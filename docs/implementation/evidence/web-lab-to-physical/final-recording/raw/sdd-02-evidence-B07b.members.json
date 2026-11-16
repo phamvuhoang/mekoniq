@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:40:18.756317+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B07b",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-02-evidence-B07b.tar.gz",
+  "archiveBytes": 33562,
+  "archiveSha256": "372b8d50e418b046121d516cf3821d142559a128e64c524e263bfe61ca9c507c",
+  "memberCount": 6,
+  "memberBytes": 123812,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "pre-fix1-report-identity.json",
+      "bytes": 566,
+      "sha256": "9d1b74b6a6909516f9df6f117d9d4f3e6f3b1ccc3f4941cf1407e8d7c770e1ab",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794674206413730922
+    },
+    {
+      "path": "pre-fix1-report.md",
+      "bytes": 37563,
+      "sha256": "9b96af81607bfa86c7956ac6d7939aaf48975c8d730aad1c23583cde18dfc87b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794674206413555838
+    },
+    {
+      "path": "root-H7-zip-byte-audit.json",
+      "bytes": 11418,
+      "sha256": "954bfa756de256f2fadc3a212c6097ad9389ed52a172d234ec460c6e62b1cfcf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794671082787798097
+    },
+    {
+      "path": "root-catalog-byte-audit.json",
+      "bytes": 57293,
+      "sha256": "3d15158e3397c69dc9e522f4c073b6b90994af1cb4739dcee4c1425a3247259f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794669313486336159
+    },
+    {
+      "path": "root-final-r70-zip-byte-audit.json",
+      "bytes": 16482,
+      "sha256": "720321cac46dd82157ea3da6a2d374e15629379fb49011b26dbed55e6def06c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794673188299435874
+    },
+    {
+      "path": "root-post-copy-original-audit.json",
+      "bytes": 490,
+      "sha256": "50ad96101832f611a7852ca9a325301d607b93315153fb2075e2fa24eef5edd3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794672224059703445
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

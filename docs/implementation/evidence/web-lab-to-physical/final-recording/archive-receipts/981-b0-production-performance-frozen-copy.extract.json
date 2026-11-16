@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:27:56.655672+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-production-performance-frozen-copy.tar.gz",
+  "archiveSha256": "1d06498b504e362b2a4c322acbd17fcf8e7d357dfcfcfb28c2fdb8eb8b951606",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-production-performance-frozen-copy.members.json",
+  "memberIndexSha256": "3165828d5371fcf965aeece9e32b774be6977183c172a64b55e2e1e057b19b70",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-production-performance-frozen-copy",
+  "verifiedFiles": 9,
+  "verifiedBytes": 39115712,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

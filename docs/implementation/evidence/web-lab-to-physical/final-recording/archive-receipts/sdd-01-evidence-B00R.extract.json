@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:40:16.738001+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/evidence-B00R",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-01-evidence-B00R.tar.gz",
+  "archiveSha256": "29e322f85ff0105c56e0bc1bb015bb782dd5a7f43f685cded15597b0af5e0760",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-01-evidence-B00R.members.json",
+  "memberIndexSha256": "27944e3ffd891f3a192ccf2d50c5e057cecc13a75a0bd52f1ec26881a24b2c3c",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/sdd-01-evidence-B00R",
+  "verifiedFiles": 51,
+  "verifiedBytes": 379087,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

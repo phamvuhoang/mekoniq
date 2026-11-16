@@ -1,0 +1,272 @@
+{
+  "verifiedIndices": [
+    {
+      "index": "metadata-retention-index-final-229efa7.json",
+      "files": 139,
+      "bytes": 2465154,
+      "sha256": "2427789e6b8856eabc5f6429394440f054984fe9d4e0d7c1613e99e54232148f"
+    },
+    {
+      "index": "external-retention-index-final-229efa7.json",
+      "files": 4937,
+      "bytes": 209796301,
+      "sha256": "e3d537602f02c8fb88db5a912f5434d4714e8eb78dad9f3bcba59e8333306c96"
+    }
+  ],
+  "failureInputsOriginalAndSnapshot": 20,
+  "checks": [
+    {
+      "name": "acceptance-r3-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "acceptance-r3-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "acceptance-r3-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "acceptance-r3-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "acceptance-r3-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "acceptance-r3-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "entry-inventory.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "export-handoff-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "handoff-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "mock-acceptance.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "mock-regression.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "opt-in-lab-twin.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "opt-in-source-stream.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "prepare-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "preservation-handoff.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "readback-r3-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-engineering-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-engineering-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-mujoco-linux-amd64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-mujoco-linux-arm64.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-puma560-linuxcnc-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "record-r3-xarm6-jazzy-sim.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "source-adapters.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "source-build-final.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "source-contracts-final.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "source-lint-final.receipt",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "name": "source-providers.receipt",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "name": "source-security.receipt",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "name": "source-type-final.receipt",
+      "exitCode": 0,
+      "signal": null
+    }
+  ],
+  "report": {
+    "bytes": 82236,
+    "sha256": "f776790ede1f9ffb854d4206dcdf6e983bb9da168890edf11c48905085cf2575"
+  },
+  "source": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "lab": "45794aa8ec7eb8a19214a6e16786455f7c948bb1",
+  "clean": true,
+  "scope": "Retained bytes and own outcomes only; no suites/engines/services. Security real IR cancellation failure remains separate from unavailable service hooks."
+}

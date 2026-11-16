@@ -1,0 +1,51 @@
+{
+  "prepared": true,
+  "nativeReady": false,
+  "issues": [
+    {
+      "code": "NATIVE_MODEL_MAPPING_UNRESOLVED",
+      "path": "/profile/documents",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "NATIVE_ENGINE_PROFILE_UNRESOLVED",
+      "path": "/profile",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "PACKAGE_LOCK_UNRESOLVED",
+      "path": "/profile/requiredPackages/0",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "SOURCE_LOCK_UNRESOLVED",
+      "path": "/profile/installation/sources",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "HOST_INVENTORY_MISSING",
+      "path": "/inventory",
+      "severity": "prerequisite"
+    }
+  ],
+  "subject": {
+    "id": "final-prepared-xarm6-jazzy-sim",
+    "executionKind": "ros2_native",
+    "sourceCommit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+    "labCommit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+    "schemaHash": "c2bdaca0b5ce9b03ee52a8c497719f4ea83b2cbb0e23c4e18365099fd163fa12",
+    "portableClosureHash": "778c336cd3bcffa975cbea2967915f27fd5f94124ec986e75f2dac031d55df93",
+    "nativeClosureHash": null,
+    "runtimeArtifactSha256": "e280572231e51db029dc3db7a9c67dfd1b63a1417d0527ccbd20786683a45ba0",
+    "profileSha256": "b811782a358226939076067d45c6aa5b0c98ad4fd40d65c5d0dd7a456700f09f",
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+    "toolSha256": "29dad7f60d74f99e09b3acd370e759ebcd5a4956e2a18293c8920296a023c865"
+  },
+  "inventoryAssessment": "supplied_records_only",
+  "qualification": "not_run",
+  "accepted": false,
+  "dynamics": "not_calibrated"
+}

@@ -1,0 +1,111 @@
+
+> mekoniq-platform@ test:acceptance /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source
+> node scripts/test-runner.mjs acceptance -- sim-extension --reporter=default --reporter=json --outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/extracted-acceptance-r2a-partial.json
+
+
+ RUN  v4.1.12 /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source
+
+ ❯ tests/acceptance/sim-extension.acceptance.test.ts (12 tests | 3 failed) 20ms
+   ✓ a candidate directory is named and holds a qualification record 2ms
+   × the record is complete and consistent with every file beside it (fail-closed check shared with the recorder) 10ms
+   ✓ the Webots campaign directory re-verifies from disk through the headless CLI (exit 0) 1ms
+   ✓ the Lab checkout pins exactly the recorded source commit and portable tool closure; the record names that pin 1ms
+   ✓ R1.1: the R1 record it carries is the one in the tree (byte for byte), and so are the IR-SIM record and the mock regression that R1 record was built on (REG02) 0ms
+   ✓ R2a: the R1.1 record it carries is the one in the tree (byte for byte), and so are the R1, IR-SIM and mock records that R1.1 record carries (REG03) 2ms
+   ✓ the IR-SIM record it builds on is the one in the tree (byte for byte) and is of the same commit 0ms
+   × no gate is accepted by this record, only its own release's gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation) 1ms
+   × INT15 screenshot of the Lab running MJ-BV01 on the real MuJoCo worker is in the R2a candidate 1ms
+   ✓ INT13 screenshot of the Lab running the coffee journey on the Webots arm is in the R1.1 candidate 1ms
+   ✓ INT11 screenshots (VI/JA/EN, desktop and tablet) are in the candidate when the Lab Webots journey was recorded 0ms
+   ✓ the performance measurement is recorded and says it is a measurement, not a gate 0ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 9 passed (12)
+   Start at  08:10:14
+   Duration  380ms (transform 80ms, setup 0ms, import 250ms, tests 20ms, environment 0ms)
+
+JSON report written to /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/extracted-acceptance-r2a-partial.json
+ ELIFECYCLE  Command failed with exit code 1.
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/acceptance/sim-extension.acceptance.test.ts > the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)
+AssertionError: expected [ 'SUITE_MISSING:ma-static', …(27) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "SUITE_MISSING:ma-static",
++   "SUITE_MISSING:ma-rtb",
++   "SUITE_MISSING:ma-py",
++   "SUITE_MISSING:ma-worker",
++   "SUITE_MISSING:ma-ports",
++   "SUITE_MISSING:ma-programs",
++   "SUITE_MISSING:ma-contact",
++   "SUITE_MISSING:ma-bv01",
++   "SUITE_MISSING:ma-faults",
++   "SUITE_MISSING:rt-remote",
++   "SUITE_MISSING:rt-paced",
++   "SUITE_MISSING:rt-container",
++   "SUITE_MISSING:regress",
++   "SUITE_MISSING:lab-rt-unit",
++   "SUITE_MISSING:lab-ui-unit",
++   "SUITE_MISSING:lab-arm-unit",
++   "SUITE_MISSING:lab-e2e-remote-origin",
++   "SUITE_MISSING:lab-e2e-twin-layout",
++   "SUITE_MISSING:lab-e2e-twin-polish",
++   "SUITE_MISSING:lab-e2e-twin-transport",
++   "SUITE_MISSING:lab-e2e-twin-workspace",
++   "SUITE_MISSING:lab-e2e-brand-accessibility",
++   "SUITE_MISSING:lab-e2e-arm-mesh",
++   "SUITE_MISSING:lab-e2e-arm-cell",
++   "SUITE_MISSING:lab-e2e-mujoco-coffee",
++   "SUITE_MISSING:lab-e2e-mujoco-mesh-fallback",
++   "SUITE_MISSING:lab-e2e-irsim-journey",
++   "SUITE_MISSING:lab-e2e-webots-coffee",
++ ]
+
+ ❯ tests/acceptance/sim-extension.acceptance.test.ts:28:158
+     26| });
+     27| test('the record is complete and consistent with every file beside it …
+     28|  expect(manifest().release==='r3'?await verifyR3Directory(dir):manifes…
+       |                                                                                                                                                              ^
+     29| });
+     30| test('the Webots campaign directory re-verifies from disk through the …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/acceptance/sim-extension.acceptance.test.ts > no gate is accepted by this record, only its own release's gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)
+AssertionError: G-MA1: expected 'not_run' to be 'tested' // Object.is equality
+
+Expected: "tested"
+Received: "not_run"
+
+ ❯ tests/acceptance/sim-extension.acceptance.test.ts:81:50
+     79|   // every other gate is tested
+     80|   const blocked:string[]=m.blocked?.gates??[];expect(m.cl01).toBeUndef…
+     81|   for(const g of ids)expect(m.gates[g].status,g).toBe(g==='G-CLOUD1'?'…
+       |                                                  ^
+     82|   return;
+     83|  }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/acceptance/sim-extension.acceptance.test.ts > INT15 screenshot of the Lab running MJ-BV01 on the real MuJoCo worker is in the R2a candidate
+AssertionError: expected 'not_run' to be 'tested' // Object.is equality
+
+Expected: "tested"
+Received: "not_run"
+
+ ❯ tests/acceptance/sim-extension.acceptance.test.ts:91:31
+     89| test('INT15 screenshot of the Lab running MJ-BV01 on the real MuJoCo w…
+     90|  const m=manifest();if(m.release!=='r2a'||m.blocked?.gates?.includes('…
+     91|  expect(m.cases.INT15.status).toBe('tested');
+       |                               ^
+     92|  expect((m.artifacts as {file:string}[]).some(a=>a.file.startsWith('sc…
+     93| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

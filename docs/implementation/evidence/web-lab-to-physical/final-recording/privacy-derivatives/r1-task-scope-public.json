@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-16T00:24:34.198575+00:00",
+  "lab": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+  "defaultAbsent": true,
+  "scope": "Fresh ordinary R1 preflight and complete record; isolated same-commit Lab for default browser outputs; current actual IR+mock inputs, no skipped suites",
+  "privateProcessSnapshot": {
+    "rawFileBytes": 171502,
+    "rawFileSha256": "12211da696749f3b113183b857f7379c076934e2e244718d22a212feea64b6cf",
+    "excludedField": "ownedProcesses",
+    "snapshotStringBytes": 170536,
+    "snapshotStringSha256": "b783fda8a1d8782aa1ac76a6cf39256d066cf69fea4065148740335c1212da69",
+    "policy": "Entire unfiltered host-process string excluded from public derivative and archive. Original ignored local record remains unchanged; no unrelated application/credential context is published. This derivative is not byte-identical to raw."
+  }
+}

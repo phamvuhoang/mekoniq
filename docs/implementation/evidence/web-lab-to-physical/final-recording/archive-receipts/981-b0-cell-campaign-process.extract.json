@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:27:41.846417+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign-process",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-cell-campaign-process.tar.gz",
+  "archiveSha256": "4f1fbc195a07da64d7e50ac16ee1eb134bd67f09c2d48dca2c6e584cbd122aa1",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-cell-campaign-process.members.json",
+  "memberIndexSha256": "ec71c4d5765e6b13f429c53ff4029ff19a8aeb856d6c4df2b459ff4e1176c85f",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-cell-campaign-process",
+  "verifiedFiles": 3,
+  "verifiedBytes": 612,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

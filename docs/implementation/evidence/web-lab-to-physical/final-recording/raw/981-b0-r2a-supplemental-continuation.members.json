@@ -1,0 +1,629 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:28:02.077435+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-r2a-supplemental-continuation.tar.gz",
+  "archiveBytes": 12003096,
+  "archiveSha256": "f95a36664044952bb12420099f5299f751e37de1ced59448281a6d7994839833",
+  "memberCount": 82,
+  "memberBytes": 12541464,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "combined-row-coverage.json",
+      "bytes": 8709,
+      "sha256": "4a1d4ca8fd67b5edf2ce08c30fbca0b0717df81a1439a359bf3d775389d0b8a8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561925908939
+    },
+    {
+      "path": "continuation-plan.json",
+      "bytes": 1360,
+      "sha256": "8ef86d908120a7d70daa2a31d0e793b83afa11c348fb6fc7e92404d15454ee74",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794777995409840663
+    },
+    {
+      "path": "default-copies/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561714433670
+    },
+    {
+      "path": "default-copies/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779512868637323
+    },
+    {
+      "path": "default-copies/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534913180828
+    },
+    {
+      "path": "default-originals/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561714433730
+    },
+    {
+      "path": "default-originals/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779512868637365
+    },
+    {
+      "path": "default-originals/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534913180790
+    },
+    {
+      "path": "execution-index.json",
+      "bytes": 16161,
+      "sha256": "f8c1e449ec5194d10e368f2d8d6feef3f5ca12844a96b1c9772b3b3384070884",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561925121560
+    },
+    {
+      "path": "lab-e2e-irsim-journey-default-preservation.json",
+      "bytes": 867,
+      "sha256": "f23a44496f311eafd5c9a4aaf8378cd1867730ff67dbac699125f40934bb0d72",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561924642725
+    },
+    {
+      "path": "lab-e2e-mujoco-coffee-default-preservation.json",
+      "bytes": 867,
+      "sha256": "7e6aa2b518470cd8fb47fb45401545d9f451d85266a3c690554a1e04042b99b1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779513160497038
+    },
+    {
+      "path": "lab-e2e-mujoco-mesh-fallback-default-preservation.json",
+      "bytes": 881,
+      "sha256": "a674a9ea0e6860b23a14e4a792109c4108854fb3809f3339d2654d0215c64fcb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779535117799133
+    },
+    {
+      "path": "playwright/lab-e2e-arm-cell/arm-cell/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778048112597018
+    },
+    {
+      "path": "playwright/lab-e2e-arm-mesh/arm-mesh/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778039324899892
+    },
+    {
+      "path": "playwright/lab-e2e-brand-accessibility/brand-accessibility/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778029661040829
+    },
+    {
+      "path": "playwright/lab-e2e-twin-transport/twin-transport/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778012553933399
+    },
+    {
+      "path": "playwright/lab-e2e-twin-workspace/twin-workspace/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778021521998376
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-fallback-problems.png",
+      "bytes": 92828,
+      "sha256": "0881ab1894343ce941b19209887e5d39f0c8a6242c3af20287b3a0843db2003c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778033867670217
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-mesh-home.png",
+      "bytes": 97842,
+      "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778033020830114
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-mesh-pick-closed.png",
+      "bytes": 92877,
+      "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778033119366865
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-notes-only.png",
+      "bytes": 16450,
+      "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778038811619005
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-notes-panel.png",
+      "bytes": 45630,
+      "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778038887928118
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note-panel.png",
+      "bytes": 52341,
+      "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778039055049262
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note.png",
+      "bytes": 16514,
+      "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778038979379327
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-en.png",
+      "bytes": 763514,
+      "sha256": "11f1ae6c12e382a3cc4aedde6b54edf7f3615b2fc8e02bcb65fc9294e8485c91",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779541175988017
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-ja.png",
+      "bytes": 807530,
+      "sha256": "7186f8c75fd9a32a6538aefd30b230b98d12ca8b82b09474a32038589efcf642",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779540951432787
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-vi.png",
+      "bytes": 789539,
+      "sha256": "3a8b76c5552860419a65405091731493fc5040a52b6d2467cf13fd36ecd22fa5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779540721314781
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-en.png",
+      "bytes": 744541,
+      "sha256": "90b256bd2da31c0832d12f48796c05f8b77909c076b69b3e93dc937564a395f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779541771742586
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-ja.png",
+      "bytes": 783529,
+      "sha256": "8c629aeeaf1a7a84fe7b9963edba6a1cf8d1cc03bc2e623be42e325654a5e3e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779541581496144
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-vi.png",
+      "bytes": 779118,
+      "sha256": "8e4051bc97d29f053c6a50fc01d0ce49f122948e1fd60f45ca1cca5825d08561",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779541390868075
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-en.png",
+      "bytes": 150869,
+      "sha256": "f196c95b18063b39ec0920da4a0b65dbce1511cfd753687bdf088d69a2d153e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779554806173240
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-ja.png",
+      "bytes": 158870,
+      "sha256": "4b8b0cdc7e2d791ab9704dfe02489ae5b0aa4a18de941f779c547766f2da1e9c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779554705030803
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-vi.png",
+      "bytes": 156848,
+      "sha256": "17fb7e2a507b18557d63e7dad4848c77df32c8543d7f42c5a581515bf4ce0d1a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779554606043001
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-en.png",
+      "bytes": 126904,
+      "sha256": "a19c146a36467ee3db224b91b676fbf573920ab579630fc80b9a70915a821699",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555087273945
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-ja.png",
+      "bytes": 136203,
+      "sha256": "a5496b273008485850adb3c31e0da8974f86ddf98a04527ff127ac5597eef7fc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779554985442463
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-vi.png",
+      "bytes": 130883,
+      "sha256": "57ec19aa19abe3d8e9de4511fe64dd79073f2b521d0533a9ee80d7fdd3262334",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779554901442941
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-en.png",
+      "bytes": 141318,
+      "sha256": "9d11cecb6aef0eeda4bac3651cfe28818b73b882cd8b860c639af5313adf6523",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555555546745
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-ja.png",
+      "bytes": 151077,
+      "sha256": "81972c3c5e04c6c3cccf894762ada7b84a697164b16dab21b8fbc67f1dd1327b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555454204224
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-vi.png",
+      "bytes": 147800,
+      "sha256": "71bb8d4bc0931c4179c73c77777526877616743e96a833d0e33d74b36301228a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555353662373
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-en.png",
+      "bytes": 136507,
+      "sha256": "7efe5327d911f95c54e10d541daa3ee97abd59a5d99e018b476509dccb597256",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555866577634
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-ja.png",
+      "bytes": 146435,
+      "sha256": "58629d6c93ff7eccbd0b50bbc95b97921e31a42647df2ce54bd2a06f0aeb23f9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555769717759
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-vi.png",
+      "bytes": 140959,
+      "sha256": "bed2c6bf5833ca4fca8f2685edd289be3d5e503fa4d2d87e4ed75522b44a63cc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779555667269357
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-loopback-blocked.png",
+      "bytes": 174250,
+      "sha256": "0a4a3fc6d4c6b503810791c38ac7d7c5383c62eaf49f640c3540448cb8347da0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779463708558137
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-pin-mismatch.png",
+      "bytes": 144760,
+      "sha256": "115a9da0056b82c9f31250878c9bf20d339e496e6416d84c876951f82a6d72f2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779463418823266
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-this-machine.png",
+      "bytes": 147550,
+      "sha256": "6907fe8746e4fe69fa8485e8e88c2555e7e23b1aad8fdd5212f59cfbc3e2a402",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779463269840561
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-web-page-initial.png",
+      "bytes": 148094,
+      "sha256": "2af51c7392c78be3b3387c455f0323c0bec9dcb6420e6a1df123684d76d667ef",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779462787423527
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-fresh-mount.png",
+      "bytes": 222978,
+      "sha256": "a234d9f7c8fb15617e60162b2636992e372891e1ed2e7f77b7df112a0fd651a1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779466229831779
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-robot-left.png",
+      "bytes": 254877,
+      "sha256": "f91ff353cd4e3c733bb6e5015ae85d77caf6b859dd8ebed3e1e31e91a45ce82f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779507829872515
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-start.png",
+      "bytes": 223035,
+      "sha256": "6e29b55690b2a2abb4e713c6daaab09c2a7928ffba87a2bab0f450310f5ed7f4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779466013504089
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cup-on-tray-robot-docked.png",
+      "bytes": 219573,
+      "sha256": "0987173484d57549ab2d2f2f02325e3e5df41bcf216c101507a3a5808e892c48",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779497542631865
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-engineering-identity.png",
+      "bytes": 255704,
+      "sha256": "3c0cca1757545f243d6d6300ae7afafc1385d09104c86312b1468fec2428b443",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779465637000640
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+      "bytes": 282875,
+      "sha256": "59e8b277c81257a352db1fa8c17a8c3bd09eb8ebe756aee3c6c629b9470fc6ca",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779497784717552
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding-fit.png",
+      "bytes": 102333,
+      "sha256": "fb76f46edc143a0171698593d6aa1b169d277f98b512ad7465c442733e46469e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779493498434389
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+      "bytes": 215237,
+      "sha256": "c4b3de4330fca427f5552a9dec11a0a049192673de469732b1906ec6f62d5017",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779493433609083
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-report-plant.png",
+      "bytes": 291888,
+      "sha256": "05db2d0bb7ae2133fa983ce45a4d1737810ec122db320e9b0014020f446867d8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779508002068663
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+      "bytes": 215513,
+      "sha256": "fa3c18e5936d716be970e641100f110721c2cbac13edf398b29575d86fd00bf5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779511045090192
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/final-I6-saved-report-mid-pick.png",
+      "bytes": 215516,
+      "sha256": "2257a48d96b281e448ae0a29949948b37c5f50d9f0d4b01cb32be2299dd1f5d8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779512544633081
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/screens/mujoco-coffee.png",
+      "bytes": 254693,
+      "sha256": "cad59bd1db1c65a004ea0dc7fb3b403c9bbbcbeeaf57f78dc79b5c01140e9e02",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779507770511734
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/U06-mesh-fallback-notes.png",
+      "bytes": 225276,
+      "sha256": "9037cbcf6cc1081cc66454e72e720b3a619d778f66ea165e6edfb0aabc903233",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779533801309486
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1024x700.png",
+      "bytes": 153172,
+      "sha256": "66f36d8a5def7dae2f83b38824683cae83d837763159c2799f7b73839ec96d43",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534626527558
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1280x800.png",
+      "bytes": 198346,
+      "sha256": "51da4f76ea4a15584bbf27e8c97dfaf94b8f18cbc71a12a188d0371eb7b69096",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534360223423
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1440x900.png",
+      "bytes": 225814,
+      "sha256": "b19f4245728c24eb70c0b91303bab6e5708415c8cb41d9607b64567ab64cf575",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534074438528
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-replay-desktop-vi.png",
+      "bytes": 202317,
+      "sha256": "0caea8959fa6c4843452e0ad1410084b274b8665622618c955659c670a18b7d7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778010369960525
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-shortcuts-desktop-vi.png",
+      "bytes": 137741,
+      "sha256": "be4fb091d4e476ac9464f8a06e5e329c9efd719f44c96aea92948684ba2e90ef",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778004039688893
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+      "bytes": 82140,
+      "sha256": "48866c48ea83348b91cff083317e73c2ddd2d278fc3e1a4e4b5ee794315c1709",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778004151365452
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-desktop-vi.png",
+      "bytes": 143130,
+      "sha256": "397c038c5fa5905e83cf6577ce971269497567741b53405030265273c051d945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778017451783994
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-en.png",
+      "bytes": 74844,
+      "sha256": "444ec7f81aacfa8c4fcc32febd28713a0c23d816150e7e3841b43ae4ef40b959",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778021207649793
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-ja.png",
+      "bytes": 71069,
+      "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778021123509430
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-vi.png",
+      "bytes": 74255,
+      "sha256": "2e3b73c5a5833d0912d76ba4a23cd734f3c514e7a2b29338410c37787da3af7c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778020941970190
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-en.png",
+      "bytes": 170518,
+      "sha256": "4ba6818ecf6f2f379a4c832822f06410824d1654b7254131396e0968cb049b2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778020553131723
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-ja.png",
+      "bytes": 169042,
+      "sha256": "be1bbf52366c35258b5bb247be5b544dc8d327ea1f88568d7ce6c4af3b29dacb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778020467361181
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-vi.png",
+      "bytes": 174660,
+      "sha256": "2102040e245940c5f8ede546d39aaff8802baf0ae2758dbe6fbfeb36adb5689b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778020349461360
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147452,
+      "sha256": "f44c2ae219a127562e28c71d3fd6a90e0d4c95ec617db4b5e9e87be068a997e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778015841774620
+    },
+    {
+      "path": "suites/lab-e2e-arm-cell-arm-cell.json",
+      "bytes": 10286,
+      "sha256": "bd2d7e496181a94d2d011fe3f5b35da31e502dbfb196c42ce32806ee02a2a4f8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778048112267305
+    },
+    {
+      "path": "suites/lab-e2e-arm-mesh-arm-mesh.json",
+      "bytes": 11775,
+      "sha256": "07e7f41ed11c05dfa09e3b1429ef590725add706807d0ae21fa2df756cfd87a8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778039324564011
+    },
+    {
+      "path": "suites/lab-e2e-brand-accessibility-brand-accessibility.json",
+      "bytes": 13221,
+      "sha256": "08346bf573e2f4d5187975f2ce6e73e1160398e99c6318f7ef3cbd79d35c759c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778029660674944
+    },
+    {
+      "path": "suites/lab-e2e-irsim-journey.json",
+      "bytes": 4765,
+      "sha256": "1e55c45aea480fa087c99761e60137b9a24904701b03f30428d01f7d587a32e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779561714118687
+    },
+    {
+      "path": "suites/lab-e2e-mujoco-coffee.json",
+      "bytes": 5254,
+      "sha256": "7800adedb564faf082ce92ad8ff8174b8def7bbc4e2d4ecdf1c4bd734eda4100",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779512868271363
+    },
+    {
+      "path": "suites/lab-e2e-mujoco-mesh-fallback.json",
+      "bytes": 4787,
+      "sha256": "b57c27746fcea0494042978ccdfb462c187485c28b3f89150bd9318295cf3631",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779534912795955
+    },
+    {
+      "path": "suites/lab-e2e-twin-transport-twin-transport.json",
+      "bytes": 16150,
+      "sha256": "3167fc2f9ce0a03902b858e8fdf121708def86d8fc5f9502fb07e74e5245a4eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778012553576538
+    },
+    {
+      "path": "suites/lab-e2e-twin-workspace-twin-workspace.json",
+      "bytes": 12993,
+      "sha256": "ffaf2fa8fafa90ee54fbca023c9a4b8848982dc3f313e108d1aea6e8a609fe31",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794778021521676653
+    },
+    {
+      "path": "table.json",
+      "bytes": 7315,
+      "sha256": "52e3b29088fcffebf8397cf12943f5c821f917e1926c9851de541a5bd1b366e2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794777995408816950
+    }
+  ],
+  "directories": [
+    "default-copies",
+    "default-copies/lab-e2e-irsim-journey",
+    "default-copies/lab-e2e-mujoco-coffee",
+    "default-copies/lab-e2e-mujoco-mesh-fallback",
+    "default-originals",
+    "default-originals/lab-e2e-irsim-journey",
+    "default-originals/lab-e2e-mujoco-coffee",
+    "default-originals/lab-e2e-mujoco-mesh-fallback",
+    "playwright",
+    "playwright/lab-e2e-arm-cell",
+    "playwright/lab-e2e-arm-cell/arm-cell",
+    "playwright/lab-e2e-arm-mesh",
+    "playwright/lab-e2e-arm-mesh/arm-mesh",
+    "playwright/lab-e2e-brand-accessibility",
+    "playwright/lab-e2e-brand-accessibility/brand-accessibility",
+    "playwright/lab-e2e-twin-transport",
+    "playwright/lab-e2e-twin-transport/twin-transport",
+    "playwright/lab-e2e-twin-workspace",
+    "playwright/lab-e2e-twin-workspace/twin-workspace",
+    "pycache",
+    "screens",
+    "screens/lab-e2e-arm-cell",
+    "screens/lab-e2e-arm-mesh",
+    "screens/lab-e2e-brand-accessibility",
+    "screens/lab-e2e-irsim-journey",
+    "screens/lab-e2e-mujoco-coffee",
+    "screens/lab-e2e-mujoco-coffee/screens",
+    "screens/lab-e2e-mujoco-mesh-fallback",
+    "screens/lab-e2e-twin-transport",
+    "screens/lab-e2e-twin-workspace",
+    "suites"
+  ],
+  "declaredDependencySymlinks": []
+}

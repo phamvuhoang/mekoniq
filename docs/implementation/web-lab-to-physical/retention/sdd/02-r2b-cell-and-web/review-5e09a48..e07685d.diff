@@ -1,0 +1,829 @@
+# Review package: 5e09a48d4a8625276495694b1a29c04679bc6a77..e07685d947bad36a175b930031e0997e2991799e
+
+## Commits
+e07685d fix: yield captured world reports and replay compression
+3fbaf9c fix: preserve verified stored replay bytes for package export
+790870c feat: expose bounded committed world display observations
+
+## Files changed
+ packages/lab-runtime/src/v2/gateway.ts                  |  7 +++++++
+ .../lab-runtime/src/v2/navigation2d/worker-client.ts    |  7 +++++--
+ packages/lab-runtime/src/v2/replay/export.ts            | 17 ++++++++++-------
+ packages/lab-runtime/src/v2/replay/reader.ts            |  9 +++++----
+ packages/lab-runtime/src/v2/scenario-runner.ts          | 12 +++++++++---
+ .../src/v2/simulation3d/mujoco-world-ports.ts           |  4 ++--
+ packages/lab-runtime/src/v2/simulation3d/mujoco.ts      |  6 +++---
+ .../lab-runtime/src/v2/simulation3d/world-arm-report.ts |  4 ++--
+ .../lab-runtime/src/v2/simulation3d/world-display.ts    |  6 ++++++
+ packages/lab-runtime/src/v2/simulation3d/world-ports.ts |  1 +
+ packages/lab-runtime/src/v2/simulation3d/world-sweep.ts | 10 ++++++++--
+ tests/integration/mujoco-cell-readiness.test.ts         | 12 +++++++++---
+ tests/security/web-replay-export.test.ts                | 13 +++++++++++--
+ tests/security/web-replay-gateway.test.ts               |  6 +++---
+ tests/unit/web-replay-reader.test.ts                    |  4 ++++
+ tests/unit/world-runner.test.ts                         | 16 +++++++++++++++-
+ tests/unit/world-sweep.test.ts                          |  5 ++++-
+ 17 files changed, 104 insertions(+), 35 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index 0d464d9..880d1c0 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -164,20 +164,27 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+      // the project is the bundle's locked projection; a supplied one can only be checked for equality against it
+      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
+      try{const locked=await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project);context.project=locked.runtimeProjection.project;context.engineering=locked.ref;engineeringChecked=true;}catch(e){return engineeringFailed(response,e);}
+     }
+    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+    const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
+    if(readinessSet?.scenarioIds&&readinessSet.bundle!==false&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
+    await closeExpiredRuns();
+    return send(response,200,await collectReadiness(context,readinessOptions()));
+   }
++  const displayRoute=new RegExp(`^/runs/(${UUID})/world-display(/scene)?$`).exec(sub);
++  if(displayRoute){
++   const entry=runs.get(displayRoute[1]!);if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
++   if(method!=='GET'||request.url?.includes('?'))return deny(response,422,'INVALID_WORLD_DISPLAY',[]);
++   const read=displayRoute[2]?entry.run.worldDisplayScene:entry.run.worldDisplay;if(!read)return deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]);
++   try{const value=displayRoute[2]?await entry.run.worldDisplayScene!():await entry.run.worldDisplay!();if(runs.get(displayRoute[1]!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return (e as Error).message==='WORLD_DISPLAY_UNSUPPORTED'?deny(response,422,'WORLD_DISPLAY_UNSUPPORTED',[]):failed(response,e);}
++  }
+   const replayRoute=new RegExp(`^/runs/(${UUID})/replay(?:/([a-f0-9-]{36})(?:/assets/(0|[1-9][0-9]{0,2}))?)?$`).exec(sub);
+   if(replayRoute){
+    const [,runId,exportId,index]=replayRoute,entry=runs.get(runId!);
+    if(!entry||entry.owner!==sessionId)return deny(response,404,'RUN_NOT_FOUND',[]);
+    if(new URL(request.url??'/','http://127.0.0.1').searchParams.size)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
+    if(method==='POST'&&!exportId){
+     if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const body=await deps.readBody(request,1024);if(Object.keys(body).length)return deny(response,422,'INVALID_REPLAY_REQUEST',[]);
+     if(!entry.run.captureReplay)return deny(response,422,'REPLAY_PROVIDER_UNSUPPORTED',[]);
+     if(entry.archiving||reclaiming.has(runId!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+     const id=randomUUID(),directory=join(deps.directory,'replay-exports',id),abort=new AbortController();let finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve);
+diff --git a/packages/lab-runtime/src/v2/navigation2d/worker-client.ts b/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
+index 5714d5b..54d2a38 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
+@@ -21,35 +21,37 @@ type Check<T>={ok:true;value:T}|{ok:false;issues:{path:string;code:string}[]};
+ export interface WireSpec {protocol:string;module:string;/** This plant's ACK deadlines where they differ from the defaults. */deadlinesMs?:Partial<Record<string,number>>;extraArgs:(o:SpawnOptions)=>string[];env?:Record<string,string>;validateRequest:(x:unknown)=>Check<unknown>;validateResponse:(x:unknown)=>Check<IRSimResponseV1>;fatalCodes:readonly string[]}
+ export interface IRSimWorkerClient{
+  request(request:WireRequest):Promise<IRSimResponseV1>;
+  close(reason:string):Promise<void>;
+  readonly state:'ready'|'failed'|'closed';
+  readonly pid:number|undefined;
+  readonly bootId:string|null;
+  readonly stderrTail:string;
+ }
+ export interface SpawnOptions{
++ /** Operator-owned bounded timing observer; never supplied by a browser or persisted. Observer errors do not affect the worker. */
++ onRequestTiming?:(sample:{runId:string;requestId:string;op:string;targetTick:number;elapsedMs:number;ok:boolean})=>void;
+  python:string;workerRoot:string;runId:string;bundleRoot:string;runDirectory:string;lockDigest:string;
+  /** Directory with the contract schemas the worker validates against (the same irsim-worker-v1 file this process uses). */
+  schemaDir:string;sceneDigest?:string;
+  /** sha256 of <bundleRoot>/scenario-fixture.json (scripted actors), bound at spawn like the scene digest: the worker loads actors only from a file with exactly this digest. */
+  fixtureSha256?:string;
+  /** Per-op ACK deadlines in ms (tests shorten them). */
+  deadlinesMs?:Partial<Record<string,number>>;
+  /** Interpreter arguments; default `-m irsim_worker`. Operator/test option only: never derived from a request. */
+  entry?:string[];
+  /** Webots plant only: the host installation the worker starts (never from a request). */
+  webotsHome?:string;
+  /** Server-owned campaign fault selector, never read from a browser request. */
+  payloadPerturbationId?:'payload-cup-forward-impulse-v1';
+ }
+-interface Pending{request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
++interface Pending{sentNs?:bigint;request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
+ 
+ /** Starts one worker process for one run. There is never a second process for the same run: after a failure the client is terminal and recovery is a new run with locked inputs. */
+ export const IRSIM_WIRE:WireSpec={protocol:'mekoniq-irsim/1',module:'irsim_worker',extraArgs:o=>o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[],validateRequest:validateIRSimRequest,validateResponse:validateIRSimResponse,fatalCodes:['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT']};
+ export const spawnIRSimWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,IRSIM_WIRE);
+ 
+ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWorkerClient>{
+  if(o.payloadPerturbationId&&wire.module!=='mujoco_worker')throw new Error('PERTURBATION_PROVIDER_UNSUPPORTED');
+  await mkdir(o.runDirectory,{recursive:true});
+  const deadlines={...DEFAULT_DEADLINES_MS,...wire.deadlinesMs,...o.deadlinesMs},root=resolve(o.workerRoot);
+  const args=isolatedPythonArgs([root],o.entry??['-m',wire.module],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...wire.extraArgs(o)]);
+@@ -75,21 +77,21 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
+   // the request that was on the wire may have been applied; everything queued behind it never left this process
+   current?.reject(new WorkerLostError(code,'unknown',detail));
+   for(const p of queue.splice(0))p.reject(new WorkerLostError(code,'not_sent',detail));
+  };
+  const pump=()=>{
+   if(state!=='ready'||inFlight)return;
+   const next=queue.shift();
+   if(!next)return;
+   inFlight=next;
+   timer=setTimeout(()=>fail('WORKER_TIMEOUT',`no ACK for ${next.request.op} within ${deadlines[next.request.op]} ms`),deadlines[next.request.op]??5000);
+-  child.stdin.write(JSON.stringify(next.request)+'\n');
++  next.sentNs=process.hrtime.bigint();child.stdin.write(JSON.stringify(next.request)+'\n');
+  };
+  const onLine=(line:string)=>{
+   let parsed:unknown;
+   try{parsed=JSON.parse(line);}catch{return fail('WORKER_PROTOCOL','a worker line is not JSON');}
+   const checked=wire.validateResponse(parsed);
+   if(!checked.ok)return fail('WORKER_PROTOCOL',`response violates ${wire.protocol}: ${checked.issues[0]?.path} ${checked.issues[0]?.code}`);
+   const r=checked.value as IRSimResponseV1,current=inFlight;
+   if(!current||r.requestId!==current.request.requestId||r.runId!==o.runId)return fail('WORKER_PROTOCOL','late, duplicate or foreign response');
+   if(bootId===null)bootId=r.bootId;else if(r.bootId!==bootId)return fail('WORKER_PROTOCOL','bootId changed within one run');
+   if(r.tick<lastTick)return fail('WORKER_PROTOCOL','tick went backwards');
+@@ -107,20 +109,21 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
+    if(snap){
+     if(snap.runId!==o.runId||snap.bootId!==r.bootId||snap.tick!==r.tick)return fail('WORKER_PROTOCOL','the snapshot contradicts its own envelope (run, boot or tick)');
+     if(BigInt(snap.simTimeNs)!==BigInt(snap.tick)*TICK_NS)return fail('WORKER_PROTOCOL','simTimeNs is not tick x 20 ms');
+     if(BigInt(snap.seq)<lastSeq)return fail('WORKER_PROTOCOL','snapshot sequence went backwards');
+     lastSeq=BigInt(snap.seq);
+     sceneDigest??=snap.sceneDigest;
+     if(snap.sceneDigest!==sceneDigest)return fail('WORKER_PROTOCOL','the snapshot is for a different scene than this run was bound to');
+    }
+   }
+   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;
++  if(o.onRequestTiming&&current.sentNs!==undefined){try{o.onRequestTiming({runId:o.runId,requestId:current.request.requestId,op:current.request.op,targetTick:r.tick,elapsedMs:Number(process.hrtime.bigint()-current.sentNs)/1e6,ok:r.ok});}catch{/* diagnostics never alter authority */}}
+   current.resolve(r);
+   if(!r.ok&&wire.fatalCodes.includes((r as {error:{code:string}}).error.code))fail('WORKER_FATAL',(r as {error:{code:string}}).error.code);
+   else pump();
+  };
+  child.stdout.on('data',(d:Buffer)=>{
+   buffer+=d.toString('utf8');
+   if(buffer.length>MAX_LINE_BYTES*2)return fail('WORKER_PROTOCOL','response line too large');
+   let i:number;
+   while((i=buffer.indexOf('\n'))>=0&&state==='ready'){const line=buffer.slice(0,i);buffer=buffer.slice(i+1);if(line.trim())onLine(line);}
+  });
+diff --git a/packages/lab-runtime/src/v2/replay/export.ts b/packages/lab-runtime/src/v2/replay/export.ts
+index 14d2db5..aaf807e 100644
+--- a/packages/lab-runtime/src/v2/replay/export.ts
++++ b/packages/lab-runtime/src/v2/replay/export.ts
+@@ -1,16 +1,19 @@
+ /** Source owns admission/capture; this module publishes only an immutable bounded display package, without opening a journal database. */
+ import {createHash,randomUUID} from 'node:crypto';
+ import {lstat,mkdir,open,realpath,rename,rm} from 'node:fs/promises';
+ import {constants} from 'node:fs';
+ import {basename,dirname,join,resolve,sep} from 'node:path';
+-import {gzipSync,gunzipSync} from 'node:zlib';
++import {gzip,gunzipSync} from 'node:zlib';
++import {promisify} from 'node:util';
++import {setImmediate as yieldTurn} from 'node:timers/promises';
++const gzipAsync=promisify(gzip);
+ import type {RunReport} from '../report';
+ import {hashJson} from '../hash';
+ import {validateWorldScene} from '../simulation3d/world-scene';
+ import {captureWorldPrefixDisk,materializeWorldPrefix,prepareWorldAdmission,validateWorldRecord,type WorldAdmission} from '../simulation3d/world-evidence';
+ import type {WorldEvidenceRecord,PhysicsTickRecord} from '../../../../contracts/generated/navigation2d';
+ import {preparePhysicsAdmission,readPhysicsEvidence} from '../simulation3d/physics-evidence';
+ import {validateNavigationDocument} from '../navigation2d/contracts';
+ import type {NavigationSceneV1} from '../navigation2d/contracts';
+ import {openReplayPackage,parseReplayManifest,replayPath,REPLAY_LIMITS,type ReplayManifest,type ReplayAsset} from './reader';
+ import licensing from './xarm-licensing.json';
+@@ -35,22 +38,22 @@ export async function loadRetainedReplay(directory:string):Promise<CapturedRepla
+  }else if(report.navigation2d?.engine.id==='mujoco_3d'&&report.physicsEvidence){const scene:unknown=await doc(directory,'bundle/navigation-scene.json',256*1024),v=validateNavigationDocument(scene);if(!v.ok)throw Error('REPLAY_SCENE_INVALID');const s=scene as NavigationSceneV1,files=new Map<string,Uint8Array>();if(s.files.reduce((n,f)=>n+f.bytes,0)>REPLAY_LIMITS.packageBytes)throw Error('REPLAY_INPUT_LIMIT');for(const f of s.files){const bytes=await readReplayInput(directory,`bundle/${f.path}`,Math.min(MAX_INPUT,f.bytes));if(bytes.length!==f.bytes||sha(bytes)!==f.sha256)throw Error('REPLAY_MODEL_HASH');files.set(f.path,bytes);}const prepared=await preparePhysicsAdmission(s,p=>Promise.resolve(files.get(p)!)),m=report.physicsEvidence.manifest;if(m.identity.runId!==report.manifest.runId||m.identity.sceneDigest!==s.sceneDigest)throw Error('REPLAY_SCENE_IDENTITY');for(const stream of m.streams)for(const ref of stream.chunks)await readReplayInput(directory,`run/physics/${ref.path}`,8*1024*1024);const physics=await readPhysicsEvidence(join(directory,'run/physics'),m,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:m.identity,runTick:h});if(physics.records.length!==h+1||physics.issues.some(i=>i!=='PHYSICS_COVERAGE_INCOMPLETE'))throw Error(`REPLAY_PHYSICS_INVALID:${physics.issues.join(',')}`);const navigation:NonNullable<CapturedReplay['mobile']>['navigation']=[];for(const refs of Object.values(report.navigation2d.artifacts))for(const f of refs){const b=await readReplayInput(directory,`run/evidence/${f.path}`,8*1024*1024);if(b.length!==f.bytes||sha(b)!==f.sha256)throw Error('REPLAY_NAVIGATION_HASH');navigation.push({path:f.path,bytes:b});}result.mobile={scene:s,files,physics:physics.records,navigation,sceneBytes:await readReplayInput(directory,'bundle/navigation-scene.json',256*1024)};if(report.manifest.simulationPerturbation){if(hashJson(report.manifest.simulationPerturbation)!==hashJson(MOBILE_PAYLOAD_IMPULSE))throw Error('REPLAY_PERTURBATION_UNREGISTERED');const record=await doc(directory,'case.json',1024*1024),ref=record.artifacts?.find((f:{path:string})=>f.path==='run/worker/payload-perturbation.json'),bytes=await readReplayInput(directory,'run/worker/payload-perturbation.json',64*1024),receipt=JSON.parse(bytes.toString()),expected=MOBILE_PAYLOAD_IMPULSE.parameters;if(record.runId!==report.manifest.runId||record.sourceCommit!==report.manifest.sourceCommit||!ref||ref.bytes!==bytes.length||ref.sha256!==sha(bytes)||receipt.id!==MOBILE_PAYLOAD_IMPULSE.id||receipt.runId!==m.identity.runId||receipt.bootId!==m.identity.bootId||receipt.sceneDigest!==m.identity.sceneDigest||receipt.loadProfileSha256!==m.identity.loadProfileDigest||receipt.tick!==expected.targetTick||receipt.tick>h)throw Error('REPLAY_RECEIPT_IDENTITY');for(const key of ['frameSampleTick','forceTransform','frameId','supportId','forceN','durationS','impulseNs','substeps','propId','method'] as const)if(hashJson(receipt[key])!==hashJson(expected[key]))throw Error('REPLAY_RECEIPT_DOSE');const before=physics.records[expected.frameSampleTick]!.loads.find(l=>l.propId===expected.propId)!,after=physics.records[expected.targetTick]!.loads.find(l=>l.propId===expected.propId)!,frame=composePose({position:before.poseMap.positionM,quaternionXyzw:before.poseMap.quaternionXyzw},invertPose({position:before.poseInSupport!.positionM,quaternionXyzw:before.poseInSupport!.quaternionXyzw})),force=qrotate(frame.quaternionXyzw,[...expected.forceN]);if(hashJson(receipt.beforePoseMap)!==hashJson(before.poseMap)||hashJson(receipt.afterPoseMap)!==hashJson(after.poseMap)||!frame.position.every((v,i)=>Math.abs(v-receipt.supportPoseMap.positionM[i])<1e-9)||Math.abs(Math.abs(frame.quaternionXyzw.reduce((sum,v,i)=>sum+v*receipt.supportPoseMap.quaternionXyzw[i],0))-1)>=1e-9||!Array.isArray(receipt.forceMapN)||receipt.forceMapN.length!==3||!force.every((v,i)=>Math.abs(v-receipt.forceMapN[i])<1e-9))throw Error('REPLAY_RECEIPT_OBSERVATION');result.mobile.receipt=bytes;}
+  }else throw Error('REPLAY_PROVIDER_UNSUPPORTED');return result;
+ }
+ /** Public reports are data, never transport credentials. The versioned provenance declares the transform. Text containing internal endpoints is not emitted. */
+ function publicData(input:unknown):unknown {if(Array.isArray(input))return input.map(publicData);if(input&&typeof input==='object')return Object.fromEntries(Object.entries(input).filter(([k])=>!/^(authorization|cookie|token|apiKey|csrfToken|sessionToken|reclaimToken|password|secret|credentials|endpoint|accessKey|signingKey|privateKey)$/i.test(k)).map(([k,v])=>[k,publicData(v)]));if(typeof input==='string'&&/\b(?:https?|wss?|tcp|file):\/\/(?:localhost|127\.|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)/i.test(input))return '[internal endpoint redacted]';return input;}
+ export function xarmSupplementalLicensing(files:ReadonlyMap<string,Uint8Array>){const known={'NOTICE':'7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c','vendor-manifest.json':'4c8e12ba58f748c0a5aefd879a5b349261fe0ea10d0255f2c3485cd1c5c2dbfe','manifest.json':'51bad5842206673d9f417a5f0f4813ac904f64b12a53cbfb403e1e12294b3407'} as const;const bytes=new Map(Object.entries(licensing).map(([n,b])=>[n,Buffer.from(b,'base64')]));for(const [n,h]of Object.entries(known))if(sha(bytes.get(n)!)!==h)throw Error('REPLAY_NOTICE_HASH');const manifest=JSON.parse(bytes.get('manifest.json')!.toString()) as {blobs:{sha256:string;bytes:number}[];files:{path:string;sha256:string}[]},component=manifest.files.find(f=>f.path==='component.json')!,actual=files.get('arm-component.json');if(!actual||sha(actual)!==component.sha256)throw Error('REPLAY_VENDOR_COMPONENT_UNKNOWN');const meshes=[...files.keys()].filter(p=>p.endsWith('.stl'));if(meshes.length!==manifest.blobs.length||manifest.blobs.some(f=>{const b=files.get(`blobs/${f.sha256}.stl`);return !b||b.length!==f.bytes||sha(b)!==f.sha256;}))throw Error('REPLAY_VENDOR_ASSETS_UNKNOWN');return {bytes,matched:['arm-component.json',...meshes].map(p=>`bundle/${p}`)};}
+ /** Atomic new-directory publication. Each request owns a random sibling staging directory; no fixed temporary names or overwrite. */
+ export async function exportWebReplay(capture:CapturedReplay,output:string,options:{signal?:AbortSignal}={}):Promise<ReplayManifest>{
+  const aborted=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};aborted();const out=join(await realpath(dirname(resolve(output))),basename(output));if(out===resolve(capture.directory)||out.startsWith(resolve(capture.directory)+sep))throw Error('REPLAY_OUTPUT_INSIDE_EVIDENCE');try{await lstat(out);throw Error('REPLAY_OUTPUT_EXISTS');}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e;}
+  if(publications.has(out))throw Error('REPLAY_OUTPUT_EXISTS');publications.add(out);
+- const stage=join(dirname(out),`.replay-${randomUUID()}`);try{const assets:ReplayAsset[]=[],stored=new Map<string,Buffer>(),r=structuredClone(capture.report),h=r.outcome.tick;let total=0,decoded=0;const add=(path:string,raw:Uint8Array,role:ReplayAsset['role'],mediaType:ReplayAsset['mediaType'],compress=false)=>{aborted();if(!replayPath(path)||stored.has(path))throw Error('REPLAY_ASSET_PATH');const bytes=compress?gzipSync(raw):Buffer.from(raw);if(bytes.length>REPLAY_LIMITS.assetCompressedBytes||raw.length>REPLAY_LIMITS.assetDecodedBytes||(total+=bytes.length)>REPLAY_LIMITS.packageBytes||(decoded+=raw.length)>REPLAY_LIMITS.totalDecodedBytes)throw Error('REPLAY_PACKAGE_LIMIT');assets.push({path,sha256:sha(bytes),decodedSha256:sha(raw),bytes:bytes.length,decodedBytes:raw.length,encoding:compress?'gzip':'identity',role,mediaType});stored.set(path,bytes);};
++ const stage=join(dirname(out),`.replay-${randomUUID()}`);try{const assets:ReplayAsset[]=[],stored=new Map<string,Buffer>(),r=structuredClone(capture.report),h=r.outcome.tick;let total=0,decoded=0;const add=async(path:string,raw:Uint8Array,role:ReplayAsset['role'],mediaType:ReplayAsset['mediaType'],compress=false)=>{aborted();if(!replayPath(path)||stored.has(path))throw Error('REPLAY_ASSET_PATH');const bytes=compress?await gzipAsync(raw):Buffer.from(raw);if(bytes.length>REPLAY_LIMITS.assetCompressedBytes||raw.length>REPLAY_LIMITS.assetDecodedBytes||(total+=bytes.length)>REPLAY_LIMITS.packageBytes||(decoded+=raw.length)>REPLAY_LIMITS.totalDecodedBytes)throw Error('REPLAY_PACKAGE_LIMIT');assets.push({path,sha256:sha(bytes),decodedSha256:sha(raw),bytes:bytes.length,decodedBytes:raw.length,encoding:compress?'gzip':'identity',role,mediaType});aborted();stored.set(path,bytes);await yieldTurn();aborted();};
+  const manifest:ReplayManifest={schemaVersion:1,documentType:'web-replay-package',runId:r.manifest.runId,horizon:{tick:h,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:capture.rawReportSha256??sha(JSON.stringify(r))},coverage:{prefixCovered:r.worldSweep?.scope?.prefixCovered??(!!capture.mobile&&capture.mobile.physics.length===h+1),streamFinalized:r.worldSweep?.scope?.streamFinalized??r.physicsEvidence?.complete??false,sampled:false,terminal:r.worldSweep?.scope?.publication?.terminal??r.physicsEvidence?.manifest.terminalReason??null,gaps:(r.worldSweep?.scope?.publication?.gaps??r.physicsEvidence?.manifest.gaps??[]) as unknown as Record<string,unknown>[],issues:[...(r.worldSweep?.reasonCodes??r.physicsEvidence?.issues??[])]},assets,streams:[],licensing:[]};
+- const stream=(kind:'world'|'physics',rows:unknown[])=>{const chunks:string[]=[];for(let i=0;i<rows.length;i+=250){const part=rows.slice(i,i+250),path=`${kind}/chunk-${String(chunks.length).padStart(5,'0')}.ndjson.gz`;for(const row of part)if(Buffer.byteLength(JSON.stringify(row))>REPLAY_LIMITS.lineBytes)throw Error('REPLAY_LINE_LIMIT');add(path,Buffer.from(part.map(x=>JSON.stringify(x)).join('\n')+'\n'),kind,'application/x-ndjson',true);chunks.push(path);}if(!rows.length)throw Error('REPLAY_STREAM_EMPTY');manifest.streams.push({kind,chunks,firstTick:0,lastTick:h,samples:rows.length});};
+- if(capture.world){const {admission:a,records}=capture.world;if(prepareWorldAdmission(a.scene,a.files).digest!==a.digest)throw Error('REPLAY_ADMISSION_IDENTITY');if(records.length!==h+1||r.worldSweep?.scope?.publicCommittedTick!==h||r.worldSweep.scope.identity.admissionDigest!==a.digest||a.scene.sceneDigest!==r.worldSweep.scope.identity.sceneDigest)throw Error('REPLAY_HORIZON_IDENTITY');let history:Parameters<typeof validateWorldRecord>[2]=[];const seen=new Set<string>();for(let i=0;i<records.length;i++){aborted();history=validateWorldRecord(records[i]!,a,history,records[i-1]?.snapshot,r.worldSweep.scope.identity,seen);}if(capture.world.sceneBytes&&hashJson(JSON.parse(Buffer.from(capture.world.sceneBytes).toString()))!==hashJson(a.scene))throw Error('REPLAY_SCENE_IDENTITY');add('bundle/lab-world-scene.json',capture.world.sceneBytes??Buffer.from(JSON.stringify(a.scene)),'scene','application/json');for(const f of a.scene.files){const b=a.files.get(f.path)!;if(!b||sha(b)!==f.sha256||b.length!==f.bytes)throw Error('REPLAY_MODEL_HASH');add(`bundle/${f.path}`,b,f.path.endsWith('.stl')?'model':'profile',f.path.endsWith('.stl')?'model/stl':'application/json');}const l=xarmSupplementalLicensing(a.files);for(const [n,b]of l.bytes)add(`licensing/${n}`,b,n==='NOTICE'?'notice':'vendor',n==='NOTICE'?'text/plain':'application/json');manifest.licensing.push({kind:'supplemental_licensing',repository:'https://github.com/xArm-Developer/xarm_ros2',commit:'ac736c92b02de7ca7e0be6f737d77d46707464d8',recordPath:'licensing/vendor-manifest.json',noticePath:'licensing/NOTICE',matchedAssets:l.matched});stream('world',records);
+- }else if(capture.mobile){const m=capture.mobile;if(m.physics.length!==h+1)throw Error('REPLAY_HORIZON_IDENTITY');if(m.sceneBytes&&hashJson(JSON.parse(Buffer.from(m.sceneBytes).toString()))!==hashJson(m.scene))throw Error('REPLAY_SCENE_IDENTITY');add('bundle/navigation-scene.json',m.sceneBytes??Buffer.from(JSON.stringify(m.scene)),'scene','application/json');for(const f of m.scene.files){const b=m.files.get(f.path)!;if(!b||sha(b)!==f.sha256||b.length!==f.bytes)throw Error('REPLAY_MODEL_HASH');add(`bundle/${f.path}`,b,'profile','application/json');}const notice=Buffer.from(mobileLicensing.NOTICE,'base64'),record=Buffer.from(mobileLicensing['manifest.json'],'base64'),canonical=m.files.get('canonical-physical-model.json');if(sha(notice)!=='80aded154e782fa1260475402e6e7051545373f876b638c5ad1d4ae34c432196'||sha(record)!=='c93d677ab4c71bfaa2d345b687377eae21964bc44180ac4f5906df3bd7e102c8'||!canonical||sha(canonical)!=='830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9')throw Error('REPLAY_MOBILE_NOTICE_PROVENANCE');add('licensing/NOTICE',notice,'notice','text/plain');add('licensing/manifest.json',record,'vendor','application/json');manifest.licensing.push({kind:'supplemental_licensing',repository:'mekoniq/source (repository-local)',commit:'681b8adb8ed473f7195062773b23fabc3b922cd5',recordPath:'licensing/manifest.json',noticePath:'licensing/NOTICE',matchedAssets:['bundle/canonical-physical-model.json']});if(m.receipt)add('observations/payload-perturbation.json',m.receipt,'trace','application/json');stream('physics',m.physics);for(const f of m.navigation)add(`navigation/${f.path}`,gunzipSync(f.bytes,{maxOutputLength:REPLAY_LIMITS.assetDecodedBytes}),'navigation','application/x-ndjson',true);
++ const stream=async(kind:'world'|'physics',rows:unknown[])=>{const chunks:string[]=[];for(let i=0;i<rows.length;i+=250){const part=rows.slice(i,i+250),path=`${kind}/chunk-${String(chunks.length).padStart(5,'0')}.ndjson.gz`;for(const row of part)if(Buffer.byteLength(JSON.stringify(row))>REPLAY_LIMITS.lineBytes)throw Error('REPLAY_LINE_LIMIT');await add(path,Buffer.from(part.map(x=>JSON.stringify(x)).join('\n')+'\n'),kind,'application/x-ndjson',true);chunks.push(path);}if(!rows.length)throw Error('REPLAY_STREAM_EMPTY');manifest.streams.push({kind,chunks,firstTick:0,lastTick:h,samples:rows.length});};
++ if(capture.world){const {admission:a,records}=capture.world;if(prepareWorldAdmission(a.scene,a.files).digest!==a.digest)throw Error('REPLAY_ADMISSION_IDENTITY');if(records.length!==h+1||r.worldSweep?.scope?.publicCommittedTick!==h||r.worldSweep.scope.identity.admissionDigest!==a.digest||a.scene.sceneDigest!==r.worldSweep.scope.identity.sceneDigest)throw Error('REPLAY_HORIZON_IDENTITY');let history:Parameters<typeof validateWorldRecord>[2]=[];const seen=new Set<string>();for(let i=0;i<records.length;i++){aborted();history=validateWorldRecord(records[i]!,a,history,records[i-1]?.snapshot,r.worldSweep.scope.identity,seen);if((i+1)%32===0){await yieldTurn();aborted();}}if(capture.world.sceneBytes&&hashJson(JSON.parse(Buffer.from(capture.world.sceneBytes).toString()))!==hashJson(a.scene))throw Error('REPLAY_SCENE_IDENTITY');await add('bundle/lab-world-scene.json',capture.world.sceneBytes??Buffer.from(JSON.stringify(a.scene)),'scene','application/json');for(const f of a.scene.files){const b=a.files.get(f.path)!;if(!b||sha(b)!==f.sha256||b.length!==f.bytes)throw Error('REPLAY_MODEL_HASH');await add(`bundle/${f.path}`,b,f.path.endsWith('.stl')?'model':'profile',f.path.endsWith('.stl')?'model/stl':'application/json');}const l=xarmSupplementalLicensing(a.files);for(const [n,b]of l.bytes)await add(`licensing/${n}`,b,n==='NOTICE'?'notice':'vendor',n==='NOTICE'?'text/plain':'application/json');manifest.licensing.push({kind:'supplemental_licensing',repository:'https://github.com/xArm-Developer/xarm_ros2',commit:'ac736c92b02de7ca7e0be6f737d77d46707464d8',recordPath:'licensing/vendor-manifest.json',noticePath:'licensing/NOTICE',matchedAssets:l.matched});await stream('world',records);
++ }else if(capture.mobile){const m=capture.mobile;if(m.physics.length!==h+1)throw Error('REPLAY_HORIZON_IDENTITY');if(m.sceneBytes&&hashJson(JSON.parse(Buffer.from(m.sceneBytes).toString()))!==hashJson(m.scene))throw Error('REPLAY_SCENE_IDENTITY');await add('bundle/navigation-scene.json',m.sceneBytes??Buffer.from(JSON.stringify(m.scene)),'scene','application/json');for(const f of m.scene.files){const b=m.files.get(f.path)!;if(!b||sha(b)!==f.sha256||b.length!==f.bytes)throw Error('REPLAY_MODEL_HASH');await add(`bundle/${f.path}`,b,'profile','application/json');}const notice=Buffer.from(mobileLicensing.NOTICE,'base64'),record=Buffer.from(mobileLicensing['manifest.json'],'base64'),canonical=m.files.get('canonical-physical-model.json');if(sha(notice)!=='80aded154e782fa1260475402e6e7051545373f876b638c5ad1d4ae34c432196'||sha(record)!=='c93d677ab4c71bfaa2d345b687377eae21964bc44180ac4f5906df3bd7e102c8'||!canonical||sha(canonical)!=='830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9')throw Error('REPLAY_MOBILE_NOTICE_PROVENANCE');await add('licensing/NOTICE',notice,'notice','text/plain');await add('licensing/manifest.json',record,'vendor','application/json');manifest.licensing.push({kind:'supplemental_licensing',repository:'mekoniq/source (repository-local)',commit:'681b8adb8ed473f7195062773b23fabc3b922cd5',recordPath:'licensing/manifest.json',noticePath:'licensing/NOTICE',matchedAssets:['bundle/canonical-physical-model.json']});if(m.receipt)await add('observations/payload-perturbation.json',m.receipt,'trace','application/json');await stream('physics',m.physics);for(const f of m.navigation)await add(`navigation/${f.path}`,gunzipSync(f.bytes,{maxOutputLength:REPLAY_LIMITS.assetDecodedBytes}),'navigation','application/x-ndjson',true);
+  }else throw Error('REPLAY_CAPTURE_MISSING');
+  // The report and Source business events are from the captured H, never a second journal read.
+- add('report.json.gz',Buffer.from(JSON.stringify(publicData(r))),'report','application/json',true);add('source-events.json.gz',Buffer.from(JSON.stringify(publicData(r.businessEvents))),'events','application/json',true);
+- for(const ref of [r.arm?.trace,r.arm?.props])if(ref){const b=await readReplayInput(capture.directory,ref.path,16*1024*1024);if(sha(b)!==ref.sha256)throw Error('REPLAY_ARM_HASH');add(ref.path,b,'trace','application/json',true);}
++ await add('report.json.gz',Buffer.from(JSON.stringify(publicData(r))),'report','application/json',true);await add('source-events.json.gz',Buffer.from(JSON.stringify(publicData(r.businessEvents))),'events','application/json',true);
++ for(const ref of [r.arm?.trace,r.arm?.props])if(ref){const b=await readReplayInput(capture.directory,ref.path,16*1024*1024);if(sha(b)!==ref.sha256)throw Error('REPLAY_ARM_HASH');await add(ref.path,b,'trace','application/json',true);}
+  const text=JSON.stringify(manifest);parseReplayManifest(text);const reader=await openReplayPackage(text,async function*(a){yield stored.get(a.path)!;},{signal:options.signal});reader.close();
+  await mkdir(stage,{mode:0o700});for(const [path,bytes]of [...stored,['manifest.json',Buffer.from(text)] as [string,Buffer]]){aborted();await mkdir(dirname(join(stage,path)),{recursive:true,mode:0o700});const file=await open(join(stage,path),'wx',0o600);try{await file.writeFile(bytes);await file.sync();}finally{await file.close();}}aborted();await rename(stage,out);return manifest;}finally{await rm(stage,{recursive:true,force:true});publications.delete(out);}
+ }
+diff --git a/packages/lab-runtime/src/v2/replay/reader.ts b/packages/lab-runtime/src/v2/replay/reader.ts
+index 3ceb010..4e5dc64 100644
+--- a/packages/lab-runtime/src/v2/replay/reader.ts
++++ b/packages/lab-runtime/src/v2/replay/reader.ts
+@@ -12,34 +12,35 @@ const validate=new Ajv({strict:false,allErrors:false}).compile(schema),encoder=n
+ export const replayPath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_./-]{0,219}$/.test(p)&&p.split('/').every(s=>s!=='.'&&s!=='..'&&s!=='');
+ const fail=(code:string):never=>{throw Error(`REPLAY_${code}`);};
+ function checkTree(value:unknown){let nodes=0;const walk=(v:unknown,depth:number)=>{if(++nodes>REPLAY_LIMITS.nodesPerAsset||depth>REPLAY_LIMITS.depth)fail('STRUCTURE_LIMIT');if(typeof v==='number'&&!Number.isFinite(v))fail('NONFINITE');if(v&&typeof v==='object')for(const child of Object.values(v))walk(child,depth+1);};walk(value,0);return nodes;}
+ /** Count lexical tokens/depth before JSON.parse allocates arrays/objects. Strings and escapes do not contribute brackets. */
+ function boundedJson(text:string){let quoted=false,escaped=false,depth=0,tokens=0,word=false;for(const c of text){if(quoted){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c==='"')quoted=false;continue;}if(c==='"'){quoted=true;tokens++;word=false;}else if(c==='{'||c==='['){if(++depth>REPLAY_LIMITS.depth)fail('STRUCTURE_LIMIT');tokens++;word=false;}else if(c==='}'||c===']'){depth--;word=false;}else if(/[0-9tfn-]/.test(c)){if(!word)tokens++;word=true;}else if(c===','||c===':'||/\s/.test(c))word=false;if(tokens>REPLAY_LIMITS.nodesPerAsset)fail('STRUCTURE_LIMIT');}const value:unknown=JSON.parse(text);checkTree(value);return value;}
+ export function parseReplayManifest(input:string|Uint8Array):ReplayManifest {
+  if((typeof input==='string'?encoder.encode(input).length:input.byteLength)>REPLAY_LIMITS.manifestBytes)fail('MANIFEST_LIMIT');const value:unknown=boundedJson(typeof input==='string'?input:decoder.decode(input));checkTree(value);if(!validate(value))fail('MANIFEST_INVALID');const m=value as ReplayManifest,paths=new Set<string>();let compressed=0,decoded=0;for(const a of m.assets){if(!replayPath(a.path)||paths.has(a.path)||a.bytes>REPLAY_LIMITS.assetCompressedBytes||a.decodedBytes>REPLAY_LIMITS.assetDecodedBytes)fail('ASSET_PATH_OR_LIMIT');paths.add(a.path);compressed+=a.bytes;decoded+=a.decodedBytes;if(a.encoding==='identity'&&a.bytes!==a.decodedBytes)fail('ASSET_SIZE');}if(compressed+(typeof input==='string'?encoder.encode(input).length:input.byteLength)>REPLAY_LIMITS.packageBytes||decoded>REPLAY_LIMITS.totalDecodedBytes)fail('PACKAGE_LIMIT');if(m.assets.filter(a=>a.role==='report').length!==1||m.assets.filter(a=>a.role==='events').length>1)fail('REPORT_REF');const used=new Set<string>();for(const s of m.streams){if(s.firstTick>s.lastTick||s.lastTick>m.horizon.tick||s.samples!==s.lastTick-s.firstTick+1||!s.chunks.length)fail('STREAM_COVERAGE');for(const p of s.chunks){if(used.has(p)||!m.assets.some(a=>a.path===p&&a.role===s.kind&&a.mediaType==='application/x-ndjson'))fail('DUPLICATE_OR_MISSING_CHUNK');used.add(p);}}if(m.assets.some(a=>['world','physics'].includes(a.role)&&!used.has(a.path)))fail('ORPHAN_CHUNK');if(m.coverage.prefixCovered&&(!m.streams.length||m.streams.some(s=>s.firstTick!==0||s.lastTick!==m.horizon.tick)))fail('PREFIX_COVERAGE');if(new Set(m.streams.map(s=>s.kind)).size!==m.streams.length)fail('DUPLICATE_STREAM');for(const l of m.licensing)if(!m.assets.some(a=>a.path===l.noticePath&&a.role==='notice')||!m.assets.some(a=>a.path===l.recordPath&&a.role==='vendor')||l.matchedAssets.some(p=>!paths.has(p)))fail('LICENSING_REF');return m;
+ }
+ async function hash(bytes:Uint8Array){return [...new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256',bytes as Uint8Array<ArrayBuffer>))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+ function checkAssetDependencies(value:unknown,base:string,paths:Set<string>){const walk=(v:unknown,key='',at:string[]=[] )=>{if(typeof v==='string'&&/^(uri|url|href|src|texture|buffer|mesh|filename|path)$/i.test(key)&&!(key==='url'&&at.length===2&&at[0]==='documents'&&/^\d+$/.test(at[1]!))){if(/^[a-z][a-z0-9+.-]*:|^\/\/|\\|[?#]/i.test(v)||v.startsWith('/'))fail('EXTERNAL_ASSET');if(/\.(gltf|glb|obj|mtl|dae|urdf|xml|js|html|wasm)$/i.test(v))fail('ASSET_FORMAT_UNSUPPORTED');if(/\.(stl|png|jpe?g|bin)$/i.test(v)){const p=base.includes('/')?base.slice(0,base.lastIndexOf('/')+1)+v:v;if(!replayPath(p)||!paths.has(p))fail('NESTED_ASSET_MISSING');}}if(v&&typeof v==='object')for(const [k,x]of Object.entries(v))walk(x,k,[...at,key].filter(Boolean));};walk(value);}
+-export interface ReplayReader {readonly manifest:Readonly<ReplayManifest>;readonly capturedReport:Readonly<Record<string,unknown>>;sampleAt(kind:ReplayStream['kind'],tick:number):Promise<ReplayRow|null>;samples(kind:ReplayStream['kind']):AsyncGenerator<ReplayRow>;readAsset(path:string):Promise<Uint8Array>;eventsAt(tick:number):{events:unknown[]|null;reason:string|null};metricsAt(tick:number):{metrics:unknown|null;physicsMetrics:unknown|null;worldSweep:unknown|null;reason:string|null};close():void}
+-/** Eager integrity pass is sequential; decoded rows are released per chunk. sampleAt retains one chunk only, and close/abort drops it. */
++export interface ReplayReader {readonly manifest:Readonly<ReplayManifest>;readonly capturedReport:Readonly<Record<string,unknown>>;sampleAt(kind:ReplayStream['kind'],tick:number):Promise<ReplayRow|null>;samples(kind:ReplayStream['kind']):AsyncGenerator<ReplayRow>;readAsset(path:string):Promise<Uint8Array>;readStoredAsset(path:string):Promise<Uint8Array>;eventsAt(tick:number):{events:unknown[]|null;reason:string|null};metricsAt(tick:number):{metrics:unknown|null;physicsMetrics:unknown|null;worldSweep:unknown|null;reason:string|null};close():void}
++/** readAsset returns decoded content; readStoredAsset returns original encoded bytes after the same complete integrity checks.
++ * Eager integrity pass is sequential; decoded rows are released per chunk. sampleAt retains one chunk only, and close/abort drops it. */
+ export async function openReplayPackage(input:string|Uint8Array,readAsset:ReplayReadAsset,options:{signal?:AbortSignal}={}):Promise<ReplayReader>{
+  const manifest=parseReplayManifest(input),controller=new AbortController();let closed=false,termination:'closed'|'aborted'|null=null,cache:{path:string;rows:ReplayRow[]}|null=null,capturedReport:Record<string,unknown>={},sourceEvents:unknown;
+  const scenes:Record<string,unknown>[]=[],assets=new Map(manifest.assets.map(a=>[a.path,a])),paths=new Set(assets.keys()),bounds=new Map<string,{first:number;last:number}>(),verified=new Set<string>();
+  const dispose=(reason:'closed'|'aborted')=>{if(closed)return;closed=true;termination=reason;options.signal?.removeEventListener('abort',external);cache=null;capturedReport={};sourceEvents=undefined;scenes.length=0;bounds.clear();verified.clear();controller.abort();};
+  const external=()=>dispose('aborted'),alive=()=>{if(termination==='aborted')fail('ABORTED');if(closed)fail('CLOSED');};options.signal?.addEventListener('abort',external,{once:true});if(options.signal?.aborted)external();
+  let operations=Promise.resolve();const serial=<T>(work:()=>Promise<T>)=>{const p=operations.then(()=>{alive();return work();});operations=p.then(()=>undefined,()=>undefined);return p;};
+- const load=async(a:ReplayAsset)=>{alive();const stored=new Uint8Array(a.bytes);let pos=0;for await(const b of await readAsset(Object.freeze({...a}),{signal:controller.signal,maxBytes:a.bytes})){alive();if(!(b instanceof Uint8Array)||pos+b.byteLength>a.bytes)fail('ASSET_SIZE_LIMIT');stored.set(b,pos);pos+=b.byteLength;}alive();if(pos!==a.bytes)fail('ASSET_SIZE');const encodedHash=await hash(stored);alive();if(encodedHash!==a.sha256)fail('ASSET_HASH');let result=stored;if(a.encoding==='gzip'){const stream=new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip')),reader=stream.getReader(),output=new Uint8Array(a.decodedBytes);let n=0;try{while(true){alive();const {done,value}=await reader.read();if(done)break;if(n+value.length>a.decodedBytes)fail('DECODE_LIMIT');output.set(value,n);n+=value.length;}if(n!==a.decodedBytes)fail('DECODE_SIZE');result=output;}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}}alive();const decodedHash=await hash(result);alive();if(decodedHash!==a.decodedSha256)fail('DECODE_HASH');verified.add(a.path);return result;};
++ const load=async(a:ReplayAsset,storedBytes=false)=>{alive();const stored=new Uint8Array(a.bytes);let pos=0;for await(const b of await readAsset(Object.freeze({...a}),{signal:controller.signal,maxBytes:a.bytes})){alive();if(!(b instanceof Uint8Array)||pos+b.byteLength>a.bytes)fail('ASSET_SIZE_LIMIT');stored.set(b,pos);pos+=b.byteLength;}alive();if(pos!==a.bytes)fail('ASSET_SIZE');const encodedHash=await hash(stored);alive();if(encodedHash!==a.sha256)fail('ASSET_HASH');let result=stored;if(a.encoding==='gzip'){const stream=new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip')),reader=stream.getReader(),output=new Uint8Array(a.decodedBytes);let n=0;try{while(true){alive();const {done,value}=await reader.read();if(done)break;if(n+value.length>a.decodedBytes)fail('DECODE_LIMIT');output.set(value,n);n+=value.length;}if(n!==a.decodedBytes)fail('DECODE_SIZE');result=output;}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}}alive();const decodedHash=await hash(result);alive();if(decodedHash!==a.decodedSha256)fail('DECODE_HASH');verified.add(a.path);return storedBytes?stored:result;};
+  const json=async(a:ReplayAsset)=>{const v=boundedJson(decoder.decode(await load(a)));if(['model','scene','profile'].includes(a.role))checkAssetDependencies(v,a.path,paths);return v;};
+  const rows=async(a:ReplayAsset)=>{const b=await load(a),text=decoder.decode(b);if(!text.endsWith('\n'))fail('LINE_TRUNCATED');let lineCount=0;for(const c of text)if(c==='\n'&&++lineCount>REPLAY_LIMITS.linesPerChunk)fail('LINE_COUNT_LIMIT');const lines=text.slice(0,-1).split('\n');let nodes=0;if(lines.length>REPLAY_LIMITS.linesPerChunk)fail('LINE_COUNT_LIMIT');return lines.map(line=>{if(encoder.encode(line).length>REPLAY_LIMITS.lineBytes)fail('LINE_LIMIT');const v=boundedJson(line);nodes+=checkTree(v);if(nodes>REPLAY_LIMITS.nodesPerAsset)fail('STRUCTURE_LIMIT');if(!v||typeof v!=='object'||Array.isArray(v))fail('ROW_INVALID');return v as ReplayRow;});};
+  const tickOf=(r:ReplayRow)=>r.snapshot?.tick??r.tick;
+  try{for(const a of manifest.assets){alive();if(a.mediaType==='application/x-ndjson'){if(a.role==='navigation'){for(const row of await rows(a))if(!Number.isSafeInteger(row.tick)||row.tick!>manifest.horizon.tick)fail('SAMPLE_IDENTITY_OR_ORDER');}continue;}if(a.mediaType==='application/json'){const v=await json(a);if(a.role==='report')capturedReport=v as Record<string,unknown>;if(a.role==='events')sourceEvents=v;if(a.role==='scene')scenes.push(v as Record<string,unknown>);}else{const bytes=await load(a);if(a.mediaType==='model/stl'&&(a.role!=='model'||!a.path.endsWith('.stl')||bytes.length<84||new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(80,true)>REPLAY_LIMITS.stlTrianglesPerAsset||84+50*new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(80,true)!==bytes.length))fail('STL_FORMAT_OR_LIMIT');}}
+   const reportManifest=capturedReport.manifest as {runId?:unknown}|undefined,outcome=capturedReport.outcome as {tick?:unknown}|undefined;if(reportManifest?.runId!==manifest.runId||outcome?.tick!==manifest.horizon.tick)fail('REPORT_IDENTITY');if(sourceEvents!==undefined&&JSON.stringify(sourceEvents)!==JSON.stringify(capturedReport.businessEvents))fail('SOURCE_EVENT_IDENTITY');sourceEvents=undefined;
+   const worldScope=(capturedReport.worldSweep as {scope?:{identity:{runId:string;bootId:string;sceneDigest:string};publicCommittedTick:number;prefixCovered:boolean;streamFinalized:boolean}}|undefined)?.scope;if(worldScope&&(worldScope.identity.runId!==manifest.runId||worldScope.publicCommittedTick!==manifest.horizon.tick||worldScope.prefixCovered!==manifest.coverage.prefixCovered||worldScope.streamFinalized!==manifest.coverage.streamFinalized))fail('REPORT_COVERAGE_IDENTITY');
+   if(manifest.streams.length){const physicsIdentity=(capturedReport.physicsEvidence as {manifest?:{identity?:{runId:string;sceneDigest:string}}}|undefined)?.manifest?.identity,sceneDigest=worldScope?.identity.sceneDigest??physicsIdentity?.sceneDigest;if(physicsIdentity&&physicsIdentity.runId!==manifest.runId)fail('SCENE_IDENTITY');if(typeof sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(sceneDigest)||scenes.length!==1||scenes[0]!.sceneDigest!==sceneDigest)fail('SCENE_IDENTITY');const refs=scenes[0]!.files;if(!Array.isArray(refs)||refs.some(f=>!f||typeof f.path!=='string'||!assets.has('bundle/'+f.path)||!['model','profile','scene'].includes(assets.get('bundle/'+f.path)!.role)||assets.get('bundle/'+f.path)!.decodedSha256!==f.sha256||assets.get('bundle/'+f.path)!.decodedBytes!==f.bytes))fail('MODEL_REF_IDENTITY');}
+   for(const s of manifest.streams){let next=s.firstTick,count=0;for(const p of s.chunks){const rs=await rows(assets.get(p)!);bounds.set(p,{first:tickOf(rs[0]!)!,last:tickOf(rs.at(-1)!)!});for(const row of rs){const tick=tickOf(row);if(tick!==next++||tick!>manifest.horizon.tick||row.snapshot&&(row.snapshot.runId!==manifest.runId||(row.snapshot.simTimeNs!==String(BigInt(tick!)*20_000_000n))||worldScope&&((row.snapshot as unknown as {bootId:string;sceneDigest:string}).bootId!==worldScope.identity.bootId||(row.snapshot as unknown as {sceneDigest:string}).sceneDigest!==worldScope.identity.sceneDigest)))fail('SAMPLE_IDENTITY_OR_ORDER');count++;}}if(count!==s.samples||next-1!==s.lastTick)fail('STREAM_COVERAGE');}
+   alive();if(verified.size!==assets.size)fail('ASSET_UNVERIFIED');
+  }catch(e){dispose(termination==='aborted'?'aborted':'closed');throw e;}
+  const getRows=async(path:string)=>{alive();if(cache?.path!==path){cache=null;const decoded=await rows(assets.get(path)!);alive();cache={path,rows:decoded};}return cache!.rows;};
+  const freeze=(v:unknown):void=>{if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.freeze(v);for(const x of Object.values(v))freeze(x);}};freeze(manifest);freeze(capturedReport);
+  const sampleAt=(kind:ReplayStream['kind'],tick:number)=>serial(async()=>{if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const s=manifest.streams.find(s=>s.kind===kind);if(!s)return null;const p=s.chunks.find(p=>tick>=bounds.get(p)!.first&&tick<=bounds.get(p)!.last);if(!p)return null;const rs=await getRows(p);return structuredClone(rs.find(r=>tickOf(r)===tick)??null);});
+- alive();return {manifest,get capturedReport(){return capturedReport;},sampleAt,async *samples(kind){alive();const s=manifest.streams.find(s=>s.kind===kind);if(!s)return;for(let tick=s.firstTick;tick<=s.lastTick;tick++){alive();const row=await sampleAt(kind,tick);if(row)yield row;}},readAsset(path){return serial(async()=>{cache=null;const a=assets.get(path);if(!a)fail('ASSET_NOT_ADMITTED');return load(a!);});},eventsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const epoch=(capturedReport.manifest as {clock?:{businessEpochMs?:number}}|undefined)?.clock?.businessEpochMs,events=capturedReport.businessEvents;if(epoch===undefined||!Number.isFinite(epoch)||!Array.isArray(events)||events.some(e=>!Number.isFinite(Date.parse(e.at))))return {events:null,reason:'EVENT_CLOCK_UNAVAILABLE'};return {events:structuredClone(events.filter(e=>Date.parse(e.at)<=epoch+tick*20)),reason:null};},metricsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');if(tick!==manifest.horizon.tick)return {metrics:null,physicsMetrics:null,worldSweep:null,reason:'CAPTURE_HORIZON_ONLY'};return {metrics:capturedReport.metrics??null,physicsMetrics:(capturedReport.physicsEvidence as {metrics?:unknown}|undefined)?.metrics??null,worldSweep:capturedReport.worldSweep??null,reason:null};},close(){dispose('closed');}};
++ alive();return {manifest,get capturedReport(){return capturedReport;},sampleAt,async *samples(kind){alive();const s=manifest.streams.find(s=>s.kind===kind);if(!s)return;for(let tick=s.firstTick;tick<=s.lastTick;tick++){alive();const row=await sampleAt(kind,tick);if(row)yield row;}},readAsset(path){return serial(async()=>{cache=null;const a=assets.get(path);if(!a)fail('ASSET_NOT_ADMITTED');return load(a!);});},readStoredAsset(path){return serial(async()=>{cache=null;const a=assets.get(path);if(!a)fail('ASSET_NOT_ADMITTED');return load(a!,true);});},eventsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const epoch=(capturedReport.manifest as {clock?:{businessEpochMs?:number}}|undefined)?.clock?.businessEpochMs,events=capturedReport.businessEvents;if(epoch===undefined||!Number.isFinite(epoch)||!Array.isArray(events)||events.some(e=>!Number.isFinite(Date.parse(e.at))))return {events:null,reason:'EVENT_CLOCK_UNAVAILABLE'};return {events:structuredClone(events.filter(e=>Date.parse(e.at)<=epoch+tick*20)),reason:null};},metricsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');if(tick!==manifest.horizon.tick)return {metrics:null,physicsMetrics:null,worldSweep:null,reason:'CAPTURE_HORIZON_ONLY'};return {metrics:capturedReport.metrics??null,physicsMetrics:(capturedReport.physicsEvidence as {metrics?:unknown}|undefined)?.metrics??null,worldSweep:capturedReport.worldSweep??null,reason:null};},close(){dispose('closed');}};
+ }
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index f9bc9e8..68f2ae6 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -41,42 +41,42 @@ import {TelemetryRecorder,TELEMETRY_RATE_TICKS} from './telemetry';
+ import {projectSamples} from './twin-projection';
+ import type {JournalEvents} from './event-stream';
+ import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
+ /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
+ export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
+ export interface RunManifestInput {worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
+ export interface RunProviders {directory:string;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
+  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
+ export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
+-export interface ScenarioRun {captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
++export interface ScenarioRun {worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
+  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
+  pulse():{tick:number;paused:boolean;runRevision:number};
+  /** Durable business events in journal order (queued behind actions, so a reader sees committed state). */
+  journal():Promise<JournalEvents[]>;
+  /** Lossy, coalesced telemetry of this process (bounded, in memory). */
+  readonly telemetry:TelemetryRecorder}
+ const EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'];
+ const FINAL=['completed','cancelled','failed'];
+ interface Confirmation {due:number|null;type:string;robotId:string}
+ interface Checkpoint {
+  schemaVersion:2;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
+  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;
+  /** Telemetry publication sequence, independent of simulation time; retained across clean reopen with unchanged provider boots. */
+  telemetrySeq?:number;
+  reclaimed?:boolean;
+  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;plant:PlantState;attention:Attention[];
+  receipts:Record<string,{hash:string;view:RunView}>;rejectedObservations:RunReport['rejectedObservations'];reconciliations:RunReport['reconciliations'];
+  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
+  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;crashArmed:boolean;
+  faultFires?:FaultFireRecord[];
+- world?:{navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
++ world?:{committedDisplay?:{command:import('./simulation3d/world-display').CommittedWorldDisplayCommand};navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
+  coffee?:CoffeeState;
+ }
+ class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
+ const ID=/^[A-Za-z0-9_.:-]{1,200}$/;
+ function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
+ /** Runtime checks the JSON schema cannot express: unique ids, everything inside the world. */
+ /** `armModel`: the arm model of the run's arm provider (the set's, never the project's); a profile for another model is ARM_COLLISION_MODEL_MISMATCH. */
+ export function checkWorld(p:LabProjectV2,armModel:ArmModelSI=PUMA560_SI){
+  if(p.armCollisionProfile)validateArmCollisionProfile(p.armCollisionProfile,armModel);
+  const w=p.world,ids=new Set<string>();
+@@ -351,21 +351,21 @@ class Run implements ScenarioRun {
+   if(!c.suspended)await this.scripted();
+   if(c.dispatchDue)await this.dispatch();
+   if(this.world){
+    const w=this.world,previous=structuredClone(c.coffee),targetTick=c.tick+1;
+    c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c,{sync:true});
+    try{
+     const snapshot=await stepWorldOnce({...w.world,
+      step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:true});const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
+      commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
+     },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c,{sync:true});});
+-    this.clock.advance(1);c.tick=this.clock.tick;c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
++    this.clock.advance(1);c.tick=this.clock.tick;const committedCommand=c.world!.pending!.command!;c.world!.committedDisplay={command:structuredClone({targetTick:committedCommand.targetTick,worldControl:committedCommand.worldControl,velocities:committedCommand.velocities})};c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
+    }catch(e){
+     this.observationTick=undefined;this.observations=[];
+     if(previous&&c.coffee){for(const k of Object.keys(c.coffee))delete (c.coffee as unknown as Record<string,unknown>)[k];Object.assign(c.coffee,previous);}
+     c.world!.terminal='WORLD_UNKNOWN';c.suspended=true;for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
+     c.attention.push({reason:'WORLD_UNKNOWN',tick:c.tick});
+     const pending=c.world!.pending!;await w.evidence.fail({targetTick,lastCommittedTick:c.tick,ackTick:pending.ackTick,reason:(e as Error).message}).catch(()=>{});
+     await writeCheckpoint(this.dir,c,{sync:true});throw e;
+    }
+   }else{this.clock.advance(1);c.tick=this.clock.tick;this.plant.advance();await this.coffee?.advance();}
+   await this.drain();await this.coffee?.drain();
+@@ -410,20 +410,26 @@ class Run implements ScenarioRun {
+  private suspend(){const c=this.cp;c.suspended=true;for(const x of Object.values(c.confirmations))if(x.type!=='standby')x.due=null;}
+  /** Scenario obstacles (person, chair, closed lane) enter and leave the plant world on their ticks; each change is logged as a fault entry. */
+  private schedule(){
+   const c=this.cp,injected=c.plant.injected;
+   for(const o of this.scenario.obstacles??[]){
+    const on=o.atTick<=c.tick&&(o.untilTick===undefined||c.tick<o.untilTick),i=injected.findIndex(x=>x.id===o.id);
+    if(on&&i<0){injected.push({id:o.id,x:o.x,y:o.y,width:o.width,height:o.height});c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:on`,entityId:null});}
+    else if(!on&&i>=0){injected.splice(i,1);c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:off`,entityId:null});}
+   }
+  }
++ worldDisplay(){return this.queue.then(()=>{
++  if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
++  const matched=!!s&&s.runId===c.runId&&s.tick===c.tick&&s.simTimeNs===this.clock.simTimeNs();
++  return {version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'};
++ });}
++ worldDisplayScene(){return this.queue.then(()=>{if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const scene=this.world?.displayScene?.();return {version:1 as const,runId:this.cp.runId,availability:scene?'available' as const:'unavailable' as const,reason:scene?null:'WORLD_SCENE_UNAVAILABLE_AFTER_REOPEN',scene:scene??null};});}
+  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
+  holdForReclaim(){
+   const p=this.queue.then(async()=>{
+    if(this.closed)throw new Error('RUN_CLOSED');const c=this.cp;
+    if(!c.reclaimed){
+     this.suspend();c.paused=true;this.clock.pause();
+     // A reclaimed process can inspect and reconcile; its old motion is made unknown, never restarted from the checkpoint.
+     for(const a of this.adapters)await a.requestStop('LOCAL_RECLAIM');await this.drain();await this.coffee?.recover();
+     if(c.started&&!await this.missionsDone()){
+      let targets=0;
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports.ts
+index 3bf67cb..c526b39 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports.ts
+@@ -51,21 +51,21 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory
+   scene.armCell.engineSeed=input.manifest.seed;scene.armCell.sceneDigest=documentDigest(scene.armCell,'sceneDigest');scene.sceneDigest=documentDigest(scene,'sceneDigest');
+   const admission=prepareWorldAdmission(scene,files),doc=<T>(p:string)=>JSON.parse(Buffer.from(files.get(p)!).toString()) as T;
+   const physical=doc<RobotPhysicalModelV1>(scene.models.mobilePhysical.path),load=doc<LoadProfileV1>(scene.models.emptyLoad.path),programDoc=doc<{programs:ArmProgramSet;digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]}>(scene.programsRef.path);
+   const oracle=loadOracleProfile().profile.mujocoArm!,physics=doc<import('./arm-cell-scene').XArmPhysics>(scene.models.armPhysics.path);
+   const support=load.supports.find(s=>s.supportId===scene.supportMap.mobileSupportId)!;
+   const programs:ArmProgramSet={...structuredClone(programDoc.programs),contact:{openM:physics.gripper.openingMaxM,closedM:0,gripSettleTicks:oracle.gripSettleTicks,dropTicks:oracle.dropTicks,liftMinM:oracle.liftMinM,releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS,releaseObservationRequired:true,releaseSettleTicks:25},collision:{geometry:worldArmGeometry(scene,files),allowedPairs:[]}};
+   try{await mkdir(join(input.directory,'mujoco-world'),{mode:0o700});}catch(e){if((e as NodeJS.ErrnoException).code==='EEXIST')throw Error('WORLD_RESTART_UNKNOWN');throw e;}
+   const bundle=join(input.directory,'mujoco-world','bundle');await mkdir(bundle,{recursive:true,mode:0o700});
+   for(const [name,b] of files){const path=join(bundle,name);await mkdir(dirname(path),{recursive:true});await writeFile(path,b);}
+   await writeFile(join(bundle,'lab-world-scene.json'),JSON.stringify(scene));
+-  worker=await spawnMujocoWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:input.runId,bundleRoot:bundle,runDirectory:join(input.directory,'mujoco-world','run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.entry?{entry:runtime.entry}:{}});
++  worker=await spawnMujocoWorker({python:runtime.python,workerRoot:runtime.workerRoot,runId:input.runId,bundleRoot:bundle,runDirectory:join(input.directory,'mujoco-world','run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.onRequestTiming?{onRequestTiming:runtime.onRequestTiming}:{},...runtime.entry?{entry:runtime.entry}:{}});
+   let requests=0,engineTick=0,failed=false,sent=false,durableTick=-1,pending:WorldTickCommand|null=null,decisions:Decision[]=[],last:Sim3DSnapshotV1,observing:Sim3DSnapshotV1|undefined;
+   const ask=async(op:string,payload:unknown)=>{const r=await worker!.request({protocol:'mekoniq-sim3d/1',requestId:`world-${++requests}`,runId:input.runId,expectedTick:engineTick,op,payload} as Parameters<NonNullable<typeof worker>['request']>[0]);if(!r.ok)throw Error(r.error.code);return r.result as Sim3DSnapshotV1;};
+   last=await ask('create',{sceneRef:'lab-world-scene.json',seed:input.manifest.seed});validateWorldObservation(last,scene,[]);await ask('start',{});
+   const recorder=await openWorldRecorder({directory:join(input.directory,'world-evidence'),admission,runId:input.runId,bootId:last.bootId});
+   if(!scene.controllerPolicy)throw Error('WORLD_CONTROLLER_POLICY_REQUIRED');
+   const controller=createNavigationController(scene.navigation,{ramp:'previous-sent-command-v1',composition:'single_world',worldBounds:scene.controllerPolicy.bounds as {minM:[number,number];maxM:[number,number]},worldTolerances:scene.controllerPolicy.tolerances,...scene.controllerPolicy.braking?{worldBraking:scene.controllerPolicy.braking}: {},...scene.controllerPolicy.terminalApproachDistanceM!==undefined?{worldTerminalApproachM:scene.controllerPolicy.terminalApproachDistanceM,...scene.controllerPolicy.terminalApproachDirection?{worldTerminalApproachDirection:scene.controllerPolicy.terminalApproachDirection}:{}}: {}}),rid=scene.navigation.robots[0]!.robotId;
+   const adapter=createIRSimNavigationAdapter({robotId:rid,scene:scene.navigation,controller,now:ctx.nowMs,mapId:'lab-world',mapRevision:String((input.manifest.project as LabProjectV2).world.revision),identity:{id:'mujoco_3d',version:runtime.engineVersion,model:'mujoco_shared_world'}});
+   st.arm={...MockArmPlant.initial(st.armId,last.bootId,programs),plantId:'mujoco_arm',historyRetention:{...WORLD_HISTORY_POLICY,droppedTraceSamples:0,droppedPropsSamples:0,droppedDebugSamples:0}};
+   const hp=doc<{robotId:string;armId:string;supportId:string;dock:{xyToleranceM:number;yawToleranceRad:number;maxLinearMps:number;maxAngularRadps:number;holdTicks:number};receiver:{maxRelativeMps:number;holdTicks:number;comMarginM:number};birth:{centerM:[number,number,number]}}>(scene.handoffPolicyRef.path);
+   const dockPolicy={robotId:rid,trayId:support.supportId,maxXyM:hp.dock.xyToleranceM,maxYawRad:hp.dock.yawToleranceRad,maxVMps:hp.dock.maxLinearMps,maxOmegaRadps:hp.dock.maxAngularRadps,holdTicks:hp.dock.holdTicks};
+@@ -117,21 +117,21 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions):WorldPortsFactory
+     const sample:ReceiptSample={...d,commandId:p.commandId,controlEpoch:p.controlEpoch,cupId:p.cupId,propId:binding.propId,supportId:prop?.restingOn??null,relativeSpeedMps:xy&&last.tick===s.tick-1&&last.physics?.loads.find(x=>x.propId===binding.propId)?.poseInSupport?Math.hypot(...xy.map((v,i)=>v-last.physics!.loads.find(x=>x.propId===binding.propId)!.poseInSupport!.positionM[i]!))/.02:Infinity,insideSupportMargin:inside,held};
+     const samples=receiptSamples.get(p.transferId)??[];samples.push(sample);if(samples.length>hp.receiver.holdTicks)samples.shift();receiptSamples.set(p.transferId,samples);
+     const receiver=evaluateTrayReceipt(samples,{...dockPolicy,commandId:p.commandId,controlEpoch:p.controlEpoch,cupId:p.cupId,propId:binding.propId,supportId:support.supportId,maxRelativeMps:hp.receiver.maxRelativeMps,holdTicks:hp.receiver.holdTicks,expectedTick:s.tick}).ready;
+     const giver=!!prop&&!held&&a.gripper!.openingM>=programs.contact!.openM-.002&&st.arm.gripperCommandM===programs.contact!.openM;
+     if(receiver&&giver){emit('release');emit('receive');t.sent=true;}
+    }
+   }
+ 
+   worldProofs.set(input.runId,{fixtureDigest,valid:true});
+   const project=input.manifest.project as LabProjectV2,navigation={mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map(p=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map' as const,x:p.x,y:p.y,yaw:p.kind==='parking'||p.kind==='coffee_pickup'?scene.navigation.robots[0]!.initialPoseMap[2]!:0}]))};
+-  return {navigation,metadata:{clock:{tickMs:20,businessEpochMs:ctx.nowMs()},worldExtent:{...scene.controllerPolicy.bounds,controller:{id:scene.controllerPolicy.id,version:scene.controllerPolicy.version,hash:hashJson(scene.controllerPolicy)}},models:[{id:'mujoco_shared_world',revision:'1',hash:scene.sceneDigest,provenance:'manufacturer_nominal+assumed'},{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'}],profiles:[{id:WORLD_HISTORY_POLICY.mode,revision:1,hash:hashJson(WORLD_HISTORY_POLICY),provenance:'source_derived_cache'},...scene.disturbance?[{id:scene.disturbance.presetId,revision:1,hash:hashJson({admission:scene.disturbance,preset:WORLD_DISTURBANCE_PRESETS[scene.disturbance.presetId]}),provenance:'registered_disturbance'}]:[],{id:scene.controllerPolicy.id,revision:Number(scene.controllerPolicy.version),hash:hashJson(scene.controllerPolicy),provenance:'assumed'},{id:scene.numericalPolicy.id,revision:1,hash:hashJson(scene.numericalPolicy),provenance:'assumed'}],armProgram:{fixture:{id:scene.id,revision:String(scene.revision)},physicsDigest:scene.models.armPhysics.sha256,programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:programDoc.digest}},robots:new Map([[rid,adapter]]),coffee,snapshot:()=>structuredClone(last),
++  return {displayScene:()=>structuredClone(scene),navigation,metadata:{clock:{tickMs:20,businessEpochMs:ctx.nowMs()},worldExtent:{...scene.controllerPolicy.bounds,controller:{id:scene.controllerPolicy.id,version:scene.controllerPolicy.version,hash:hashJson(scene.controllerPolicy)}},models:[{id:'mujoco_shared_world',revision:'1',hash:scene.sceneDigest,provenance:'manufacturer_nominal+assumed'},{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'}],profiles:[{id:WORLD_HISTORY_POLICY.mode,revision:1,hash:hashJson(WORLD_HISTORY_POLICY),provenance:'source_derived_cache'},...scene.disturbance?[{id:scene.disturbance.presetId,revision:1,hash:hashJson({admission:scene.disturbance,preset:WORLD_DISTURBANCE_PRESETS[scene.disturbance.presetId]}),provenance:'registered_disturbance'}]:[],{id:scene.controllerPolicy.id,revision:Number(scene.controllerPolicy.version),hash:hashJson(scene.controllerPolicy),provenance:'assumed'},{id:scene.numericalPolicy.id,revision:1,hash:hashJson(scene.numericalPolicy),provenance:'assumed'}],armProgram:{fixture:{id:scene.id,revision:String(scene.revision)},physicsDigest:scene.models.armPhysics.sha256,programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:programDoc.digest}},robots:new Map([[rid,adapter]]),coffee,snapshot:()=>structuredClone(last),
+    evidence:{append:async s=>{await recorder.append(s,s.tick===0?null:pending);durableTick=s.tick;},fail:async f=>{failed=true;invalidate();await recorder.fail(f);},finish:()=>recorder.finish()},
+    world:{prepareTick(targetTick){if(failed||pending)throw Error('WORLD_TERMINAL');if(targetTick!==last.tick+1||targetTick>30000)throw Error('WORLD_TARGET_TICK_INVALID');
+      const active=st.arm.programs.find(p=>p.state==='running');programs.collision!.allowedPairs=worldAllowedPairs(scene,files,active?.program??null);
+      const prepared=structuredClone(st.arm),preview=new MockArmPlant(prepared,ctx.nowMs,input.newBootId,{take:()=>null,put:()=>{}},()=>null,XARM6_SI,oracle,programs);preview.advance();
+      const interlocked=!!cellHalted||st.arm.holding!==null||st.arm.programs.some(p=>p.state==='running')||st.arm.stop?.latched,nav=interlocked?{velocities:[{robotId:rid,vMps:0,omegaRadps:0}],decisions:[]}:controller.advance(last,{});decisions=nav.decisions;
+      const propPlacements:WorldTickCommand['propPlacements']=[],worldInteractions:NonNullable<WorldTickCommand['worldInteractions']>=[];
+      for(const binding of scene.propBindings){const born=history.some(i=>i.propId===binding.propId&&i.kind==='birth'),gone=history.some(i=>i.propId===binding.propId&&i.kind==='remove');
+       const kind=!born&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;
+       if(workflow&&last.arms![0]!.gripper!.heldPropIds.includes(binding.propId))throw Error('WORLD_MOVE_HELD_PROP');
+       propPlacements.push({propId:binding.propId,pose:kind==='birth'?{position:hp.birth.centerM,quaternionXyzw:[0,0,0,1]}:null});worldInteractions.push({eventId:workflow?(kind==='birth'?birthEvents:removeEvents).get(binding.cupId)!:`source:${input.runId}:${binding.cupId}:${kind}`,cupId:binding.cupId,propId:binding.propId,kind,targetTick});
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco.ts
+index 4b3f847..acdfbb9 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco.ts
+@@ -14,27 +14,27 @@ import {buildArmCellScene,readXArmFixture,writeArmCellBundle,type XArmPhysics} f
+ import {armReadiness} from './readiness';
+ import {activeRunCount,holdsSlot,holdSlot,releaseSlot} from '../navigation2d/runner';
+ import {mujocoMobilePlant,prepareMobileStopMonitor} from './mujoco-mobile';
+ import type {MujocoProviderLike} from '../navigation2d/readiness';
+ import {mujocoWorldPorts} from './mujoco-world-ports';
+ import {worldReadiness} from './world-readiness';
+ import {spawnMujocoWorker} from './worker-client';
+ 
+ /** One MuJoCo world across arm/mobile/future cell: the run's world is one engine in one worker. */
+ export const MUJOCO_MAX_ACTIVE_RUNS=1,MUJOCO_SLOT='mujoco_engine';
+-export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {engineVersion:string;maxActiveRuns?:number;
++export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {onRequestTiming?:import('../navigation2d/worker-client').SpawnOptions['onRequestTiming'];engineVersion:string;maxActiveRuns?:number;
+  /** Source-only registered shared-world campaign disturbance; never a browser force request. */cellDisturbance?:import('./world-disturbance').CellDisturbanceOption;
+  /** Test/fault option: obstacles (arm base frame) that exist in the MuJoCo cell only; the TS capsule check never sees them. Never exposed through a request. */armExtraStatics?:readonly ArmObstacle[];
+  /** Test/fault option: physics.json fields replaced for the worker (e.g. weaker gains). Never exposed through a request. */physicsOverride?:Partial<XArmPhysics>;
+  /** Test/fault option: the pad friction of the cell scene (e.g. a slippery grip). Never exposed through a request. */padFrictionOverride?:number}
+ /** Operator options only (CLI flags/env), never request fields. */
+-export interface MujocoOptions {enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;schemaDir?:string;bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>}
++export interface MujocoOptions {onRequestTiming?:import('../navigation2d/worker-client').SpawnOptions['onRequestTiming'];enabled:boolean;python:string;workerRoot:string;lockPath:string;directory:string;schemaDir?:string;bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>}
+ const cap=(reason?:string):BackendCapability=>({id:MUJOCO_ARM.id,modes:['simulation'],accesses:['simulated'],installed:!reason,compatible:!reason,reachable:!reason,commissioned:true,...reason?{reason}:{}});
+ const run=promisify(execFile);
+ // every distribution the interpreter sees, as normalized name -> version (PEP 503 names), from the standard library only
+ const DISTRIBUTIONS="import importlib.metadata as m,json,re\nprint(json.dumps({re.sub(r'[-_.]+','-',d.metadata['Name']).lower():d.version for d in m.distributions()}))";
+ 
+ /** The packages of the lock (`name==version` lines) that the interpreter does not have at exactly that version. */
+ async function lockMismatch(python:string,lockPath:string):Promise<string[]>{
+  const want=[...(await readFile(lockPath,'utf8')).matchAll(/^([A-Za-z0-9][A-Za-z0-9_.-]*)==([^\s;\\]+)/gm)].map(([,n,v])=>[n!.replace(/[-_.]+/g,'-').toLowerCase(),v!] as const);
+  const have=JSON.parse((await run(python,['-I','-B','-c',DISTRIBUTIONS],{timeout:30_000,maxBuffer:1<<22})).stdout) as Record<string,string>;
+  return want.filter(([n,v])=>have[n]!==v).map(([n,v])=>`${n}==${v}`);
+@@ -61,21 +61,21 @@ export async function mujocoFromOptions(o:MujocoOptions):Promise<MujocoProviderL
+    const w=await spawnMujocoWorker({python:o.python,workerRoot,runId:'mujoco-describe',bundleRoot:scratch,runDirectory:join(scratch,'run'),lockDigest,schemaDir});
+    try{
+     const r=await w.request({protocol:'mekoniq-sim3d/1',requestId:'describe-1',runId:'mujoco-describe',expectedTick:0,op:'describe',payload:{}});
+     if(!r.ok)return off('MUJOCO_WORKER_UNAVAILABLE',(r as {error:{code:string}}).error.code);
+     describe=r.result as unknown as typeof describe;
+    }finally{await w.close('describe done');}
+   }finally{await rm(scratch,{recursive:true,force:true});}
+  }catch(e){return off('MUJOCO_WORKER_UNAVAILABLE',e instanceof WorkerLostError?e.code:(e as Error).message);}
+  if(!describe.pythonVersion.startsWith('3.11.'))return off('PYTHON_311_REQUIRED',describe.pythonVersion);
+  if(describe.lockDigest!==lockDigest)return off('MUJOCO_LOCK_MISMATCH','the worker reported another lock');
+- const runtime:MujocoRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,engineVersion:describe.engineVersion,maxActiveRuns:MUJOCO_MAX_ACTIVE_RUNS};
++ const runtime:MujocoRuntimeOptions={python:o.python,workerRoot,schemaDir,lockDigest,engineVersion:describe.engineVersion,maxActiveRuns:MUJOCO_MAX_ACTIVE_RUNS,...o.onRequestTiming?{onRequestTiming:o.onRequestTiming}:{}};
+  const gate={busy:false};
+  // A probe owns the same engine slot as a run, from immediately before spawn through process close.
+  const engineSmoke=async(runSmoke:()=>Promise<string[]>)=>{
+   if(activeRunCount(MUJOCO_SLOT))return ['MUJOCO_CAPACITY'];
+   const id='mujoco-readiness-smoke';holdSlot(MUJOCO_SLOT,id);
+   try{return await runSmoke();}finally{releaseSlot(MUJOCO_SLOT,id);}
+  };
+  const readinessChecks=armReadiness({prefix:'MUJOCO',slot:MUJOCO_SLOT,maxRuns:MUJOCO_MAX_ACTIVE_RUNS,oracle:'mujocoArm',lockPath:o.lockPath,lockDigest,probeDir,gate,
+   evidence:`mujoco:${describe.engineVersion}/python-${describe.pythonVersion}/lock:${lockDigest.slice(0,16)}`,
+   // the cell the run will build from its project (one cup for the smoke: the run's own cups do not change whether the cell compiles)
+diff --git a/packages/lab-runtime/src/v2/simulation3d/world-arm-report.ts b/packages/lab-runtime/src/v2/simulation3d/world-arm-report.ts
+index 82f7a32..24285bc 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/world-arm-report.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/world-arm-report.ts
+@@ -1,15 +1,15 @@
+ /** Transient report reconstruction from one trusted Source horizon and captured world stream. */
+ import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
+ import type {ArmReportMaterialization,WorldReportSource} from '../beverage/coffee-ports';
+ import {materializeWorldPrefix,type WorldPrefixCapture,type WorldAdmission} from './world-evidence';
+-import {evaluateWorldSweep,unavailableWorldSweep} from './world-sweep';
++import {evaluateWorldSweepAsync,unavailableWorldSweep} from './world-sweep';
+ import {worldDocument} from './world-control';
+ import type {XArmPhysics} from './arm-cell-scene';
+ import {join} from 'node:path';
+ import {readBoundedPhysicsFile} from './physics-evidence';
+ import {prepareWorldAdmission,captureWorldPrefixDisk} from './world-evidence';
+ import {validateWorldScene} from './world-scene';
+ import {READ_LIMITS,EVIDENCE_LIMITS} from '../navigation2d/evidence';
+ import {trackingStats} from './arm-ports';
+ import type {ArmCellEvidence,CoffeePlantPorts} from '../beverage/coffee-ports';
+ import type {ArmProgramRecord} from '../report';
+@@ -18,21 +18,21 @@ export async function materializeWorldArmReport(capture:WorldPrefixCapture,admis
+  const state=structuredClone(critical),h=capture.requestedTick,prefix=await materializeWorldPrefix(capture,admission),issues=[...prefix.issues];let covered=prefix.covered;
+  if(covered)try{
+   if(!state.tracking)throw Error('WORLD_TRACKING_STATE_MISSING');const aid=admission.scene.armCell.arm.armId,physics=worldDocument<XArmPhysics>(admission.files,admission.scene.models.armPhysics.path),trace:NonNullable<ArmPlantState['tracking']>['trace']=[],props:ArmPropSample[]=[];
+   for(const row of prefix.records){const s=row.snapshot,a=s.arms![0]!,c=row.command,target=c?.jointTargets?.find(t=>t.armId===aid),gripper=c?.gripperTargets?.find(t=>t.armId===aid);if(s.tick>0&&(!target||!gripper))throw Error('WORLD_ARM_COMMAND_MISSING');
+    trace.push({tick:s.tick,actualRad:[...a.positionsRad],commandedRad:[...(target?.positionsRad??admission.scene.armCell.arm.homeRad)],gripperCommandM:gripper?.openingM??physics.gripper.openingMaxM});
+    props.push({tick:s.tick,props:s.props!.map(p=>({propId:p.propId,positionM:[...p.position] as [number,number,number],quaternionXyzw:[...p.quaternionXyzw] as [number,number,number,number],restingOn:p.restingOn,held:a.gripper!.heldPropIds.includes(p.propId)}))});
+   }
+   state.tracking.trace=trace;state.tracking.props=props;
+  }catch(e){covered=false;issues.push((e as Error).message);}
+  const authority={runId:capture.authority.runId,bootId:capture.authority.bootId,sceneDigest:capture.authority.sceneDigest,lastCommittedTick:h,businessEpochMs:source.businessEpochMs};
+- const worldSweep=covered?evaluateWorldSweep(prefix.records,admission,source.journal,authority,true):unavailableWorldSweep(h,issues);worldSweep.complete=worldSweep.complete&&prefix.publication.streamFinalized;
++ const worldSweep=covered?await evaluateWorldSweepAsync(prefix.records,admission,source.journal,authority,true):unavailableWorldSweep(h,issues);worldSweep.complete=worldSweep.complete&&prefix.publication.streamFinalized;
+  worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,identity:{runId:authority.runId,bootId:authority.bootId,sceneDigest:authority.sceneDigest,admissionDigest:admission.digest},publication:prefix.publication};
+  if(replay){if(!covered)throw Error('REPLAY_WORLD_PREFIX_UNAVAILABLE');await replay({records:structuredClone(prefix.records),admission:{...admission,files:new Map([...admission.files].map(([p,b])=>[p,new Uint8Array(b)])),scene:structuredClone(admission.scene),physics:structuredClone(admission.physics),modelCounts:{...admission.modelCounts}}});}
+  const samples=state.tracking?.trace??[];return {state,worldSweep,worldTrace:{method:'world-committed-trace-v1',scope:covered?'all_world_ticks':'retained_cache_only',publicCommittedTick:h,prefixCovered:covered,streamFinalized:prefix.publication.streamFinalized,trackingStatisticsScope:'active_program_ticks',trackingSamples:critical.tracking?.samples??0,firstTick:samples[0]?.tick??null,lastTick:samples.at(-1)?.tick??null,samples:samples.length,reasonCodes:issues,publication:prefix.publication,...critical.historyRetention?{hotHistoryPolicy:{mode:critical.historyRetention.mode,limit:critical.historyRetention.limit}}:{}}};
+ }
+ 
+ /** An unavailable archive remains inspectable, with no replacement fixture or engine. */
+ export function unavailableWorldArmReport(critical:ArmPlantState,identity:{runId:string;bootId:string;sceneDigest:string},publicCommittedTick:number,reasonCodes:string[]):ArmReportMaterialization{
+  const state=structuredClone(critical),samples=state.tracking?.trace??[],worldSweep=unavailableWorldSweep(publicCommittedTick,reasonCodes);worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick,prefixCovered:false,streamFinalized:false,identity:{...identity,admissionDigest:null}};
+  return {state,worldSweep,worldTrace:{method:'world-committed-trace-v1',scope:'retained_cache_only',publicCommittedTick,prefixCovered:false,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:state.tracking?.samples??0,firstTick:samples[0]?.tick??null,lastTick:samples.at(-1)?.tick??null,samples:samples.length,reasonCodes:[...reasonCodes],...state.historyRetention?{hotHistoryPolicy:{mode:state.historyRetention.mode,limit:state.historyRetention.limit}}:{}}};
+ }
+diff --git a/packages/lab-runtime/src/v2/simulation3d/world-display.ts b/packages/lab-runtime/src/v2/simulation3d/world-display.ts
+new file mode 100644
+index 0000000..34f6daf
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/world-display.ts
+@@ -0,0 +1,6 @@
++/** One bounded, committed display observation. Read-only; never persisted in action receipts. */
++import type {Sim3DSnapshotV1,LabWorldSceneV1} from '../navigation2d/contracts';
++import type {WorldTickCommand} from './world-ports';
++export type CommittedWorldDisplayCommand=Pick<WorldTickCommand,'targetTick'|'worldControl'|'velocities'>;
++export interface WorldDisplay {version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:Sim3DSnapshotV1|null;control:CommittedWorldDisplayCommand|null;controlReason:string|null}
++export interface WorldDisplayScene {version:1;runId:string;availability:'available'|'unavailable';reason:string|null;scene:LabWorldSceneV1|null}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/world-ports.ts b/packages/lab-runtime/src/v2/simulation3d/world-ports.ts
+index 2123bd5..b36b20e 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/world-ports.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/world-ports.ts
+@@ -18,20 +18,21 @@ export interface WorldTickCommand {
+ /** Preparation cannot publish observations. The shared engine advances only in step; commit consumes a validated, durably recorded ACK. */
+ export interface WorldPlantPorts {
+  prepareTick(nextTick:number):WorldTickCommand;
+  step(command:WorldTickCommand):Promise<Sim3DSnapshotV1>;
+  commit(observation:Sim3DSnapshotV1):Promise<void>;
+  close():Promise<void>;
+ }
+ export interface WorldFailure {targetTick:number;lastCommittedTick:number;ackTick:number|null;reason:string}
+ export interface WorldEvidence {append(snapshot:Sim3DSnapshotV1):Promise<void>;fail(failure:WorldFailure):Promise<void>;finish():Promise<void>}
+ export interface WorldPlantBindings {
++ displayScene?():import('../navigation2d/contracts').LabWorldSceneV1;
+  navigation?:import('../session').SourceFixture['navigation'];
+  metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'>;
+  evidence:WorldEvidence;
+  world:WorldPlantPorts;
+  robots:ReadonlyMap<string,RobotAdapter>;
+  coffee:CoffeePlantPorts;
+  snapshot():Sim3DSnapshotV1;
+ }
+ export interface WorldFactoryInput {
+  manifest:RunManifestInput;runId:string;directory:string;state:CoffeeState;context:CoffeeContext;newBootId():string;
+diff --git a/packages/lab-runtime/src/v2/simulation3d/world-sweep.ts b/packages/lab-runtime/src/v2/simulation3d/world-sweep.ts
+index 3763672..d160c45 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/world-sweep.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/world-sweep.ts
+@@ -1,51 +1,57 @@
+ /** Independent, bounded geometric review of complete raw world evidence. Legacy ARM03
+  * retains its own truncation result. Native substep contact aggregates stay separate. */
++import {setImmediate as yieldTurn} from 'node:timers/promises';
+ import type {DomainEvent,JournalEntry} from '../../../../contracts/src/index';
+ import type {WorldEvidenceRecord,RobotPhysicalModelV1} from '../../../../contracts/generated/navigation2d';
+ import {readWorldEvidence,validateWorldRecord,type WorldAdmission,type WorldPrefixRead} from './world-evidence';
+ import {worldArmGeometry,worldAllowedPairs,worldDocument} from './world-control';
+ import {worldArmObstacles,type WorldInteractionIntent} from './world-scene';
+ import {checkArmSweep,type SweepResult} from '../models/arm-collision';
+ import {XARM6_SI} from '../models/arm-kinematics';
+ import {hashJson} from '../hash';
+ import {READ_LIMITS} from '../navigation2d/evidence';
+ /** Additional bounded trusted-journal input; observations retain shared evidence limits. */
+ export const WORLD_SWEEP_SOURCE_LIMITS={entries:10000,bytes:16*1024*1024} as const;
+ export interface WorldSweepAuthority {runId:string;bootId:string;sceneDigest:string;lastCommittedTick:number;businessEpochMs:number}
+ export type WorldSourceJournal=readonly Pick<JournalEntry,'entryId'|'organizationId'|'venueId'|'recordedAt'|'payload'>[];
+ export interface WorldSweepResult {scope?:{kind:'source_committed_prefix';publicCommittedTick:number;prefixCovered:boolean;streamFinalized:boolean;identity:{runId:string;bootId:string;sceneDigest:string;admissionDigest:string|null};publication?:WorldPrefixRead['publication']};id:'world-full-capsule-v1';accepted:false;calibration:'not_calibrated';status:'pass'|'fail'|'not_run';complete:boolean;reasonCodes:string[];sourceJournal:'trusted_source_session';
+  geometry:{status:'pass'|'fail'|'not_run';checkedIntervals:number;expectedIntervals:number;distinctSceneRevisions:number;uncertainIntervals:number;geometryHash:string;firstFailure:null|{tick:number;pair:string[];reason:string}};
+  nativeContacts:{status:'pass'|'fail'|'not_run';aggregateRows:number;unexpected:number;firstUnexpected:null|{tick:number;a:string;b:string}};
+  method:{engine:'capsule-sweep-v1';toleranceM:number;modelRevision:string;sampling:string};
+ }
+ export function unavailableWorldSweep(lastCommittedTick:number,reasonCodes:string[]):WorldSweepResult{return {id:'world-full-capsule-v1',accepted:false,calibration:'not_calibrated',status:'not_run',complete:false,reasonCodes:[...reasonCodes],sourceJournal:'trusted_source_session',geometry:{status:'not_run',checkedIntervals:0,expectedIntervals:lastCommittedTick,distinctSceneRevisions:0,uncertainIntervals:0,geometryHash:'',firstFailure:null},nativeContacts:{status:'not_run',aggregateRows:0,unexpected:0,firstUnexpected:null},method:{engine:'capsule-sweep-v1',toleranceM:.0005,modelRevision:XARM6_SI.revision,sampling:'actual consecutive arm joints and current observed full AMR geometry; native aggregates cover all10 substeps separately'}};}
+-export function evaluateWorldSweep(records:readonly WorldEvidenceRecord[],admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority,complete:boolean,onInterval?:(tick:number,result:SweepResult)=>void):WorldSweepResult{
++function* evaluateWorldSweepSteps(records:readonly WorldEvidenceRecord[],admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority,complete:boolean,onInterval?:(tick:number,result:SweepResult)=>void):Generator<void,WorldSweepResult>{
+  const result=unavailableWorldSweep(authority.lastCommittedTick,[]);
+  try{
+   if(!complete||admission.scene.controlContextVersion!==1||authority.sceneDigest!==admission.scene.sceneDigest||!Number.isFinite(authority.businessEpochMs)||!Number.isSafeInteger(authority.lastCommittedTick)||authority.lastCommittedTick<0||authority.lastCommittedTick>30000||records.length!==authority.lastCommittedTick+1||records.length>30001)throw Error('WORLD_SWEEP_INCOMPLETE');
+-  let observationBytes=0;for(const row of records){const n=Buffer.byteLength(JSON.stringify(row))+1;observationBytes+=n;if(n>READ_LIMITS.lineBytes||observationBytes>READ_LIMITS.totalInflated)throw Error('WORLD_SWEEP_READ_LIMIT');}
++  let observationBytes=0;for(const [i,row]of records.entries()){const n=Buffer.byteLength(JSON.stringify(row))+1;observationBytes+=n;if(n>READ_LIMITS.lineBytes||observationBytes>READ_LIMITS.totalInflated)throw Error('WORLD_SWEEP_READ_LIMIT');if((i+1)%32===0)yield;}
+   if(journal.length>WORLD_SWEEP_SOURCE_LIMITS.entries||Buffer.byteLength(JSON.stringify(journal))>WORLD_SWEEP_SOURCE_LIMITS.bytes)throw Error('WORLD_SOURCE_JOURNAL_READ_LIMIT');
+   const events=new Map<string,{event:DomainEvent;at:number}>();for(const entry of journal){if(entry.organizationId!==`lab-${authority.runId}`||entry.venueId!=='simulation'||!Number.isFinite(Date.parse(entry.recordedAt)))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');const list=entry.payload.events as unknown as DomainEvent[];for(let i=0;i<list.length;i++){const key=`${entry.entryId}:${i}`;if(events.has(key))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');events.set(key,{event:list[i]!,at:Date.parse(entry.recordedAt)});}}
+   const scene=admission.scene,physical=worldDocument<RobotPhysicalModelV1>(admission.files,scene.models.mobilePhysical.path),geometry=worldArmGeometry(scene,admission.files),rid=scene.navigation.robots[0]!.robotId,aid=scene.armCell.arm.armId,revision=new Set<string>(),disturbances=new Set<string>();result.geometry.geometryHash=hashJson(geometry);let history:WorldInteractionIntent[]=[];
+   for(let i=0;i<records.length;i++){
+    const row=records[i]!,s=row.snapshot,previous=records[i-1]?.snapshot;history=validateWorldRecord(row,admission,history,previous,authority,disturbances);
+    for(const intent of row.interactions){const e=events.get(intent.eventId)?.event;if(!e||e.type!==(intent.kind==='birth'?'CupBound':'CupHandedOff')||e.data.kind!=='cup'||e.data.id!==intent.cupId)throw Error('WORLD_LIFECYCLE_SOURCE_MISMATCH');}
+    if(!previous)continue;
+    const c=row.command!,control=c.worldControl!,p=control.program;
+    if(c.velocities.length!==1||c.velocities[0]!.robotId!==rid||c.jointTargets?.length!==1||c.jointTargets[0]!.armId!==aid||c.gripperTargets?.length!==1||c.gripperTargets[0]!.armId!==aid)throw Error('WORLD_CONTROL_INVALID');
+    if(p){const source=events.get(p.sourceEventId),e=source?.event,transfer=(e?.data.state as Record<string,unknown>)?.pendingTransfer as Record<string,unknown>|undefined,to=transfer?.to as {kind?:string;id?:string;slot?:number}|undefined;
+     if(!e||source!.at>authority.businessEpochMs+(s.tick-1)*20||e.type!=='CupTransferRequested'||e.data.kind!=='cup'||e.data.id!==p.cupId||!transfer||['commandId','transferId','payloadHash','controlEpoch'].some(k=>transfer[k]!==p[k as keyof typeof p])||(p.programId==='cup-pick'?(to?.kind!=='arm'||to.id!==aid):(to?.kind!=='robot'||to.id!==rid||to.slot!==1)))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');
+    }
+    if(control.attachmentProxyPropId&&!previous.props?.some(prop=>prop.propId===control.attachmentProxyPropId))throw Error('WORLD_CONTROL_SOURCE_MISMATCH');
+    const allowedPairs=worldAllowedPairs(scene,admission.files,p?.programId??null),world=worldArmObstacles(scene,physical,s),sweep=checkArmSweep(XARM6_SI,previous.arms![0]!.positionsRad,s.arms![0]!.positionsRad,{world,geometry,heldCup:control.attachmentProxyPropId!==null,allowedPairs,toleranceM:.0005});
+    result.geometry.checkedIntervals++;revision.add(sweep.geometryRevision);if(sweep.reason==='SWEEP_UNCERTAIN')result.geometry.uncertainIntervals++;if(!sweep.ok&&!result.geometry.firstFailure)result.geometry.firstFailure={tick:s.tick,pair:sweep.pair??[],reason:sweep.reason??'UNKNOWN'};onInterval?.(s.tick,sweep);
+    for(const contact of s.physics!.contacts){result.nativeContacts.aggregateRows++;const pair=[contact.a,contact.b],armSide=pair.find(x=>x.startsWith(`${aid}/`)),supportSide=pair.find(x=>x.startsWith('support/')),mobileSide=pair.find(x=>x.startsWith(`${rid}/`));let unexpected=!contact.expected;
+     if(armSide&&(supportSide||mobileSide)){const primitive=armSide===`${aid}/palm`||armSide.startsWith(`${aid}/pad/`)?'gripper':armSide,target=supportSide??mobileSide!;if(!allowedPairs.some(p=>p[0]===primitive&&p[1]===target))unexpected=true;}
+     if(unexpected){result.nativeContacts.unexpected++;result.nativeContacts.firstUnexpected??={tick:s.tick,a:contact.a,b:contact.b};}
+    }
++   if((i+1)%32===0)yield;
+   }
+   result.geometry.distinctSceneRevisions=revision.size;result.complete=true;result.geometry.status=result.geometry.firstFailure?'fail':result.geometry.uncertainIntervals?'not_run':'pass';result.nativeContacts.status=result.nativeContacts.unexpected?'fail':'pass';result.status=result.geometry.status==='fail'||result.nativeContacts.status==='fail'?'fail':result.geometry.status==='pass'&&result.geometry.checkedIntervals===authority.lastCommittedTick?'pass':'not_run';if(result.status!=='pass')result.reasonCodes.push(result.geometry.firstFailure?.reason??'WORLD_NATIVE_CONTACT');
+  }catch(error){result.reasonCodes.push((error as Error).message);result.status='not_run';result.complete=false;}
+  return result;
+ }
++/** One core preserves the legacy synchronous review and callback order. */
++export function evaluateWorldSweep(...args:Parameters<typeof evaluateWorldSweepSteps>):WorldSweepResult{const work=evaluateWorldSweepSteps(...args);let step=work.next();while(!step.done)step=work.next();return step.value;}
++/** Only detached, captured report materialization opts into cooperative scheduling. */
++export async function evaluateWorldSweepAsync(...args:Parameters<typeof evaluateWorldSweepSteps>):Promise<WorldSweepResult>{const work=evaluateWorldSweepSteps(...args);let step=work.next();while(!step.done){await yieldTurn();step=work.next();}return step.value;}
+ export async function readWorldSweep(directory:string,admission:WorldAdmission,journal:WorldSourceJournal,authority:WorldSweepAuthority){const read=await readWorldEvidence(directory,admission);return evaluateWorldSweep(read.records,admission,journal,authority,read.complete);}
+diff --git a/tests/integration/mujoco-cell-readiness.test.ts b/tests/integration/mujoco-cell-readiness.test.ts
+index d43c300..0bfa80e 100644
+--- a/tests/integration/mujoco-cell-readiness.test.ts
++++ b/tests/integration/mujoco-cell-readiness.test.ts
+@@ -1,33 +1,39 @@
+ import {existsSync} from 'node:fs';
+ import {afterEach,describe,expect,test,vi} from 'vitest';
+ import {mkdtemp,readFile,writeFile,rm,copyFile,mkdir} from 'node:fs/promises';
+ import {join,resolve} from 'node:path';
+ import {mujocoFromOptions,MUJOCO_SLOT} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+ import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
+ import {activeRunCount,holdSlot,releaseSlot} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+ import {act,amrAsset} from '../support/lab-v2';
+ import {OwnedProcesses} from '../support/owned-processes';
+ import {readArmTrace,readArmProps} from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
++import * as worldSweep from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
+ import * as worldScene from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
+ import * as workerClient from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+ describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('shared world native checks (requires .venv-mujoco)',()=>{
+ const dirs:string[]=[];afterEach(async()=>{vi.restoreAllMocks();releaseSlot(MUJOCO_SLOT,'b06-other');for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+ async function fixture(){const directory=await mkdtemp('/tmp/b06-normal-bootstrap-');dirs.push(directory);const processes=new OwnedProcesses();processes.addDirectory(directory);const root=resolve('robotics/simulation-mujoco'),lockPath=join(directory,'requirements.lock');await copyFile(join(root,'requirements.lock'),lockPath);
+- const provider=await processes.observe(()=>mujocoFromOptions({enabled:true,python:resolve('.venv-mujoco/bin/python'),workerRoot:root,lockPath,directory,bundleFile:async()=>{throw Error('BUNDLE_NOT_USED_BY_WORLD');}}));
+- const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'unused',lockPath:'unused',directory,mujoco:provider}),project=JSON.parse(await readFile(join(root,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8')),context={scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',project};return {directory,processes,provider,sim,project,context,lockPath};
++ const timings:Parameters<NonNullable<import('../../packages/lab-runtime/src/v2/simulation3d/mujoco').MujocoOptions['onRequestTiming']>>[0][]=[];const provider=await processes.observe(()=>mujocoFromOptions({onRequestTiming:s=>timings.push(s),enabled:true,python:resolve('.venv-mujoco/bin/python'),workerRoot:root,lockPath,directory,bundleFile:async()=>{throw Error('BUNDLE_NOT_USED_BY_WORLD');}}));
++ const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'unused',lockPath:'unused',directory,mujoco:provider}),project=JSON.parse(await readFile(join(root,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8')),context={scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',project};return {directory,processes,provider,sim,project,context,lockPath,timings};
+ }
++test('real native report yields to a later committed action while preserving captured H',async()=>{
++ expect(worldSweep.evaluateWorldSweepAsync).toBeTypeOf('function');const h=await fixture(),runDir=join(h.directory,'cooperative-run');await mkdir(runDir);const run=await h.processes.observeRun(await h.processes.observe(()=>h.sim.simulationFactory({project:h.project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',sourceCommit:'cooperative-native-test'},{directory:runDir,assets:[amrAsset],catalog:h.sim.catalog,enabledBackends:['mock_coffee',...h.sim.enabledBackends]})));
++ try{await run.start();await act(run,'step',{ticks:256});const original=worldSweep.evaluateWorldSweepAsync,current=await run.snapshot();let later:ReturnType<typeof act>|undefined,reportDone=false,enteredDuringReport=false;vi.spyOn(worldSweep,'evaluateWorldSweepAsync').mockImplementation((records,admission,journal,authority,complete,callback)=>original(records,admission,journal,authority,complete,(tick,result)=>{callback?.(tick,result);if(tick===1&&!later)later=run.action({actionId:'during-cooperative-report',expectedRevision:current.run.runRevision,kind:'step',payload:{ticks:1}},async()=>{enteredDuringReport=!reportDone;});}));const report=run.report().then(r=>{reportDone=true;return r;});while(!later)await new Promise<void>(r=>setImmediate(r));expect((await later).tick).toBe(257);expect(enteredDuringReport).toBe(true);const captured=await report;expect(captured.outcome.tick).toBe(256);expect(captured.worldSweep!.scope!.publicCommittedTick).toBe(256);expect(captured.worldSweep!.geometry.checkedIntervals).toBe(256);expect((await readArmTrace(runDir,captured.arm!)).samples.at(-1)!.tick).toBe(256);expect((await run.snapshot()).tick).toBe(257);
++ }finally{await run.close();expect(h.processes.processes()).toEqual([]);}
++},120000);
+ test('verified normal bootstrap creates the shared world without injected ports and reports one captured complete prefix',async()=>{
+  const h=await fixture();expect(h.provider.world?.factory).toBeTypeOf('function');const checks=await h.sim.readinessChecks!(h.context,new AbortController().signal);expect(checks.flatMap(c=>c.reasonCodes)).toEqual([]);expect(checks.find(c=>c.id==='runner')?.evidenceRef).toMatch(/^mujoco-world-smoke:/);expect(h.processes.processes()).toEqual([]);
+  const runDir=join(h.directory,'actual-run');await mkdir(runDir);const manifest={project:h.project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation' as const,access:'simulated' as const,backendSetId:'engineering-mujoco-cell-v1',sourceCommit:'normal-bootstrap-test'},providers={directory:runDir,assets:[amrAsset],catalog:h.sim.catalog,enabledBackends:['mock_coffee',...h.sim.enabledBackends]};
+  const open=async()=>h.processes.observeRun(await h.processes.observe(()=>h.sim.simulationFactory(manifest,providers))),run=await open();
+- try{await run.start();await act(run,'step',{ticks:40});const cp=JSON.parse(await readFile(join(runDir,'run.json'),'utf8'));expect(cp.world.snapshot.worldStep).toMatchObject({modelCount:1,nq:35,nv:32,physicsSubsteps:410});expect(cp.world.snapshot.props).toHaveLength(1);const own=await h.sim.readinessChecks!({...h.context,runId:cp.runId},new AbortController().signal);expect(own.flatMap(c=>c.reasonCodes)).toEqual([]);
++ try{expect((await run.worldDisplayScene!()).availability).toBe('available');expect((await run.worldDisplay!()).tick).toBe(0);await run.start();await act(run,'step',{ticks:40});const display=await run.worldDisplay!();expect(display).toMatchObject({tick:40,availability:'valid',snapshot:{tick:40},control:{targetTick:40}});expect(h.timings.filter(s=>s.runId===run.id&&s.op==='step')).toHaveLength(40);expect(h.timings.filter(s=>s.op==='step').every(s=>s.elapsedMs>0&&s.ok)).toBe(true);const cp=JSON.parse(await readFile(join(runDir,'run.json'),'utf8'));expect(cp.world.snapshot.worldStep).toMatchObject({modelCount:1,nq:35,nv:32,physicsSubsteps:410});expect(cp.world.snapshot.props).toHaveLength(1);const own=await h.sim.readinessChecks!({...h.context,runId:cp.runId},new AbortController().signal);expect(own.flatMap(c=>c.reasonCodes)).toEqual([]);
+   const report=await run.report();expect(report.worldSweep).toMatchObject({id:'world-full-capsule-v1',status:'pass',complete:false,geometry:{checkedIntervals:40,expectedIntervals:40},scope:{kind:'source_committed_prefix',publicCommittedTick:40,prefixCovered:true,streamFinalized:false}});expect(report.arm!.collision.result).toBe('not_run');expect(report.arm!.collision.reasonCodes).toContain('TRACE_EMPTY');expect(report.coffee!.armTrace.collision!.evidence!.droppedIntervals).toBeGreaterThan(0);expect(report.arm!.worldTrace).toMatchObject({scope:'all_world_ticks',publicCommittedTick:40,prefixCovered:true,samples:41,trackingStatisticsScope:'active_program_ticks',trackingSamples:0});expect((await readArmTrace(runDir,report.arm!)).samples.map(s=>s.tick)).toEqual(Array.from({length:41},(_,n)=>n));expect((await readArmProps(runDir,report.arm!)).samples).toHaveLength(41);
+   const after=JSON.parse(await readFile(join(runDir,'run.json'),'utf8'));expect(after.coffee.arm.collision.evidence.intervals.length).toBeLessThanOrEqual(16);expect(after.coffee.arm.tracking.trace.length).toBeLessThanOrEqual(16);expect(after.coffee.arm.tracking.props.length).toBeLessThanOrEqual(16);
+  }finally{await run.close();expect(h.processes.processes()).toEqual([]);}
+  vi.spyOn(worldScene,'readWorldFixture').mockRejectedValue(Error('LATEST_FIXTURE_FORBIDDEN_ON_REOPEN'));const reopened=await open();try{const report=await reopened.report();expect(report.outcome).toMatchObject({status:'needs_attention',served:'0'});expect(report.worldSweep).toMatchObject({status:'pass',geometry:{checkedIntervals:40},scope:{publicCommittedTick:40,prefixCovered:true,streamFinalized:true}});expect((await readArmTrace(runDir,report.arm!)).samples).toHaveLength(41);expect(h.processes.processes()).toEqual([]);await expect(act(reopened,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await reopened.close();expect(h.processes.processes()).toEqual([]);}
+  await writeFile(join(runDir,'mujoco-world/bundle/arm-physics.json'),'{}');const unavailable=await open();try{const report=await unavailable.report();expect(report.worldSweep).toMatchObject({status:'not_run',scope:{publicCommittedTick:40,prefixCovered:false,streamFinalized:false}});expect(report.arm!.worldTrace).toMatchObject({scope:'retained_cache_only',prefixCovered:false});expect(report.arm!.worldTrace!.reasonCodes.length).toBeGreaterThan(0);expect(h.processes.processes()).toEqual([]);}finally{await unavailable.close();}
+ },120000);
+ test('world readiness rechecks wrong project, changed lock and busy engine even after a successful cached smoke',async()=>{
+  const h=await fixture(),signal=new AbortController().signal;expect((await h.sim.readinessChecks!(h.context,signal)).flatMap(c=>c.reasonCodes)).toEqual([]);
+  const wrong=structuredClone(h.project);wrong.world.points[0].x+=.1;expect((await h.sim.readinessChecks!({...h.context,project:wrong},signal)).flatMap(c=>c.reasonCodes)).toContain('WORLD_PROJECT_MISMATCH');
+  holdSlot(MUJOCO_SLOT,'b06-other');try{expect((await h.sim.readinessChecks!(h.context,signal)).flatMap(c=>c.reasonCodes)).toContain('WORLD_CAPACITY');}finally{releaseSlot(MUJOCO_SLOT,'b06-other');}
+diff --git a/tests/security/web-replay-export.test.ts b/tests/security/web-replay-export.test.ts
+index 8764d68..fd85b0a 100644
+--- a/tests/security/web-replay-export.test.ts
++++ b/tests/security/web-replay-export.test.ts
+@@ -1,16 +1,20 @@
+-import {afterEach,expect,test} from 'vitest';
++import {afterEach,expect,test,vi} from 'vitest';
++import * as zlib from 'node:zlib';
++import {createHash} from 'node:crypto';
+ import {mkdtemp,readFile,readdir,rm,symlink,writeFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {exportWebReplay,loadRetainedReplay,xarmSupplementalLicensing} from '../../packages/lab-runtime/src/v2/replay/export';
+-const owned:string[]=[];afterEach(async()=>{for(const p of owned.splice(0))await rm(p,{recursive:true,force:true});});
++const compression=vi.hoisted(()=>({started:()=>{}}));
++vi.mock('node:zlib',async importOriginal=>{const actual=await importOriginal<typeof import('node:zlib')>();return {...actual,gzipSync:vi.fn(actual.gzipSync),gzip:vi.fn((...args:Parameters<typeof actual.gzip>)=>{compression.started();return actual.gzip(...args);})};});
++const owned:string[]=[];afterEach(async()=>{compression.started=()=>{};for(const p of owned.splice(0))await rm(p,{recursive:true,force:true});});
+ async function output(){const root=await mkdtemp(join(tmpdir(),'web-replay-test-'));owned.push(root);return join(root,'package');}
+ const nominal='/tmp/mekoniq-b06-nominal-7-1iGdiu';
+ test('exports actual retained B06 captured horizon without changing evidence or sampling',async()=>{
+  const captured=await loadRetainedReplay(nominal),out=await output(),m=await exportWebReplay(captured,out);
+  expect(m.documentType).toBe('web-replay-package');expect(m.horizon.tick).toBe(10850);expect(m.coverage.sampled).toBe(false);expect(m.provenance.accepted).toBe(false);expect(m.coverage.prefixCovered).toBe(true);expect(m.coverage.streamFinalized).toBe(false);
+  expect(m.assets.reduce((n,a)=>n+a.bytes,0)).toBeLessThan(25*1024*1024);expect(m.assets.some(a=>a.role==='notice')).toBe(true);expect(m.streams[0]!.samples).toBe(10851);
+  expect((await readFile(join(out,'manifest.json'),'utf8'))).not.toContain(nominal);expect(await readdir(out)).not.toContain('signing-key.json');
+ });
+ test('exports the retained B04 impulse fall including its exact final tick and terminal coverage',async()=>{
+  const m=await exportWebReplay(await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),await output());expect(m.horizon.tick).toBe(520);expect(m.coverage.sampled).toBe(false);expect(m.streams.some(s=>s.kind==='physics'&&s.lastTick===520)).toBe(true);expect(m.coverage.terminal).toBe('LOAD_FELL');expect(m.assets.some(a=>a.path==='observations/payload-perturbation.json')).toBe(true);
+@@ -32,10 +36,15 @@ test('unknown substituted vendor assets and tampered supplemental NOTICE are ref
+  const {default:record}=await import('../../packages/lab-runtime/src/v2/replay/xarm-licensing.json'),notice=record.NOTICE;record.NOTICE=Buffer.from('wrong terms').toString('base64');try{await expect(exportWebReplay(capture,await output())).rejects.toThrow('REPLAY_NOTICE_HASH');}finally{record.NOTICE=notice;}
+ });
+ test('public exports redact nested credentials/internal endpoints without changing captured inputs',async()=>{
+  const capture=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),privateFields={token:'PRIVATE_VALUE',apiKey:'PRIVATE_VALUE',sessionToken:'PRIVATE_VALUE',endpoint:'http://127.0.0.1:4176/private',note:'transport http://10.1.1.1:8000/foo'};(capture.report as unknown as Record<string,unknown>).privateFields=privateFields;const out=await output(),m=await exportWebReplay(capture,out),a=m.assets.find(a=>a.role==='report')!,{gunzipSync}=await import('node:zlib'),text=gunzipSync(await readFile(join(out,a.path))).toString();expect(text).not.toContain('PRIVATE_VALUE');expect(text).not.toContain('127.0.0.1');expect(text).not.toContain('10.1.1.1');expect(privateFields.token).toBe('PRIVATE_VALUE');expect(m.provenance.reportTransform).toBe('credential_redaction_v1');
+ });
+ test('receipt inventory, run identity, applied horizon and measured force/pose are independently bound',async()=>{
+  const {cp}=await import('node:fs/promises'),{createHash}=await import('node:crypto'),root=await output(),original='/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall';await cp(original,root,{recursive:true});const receiptPath=join(root,'run/worker/payload-perturbation.json'),casePath=join(root,'case.json'),bytes=await readFile(receiptPath),record=JSON.parse(await readFile(casePath,'utf8')),receipt=JSON.parse(bytes.toString());
+  for(const change of [{bootId:'other'},{tick:521},{forceN:[0,0,0]},{forceMapN:[0,0,0]},{afterPoseMap:{positionM:[0,0,0],quaternionXyzw:[0,0,0,1]}}]){const changed=Buffer.from(JSON.stringify({...receipt,...change})),c=structuredClone(record),ref=c.artifacts.find((f:{path:string})=>f.path==='run/worker/payload-perturbation.json');ref.bytes=changed.length;ref.sha256=createHash('sha256').update(changed).digest('hex');await writeFile(receiptPath,changed);await writeFile(casePath,JSON.stringify(c));await expect(loadRetainedReplay(root)).rejects.toThrow(/REPLAY_RECEIPT/);}
+  await writeFile(receiptPath,bytes);await writeFile(casePath,JSON.stringify(record));await rm(receiptPath);await expect(loadRetainedReplay(root)).rejects.toThrow();
+ });
++
++test('detached export uses sequential asynchronous compression and preserves exact stored/decoded gzip identities',async()=>{const capture=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),out=await output(),sync=zlib.gzipSync;const trap=vi.spyOn(zlib,'gzipSync').mockImplementation(()=>{throw Error('SYNCHRONOUS_EXPORT_COMPRESSION');});let manifest;try{manifest=await exportWebReplay(capture,out);}finally{trap.mockRestore();}for(const a of manifest.assets){const bytes=await readFile(join(out,a.path)),plain=a.encoding==='gzip'?zlib.gunzipSync(bytes):bytes;expect(createHash('sha256').update(bytes).digest('hex')).toBe(a.sha256);expect(createHash('sha256').update(plain).digest('hex')).toBe(a.decodedSha256);if(a.encoding==='gzip')expect(bytes).toEqual(sync(plain));}});
++test('the same genuine captured world input retains every original encoded and decoded asset hash',async()=>{const capture=await loadRetainedReplay(nominal),expected=JSON.parse(await readFile('/tmp/b07a-final-packages-ZYL6r5/nominal/manifest.json','utf8')),actual=await exportWebReplay(capture,await output());expect(actual.assets).toEqual(expected.assets);expect(actual.streams).toEqual(expected.streams);});
++
++test('abort during asynchronous compression releases the owned publication only after cleanup and allows retry',async()=>{const capture=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),out=await output(),abort=new AbortController();compression.started=()=>abort.abort();await expect(exportWebReplay(capture,out,{signal:abort.signal})).rejects.toThrow('REPLAY_ABORTED');expect((await readdir(join(out,'..'))).filter(p=>p.startsWith('.replay-'))).toEqual([]);compression.started=()=>{};expect((await exportWebReplay(capture,out)).horizon.tick).toBe(520);});
+diff --git a/tests/security/web-replay-gateway.test.ts b/tests/security/web-replay-gateway.test.ts
+index b00215a..6715115 100644
+--- a/tests/security/web-replay-gateway.test.ts
++++ b/tests/security/web-replay-gateway.test.ts
+@@ -12,27 +12,27 @@ import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/ga
+ import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {TelemetryRecorder} from '../../packages/lab-runtime/src/v2/telemetry';
+ import type {ScenarioRun,RunView} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {loadRetainedReplay} from '../../packages/lab-runtime/src/v2/replay/export';
+ vi.mock('node:fs/promises',async original=>{const actual=await original<typeof import('node:fs/promises')>();return {...actual,opendir:vi.fn(actual.opendir)};});
+ const roots:string[]=[],gateways:LabGateway[]=[];afterEach(async()=>{vi.restoreAllMocks();for(const g of gateways.splice(0))await g.close();for(const r of roots.splice(0))await rm(r,{recursive:true,force:true});});
+ async function pair(g:LabGateway){const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});const body=await r.json();return {authorization:`Bearer ${body.sessionToken}`,cookie:r.headers.get('set-cookie')!.split(';')[0]!,'x-csrf-token':String(body.csrfToken),origin:'http://127.0.0.1:4175','content-type':'application/json'};}
+ test('immutable export and indexed asset reads are private to current owner, survive view-only reclaim, and refuse paths',async()=>{
+  const captured=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),id=captured.report.manifest.runId,directory=await mkdtemp(join(tmpdir(),'web-replay-gateway-'));roots.push(directory);const ids=['mujoco_3d','mujoco_arm','mock_coffee'],catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>ids.includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};
+  let block:Promise<void>|undefined;const hooks:{capture?:()=>void}={};
+- const view={run:{id,runRevision:0},tick:520} as RunView;const factory=async(_i:unknown,p:{directory:string})=>{await mkdir(p.directory,{recursive:true});return {id,captureReplay:async()=>{hooks.capture?.();if(block)await block;return captured;},report:async()=>captured.report,snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:520,paused:true,runRevision:0})} as ScenarioRun;};
++ const view={run:{id,runRevision:0},tick:520} as RunView;const factory=async(_i:unknown,p:{directory:string})=>{await mkdir(p.directory,{recursive:true});return {id,worldDisplay:async()=>({version:1,runId:id,tick:520,revision:0,simTimeNs:'10400000000',availability:'stale',reason:'protocol_double',snapshot:null,control:null,controlReason:'NOT_RECORDED_AT_TICK'}),worldDisplayScene:async()=>({version:1,runId:id,availability:'unavailable',reason:'protocol_double',scene:null}),captureReplay:async()=>{hooks.capture?.();if(block)await block;return captured;},report:async()=>captured.report,snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:520,paused:true,runRevision:0})} as ScenarioRun;};
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:ids,simulationFactory:factory,portableChecks:async()=>['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'}))}});gateways.push(g);const owner=await pair(g),other=await pair(g),base=g.url+`/lab/v2/runs/${id}`;
+  const created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:owner,body:JSON.stringify({project:JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8')),scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(created.status,await created.clone().text()).toBe(201);const proof=(await created.json()).reclaimToken;
+- expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(404);expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{"path":"../run.json"}'})).status).toBe(422);
++ expect((await fetch(base+'/world-display',{headers:other})).status).toBe(404);expect((await fetch(base+'/world-display/scene',{headers:other})).status).toBe(404);expect((await fetch(base+'/world-display',{headers:owner})).status).toBe(200);expect((await fetch(base+'/world-display/scene',{headers:owner})).status).toBe(200);expect((await fetch(base+'/world-display?path=x',{headers:owner})).status).toBe(400);expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(404);expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{"path":"../run.json"}'})).status).toBe(422);
+  const responses=await Promise.all([0,1].map(()=>fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})));expect(responses.map(r=>r.status)).toEqual([201,201]);const [a,b]=await Promise.all(responses.map(r=>r.json()));const residue=join(directory,'replay-exports','.replay-crash-staging');await mkdir(residue);expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})).status).toBe(429);expect((await fetch(base+`/replay/${b.exportId}`,{headers:owner})).status).toBe(200);expect((await readdir(join(directory,'replay-exports'))).includes('.replay-crash-staging')).toBe(true);await rm(residue,{recursive:true});expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})).status).toBe(429);expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(404);expect(a.manifest).toEqual(b.manifest);expect(a.exportId).not.toBe(b.exportId);
+  const url=base+`/replay/${a.exportId}`;expect((await fetch(url,{headers:other})).status).toBe(404);expect((await fetch(url+'/assets/0',{headers:other})).status).toBe(404);expect((await fetch(url+'/assets/0',{headers:owner})).status).toBe(200);expect((await fetch(url+'/assets/999',{headers:owner})).status).toBe(404);expect((await fetch(url+'/assets/../run.json',{headers:owner})).status).toBe(404);
+- const reclaim=await fetch(base+'/reclaim',{method:'POST',headers:other,body:JSON.stringify({proof})});expect(reclaim.status).toBe(200);expect((await fetch(url,{headers:owner})).status).toBe(404);expect((await fetch(url,{headers:other})).status).toBe(200);const preflight=await fetch(url,{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE','access-control-request-headers':'content-type,authorization'}});expect(preflight.status).toBe(204);expect(preflight.headers.get('access-control-allow-methods')?.split(/,\s*/)).toContain('DELETE');expect((await fetch(url,{method:'OPTIONS',headers:{origin:'https://forbidden.invalid','access-control-request-method':'DELETE'}})).status).toBe(403);const unrelated=await fetch(base+'/actions',{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE'}});expect(unrelated.headers.get('access-control-allow-methods')?.split(/,\s*/)).not.toContain('DELETE');expect((await fetch(url,{method:'DELETE',headers:owner})).status).toBe(404);const cookieOnly={cookie:other.cookie,origin:other.origin};expect((await fetch(url,{method:'DELETE',headers:cookieOnly})).status).toBe(403);expect((await fetch(url,{method:'DELETE',headers:{...cookieOnly,'x-csrf-token':other['x-csrf-token']}})).status).toBe(200);expect((await fetch(url,{headers:other})).status).toBe(404);expect((await readdir(directory)).some(n=>n==='replay-exports')).toBe(true);
++ const reclaim=await fetch(base+'/reclaim',{method:'POST',headers:other,body:JSON.stringify({proof})});expect(reclaim.status).toBe(200);expect((await fetch(base+'/world-display',{headers:owner})).status).toBe(404);expect((await fetch(base+'/world-display',{headers:other})).status).toBe(200);expect((await fetch(url,{headers:owner})).status).toBe(404);expect((await fetch(url,{headers:other})).status).toBe(200);const preflight=await fetch(url,{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE','access-control-request-headers':'content-type,authorization'}});expect(preflight.status).toBe(204);expect(preflight.headers.get('access-control-allow-methods')?.split(/,\s*/)).toContain('DELETE');expect((await fetch(url,{method:'OPTIONS',headers:{origin:'https://forbidden.invalid','access-control-request-method':'DELETE'}})).status).toBe(403);const unrelated=await fetch(base+'/actions',{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE'}});expect(unrelated.headers.get('access-control-allow-methods')?.split(/,\s*/)).not.toContain('DELETE');expect((await fetch(url,{method:'DELETE',headers:owner})).status).toBe(404);const cookieOnly={cookie:other.cookie,origin:other.origin};expect((await fetch(url,{method:'DELETE',headers:cookieOnly})).status).toBe(403);expect((await fetch(url,{method:'DELETE',headers:{...cookieOnly,'x-csrf-token':other['x-csrf-token']}})).status).toBe(200);expect((await fetch(url,{headers:other})).status).toBe(404);expect((await readdir(directory)).some(n=>n==='replay-exports')).toBe(true);
+  let release!:()=>void,started!:()=>void;block=new Promise<void>(r=>release=r);const began=new Promise<void>(r=>started=r);hooks.capture=started;const abort=new AbortController(),pending=fetch(base+'/replay',{method:'POST',headers:other,body:'{}',signal:abort.signal});await began;abort.abort();await expect(pending).rejects.toThrow();expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(429);release();block=undefined;let retry:Response|undefined;for(let i=0;i<50;i++){retry=await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'});if(retry.status!==429)break;await new Promise(r=>setTimeout(r,10));}expect(retry!.status).toBe(201);expect((await fetch(base+`/replay/${b.exportId}`,{headers:other})).status).toBe(200);expect((await readdir(join(directory,'replay-exports'))).filter(n=>n.startsWith('.replay-'))).toEqual([]);
+  await g.close();gateways.splice(gateways.indexOf(g),1);expect(await readdir(join(directory,'replay-exports'))).toEqual([]);
+ });
+ test('process caps two active captures and eight retained versions; close removes only owned exports',async()=>{
+  const {randomUUID}=await import('node:crypto'),original=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),directory=await mkdtemp(join(tmpdir(),'replay-global-limit-'));roots.push(directory);const ids=['mujoco_3d','mujoco_arm','mock_coffee'],catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>ids.includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};let hold:Promise<void>|undefined,started=0;
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:ids,portableChecks:async()=>['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{const id=randomUUID(),report=structuredClone(original.report);report.manifest.runId=id;report.physicsEvidence!.manifest.identity.runId=id;const capture={...original,report},view={run:{id,runRevision:0},tick:520} as RunView;await mkdir(p.directory,{recursive:true});return {id,captureReplay:async()=>{started++;if(hold)await hold;return capture;},report:async()=>report,snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:520,paused:true,runRevision:0})} as ScenarioRun;}}});gateways.push(g);const owner=await pair(g),runIds:string[]=[],project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
+  for(let n=0;n<5;n++){const r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:owner,body:JSON.stringify({project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(r.status).toBe(201);runIds.push((await r.json()).run.id);}
+  const post=(id:string)=>fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers:owner,body:'{}'});let release!:()=>void;hold=new Promise<void>(r=>release=r);const pending=[post(runIds[0]!),post(runIds[1]!)];for(let n=0;n<100&&started<2;n++)await new Promise(r=>setTimeout(r,5));expect(started).toBe(2);const denied=await post(runIds[2]!);expect(denied.status).toBe(429);expect((await denied.json()).error).toBe('REPLAY_CAPACITY');release();hold=undefined;expect((await Promise.all(pending)).map(r=>r.status)).toEqual([201,201]);for(const id of runIds.slice(2))for(let n=0;n<2;n++)expect((await post(id)).status).toBe(201);const max=await post(runIds[0]!);expect(max.status).toBe(429);expect((await max.json()).error).toBe('REPLAY_CAPACITY');expect(await readdir(join(directory,'replay-exports'))).toHaveLength(8);await g.close();gateways.splice(gateways.indexOf(g),1);expect(await readdir(join(directory,'replay-exports'))).toEqual([]);expect(await readdir(directory)).toHaveLength(6);
+ });
+ test('crash-stale or unknown export directories consume the bounded disk slots after restart and are never deleted',async()=>{
+diff --git a/tests/unit/web-replay-reader.test.ts b/tests/unit/web-replay-reader.test.ts
+index d9a6c32..b27c2b7 100644
+--- a/tests/unit/web-replay-reader.test.ts
++++ b/tests/unit/web-replay-reader.test.ts
+@@ -8,10 +8,14 @@ test('pure reader verifies digest, exposes capture-only aggregates, closes and r
+ test('bounds compressed, inflated, metadata, duplicate references and corrupt content',async()=>{const f=fixture(),read=async function*(){yield f.bytes;};for(const change of [(m:typeof f.manifest)=>{m.assets.push(m.assets[0]!);},(m:typeof f.manifest)=>{m.assets[0]!.bytes=REPLAY_LIMITS.assetCompressedBytes+1;},(m:typeof f.manifest)=>{m.assets[0]!.decodedBytes=REPLAY_LIMITS.assetDecodedBytes+1;}]){const m=structuredClone(f.manifest);change(m);await expect(openReplayPackage(JSON.stringify(m),read)).rejects.toThrow();}await expect(openReplayPackage(' '.repeat(REPLAY_LIMITS.manifestBytes+1),read)).rejects.toThrow(/LIMIT/);await expect(openReplayPackage(JSON.stringify(f.manifest),async function*(){yield Buffer.from('corrupt');})).rejects.toThrow(/HASH|SIZE/);const expansion=gzipSync(Buffer.alloc(2*1024*1024,32));const m=structuredClone(f.manifest);Object.assign(m.assets[0]!,{sha256:sha(expansion),bytes:expansion.length,decodedBytes:10});await expect(openReplayPackage(JSON.stringify(m),async function*(){yield expansion;})).rejects.toThrow(/DECODE|LIMIT/);});
+ test('cancel during load calls iterator cleanup and retains no package',async()=>{const f=fixture(),abort=new AbortController();let cleaned=false;const read=async function*(){try{yield f.bytes.subarray(0,5);abort.abort();yield f.bytes.subarray(5);}finally{cleaned=true;}};await expect(openReplayPackage(JSON.stringify(f.manifest),read,{signal:abort.signal})).rejects.toThrow(/ABORT/);expect(cleaned).toBe(true);});
+ test('rejects nested external render dependencies even beneath documents and never requests those URLs',async()=>{const f=fixture(),files=new Map<string,Uint8Array>([['report.json.gz',f.bytes]]);for(const value of [{textures:[{uri:'https://attacker.invalid/x.png'}]},{documents:[{nested:{uri:'https://attacker.invalid/x.bin'}}]},{mesh:{filename:'../outside.stl'}},{buffers:[{uri:'data:application/octet-stream;base64,AA=='}]}]){const raw=Buffer.from(JSON.stringify(value)),m=structuredClone(f.manifest);m.assets.push({path:'model.json',sha256:sha(raw),decodedSha256:sha(raw),bytes:raw.length,decodedBytes:raw.length,encoding:'identity',role:'model',mediaType:'application/json'} as never);files.set('model.json',raw);const asked:string[]=[];await expect(openReplayPackage(JSON.stringify(m),async function*(a){asked.push(a.path);yield files.get(a.path)!;})).rejects.toThrow(/EXTERNAL|NESTED/);expect(asked.every(p=>!p.includes('://'))).toBe(true);}});
+ test('checks exact stream order, missing chunks, sample limits, line and structure expansion before exposing rows',async()=>{const f=fixture();for(const lines of [[{tick:0},{tick:2}],Array.from({length:1001},()=>({tick:0})),[{tick:0,x:'x'.repeat(REPLAY_LIMITS.lineBytes)}]]){const plain=Buffer.from(lines.map(l=>JSON.stringify(l)).join('\n')+'\n'),bytes=gzipSync(plain),m=structuredClone(f.manifest);m.assets.push({path:'physics.ndjson.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'physics',mediaType:'application/x-ndjson'} as never);const scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[]}));m.assets.push({path:'scene.json',sha256:sha(scene),decodedSha256:sha(scene),bytes:scene.length,decodedBytes:scene.length,encoding:'identity',role:'scene',mediaType:'application/json'} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson.gz'],firstTick:0,lastTick:1,samples:2} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield a.path==='report.json.gz'?f.bytes:a.path==='scene.json'?scene:bytes;})).rejects.toThrow(/ORDER|COUNT|LINE/);}});
+ test('event cursor is unavailable without the Source clock, never guessed from an aggregate',async()=>{const f=fixture(),r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;});expect(r.eventsAt(6)).toEqual({events:null,reason:'EVENT_CLOCK_UNAVAILABLE'});r.close();});
+ test('refuses role/media and format disguises before any asset IO',async()=>{const f=fixture();for(const a of [{path:'trace.ndjson',role:'trace',mediaType:'application/x-ndjson',encoding:'identity'},{path:'model.json',role:'model',mediaType:'text/plain',encoding:'identity'},{path:'model.glb',role:'model',mediaType:'application/json',encoding:'identity'}]){const raw=Buffer.from('{"textures":[{"uri":"https://outside.invalid/texture.png"}]}'),m=structuredClone(f.manifest);m.assets.push({...a,sha256:'0'.repeat(64),decodedSha256:'0'.repeat(64),bytes:raw.length,decodedBytes:raw.length} as never);let calls=0;await expect(openReplayPackage(JSON.stringify(m),async function*(asset){calls++;yield asset.path==='report.json.gz'?f.bytes:raw;})).rejects.toThrow(/MANIFEST|FORMAT/);expect(calls).toBe(0);}});
+ test('hash-checks every admitted auxiliary role and abort after open clears owned metadata',async()=>{const f=fixture();for(const role of ['trace','profile','vendor','scene','model']){const raw=Buffer.from('{}'),m=structuredClone(f.manifest);m.assets.push({path:`${role}.json`,role,mediaType:'application/json',encoding:'identity',sha256:'0'.repeat(64),decodedSha256:sha(raw),bytes:raw.length,decodedBytes:raw.length} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield a.path==='report.json.gz'?f.bytes:raw;})).rejects.toThrow('REPLAY_ASSET_HASH');}const abort=new AbortController(),r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;},{signal:abort.signal});expect(r.capturedReport.manifest).toBeDefined();abort.abort();expect(r.capturedReport).toEqual({});await expect(r.readAsset('report.json.gz')).rejects.toThrow(/ABORT|CLOSED/);r.close();});
+ test('abort after a decoded sample disposes cache/report while caller-owned sample remains intact',async()=>{const f=fixture(),row={tick:0,simTimeNs:'0'},raw=Buffer.from(JSON.stringify(row)+'\n'),scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[]})),m=structuredClone(f.manifest),files=new Map<string,Uint8Array>([['report.json.gz',f.bytes],['physics.ndjson',raw],['scene.json',scene]]);for(const [path,bytes,role,mediaType]of [['physics.ndjson',raw,'physics','application/x-ndjson'],['scene.json',scene,'scene','application/json']] as const)m.assets.push({path,role,mediaType,encoding:'identity',sha256:sha(bytes),decodedSha256:sha(bytes),bytes:bytes.length,decodedBytes:bytes.length} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson'],firstTick:0,lastTick:0,samples:1} as never);const abort=new AbortController(),r=await openReplayPackage(JSON.stringify(m),async function*(a){yield files.get(a.path)!;},{signal:abort.signal}),sample=await r.sampleAt('physics',0);abort.abort();expect(r.capturedReport).toEqual({});expect(sample).toEqual(row);await expect(r.sampleAt('physics',0)).rejects.toThrow(/ABORT|CLOSED/);expect(()=>r.metricsAt(7)).toThrow(/ABORT|CLOSED/);r.close();});
+ test('abort at the final digest boundary cannot publish a reader',async()=>{const f=fixture(),abort=new AbortController(),digest=globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle);let hashes=0;const spy=vi.spyOn(globalThis.crypto.subtle,'digest').mockImplementation(async(...args)=>{const result=await digest(...args);if(++hashes===2)abort.abort();return result;});try{await expect(openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;},{signal:abort.signal})).rejects.toThrow('REPLAY_ABORTED');}finally{spy.mockRestore();}});
+ test('scene renderer references cannot disguise a model as metadata',async()=>{const f=fixture(),model=Buffer.from('{"textures":[{"uri":"https://outside.invalid/a.png"}]}'),row=Buffer.from('{"tick":0}\n'),scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[{path:'component.json',sha256:sha(model),bytes:model.length}]})),m=structuredClone(f.manifest),files=new Map([['report.json.gz',f.bytes],['bundle/component.json',model],['scene.json',scene],['physics.ndjson',row]]);for(const [path,b,role,mediaType]of [['bundle/component.json',model,'vendor','application/json'],['scene.json',scene,'scene','application/json'],['physics.ndjson',row,'physics','application/x-ndjson']] as const)m.assets.push({path,role,mediaType,encoding:'identity',sha256:sha(b),decodedSha256:sha(b),bytes:b.length,decodedBytes:b.length} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson'],firstTick:0,lastTick:0,samples:1} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield files.get(a.path)!;})).rejects.toThrow('REPLAY_MODEL_REF_IDENTITY');});
++
++test('stored-byte export preserves original gzip identity and keeps validation/cancellation bounds',async()=>{const f=fixture(),abort=new AbortController();let corrupt=false;const r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield corrupt?Buffer.alloc(f.bytes.length):f.bytes;},{signal:abort.signal});const stored=await r.readStoredAsset('report.json.gz');expect(Buffer.from(stored)).toEqual(f.bytes);expect(sha(stored)).toBe(f.manifest.assets[0]!.sha256);expect(await r.readAsset('report.json.gz')).not.toEqual(stored);stored.fill(0);expect(Buffer.from(await r.readStoredAsset('report.json.gz'))).toEqual(f.bytes);corrupt=true;await expect(r.readStoredAsset('report.json.gz')).rejects.toThrow('REPLAY_ASSET_HASH');await expect(r.readStoredAsset('../secret')).rejects.toThrow('REPLAY_ASSET_NOT_ADMITTED');abort.abort();await expect(r.readStoredAsset('report.json.gz')).rejects.toThrow('REPLAY_ABORTED');});
++
++test('stored-byte identity assets remain exact and close prevents further reads',async()=>{const f=fixture(),plain=Buffer.from(JSON.stringify({manifest:{runId:'run-1'},outcome:{tick:7}})),asset=f.manifest.assets[0]!;Object.assign(asset,{path:'report.json',encoding:'identity',bytes:plain.length,decodedBytes:plain.length,sha256:sha(plain),decodedSha256:sha(plain)});const r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield plain;});expect(Buffer.from(await r.readStoredAsset(asset.path))).toEqual(plain);r.close();await expect(r.readStoredAsset(asset.path)).rejects.toThrow('REPLAY_CLOSED');});
+diff --git a/tests/unit/world-runner.test.ts b/tests/unit/world-runner.test.ts
+index bfb4e8d..bd4e06d 100644
+--- a/tests/unit/world-runner.test.ts
++++ b/tests/unit/world-runner.test.ts
+@@ -26,21 +26,21 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
+  const catalog:CapabilityCatalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b),sets:{...defaultCatalog.sets,'test-world':{...defaultCatalog.sets['engineering-mujoco-arm-v1']!,backends:['mujoco_3d','mujoco_arm','mock_coffee'],providers:{amr:'mujoco_3d',arm:'mujoco_arm',coffee:'mock_coffee'},execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1],composition:'single_world'}}}};
+  const scene=JSON.parse(await readFile(fx+'/lab-world-scene.json','utf8'));
+  const snap=(tick:number):Sim3DSnapshotV1=>({schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(tick+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'assigned',bootId:'engine-boot',seq:String(tick+1),tick,simTimeNs:String(tick*20_000_000),sceneDigest:scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[.35+tick*.001,.48591366218667575,Math.PI/2],bodyVelocity:[.05,0],collisionIds:[],scans:[],pose3d:{z:.09,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:scene.armCell.arm.homeRad,velocitiesRadS:[0,0,0,0,0,0],collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:[]});
+  const fixture=await readWorldFixture(resolve('robotics/simulation-mujoco')),admission=prepareWorldAdmission(fixture.scene,fixture.files);
+  const directory=await runDirectory(),evidenceDirectory=join(directory,'actual-world-evidence'),calls:string[]=[];let opens=0,committed=snap(0),ctx:WorldFactoryInput['context'];
+  const factory:WorldPortsFactory=async input=>{opens++;ctx=input.context;committed={...snap(0),runId:input.runId};
+   const adapter={observe:()=>()=>{},describe:async()=>({id:'amr-1'}),requestStop:async()=>({acknowledged:true,physicalStopConfirmed:false}),reconcile:async()=>({status:'unknown'})} as unknown as RobotAdapter;
+   const rec=failure?.startsWith('flush-')?await openWorldRecorder({directory:evidenceDirectory,admission,runId:input.runId,bootId:'engine-boot',chunkTicks:2}):undefined;
+   const coffee=createMockCoffeePorts(input.state,input.context,input.newBootId,reporting?{tracking:{reachTolRad:.01,settleTicks:1,followTolRad:1,followTicks:1}}:{}),advance=coffee.advance;
+   if(reporting){const baseReport=coffee.report;coffee.report=()=>({...baseReport(),armPlant:{engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',tracking:{samples:0,peakRad:Array(6).fill(0),rmsRad:Array(6).fill(0)}},armCell:{waypoints:{digest:'nonnative-report-fixture',table:[]},allowedContacts:[],releaseTimeoutTicks:25,notes:['Nonnative publication seam only']}});coffee.armReportState=async tick=>{const state=structuredClone(input.state.arm);state.tracking!.trace=Array.from({length:tick+1},(_,n)=>({tick:n,actualRad:[...state.q],commandedRad:[...state.q]}));state.tracking!.props=Array.from({length:tick+1},(_,n)=>({tick:n,props:[]}));return {async materialize(){return {state,worldTrace:{method:'world-committed-trace-v1',scope:'all_world_ticks',publicCommittedTick:tick,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:0,firstTick:0,lastTick:tick,samples:tick+1,reasonCodes:[]},worldSweep:unavailableWorldSweep(tick,['NONNATIVE_PUBLICATION_FIXTURE'])};}};};}
+-  if(failure==='coffee-commit')coffee.advance=async()=>{await advance();throw Error('COFFEE_COMMIT_FAILED');};return {navigation:{mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map((p:{id:string;x:number;y:number})=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:Math.PI/2}]))},robots:new Map([['amr-1',adapter]]),coffee,snapshot:()=>committed,
++  if(failure==='coffee-commit')coffee.advance=async()=>{await advance();throw Error('COFFEE_COMMIT_FAILED');};return {navigation:{mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map((p:{id:string;x:number;y:number})=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:Math.PI/2}]))},robots:new Map([['amr-1',adapter]]),coffee,displayScene:()=>structuredClone(scene),snapshot:()=>committed,
+    evidence:rec?{async append(s){const p=physicsTick(s.tick);p.loads=[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';await rec.append({...s,physics:p},s.tick?{targetTick:s.tick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]}:null);},fail:rec.fail,finish:rec.finish}:{async append(s){calls.push(`append:${s.tick}`);if(failure==='append'&&s.tick>0)throw Error('DISK_FAILED');},async fail(e){calls.push(`fail:${e.lastCommittedTick}:${e.targetTick}:${e.ackTick}`);},async finish(){calls.push('finish');}},
+    world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
+  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
+  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
+  const open=()=>createScenarioRun(manifest,providers);return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
+ }
+ test('world path never constructs/advances mock AMR and commits actual pose with target observation time',async()=>{
+  const h=await setup();vi.spyOn(MockPlant.prototype,'advance').mockImplementation(()=>{throw Error('MOCK_ADVANCE_FORBIDDEN');});
+  const run=await h.open();try{await run.start();const v=await act(run,'step',{ticks:1});expect(((await h.source().read('robot','amr-1')).state.bindings as Record<string,{yaw:number}>)['coffee-pickup']!.yaw).toBe(Math.PI/2);expect(v.tick).toBe(1);expect(v.entities[0]!.pose.x).toBe(.351);expect(h.calls).toContain(`commit:1:1:${Date.parse('2026-11-01T00:00:00Z')+20}`);expect(h.calls.slice(0,4)).toEqual(['append:0','prepare:1','step:1','append:1']);}finally{await run.close();}
+ });
+@@ -76,10 +76,24 @@ test('two same-H report materializations coalesce trace and props publication wh
+ });
+ 
+ test('Source replay capture uses the same nonmultiple-of-five horizon while a later action proceeds',async()=>{
+  const h=await setup(undefined,true),run=await h.open();try{await run.start();await act(run,'step',{ticks:7});expect(typeof run.captureReplay).toBe('function');const p=run.captureReplay!();await act(run,'step',{ticks:1});const c=await p;expect(c.report.outcome.tick).toBe(7);expect((await run.snapshot()).tick).toBe(8);expect(c.report.arm!.worldTrace!.publicCommittedTick).toBe(7);expect(c.world).toBeUndefined();}finally{await run.close();}
+ });
+ test('replay capture materialization never holds Source actions while immutable trace publication is blocked',async()=>{
+  const h=await setup(undefined,true),run=await h.open(),blocked=publicationGate(),entered=publicationGate(),write=durable.writeDurable;let capture:ReturnType<NonNullable<typeof run.captureReplay>>|undefined;
+  vi.spyOn(durable,'writeDurable').mockImplementation(async(dir,name,bytes)=>{if(dir===h.directory&&/^arm-trace-/.test(name)){entered.release();await blocked.promise;}await write(dir,name,bytes);});
+  try{await run.start();await act(run,'step',{ticks:7});capture=run.captureReplay!();await entered.promise;const next=act(run,'step',{ticks:1});expect(await Promise.race([next.then(v=>v.tick),new Promise(r=>setTimeout(()=>r('ACTION_BLOCKED_BY_EXPORT'),2000))])).toBe(8);blocked.release();const c=await capture;expect(c.report.outcome.tick).toBe(7);expect((await readArmTrace(h.directory,c.report.arm!)).samples.at(-1)!.tick).toBe(7);}finally{blocked.release();await capture?.catch(()=>{});await run.close();}
+ });
++
++test('read-only world display clones one committed H/control and keeps action receipts bounded',async()=>{
++ const h=await setup(),run=await h.open();try{
++  expect(typeof run.worldDisplay).toBe('function');const scene=await run.worldDisplayScene!();expect(scene).toMatchObject({availability:'available',scene:{sceneDigest:expect.any(String)}});scene.scene!.sceneDigest='mutated';expect((await run.worldDisplayScene!()).scene!.sceneDigest).not.toBe('mutated');const zero=await run.worldDisplay!();expect(zero).toMatchObject({tick:0,availability:'valid',control:null,controlReason:'NOT_RECORDED_AT_TICK'});
++  await run.start();await act(run,'step',{ticks:7});const a=await run.worldDisplay!();expect(a.tick).toBe(7);expect(a.snapshot!.tick).toBe(7);a.snapshot!.robots[0]!.poseDriveMap[0]=999;expect((await run.worldDisplay!()).snapshot!.robots[0]!.poseDriveMap[0]).not.toBe(999);
++  const cp=JSON.parse(await readFile(join(h.directory,'run.json'),'utf8'));expect(Object.values(cp.receipts).every((r:unknown)=>!JSON.stringify(r).includes('worldStep'))).toBe(true);expect(cp.world.committedDisplay.command.targetTick).toBe(7);expect(JSON.stringify(cp.world.committedDisplay).length).toBeLessThan(2048);
++ }finally{await run.close();}
++ const reopened=await h.open();try{expect(await reopened.worldDisplay!()).toMatchObject({tick:7,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});}finally{await reopened.close();}
++});
++test('failed H+1 ACK never becomes a public world display observation or control',async()=>{
++ const h=await setup('commit'),run=await h.open();try{await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow();expect(await run.worldDisplay!()).toMatchObject({tick:0,availability:'stale',reason:'WORLD_UNKNOWN',snapshot:{tick:0},control:null});}finally{await run.close();}
++});
++
++test('display read queued behind an in-flight action publishes a single settled H/revision',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(false);gate.release();const after=await action,d=await display;expect(d).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7}});}finally{gate.release();await run.close();}});
+diff --git a/tests/unit/world-sweep.test.ts b/tests/unit/world-sweep.test.ts
+index 5a669d2..897cc5c 100644
+--- a/tests/unit/world-sweep.test.ts
++++ b/tests/unit/world-sweep.test.ts
+@@ -1,15 +1,15 @@
+ import {expect,test} from 'vitest';
+ import {resolve} from 'node:path';
+ import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
+ import {prepareWorldAdmission} from '../../packages/lab-runtime/src/v2/simulation3d/world-evidence';
+-import {evaluateWorldSweep} from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
++import {evaluateWorldSweep,evaluateWorldSweepAsync} from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
+ import {tick} from '../support/physics';
+ import type {WorldEvidenceRecord} from '../../packages/contracts/generated/navigation2d';
+ import type {WorldControl} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
+ const idle:WorldControl={version:1,program:null,attachmentProxyPropId:null,movementInterlocked:false,stopLatched:false};
+ async function fixture(count:number,q?:number[]){const f=await readWorldFixture(resolve('robotics/simulation-mujoco'),'coffee-delivery-cell-v1'),admission=prepareWorldAdmission(f.scene,f.files),records:WorldEvidenceRecord[]=[];
+  for(let n=0;n<=count;n++){const p=tick(n),x=.35+n*1e-7,y=.48591366218667575,quat=[0,0,Math.SQRT1_2,Math.SQRT1_2];p.loads=[];p.contacts=[];for(const b of p.base){b.robotId='amr-1';b.poseMap={positionM:[x,y,.09],quaternionXyzw:quat};b.rollRad=0;b.pitchRad=0;}for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry){o.robotId='amr-1';o.poseDriveMap=[x,y,Math.PI/2];}
+  records.push({snapshot:{schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(n+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'world-unit',bootId:'world-boot',seq:String(n+1),tick:n,simTimeNs:String(n*20_000_000),sceneDigest:f.scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[x,y,Math.PI/2],bodyVelocity:[0,0],collisionIds:[],scans:[],pose3d:{z:.09,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:q??f.scene.armCell.arm.homeRad,velocitiesRadS:Array(6).fill(0),collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:[],physics:p},command:n?{targetTick:n,velocities:[{robotId:'amr-1',vMps:0,omegaRadps:0}],actorUpdates:[],jointTargets:[{armId:'arm-1',positionsRad:q??f.scene.armCell.arm.homeRad}],gripperTargets:[{armId:'arm-1',openingM:.0889}],propPlacements:[],worldControl:structuredClone(idle)}:null,interactions:[]});}
+  return {admission,records,authority:{runId:'world-unit',bootId:'world-boot',sceneDigest:f.scene.sceneDigest,lastCommittedTick:count,businessEpochMs:0},journal:[]};
+ }
+ test('world full sweep covers more than4096 changing admitted geometry intervals without the legacy cache',async()=>{
+@@ -25,10 +25,13 @@ test('same actual support contact becomes forbidden across the Source program ph
+  h.records[1]!.command!.worldControl={...idle,movementInterlocked:true,program:{commandId:'c',transferId:'t',cupId:'cup-1',sourceEventId:'source:0',payloadHash:'0'.repeat(64),controlEpoch:1,programId:'cup-pick',stage:1,waypoint:'pick'}};
+  const journal=[{entryId:'source',organizationId:'lab-world-unit',venueId:'simulation',recordedAt:new Date(0).toISOString(),payload:{events:[{type:'CupTransferRequested',data:{kind:'cup',id:'cup-1',state:{pendingTransfer:{commandId:'c',transferId:'t',payloadHash:'0'.repeat(64),controlEpoch:1,to:{kind:'arm',id:'arm-1'}}}}}]}}];
+  const r=evaluateWorldSweep(h.records,h.admission,journal,h.authority,true);expect(r.geometry.checkedIntervals).toBe(2);expect(r.status).toBe('fail');expect(r.geometry.firstFailure?.tick).toBe(2);expect(r.geometry.firstFailure?.pair).toContain('support/nozzle-stand');
+ });
+ test('direct sweep review rejects oversized observations and Source journals before geometric work',async()=>{
+  const h=await fixture(1);(h.records[1] as unknown as {padding:string}).padding='x'.repeat(256*1024);
+  const rows=evaluateWorldSweep(h.records,h.admission,[],h.authority,true);expect(rows.reasonCodes).toContain('WORLD_SWEEP_READ_LIMIT');expect(rows.geometry.checkedIntervals).toBe(0);
+  const g=await fixture(1),entry={entryId:'j',organizationId:'lab-world-unit',venueId:'simulation',recordedAt:new Date(0).toISOString(),payload:{events:[]}};
+  const journal=evaluateWorldSweep(g.records,g.admission,Array(10001).fill(entry),g.authority,true);expect(journal.reasonCodes).toContain('WORLD_SOURCE_JOURNAL_READ_LIMIT');expect(journal.geometry.checkedIntervals).toBe(0);
+ });
++
++test('cooperative sweep keeps exact synchronous results/callback order for nominal, fault, invalid and Source mismatch',async()=>{const f=await readWorldFixture(resolve('robotics/simulation-mujoco'),'coffee-delivery-cell-v1'),pick=JSON.parse(Buffer.from(f.files.get('programs.json')!).toString()).programs.waypoints.pick;for(const mode of ['nominal','fault','invalid','source'] as const){const h=await fixture(96,mode==='fault'?pick:undefined);if(mode==='invalid')h.records[20]!.snapshot.tick=999;if(mode==='source')h.records[50]!.command!.worldControl={...idle,movementInterlocked:true,program:{commandId:'c',transferId:'t',cupId:'cup-1',sourceEventId:'missing:0',payloadHash:'0'.repeat(64),controlEpoch:1,programId:'cup-place',stage:0,waypoint:'high'}};const sync:number[]=[],asyncTicks:number[]=[],expected=evaluateWorldSweep(h.records,h.admission,[],h.authority,true,t=>sync.push(t)),actual=await evaluateWorldSweepAsync(h.records,h.admission,[],h.authority,true,t=>asyncTicks.push(t));expect(expected.status).toBe(mode==='nominal'?'pass':mode==='fault'?'fail':'not_run');expect(actual).toEqual(expected);expect(asyncTicks).toEqual(sync);}});
++test('cooperative prevalidation and full sweep allow event loop progress before completion',async()=>{const h=await fixture(256);let progress=0,complete=false;const pulse=()=>{if(!complete){progress++;setImmediate(pulse);}};setImmediate(pulse);try{const r=await evaluateWorldSweepAsync(h.records,h.admission,[],h.authority,true);expect(r.geometry.checkedIntervals).toBe(256);expect(progress).toBeGreaterThanOrEqual(16);}finally{complete=true;}});

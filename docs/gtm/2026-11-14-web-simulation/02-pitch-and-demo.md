@@ -1,5 +1,8 @@
 # 02 — Pitch và demo
 
+**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+
+
 Bản dùng **sau D0**, chỉ khi các cảnh được nhắc đã qua checklist [06](06-measurement-and-launch.md). Trước D0 dùng “chúng tôi đang hoàn thiện mô phỏng” và mời buổi xem nội bộ có hướng dẫn. Toàn bộ số lượng khách, giá và kết quả kinh doanh phải lấy dữ liệu thật trước khi thêm vào deck.
 
 ## Bài nói 30 giây

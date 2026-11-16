@@ -1,0 +1,674 @@
+{
+  "schema": "root-current-r1-audit/1",
+  "at": "2026-11-15T20:41:49.505534+00:00",
+  "qualification": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r1/qualification.json",
+    "bytes": 577541,
+    "sha256": "4dede52285ed09b5e23b189c7b1ca125eafa4c38e7ad2f5d0877b18330f62fff"
+  },
+  "identity": {
+    "before": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "locks": {
+        "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+        "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+        "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+        "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+        "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+      },
+      "webots": {
+        "version": "Webots version: R2025a",
+        "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+      },
+      "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+      "at": "2026-11-15T17:58:47.819Z"
+    },
+    "after": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "locks": {
+        "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+        "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+        "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+        "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+        "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+      },
+      "webots": {
+        "version": "Webots version: R2025a",
+        "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+      },
+      "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+      "at": "2026-11-15T18:25:29.553Z"
+    },
+    "identityStable": true
+  },
+  "lab": {
+    "commit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+    "dirty": false,
+    "pin": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+    }
+  },
+  "gates": {
+    "G-ALG1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "ALG01",
+        "ALG02",
+        "ALG03",
+        "ALG05"
+      ]
+    },
+    "G-ALG2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "PID01",
+        "PID02",
+        "PID03"
+      ]
+    },
+    "G-WB1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "WB01",
+        "WB02",
+        "WB08"
+      ]
+    },
+    "G-WB2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "WB03",
+        "WB04",
+        "WB05",
+        "WB06",
+        "WB07"
+      ]
+    },
+    "G-INT2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "INT11",
+        "INT12"
+      ]
+    },
+    "G-REG1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "REG01"
+      ]
+    }
+  },
+  "notRun": [
+    {
+      "id": "ALG04",
+      "reason": "R3: the joint trace needs a running LinuxCNC bridge"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "file": "suites/alg-ts.log",
+      "bytes": 1034,
+      "sha256": "dfdc05cece978d9ed3edeadf3143b8188752632c844109b3af5590a0b9675410"
+    },
+    {
+      "file": "suites/alg-ts.json",
+      "bytes": 8860,
+      "sha256": "182c2809b8890af5cf68c1be7848812f39aad06396340555b5b8e67a1fd96894"
+    },
+    {
+      "file": "suites/alg-py.log",
+      "bytes": 99,
+      "sha256": "8c11921f7c2b5e6e277512f16467611c557d759d4fcbbca12010e014c4c7083b"
+    },
+    {
+      "file": "suites/alg-py.xml",
+      "bytes": 1814,
+      "sha256": "e8d37a9278951e5c8d3d0aa904e39602b5e654f5c20dcaaf2f0be86119d0823a"
+    },
+    {
+      "file": "suites/wb-static.log",
+      "bytes": 472,
+      "sha256": "626c74872f683f690fe3bb95fcbf460d2275bdc635ec3b5007ae14812b372846"
+    },
+    {
+      "file": "suites/wb-static.json",
+      "bytes": 8298,
+      "sha256": "f5fcaf174097c052099bb9e5b480a6ac38d5096e6815bdb2bb2ff18324f519b5"
+    },
+    {
+      "file": "suites/wb-py.log",
+      "bytes": 179,
+      "sha256": "a0170fbdeff1bf18fb1a1c71901c346095ecfe315ce0ac25bfabc8c8c7ffdd15"
+    },
+    {
+      "file": "suites/wb-py.xml",
+      "bytes": 9524,
+      "sha256": "9992670ea204714236fbcb25346f57723b53e931d8558849d4085f51c6727f8b"
+    },
+    {
+      "file": "suites/wb-worker.log",
+      "bytes": 1434,
+      "sha256": "e108fb6f7ca6c87601b8ec16735c6b0c81c9a1b39f6bae35420baf15d7444601"
+    },
+    {
+      "file": "suites/wb-worker.json",
+      "bytes": 5244,
+      "sha256": "d06b2fb4d2ffb0ff2ed591361febdbd912956a02f2fc8b43db23bb5898dc7c98"
+    },
+    {
+      "file": "suites/wb-mission.log",
+      "bytes": 493,
+      "sha256": "b197337539d67d7c0f4419fd801a06727c77fa5eb53d5ee7fa34acf7d682a58f"
+    },
+    {
+      "file": "suites/wb-mission.json",
+      "bytes": 1039,
+      "sha256": "87d0d0cc27ee39e7d8fcd3ce106e83b52e5f6d0ebb1ef351044bf27a7ef03b0b"
+    },
+    {
+      "file": "suites/wb-fleet.log",
+      "bytes": 515,
+      "sha256": "ea09943cd3cda09ac51a3ff82fed9e559712ccecb6c04103538a8339e4c24133"
+    },
+    {
+      "file": "suites/wb-fleet.json",
+      "bytes": 1082,
+      "sha256": "dc636192dc7bac79e01b2f122b0d1c22993ad9d213d20da7d2fded2e613a82e5"
+    },
+    {
+      "file": "suites/wb-faults.log",
+      "bytes": 2352,
+      "sha256": "476ad9649df5688b708a8b8dc9b87ce120be10c337e207d736302f653fb45151"
+    },
+    {
+      "file": "suites/wb-faults.json",
+      "bytes": 4537,
+      "sha256": "e871025d4a3ceb4765129f4559ba9a6e1aea624033bc656a2b8d8585c8531281"
+    },
+    {
+      "file": "suites/wb-evidence.log",
+      "bytes": 855,
+      "sha256": "53d2a271195640cfff7e9aea8b7eebd531adf0b9ead66054d09b12fcedf0e705"
+    },
+    {
+      "file": "suites/wb-evidence.json",
+      "bytes": 1398,
+      "sha256": "b8af9093691fb292a3f40b9df77bcb026093af943b4ccc73bd5256aa6fb35986"
+    },
+    {
+      "file": "suites/wb-batch.log",
+      "bytes": 545,
+      "sha256": "0446937fbe2a87134865dec06c2a7d9ad15fb1c98a93207f0a49d99bf0923419"
+    },
+    {
+      "file": "suites/wb-batch.json",
+      "bytes": 2080,
+      "sha256": "48ca0fde604dad67dad6c40ed5ad5cccac2235ee842b0fe3f6933557f4fb83ad"
+    },
+    {
+      "file": "suites/int-regress.log",
+      "bytes": 4915,
+      "sha256": "d4ec8efcbaddfb1f7834bb1d996d7716b006b8c7c51bd4d03bfb2adbba4e4f97"
+    },
+    {
+      "file": "suites/int-regress.json",
+      "bytes": 29391,
+      "sha256": "37e8e975ba025b93981ec4b8208ccc70ae316301a319e9f7bfcc1fc95473dcf2"
+    },
+    {
+      "file": "suites/lab-unit.log",
+      "bytes": 843,
+      "sha256": "95f2d84547da24fe8f8aa30f71b453dcb9e1085aca7dac5d4e9e560c4f862497"
+    },
+    {
+      "file": "suites/lab-unit.json",
+      "bytes": 14820,
+      "sha256": "082763a6a1189db3f96db04897bb9e813e32fa96d5801bc9e299a0bdb1ac8e9c"
+    },
+    {
+      "file": "suites/lab-e2e-webots-journey.log",
+      "bytes": 1068,
+      "sha256": "16912a7b355e0646124258a08a1a4cb716f2d38a14fa64e193af585c5e2a858e"
+    },
+    {
+      "file": "suites/lab-e2e-webots-journey.json",
+      "bytes": 3992,
+      "sha256": "bc55e645172b5d6a6450ac3c36d4168d495b3752dc01f290bc470faa74b8a3b1"
+    },
+    {
+      "file": "suites/lab-e2e-webots-fleet.log",
+      "bytes": 1077,
+      "sha256": "2a6b116e5c7ab73624bbdf4799c1f45eb8a90b17671911366c2c0ac23e658615"
+    },
+    {
+      "file": "suites/lab-e2e-webots-fleet.json",
+      "bytes": 4005,
+      "sha256": "72a1a68cc5236ee5b7e8cbc4e3e6f86f127dfb1dc53483dca920912ce460f6f9"
+    },
+    {
+      "file": "suites/algorithm.log",
+      "bytes": 109,
+      "sha256": "468be5a8cc6eecb4f673baf4fcac350c4b67b0ebe00862192e0b652f449cc0c7"
+    },
+    {
+      "file": "suites/licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "suites/performance.log",
+      "bytes": 274,
+      "sha256": "cdf6c0f1b18f9852fae2b4d8d888ae03b4ad95b37ac6d496536c9dc30e556638"
+    },
+    {
+      "file": "campaign/summary.json",
+      "bytes": 32780,
+      "sha256": "06b5f2ad36e22f5ddcbc827e0f4dffd0dafd863a75683bead7fccf84a74a5a85"
+    },
+    {
+      "file": "algorithm-results.json",
+      "bytes": 6147,
+      "sha256": "dfd60463701bff084e4880f6ed5cae71fe318871a1418188377b4ec4c963f30d"
+    },
+    {
+      "file": "irsim-record.json",
+      "bytes": 357894,
+      "sha256": "08bf233a2c1e4c46928b0cbacd36393c2821afaf61db337b5c4ea635d7b44c37"
+    },
+    {
+      "file": "mock-regression.json",
+      "bytes": 55332,
+      "sha256": "acc8fea1a814e5c04edc698290d093974aafd006037c4c014f7bfae9c5d675e8"
+    },
+    {
+      "file": "performance.json",
+      "bytes": 1069,
+      "sha256": "0b63fc2c0fed224388529d4e119eafae5eb8445d16ed80c4375ac225b93a32a8"
+    }
+  ],
+  "suiteResults": [
+    {
+      "id": "alg-ts",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0,
+        "total": 26
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "alg-py",
+      "kind": "pytest",
+      "derivedCounts": {
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "total": 16
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "counterScope": "raw header regex only"
+    },
+    {
+      "id": "wb-static",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0,
+        "total": 25
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-py",
+      "kind": "pytest",
+      "derivedCounts": {
+        "passed": 78,
+        "failed": 0,
+        "skipped": 0,
+        "total": 78
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "counterScope": "raw header regex only"
+    },
+    {
+      "id": "wb-worker",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "total": 14
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-mission",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-fleet",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-faults",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "total": 10
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-evidence",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-batch",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "total": 4
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "int-regress",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 76,
+        "failed": 0,
+        "skipped": 0,
+        "total": 76
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-unit",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 42,
+        "failed": 0,
+        "skipped": 0,
+        "total": 42
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-e2e-webots-journey",
+      "kind": "playwright",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-e2e-webots-fleet",
+      "kind": "playwright",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    }
+  ],
+  "algorithmCases": [
+    {
+      "id": "ALG01",
+      "verdict": "pass"
+    },
+    {
+      "id": "ALG02",
+      "verdict": "pass"
+    },
+    {
+      "id": "ALG03",
+      "verdict": "pass"
+    },
+    {
+      "id": "ALG05",
+      "verdict": "pass"
+    },
+    {
+      "id": "PID01",
+      "verdict": "pass"
+    },
+    {
+      "id": "PID02",
+      "verdict": "pass"
+    },
+    {
+      "id": "PID03",
+      "verdict": "pass"
+    }
+  ],
+  "campaignCases": 20,
+  "expectedEvidenceGap": {
+    "id": "020-WB-FD01-enginekill-serve-3d-v1-s5-r1",
+    "scenarioId": "WB-FD01-enginekill",
+    "fixtureId": "serve-3d-v1",
+    "seed": 5,
+    "repeat": 1,
+    "result": "pass",
+    "kind": "operator_fault",
+    "label": "WB05: the Webots process is killed between steps on the table leg; leg unknown, no resend, no second engine, cargo kept, the unknown tick a recorded gap",
+    "stepTicks": 500,
+    "evidenceComplete": false,
+    "evidenceAsExpected": true,
+    "reasons": [],
+    "reasonsTruncated": false,
+    "assertions": [
+      {
+        "id": "IDENTITY_BOUND",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SERVED_BEFORE_HANDOFF",
+        "result": "pass"
+      },
+      {
+        "id": "BUSINESS_OUTCOME",
+        "result": "pass"
+      },
+      {
+        "id": "EVIDENCE_GAP_AS_DECLARED",
+        "result": "pass"
+      },
+      {
+        "id": "CARGO_KEPT",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SECOND_WORKER",
+        "result": "pass"
+      }
+    ],
+    "digests": {
+      "trajectoryDigest": "5a550f25a3615d90e478bbb2e2659cb4ee08cc27529099a83256c6067b3dc3ee",
+      "sensorDigest": "848fb35cce7e8fc05705de2df7babb92d2f119be3d23e302846bf23535fa73c5",
+      "assertionDigest": "08c9d125b91302849f1278c502370adbe8fded73338c47600a04d8125aacad30",
+      "outcomeDigest": "d2583d12cfa91d6eb55fdda29dd27517ec20e88669fc838643e710b1e9055ad6"
+    },
+    "outcome": {
+      "status": "needs_attention",
+      "served": "0",
+      "tick": 1600,
+      "simTimeNs": "32000000000"
+    },
+    "wallMs": 11179
+  },
+  "receipts": [
+    {
+      "name": "record-r1",
+      "sha256": "6876767babe4be80dbdc43b40c3c9ab7704fb4b81624229b3bca25391df43aa0",
+      "exitCode": 0,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T17:58:47.310Z",
+      "finishedAt": "2026-11-15T18:25:30.384Z",
+      "logSha256": "54a461891b7f48b38b1c426885d7dec574d80281de3c6996bfd2922494ef2c50"
+    },
+    {
+      "name": "acceptance-r1",
+      "sha256": "d5f9cace744f1f3aee2f0d2f0977c6767a7d87c97c6957ade376bc4c22e153bd",
+      "exitCode": 1,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T18:25:30.722Z",
+      "finishedAt": "2026-11-15T18:25:32.030Z",
+      "logSha256": "4e166daefb486d4cc94c876d30c0cd041c0ab3c873dc4209ed92b30e43c6ff35"
+    },
+    {
+      "name": "acceptance-r1-staged",
+      "sha256": "18f0fd3e2a66462e2ffc3e09e0e7e3b8a31a5483e66ecd1478922932cd5fd4fa",
+      "exitCode": 0,
+      "signal": null,
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/source",
+      "startedAt": "2026-11-15T20:31:31.630Z",
+      "finishedAt": "2026-11-15T20:31:33.297Z",
+      "logSha256": "37f444a8f674ea63f303e6a7e6fa3916e6015c6d0b24083946f1a6c80beeb74a"
+    }
+  ],
+  "officialManifestMembership": [
+    {
+      "candidate": "irsim",
+      "filesIncludingQualification": 1603,
+      "bytes": 70037176,
+      "exactOfficialManifestMembership": true
+    },
+    {
+      "candidate": "r1",
+      "filesIncludingQualification": 2588,
+      "bytes": 139840241,
+      "exactOfficialManifestMembership": true
+    }
+  ],
+  "membershipByteVerification": "All4191original/staged entries already independently hashed in root-final-981-r1-staged-audit.json SHAfe175c32f01fef5158affa78534ce1e1b380e75dd51bd86404fc78b86e7705b2; this audit proves exact equality with official IR/R1 artifact lists plus qualification files.",
+  "performance": {
+    "schemaVersion": 1,
+    "documentType": "webots-performance-measurement",
+    "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches; the first batch includes the first-world load",
+    "host": {
+      "platform": "darwin",
+      "release": "25.5.0",
+      "arch": "arm64",
+      "cpu": "Apple M2 Pro",
+      "cpus": 10,
+      "memGiB": 16,
+      "node": "v24.22.2",
+      "webots": "0ba7fdf2603a0b5c",
+      "basicTimeStepMs": 20
+    },
+    "workload": {
+      "scenarioId": "WB-FD07",
+      "fixtureId": "serve-3d-fleet-v1",
+      "ticks": 1500,
+      "simSeconds": 30,
+      "finalStatus": "running",
+      "outcome": {
+        "status": "running",
+        "served": "0",
+        "tick": 1500,
+        "simTimeNs": "30000000000"
+      },
+      "outputBytes": 3199175
+    },
+    "steadyState": {
+      "batches": 30,
+      "perTickMs": {
+        "p50": 5.61090168,
+        "p95": 11.42832668,
+        "max": 11.988690839999999
+      },
+      "realtimeFactor": 2.6120749958076197,
+      "wallSeconds": 11.485121999999999,
+      "webotsRssMiB": {
+        "max": 296.03125,
+        "samples": 30
+      },
+      "controllersRssMiB": {
+        "max": 53.984375
+      }
+    }
+  },
+  "limits": [
+    "ALG04 remains not_run; no LinuxCNC/native/physical or human acceptance.",
+    "Original publicguard11pass1fail external layout remains failed; separate exact staged complete12pass has data-only dirtiness, not clean production execution.",
+    "Malformed Python XML retains raw regex counters only; no standard JUnit validity claim.",
+    "Webots30simseconds timing is batch-mean local measurement with first-world load; not full-cell web draw/1x benchmark.",
+    "No tests or campaigns rerun by root."
+  ]
+}

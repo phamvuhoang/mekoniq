@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:02.500225+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-r2a-supplemental-headless.tar.gz",
+  "archiveSha256": "bdbddd7df0abb7b96042faff9f88f9bf9261ff31be648f22033b1a51b5b3d480",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-r2a-supplemental-headless.members.json",
+  "memberIndexSha256": "6baada6b1e4e3e3fc9b8d00f711cae02d427419c414d410873c9b25c297f00b4",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-r2a-supplemental-headless",
+  "verifiedFiles": 54,
+  "verifiedBytes": 5687418,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

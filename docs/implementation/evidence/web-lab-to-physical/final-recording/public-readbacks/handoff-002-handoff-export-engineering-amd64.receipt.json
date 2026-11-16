@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/native-handoff.mjs",
+    "verify",
+    "--input",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/229efa7/handoff-export-engineering-amd64"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "sourceCommit": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T00:33:04.756927+00:00",
+  "finishedAt": "2026-11-16T00:33:06.071394+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "handoff-002-handoff-export-engineering-amd64.log",
+  "logBytes": 1521,
+  "logSha256": "8f7831b856eee70e6af632fcc74ea16106232b1b6e1d16e9cc2654e9249658c8",
+  "expectedHistoricalDisposition": "prepared-only, nativeReady:false or retained explicit preparation failure",
+  "scope": "Public retained-data readback only, extracted copies; no campaign/native/engine execution or status rewriting"
+}

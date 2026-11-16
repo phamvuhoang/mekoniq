@@ -1,0 +1,153 @@
+{
+  "scope": "Every owned exact Git URL found across all staged Markdown, including exact retained historical reports, plus all exact commits in the published giant-patch/envelope reproduction descriptors and explicit historical L01 subject/checker. Relative links in immutable historical reports are provenance and audited separately from maintained navigation.",
+  "refs": [
+    {
+      "repository": "source",
+      "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        },
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 checker"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ]
+    },
+    {
+      "repository": "web",
+      "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "base"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "frozenHead"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "4f893ac",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a6ec316",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "schema": "root-staged-r1-readback-audit/1",
+  "at": "2026-11-15T20:37:25.367900+00:00",
+  "preparation": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/legacy-stage-preparation.json",
+    "bytes": 2839446,
+    "sha256": "a8929211dc77592a36d762707a07c6b93f099420ec646c706fd342d6393d6b26"
+  },
+  "receipt": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/acceptance-r1-staged.receipt.json",
+    "bytes": 3393267,
+    "sha256": "18f0fd3e2a66462e2ffc3e09e0e7e3b8a31a5483e66ecd1478922932cd5fd4fa",
+    "argv": [
+      "env",
+      "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r1",
+      "perl",
+      "-e",
+      "alarm 300; exec @ARGV",
+      "pnpm",
+      "test:acceptance",
+      "--",
+      "sim-extension",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/legacy-r1-acceptance-tests.json"
+    ],
+    "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/source",
+    "startedAt": "2026-11-15T20:31:31.630Z",
+    "finishedAt": "2026-11-15T20:31:33.297Z",
+    "exitCode": 0,
+    "signal": null,
+    "logSha256": "37f444a8f674ea63f303e6a7e6fa3916e6015c6d0b24083946f1a6c80beeb74a"
+  },
+  "checkedRepos": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/source",
+      "head": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "tree": "0f00b40f4cdff7ea8acb08db7901b119beee9216",
+      "trackedDiffEmpty": true
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/lab",
+      "head": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+      "tree": "2ac16ff1c956f6b57210778c88e29812121583c2",
+      "trackedDiffEmpty": true
+    }
+  ],
+  "checkedCode": [
+    {
+      "path": "tests/acceptance/sim-extension.acceptance.test.ts",
+      "gitBlob": "3d4c06dd8ac78c7fe62191a2f7379b1ba7bec110",
+      "bytes": 10678,
+      "sha256": "a775bd423f0b88deb5aabff177ae82a0f0ef437ad5a989357a6950d9a2d6a99f"
+    },
+    {
+      "path": "scripts/lab-irsim.mjs",
+      "gitBlob": "19b291060f0dec012d3a6e5e220a348c38153eb1",
+      "bytes": 13732,
+      "sha256": "3fe8e2c20913b4955eab57ce1dc07a37c055e12d0abb2cacf4c0764e27f4e6e8"
+    },
+    {
+      "path": "scripts/sim-extension-qualification.mjs",
+      "gitBlob": "6a8de2deda5076fd145094a6af8b1214211dc435",
+      "bytes": 30885,
+      "sha256": "b2e1ea4d1eb532d059798fb693152661e2aa6bac224e0bbbe8d62e4ab7ac046a"
+    },
+    {
+      "path": "scripts/irsim-qualification.mjs",
+      "gitBlob": "8053bc4d8a055babc993b6e844869ae78ecb0256",
+      "bytes": 18666,
+      "sha256": "57d300a17cd4df6c2c508dce8ace9d12433d7306392f61a41b5f03c3a7c96a46"
+    },
+    {
+      "path": "scripts/r2b-readback.mjs",
+      "gitBlob": "f7f3de10466396e6b8769a971ff7f9a40f60f0e6",
+      "bytes": 8301,
+      "sha256": "c9e7b1c2c19c5322d4fdb7f78227a552062045afecbd0f660f8712f44ea7205d"
+    },
+    {
+      "path": "scripts/r3-readback.mjs",
+      "gitBlob": "3a1f54603f818266f27b25c73c97f430c597c223",
+      "bytes": 11162,
+      "sha256": "c0b5a96ec0380711898c00673639b3f48364cdf1bbfcfbf0eef239c2dd30e973"
+    },
+    {
+      "path": "scripts/native-checker-bootstrap.mjs",
+      "gitBlob": "cd7e6b8e6fda7843e465e965947346d637524507",
+      "bytes": 2127,
+      "sha256": "2db894851179635c26fd8a68a20a987eec410880ec972ef60ac3cafe9e90000b"
+    }
+  ],
+  "dependencyResolution": {
+    "node": "v24.22.2",
+    "vitest": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/vitest@4.1.12_@types+node@24.19.2_vite@8.3.5_@types+node@24.19.2_esbuild@0.28.2_tsx@4.22.4_/node_modules/vitest/package.json",
+    "vitestVersion": "4.1.12",
+    "tsx": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/tsx@4.22.4/node_modules/tsx/dist/esm/api/index.cjs",
+    "nodeModules": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules"
+  },
+  "dependencyPolicy": "Explicit reused existing node_modules via ignored symlinks, matching exact frozen lock bytes; no package install/download. Assessment/test code stays in exact isolated checkout. No independent host authenticity claim.",
+  "copies": [
+    {
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/source/docs/implementation/evidence/linkforge-irsim/irsim",
+      "files": 1603,
+      "bytes": 70037176,
+      "originalAndStagedHashVerified": true
+    },
+    {
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r1",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-legacy-readback-5rpskqkf/source/docs/implementation/evidence/sim-extension/r1",
+      "files": 2588,
+      "bytes": 139840241,
+      "originalAndStagedHashVerified": true
+    }
+  ],
+  "untrackedEvidenceFilesAtInvocationBoundaries": 4191,
+  "statusSerialization": "Receipt equals trimmed preparation status plus exactly one final newline.",
+  "rawResult": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/legacy-r1-acceptance-tests.json",
+    "bytes": 5005,
+    "sha256": "05b0b6292b8ffb7df523a39934b273513a8cbd890129a9ab536a8f0b7b4ffb10",
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "originalExternalLayoutOwnExit": 1,
+  "limits": [
+    "Exact producer code in isolated fixture layout with4191untracked evidence files; not clean production execution.",
+    "Dependency node_modules symlinks explicitly reuse original locked installation; no independent host/install provenance claim.",
+    "All4191original/staged file pairs hashed; databases read only as bytes, never through SQLite.",
+    "Original external-layout11pass/1fail retained; no code/producer/campaign/artifact changes or root test rerun.",
+    "12testfile contains release-conditional branches; no other release qualification implied."
+  ]
+}

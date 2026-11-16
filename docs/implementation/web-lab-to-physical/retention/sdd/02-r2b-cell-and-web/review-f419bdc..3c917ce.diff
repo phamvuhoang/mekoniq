@@ -1,0 +1,381 @@
+# Review package: f419bdc0ef522f037e4a7717374e9135fbe5fce8..HEAD
+
+## Commits
+3c917ce fix: serialize cold reclaim and validate retained state
+
+## Files changed
+ packages/lab-runtime/src/v2/gateway.ts           | 24 ++++++++++-------
+ packages/lab-runtime/src/v2/scenario-runner.ts   | 22 +++++++++++++--
+ tests/integration/lab-runtime-persistent.test.ts | 11 +++++++-
+ tests/security/lab-run-writer.test.ts            | 34 ++++++++++++++++++++++++
+ tests/unit/world-runner.test.ts                  |  8 ++++++
+ 5 files changed, 86 insertions(+), 13 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index b15c059..16a65a7 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -42,51 +42,54 @@ export interface V2Deps {
+  wall?:WallClock;
+ }
+ const COOKIE='mekoniq_lab_session_v2';
+ // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
+ const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
+ const UUID='[0-9a-f-]{36}';
+ // D55: failed pairings are counted for the whole runtime (a proxy hides client addresses)
+ const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
+ const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
+ // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
+-const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
++const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+ export function createV2Gateway(deps:V2Deps){
+  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
+  const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
+  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
+  const replayReads=new Set<{abort:AbortController;response:ServerResponse;done:Promise<void>}>();let replayReadBytes=0;
+  let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
+  const replayPackages=new Map<string,{runId:string;directory:string;manifest:ReplayManifest}>(),replayPending=new Map<string,number>();
+  // Scan/admission and deletion share one short queue; captured materialization never holds it.
+  let replayAdmission=Promise.resolve();const replaySerial=<T>(work:()=>Promise<T>)=>{const pending=replayAdmission.then(work);replayAdmission=pending.then(()=>undefined,()=>undefined);return pending;};
+  /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
+  const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
+  const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
+- type Entry={owner:string;readers:Set<string>;controlEpoch:number;queue:Promise<void>;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
++ type Entry={owner:string;readers:Set<string>;controlEpoch:number;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
+  const runs=new Map<string,Entry>();let creating=0;
+  const readable=(e:Entry,id:string)=>e.owner===id||e.readers.has(id);
+- const serial=<T>(e:Entry,work:()=>Promise<T>)=>{const pending=e.queue.then(work);e.queue=pending.then(()=>undefined,()=>undefined);return pending;};
++ // Reserve the logical run before selecting an entry: cold reclaim and existing-entry work share one queue.
++ const runQueues=new Map<string,Promise<void>>();
++ const serialRun=<T>(id:string,work:()=>Promise<T>)=>{const pending=(runQueues.get(id)??Promise.resolve()).then(work),settled=pending.then(()=>undefined,()=>undefined);runQueues.set(id,settled);void settled.then(()=>{if(runQueues.get(id)===settled)runQueues.delete(id);});return pending;};
++ const serial=<T>(e:Entry,work:()=>Promise<T>)=>serialRun(e.run.id,work);
+  const writerView=(e:Entry)=>({runId:e.run.id,sessionId:e.readOnly?null:sessions.get(e.owner)?.publicId??null,controlEpoch:e.controlEpoch});
+  const authority=(e:Entry,id:string,epoch:string|undefined,allowReconcile=false)=>{
+   const session=sessions.get(id);if(!session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');
+   if(runs.get(e.run.id)!==e||!readable(e,id))throw Error('RUN_NOT_FOUND');
+   if(e.archiving||reclaiming.has(e.run.id))throw Error('RUN_ARCHIVE_CONFLICT');
+   if(epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+   if(e.readOnly&&e.owner===id&&allowReconcile)return;
+   if(e.readOnly&&e.owner===id)throw Error('RECLAIM_READ_ONLY');
+   if(e.owner!==id||epoch===undefined&&e.controlEpoch!==0||epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+  };
+  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
+  let expiryCleanup=Promise.resolve();
+  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
+-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
++  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(runs.get(id)!==e||current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
+  });
+  const reclaiming=new Set<string>();
+  let pairingFailures:number[]=[];
+  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
+  const token=()=>randomBytes(32).toString('base64url');
+  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
+  const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
+  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
+@@ -273,21 +276,21 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+    const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project,...engineering?{engineering:engineering.ref}:{}},readinessOptions());
+    if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
+    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
+    try{
+     const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...engineering?{engineering}:{}};
+     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
+     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
+     // the run → bundle association is durable before the client hears about the run
+     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
+-    const view=await run.snapshot();const entry:Entry={owner:sessionId,readers:new Set(),controlEpoch:0,queue:Promise.resolve(),run,directory,input};runs.set(run.id,entry);return send(response,201,{...view,reclaimToken,writer:writerView(entry)});
++    const view=await run.snapshot();const entry:Entry={owner:sessionId,readers:new Set(),controlEpoch:0,run,directory,input};runs.set(run.id,entry);return send(response,201,{...view,reclaimToken,writer:writerView(entry)});
+    }catch(e){await run?.close().catch(()=>{});if(r.mode==='mock')await rm(directory,{recursive:true,force:true});return failed(response,e);}
+    finally{creating--;}
+   }
+   const entry=runs.get(runRoute![1]!),kind=runRoute![2];
+   if(kind==='writer'){
+    if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+    const b=await deps.readBody(request,1024);
+    if(Object.keys(b).sort().join(',')!=='controlEpoch,operation,recipientSessionId'||!['grant_read','transfer'].includes(String(b.operation))||typeof b.recipientSessionId!=='string'||!Number.isSafeInteger(b.controlEpoch)||Number(b.controlEpoch)<0)return deny(response,422,'INVALID_WRITER_REQUEST',[]);
+    try{return await serial(entry,async()=>{
+     if(entry.readOnly)throw Error('RUN_WRITER_CONFLICT');if(request.headers['x-lab-control-epoch']!==undefined&&request.headers['x-lab-control-epoch']!==String(entry.controlEpoch))throw Error('RUN_WRITER_CONFLICT');authority(entry,sessionId,String(b.controlEpoch));
+@@ -299,42 +302,43 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+      // Session expiry during persistence cannot confer control; no response is published until it is rechecked.
+      authority(entry,sessionId,String(b.controlEpoch));entry.controlEpoch++;if(deps.now()>=recipient[1].expiresAt||sessions.get(recipient[0])!==recipient[1])return deny(response,422,'INVALID_WRITER_RECIPIENT',[]);
+      entry.readers.add(entry.owner);entry.owner=recipient[0];
+     }else entry.readers.add(recipient[0]);
+     return send(response,200,{writer:writerView(entry)});
+    });}catch(e){return failed(response,e);}
+   }
+   if(kind==='reclaim'){
+    const body=await deps.readBody(request),id=runRoute![1]!;
+    if(Object.keys(body).some(k=>k!=='proof')||typeof body.proof!=='string'||body.proof.length>200)return deny(response,422,'INVALID_RECLAIM',[]);
+-   const stored=await findReclaim(deps.directory,id);
+-   if(!stored||!deps.same(proofHash(body.proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
++   const proof=body.proof;
++   return serialRun(id,async()=>{
++   const entry=runs.get(id),stored=await findReclaim(deps.directory,id);
++   if(!stored||!deps.same(proofHash(proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
+    if(stored.record.schemaHash!==deps.schemaHash||stored.record.input.sourceCommit!==deps.sourceCommit)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+    if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
+    if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+-   const reclaim=async()=>{
+    if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
+    reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
+    try{
+     const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
+     const locked=stored.record.input.engineering;
+     const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,reclaimOnly:true,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
+     // a verified proof restores read access to this run's bundle for the new session; it never confers control
+     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
+     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
+     const view=await run.holdForReclaim();
+     const epoch=Math.max(entry?.controlEpoch??0,stored.record.controlEpoch??0)+1;await saveControlEpoch(stored.directory,epoch);
+-    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,queue:Promise.resolve(),run,directory:stored.directory,readOnly:true,input:stored.record.input});
++    if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,run,directory:stored.directory,readOnly:true,input:stored.record.input});
+     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
+     return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
+    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
+-   };return entry?serial(entry,reclaim):reclaim();
++   });
+   }
+   if(kind==='actions'){
+    const action=validateActionV2(await deps.readBody(request));
+    if(!action.ok)return deny(response,422,'INVALID_ACTION',codesOf(action.issues),action.issues);
+    if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+    if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+    if(entry.readOnly&&action.value.kind!=='reconcile')return deny(response,403,'RECLAIM_READ_ONLY',['VIEW_RECONCILE_ONLY']);
+    const checkAuthority=()=>authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,action.value.kind==='reconcile');
+    const beforeExecute=async()=>{
+     checkAuthority();if(action.value.kind!=='start'&&action.value.kind!=='resume')return;
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index 63bdb34..359410d 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -1,13 +1,13 @@
+ import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
+ import type {RobotAdapter} from '../../../robot-adapters/src/contract';
+-import type {Sim3DSnapshotV1} from './navigation2d/contracts';
++import {validateSim3DResponse,type Sim3DSnapshotV1} from './navigation2d/contracts';
+ import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
+ import type {WorldTickCommand} from './simulation3d/world-ports';
+ import {retainedWorldArmReports} from './simulation3d/world-arm-report';
+ import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
+ import type {ArmReportBlock} from './beverage/arm-plant-report';
+ import {stepWorldOnce} from './simulation3d/world-step';
+ import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase} from './fault-schedule';
+ // Mock scenario runner. Per tick: scripted inputs -> source decisions/outbox dispatch -> model advance -> observations -> journal.
+ // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
+ import {mkdir,chmod,readdir} from 'node:fs/promises';
+@@ -67,20 +67,37 @@ interface Checkpoint {
+  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;plant:PlantState;attention:Attention[];
+  receipts:Record<string,{hash:string;view:RunView}>;rejectedObservations:RunReport['rejectedObservations'];reconciliations:RunReport['reconciliations'];
+  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
+  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;crashArmed:boolean;
+  faultFires?:FaultFireRecord[];
+  world?:{committedDisplay?:{command:import('./simulation3d/world-display').CommittedWorldDisplayCommand};navigation?:import('./session').SourceFixture['navigation'];snapshot?:Sim3DSnapshotV1;terminal?:string;pending?:{targetTick:number;stage:string;ackTick:number|null;command?:WorldTickCommand}};
+  coffee?:CoffeeState;
+ }
+ class SimulatedCrash extends Error {constructor(){super('SIMULATED_CRASH');}}
+ const ID=/^[A-Za-z0-9_.:-]{1,200}$/;
++/** Recovery needs retained state, not fresh defaults. Optional trace/report coverage remains optional. */
++function validateRecoveryState(cp:Checkpoint,coffee:Roles['coffee']|undefined,singleWorld:boolean){
++ const object=(value:unknown)=>!!value&&typeof value==='object'&&!Array.isArray(value),integer=(value:unknown)=>Number.isSafeInteger(value)&&Number(value)>=0;
++ const fail=()=>{throw Error('RECOVERY_STATE_INVALID');};
++ if(cp.schemaVersion!==2||typeof cp.runId!=='string'||!ID.test(cp.runId)||cp.manifest?.runId!==cp.runId||!integer(cp.tick)||!object(cp.plant)||!Array.isArray(cp.plant.robots))fail();
++ if(coffee){
++  const c=cp.coffee,a=c?.arm,p=c?.plant;
++  if(!c||c.stationId!==coffee.stationId||c.cellId!==coffee.cellId||c.armId!==coffee.armId||!Array.isArray(c.workload)||!object(c.sessions)||!object(c.trays))fail();
++  if(!a||a.deviceId!==coffee.armId||typeof a.bootId!=='string'||!a.bootId||!integer(a.seq)||!integer(a.tick)||!Array.isArray(a.q)||a.q.length!==6||!a.q.every(Number.isFinite)||!['open','closed'].includes(a.gripper)||!Array.isArray(a.programs)||!Array.isArray(a.modifiers)||!Array.isArray(a.trace))fail();
++  if(!p||p.cellId!==coffee.cellId||!integer(p.tick)||!Array.isArray(p.devices)||!p.devices.length||!Array.isArray(p.cups)||!Array.isArray(p.commands)||!Array.isArray(p.modifiers)||!Array.isArray(p.log))fail();
++ }
++ if(singleWorld){
++  const s=cp.world?.snapshot;
++  if(!s||s.runId!==cp.runId||s.tick!==cp.tick||typeof s.bootId!=='string'||!s.bootId||typeof s.sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(s.sceneDigest))return fail();
++  if(!validateSim3DResponse({protocol:'mekoniq-sim3d/1',requestId:'retained-recovery',runId:s.runId,bootId:s.bootId,tick:s.tick,ok:true,result:s}).ok||!cp.roles.robots.every(r=>s.robots.some(robot=>robot.robotId===r.id))||!s.arms?.some(a=>a.armId===coffee?.armId))fail();
++ }
++}
+ function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
+ /** Runtime checks the JSON schema cannot express: unique ids, everything inside the world. */
+ /** `armModel`: the arm model of the run's arm provider (the set's, never the project's); a profile for another model is ARM_COLLISION_MODEL_MISMATCH. */
+ export function checkWorld(p:LabProjectV2,armModel:ArmModelSI=PUMA560_SI){
+  if(p.armCollisionProfile)validateArmCollisionProfile(p.armCollisionProfile,armModel);
+  const w=p.world,ids=new Set<string>();
+  for(const o of [...w.points,...w.obstacles,...p.entities]){if(ids.has(o.id)||!ID.test(o.id))throw new Error('INVALID_PROJECT');ids.add(o.id);}
+  if(![w.width,w.height].every(n=>Number.isFinite(n)&&n>0&&n<=1000))throw new Error('INVALID_PROJECT');
+  for(const pt of w.points)if(!(pt.x>=0&&pt.y>=0&&pt.x<=w.width&&pt.y<=w.height))throw new Error('INVALID_PROJECT');
+  for(const o of w.obstacles)if(!(o.x>=0&&o.y>=0&&o.width>0&&o.height>0&&o.x+o.width<=w.width&&o.y+o.height<=w.height))throw new Error('INVALID_PROJECT');
+@@ -118,24 +135,25 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
+  const program=plantSet?providers.armProgram:undefined;
+  const armProfile=program?{kinematics:armModel,program:{fixture:program.fixture,physicsDigest:program.physicsDigest,programsDigest:program.programsDigest,waypointsDigest:program.waypointsDigest,programs:program.programs},collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}}
+   :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
+  const manifest:Omit<RunReport['manifest'],'runId'>={...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
+   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
+   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
+   models:[...singleWorld?[]:[{id:MOCK_AMR.id,revision:MOCK_AMR.version,hash:hashJson(MOCK_AMR_PARAMS),provenance:'illustrative'}],...scenario.coffee?[{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'},{id:armModel.id,revision:armModel.revision,hash:hashJson(armProfile),provenance:armModel===XARM6_SI?'manufacturer_nominal':'illustrative_reference'}]:[]],
+   profiles:[{id:'mock-runtime',revision:1,hash:configuration.hash,provenance:'illustrative'},...armCollisionScene?.profile?[{id:armCollisionScene.profile.id,revision:armCollisionScene.profile.revision,hash:armCollisionScene.profileHash!,provenance:armCollisionScene.profile.provenance}]:[]],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'MOCK_ILLUSTRATIVE'},...armCollisionScene?{armCollisionScene}:{},...program?{armProgram:structuredClone(program)}:{}};
+  const manifestHash=hashJson(manifest),dir=providers.directory;
+- await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
++ if(!providers.reclaimOnly){await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);}
+  let cp=await readCheckpoint<Checkpoint>(dir);
+  if(cp&&cp.manifestHash!==manifestHash)throw new Error('RUN_IDENTITY_MISMATCH');
+  if(providers.reclaimOnly&&(!cp||singleWorld&&!cp.world))throw Error('RECOVERY_CHECKPOINT_MISSING');
++ if(providers.reclaimOnly)validateRecoveryState(cp!,scenario.coffee?roles.coffee:undefined,singleWorld===true);
+  const fresh=!cp;
+  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
+  if(!cp){
+   const runId=randomUUID(),point=(id:string)=>project.world.points.find(p=>p.id===id)!,draws=new Map<string,ReturnType<typeof actorStream>>();
+   const draw=(actor:string,range:readonly [number,number])=>{const s=draws.get(actor)??actorStream(input.seed,actor);draws.set(actor,s);return s.int(range[0],range[1]);};
+   const workload=scenario.orders.map((o,i)=>({actor:o.actor,tableId:roles.tables[o.table]!,quantity:o.quantity,atTick:draw(o.actor,o.atTick),sessionId:`lab-session-${i+1}`,status:'planned' as const}));
+   cp={schemaVersion:2,runId,manifestHash,manifest:{runId,...manifest},roles,trays,tick:0,started:false,paused:false,cancelled:false,suspended:false,revision:0,ordinal:0,dispatchDue:false,
+    workload,confirmations:{},parking:{},attention:[],receipts:{},rejectedObservations:[],reconciliations:[],recoveredOps:[],confirmationLog:[],faults:[],pendingOps:[],inFlight:false,crashArmed:false,
+    ...scenario.coffee&&roles.coffee?{coffee:initialCoffee(scenario.coffee.orders,roles.coffee,roles.tables,draw)}:{},
+    plant:{width:project.world.width,height:project.world.height,obstacles:structuredClone(project.world.obstacles),injected:[],contacts:0,minSeparationM:null,maxConcurrentMovers:0,
+diff --git a/tests/integration/lab-runtime-persistent.test.ts b/tests/integration/lab-runtime-persistent.test.ts
+index 3f59ba8..ae95d38 100644
+--- a/tests/integration/lab-runtime-persistent.test.ts
++++ b/tests/integration/lab-runtime-persistent.test.ts
+@@ -1,11 +1,12 @@
+-import {afterEach,expect,test} from 'vitest';
++import {afterEach,expect,test,vi} from 'vitest';
++import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
+ import {mkdtemp,rm,writeFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
+ const roots:string[]=[],gateways:LabGateway[]=[];
+ afterEach(async()=>{for(const g of gateways.splice(0))await g.close();for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
+ const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'b09-persistent-'));roots.push(d);return d;};
+ const start=(directory:string)=>startLabGateway({directory,port:0,sourceCommit:'test',schemaHash:'a'.repeat(64)});
+ test('a second runtime refuses the same data root before startup, and close releases ownership',async()=>{
+  const directory=await temp(),a=await start(directory);gateways.push(a);let b:LabGateway|undefined;
+@@ -64,15 +65,23 @@ test('actual Mac portable MuJoCo arm closes via public gateway, releases only it
+   await post(path+'/reclaim',{proof:made.reclaimToken});expect(mujocoWorkers()).toEqual([]);const checkpoint=JSON.parse(await readFile(join(stored!.directory,'run.json'),'utf8'));expect(checkpoint.coffee.arm).toEqual(beforeCheckpoint.coffee.arm);expect(await readFile(join(stored!.directory,'mujoco-arm/bundle/arm-cell-scene.json'),'utf8')).toBe(sceneBefore);
+   const after=await (await fetch(g.url+'/lab/v2'+path+'/report',{headers:h})).json();expect(after.outcome.tick).toBe(20);expect(after.manifest.sourceCommit).toBe(report.manifest.sourceCommit);
+   console.log('B09 actual portable arm',JSON.stringify({platform:process.platform,arch:process.arch,tick:20,workerPidsAfterClose:mujocoWorkers(),scope:'Mac portable worker; not WEB05 container/native-amd64',accepted:false}));
+  }finally{await g?.close();await removeMujocoDirs();}
+ },60000);
+ 
+ test('reclaim-only creation refuses an empty root rather than creating any simulated run',async()=>{
+  const {createScenarioRun}=await import('../../packages/lab-runtime/src/v2/scenario-runner'),{manifestFor}=await import('../support/lab-v2');
+  await expect(createScenarioRun(manifestFor('FD01',{seed:1}),{directory:await temp(),enabledBackends:['mock_amr'],reclaimOnly:true})).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');
+ });
++for(const missing of ['coffee','arm','arm.q','arm.bootId','plant'] as const)test(`explicit arm reclaim refuses missing ${missing} before opening Source or changing retained bytes`,async()=>{
++ const {readFile,readdir}=await import('node:fs/promises'),{createScenarioRun}=await import('../../packages/lab-runtime/src/v2/scenario-runner'),{manifestFor,coffeeProject,amrAsset,COFFEE_BACKENDS}=await import('../support/lab-v2');
++ const directory=await temp(),input={...manifestFor('BV01',{seed:1,project:coffeeProject()}),backendSetId:'mock-default'},providers={directory,assets:[amrAsset],enabledBackends:COFFEE_BACKENDS};
++ const original=await createScenarioRun(input,providers);await original.close();const path=join(directory,'run.json'),cp=JSON.parse(await readFile(path,'utf8'));
++ if(missing==='coffee')delete cp.coffee;else if(missing==='arm.q')delete cp.coffee.arm.q;else if(missing==='arm.bootId')delete cp.coffee.arm.bootId;else delete cp.coffee[missing];
++ const bytes=JSON.stringify(cp);await writeFile(path,bytes);const journal=await readFile(join(directory,'journal.db')),files=await readdir(directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof createScenarioRun>>|undefined;
++ try{await expect(createScenarioRun(input,{...providers,reclaimOnly:true}).then(run=>{unexpected=run;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(await readFile(path,'utf8')).toBe(bytes);expect((await readFile(join(directory,'journal.db'))).equals(journal)).toBe(true);expect(await readdir(directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
++});
+ test('an unwritable or symlinked data root is refused before any provider setup',async()=>{
+  const {chmod,symlink}=await import('node:fs/promises'),directory=await temp();let prepared=false;
+  await chmod(directory,0o500);try{await expect(startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),prepareV2:async()=>{prepared=true;return {};}})).rejects.toThrow('LAB_DATA_DIR_UNWRITABLE');expect(prepared).toBe(false);}finally{await chmod(directory,0o700);}
+  const linked=join(await temp(),'link');await symlink(directory,linked);await expect(start(linked)).rejects.toThrow('LAB_DATA_DIR_INVALID');
+ });
+diff --git a/tests/security/lab-run-writer.test.ts b/tests/security/lab-run-writer.test.ts
+index 5ac9529..2d60882 100644
+--- a/tests/security/lab-run-writer.test.ts
++++ b/tests/security/lab-run-writer.test.ts
+@@ -1,23 +1,57 @@
+ // Real HTTP sessions and gateway authority; instrumented protocol double, NOT physics evidence.
+ import {afterEach,expect,test} from 'vitest';
+ import {mkdtemp,mkdir,rm} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {randomUUID} from 'node:crypto';
++import type {IncomingMessage,ServerResponse} from 'node:http';
++import {createV2Gateway} from '../../packages/lab-runtime/src/v2/gateway';
++import {saveReclaim,findReclaim,proofHash} from '../../packages/lab-runtime/src/v2/reclaim-store';
+ import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
+ import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {TelemetryRecorder} from '../../packages/lab-runtime/src/v2/telemetry';
+ import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {xarmProject} from '../support/mujoco-arm';
+ const gateways:LabGateway[]=[],dirs:string[]=[];afterEach(async()=>{for(const g of gateways.splice(0))await g.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+ const origin='http://127.0.0.1:4175';
++test('cold recovery state refusals retain stable public conflict codes and private proof checks',async()=>{
++ const directory=await mkdtemp(join(tmpdir(),'writer-refusal-'));dirs.push(directory);const runDirectory=join(directory,'run'),id=randomUUID();await mkdir(runDirectory);
++ await saveReclaim(runDirectory,{runId:id,proofHash:proofHash('proof'),schemaHash:'a'.repeat(64),input:{mode:'simulation',sourceCommit:'test'} as never});
++ let code='RECOVERY_STATE_INVALID',opens=0;const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{simulationFactory:async()=>{opens++;throw Error(code);}}});gateways.push(g);
++ const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})}),token=(await paired.json()).sessionToken;
++ const reclaim=async(proof:string)=>fetch(g.url+`/lab/v2/runs/${id}/reclaim`,{method:'POST',headers:{origin,'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({proof})});
++ expect((await reclaim('wrong')).status).toBe(404);expect(opens).toBe(0);
++ for(code of ['RECOVERY_STATE_INVALID','RECOVERY_CHECKPOINT_MISSING']){const response=await reclaim('proof');expect(response.status).toBe(409);expect(await response.json()).toMatchObject({error:code});}
++ expect((await findReclaim(directory,id))!.record.controlEpoch??0).toBe(0);
++});
++test('delayed cold reclaim reuses the current runner, fences its previous owner and closes every opened resource',async()=>{
++ const directory=await mkdtemp(join(tmpdir(),'writer-cold-'));dirs.push(directory);const runDirectory=join(directory,'run'),id=randomUUID();await mkdir(runDirectory);
++ await saveReclaim(runDirectory,{runId:id,proofHash:proofHash('proof'),schemaHash:'schema',input:{mode:'simulation',sourceCommit:'test'} as never});
++ const gate=()=>{let release!:()=>void;return {promise:new Promise<void>(r=>release=r),release:()=>release()};},body=gate(),entered=gate(),action=gate(),actionEntered=gate();let opens=0,closes=0;
++ const requests=new WeakMap<IncomingMessage,Record<string,unknown>>(),responses=new WeakMap<ServerResponse,{status:number;body:Record<string,unknown>}>(),owned:ScenarioRun[]=[];
++ const g=createV2Gateway({directory,sourceCommit:'test',schemaHash:'schema',now:()=>0,pairingValid:()=>true,spendPairing(){},same:(a,b)=>a===b,readBody:async request=>{if(request.headers['x-delay']){entered.release();await body.promise;}return requests.get(request)!;},send:(response,status,value)=>{responses.set(response,{status,body:value as Record<string,unknown>});},simulationFactory:async()=>{
++  opens++;let closed=false;const view=()=>({run:{id,runRevision:0},tick:1});const run={id,holdForReclaim:async()=>view(),snapshot:async()=>view(),action:async(_a:unknown,before?:()=>Promise<void>)=>{actionEntered.release();await action.promise;await before?.();return view();},close:async()=>{if(!closed){closed=true;closes++;}}} as unknown as ScenarioRun;owned.push(run);return run;
++ }});
++ const call=async(path:string,value:Record<string,unknown>,token?:string,delay=false)=>{const request={method:'POST',headers:{...token?{authorization:`Bearer ${token}`}:{},...delay?{'x-delay':'1'}:{}}} as IncomingMessage,response={setHeader(){}} as unknown as ServerResponse;requests.set(request,value);await g(request,response,'/lab/v2'+path,origin);return responses.get(response)!;};
++ const pair=async()=>String((await call('/sessions',{token:'pair'})).body.sessionToken),path=`/runs/${id}`;
++ let pending:Promise<unknown>|undefined,acting:Promise<unknown>|undefined;
++ try{
++  const a=await pair(),b=await pair();pending=call(path+'/reclaim',{proof:'proof'},a,true);await entered.promise;
++  const first=await call(path+'/reclaim',{proof:'proof'},b);expect(first.status).toBe(200);expect(first.body.writer).toMatchObject({controlEpoch:1});
++  acting=call(path+'/actions',{actionId:'reconcile',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b);await actionEntered.promise;
++  body.release();let recovered=false;const done=pending.then(r=>{recovered=true;return r as Awaited<ReturnType<typeof call>>;});await new Promise<void>(r=>setImmediate(r));expect(recovered).toBe(false);
++  action.release();expect((await acting as Awaited<ReturnType<typeof call>>).status).toBe(200);const second=await done;expect(second.status).toBe(200);expect(second.body.writer).toMatchObject({controlEpoch:2});expect(opens).toBe(1);
++  expect((await findReclaim(directory,id))!.record.controlEpoch).toBe(2);expect((await call(path+'/actions',{actionId:'old-owner',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b)).status).toBe(404);
++  await g.close();expect(closes).toBe(opens);
++ }finally{body.release();action.release();await Promise.allSettled([pending,acting]);await g.close();for(const run of owned)await run.close();}
++});
+ async function fixture(){
+  const directory=await mkdtemp(join(tmpdir(),'writer-'));dirs.push(directory);let now=1000,steps=0,closed=0,revision=0;let hold:Promise<void>|undefined,closeHold:Promise<void>|undefined,journalHold:Promise<void>|undefined;const id=randomUUID(),view=()=>({run:{id,runRevision:revision,status:'running'},tick:steps});
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),nowMs:()=>now,v2:{catalog:{...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_arm'?{...b,installed:true,compatible:true,reachable:true,reason:undefined}:b)},enabledBackends:['mock_amr','mock_coffee','mujoco_arm'],portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{await mkdir(p.directory,{recursive:true});return {id,snapshot:async()=>view(),report:async()=>({manifest:{runId:id}}),holdForReclaim:async()=>view(),action:async(a:{kind:string},before?:()=>Promise<void>)=>{if(hold)await hold;await before?.();if(a.kind==='step')steps++;revision++;return view();},close:async()=>{closed++;if(closeHold)await closeHold;},pulse:()=>({tick:steps,paused:true,runRevision:revision}),journal:async()=>{if(journalHold)await journalHold;return [];},telemetry:new TelemetryRecorder()} as unknown as ScenarioRun;}}});gateways.push(g);
+  const pair=async()=>{const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {...await r.json(),cookie:r.headers.get('set-cookie')!.split(';')[0]!};};
+  const call=async(p:{sessionToken:string},path:string,body?:unknown,epoch?:number)=>{const r=await fetch(g.url+'/lab/v2'+path,{method:body===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',authorization:`Bearer ${p.sessionToken}`,...epoch!==undefined?{'x-lab-control-epoch':String(epoch)}:{}},...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:r.status,...await r.json()};};
+  const a=await pair();const create=(sourceCommit='test')=>call(a,'/runs',{project:xarmProject(),scenarioId:'MJ-BV01',scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit,schemaHash:'a'.repeat(64)}});
+  const made=await create();expect(made.status,JSON.stringify(made)).toBe(201);const path=`/runs/${id}`,step=(p:typeof a,epoch?:number)=>call(p,path+'/actions',{actionId:randomUUID(),expectedRevision:revision,kind:'step',payload:{ticks:1}},epoch),writer=(p:typeof a,recipient:typeof a,operation:string,controlEpoch:number)=>call(p,path+'/writer',{operation,recipientSessionId:recipient.sessionId,controlEpoch});
+  return {g,a,pair,call,create,made,path,step,writer,steps:()=>steps,closed:()=>closed,advance:(ms:number)=>{now+=ms;},hold:(p?:Promise<void>)=>{hold=p;},holdClose:(p:Promise<void>)=>{closeHold=p;},holdJournal:(p:Promise<void>)=>{journalHold=p;},directory};
+ }
+ test('explicit read authorization allows two real tokens to race: one writer, one engine step, private404 preserved',async()=>{
+diff --git a/tests/unit/world-runner.test.ts b/tests/unit/world-runner.test.ts
+index 07463db..b83af37 100644
+--- a/tests/unit/world-runner.test.ts
++++ b/tests/unit/world-runner.test.ts
+@@ -1,20 +1,21 @@
+ import {afterEach,expect,test,vi} from 'vitest';
+ import {readFile} from 'node:fs/promises';
+ import * as fs from 'node:fs/promises';
+ import {readArmTrace,readArmProps} from '../../packages/lab-runtime/src/v2/beverage/arm-plant-report';
+ import {unavailableWorldSweep} from '../../packages/lab-runtime/src/v2/simulation3d/world-sweep';
+ import {join,resolve} from 'node:path';
+ import {createScenarioRun,type RunManifestInput} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {defaultCatalog,type CapabilityCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {scenarioRegistry} from '../../packages/lab-runtime/src/v2/scenario-registry';
+ import {MockPlant} from '../../packages/lab-runtime/src/v2/backends/mock-amr';
++import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
+ import {createMockCoffeePorts} from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
+ import type {WorldPortsFactory,WorldFactoryInput} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
+ import type {RobotAdapter} from '../../packages/robot-adapters/src/contract';
+ import type {Sim3DSnapshotV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+ import * as durable from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
+ import {openWorldRecorder,prepareWorldAdmission,readWorldEvidence} from '../../packages/lab-runtime/src/v2/simulation3d/world-evidence';
+ import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
+ import {tick as physicsTick} from '../support/physics';
+ import {act,cleanupRuns,runDirectory} from '../support/lab-v2';
+ vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,readFile:vi.fn(actual.readFile)};});
+@@ -97,10 +98,17 @@ test('failed H+1 ACK never becomes a public world display observation or control
+ });
+ 
+ test('display read queued behind an in-flight action publishes a single settled H/revision',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(false);gate.release();const after=await action,d=await display;expect(d).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7}});}finally{gate.release();await run.close();}});
+ 
+ test('explicit world reclaim never respawns and refuses a missing committed world checkpoint',async()=>{
+  const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
+  const reopened=await h.open(true);expect(h.opens()).toBe(1);expect((await reopened.snapshot()).tick).toBe(1);await reopened.close();
+  const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));delete cp.world;await fs.writeFile(path,JSON.stringify(cp));
+  await expect(h.open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(h.opens()).toBe(1);
+ });
++for(const missing of ['snapshot','bootId','sceneDigest','runId','tick','coffee','arm'] as const)test(`explicit world reclaim refuses missing or mismatched ${missing} before resources and persistence`,async()=>{
++ const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
++ const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));
++ if(missing==='snapshot')cp.world={};else if(missing==='coffee')delete cp.coffee;else if(missing==='arm')delete cp.coffee.arm;else if(missing==='tick')cp.world.snapshot.tick=0;else delete cp.world.snapshot[missing];
++ const bytes=JSON.stringify(cp);await fs.writeFile(path,bytes);const journal=await fs.readFile(join(h.directory,'journal.db')),files=await fs.readdir(h.directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof h.open>>|undefined;
++ try{await expect(h.open(true).then(value=>{unexpected=value;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(h.opens()).toBe(1);expect(await fs.readFile(path,'utf8')).toBe(bytes);expect((await fs.readFile(join(h.directory,'journal.db'))).equals(journal)).toBe(true);expect(await fs.readdir(h.directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
++});

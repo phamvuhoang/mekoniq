@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "snapshot": "L00–L05 prepared code reviewed; native qualification incomplete; B10 tooling active; latest ruling R92",
+  "snapshot": "Final current-tuple recording after two reviewed prerequisite corrections; native/container qualification incomplete; latest ruling R93",
   "scope": "all explicit Ruling: lines plus Sequencing ruling for final evidence: in README and active 01/02/03 plan ledgers",
   "records": [
     {
@@ -72,6 +72,11 @@
       "ledger": "README/progress.md",
       "lineAtSnapshot": 184,
       "text": "Ruling: integrate this frozen upstream source11d25b4/Laba744954 after B09 and before L00/finalqualification as B00R2, in featureworktreesonly, with scopedcloudguard/docs merge review and clean export/pin. No active B04 edits interrupted; oldbaseline numerical/runtime bytes unchanged. Costifwrong: one extra merge/export/review and possible recorder conflicts; avoids stale host claims and keeps finalbranch aligned with current R2a production evidence without chasing movingmain."
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 244,
+      "text": "Ruling: R93 records the current Docker-blocked regression boundary through existing public tooling without changing qualification policy. After actual current R1/R1.1 inputs qualify, use a new R2a --skip-suites record so its recorder does not repeat the known-unreachable Docker prerequisite; every skipped suite remains not_run. Execute each available unchanged non-container SUITES_R2A entry separately with its real argv/cwd/environment/own receipts and preserve it as supplemental evidence, never splice results into the immutable partial candidate. Feed that genuine same-tuple partial R2a directory and actual independent payload/cell/study/web inputs to the normal full R2b recorder. Preserve its derived REG04 failed/R2A_GATE_NOT_TESTED and nonzero public readback, while missing WEB05 is separately not_run. Do not use the R2a --blocked spike-failure override, omit a real partial input to improve status, reduce full R2b scope, alter tables/thresholds or re-probe/reset unrelated Docker/services. Reason: required current container execution is unavailable but the user-authorized local web/physics/regression work can still produce independently useful evidence; existing guards must expose the missing dependency. Cost if wrong: the recorded R2a candidate understates separately observed local suite coverage and REG04 remains failed, so full release qualification is incomplete until the reviewed current container and complete chain can run; supplemental passes cannot be advertised as full R2a/R2b qualification."
     },
     {
       "ledger": "01-r2b-mobility/progress.md",

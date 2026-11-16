@@ -1,0 +1,225 @@
+{
+  "at": "2026-11-15T20:50:09.942139+00:00",
+  "scope": "Root independent read-only historical checker and retained-byte audit; no native execution or test rerun",
+  "checker": {
+    "sourceCommit": "874d05aedfbf573496994fd73016f19ef19e6932",
+    "toolSha256": "f0052cf8449b7c978d432ead1c65a9ebfda784db166933ada3e9c6bba9f0557f"
+  },
+  "checkerTree": "6a59ef54f7861d12b1901d88da63394df6b5a830",
+  "checkerGitBlobsVerified": 1035,
+  "handoffSubsetDigest": "1ffa5a770189a26128cf8a1e6bbb546b946dd73fe9d20750af58bc256eff5ff3",
+  "copies": [
+    {
+      "source": "/tmp/mekoniq-L01-fix2-preparation-sQ7TjS/handoff",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff",
+      "files": 186,
+      "bytesPerSide": 9725090
+    },
+    {
+      "source": "/tmp/mekoniq-L01-fix2-preparation-sQ7TjS/native-not-run",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/native-not-run",
+      "files": 188,
+      "bytesPerSide": 9767280
+    }
+  ],
+  "ownInvocations": [
+    {
+      "check": "verify-l01-exact",
+      "ownExit": 1,
+      "signal": null,
+      "startedAt": "2026-11-15T20:38:55.846Z",
+      "finishedAt": "2026-11-15T20:38:57.101Z",
+      "args": [
+        "scripts/native-sim/mujoco-probe.mjs",
+        "--verify",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/native-not-run"
+      ]
+    },
+    {
+      "check": "verify-l01-handoff-exact",
+      "ownExit": 1,
+      "signal": null,
+      "startedAt": "2026-11-15T20:39:36.596Z",
+      "finishedAt": "2026-11-15T20:39:37.633Z",
+      "args": [
+        "scripts/native-handoff.mjs",
+        "verify",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff"
+      ]
+    },
+    {
+      "check": "verify-l01-handoff-exact-args2",
+      "ownExit": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T20:39:58.774Z",
+      "finishedAt": "2026-11-15T20:39:59.964Z",
+      "args": [
+        "scripts/native-handoff.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff"
+      ]
+    }
+  ],
+  "nativeReadback": {
+    "passed": false,
+    "issues": [
+      "NATIVE_CAMPAIGN_NOT_PASSED",
+      "PROBE_UNREADABLE:ENOENT: no such file or directory, lstat '/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/native-not-run/observer'"
+    ],
+    "subject": {
+      "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+      "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+      "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+      "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+      "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "id": "r2a-4f893ac-linux-amd64",
+      "executionKind": "mujoco_image",
+      "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+      "nativeClosureHash": null,
+      "image": null
+    },
+    "qualification": "not_qualified",
+    "accepted": false,
+    "dynamics": "not_calibrated"
+  },
+  "preparedReadback": {
+    "prepared": true,
+    "nativeReady": false,
+    "issues": [
+      {
+        "code": "PACKAGE_LOCK_UNRESOLVED",
+        "path": "/profile/requiredPackages/0",
+        "severity": "prerequisite"
+      },
+      {
+        "code": "SUBJECT_IMAGE_UNRESOLVED",
+        "path": "/subject/image",
+        "severity": "prerequisite"
+      },
+      {
+        "code": "HOST_INVENTORY_MISSING",
+        "path": "/inventory",
+        "severity": "prerequisite"
+      }
+    ],
+    "subject": {
+      "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+      "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+      "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+      "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+      "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "id": "r2a-4f893ac-linux-amd64",
+      "executionKind": "mujoco_image",
+      "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+      "nativeClosureHash": null,
+      "image": null
+    },
+    "checker": {
+      "sourceCommit": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "toolSha256": "1ffa5a770189a26128cf8a1e6bbb546b946dd73fe9d20750af58bc256eff5ff3"
+    },
+    "inventoryAssessment": "supplied_records_only",
+    "qualification": "not_run",
+    "accepted": false,
+    "dynamics": "not_calibrated"
+  },
+  "files": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-exact.log",
+      "bytes": 431,
+      "sha256": "c8a5c16165aabf5da155a2aa4d47a38c2b068f055d0f3e2098d531d8ea88d909"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-exact.receipt.json",
+      "bytes": 5074,
+      "sha256": "ae833ad312440c08c738ca59242e0afc024d948e875567fa300c10e4cc7f8e93"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/readback-process/process.json",
+      "bytes": 502,
+      "sha256": "b92bb1b41dfdd981b8a1ad12293b1f4acfb4dc9f9400e5de39ea64329e161522"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/readback-process/stdout.log",
+      "bytes": 994,
+      "sha256": "9131cbc10d493d33eef335650601808fcfb24cdaf89ddcba3bb1dbbc3eed889d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/readback-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-handoff-exact.log",
+      "bytes": 413,
+      "sha256": "2aed18de17a6fd670a5f3353b9e5e5e5b8a66f71691680ece03138403dd44e27"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-handoff-exact.receipt.json",
+      "bytes": 5062,
+      "sha256": "b89e3f28ee253ea7d65073cd1774728e68b9fec9fbff7bb71efc1ed9cc6a1d72"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-process/process.json",
+      "bytes": 484,
+      "sha256": "3bc64e962e36e6e8189948f20784a95037adbc2a9a5c622f134ec46be9efa634"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-process/stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-process/stderr.log",
+      "bytes": 105,
+      "sha256": "ee4a10ebc63194389d921a98be70259b1bba031256d4f6e4593f838a0561f6fd"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-handoff-exact-args2.log",
+      "bytes": 426,
+      "sha256": "8ef3792b7152ae3bcfcb1e2ef5977919f53c50da7063f976aa0004194b3120e0"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-l01-handoff-exact-args2.receipt.json",
+      "bytes": 5083,
+      "sha256": "4834dc3480b35074a9900539e329e65b926b598077ec628221b445f34091c193"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-args2-process/process.json",
+      "bytes": 502,
+      "sha256": "7632a76b2cd03e6bd4b150c963bf291662bd0e7fd26d59293860754a49248b74"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-args2-process/stdout.log",
+      "bytes": 1368,
+      "sha256": "c9499f58c65ba340abc93710759d204510097317c1abaa1fce51b87f79ac06fe"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/l01-reproduction/handoff-verify-args2-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/l01-reproduction-preparation.json",
+      "bytes": 87078,
+      "sha256": "252e3e9a415e3f3144b44f70ee5bfb8fb452d384386d723a8a4d06d5996bd666"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/l01-reproduction-completion.json",
+      "bytes": 528,
+      "sha256": "5e5ca9fa57a90168b42a7bada953d16219976cb227f5e5dbd4a085bd3a82474b"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/l01-handoff-verification-completion.json",
+      "bytes": 944,
+      "sha256": "5eff0acb5ddadd9d00c74abe1f3266c4f8a167d142617d8c6e9334fce8744f1e"
+    }
+  ],
+  "limitations": [
+    "Historical subject is distinct from current981 producer.",
+    "Explicit installed dependencies reused, not independent host authenticity.",
+    "Expected native refusal and initial wrong positional handoff argv retained.",
+    "Neither native nor physical qualification is closed."
+  ]
+}

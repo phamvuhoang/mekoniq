@@ -1,0 +1,21 @@
+{
+  "scope": "Read-only cached runtime identity inventory; no code/image execution, no file copy or original-checkout mutation",
+  "records": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/lab/.runtime/55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "manifestExists": true,
+      "runtimeExists": true,
+      "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+      "artifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "actualRuntimeSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+      "portableDigest": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+      "dirty": false
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.runtime/55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+      "manifestExists": false,
+      "runtimeExists": false
+    }
+  ]
+}

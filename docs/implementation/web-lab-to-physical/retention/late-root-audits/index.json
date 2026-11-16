@@ -1,0 +1,23 @@
+{
+  "scope": "Exact late root audits created after frozen metadata archive/readable initial snapshot; not recursively part of their own input snapshot. Initial118 archive audit remains in readable SDD unchanged.",
+  "files": [
+    {
+      "original": ".superpowers/sdd/README/root-final-public-archive-audit-complete121.json",
+      "path": "late-root-audits/root-final-public-archive-audit-complete121.json",
+      "bytes": 171946,
+      "sha256": "c0cb9646557a565e2128e1d320ac7cc1db2c6aef0d52c1f657a98022e1c6a2c1"
+    },
+    {
+      "original": ".superpowers/sdd/README/root-final-public-archive-audit-complete121.log",
+      "path": "late-root-audits/root-final-public-archive-audit-complete121.log",
+      "bytes": 8952,
+      "sha256": "87300d1724e4f700cd6a15fbcbb086c0ed3ba4e677ac5161dcb898f141b5a672"
+    },
+    {
+      "original": ".superpowers/sdd/README/root-final-readable-retention-audit.json",
+      "path": "late-root-audits/root-final-readable-retention-audit.json",
+      "bytes": 2220,
+      "sha256": "39a43eb6051b39e307063e40d5f800702493cd4ce014b229b02ab0b6c575b529"
+    }
+  ]
+}

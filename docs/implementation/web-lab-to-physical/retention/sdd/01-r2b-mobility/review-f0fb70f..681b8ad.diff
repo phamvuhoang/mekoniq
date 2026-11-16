@@ -1,0 +1,2170 @@
+# Review package: f0fb70f9733bc6eb103fe8e8972cd45926af918d..681b8adb8ed473f7195062773b23fabc3b922cd5
+
+## Commits
+681b8ad fix: isolate payload journal verification from retained artifacts
+a3a50a3 fix: retain physical run status through braking observations
+94270c8 feat: add registered mobile payload experiments and campaign
+
+## Files changed
+ .../research/2026-11-mujoco-payload-experiments.md |  35 ++++
+ packages/contracts/generated/engineering.ts        |  11 +
+ packages/contracts/generated/lab-v2.ts             |  30 ++-
+ .../schemas/engineering-project.schema.json        |  12 ++
+ .../contracts/schemas/twin-sample-v2.schema.json   |  79 ++++++++
+ packages/lab-runtime/src/engineering/contracts.ts  |   1 +
+ .../lab-runtime/src/engineering/mujoco-compiler.ts |  16 +-
+ packages/lab-runtime/src/v2/gateway.ts             |   4 +-
+ packages/lab-runtime/src/v2/navigation2d/plant.ts  |   4 +
+ packages/lab-runtime/src/v2/navigation2d/runner.ts |  39 +++-
+ .../src/v2/navigation2d/worker-client.ts           |   3 +
+ packages/lab-runtime/src/v2/report.ts              |   7 +-
+ .../src/v2/simulation3d/mujoco-mobile.ts           |  13 +-
+ .../src/v2/simulation3d/payload-campaign.ts        | 222 +++++++++++++++++++++
+ .../src/v2/simulation3d/payload-experiments.ts     |  20 ++
+ .../src/v2/simulation3d/physics-evidence.ts        |   2 +-
+ .../src/v2/simulation3d/worker-client.ts           |   2 +-
+ .../simulation-mujoco/campaigns/payload-v1.json    | 167 ++++++++++++++++
+ .../serve-payload-v1/drive-contact-high-v1.json    | 105 ++++++++++
+ .../serve-payload-v1/drive-contact-low-v1.json     | 105 ++++++++++
+ .../serve-payload-v1/registered-physics.json       |  17 ++
+ .../simulation-mujoco/mujoco_worker/__main__.py    |   3 +-
+ .../mujoco_worker/mobile_engine.py                 |  20 ++
+ .../simulation-mujoco/mujoco_worker/session.py     |  37 +++-
+ robotics/simulation-mujoco/probe_mobile.py         |  16 +-
+ robotics/simulation-mujoco/tests/test_mobile.py    |  64 ++++++
+ scripts/lab-mujoco.mjs                             |  23 +++
+ tests/integration/lab-v2-software-gaps.test.ts     |   2 +-
+ tests/integration/mujoco-payload-campaign.test.ts  | 143 +++++++++++++
+ tests/unit/payload-experiments.test.ts             |  19 ++
+ 30 files changed, 1188 insertions(+), 33 deletions(-)
+
+## Diff
+diff --git a/docs/research/2026-11-mujoco-payload-experiments.md b/docs/research/2026-11-mujoco-payload-experiments.md
+new file mode 100644
+index 0000000..3ea3089
+--- /dev/null
++++ b/docs/research/2026-11-mujoco-payload-experiments.md
+@@ -0,0 +1,35 @@
++# Registered payload experiments (B04a)
++
++Development simulation only; dynamics remain `not_calibrated`, all automatic campaign artifacts have `accepted:false`. The engine/clock remain MuJoCo 3.17.0, 20 ms logical ticks, ten 2 ms substeps. Raw tick zero retains priming, while aggregate interval metrics cover `(0,lastTick]`.
++
++`EngineeringProject.mujocoExperimentId` is an optional closed selector on `engineering-mujoco-3d-v1`. Omitting it preserves the existing center-load compiler path. A selection changes the project/bundle/new-run identity; it never mutates a live world. There is no browser path, code or arbitrary physics JSON input. The existing `MJ-FD01` scenario, `mujoco_3d` backend, portable readiness checks and shared `mujoco_arm` world slot are reused. Health advertises `sim3d_payload_experiments_v1` and `mobilePayloadExperiments` only with engineering and an enabled installed/reachable mobile provider. Readiness must still pass for the admitted bundle.
++
++| Selector | Load fixture | Physics fixture | Policy linear/angular caps |
++|---|---|---|---|
++| payload-empty-v1 | empty | drive-contact-profile | 0.5 m/s, 1 rad/s |
++| payload-center-v1 | cup-center | drive-contact-profile | 0.5 m/s, 1 rad/s |
++| payload-offset-v1 | cup-offset | drive-contact-profile | 0.5 m/s, 1 rad/s |
++| payload-slow-v1 | cup-center | drive-contact-profile | 0.2 m/s, 0.4 rad/s |
++| payload-fast-v1 | cup-center | drive-contact-profile | 1 m/s, 2 rad/s |
++| payload-friction-low-v1 | cup-center | drive-contact-low-v1 | 0.5 m/s, 1 rad/s |
++| payload-friction-high-v1 | cup-center | drive-contact-high-v1 | 0.5 m/s, 1 rad/s |
++
++Existing entity speed caps and wheel limits also constrain the projection. The campaign fixture has no entity cap. Consumers must use the applied navigation kinematics, not infer speed from a selector label. The speed experiment changes policy numbers, its registered `<selector>-navigation-policy` ID, its `payload-experiments-v1` assumption SourceRef/content hash and policy hash, project digest, physical model input provenance/digest/file hash, rebound load modelRef/digest/file hash, navigation projection provenance/kinematics/digest, scene, bundle and run identity. Canonical physical fixture SHA256 stays `830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9`. Mechanical shape, world/assembly, load props/supports, physics bytes, stop policy and controller algorithm/ramp identity remain unchanged. `PAYLOAD_SPEED_DIFFERENCES` enumerates these fields for B08: compare exact values outside the declaration and return incomparable if another field differs. Never ignore all model/policy changes.
++
++The friction variants change only `contact.sliding` numerically, to 0.3 / 0.9, and carry distinct IDs, contact-source assumption text, numerical/document digests and own measurement probe IDs. All other drive/solver/clock/numerics remain baseline. MuJoCo max-geom mixing matters: floor sliding friction stays 0.8, cup sliding friction stays 0.6. The low variant is masked at those contacts and does not establish a lower effective floor-wheel coefficient. The high variant can change effective contact friction. No causal effect is inferred merely because a file hash changed.
++
++| Physics fixture | Exact file-byte SHA256 | Own probe |
++|---|---|---|
++| baseline | 9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3 | b02a-locked |
++| low | c9aec2a6a250e81f4c5c1d1372e88d7d90340b7e42f7526fe90a7ad3d1d4ad9c | b04a-drive-contact-low-v1 |
++| high | 9d1f7f3315cfe9df89ed8b8b15361b3fd09d66dedbe4ea5240a5c04b54ecbe8a | b04a-drive-contact-high-v1 |
++
++The existing bounded real-engine probe accepts only these named profile files. Each new variant was run for three loads × hold/straight/circle/stop × three repeats × 500 ticks, with raw gzip observations and model readback. All values were finite; maximum repeat position difference was zero, maximum quaternion-angle difference was 9.884312124119402e-8 rad (low), 9.424321830774485e-8 rad (high), below 1e-6. Baseline probe/profile bytes were preserved. Task handoff identifies retained raw artifact directories and summary hashes; this is development evidence, not qualification.
++
++`node scripts/lab-mujoco.mjs run --campaign payload-v1 --out DIR` records the production runner, source SQLite journal, navigation chunks, B03 physics chunks, input closure, report, process/request trace and artifact hashes. Output must be new. `verify --input DIR` uses `verifyPayloadCampaign(root)`, the same bounded reader used by tests. It ignores summary verdicts. The original eighteen cases remain: nine turns (three loads × seeds 7/19/41), three additional center/seed7 repeats, two braking cancels, two friction runs, and two worker-kill/ACK-loss cases. A nineteenth supplementary cup-fall case is required by the controller's MJ04 ruling. Completed cases count verified assertions, including correctly detected faults, not successful missions. Kill/ACK loss admits exactly the declared terminal unknown advanced tick; corrupt/missing/foreign artifacts are never excused.
++
++The cup-fall input is server-only `payload-cup-forward-impulse-v1`, never a browser selector. It is bound into the source manifest and configuration hash. At logical tick501 the original process applies 30 N along the declared tray support +x (transformed from the committed tick500 support pose at the start of tick501, then held fixed in map over all ten substeps) to the existing free `cup-1` for ten 2 ms substeps: 0.6 N·s. It writes no pose or velocity, clears external force even on a failed step, and cannot inject twice through ACK replay. Its dose is an assumed simulation fault, not a physical impact rating. The worker writes a run/boot/scene/profile/tick-bound receipt; the campaign checks it against retained physics poses and the stop monitor's five-tick load-drop window. Arm and unsupported providers refuse the option. A preceding contact warning remains in the source journal; recording continues in the same world until the registered terminal fall or bounded fault horizon, with no new mission or false served claim.
++
++Mobile telemetry has a separate `TwinPayloadState` observed branch: `payloadKind:'free'`, `propId`, declared `supportId`, `loadProfileSha256`, `sceneDigest`, `geometry`, `positionM`, `quaternionXyzw`. Entity IDs are `payload:<propId>`. Only committed snapshots publish these fields, preserving run/boot/seq/time and `origin:'physics_sim'`, `frameId:'map'`. Entities use `kind:'payload'` and `plant: TwinPayloadState`; AMR-only `distanceM` is explicitly null; `moving` derives from measured payload linear/angular velocity magnitudes and the admitted stopped thresholds. Declared support is a coordinate reference; there is no synthesized coffee ledger ownership. Empty means no payload. Rendering/Three conversion and browser import admission belong to B04b. The optional B03 report physics block remains unchanged; imported reports must preserve its completeness/unavailable distinctions.
++
++The two braking cases additionally bind server-only `payload-brake-observation-v1` (`extraTicks:5`) in the case, source manifest and configuration hash. Ordinary cancellation confirms on the first stopped observation and closes immediately; its B03 five-sample stop metric can therefore remain unavailable. The registered campaign policy retains the same world for five further committed ticks after business cancellation, without changing the journal confirmation or the stop metric definition. Its checkpoint records the exact first/last observation-tail ticks. Run status remains running through this tail, even though the source business journal already records cancellation; it becomes cancelled only after the final committed observation. Single-tick callers and mid-tail reports share that boundary. Reopening an interrupted tail is needs_attention/RECOVERY_UNKNOWN and cannot resume or create a replacement worker. Tail targets remain zero and produce no new dispatch or confirmation. A lost ACK, malformed observation or physical fault still ends the world immediately; it does not receive an observation tail. This completion policy is an input invariant for counterfactual comparisons.
+diff --git a/packages/contracts/generated/engineering.ts b/packages/contracts/generated/engineering.ts
+index 8c67774..d2b0a67 100644
+--- a/packages/contracts/generated/engineering.ts
++++ b/packages/contracts/generated/engineering.ts
+@@ -687,20 +687,31 @@ export interface EngineeringProject {
+   schemaVersion: 1;
+   id: EngineeringId;
+   revision: number;
+   runtimeProject: LabProjectV2;
+   assembly: Assembly;
+   /**
+    * @maxItems 200
+    */
+   entityBindings: EntityBinding[];
+   requestedProfile: EngineeringProfile;
++  /**
++   * Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.
++   */
++  mujocoExperimentId?:
++    | 'payload-empty-v1'
++    | 'payload-center-v1'
++    | 'payload-offset-v1'
++    | 'payload-slow-v1'
++    | 'payload-fast-v1'
++    | 'payload-friction-low-v1'
++    | 'payload-friction-high-v1';
+ }
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Problem".
+  */
+ export interface Problem {
+   code: string;
+   path: string;
+   blocking: boolean;
+   detail: string;
+diff --git a/packages/contracts/generated/lab-v2.ts b/packages/contracts/generated/lab-v2.ts
+index 61aa0b3..69b85d0 100644
+--- a/packages/contracts/generated/lab-v2.ts
++++ b/packages/contracts/generated/lab-v2.ts
+@@ -1057,21 +1057,21 @@ export interface TwinSampleV2 {
+   observedAt: string | null;
+   receivedMonotonicNs: string;
+   frameId: string;
+   origin: 'mock' | 'controller_sim' | 'physics_sim' | 'hardware';
+   quality: 'valid' | 'stale' | 'unknown' | 'invalid';
+   /**
+    * @maxItems 20
+    */
+   reasonCodes: string[];
+   commanded: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
+-  observed: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
++  observed: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | TwinPayloadState | null;
+   estimated: TwinAmrState | TwinAmrGoal | TwinArmState | TwinCoffeeCellState | TwinCupState | null;
+   causationId: string | null;
+ }
+ /**
+  * AMR base_link in frameId (map): metres, radians; commanded carries the goal, observed the pose.
+  *
+  * This interface was referenced by `TwinSampleV2`'s JSON-Schema
+  * via the `definition` "TwinAmrState".
+  */
+ export interface TwinAmrState {
+@@ -1175,10 +1175,38 @@ export interface TwinCupState {
+    * @maxItems 3
+    */
+   positionM?: number[];
+   /**
+    * @minItems 4
+    * @maxItems 4
+    */
+   quaternionXyzw?: number[];
+   restingOn?: string | null;
+ }
++/**
++ * Free simulated payload observation in map coordinates; declared support is a reference frame, never custody. Digests identify admitted file bytes.
++ *
++ * This interface was referenced by `TwinSampleV2`'s JSON-Schema
++ * via the `definition` "TwinPayloadState".
++ */
++export interface TwinPayloadState {
++  payloadKind: 'free';
++  propId: string;
++  supportId: string;
++  loadProfileSha256: string;
++  sceneDigest: string;
++  geometry: {
++    kind: 'cylinder';
++    radiusM: number;
++    heightM: number;
++  };
++  /**
++   * @minItems 3
++   * @maxItems 3
++   */
++  positionM: number[];
++  /**
++   * @minItems 4
++   * @maxItems 4
++   */
++  quaternionXyzw: number[];
++}
+diff --git a/packages/contracts/schemas/engineering-project.schema.json b/packages/contracts/schemas/engineering-project.schema.json
+index ac2e275..ee76c21 100644
+--- a/packages/contracts/schemas/engineering-project.schema.json
++++ b/packages/contracts/schemas/engineering-project.schema.json
+@@ -27,20 +27,32 @@
+     },
+     "entityBindings": {
+       "type": "array",
+       "maxItems": 200,
+       "items": {
+         "$ref": "#/definitions/EntityBinding"
+       }
+     },
+     "requestedProfile": {
+       "$ref": "#/definitions/EngineeringProfile"
++    },
++    "mujocoExperimentId": {
++      "description": "Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.",
++      "enum": [
++        "payload-empty-v1",
++        "payload-center-v1",
++        "payload-offset-v1",
++        "payload-slow-v1",
++        "payload-fast-v1",
++        "payload-friction-low-v1",
++        "payload-friction-high-v1"
++      ]
+     }
+   },
+   "required": [
+     "documentType",
+     "schemaVersion",
+     "id",
+     "revision",
+     "runtimeProject",
+     "assembly",
+     "entityBindings",
+diff --git a/packages/contracts/schemas/twin-sample-v2.schema.json b/packages/contracts/schemas/twin-sample-v2.schema.json
+index 27aa307..4dd4746 100644
+--- a/packages/contracts/schemas/twin-sample-v2.schema.json
++++ b/packages/contracts/schemas/twin-sample-v2.schema.json
+@@ -124,20 +124,23 @@
+         },
+         {
+           "$ref": "#/definitions/TwinArmState"
+         },
+         {
+           "$ref": "#/definitions/TwinCoffeeCellState"
+         },
+         {
+           "$ref": "#/definitions/TwinCupState"
+         },
++        {
++          "$ref": "#/definitions/TwinPayloadState"
++        },
+         {
+           "type": "null"
+         }
+       ]
+     },
+     "estimated": {
+       "anyOf": [
+         {
+           "$ref": "#/definitions/TwinAmrState"
+         },
+@@ -572,13 +575,89 @@
+             {
+               "type": "null"
+             }
+           ]
+         }
+       },
+       "required": [
+         "ownerKind",
+         "ownerId"
+       ]
++    },
++    "TwinPayloadState": {
++      "description": "Free simulated payload observation in map coordinates; declared support is a reference frame, never custody. Digests identify admitted file bytes.",
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "payloadKind": {
++          "const": "free"
++        },
++        "propId": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 200
++        },
++        "supportId": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 200
++        },
++        "loadProfileSha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "sceneDigest": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "geometry": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "kind": {
++              "const": "cylinder"
++            },
++            "radiusM": {
++              "type": "number",
++              "exclusiveMinimum": 0
++            },
++            "heightM": {
++              "type": "number",
++              "exclusiveMinimum": 0
++            }
++          },
++          "required": [
++            "kind",
++            "radiusM",
++            "heightM"
++          ]
++        },
++        "positionM": {
++          "type": "array",
++          "minItems": 3,
++          "maxItems": 3,
++          "items": {
++            "type": "number"
++          }
++        },
++        "quaternionXyzw": {
++          "type": "array",
++          "minItems": 4,
++          "maxItems": 4,
++          "items": {
++            "type": "number"
++          }
++        }
++      },
++      "required": [
++        "payloadKind",
++        "propId",
++        "supportId",
++        "loadProfileSha256",
++        "sceneDigest",
++        "geometry",
++        "positionM",
++        "quaternionXyzw"
++      ]
+     }
+   }
+ }
+diff --git a/packages/lab-runtime/src/engineering/contracts.ts b/packages/lab-runtime/src/engineering/contracts.ts
+index 6af936c..feef68b 100644
+--- a/packages/lab-runtime/src/engineering/contracts.ts
++++ b/packages/lab-runtime/src/engineering/contracts.ts
+@@ -96,20 +96,21 @@ function componentRules(c:ComponentRevision):Problem[]{
+   if(l.lower&&l.upper){out.push(...unit(l.lower,angle,`${base}/lower`),...unit(l.upper,angle,`${base}/upper`));if(l.lower.value>=l.upper.value)out.push(problem('JOINT_LIMITS_INVERTED',base,`lower ${l.lower.value} must be below upper ${l.upper.value}`));}
+   Object.values(l).forEach(s=>dimensioned.add(s));
+  });
+  walk(c,'',(node,path)=>{if(typeof node.unit==='string'&&'value' in node&&!dimensioned.has(node)&&!(ALLOWED_UNITS as readonly string[]).includes(node.unit))out.push(problem('UNIT_NOT_ALLOWED',`${path}/unit`,`"${node.unit}" is not an allowed unit`));});
+  return out;
+ }
+ export const validateComponentRevision=check<ComponentRevision>('engineering-component.schema.json',componentRules);
+ 
+ function projectRules(p:EngineeringProject):Problem[]{
+  const out=[...duplicates(p.assembly.instances.map(i=>i.id),'/assembly/instances'),...duplicates(p.entityBindings.map(b=>b.entityId).map(String),'/entityBindings'),...poseProblems(p.assembly,'/assembly')];
++ if(p.mujocoExperimentId&&p.requestedProfile!=='engineering-mujoco-3d-v1')out.push(problem('MUJOCO_EXPERIMENT_PROFILE_REQUIRED','/mujocoExperimentId','payload experiments require the mobile MuJoCo profile'));
+  const bound=new Map<string,string>();
+  p.entityBindings.forEach((b,i)=>b.instanceIds.forEach((id,j)=>{const other=bound.get(id);if(other&&other!==b.entityId)out.push(problem('DUPLICATE_INSTANCE_BINDING',`/entityBindings/${i}/instanceIds/${j}`,`${id} already bound to ${other}`));bound.set(id,b.entityId);}));
+  return out;
+ }
+ /** Unit and range of one model scalar. A model scalar with the wrong unit is not reinterpreted: it is refused. */
+ const field=(out:Problem[],s:Scalar|undefined,units:string[],path:string,ok:((v:number)=>boolean)|null,why:string)=>{
+  if(!s)return;
+  out.push(...unit(s,units,path));
+  if(ok&&!(Number.isFinite(s.value)&&ok(s.value)))out.push(problem('MODEL_PARAMETER_RANGE',path,why));
+ };
+diff --git a/packages/lab-runtime/src/engineering/mujoco-compiler.ts b/packages/lab-runtime/src/engineering/mujoco-compiler.ts
+index efb4d2e..22e71a1 100644
+--- a/packages/lab-runtime/src/engineering/mujoco-compiler.ts
++++ b/packages/lab-runtime/src/engineering/mujoco-compiler.ts
+@@ -1,11 +1,12 @@
+ // Server-owned measured Serve profile. Requests choose only the engineering profile; paths and physics parameters never come from the browser.
++import {payloadExperiment} from '../v2/simulation3d/payload-experiments';
+ import {createHash} from 'node:crypto';
+ import {mkdir,readFile,writeFile} from 'node:fs/promises';
+ import {dirname,join} from 'node:path';
+ import {NAVIGATION_SCHEMA_HASH,defaultNavigationPolicy,sealDocument,type LoadProfileV1,type RobotPhysicalModelV1} from '../v2/navigation2d/contracts';
+ import {MOBILE_STOP_POLICY,MOBILE_CONTROLLER_POLICY} from '../v2/simulation3d/mujoco-mobile';
+ import {hashJson} from '../v2/hash';
+ import {EngineeringInputError} from './assembly';
+ import type {CompilerPort} from './gateway';
+ import {compileNavigationScene,withSceneFiles,NAVIGATION_COMPILER_VERSION} from './navigation-compiler';
+ import {projectNavigationModel} from './navigation-model';
+@@ -15,30 +16,33 @@ import {WORLD3D_DEFAULT} from './webots-compiler';
+ const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
+ const json=(v:unknown)=>Buffer.from(JSON.stringify(v,null,2)+'\n');
+ const fail=(code:string,detail:string):never=>{throw new EngineeringInputError([{code,path:'/runtimeProject/entities',blocking:true,detail}]);};
+ /** Ignore input identity only: the locked profile applies to exactly the registered mechanics and sensors. */
+ const shape=(p:RobotPhysicalModelV1)=>{const {inputs:_i,modelDigest:_d,robotId:_r,...rest}=p;void _i;void _d;void _r;return hashJson(rest);};
+ export function createMujocoCompiler(o:{workerRoot:string}):CompilerPort{
+  return {version:`lab-mujoco-compiler/1+${NAVIGATION_COMPILER_VERSION}`,runnable:()=>false,
+   async compileResolved(input,outDir){
+    const entities=input.project.runtimeProject.entities;
+    if(entities.length!==1||entities[0]!.kind!=='amr')fail('MUJOCO_MOBILE_SCOPE_UNSUPPORTED','the measured mobile profile supports exactly one AMR and no other entities');
++   const experiment=input.project.mujocoExperimentId?payloadExperiment(input.project.mujocoExperimentId):undefined,loadName=experiment?.load??'cup-center',physicsName=experiment?.physics??'drive-contact-profile';
+    const fixture=join(o.workerRoot,'fixtures/serve-payload-v1');
+    const physical=projectPhysicalModel(input,entities[0]!.id,NAVIGATION_SCHEMA_HASH),canonical=JSON.parse(await readFile(join(fixture,'physical-model-amr-1.json'),'utf8')) as RobotPhysicalModelV1;
+    if(shape(physical)!==shape(canonical))fail('MUJOCO_MODEL_UNSUPPORTED','the measured drive/load profile requires the canonical Serve mechanics and noiseless sensor');
+    const physicalPath=`physical-model/${physical.robotId}.json`,physicalBytes=json(physical);
+-   const load=sealDocument<LoadProfileV1>({...JSON.parse(await readFile(join(fixture,'cup-center.json'),'utf8')),modelRef:{path:physicalPath,sha256:sha(physicalBytes)}},'digest');
+-   const loadBytes=json(load),physicsBytes=await readFile(join(fixture,'drive-contact-profile.json')),physics=JSON.parse(physicsBytes.toString());
+-   if(sha(physicsBytes)!=='9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3')fail('MUJOCO_PROFILE_UNSUPPORTED','the mobile profile must be the reviewed B02a measurement lock');
+-   const policy=defaultNavigationPolicy(),model=projectNavigationModel(physical,policy,{entitySpeedLimitMps:entities[0]!.speedLimitMps});
++   const load=sealDocument<LoadProfileV1>({...JSON.parse(await readFile(join(fixture,`${loadName}.json`),'utf8')),modelRef:{path:physicalPath,sha256:sha(physicalBytes)}},'digest');
++   const loadBytes=json(load),physicsBytes=await readFile(join(fixture,`${physicsName}.json`)),physics=JSON.parse(physicsBytes.toString());
++   const registered=JSON.parse(await readFile(join(fixture,'registered-physics.json'),'utf8'));
++   if(sha(physicsBytes)!==registered[physicsName]?.sha256)fail('MUJOCO_PROFILE_UNSUPPORTED','the mobile profile must be the reviewed B02a measurement lock');
++   const baseline=defaultNavigationPolicy(),parameters=experiment?{...baseline.parameters,maxLinearMps:experiment.maxLinearMps,maxAngularRadps:experiment.maxAngularRadps}:baseline.parameters;
++   const policy=hashJson(parameters)===hashJson(baseline.parameters)?baseline:sealDocument({...baseline,id:`${input.project.mujocoExperimentId}-navigation-policy`,parameters,source:{kind:'assumed' as const,documentId:'payload-experiments-v1',revision:'1',locator:`registered ${input.project.mujocoExperimentId} speed caps; all other parameters retain baseline`,contentSha256:hashJson(parameters)}},'hash'),model=projectNavigationModel(physical,policy,{entitySpeedLimitMps:entities[0]!.speedLimitMps});
+    const stopBytes=json(MOBILE_STOP_POLICY),controllerBytes=json(MOBILE_CONTROLLER_POLICY);
+-   const files=[{path:'mobile-controller-policy.json',bytes:controllerBytes},{path:'mobile-stop-policy.json',bytes:stopBytes},{path:physicalPath,bytes:physicalBytes},{path:'cup-center.json',bytes:loadBytes},{path:'drive-contact-profile.json',bytes:physicsBytes},
++   const files=[{path:'mobile-controller-policy.json',bytes:controllerBytes},{path:'mobile-stop-policy.json',bytes:stopBytes},{path:physicalPath,bytes:physicalBytes},{path:`${loadName}.json`,bytes:loadBytes},{path:`${physicsName}.json`,bytes:physicsBytes},
+     {path:'assumptions.json',bytes:await readFile(join(fixture,'assumptions.json'))},
+     {path:'cell-layout.json',bytes:await readFile(join(o.workerRoot,'fixtures/xarm6-g2-v1/cell-layout.json'))},
+     {path:'canonical-physical-model.json',bytes:await readFile(join(fixture,'physical-model-amr-1.json'))}];
+    const scene=withSceneFiles(compileNavigationScene(input,[model],policy,NAVIGATION_SCHEMA_HASH,{world3d:{...WORLD3D_DEFAULT},engine:{id:'mujoco_3d',version:'3.17.0',timestepMs:2,substeps:10,
+-    controllerPolicyRef:{id:MOBILE_CONTROLLER_POLICY.id,revision:MOBILE_CONTROLLER_POLICY.revision,path:'mobile-controller-policy.json',sha256:sha(controllerBytes)},stopPolicyRef:{id:MOBILE_STOP_POLICY.id,revision:MOBILE_STOP_POLICY.revision,path:'mobile-stop-policy.json',sha256:sha(stopBytes)},physicsProfileRef:{id:physics.id,revision:physics.revision,path:'drive-contact-profile.json',sha256:sha(physicsBytes)},loadProfileRef:{id:load.id,revision:load.revision,path:'cup-center.json',sha256:sha(loadBytes)}}}),files.map(f=>({path:f.path,sha256:sha(f.bytes),bytes:f.bytes.length})));
++    controllerPolicyRef:{id:MOBILE_CONTROLLER_POLICY.id,revision:MOBILE_CONTROLLER_POLICY.revision,path:'mobile-controller-policy.json',sha256:sha(controllerBytes)},stopPolicyRef:{id:MOBILE_STOP_POLICY.id,revision:MOBILE_STOP_POLICY.revision,path:'mobile-stop-policy.json',sha256:sha(stopBytes)},physicsProfileRef:{id:physics.id,revision:physics.revision,path:`${physicsName}.json`,sha256:sha(physicsBytes)},loadProfileRef:{id:load.id,revision:load.revision,path:`${loadName}.json`,sha256:sha(loadBytes)}}}),files.map(f=>({path:f.path,sha256:sha(f.bytes),bytes:f.bytes.length})));
+    const sceneBytes=json(scene),out=[...files,{path:'scene.json',bytes:sceneBytes},{path:'navigation-scene.json',bytes:sceneBytes},{path:'navigation-policy.json',bytes:json(policy)},{path:`navigation-model/${physical.robotId}.json`,bytes:json(model)}];
+    for(const f of out){await mkdir(dirname(join(outDir,f.path)),{recursive:true});await writeFile(join(outDir,f.path),f.bytes);}
+    return {sceneDigest:sha(sceneBytes),files:out.map(f=>({path:f.path,sha256:sha(f.bytes)})).sort((a,b)=>a.path<b.path?-1:1)};
+   }};
+ }
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index 50a9380..73e46ba 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -1,10 +1,11 @@
++import {PAYLOAD_EXPERIMENTS} from './simulation3d/payload-experiments';
+ import {randomBytes,randomUUID} from 'node:crypto';
+ import {rm,writeFile} from 'node:fs/promises';
+ import {join} from 'node:path';
+ import type {IncomingMessage,ServerResponse} from 'node:http';
+ import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
+ import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
+ import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
+ import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffered} from './scenario-matrix';
+ import {scenarioRegistry} from './scenario-registry';
+ import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProviders} from './scenario-runner';
+@@ -65,25 +66,26 @@ export function createV2Gateway(deps:V2Deps){
+  const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
+  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
+  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
+   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
+   if(method==='GET'&&sub==='/health')return send(response,200,{
+    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
+    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
+    backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true},deployment:{bind:deps.deployment?.bind??'loopback'},
++   ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
+    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
+    capabilities:[...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
+     // the arm plant needs no engineering bundle: its scene is built from the run's project
+     ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
+-    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1']:[],
++    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1','sim3d_payload_experiments_v1']:[],
+     ...enabled.has('mujoco_arm')&&catalog.backends.some(b=>b.id==='mujoco_arm'&&b.installed&&b.reachable)?['sim3d_arm_contact_v1']:[]],
+   });
+   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
+   if(method==='POST'&&sub==='/sessions'){
+    const b=await deps.readBody(request),extra=Object.keys(b).filter(k=>k!=='token');
+    // only with an access key (D55); checked after the body so concurrent attempts cannot all pass the gate before one is counted; a valid attempt does not reset the count
+    const limited=!!deps.accessKeyValid;
+    pairingFailures=pairingFailures.filter(t=>deps.now()-t<PAIRING_WINDOW_MS);
+    if(limited&&pairingFailures.length>=PAIRING_FAILURES){response.setHeader('Retry-After',String(Math.max(1,Math.ceil((pairingFailures[0]!+PAIRING_WINDOW_MS-deps.now())/1000))));return deny(response,429,'PAIRING_RATE_LIMITED',[]);}
+    if(extra.length){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_SESSION_REQUEST',codesOf(issues),issues);}
+diff --git a/packages/lab-runtime/src/v2/navigation2d/plant.ts b/packages/lab-runtime/src/v2/navigation2d/plant.ts
+index 05cacbe..5285dba 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/plant.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/plant.ts
+@@ -2,21 +2,25 @@
+ // The runner owns the clock, the missions, the journal and the evidence; a plant only steps, senses and says who it is. One run, one plant, no fallback between them.
+ import type {IRSimResponseV1,IRSimSnapshotV1,NavigationSceneV1} from './contracts';
+ import {IRSIM_AMR} from './adapter';
+ import type {EvidenceProfile} from './evidence';
+ import {spawnIRSimWorker,WorkerLostError,type SpawnOptions,type WireRequest} from './worker-client';
+ export {WorkerLostError};
+ export type {SpawnOptions};
+ 
+ export const IRSIM_BACKEND=IRSIM_AMR.id;
+ /** Who the plant is and what a report may claim about it. */
++export interface SimulationPerturbation {id:string;revision:number;parameters:Record<string,unknown>}
++export interface CompletionObservation {id:'payload-brake-observation-v1';extraTicks:5}
+ export interface PlantIdentity {
++ /** Registered server-only post-cancellation observation window, not a business confirmation delay. */completionObservation?:CompletionObservation;
++ /** Server-only named fault input, included in source run/configuration identity. */simulationPerturbation?:SimulationPerturbation;
+  /** Optional provider-specific controller; absent preserves the legacy controller identity and behavior. */
+  controller?:{identity:{id:'grid-diff-v1';version:string};options:import('./controller').NavigationControllerOptions};
+  adapterIdentity?:{id:string;version:string;model:string};
+  /** Backend identity written into checkpoint and twin samples. */
+  amr:{readonly id:string;readonly version:string;readonly model:string;readonly dynamics:boolean};
+  /** Measured physics pose provenance; absent preserves legacy controller_sim samples. */telemetryOrigin?:'physics_sim';
+  /** label of the in-memory telemetry recorder */telemetryLabel:string;
+  /** first lines of the report's limitations (the scenario's and the scene's follow) */limitations:readonly string[];
+  /** what the report may claim: `dynamics` is true only for a plant that simulates it */coverage:{dynamics:boolean};
+  /** the capability the server must advertise before a set of this plant is selectable */capability:string;
+diff --git a/packages/lab-runtime/src/v2/navigation2d/runner.ts b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+index 88e73f4..11f7da7 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/runner.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+@@ -65,20 +65,21 @@ interface Checkpoint {
+  receipts:Record<string,{hash:string;view:RunView}>;rejectedObservations:RunReport['rejectedObservations'];reconciliations:RunReport['reconciliations'];
+  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
+  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;
+  plant:PlantCheckpoint;adapters:Record<string,IRSimAdapterState>;distanceM:Record<string,number>;maxConcurrentMovers:number;
+  /** what the worker's describe reported when the plant started */
+  engine?:{packageVersion:string;pythonVersion:string};
+  /** gaps the run asked the recorder for (a lost step ACK, a refused append): re-recorded on reopen when the manifest never got them */
+  evidenceGaps?:Gap[];
+  /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
+  evidenceTerminal?:string|null;
++ /** Only the registered braking campaign retains this bounded observation tail in the same world. */completionTail?:{firstTick:number;lastTick:number};
+  /** contention rig only (scenario.rig): each robot's directly-given controller goal and its last decision */
+  rig?:Record<string,{commandId:string;state:string;tick:number}>;
+ }
+ 
+ /** The locked navigation scene and the worker files it lists, verified against the bundle's project and this run's world. */
+ async function lockScene(input:RunManifestInput,project:LabProjectV2,roles:Roles,read:(path:string)=>Promise<Uint8Array>,engineId:string){
+  const lock=input.engineering!,bytes=await read(SCENE).catch(()=>{throw new Error(`ENGINEERING_CLOSURE_MISSING:${SCENE}`);});
+  const scene=JSON.parse(Buffer.from(bytes).toString('utf8')) as NavigationSceneV1,checked=validateNavigationDocument(scene);
+  if(!checked.ok||scene.documentType!=='navigation-scene')throw new Error('NAVIGATION_SCENE_INVALID');
+  if(lock.navigation&&(lock.navigation.sha256!==sha256(bytes)||lock.navigation.sceneDigest!==scene.sceneDigest))throw new Error('ENGINEERING_IDENTITY_MISMATCH');
+@@ -118,34 +119,36 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
+  // ponytail: scheduled faults/obstacles are not compiled into the 2D plant yet (C02); refuse them instead of silently running without
+  if(project.faultSchedule?.length||scenario.obstacles?.length)throw new Error('FAULT_SCHEDULE_UNSUPPORTED');
+  const roles=resolveRoles(scenario,project),assetCatalog=[...(providers.assets??input.engineering.runtimeProjection.assets as never[]),...serverAssets],trays:Record<string,number>={};
+  const assets=project.entities.map(e=>{const a=assetCatalog.find(x=>x.contentHash===e.assetRef.contentHash);trays[e.id]=a?Math.max(1,a.frames.filter(f=>/^tray_\d+$/.test(f.id)).length):1;return {...e.assetRef,resolved:!!a};});
+  const dir=providers.directory,bundleDir=join(dir,'bundle');
+  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
+  let cp=await readCheckpoint<Checkpoint>(dir);
+  const fresh=!cp;
+  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
+  if(cp&&cp.provider!==amr.id)throw new Error('RUN_IDENTITY_MISMATCH');
++ if(plant.identity.completionObservation&&(amr.id!=='mujoco_3d'||plant.identity.completionObservation.id!=='payload-brake-observation-v1'||plant.identity.completionObservation.extraTicks!==5))throw new Error('COMPLETION_OBSERVATION_UNREGISTERED');
++ if(cp?.completionTail&&(!plant.identity.completionObservation||!Number.isSafeInteger(cp.completionTail.firstTick)||cp.completionTail.firstTick<0||cp.completionTail.lastTick!==cp.completionTail.firstTick+5||cp.tick<cp.completionTail.firstTick||cp.tick>cp.completionTail.lastTick))throw new Error('RECOVERY_CHECKPOINT_INVALID');
+  if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
+  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
+  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
+  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
+  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
+  const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
+  if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
+  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
+  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
+  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
+  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
+- const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
++ const configuration={revision:1,hash:hashJson({...plant.identity.completionObservation?{completionObservation:plant.identity.completionObservation}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:plant.identity.simulationPerturbation}:{},roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
+  const backends=[{...amr}];
+- const manifest:Omit<RunReport['manifest'],'runId'>={engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
++ const manifest:Omit<RunReport['manifest'],'runId'>={...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
+   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
+   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
+   profiles:[{id:scene.policy.id,revision:scene.policy.revision,hash:scene.policy.hash,provenance:scene.policy.source.kind}],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'SIMULATED_PLANT'}};
+  const manifestHash=hashJson(manifest);
+  if(cp&&cp.manifestHash!==manifestHash)throw new Error('RUN_IDENTITY_MISMATCH');
+  // a reopened run's actor file must still be exactly the one its manifest identity was made from
+  if(cp&&fixtureBytes&&sha256(await readFile(join(bundleDir,FIXTURE)).catch(()=>Buffer.alloc(0)))!==sha256(fixtureBytes))throw new Error('RUN_IDENTITY_MISMATCH');
+  if(!cp){
+   for(const [path,bytes] of files){await mkdir(dirname(join(bundleDir,path)),{recursive:true});await writeFile(join(bundleDir,path),bytes,{mode:0o600,flag:'wx'});}
+@@ -241,20 +244,32 @@ class FixedStepRun implements ScenarioRun {
+  private releaseSlot(){slotsOf(this.plant.identity.amr.id).delete(this.cp.runId);}
+  /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
+  private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();await this.flushPhysics();}
+  record(){
+   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
+   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
+   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
+    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
+    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:this.plant.identity.telemetryOrigin??'controller_sim',
+     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
++  this.telemetry.record(this.payloadStates().map(({id,plant}):TwinSampleV2=>({schemaVersion:2,runId:c.runId,entityId:id,providerId:'mujoco_3d',bootId:c.plant.bootId!,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:'physics_sim',quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:null,observed:plant,estimated:null,causationId:null})));
++ }
++ /** Only the committed checkpoint can publish a free payload. No coffee/custody IDs are synthesized. */
++ private payloadStates(){
++  const snapshot=this.cp.plant.snapshot as import('./contracts').Sim3DSnapshotV1|null;
++  if(!this.physics||!snapshot?.physics)return [];
++  return this.physics.load.props.flatMap(p=>{
++   const observed=snapshot.physics!.loads.find(l=>l.propId===p.propId);
++   if(p.attachment.kind!=='free'||!observed)return [];
++   const plant:import('../../../../contracts/generated/lab-v2').TwinPayloadState={payloadKind:'free',propId:p.propId,supportId:p.attachment.supportId,loadProfileSha256:this.physics!.loadProfileDigest,sceneDigest:this.scene.sceneDigest,geometry:structuredClone(p.geometry),positionM:[...observed.poseMap.positionM],quaternionXyzw:[...observed.poseMap.quaternionXyzw]};
++   return [{id:`payload:${p.propId}`,plant,moving:Math.hypot(...observed.linearVelocityMapMps)>this.scene.policy.parameters.stoppedLinearMps||Math.hypot(...observed.angularVelocityMapRadps)>this.scene.policy.parameters.stoppedAngularRadps}];
++  });
+  }
+  // ---- plant (one worker process per run, never a second one) ----
+  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
+   const c=this.cp,r=await this.worker!.request({protocol:this.plant.protocol,requestId:`${op}-${++c.plant.requests}`,runId:c.runId,expectedTick:c.tick,op,payload} as never);
+   if(!r.ok)throw new WorkerLostError(r.error.code,this.plant.startupPolicy&&op==='create'&&!this.plant.startupPolicy.preMutationCreateRefusals.includes(r.error.code)?'unknown':'not_sent',`${op} refused`);
+   return r;
+  }
+  private async startPlant(){
+   const c=this.cp,o=this.irsim;let created=false;
+   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
+@@ -315,22 +330,22 @@ class FixedStepRun implements ScenarioRun {
+   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
+   c.pendingOps=[];
+   if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RUNTIME_RESTART';}
+   for(const a of this.adapters.values())a.state.plantLost=c.plant.status==='lost';
+   let travelling=0;
+   for(const {id} of c.roles.robots){
+    const robot=await this.source.read('robot',id);if(typeof robot.state.missionId!=='string')continue;
+    const m=await this.source.read('mission',robot.state.missionId),stop=(m.state.stops as JsonObject[]).find(s=>s.id===m.state.currentStopId);
+    if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string'){travelling++;this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');}
+   }
+-  // a finished run had nothing in flight: reopening it is a read, not a recovery; so is a journal-confirmed cancel whose robots were observed stopped
+-  if(!travelling&&!c.inFlight&&(await this.missionsDone()||c.cancelled&&!c.attention.length&&await this.cancelDone()))return;
++  // A finished run is read-only. Business cancellation alone cannot complete a registered physical observation tail after a restart.
++  if(!travelling&&!c.inFlight&&(await this.missionsDone()||c.cancelled&&!c.attention.length&&await this.cancellationFinished()))return;
+   c.attention.push({reason:'RECOVERY_UNKNOWN',tick:c.tick});c.suspended=true;c.confirmations={};
+   await this.drain();await this.scanArrivals();
+   c.inFlight=false;c.dispatchDue=true;c.revision++;
+  }
+  // ---- source (same scripted semantics as the mock FD runner) ----
+  private async submit(type:string,payload:JsonObject,robotId?:string):Promise<CommandResult>{
+   if(type==='Mission.Create'){
+    const limits=this.project.entities.filter(e=>e.kind==='amr'&&(payload.robotId===undefined||e.id===payload.robotId)).flatMap(e=>e.speedLimitMps===undefined?[]:[e.speedLimitMps]);
+    if(limits.length)payload={...payload,speedLimitMps:Math.min(...limits,typeof payload.speedLimitMps==='number'?payload.speedLimitMps:Infinity)};
+   }
+@@ -576,56 +591,66 @@ class FixedStepRun implements ScenarioRun {
+  private async runMissions(){
+   const c=this.cp,ids=new Set([...c.workload.flatMap(w=>w.missionId?[w.missionId]:[]),...Object.values(c.parking)]);
+   for(const {id} of c.roles.robots){const m=(await this.source.read('robot',id)).state.missionId;if(typeof m==='string')ids.add(m);}
+   return [...ids];
+  }
+  /** Cancelled only when the journal shows every run mission final and the last verified snapshot shows every robot stopped. */
+  private async cancelDone(){
+   for(const id of await this.runMissions())if(!FINAL.includes(String((await this.source.read('mission',id)).state.status)))return false;
+   return !this.cp.roles.robots.some(r=>this.moving(r.id));
+  }
+- private async finished(){const c=this.cp;return c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());}
++ private async finished(){
++  const c=this.cp,done=c.started&&!c.attention.length&&(c.cancelled?await this.cancelDone():await this.missionsDone());
++  if(!done||!c.cancelled||!this.plant.identity.completionObservation)return done;
++  c.completionTail??={firstTick:c.tick,lastTick:c.tick+this.plant.identity.completionObservation.extraTicks};
++  return c.tick>=c.completionTail.lastTick;
++ }
++ /** Business cancellation can precede physical completion; reads must never start or shorten the registered observation tail. */
++ private async cancellationFinished(){
++  return await this.cancelDone()&&(!this.plant.identity.completionObservation||!!this.cp.completionTail&&this.cp.tick>=this.cp.completionTail.lastTick);
++ }
+  /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
+   * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
+   * the steps decrement happen before any await). */
+  private async takeControls(){for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);}
+  private async missionsDone(){
+   const c=this.cp;
+   if(this.scenario.rig)return this.scenario.rig.goals.every(g=>c.rig?.[c.roles.robots[g.robot]!.id]?.state==='arrived');
+   if(c.workload.some(w=>w.status!=='placed'))return false;
+   for(const w of c.workload)if((await this.source.read('mission',w.missionId!)).state.status!=='completed')return false;
+   if(!this.scenario.park)return true;
+   for(const r of c.roles.robots){const s=(await this.source.read('robot',r.id)).state;if(s.missionId||s.availability!=='idle'||s.position!==r.parkingId)return false;}
+   return true;
+  }
+  private async view():Promise<RunView>{
+   const c=this.cp,m=c.manifest;
+   let status:RunView['run']['status']='running';
+   const awaiting=Object.entries(c.confirmations).filter(([,x])=>x.due===null).map(([k,x])=>({subjectId:k.split('/')[1]!,confirmationType:x.type,missionId:k.split('/')[0]!,robotId:x.robotId}));
+   if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)status='needs_attention';
+   else if(!c.started)status='ready';
+   else if(c.attention.length)status='needs_attention';
+-  else if(c.cancelled)status=await this.cancelDone()?'cancelled':'running';
++  else if(c.cancelled)status=await this.cancellationFinished()?'cancelled':'running';
+   else if(await this.missionsDone())status='completed';
+   else if(c.paused)status='paused';
+   else if(awaiting.length)status='awaiting_confirmation';
+   let served=0n;for(const w of c.workload)if(w.lineId)served+=BigInt(String((await this.source.read('fulfillment',w.lineId)).state.served??'0'));
+   const journal=await this.source.journal();
+   return {run:{schemaVersion:2,id:c.runId,mode:'simulation',access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
+    tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:this.plant.identity.amr.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
+  }
+  private entities():EntityView[]{
+   const c=this.cp;
+-  return c.roles.robots.map(({id})=>{
++  const robots:EntityView[]=c.roles.robots.map(({id})=>{
+    const r=this.robotObs(id),start=this.scene.robots.find(x=>x.robotId===id)!.initialPoseMap,[x,y,yawRad]=this.basePose(id,r?.poseDriveMap??start),g=this.adapters.get(id)!.goal();
+    return {id,kind:'amr' as const,pose:{x,y,yawRad},quality:this.verified()?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
+   });
++  return [...robots,...this.payloadStates().map(({id,plant,moving}):EntityView=>({id,kind:'payload',plant,pose:{x:plant.positionM[0]!,y:plant.positionM[1]!,yawRad:yawOf(plant.quaternionXyzw)},quality:this.verified()?'valid':'stale',moving,hold:null,goal:null,path:[],distanceM:null}))];
+  }
+  /** One critical section: no action interleaves while the report reads the checkpoint, the journal, the evidence listing and the clock (one moment, never two). */
+  report():Promise<RunReport>{const p=this.queue.then(()=>this.buildReport());this.queue=p.catch(()=>{});return p;}
+  private async buildReport():Promise<RunReport>{
+   if(this.closed)throw new Error('RUN_CLOSED');
+   await this.flushPhysics();
+   const c=this.cp,v=await this.view();
+   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
+   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
+   const physicsEvidence=await this.physicsReport(read);
+diff --git a/packages/lab-runtime/src/v2/navigation2d/worker-client.ts b/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
+index 04569ee..5714d5b 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/worker-client.ts
+@@ -32,28 +32,31 @@ export interface SpawnOptions{
+  /** Directory with the contract schemas the worker validates against (the same irsim-worker-v1 file this process uses). */
+  schemaDir:string;sceneDigest?:string;
+  /** sha256 of <bundleRoot>/scenario-fixture.json (scripted actors), bound at spawn like the scene digest: the worker loads actors only from a file with exactly this digest. */
+  fixtureSha256?:string;
+  /** Per-op ACK deadlines in ms (tests shorten them). */
+  deadlinesMs?:Partial<Record<string,number>>;
+  /** Interpreter arguments; default `-m irsim_worker`. Operator/test option only: never derived from a request. */
+  entry?:string[];
+  /** Webots plant only: the host installation the worker starts (never from a request). */
+  webotsHome?:string;
++ /** Server-owned campaign fault selector, never read from a browser request. */
++ payloadPerturbationId?:'payload-cup-forward-impulse-v1';
+ }
+ interface Pending{request:WireRequest;resolve:(r:IRSimResponseV1)=>void;reject:(e:Error)=>void}
+ 
+ /** Starts one worker process for one run. There is never a second process for the same run: after a failure the client is terminal and recovery is a new run with locked inputs. */
+ export const IRSIM_WIRE:WireSpec={protocol:'mekoniq-irsim/1',module:'irsim_worker',extraArgs:o=>o.fixtureSha256?['--fixture-sha256',o.fixtureSha256]:[],validateRequest:validateIRSimRequest,validateResponse:validateIRSimResponse,fatalCodes:['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT']};
+ export const spawnIRSimWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,IRSIM_WIRE);
+ 
+ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWorkerClient>{
++ if(o.payloadPerturbationId&&wire.module!=='mujoco_worker')throw new Error('PERTURBATION_PROVIDER_UNSUPPORTED');
+  await mkdir(o.runDirectory,{recursive:true});
+  const deadlines={...DEFAULT_DEADLINES_MS,...wire.deadlinesMs,...o.deadlinesMs},root=resolve(o.workerRoot);
+  const args=isolatedPythonArgs([root],o.entry??['-m',wire.module],['--run-id',o.runId,'--bundle-root',resolve(o.bundleRoot),'--schema-dir',resolve(o.schemaDir),'--lock-digest',o.lockDigest,...o.sceneDigest?['--scene-digest',o.sceneDigest]:[],...wire.extraArgs(o)]);
+  // fixed argv, allowlisted environment (no credentials, no ROS discovery), a private working directory; the venv isolates dependencies but is not a sandbox
+  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg',...wire.env} as unknown as NodeJS.ProcessEnv;
+  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
+  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
+  const queue:Pending[]=[];let inFlight:Pending|undefined;
+  // Settled by the process ending ('exit'; 'close' covers a spawn error where 'exit' never fires). It must not wait for stdio to drain: a grandchild that
+  // inherited the pipes (recordings hung ~15 min on exactly that) would hold 'close' open, so after 'exit' the streams get 500 ms to flush and are then destroyed.
+diff --git a/packages/lab-runtime/src/v2/report.ts b/packages/lab-runtime/src/v2/report.ts
+index 3764b48..ca7f2a6 100644
+--- a/packages/lab-runtime/src/v2/report.ts
++++ b/packages/lab-runtime/src/v2/report.ts
+@@ -6,34 +6,37 @@ import type {JsonObject} from '../../../contracts/src/index';
+ import {hashJson} from './hash';
+ import type {TelemetryReport} from './telemetry';
+ import type {ArmPlantState,ArmProgramSet} from '../../../cell-adapters/src/mock-arm';
+ /** A plant arm run whose program comes from its fixture (MuJoCo, R2a): what the arm ran, recorded in the manifest. */
+ export interface ArmProgramRecord {fixture:{id:string;revision:string};physicsDigest:string;programs:ArmProgramSet;programsDigest:string;waypointsDigest:string}
+ import type {ArmSceneDeclaration} from './models/arm-scene';
+ import type {ArmReportBlock} from './beverage/arm-plant-report';
+ export interface BusinessEvent {sequence:string;at:string;type:string;kind:string;id:string;state:JsonObject}
+ export interface Attention {reason:string;tick:number;robotId?:string;subjectId?:string;commandId?:string}
+ export interface WorkloadItem {actor:string;tableId:string;quantity:number;atTick:number;sessionId:string;status:'planned'|'placed';lineId?:string;missionId?:string;allocationId?:string}
+-export interface EntityView {id:string;kind:'amr';pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
++export interface AmrEntityView {id:string;kind:'amr';pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
++/** Renderable observed free payload; AMR travel distance is unavailable; moving derives from actual payload twist and admitted stopped thresholds. */
++export interface PayloadEntityView {id:string;kind:'payload';plant:import('../../../contracts/generated/lab-v2').TwinPayloadState;pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:null;goal:null;path:[];distanceM:null}
++export type EntityView=AmrEntityView|PayloadEntityView;
+ export interface CoffeeView {jobs:{jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null;waitingReason?:string|null;canRestoreCup?:boolean}[];cups:{cupId:string;ownerKind:string;ownerId:string}[]}
+ export interface CupMovementView {transferId:string;from:{kind:string;id:string};to:{kind:string;id:string;slot?:number};provenance:string;observedBy:string;at:string;reason?:string;evidence?:JsonObject}
+ export interface CoffeeReport {
+  jobs:JsonObject[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:CupMovementView[];[k:string]:unknown}[];
+  cellEffects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
+  armTrace:{tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[];collision:ArmPlantState['collision']|null;stop:ArmPlantState['stop']|null};plantLog:JsonObject[];
+ }
+ export interface RunReport {
+  schemaVersion:2;
+  /** Optional independent read-back physics evidence; deliberately excluded from canonicalOutcome. */
+  physicsEvidence?:{manifest:import('../../../contracts/generated/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:import('./simulation3d/physics-metrics').PhysicsMetrics};
+  faultScheduleFires?:FaultFireRecord[];
+- manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
++ manifest:{completionObservation?:import('./navigation2d/plant').CompletionObservation;simulationPerturbation?:import('./navigation2d/plant').SimulationPerturbation;faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+   scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
+   hashAlgorithm:'sha256-canonical-json-v1';designHash:string;adapterHash:string;configuration:{revision:number;hash:string};recipes:{id:string;revision:number;hash:string}[];
+   models:{id:string;revision:string;hash:string;provenance:string}[];profiles:{id:string;revision:number;hash:string;provenance:string}[];calibration:{status:'not_calibrated';revision:null;hash:null;reason:string};armCollisionScene?:ArmSceneDeclaration;/** Only a run whose arm provider supplies its program (MuJoCo arm). */armProgram?:ArmProgramRecord};
+  outcome:{status:string;served:string;tick:number;simTimeNs:string};
+  attention:Attention[];workload:WorkloadItem[];entities:EntityView[];businessEvents:BusinessEvent[];effects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
+  metrics:{maxConcurrentMovers:number;
+   /** Plant hold transitions (cause of each wait and its end, null = moving again), from the mock model. */
+   holds?:{at:string;robotId:string;hold:string|null}[];distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
+   /** IR-SIM only: plant metrics recomputed from the durable evidence (navigation2d), with their coverage. */
+   navigation?:Omit<NavigationMetrics,'contacts'|'coverageReasons'>&{reasons:string[]}};
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+index c814442..117eef1 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+@@ -1,30 +1,35 @@
+ import {createHash} from 'node:crypto';
+ import {hashJson} from '../hash';
+ import type {NavigationSceneV1,LoadProfileV1,Sim3DSnapshotV1} from '../navigation2d/contracts';
+ import {validateLoadProfile} from './load-profile';
+ import type {PlantPort,PlantStopMonitor} from '../navigation2d/plant';
+ import type {MujocoRuntimeOptions} from './mujoco';
+ import {spawnMujocoWorker} from './worker-client';
+ export const MUJOCO_MOBILE={id:'mujoco_3d',version:'3.17.0',model:'mujoco_serve_diff_drive',dynamics:true} as const;
+-export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions):PlantPort=>({
++export const MOBILE_PAYLOAD_IMPULSE=Object.freeze({id:'payload-cup-forward-impulse-v1',revision:1,parameters:Object.freeze({targetTick:501,frameSampleTick:500,forceTransform:'support-at-start-of-tick-held-in-map',frameId:'support',supportId:'amr-1/tray-1',forceN:Object.freeze([30,0,0]),durationS:.02,impulseNs:Object.freeze([.6,0,0]),substeps:10,propId:'cup-1',method:'mujoco-xfrc-applied',provenance:'assumed_simulation_fault'})});
++export const MOBILE_BRAKE_OBSERVATION=Object.freeze({id:'payload-brake-observation-v1' as const,extraTicks:5 as const});
++export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions,experiment?:'payload-cup-forward-impulse-v1'|'payload-brake-observation-v1'):PlantPort=>{
++ if(experiment&&experiment!==MOBILE_PAYLOAD_IMPULSE.id&&experiment!==MOBILE_BRAKE_OBSERVATION.id)throw new Error('PERTURBATION_UNREGISTERED');
++ const perturbation=experiment===MOBILE_PAYLOAD_IMPULSE.id?experiment:undefined,completionObservation=experiment===MOBILE_BRAKE_OBSERVATION.id?MOBILE_BRAKE_OBSERVATION:undefined;
++ return ({
+  startupPolicy:{preMutationCreateRefusals:['SCENE_PATH_REJECTED','SCENE_SCHEMA_INVALID','SCENE_UNSUPPORTED','SCENE_DIGEST_MISMATCH','SCENE_FILE_MISMATCH','PROFILE_ID_MISMATCH','DIGEST_MISMATCH','MODEL_DIGEST_MISMATCH','WORLD_CAPACITY_EXCEEDED','PHYSICS_PROFILE_INVALID']},
+  prepareStopMonitor:prepareMobileStopMonitor,
+- identity:{amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
++ identity:{...completionObservation?{completionObservation}:{},...perturbation?{simulationPerturbation:MOBILE_PAYLOAD_IMPULSE}:{},amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
+   limitations:['MuJoCo 3.17.0 rigid-body differential drive with fixed sliding sphere casters: not_calibrated.',
+    'One zero-target priming tick precedes tick 0: engine time is (tick+1)*20 ms; source time is tick*20 ms.',
+    'The seed is identity only: no stochastic engine, noisy sensors or actors. Fixed-caster drag and wheel-odometry slip are modeled limitations.',
+    'Declared support coordinates and instantaneous payload contact are not proof of custody or delivery; physics metrics require verified durable coverage.'],
+   evidence:{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'mujoco_3d rigid-body dynamics, not_calibrated; seed is identity only (no stochastic engine or sensor noise)',
+    engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
+- protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker(o),
+-});
++ protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker({...o,...perturbation?{payloadPerturbationId:perturbation}:{}}),
++});};
+ 
+ /** Experiment cutoffs only, not physical safety limits. Separate from the B02a numerical measurement lock. */
+ export const MOBILE_CONTROLLER_POLICY=Object.freeze({schemaVersion:1,id:'serve-mobile-controller-v1',revision:1,calibration:'not_calibrated',controller:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},ramp:'previous-sent-command-v1',
+  commandState:'Per robot, initialized to zero on a new run, updated from every sent output including explicit zeros; preserved across pause/resume, cancel and goal changes; lost or refused steps terminate, never resume.',
+  observations:'Measured velocity remains authoritative for arrival/stopped checks, obstacle stopping distance and progress. No hardware controller equivalence is claimed.'});
+ export const MOBILE_STOP_POLICY=Object.freeze({schemaVersion:1,id:'serve-mobile-stop-v1',revision:1,calibration:'not_calibrated',maxAbsRollPitchRad:0.7853981633974483,belowRestWheelRadii:0.6,aboveRestWheelRadii:4,loadDropM:0.10,loadDropHoldTicks:5,
+  assumptions:'Experimental observation cutoffs, not calibrated safety limits. Missing physics/frame/identity is unknown, not a fall. Source journal remains custody authority.'});
+ /** Read only declared byte-verified files. Rebinding a path/ref cannot select raw policy knobs. */
+ export async function prepareMobileStopMonitor(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>):Promise<PlantStopMonitor>{
+  if(scene.engine.id!=='mujoco_3d'||!scene.engine.stopPolicyRef||!scene.engine.controllerPolicyRef)throw new Error('MUJOCO_STOP_POLICY_REQUIRED');
+diff --git a/packages/lab-runtime/src/v2/simulation3d/payload-campaign.ts b/packages/lab-runtime/src/v2/simulation3d/payload-campaign.ts
+new file mode 100644
+index 0000000..b31b8ee
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/payload-campaign.ts
+@@ -0,0 +1,222 @@
++/** Headless registered experiments use the production fixed-step runner and both independent readers. */
++import {createHash} from 'node:crypto';
++import {mkdir,readFile,writeFile,lstat,readdir,realpath,mkdtemp,rm} from 'node:fs/promises';
++import {join,sep} from 'node:path';
++import {tmpdir} from 'node:os';
++import {DatabaseSync} from 'node:sqlite';
++import canonicalPhysical from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/physical-model-amr-1.json';
++import canonicalEmpty from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/empty.json';
++import canonicalCenter from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-center.json';
++import canonicalOffset from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-offset.json';
++import canonicalProject from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json';
++import registeredPhysics from '../../../../../robotics/simulation-mujoco/fixtures/serve-payload-v1/registered-physics.json';
++import campaign from '../../../../../robotics/simulation-mujoco/campaigns/payload-v1.json';
++import {PAYLOAD_EXPERIMENTS,payloadExperiment,type PayloadExperimentId} from './payload-experiments';
++import {createEngineeringService,type LockedEngineering} from '../../engineering/gateway';
++import {createMujocoCompiler} from '../../engineering/mujoco-compiler';
++import {lockDigestOf} from '../../engineering/linkforge';
++import type {EngineeringProject} from '../../engineering/contracts';
++import {createFixedStepScenarioRun} from '../navigation2d/runner';
++import {defaultCatalog} from '../capabilities';
++import {mujocoMobilePlant,MOBILE_PAYLOAD_IMPULSE,MOBILE_BRAKE_OBSERVATION} from './mujoco-mobile';
++import {WorkerLostError} from '../navigation2d/plant';
++import {engineSeedOf,readNavigationEvidence} from '../navigation2d/evidence';
++import {preparePhysicsAdmission,readPhysicsEvidence,readPhysicsManifest} from './physics-evidence';
++import {physicsMetrics} from './physics-metrics';
++import {validateNavigationDocument,validateSim3DResponse,type NavigationSceneV1} from '../navigation2d/contracts';
++import {composePose,invertPose,qrotate} from '../frames';
++import {hashJson} from '../hash';
++import type {RunReport} from '../report';
++export interface PayloadCampaignVerdict {expectedRuns:number;completedCases:number;missingArtifacts:string[];faultCases:{id:string;detected:boolean;falseServed:boolean}[];issues:string[]}
++export const PAYLOAD_CAMPAIGN=campaign;
++const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
++const json=(v:unknown)=>JSON.stringify(v,null,2)+'\n';
++const SET='engineering-mujoco-3d-v1',OWNER='payload-campaign';
++type Case=typeof campaign.cases[number];
++interface Trace {spawns:number;pid:number|null;createSeed:number|null;perturbationId:string|null;steps:{requestId:string;targetTick:number;ack:boolean}[];injection:null|{kind:string;method:string;pid:number;targetTick:number;appliedTick:number;responseSha256:string};cancelAtTick:number|null;retryRefused:boolean}
++interface CaseRecord {schemaVersion:1;case:Case;sourceCommit:string;accepted:false;runId:string;inputs:{projectDigest:string;sceneDigest:string;loadProfileSha256:string;physicsProfileSha256:string;canonicalPhysicalSha256:string;physicalModelDigest:string;navigationModelDigest:string;policyHash:string;controllerPolicySha256:string;stopPolicySha256:string;entitySpeedLimitMps:number|null};artifacts:{path:string;bytes:number;sha256:string}[]}
++async function bounded(root:string,path:string,max=16*1024*1024){
++ if(!/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/.test(path)||path.split('/').some(p=>p==='.'||p==='..'))throw new Error('CAMPAIGN_PATH_REJECTED');
++ const base=await realpath(root),file=join(root,path);
++ let parent=root;for(const part of path.split('/').slice(0,-1)){parent=join(parent,part);const st=await lstat(parent);if(!st.isDirectory()||st.isSymbolicLink())throw new Error('CAMPAIGN_PATH_REJECTED');}
++ const st=await lstat(file);if(!st.isFile()||st.size>max)throw new Error('CAMPAIGN_FILE_LIMIT_OR_PATH');
++ if(!(await realpath(file)).startsWith(base+sep))throw new Error('CAMPAIGN_PATH_REJECTED');
++ const bytes=await readFile(file);if(bytes.length!==st.size||bytes.length>max)throw new Error('CAMPAIGN_FILE_LIMIT');return bytes;
++}
++async function artifactPaths(root:string,base='',budget={left:10000}):Promise<string[]>{
++ if(base.split('/').length>12)throw new Error('ARTIFACT_DEPTH_LIMIT');const out:string[]=[];
++ for(const name of await readdir(join(root,base))){if(--budget.left<0)throw new Error('ARTIFACT_COUNT_LIMIT');const path=base?`${base}/${name}`:name;if(path==='case.json')continue;const st=await lstat(join(root,path));if(st.isSymbolicLink())throw new Error('CAMPAIGN_PATH_REJECTED');if(st.isDirectory())out.push(...await artifactPaths(root,path,budget));else if(st.isFile())out.push(path);else throw new Error('CAMPAIGN_PATH_REJECTED');}
++ return out.sort();
++}
++async function listing(root:string,base=''):Promise<CaseRecord['artifacts']>{
++ const out:CaseRecord['artifacts']=[];
++ for(const name of (await readdir(join(root,base))).sort()){
++  const path=base?`${base}/${name}`:name;if(path==='case.json')continue;
++  const st=await lstat(join(root,path));if(st.isDirectory())out.push(...await listing(root,path));else {const b=await bounded(root,path,100*1024*1024);out.push({path,bytes:b.length,sha256:sha(b)});}
++ }return out;
++}
++async function setup(o:{root:string;out:string}){
++ const workerRoot=join(o.root,'robotics/simulation-mujoco'),fixture=join(workerRoot,'fixtures/serve-payload-v1'),catalogRoot=join(o.out,'catalog');
++ const c=JSON.parse(await readFile(join(fixture,'serve-3d-components.json'),'utf8')) as {components:Record<string,unknown>;models:Record<string,unknown>};
++ for(const dir of ['components','models','documents'])await mkdir(join(catalogRoot,dir),{recursive:true});
++ for(const [id,doc] of Object.entries(c.components))await writeFile(join(catalogRoot,'components',id+'.json'),json(doc));
++ for(const [id,doc] of Object.entries(c.models))await writeFile(join(catalogRoot,'models',id+'.json'),json(doc));
++ await writeFile(join(catalogRoot,'catalog.json'),json({schemaVersion:1,id:'payload-v1',components:Object.keys(c.components).map(digest=>({digest,file:`components/${digest}.json`})),quotes:[]}));
++ const compiler=createMujocoCompiler({workerRoot}),service=createEngineeringService({directory:join(o.out,'engineering'),catalogRoot,compiler:{version:'refused',runnable:()=>false,async compileResolved(){throw new Error('NATIVE_DISABLED');}},compilers:{[SET]:compiler}});
++ const compiled=new Map<string,{locked:LockedEngineering;scene:NavigationSceneV1}>();
++ for(const experimentId of Object.keys(PAYLOAD_EXPERIMENTS) as PayloadExperimentId[]){
++  const project:EngineeringProject={...JSON.parse(await readFile(join(fixture,'serve-3d-project.json'),'utf8')),requestedProfile:SET,mujocoExperimentId:experimentId};
++  const receipt=await service.compileEngineeringProject(project,OWNER);if(receipt.state!=='compiled')throw new Error(`PAYLOAD_COMPILE_FAILED:${JSON.stringify(receipt.problems)}`);
++  const locked=await service.admitRun(OWNER,{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},SET,undefined);
++  const scene=JSON.parse(Buffer.from(await service.bundleFile(receipt.bundleDigest!,'navigation-scene.json')).toString()) as NavigationSceneV1;
++  compiled.set(experimentId,{locked,scene});
++ }return {service,compiled,workerRoot};
++}
++export async function runPayloadCampaign(o:{root:string;out:string;sourceCommit:string;python?:string}):Promise<PayloadCampaignVerdict>{
++ if(!/^[a-f0-9]{40}(?:-dirty)?$/.test(o.sourceCommit))throw new Error('SOURCE_COMMIT_REQUIRED');
++ // Never overwrite a previous campaign, including a failed one.
++ await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign,sourceCommit:o.sourceCommit,accepted:false,recording:'development_experimental'}));
++ const {service,compiled,workerRoot}=await setup(o),runtime={python:o.python??join(o.root,'.venv-mujoco/bin/python'),workerRoot,schemaDir:join(o.root,'packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++ const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
++ for(const spec of campaign.cases){
++  const {locked,scene}=compiled.get(spec.experimentId)!,dir=join(o.out,spec.id);await mkdir(dir);
++  const bundle=join(dir,'bundle');await mkdir(bundle);for(const path of ['navigation-scene.json',...scene.files.map(f=>f.path)]){await mkdir(join(bundle,path,'..'),{recursive:true});await writeFile(join(bundle,path),await service.bundleFile(locked.ref.bundleDigest,path));}
++  await writeFile(join(dir,'input.json'),json(locked.project));
++  const trace:Trace={spawns:0,pid:null,createSeed:null,perturbationId:spec.kind==='cup-fall'?'payload-cup-forward-impulse-v1':null,steps:[],injection:null,cancelAtTick:null,retryRefused:false},plant=mujocoMobilePlant(runtime,spec.kind==='cup-fall'?'payload-cup-forward-impulse-v1':spec.kind==='brake'?'payload-brake-observation-v1':undefined),spawn=plant.spawn;
++  plant.spawn=async options=>{trace.spawns++;const worker=await spawn(options);trace.pid=worker.pid??null;return {get state(){return worker.state;},get pid(){return worker.pid;},get bootId(){return worker.bootId;},get stderrTail(){return worker.stderrTail;},close:reason=>worker.close(reason),async request(request){
++   if(request.op==='create')trace.createSeed=(request.payload as {seed:number}).seed;
++   const response=await worker.request(request);
++   if(request.op==='step'){
++    const targetTick=request.expectedTick+1,inject=['worker-kill','ack-loss'].includes(spec.kind)&&targetTick===(spec.atTick??0)+1;
++    trace.steps.push({requestId:request.requestId,targetTick,ack:!inject&&response.ok});
++    if(inject){if(!response.ok||!worker.pid)throw new Error('INJECTION_PREREQUISITE');
++     trace.injection={kind:spec.kind,method:spec.kind==='worker-kill'?'owned-worker-pid-SIGKILL-after-applied-step-before-delivery':'drop-real-step-ACK-before-runner-delivery',pid:worker.pid,targetTick,appliedTick:(response.result as {tick:number}).tick,responseSha256:sha(JSON.stringify(response))};
++     await writeFile(join(dir,'injected-ack.json'),json(response));await writeFile(join(dir,'trace.json'),json(trace));
++     if(spec.kind==='worker-kill')process.kill(worker.pid,'SIGKILL');
++     throw new WorkerLostError(spec.kind==='worker-kill'?'WORKER_EXITED':'WORKER_TIMEOUT','unknown','server-owned campaign injection after actual engine step');
++    }
++   }return response;
++  }};};
++  const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:spec.seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:o.sourceCommit,engineering:locked},{directory:join(dir,'run'),catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});
++  let report:RunReport;let action=0;
++  const act=async(kind:string,payload:object={})=>{const v=await run.snapshot();return run.action({actionId:`campaign-${++action}`,expectedRevision:v.run.runRevision,kind,payload});};
++  try{
++   await run.start();let v=await run.snapshot();
++   while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<30000){
++    if(spec.kind==='brake'&&trace.cancelAtTick===null&&v.tick>=spec.atTick!){trace.cancelAtTick=v.tick;v=await act('cancel');}
++    const ticks=spec.kind==='brake'&&trace.cancelAtTick===null?Math.min(250,spec.atTick!-v.tick):250;
++    v=await act('step',{ticks});
++   }
++   if(spec.kind==='cup-fall'){let tail=await run.snapshot();while(tail.tick<650&&tail.attention.every(a=>a.reason==='CONTACT')){tail=await act('step',{ticks:10});} }
++   if(trace.injection||spec.kind==='cup-fall'){try{await act('step',{ticks:1});}catch(e){trace.retryRefused=String(e).includes('PLANT_LOST');}}
++   report=await run.report();
++  }finally{await run.close();}
++  await writeFile(join(dir,'report.json'),json(report!));await writeFile(join(dir,'trace.json'),json(trace));
++  const engine=scene.engine;if(engine.id!=='mujoco_3d')throw new Error('WRONG_ENGINE');
++  const load=JSON.parse(await readFile(join(bundle,engine.loadProfileRef.path),'utf8'));
++  const record:CaseRecord={schemaVersion:1,case:spec,accepted:false,sourceCommit:o.sourceCommit,runId:report!.manifest.runId,inputs:{projectDigest:locked.ref.projectDigest,sceneDigest:scene.sceneDigest,loadProfileSha256:engine.loadProfileRef.sha256,physicsProfileSha256:engine.physicsProfileRef.sha256,canonicalPhysicalSha256:scene.files.find(f=>f.path==='canonical-physical-model.json')!.sha256,physicalModelDigest:scene.robots[0]!.model.physicalModelDigest,navigationModelDigest:scene.robots[0]!.model.modelDigest,policyHash:scene.policy.hash,controllerPolicySha256:engine.controllerPolicyRef!.sha256,stopPolicySha256:engine.stopPolicyRef!.sha256,entitySpeedLimitMps:locked.project.runtimeProject.entities[0]!.speedLimitMps??null},artifacts:await listing(dir)};
++  if(load.id!==payloadExperiment(spec.experimentId).load)throw new Error('LOAD_IDENTITY_MISMATCH');
++  await writeFile(join(dir,'case.json'),json(record));
++ }
++ const verdict=await verifyPayloadCampaign(o.out);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return verdict;
++}
++
++/** Readback is intentionally independent of summary.json and report metrics. Every required case has retained source/physics/navigation artifacts. */
++export async function verifyPayloadCampaign(root:string):Promise<PayloadCampaignVerdict>{
++ const verdict:PayloadCampaignVerdict={expectedRuns:campaign.cases.length,completedCases:0,missingArtifacts:[],faultCases:[],issues:[]},repeatDigests=new Map<string,string>();
++ let sourceCommit:string|undefined;
++ try{const allowed=new Set(['campaign.json','summary.json','catalog','engineering',...campaign.cases.map(c=>c.id)]);for(const name of await readdir(root))if(!allowed.has(name))verdict.issues.push(`UNEXPECTED_CAMPAIGN_ARTIFACT:${name}`);}catch(e){verdict.issues.push(String(e));}
++ try{const c=JSON.parse((await bounded(root,'campaign.json',128*1024)).toString());if(hashJson(c.campaign)!==hashJson(campaign)||c.accepted!==false||! /^[a-f0-9]{40}(?:-dirty)?$/.test(c.sourceCommit))throw new Error('CAMPAIGN_IDENTITY');sourceCommit=c.sourceCommit;}catch(e){verdict.missingArtifacts.push('campaign.json');verdict.issues.push(String(e));}
++ for(const spec of campaign.cases){
++  const dir=join(root,spec.id),isFault=['worker-kill','ack-loss','cup-fall'].includes(spec.kind),isAckFault=['worker-kill','ack-loss'].includes(spec.kind),fault={id:spec.id,detected:false,falseServed:false};if(isFault)verdict.faultCases.push(fault);
++  const check=(ok:unknown,why:string)=>{if(!ok)throw new Error(why);};
++  try{
++   check((await lstat(dir)).isDirectory()&&!(await lstat(dir)).isSymbolicLink(),'CAMPAIGN_PATH_REJECTED');
++   const record=JSON.parse((await bounded(dir,'case.json',1024*1024)).toString()) as CaseRecord;
++   check(Object.keys(record).sort().join(',')==='accepted,artifacts,case,inputs,runId,schemaVersion,sourceCommit','CASE_SHAPE_INVALID');
++   check(record.schemaVersion===1&&record.accepted===false&&hashJson(record.case)===hashJson(spec)&&record.sourceCommit===sourceCommit,'CASE_IDENTITY_MISMATCH');
++   check(Array.isArray(record.artifacts)&&record.artifacts.length>10&&record.artifacts.length<10000,'ARTIFACT_LIST_INVALID');
++   const paths=new Set<string>();let bytes=0;
++   for(const ref of record.artifacts){check(!paths.has(ref.path),'ARTIFACT_DUPLICATE');paths.add(ref.path);check(Number.isSafeInteger(ref.bytes)&&ref.bytes>=0&&ref.bytes<=100*1024*1024,'ARTIFACT_LIMIT');bytes+=ref.bytes;check(bytes<=250*1024*1024,'CASE_BYTE_LIMIT');const b=await bounded(dir,ref.path,100*1024*1024);check(b.length===ref.bytes&&sha(b)===ref.sha256,`ARTIFACT_HASH:${ref.path}`);}
++   check(hashJson(await artifactPaths(dir))===hashJson([...paths].sort()),'UNLISTED_ARTIFACT');
++   for(const path of ['input.json','report.json','trace.json','bundle/navigation-scene.json','run/run.json','run/journal.db','run/physics/manifest.json','run/evidence/manifest.json'])check(paths.has(path),`MISSING_ARTIFACT:${path}`);
++   const read=async(path:string)=>JSON.parse((await bounded(dir,path)).toString());
++   const scene=await read('bundle/navigation-scene.json') as NavigationSceneV1,project=await read('input.json') as EngineeringProject,report=await read('report.json') as RunReport,cp=await read('run/run.json'),trace=await read('trace.json') as Trace;
++   check(validateNavigationDocument(scene).ok&&scene.engine.id==='mujoco_3d','SCENE_INVALID');if(scene.engine.id!=='mujoco_3d')throw new Error('ENGINE_INVALID');
++   const exp=payloadExperiment(spec.experimentId),engine=scene.engine;
++   check(hashJson(project)===hashJson({...canonicalProject,requestedProfile:SET,mujocoExperimentId:spec.experimentId}),'UNDECLARED_PROJECT_INPUT');
++   check(trace.createSeed===engineSeedOf(spec.seed,scene).engineSeed&&trace.perturbationId===(spec.kind==='cup-fall'?'payload-cup-forward-impulse-v1':null),'ACTUAL_WORKER_INPUT');
++   check(project.mujocoExperimentId===spec.experimentId&&hashJson(project)===record.inputs.projectDigest&&scene.inputs.project.digest===record.inputs.projectDigest,'PROJECT_IDENTITY');
++   check(scene.sceneDigest===record.inputs.sceneDigest&&scene.policy.parameters.maxLinearMps===exp.maxLinearMps&&scene.policy.parameters.maxAngularRadps===exp.maxAngularRadps,'APPLIED_POLICY_IDENTITY');
++   check(hashJson(report.manifest.completionObservation??null)===hashJson(spec.kind==='brake'?MOBILE_BRAKE_OBSERVATION:null)&&hashJson(cp.manifest.completionObservation??null)===hashJson(report.manifest.completionObservation??null),'COMPLETION_OBSERVATION_IDENTITY');
++   if(spec.kind==='brake')check(cp.completionTail?.lastTick===cp.tick&&cp.completionTail.firstTick+5===cp.tick,'COMPLETION_OBSERVATION_HORIZON');
++   check(hashJson(report.manifest.simulationPerturbation??null)===hashJson(spec.kind==='cup-fall'?MOBILE_PAYLOAD_IMPULSE:null)&&hashJson(cp.manifest.simulationPerturbation??null)===hashJson(report.manifest.simulationPerturbation??null),'PERTURBATION_MANIFEST_IDENTITY');
++   check(cp.plant.bootId===cp.plant.snapshot.bootId,'COMMITTED_BOOT_IDENTITY');
++   check(report.manifest.seed===spec.seed&&cp.manifest.seed===spec.seed&&report.manifest.sourceCommit===sourceCommit&&cp.manifest.sourceCommit===sourceCommit&&report.manifest.runId===record.runId&&cp.runId===record.runId,'RUN_IDENTITY');
++   check(engine.loadProfileRef.id===exp.load&&engine.physicsProfileRef.path===`${exp.physics}.json`&&engine.physicsProfileRef.sha256===record.inputs.physicsProfileSha256&&engine.loadProfileRef.sha256===record.inputs.loadProfileSha256,'PROFILE_IDENTITY');
++   check(engine.physicsProfileRef.sha256===registeredPhysics[exp.physics].sha256&&scene.files.find(f=>f.path==='canonical-physical-model.json')?.sha256==='830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9','REGISTERED_INPUT_BYTES');
++   check(record.inputs.canonicalPhysicalSha256==='830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9'&&record.inputs.physicalModelDigest===scene.robots[0]!.model.physicalModelDigest&&record.inputs.navigationModelDigest===scene.robots[0]!.model.modelDigest&&record.inputs.policyHash===scene.policy.hash&&record.inputs.controllerPolicySha256===engine.controllerPolicyRef?.sha256&&record.inputs.stopPolicySha256===engine.stopPolicyRef?.sha256&&record.inputs.entitySpeedLimitMps===(project.runtimeProject.entities[0]!.speedLimitMps??null),'DERIVED_INPUT_IDENTITY');
++   for(const f of scene.files){check(paths.has(`bundle/${f.path}`),'BUNDLE_ARTIFACT_MISSING');const b=await bounded(dir,`bundle/${f.path}`);check(sha(b)===f.sha256&&b.length===f.bytes,'BUNDLE_HASH');}
++   const prepared=await preparePhysicsAdmission(scene,p=>bounded(dir,`bundle/${p}`)),physical=await read(`bundle/${prepared.load.modelRef.path}`);
++   check(validateNavigationDocument(physical).ok&&physical.modelDigest===scene.robots[0]!.model.physicalModelDigest&&hashJson(physical.inputs)===hashJson(scene.inputs),'PHYSICAL_MODEL_PROVENANCE');
++   const mechanical=(doc:Record<string,unknown>)=>Object.fromEntries(Object.entries(doc).filter(([key])=>!['inputs','modelDigest','robotId'].includes(key)));
++   check(hashJson(mechanical(physical))===hashJson(mechanical(canonicalPhysical)),'UNREGISTERED_MECHANICS');
++   const expectedLoad={'empty':canonicalEmpty,'cup-center':canonicalCenter,'cup-offset':canonicalOffset}[exp.load];
++   check(hashJson(prepared.load.props)===hashJson(expectedLoad.props)&&hashJson(prepared.load.supports)===hashJson(expectedLoad.supports),'UNREGISTERED_LOAD');
++   const manifest=await readPhysicsManifest(join(dir,'run/physics'));
++   const physics=await readPhysicsEvidence(join(dir,'run/physics'),manifest,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:{runId:record.runId,bootId:cp.plant.bootId,sceneDigest:scene.sceneDigest,loadProfileDigest:engine.loadProfileRef.sha256,physicsProfileDigest:engine.physicsProfileRef.sha256},runTick:cp.tick});
++   const navManifest=await read('run/evidence/manifest.json');check(navManifest.runId===record.runId&&navManifest.sceneDigest===scene.sceneDigest&&navManifest.boots.length===1&&navManifest.boots[0].bootId===cp.plant.bootId&&navManifest.boots[0].firstTick===0,'NAVIGATION_RUN_IDENTITY');
++   const navigation=await readNavigationEvidence(join(dir,'run/evidence'),navManifest,{scene,runTick:cp.tick});
++   // SQLite readOnly still creates WAL/SHM sidecars. Open only a bounded isolated copy so verification never mutates retained evidence.
++   const scratch=await mkdtemp(join(tmpdir(),'payload-journal-read-'));let events:RunReport['businessEvents'];
++   try{
++    for(const name of ['journal.db','journal.db-wal','journal.db-shm'])if(paths.has(`run/${name}`)){
++     const ref=record.artifacts.find(f=>f.path===`run/${name}`)!,bytes=await bounded(dir,ref.path,100*1024*1024);check(bytes.length===ref.bytes&&sha(bytes)===ref.sha256,'JOURNAL_COPY_HASH');
++     await writeFile(join(scratch,name),bytes,{flag:'wx',mode:0o600});
++    }
++    const db=new DatabaseSync(join(scratch,'journal.db'),{readOnly:true});
++    try{const rows=db.prepare('SELECT entry_json FROM journal ORDER BY length(producer_sequence),producer_sequence').all();check(rows.length>0&&rows.length<100000,'JOURNAL_LIMIT');events=rows.flatMap(row=>{const e=JSON.parse(String(row.entry_json));return e.payload.events.map((x:{type:string;data:{kind:string;id:string;state:unknown}})=>({sequence:e.sequence,at:e.recordedAt,type:x.type,kind:String(x.data.kind),id:String(x.data.id),state:x.data.state??{}}));});}finally{db.close();}
++   }finally{await rm(scratch,{recursive:true,force:true});}
++   check(hashJson(events!)===hashJson(report.businessEvents),'JOURNAL_REPORT_MISMATCH');
++   const falseServed=events!.some(e=>e.kind==='fulfillment'&&BigInt(String(e.state.served??'0'))>0n);
++   check(trace.spawns===1&&trace.steps.length===cp.tick+(isAckFault?1:0)&&trace.steps.every((s,i)=>s.targetTick===i+1)&&new Set(trace.steps.map(s=>s.requestId)).size===trace.steps.length,'STEP_RETRY_OR_GAP');
++   check(report.outcome.tick===cp.tick&&manifest.coverage.lastTick===cp.tick&&physics.records.length===cp.tick+1,'COMMITTED_HORIZON');
++   if(isFault)check(events!.some(e=>e.type==='RobotCommandObserved'&&e.state.status==='unknown'),'SOURCE_UNKNOWN_NOT_RECORDED');
++   if(isAckFault){
++    fault.falseServed=falseServed||report.outcome.served!=='0';
++    const reason=spec.kind==='worker-kill'?'WORKER_EXITED':'WORKER_TIMEOUT',injection=trace.injection,ack=await read('injected-ack.json');
++    check(injection?.kind===spec.kind&&injection.targetTick===spec.atTick!+1&&injection.appliedTick===injection.targetTick&&injection.pid===trace.pid&&sha(JSON.stringify(ack))===injection.responseSha256&&validateSim3DResponse(ack).ok&&ack.ok&&ack.runId===record.runId&&ack.bootId===cp.plant.bootId&&ack.result.sceneDigest===scene.sceneDigest&&ack.result.tick===injection.targetTick,'INJECTION_INVALID');
++    check(cp.tick===spec.atTick&&trace.retryRefused&&!fault.falseServed&&report.outcome.status==='needs_attention'&&report.attention.some(a=>a.reason==='WORKER_LOST'&&a.subjectId===reason)&&cp.plant.reason===reason,'FAULT_NOT_DETECTED');
++    check(physics.issues.length===1&&physics.issues[0]==='PHYSICS_COVERAGE_INCOMPLETE'&&manifest.terminalReason==='STEP_ACK_LOST'&&manifest.gaps.length===1&&manifest.gaps[0]!.firstTick===cp.tick+1&&manifest.gaps[0]!.lastTick===cp.tick+1&&manifest.gaps[0]!.reason==='STEP_ACK_LOST','UNRELATED_PHYSICS_GAP');
++    check(navigation.issues.length===0&&navigation.horizon===cp.tick&&navigation.gaps.length===1&&navigation.gaps[0]!.fromTick===cp.tick+1&&navigation.gaps[0]!.toTick===cp.tick+1&&navigation.gaps[0]!.reason==='STEP_ACK_LOST','UNRELATED_NAVIGATION_GAP');fault.detected=true;
++   }else if(spec.kind==='cup-fall'){
++    fault.falseServed=falseServed||report.outcome.served!=='0';
++    const receipt=await read('run/worker/payload-perturbation.json'),expected=spec.perturbation!;
++    check(paths.has('run/worker/payload-perturbation.json')&&receipt.runId===record.runId&&receipt.bootId===cp.plant.bootId&&receipt.sceneDigest===scene.sceneDigest&&receipt.loadProfileSha256===engine.loadProfileRef.sha256&&receipt.tick===expected.targetTick,'PERTURBATION_IDENTITY');
++    for(const key of ['id','frameSampleTick','forceTransform','frameId','supportId','forceN','durationS','impulseNs','substeps','propId','method'])check(hashJson(receipt[key])===hashJson(expected[key as keyof typeof expected]),'PERTURBATION_DOSE');
++    check(trace.retryRefused&&!fault.falseServed&&report.outcome.status==='needs_attention'&&report.attention.some(a=>a.reason==='LOAD_FELL')&&cp.plant.reason==='LOAD_FELL','FALL_NOT_DETECTED');
++    check(physics.issues.length===1&&physics.issues[0]==='PHYSICS_COVERAGE_INCOMPLETE'&&manifest.terminalReason==='LOAD_FELL'&&manifest.gaps.length===0&&navigation.complete,'UNRELATED_FALL_GAP');
++    const rows=physics.records,before=rows[expected.targetTick-1]!.loads[0]!,after=rows[expected.targetTick]!.loads[0]!;
++    const frame=composePose({position:before.poseMap.positionM,quaternionXyzw:before.poseMap.quaternionXyzw},invertPose({position:before.poseInSupport!.positionM,quaternionXyzw:before.poseInSupport!.quaternionXyzw})),force=qrotate(frame.quaternionXyzw,expected.forceN);
++    check(frame.position.every((x,i)=>Math.abs(x-receipt.supportPoseMap.positionM[i])<1e-9)&&Math.abs(Math.abs(frame.quaternionXyzw.reduce((sum,x,i)=>sum+x*receipt.supportPoseMap.quaternionXyzw[i],0))-1)<1e-9,'PERTURBATION_SUPPORT_FRAME');
++    check(Array.isArray(receipt.forceMapN)&&receipt.forceMapN.length===3&&force.every((x,i)=>Math.abs(x-receipt.forceMapN[i])<1e-9),'PERTURBATION_FORCE_FRAME');
++    const delta=Math.hypot(...after.poseMap.positionM.map((x,i)=>x-before.poseMap.positionM[i]!));check(delta>0&&delta<.05,'PERTURBATION_TELEPORT');
++    const initial=prepared.load.props[0]!.attachment;if(initial.kind!=='free')throw new Error('FALL_ATTACHMENT_INVALID');
++    check(rows.slice(-5).every(r=>r.loads[0]!.poseInSupport!.positionM[2]!<=initial.initialPoseInSupport.positionM[2]!-.1)&&rows[rows.length-6]!.loads[0]!.poseInSupport!.positionM[2]!>initial.initialPoseInSupport.positionM[2]!-.1,'FALL_HOLD_MISMATCH');
++    check(hashJson(receipt.beforePoseMap)===hashJson(before.poseMap)&&hashJson(receipt.afterPoseMap)===hashJson(after.poseMap),'PERTURBATION_POSE_RECEIPT');fault.detected=true;
++   }else{
++    check(physics.complete&&navigation.complete,'INCOMPLETE_EVIDENCE');
++    check(trace.injection===null&&trace.steps.every(s=>s.ack),'UNDECLARED_FAULT');
++    check(spec.kind==='brake'?report.outcome.status==='cancelled'&&trace.cancelAtTick===spec.atTick&&!falseServed:report.outcome.status==='completed'&&report.outcome.served==='1','OUTCOME_MISMATCH');
++    const metrics=physicsMetrics(physics,prepared.admission,{...navigation,policy:scene.policy.parameters});check(metrics.contactImpulseNs.available&&metrics.maxTiltRad.available&&metrics.wheelPositionResidualM.available&&metrics.wheelYawResidualRad.available,'PHYSICS_METRIC_UNAVAILABLE');
++    check(prepared.load.props.length===0?!metrics.loadDisplacementM.available:metrics.loadDisplacementM.available,'LOAD_METRIC_AVAILABILITY');
++    check(navigation.control.some(c=>c.velocities.some(v=>Math.abs(v.omegaRadps)>.05)),'TURN_NOT_OBSERVED');
++    if(spec.kind==='brake')check(metrics.stopDistanceM.available&&trace.cancelAtTick===spec.atTick,'STOP_WINDOW_UNAVAILABLE');
++    if(spec.experimentId==='payload-center-v1'&&spec.seed===7)repeatDigests.set(spec.id,hashJson(physics.records));
++   }
++   verdict.completedCases++;
++  }catch(e){const message=(e as Error).message;if(message.includes('ENOENT')||message.startsWith('MISSING_ARTIFACT'))verdict.missingArtifacts.push(`${spec.id}:${message}`);verdict.issues.push(`${spec.id}:${message}`);}
++ }
++ const baseline=repeatDigests.get('turn-center-s7');for(let i=1;i<=3;i++){const id=`repeat-center-s7-r${i}`;if(!baseline||repeatDigests.get(id)!==baseline){verdict.issues.push(`${id}:REPEAT_MISMATCH_OR_MISSING`);if(repeatDigests.has(id))verdict.completedCases--;}}
++ return verdict;
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts b/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts
+new file mode 100644
+index 0000000..d8d2374
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts
+@@ -0,0 +1,20 @@
++/** Closed server-owned experiments. A selector creates a new project/bundle/run; no live edits. */
++export const PAYLOAD_EXPERIMENTS={
++ 'payload-empty-v1':{load:'empty',physics:'drive-contact-profile',maxLinearMps:.5,maxAngularRadps:1},
++ 'payload-center-v1':{load:'cup-center',physics:'drive-contact-profile',maxLinearMps:.5,maxAngularRadps:1},
++ 'payload-offset-v1':{load:'cup-offset',physics:'drive-contact-profile',maxLinearMps:.5,maxAngularRadps:1},
++ 'payload-slow-v1':{load:'cup-center',physics:'drive-contact-profile',maxLinearMps:.2,maxAngularRadps:.4},
++ 'payload-fast-v1':{load:'cup-center',physics:'drive-contact-profile',maxLinearMps:1,maxAngularRadps:2},
++ 'payload-friction-low-v1':{load:'cup-center',physics:'drive-contact-low-v1',maxLinearMps:.5,maxAngularRadps:1},
++ 'payload-friction-high-v1':{load:'cup-center',physics:'drive-contact-high-v1',maxLinearMps:.5,maxAngularRadps:1},
++} as const;
++for(const value of Object.values(PAYLOAD_EXPERIMENTS))Object.freeze(value);Object.freeze(PAYLOAD_EXPERIMENTS);
++export type PayloadExperimentId=keyof typeof PAYLOAD_EXPERIMENTS;
++export const payloadExperiment=(id:string)=>{if(!Object.hasOwn(PAYLOAD_EXPERIMENTS,id))throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');return PAYLOAD_EXPERIMENTS[id as PayloadExperimentId];};
++
++/** B08 must compare exact fields, after verifying all digests. These are allowed differences, not a mask for arbitrary model/policy edits. */
++export const PAYLOAD_SPEED_DIFFERENCES=Object.freeze({
++ selectedInputs:['mujocoExperimentId','policy.parameters.maxLinearMps','policy.parameters.maxAngularRadps'] as const,
++ derivedInputs:['projectDigest','physical.inputs.project.digest','physical.modelDigest','physical file sha256','load.modelRef.sha256','load.digest','load file sha256','navigation.inputs.project.digest','navigation.physicalModelDigest','navigation.modelDigest','navigation.kinematics.maxLinearMps','navigation.kinematics.maxAngularRadps','policy.id','policy.source','policy.hash','scene.inputs.project.digest','scene.sceneDigest','bundleDigest','runId'] as const,
++ unchanged:['runSeed','sourceCommit','engineVersion','lockDigest','platform','clock','simulationPerturbation','completionObservation','assemblyDigest','world','canonical physical file sha256','physical mechanics excluding inputs/modelDigest','load props/supports','physics profile file sha256','controller algorithm/version/ramp policy','stop policy','all other navigation policy/kinematics fields','entitySpeedLimitMps'] as const,
++});
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+index f2aa111..33954c9 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+@@ -17,21 +17,21 @@ export interface PhysicsRead {complete:boolean;records:PhysicsTickRecord[];gaps:
+ export interface PhysicsRecorderOptions {directory:string;identity:PhysicsEvidenceV1['identity'];admission:PhysicsAdmission;metricsPolicyDigest:string;assumptions:PhysicsEvidenceV1['assumptions'];maxBytes?:number;maxTicks?:number;chunkTicks?:number}
+ export interface PhysicsRecorder {directory:string;append(record:PhysicsTickRecord):Promise<void>;flush():Promise<void>;finish(reason:string|null):Promise<void>;gap(firstTick:number,lastTick:number,reason:string):Promise<void>;manifest():PhysicsEvidenceV1}
+ /** Byte verified closure already admitted by lockScene; verify again here rather than trusting observation IDs. */
+ export async function preparePhysicsAdmission(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>){
+  if(scene.engine.id!=='mujoco_3d'||scene.robots.length!==1||scene.clock.tickMs!==20||scene.engine.substeps!==10||scene.engine.timestepMs!==2||!scene.engine.stopPolicyRef)throw new Error('PHYSICS_PROFILE_UNSUPPORTED');
+  const doc=async(ref:{path:string;sha256:string})=>{const f=scene.files.find(f=>f.path===ref.path),b=await read(ref.path);if(!f||f.sha256!==ref.sha256||f.bytes!==b.length||sha(b)!==ref.sha256)throw new Error('PHYSICS_PROFILE_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString());};
+  const load=await doc(scene.engine.loadProfileRef) as LoadProfileV1;if(!validateLoadProfile(load).ok)throw new Error('PHYSICS_LOAD_INVALID');
+  const physical=await doc(load.modelRef) as RobotPhysicalModelV1,robot=scene.robots[0]!;
+  const policy=await doc(scene.engine.stopPolicyRef);
+  const admission:PhysicsAdmission={maxAbsRollPitchRad:policy.maxAbsRollPitchRad,robotId:robot.robotId,props:load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...physical.links.flatMap(l=>l.collision.map((_,i)=>`${robot.robotId}/${l.id}/c${i}`)),...load.props.map(p=>`prop/${p.propId}`),...[...scene.world.obstacles,...scene.world.boundaries].map(o=>`static/${o.id}`)],tickMs:20,substeps:10,driveFrameInBase:robot.model.driveFrameInBase};
+- return {admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
++ return {load,admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
+ }
+ export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedTick?:number):asserts input is PhysicsTickRecord{
+  if(!validatePhysicsTickShape(input))throw new Error('PHYSICS_OBSERVATION_INVALID');
+  const r=input as PhysicsTickRecord,fail=()=>{throw new Error('PHYSICS_OBSERVATION_INVALID');};
+  if(a.tickMs!==20||a.substeps!==10||r.tick>EVIDENCE_LIMITS.maxTicks||(expectedTick!==undefined&&r.tick!==expectedTick)||r.simTimeNs!==String(BigInt(r.tick)*BigInt(a.tickMs)*1_000_000n))fail();
+  const finite=(x:unknown):boolean=>typeof x==='number'?Number.isFinite(x):Array.isArray(x)?x.every(finite):x!==null&&typeof x==='object'?Object.values(x).every(finite):true;
+  const pose=(p:{positionM:number[];quaternionXyzw:number[]})=>Number.isFinite(Math.hypot(...p.quaternionXyzw))&&Math.abs(Math.hypot(...p.quaternionXyzw)-1)<1e-6;
+  if(!finite(r)||[r.base,r.wheels,r.odometry].some(xs=>xs.length!==1||xs[0]!.robotId!==a.robotId)||r.loads.length!==a.props.length||new Set(r.loads.map(p=>p.propId)).size!==a.props.length)fail();
+  if(r.wheels[0]!.saturatedSubsteps>a.substeps)fail();
+  for(const b of r.base){if(!pose(b.poseMap))fail();const [roll,pitch]=rollPitch(b.poseMap.quaternionXyzw);if(Math.abs(Math.atan2(Math.sin(roll-b.rollRad),Math.cos(roll-b.rollRad)))>1e-6||Math.abs(pitch-b.pitchRad)>1e-6)fail();}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/worker-client.ts b/packages/lab-runtime/src/v2/simulation3d/worker-client.ts
+index 5fe9d1b..9115fe0 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/worker-client.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/worker-client.ts
+@@ -8,13 +8,13 @@ import {spawnWorker,type IRSimWorkerClient,type SpawnOptions,type WireSpec} from
+ export const SIM3D_FATAL_CODES=['INVALID_JSON','INVALID_REQUEST','REQUEST_TOO_LARGE','PROTOCOL_MISMATCH','WORKER_FAILED','CLOCK_DRIFT','SENSOR_INCONSISTENT','PLANT_UNSTABLE','ENGINE_LOST','ENGINE_TIMEOUT',
+  'WEBOTS_START_FAILED','WEBOTS_NOT_INSTALLED','WEBOTS_VERSION_MISMATCH','WEBOTS_PORT_IN_USE'] as const;
+ // create starts Webots: the worker allows it START_TIMEOUT_S (60) + CHILD_TIMEOUT_S (30) and answers WEBOTS_START_FAILED itself, and describe runs `webots --version` (30 s) and hashes the executable, so the client waits longer than each (a kill on a shorter deadline cannot clean /tmp/webots)
+ export const SIM3D_WIRE:WireSpec={protocol:'mekoniq-sim3d/1',module:'webots_worker',deadlinesMs:{create:100_000,describe:45_000},
+  extraArgs:o=>{if(!o.webotsHome)throw new Error('WEBOTS_HOME_REQUIRED');return ['--webots-home',resolve(o.webotsHome)];},
+  env:{HOME:process.env.HOME??'/',TMPDIR:process.env.TMPDIR??'/tmp'}, // Webots keeps its caches and preferences under HOME; nothing else of the environment is passed on
+  validateRequest:validateSim3DRequest,validateResponse:validateSim3DResponse as WireSpec['validateResponse'],fatalCodes:SIM3D_FATAL_CODES};
+ // MEKONIQ_WEBOTS_WATCH=1 (dev): a real run's Webots stays visible and rendered; readiness describe/smoke workers ('webots-…' run ids) stay headless
+ export const spawnSim3DWorker=(o:SpawnOptions&{webotsHome:string}):Promise<IRSimWorkerClient>=>spawnWorker(o,process.env.MEKONIQ_WEBOTS_WATCH==='1'&&!o.runId.startsWith('webots-')?{...SIM3D_WIRE,env:{...SIM3D_WIRE.env,MEKONIQ_WEBOTS_WATCH:'1'}}:SIM3D_WIRE);
+ // R2a: the MuJoCo arm cell worker speaks the same wire; MuJoCo runs inside the worker process (no host engine, no extra argv or environment). create compiles the MJCF and loads the meshes.
+-export const MUJOCO_WIRE:WireSpec={protocol:'mekoniq-sim3d/1',module:'mujoco_worker',deadlinesMs:{create:20_000,describe:15_000},extraArgs:()=>[],
++export const MUJOCO_WIRE:WireSpec={protocol:'mekoniq-sim3d/1',module:'mujoco_worker',deadlinesMs:{create:20_000,describe:15_000},extraArgs:o=>{if(o.payloadPerturbationId&&o.payloadPerturbationId!=='payload-cup-forward-impulse-v1')throw new Error('PERTURBATION_UNREGISTERED');return o.payloadPerturbationId?['--payload-perturbation',o.payloadPerturbationId]:[];},
+  validateRequest:validateSim3DRequest,validateResponse:validateSim3DResponse as WireSpec['validateResponse'],fatalCodes:[...SIM3D_FATAL_CODES,'CONTACT_CAPACITY_EXCEEDED']};
+ export const spawnMujocoWorker=(o:SpawnOptions):Promise<IRSimWorkerClient>=>spawnWorker(o,MUJOCO_WIRE);
+diff --git a/robotics/simulation-mujoco/campaigns/payload-v1.json b/robotics/simulation-mujoco/campaigns/payload-v1.json
+new file mode 100644
+index 0000000..32e866e
+--- /dev/null
++++ b/robotics/simulation-mujoco/campaigns/payload-v1.json
+@@ -0,0 +1,167 @@
++{
++  "schemaVersion": 1,
++  "id": "payload-v1",
++  "accepted": false,
++  "scenarioId": "MJ-FD01",
++  "coverage": [
++    "MJ01",
++    "MJ02",
++    "MJ03",
++    "MJ04",
++    "MJ05",
++    "MJ06",
++    "MJ07"
++  ],
++  "cases": [
++    {
++      "id": "turn-empty-s7",
++      "experimentId": "payload-empty-v1",
++      "seed": 7,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-center-s7",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-offset-s7",
++      "experimentId": "payload-offset-v1",
++      "seed": 7,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-empty-s19",
++      "experimentId": "payload-empty-v1",
++      "seed": 19,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-center-s19",
++      "experimentId": "payload-center-v1",
++      "seed": 19,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-offset-s19",
++      "experimentId": "payload-offset-v1",
++      "seed": 19,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-empty-s41",
++      "experimentId": "payload-empty-v1",
++      "seed": 41,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-center-s41",
++      "experimentId": "payload-center-v1",
++      "seed": 41,
++      "kind": "turn"
++    },
++    {
++      "id": "turn-offset-s41",
++      "experimentId": "payload-offset-v1",
++      "seed": 41,
++      "kind": "turn"
++    },
++    {
++      "id": "repeat-center-s7-r1",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "repeat"
++    },
++    {
++      "id": "repeat-center-s7-r2",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "repeat"
++    },
++    {
++      "id": "repeat-center-s7-r3",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "repeat"
++    },
++    {
++      "id": "brake-slow",
++      "experimentId": "payload-slow-v1",
++      "seed": 7,
++      "kind": "brake",
++      "atTick": 500,
++      "completionObservation": {
++        "id": "payload-brake-observation-v1",
++        "extraTicks": 5
++      }
++    },
++    {
++      "id": "brake-fast",
++      "experimentId": "payload-fast-v1",
++      "seed": 7,
++      "kind": "brake",
++      "atTick": 500,
++      "completionObservation": {
++        "id": "payload-brake-observation-v1",
++        "extraTicks": 5
++      }
++    },
++    {
++      "id": "friction-low",
++      "experimentId": "payload-friction-low-v1",
++      "seed": 7,
++      "kind": "friction"
++    },
++    {
++      "id": "friction-high",
++      "experimentId": "payload-friction-high-v1",
++      "seed": 7,
++      "kind": "friction"
++    },
++    {
++      "id": "worker-kill",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "worker-kill",
++      "atTick": 500
++    },
++    {
++      "id": "ack-loss",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "ack-loss",
++      "atTick": 500
++    },
++    {
++      "id": "cup-fall",
++      "experimentId": "payload-center-v1",
++      "seed": 7,
++      "kind": "cup-fall",
++      "atTick": 500,
++      "perturbation": {
++        "id": "payload-cup-forward-impulse-v1",
++        "targetTick": 501,
++        "frameSampleTick": 500,
++        "forceTransform": "support-at-start-of-tick-held-in-map",
++        "frameId": "support",
++        "supportId": "amr-1/tray-1",
++        "forceN": [
++          30,
++          0,
++          0
++        ],
++        "durationS": 0.02,
++        "impulseNs": [
++          0.6,
++          0,
++          0
++        ],
++        "substeps": 10,
++        "propId": "cup-1",
++        "method": "mujoco-xfrc-applied",
++        "provenance": "assumed_simulation_fault"
++      }
++    }
++  ]
++}
+diff --git a/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-high-v1.json b/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-high-v1.json
+new file mode 100644
+index 0000000..4cab82e
+--- /dev/null
++++ b/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-high-v1.json
+@@ -0,0 +1,105 @@
++{
++  "schemaVersion": 1,
++  "id": "drive-contact-high-v1",
++  "revision": 1,
++  "digest": "64efa556fd308f818a3806727eea307b38689821ed06331419285af34cd08626",
++  "calibration": "not_calibrated",
++  "tickMs": 20,
++  "timestepMs": 2,
++  "substeps": 10,
++  "integrator": "implicitfast",
++  "solver": {
++    "iterations": 100,
++    "tolerance": 1e-08
++  },
++  "velocityGainNmsPerRad": 2,
++  "brakeTorqueNm": 6,
++  "driveCurve": [
++    {
++      "speedRadS": 0,
++      "torqueNm": 6
++    },
++    {
++      "speedRadS": 10,
++      "torqueNm": 6
++    },
++    {
++      "speedRadS": 20,
++      "torqueNm": 0
++    }
++  ],
++  "contact": {
++    "sliding": 0.9,
++    "torsionalM": 0.005,
++    "rollingM": 0.0001
++  },
++  "numerics": {
++    "gravityMps2": [
++      0,
++      0,
++      -9.81
++    ],
++    "solver": "Newton",
++    "condim": 6,
++    "solref": [
++      0.02,
++      1
++    ],
++    "solimp": [
++      0.9,
++      0.95,
++      0.001
++    ],
++    "robotSelfContact": "masked-canonical-fixed-overlaps",
++    "casterContactRule": "explicit-floor-pair",
++    "casterPairFriction": "scene-casterFriction-tangent-zero-torsion-rolling",
++    "floorWheelFrictionRule": "max-geom",
++    "lidarSelfFilter": "exclude-robot-geom-group-1"
++  },
++  "sources": {
++    "velocityGainNmsPerRad": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "brakeTorqueNm": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "driveCurve": {
++      "kind": "assumed",
++      "documentId": "serve-3d-v1/physical-model-amr-1.json",
++      "revision": "1",
++      "locator": "wheel axle effort 6 Nm and speed 20 rad/s; assumed intermediate knee",
++      "contentSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
++    },
++    "contact": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "B04a assumed wheel/floor sliding coefficient 0.9; same solver/clock, not calibrated",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "solver": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    }
++  },
++  "requiresB02MeasurementLock": false,
++  "measurementLock": {
++    "probeId": "b04a-drive-contact-high-v1",
++    "numericalInputSha256": "50122ed3859a0907eca35647c87d63d16e0783b27b59bb35ddee0d3403e9df2d",
++    "engineVersion": "3.17.0",
++    "status": "locked_not_calibrated",
++    "repeatPositionToleranceM": 1e-06,
++    "repeatAngleToleranceRad": 1e-06
++  }
++}
+diff --git a/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-low-v1.json b/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-low-v1.json
+new file mode 100644
+index 0000000..533fc13
+--- /dev/null
++++ b/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-low-v1.json
+@@ -0,0 +1,105 @@
++{
++  "schemaVersion": 1,
++  "id": "drive-contact-low-v1",
++  "revision": 1,
++  "digest": "fa342b45c20e462a3d48a8a6cc7444c643cd4adaeec8dbb8e7854a77d8666562",
++  "calibration": "not_calibrated",
++  "tickMs": 20,
++  "timestepMs": 2,
++  "substeps": 10,
++  "integrator": "implicitfast",
++  "solver": {
++    "iterations": 100,
++    "tolerance": 1e-08
++  },
++  "velocityGainNmsPerRad": 2,
++  "brakeTorqueNm": 6,
++  "driveCurve": [
++    {
++      "speedRadS": 0,
++      "torqueNm": 6
++    },
++    {
++      "speedRadS": 10,
++      "torqueNm": 6
++    },
++    {
++      "speedRadS": 20,
++      "torqueNm": 0
++    }
++  ],
++  "contact": {
++    "sliding": 0.3,
++    "torsionalM": 0.005,
++    "rollingM": 0.0001
++  },
++  "numerics": {
++    "gravityMps2": [
++      0,
++      0,
++      -9.81
++    ],
++    "solver": "Newton",
++    "condim": 6,
++    "solref": [
++      0.02,
++      1
++    ],
++    "solimp": [
++      0.9,
++      0.95,
++      0.001
++    ],
++    "robotSelfContact": "masked-canonical-fixed-overlaps",
++    "casterContactRule": "explicit-floor-pair",
++    "casterPairFriction": "scene-casterFriction-tangent-zero-torsion-rolling",
++    "floorWheelFrictionRule": "max-geom",
++    "lidarSelfFilter": "exclude-robot-geom-group-1"
++  },
++  "sources": {
++    "velocityGainNmsPerRad": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "brakeTorqueNm": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "driveCurve": {
++      "kind": "assumed",
++      "documentId": "serve-3d-v1/physical-model-amr-1.json",
++      "revision": "1",
++      "locator": "wheel axle effort 6 Nm and speed 20 rad/s; assumed intermediate knee",
++      "contentSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
++    },
++    "contact": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "B04a assumed wheel/floor sliding coefficient 0.3; same solver/clock, not calibrated",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    },
++    "solver": {
++      "kind": "assumed",
++      "documentId": "serve-payload-v1/assumptions.json",
++      "revision": "1",
++      "locator": "drive, contact, solver: explicit uncalibrated starting assumptions",
++      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
++    }
++  },
++  "requiresB02MeasurementLock": false,
++  "measurementLock": {
++    "probeId": "b04a-drive-contact-low-v1",
++    "numericalInputSha256": "b4cb4798748cf835cc596bfbf3feb761924c25f6ed121e30076bb7fb47005297",
++    "engineVersion": "3.17.0",
++    "status": "locked_not_calibrated",
++    "repeatPositionToleranceM": 1e-06,
++    "repeatAngleToleranceRad": 1e-06
++  }
++}
+diff --git a/robotics/simulation-mujoco/fixtures/serve-payload-v1/registered-physics.json b/robotics/simulation-mujoco/fixtures/serve-payload-v1/registered-physics.json
+new file mode 100644
+index 0000000..85a9560
+--- /dev/null
++++ b/robotics/simulation-mujoco/fixtures/serve-payload-v1/registered-physics.json
+@@ -0,0 +1,17 @@
++{
++  "drive-contact-profile": {
++    "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
++    "digest": "1ef1c4de61894e35e89fbbc8cb534c184ef66944e40fed60dedf496f81956480",
++    "probeId": "b02a-locked"
++  },
++  "drive-contact-low-v1": {
++    "sha256": "c9aec2a6a250e81f4c5c1d1372e88d7d90340b7e42f7526fe90a7ad3d1d4ad9c",
++    "digest": "fa342b45c20e462a3d48a8a6cc7444c643cd4adaeec8dbb8e7854a77d8666562",
++    "probeId": "b04a-drive-contact-low-v1"
++  },
++  "drive-contact-high-v1": {
++    "sha256": "9d1f7f3315cfe9df89ed8b8b15361b3fd09d66dedbe4ea5240a5c04b54ecbe8a",
++    "digest": "64efa556fd308f818a3806727eea307b38689821ed06331419285af34cd08626",
++    "probeId": "b04a-drive-contact-high-v1"
++  }
++}
+diff --git a/robotics/simulation-mujoco/mujoco_worker/__main__.py b/robotics/simulation-mujoco/mujoco_worker/__main__.py
+index ee64094..cbcf102 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/__main__.py
++++ b/robotics/simulation-mujoco/mujoco_worker/__main__.py
+@@ -9,24 +9,25 @@ from .protocol import MAX_LINE_BYTES, PROTOCOL, WorkerError, load_validators, pa
+ from .session import WorkerSession
+ 
+ 
+ def main(argv=None):
+     ap = argparse.ArgumentParser()
+     ap.add_argument("--run-id", required=True)
+     ap.add_argument("--bundle-root", required=True)
+     ap.add_argument("--schema-dir", required=True)
+     ap.add_argument("--lock-digest", required=True)
+     ap.add_argument("--scene-digest")
++    ap.add_argument("--payload-perturbation", choices=["payload-cup-forward-impulse-v1"])
+     args = ap.parse_args(argv)
+     out = sys.stdout
+     validator, _ = load_validators(args.schema_dir)
+-    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest, schema_dir=args.schema_dir)
++    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest, schema_dir=args.schema_dir, payload_perturbation=args.payload_perturbation)
+ 
+     def send(response):
+         out.write(json.dumps(response, separators=(",", ":"), allow_nan=False) + "\n")
+         out.flush()
+ 
+     code = 0
+     with contextlib.redirect_stdout(sys.stderr):  # an engine or library print must never corrupt the response stream
+         while True:
+             raw = sys.stdin.buffer.readline(MAX_LINE_BYTES + 2)
+             if not raw:
+diff --git a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+index 06a8c17..3dfdc71 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
++++ b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+@@ -114,20 +114,40 @@ class MobileEngine:
+             pair = (a, b)
+             if pair not in out:
+                 out[pair] = [0.0, np.zeros(3), c.pos.copy(), -1.0]
+             sample = out[pair]
+             sample[0] += max(0.0, float(force[0]))
+             sample[1] += fmap
+             if force[0] > sample[3]:
+                 sample[2], sample[3] = c.pos.copy(), float(force[0])
+         return out
+ 
++    def apply_payload_impulse(self, perturbation_id):
++        """One registered support-frame force over one logical tick; never writes qpos/qvel."""
++        if perturbation_id != "payload-cup-forward-impulse-v1" or len(self.profile["props"]) != 1:
++            raise WorkerError("PERTURBATION_SCOPE_INVALID", "registered cup impulse requires one free cup")
++        prop = self.profile["props"][0]
++        if prop["propId"] != "cup-1" or prop["attachment"]["kind"] != "free":
++            raise WorkerError("PERTURBATION_SCOPE_INVALID", "registered cup impulse requires cup-1 free attachment")
++        before = self.read()["loads"][0]["poseMap"]
++        support = self.names["supports"][prop["attachment"]["supportId"]]
++        sp = support["poseInBody"]
++        sbid = self.model.body(self.names["links"][support["parentBodyId"]]).id
++        st = _transform(self.data, sbid) @ pose(sp["positionM"], sp["quaternionXyzw"])
++        force_map = st[:3, :3] @ np.array([30., 0., 0.])
++        self.data.xfrc_applied[self.prop["cup-1"], :3] = force_map
++        return {"propId": "cup-1", "frameId": "support", "supportId": prop["attachment"]["supportId"], "supportPoseMap": matrix_pose(st), "forceTransform": "support-at-start-of-tick-held-in-map", "forceMapN": force_map.tolist(), "forceN": [30,0,0], "durationS": .02,
++                "impulseNs": [.6,0,0], "substeps": 10, "method": "mujoco-xfrc-applied", "beforePoseMap": before}
++
++    def clear_payload_impulse(self):
++        self.data.xfrc_applied[self.prop["cup-1"], :] = 0
++
+     def step(self, v_mps, omega_radps):
+         d, m = self.data, self.model
+         targets = wheel_targets(v_mps, omega_radps, self.radius, self.separation)
+         if any(not lo <= t <= hi for t, (lo,hi) in zip(targets, m.actuator_ctrlrange[self.acts])):
+             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel target exceeds canonical speed limit")
+         self.targets[:] = targets
+         d.ctrl[self.acts] = self.targets
+         aggregate, unstable, self.saturated = ContactAccumulator(self.dt, self.names["expected"]), set(), 0
+         for _ in range(self.substeps):
+             old = d.qpos[self.wq].copy()
+diff --git a/robotics/simulation-mujoco/mujoco_worker/session.py b/robotics/simulation-mujoco/mujoco_worker/session.py
+index a5e5316..56e4e76 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/session.py
++++ b/robotics/simulation-mujoco/mujoco_worker/session.py
+@@ -51,21 +51,24 @@ def engine_seed(seed):
+     """A run seed (uint32) as the scene's engineSeed (int32 range): the low 31 bits."""
+     return seed & 0x7FFFFFFF
+ 
+ 
+ def overlaps(p, a, q, b):
+     """Two upright cylinders (centre p, q; dims a, b = (radius, height)) intersect."""
+     return math.hypot(p[0] - q[0], p[1] - q[1]) < a[0] + b[0] and abs(p[2] - q[2]) < (a[1] + b[1]) / 2
+ 
+ 
+ class WorkerSession:
+-    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None):
++    def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None, payload_perturbation=None):
++        if payload_perturbation not in (None, "payload-cup-forward-impulse-v1"):
++            raise WorkerError("PERTURBATION_UNREGISTERED", str(payload_perturbation))
++        self.payload_perturbation, self.perturbation_done = payload_perturbation, False
+         self.run_id, self.bundle_root, self.lock_digest, self.expected_scene_digest = run_id, Path(bundle_root), lock_digest, expected_scene_digest
+         self._factory, self._host = engine_factory, host_info
+         self.boot_id = str(uuid.uuid4())
+         self.state, self.tick, self.seq, self.substeps = "new", 0, 0, 0  # substeps: how many the engine has been asked for (the clock check's reference)
+         self.engine = self.scene = self.snapshot = None
+         self.receipts = Receipts()
+         self.cups, self.present = {}, {}  # propId -> (radius, height); cups in the scene -> position after the last step
+         self.mobile = False
+         self.schema_dir = Path(schema_dir) if schema_dir else Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
+ 
+@@ -124,20 +127,22 @@ class WorkerSession:
+         if request["expectedTick"] != self.tick:
+             raise WorkerError("TICK_MISMATCH", f"expectedTick {request['expectedTick']} but the run is at tick {self.tick}")
+         return getattr(self, "_op_" + op.lower())(payload)
+ 
+     # ---- operations ----
+     def _op_create(self, p):
+         if self.state != "new":
+             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
+         if p.get("sceneRef") == "navigation-scene.json":
+             return self._create_mobile(p)
++        if self.payload_perturbation:
++            raise WorkerError("PERTURBATION_SCOPE_INVALID", "mobile free payload only")
+         arms = p.get("arms") or []
+         if len(arms) != 1 or p["sceneRef"] != SCENE_FILE or arms[0]["sceneRef"] != SCENE_FILE:
+             raise WorkerError("INVALID_REQUEST", f"an arm cell run names {SCENE_FILE} as sceneRef and as arms[0].sceneRef")
+         scene = json.loads(confined(self.bundle_root, SCENE_FILE).read_text())
+         if scene.get("schemaVersion") != 1 or scene.get("engine", {}).get("id") != "mujoco_3d" or not isinstance(scene.get("arm"), dict):
+             raise WorkerError("SCENE_UNSUPPORTED", "not a mujoco_3d arm cell scene")
+         digest = scene_digest_of(scene)
+         if digest != scene.get("sceneDigest") or (self.expected_scene_digest and digest != self.expected_scene_digest):
+             raise WorkerError("SCENE_DIGEST_MISMATCH", "the scene does not hash to the digest it declares or the process was bound to")
+         if scene["arm"]["armId"] != arms[0]["armId"]:
+@@ -213,20 +218,24 @@ class WorkerSession:
+                 self._validate_document(obj, schema)
+             if (obj["id"], obj["revision"]) != (ref["id"], ref["revision"]):
+                 raise WorkerError("PROFILE_ID_MISMATCH", ref["path"])
+             actual = hashlib.sha256(rfc8785.dumps({k: v for k, v in obj.items() if k != "digest"})).hexdigest()
+             if actual != obj["digest"]:
+                 raise WorkerError("DIGEST_MISMATCH", ref["path"])
+             return obj
+         load = profile(scene["engine"]["loadProfileRef"], "load-profile-v1.schema.json")
+         physics = profile(scene["engine"]["physicsProfileRef"])
+         self._check_physics_profile(physics)
++        if self.payload_perturbation:
++            canonical = json.loads((Path(__file__).resolve().parents[1] / "fixtures/serve-payload-v1/cup-center.json").read_text())
++            if load["props"] != canonical["props"] or load["supports"] != canonical["supports"]:
++                raise WorkerError("PERTURBATION_SCOPE_INVALID", "canonical free center cup required")
+         ref = load["modelRef"]
+         confined(self.bundle_root, ref["path"])
+         if ref["path"] not in files or files[ref["path"]][0] != ref["sha256"]:
+             raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+         model = json.loads(files[ref["path"]][1])
+         self._validate_document(model, "robot-physical-model-v1.schema.json")
+         actual = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
+         if actual != model["modelDigest"] or actual != scene["robots"][0]["model"]["physicalModelDigest"] or model["robotId"] != rid:
+             raise WorkerError("MODEL_DIGEST_MISMATCH", "physical model does not match navigation projection")
+         from .compile_mobile import resolve_lidar
+@@ -256,39 +265,59 @@ class WorkerSession:
+         # Resolve SourceRef's own refs through the normal registry by validating each
+         # source separately; the profile's numerical structure is deliberately closed.
+         fields = {"schemaVersion": {"const": 1}, "id": {"type": "string"}, "revision": {"type": "integer", "minimum": 1}, "digest": {"type": "string"}, "calibration": {"const": "not_calibrated"},
+                   "tickMs": {"const": 20}, "timestepMs": {"const": 2}, "substeps": {"const": 10}, "integrator": {"const": "implicitfast"},
+                   "solver": obj({"iterations": {"type": "integer", "minimum": 1, "maximum": 1000}, "tolerance": {"type": "number", "exclusiveMinimum": 0}}),
+                   "velocityGainNmsPerRad": {"type": "number", "exclusiveMinimum": 0}, "brakeTorqueNm": {"type": "number", "exclusiveMinimum": 0},
+                   "driveCurve": {"type": "array", "minItems": 2, "maxItems": 32, "items": obj({"speedRadS": number, "torqueNm": number})},
+                   "contact": obj({"sliding": number, "torsionalM": number, "rollingM": number}),
+                   "sources": obj({k: {"type": "object"} for k in ("velocityGainNmsPerRad", "brakeTorqueNm", "driveCurve", "contact", "solver")}),
+                   "requiresB02MeasurementLock": {"const": False}, "numerics": {"const": NUMERICS},
+-                  "measurementLock": obj({"probeId": {"const": "b02a-locked"},
++                  "measurementLock": obj({"probeId": {"enum": ["b02a-locked", "b04a-drive-contact-low-v1", "b04a-drive-contact-high-v1"]},
+                     "numericalInputSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "engineVersion": {"const": "3.17.0"}, "status": {"const": "locked_not_calibrated"},
+                     "repeatPositionToleranceM": {"const": 1e-6}, "repeatAngleToleranceRad": {"const": 1e-6}})}
+         schema = obj(fields)
+         errors = list(jsonschema.Draft7Validator(schema).iter_errors(p))
+         if errors:
+             raise WorkerError("PHYSICS_PROFILE_INVALID", errors[0].message)
+         keys = ("tickMs", "timestepMs", "substeps", "integrator", "solver", "velocityGainNmsPerRad", "brakeTorqueNm", "driveCurve", "contact", "numerics")
+         fingerprint = hashlib.sha256(rfc8785.dumps({k: p[k] for k in keys})).hexdigest()
+         if fingerprint != p["measurementLock"]["numericalInputSha256"]:
+             raise WorkerError("PHYSICS_PROFILE_INVALID", "numerical lock fingerprint mismatch")
++        registered = json.loads((Path(__file__).resolve().parents[1] / "fixtures/serve-payload-v1/registered-physics.json").read_text())
++        digest = hashlib.sha256(rfc8785.dumps({k:v for k,v in p.items() if k != "digest"})).hexdigest()
++        if not any(x["digest"] == digest and x["probeId"] == p["measurementLock"]["probeId"] for x in registered.values()):
++            raise WorkerError("PHYSICS_PROFILE_INVALID", "unregistered numerical profile")
+         for value in p["sources"].values():
+             self._validate_document(value, "engineering-component.schema.json#/definitions/SourceRef")
+         curve = p["driveCurve"]
+         if curve[0]["speedRadS"] != 0 or curve[-1]["torqueNm"] != 0 or any(b["speedRadS"] <= a["speedRadS"] or b["torqueNm"] > a["torqueNm"] for a,b in zip(curve,curve[1:])):
+             raise WorkerError("PHYSICS_PROFILE_INVALID", "ordered non-increasing torque curve must start at rest and end at zero torque")
+ 
+     def _advance_mobile(self, v, w, tick):
+-        reading = self.engine.step(v, w)
++        injected = self.payload_perturbation is not None and tick == 501 and not self.perturbation_done
++        if injected:
++            self.perturbation_done = True  # never repeat, including if the step fails
++            declaration = self.engine.apply_payload_impulse(self.payload_perturbation)
++        try:
++            reading = self.engine.step(v, w)
++        finally:
++            if injected:
++                self.engine.clear_payload_impulse()
++        if injected:
++            import os
++            receipt = {"id": self.payload_perturbation, "runId": self.run_id, "bootId": self.boot_id,
++                       "tick": tick, "frameSampleTick": tick - 1, "sceneDigest": self.scene["sceneDigest"],
++                       "loadProfileSha256": self.scene["engine"]["loadProfileRef"]["sha256"],
++                       **declaration, "afterPoseMap": reading["loads"][0]["poseMap"]}
++            with open("payload-perturbation.json", "x") as f:
++                json.dump(receipt, f, allow_nan=False); f.flush(); os.fsync(f.fileno())
+         self.substeps += self.scene["engine"]["substeps"]
+         snapshot.check_mobile_stable(reading)
+         expected = self.substeps * self.scene["engine"]["timestepMs"] / 1000
+         if abs(reading["time"] - expected) > CLOCK_TOLERANCE_S:
+             raise WorkerError("CLOCK_DRIFT", f"engine time {reading['time']} != {expected}", fatal=True)
+         self.seq += 1
+         self.snapshot = snapshot.build_mobile(run_id=self.run_id, boot_id=self.boot_id, seq=self.seq, tick=tick, scene=self.scene, reading=reading)
+         return self.snapshot
+ 
+     def _check_mobile_step(self, p):
+@@ -298,20 +327,22 @@ class WorkerSession:
+         rid = self.scene["robots"][0]["robotId"]
+         if len(targets) != 1 or targets[0].get("robotId") != rid:
+             raise WorkerError("ROBOT_UNKNOWN", "every tick needs one explicit target for the scene AMR")
+         v, w = targets[0]["vMps"], targets[0]["omegaRadps"]
+         kin = self.scene["robots"][0]["model"]["kinematics"]
+         if not snapshot._finite([v,w]) or abs(v) > kin["maxLinearMps"] or abs(w) > kin["maxAngularRadps"]:
+             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "target exceeds admitted navigation limits")
+         return v,w
+ 
+     def _check_step(self, p):
++        if self.payload_perturbation:
++            raise WorkerError("PERTURBATION_SCOPE_INVALID", "mobile free payload only")
+         """(targets, opening or None, placements) of a valid arm cell step; refuses before anything reaches the engine."""
+         if p["velocities"] or p["actorUpdates"]:
+             raise WorkerError("INVALID_REQUEST", "an arm cell run takes jointTargets, gripperTargets and propPlacements, not velocities or actor updates")
+         arm_id, limits = self.scene["arm"]["armId"], self.engine.arm_limits
+         targets = p.get("jointTargets") or []
+         if len(targets) != 1 or targets[0]["armId"] != arm_id:
+             raise WorkerError("JOINT_TARGET_SHAPE", f"every tick needs one explicit target for {arm_id!r}; got {[t['armId'] for t in targets]}")
+         q = targets[0]["positionsRad"]
+         if len(q) != len(limits):
+             raise WorkerError("JOINT_TARGET_SHAPE", f"{len(q)} positions for {len(limits)} joints")
+diff --git a/robotics/simulation-mujoco/probe_mobile.py b/robotics/simulation-mujoco/probe_mobile.py
+index 9f11e76..03bf969 100644
+--- a/robotics/simulation-mujoco/probe_mobile.py
++++ b/robotics/simulation-mujoco/probe_mobile.py
+@@ -24,35 +24,40 @@ LOADS = ("empty", "cup-center", "cup-offset")
+ CASES = ("hold", "straight", "circle", "stop")
+ 
+ 
+ def targets(case, tick):
+     if case == "hold" or tick < 100 or tick >= (300 if case == "stop" else 400):
+         return 0.0, 0.0
+     ramp = min(1.0, (tick - 99) / 50)
+     return ((.5 if case == "stop" else .2) * ramp, .4 * ramp if case == "circle" else 0.0)
+ 
+ 
+-def run_case(case, load, repeat, out):
++def run_case(case, load, repeat, out, physics_name="drive-contact-profile"):
+     read = lambda name: json.loads((FIXTURE / (name + ".json")).read_text())
+-    scene, model, profile, physics = read("navigation-scene"), read("physical-model-amr-1"), read(load), read("drive-contact-profile")
++    scene, model, profile, physics = read("navigation-scene"), read("physical-model-amr-1"), read(load), read(physics_name)
+     scene["engine"]["loadProfileRef"].update(id=profile["id"], revision=profile["revision"], path=load+".json", sha256=hashlib.sha256((FIXTURE/(load+".json")).read_bytes()).hexdigest())
++    scene["engine"]["physicsProfileRef"].update(id=physics["id"], revision=physics["revision"], path=physics_name+".json", sha256=hashlib.sha256((FIXTURE/(physics_name+".json")).read_bytes()).hexdigest())
++    if physics_name != "drive-contact-profile":
++        raw_profile = (FIXTURE/(physics_name+".json")).read_bytes()
++        scene["files"].append({"path": physics_name+".json", "sha256": hashlib.sha256(raw_profile).hexdigest(), "bytes": len(raw_profile)})
++        scene["files"].sort(key=lambda ref: ref["path"])
+     scene["sceneDigest"] = scene_digest_of(scene)
+     engine = MobileEngine(scene, {"amr-1": model}, profile, physics)
+     filename = f"{load}-{case}-r{repeat}.ndjson.gz"
+     elapsed, poses, load_poses, residuals, slips, tilts, speeds = [], [], [], [], [], [], []
+     saturation, peak, stop_length, last, stopped_ticks, stopped_at = 0, 0.0, 0.0, None, 0, None
+     stop_tick = 300 if case == "stop" else 400
+     baseline_load = engine.read()["loads"]
+     base_load = np.array(baseline_load[0]["poseInSupport"]["positionM"]) if baseline_load else None
+     with (out / filename).open("wb") as stream, gzip.GzipFile(filename="", fileobj=stream, mode="wb", mtime=0) as raw:
+         identity = {"record": "identity", "case": case, "load": load, "repeat": repeat, "engineVersion": mujoco.__version__, "seed": 7,
+-                    "inputs": {name: hashlib.sha256((FIXTURE/name).read_bytes()).hexdigest() for name in ("navigation-scene.json", "physical-model-amr-1.json", load+".json", "drive-contact-profile.json")},
++                    "inputs": {name: hashlib.sha256((FIXTURE/name).read_bytes()).hexdigest() for name in ("navigation-scene.json", "physical-model-amr-1.json", load+".json", physics_name+".json")},
+                     "physicsProfile": physics, "navigationScene": scene, "compiledSceneDigest": scene["sceneDigest"], "modelReadback": engine.readback(), "initialLoads": baseline_load, "initialBase": engine.read()["base"], "engineClock": "(tick+1)*0.02", "logicalTickMs": 20,
+                     "limits": {"repeatPositionM": 1e-6, "repeatAngleRad": 1e-6}, "limitations": ["not_calibrated", "fixed sphere casters with explicit sliding contact pairs", "LiDAR raw arrays excluded; covered by focused independent-raycast test"]}
+         raw.write((json.dumps(identity, separators=(",", ":"), allow_nan=False) + "\n").encode())
+         for tick in range(500):
+             command = targets(case, tick)
+             start = time.perf_counter()
+             reading = engine.step(*command)
+             elapsed.append((time.perf_counter() - start) * 1000)
+             reading["robot"] = {k: v for k, v in reading["robot"].items() if k != "scans"}
+             raw.write((json.dumps({"record": "tick", "tick": tick, "simTimeNs": str(tick*20_000_000), "command": list(command), **reading}, separators=(",", ":"), allow_nan=False) + "\n").encode())
+@@ -78,39 +83,40 @@ def run_case(case, load, repeat, out):
+                "maxOdomResidualM": max(x[0] for x in residuals), "maxOdomResidualRad": max(x[1] for x in residuals), "saturatedSubsteps": saturation, "peakPairNormalN": peak,
+                "stepP95Ms": float(np.percentile(elapsed, 95)), "finalPoseDriveMap": last, "finalBodySpeed": speeds[-1], "stopDistanceM": stop_length if stopped_at is not None else None,
+                "stoppedAtTick": stopped_at, "raw": {"path": filename, "sha256": hashlib.sha256((out/filename).read_bytes()).hexdigest(), "bytes": (out/filename).stat().st_size}}
+     engine.close()
+     return metrics, np.array(poses), np.array(load_poses)
+ 
+ 
+ def main():
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--out", type=Path, required=True)
++    parser.add_argument("--physics", choices=("drive-contact-profile", "drive-contact-low-v1", "drive-contact-high-v1"), default="drive-contact-profile")
+     args = parser.parse_args()
+     if args.out.exists():
+         raise SystemExit("output exists; preserve earlier probe evidence")
+     args.out.mkdir(parents=True)
+     runs, repeats = [], []
+     for load in LOADS:
+         for case in CASES:
+             first_base = first_load = None
+             for repeat in range(1, 4):
+-                metrics, base, payload = run_case(case, load, repeat, args.out)
++                metrics, base, payload = run_case(case, load, repeat, args.out, args.physics)
+                 if first_base is None:
+                     first_base, first_load = base, payload
+                 position = float(np.max(abs(base[:,:3]-first_base[:,:3])))
+                 # Quaternion relative angle, sign-independent. Clamp numerical dot.
+                 angle = float(np.max(2*np.arccos(np.clip(np.abs(np.sum(base[:,3:]*first_base[:,3:], axis=1)),0,1))))
+                 if payload.size:
+                     position = max(position, float(np.max(abs(payload[:,:,:3]-first_load[:,:,:3]))))
+                     angle = max(angle, float(np.max(2*np.arccos(np.clip(np.abs(np.sum(payload[:,:,3:]*first_load[:,:,3:], axis=2)),0,1)))))
+                 repeats.append({"load": load, "case": case, "repeat": repeat, "maxPositionDifferenceM": position, "maxAngleDifferenceRad": angle, "pass": position <= 1e-6 and angle <= 1e-6})
+                 runs.append(metrics)
+                 print(json.dumps(metrics, separators=(",", ":")), flush=True)
+-    summary = {"schemaVersion": 1, "accepted": False, "calibration": "not_calibrated", "engineVersion": mujoco.__version__, "pythonVersion": platform.python_version(), "machine": platform.machine(),
++    summary = {"probeId": json.loads((FIXTURE/(args.physics+".json")).read_text())["measurementLock"]["probeId"], "physicsProfileSha256": hashlib.sha256((FIXTURE/(args.physics+".json")).read_bytes()).hexdigest(), "schemaVersion": 1, "accepted": False, "calibration": "not_calibrated", "engineVersion": mujoco.__version__, "pythonVersion": platform.python_version(), "machine": platform.machine(),
+                "platform": platform.platform(), "repeats": repeats, "runs": runs, "measurementChecks": {"allFinite": all(r["finite"] for r in runs), "repeatWithinTolerance": all(r["pass"] for r in repeats)},
+                "limitations": ["measurement probe only; no campaign, hardware, native, payload safety or human acceptance", "hold case runs 10 seconds; each maneuver includes 2s hold, bounded ramp and stop", "timings are host observations, not realtime guarantees"]}
+     (args.out / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
+ 
+ 
+ if __name__ == "__main__":
+     main()
+diff --git a/robotics/simulation-mujoco/tests/test_mobile.py b/robotics/simulation-mujoco/tests/test_mobile.py
+index 9a45ad2..74fa4be 100644
+--- a/robotics/simulation-mujoco/tests/test_mobile.py
++++ b/robotics/simulation-mujoco/tests/test_mobile.py
+@@ -473,10 +473,74 @@ def test_mobile_admission_refuses_before_engine_factory(tmp_path, change):
+     if change == "path": scene["engine"]["loadProfileRef"]["path"] = "../cup-center.json"
+     if change == "capacity": scene["robots"].append(copy.deepcopy(scene["robots"][0]))
+     scene["sceneDigest"] = scene_digest_of(scene)
+     scene_path.write_text(json.dumps(scene))
+     called = []
+     session._factory = lambda *a: called.append(a)
+     response = session.handle(create_request())
+     assert not response["ok"], response
+     assert called == []
+     assert session.engine is None
++
++@pytest.mark.parametrize('name', ['drive-contact-low-v1', 'drive-contact-high-v1'])
++def test_registered_friction_profiles_have_their_own_lock_and_reject_numerical_relabel(tmp_path, name):
++    session = bundle(tmp_path)
++    path = FX / (name + '.json')
++    assert path.exists(), 'registered numerical variant missing'
++    p = json.loads(path.read_text())
++    assert p['measurementLock']['probeId'] == 'b04a-' + name
++    session._check_physics_profile(p)
++    p['contact']['sliding'] += .01
++    keys = ('tickMs','timestepMs','substeps','integrator','solver','velocityGainNmsPerRad','brakeTorqueNm','driveCurve','contact','numerics')
++    canonical = __import__('rfc8785').dumps
++    p['measurementLock']['numericalInputSha256'] = hashlib.sha256(canonical({k:p[k] for k in keys})).hexdigest()
++    p['digest'] = hashlib.sha256(canonical({k:v for k,v in p.items() if k != 'digest'})).hexdigest()
++    with pytest.raises(WorkerError):
++        session._check_physics_profile(p)
++
++
++def test_registered_payload_impulse_is_integrated_once_without_pose_teleport(tmp_path, monkeypatch):
++    monkeypatch.chdir(tmp_path)
++    bundle(tmp_path / 'bundle')
++    session = WorkerSession(run_id='mobile-1', bundle_root=tmp_path / 'bundle', lock_digest='b'*64,
++                            payload_perturbation='payload-cup-forward-impulse-v1')
++    assert session.handle(create_request())['ok']
++    assert session.handle(request('start'))['ok']
++    rows = []
++    try:
++        for tick in range(1, 551):
++            r = session.handle(request('step', {'targetTick':tick,'velocities':[{'robotId':'amr-1','vMps':0,'omegaRadps':0}],'actorUpdates':[]}, tick=tick-1))
++            assert r['ok'], r
++            rows.append(r['result'])
++            if tick == 501:
++                assert session.handle(request('step', {'targetTick':tick,'velocities':[{'robotId':'amr-1','vMps':0,'omegaRadps':0}],'actorUpdates':[]}, tick=tick-1)) == r
++        receipt = json.loads((tmp_path/'payload-perturbation.json').read_text())
++        assert receipt['runId'] == 'mobile-1' and receipt['tick'] == 501
++        assert receipt['forceN'] == [30,0,0] and receipt['durationS'] == .02
++        before, after = rows[499]['physics']['loads'][0], rows[500]['physics']['loads'][0]
++        delta = np.linalg.norm(np.array(after['poseMap']['positionM'])-before['poseMap']['positionM'])
++        assert 0 < delta < .05
++        assert rows[-1]['physics']['loads'][0]['poseInSupport']['positionM'][2] < -.1
++        assert np.max(np.abs(session.engine.data.xfrc_applied)) == 0
++    finally:
++        session.end()
++
++
++def test_payload_perturbation_refuses_arm_and_unknown_selector_before_mutation(tmp_path):
++    with pytest.raises(WorkerError, match='PERTURBATION_UNREGISTERED'):
++        WorkerSession(run_id='mobile-1',bundle_root=tmp_path,lock_digest='b'*64,payload_perturbation='custom-force')
++    s = WorkerSession(run_id='mobile-1',bundle_root=tmp_path,lock_digest='b'*64,payload_perturbation='payload-cup-forward-impulse-v1')
++    response = s.handle(request('create', {'sceneRef':'scene.json','seed':7,'arms':[]}))
++    assert not response['ok'] and response['error']['code'] == 'PERTURBATION_SCOPE_INVALID'
++    assert s.engine is None and s.tick == 0
++
++
++def test_variant_probe_scene_declares_the_actual_profile_bytes(tmp_path):
++    from probe_mobile import run_case
++    name = 'drive-contact-low-v1'
++    metrics, _, _ = run_case('hold','empty',1,tmp_path,name)
++    with gzip.open(tmp_path/metrics['raw']['path'],'rt') as raw:
++        identity = json.loads(next(raw))
++    ref = identity['navigationScene']['engine']['physicsProfileRef']
++    assert ref['path'] == name+'.json'
++    files = identity['navigationScene']['files']
++    assert any(x['path'] == ref['path'] and x['sha256'] == ref['sha256'] and x['bytes'] == (FX/ref['path']).stat().st_size for x in files)
+diff --git a/scripts/lab-mujoco.mjs b/scripts/lab-mujoco.mjs
+new file mode 100644
+index 0000000..14357f3
+--- /dev/null
++++ b/scripts/lab-mujoco.mjs
+@@ -0,0 +1,23 @@
++#!/usr/bin/env node
++import {resolve,dirname} from 'node:path';
++import {fileURLToPath} from 'node:url';
++import {spawnSync} from 'node:child_process';
++import {tsImport} from 'tsx/esm/api';
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++const usage=()=>{console.error('usage: lab-mujoco.mjs run --campaign payload-v1 --out DIR | verify --input DIR');process.exit(2);};
++const [command,...args]=process.argv.slice(2),options={};
++for(let i=0;i<args.length;i+=2){const key=args[i],value=args[i+1];if(!['--campaign','--out','--input'].includes(key)||!value||value.startsWith('--')||options[key])usage();options[key]=value;}
++if(command==='run'?(options['--campaign']!=='payload-v1'||!options['--out']||options['--input']):command!=='verify'||!options['--input']||options['--out']||options['--campaign'])usage();
++try{
++ const {runPayloadCampaign,verifyPayloadCampaign}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/payload-campaign.ts',import.meta.url);
++ let verdict;
++ if(command==='verify')verdict=await verifyPayloadCampaign(resolve(options['--input']));
++ else{
++  const git=(...args)=>spawnSync('git',args,{cwd:root,encoding:'utf8'});
++  const head=git('rev-parse','HEAD').stdout.trim(),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
++  const probe=spawnSync(resolve(root,'.venv-mujoco/bin/python'),['-c','import mujoco; assert mujoco.__version__ == "3.17.0"'],{cwd:root,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});
++  if(probe.status!==0){console.error('MUJOCO_PREREQUISITE_MISSING');process.exit(2);}
++  verdict=await runPayloadCampaign({root,out:resolve(options['--out']),sourceCommit:head+(dirty?'-dirty':'')});
++ }
++ console.log(JSON.stringify(verdict,null,2));process.exitCode=verdict.completedCases===verdict.expectedRuns&&!verdict.issues.length&&!verdict.missingArtifacts.length?0:1;
++}catch(e){console.error(e.stack??String(e));process.exitCode=1;}
+diff --git a/tests/integration/lab-v2-software-gaps.test.ts b/tests/integration/lab-v2-software-gaps.test.ts
+index 16362ab..420067d 100644
+--- a/tests/integration/lab-v2-software-gaps.test.ts
++++ b/tests/integration/lab-v2-software-gaps.test.ts
+@@ -17,21 +17,21 @@ test('restoring an untouched removed cup requires a real bound observation and t
+  }finally{await run.close();}
+ });
+ 
+ test('project speed limit reaches mission admission and the plant, while the run keeps immutable inputs',async()=>{
+  const normal=await openFixture('FD01',{seed:42}),project=restaurant();Object.assign(project.entities[0]!,{speedLimitMps:0.25});
+  let slow:Awaited<ReturnType<typeof openFixture>>|undefined;
+  try{
+   slow=await openFixture('FD01',{seed:42,project});Object.assign(project.entities[0]!,{speedLimitMps:0.5});
+   await normal.start();await slow.start();const a=await act(normal,'step',{ticks:250}),b=await act(slow,'step',{ticks:250});
+   // The grid path turns within a tick; chord-distance integration can differ by less than one millimetre.
+-  expect(b.entities[0]!.distanceM).toBeCloseTo(a.entities[0]!.distanceM/2,3);
++  expect(b.entities.find(e=>e.kind==='amr')!.distanceM).toBeCloseTo(a.entities.find(e=>e.kind==='amr')!.distanceM/2,3);
+   const r=await slow.report();expect(r.effects.find(e=>e.type==='robot.execute')?.payload.limits).toMatchObject({speedLimitMps:0.25});
+   expect(r.manifest.project.hash).not.toBe((await normal.report()).manifest.project.hash);
+  }finally{await normal.close();await slow?.close();}
+ });
+ 
+ test('coffee manifest locks every design, recipe, model, adapter and illustrative profile without implying calibration',async()=>{
+  const project=coffeeProject(),original=structuredClone(project),run=await openCoffee('BV01',{seed:42,project});
+  let changed:Awaited<ReturnType<typeof openCoffee>>|undefined;
+  try{
+   const {manifest:m}=await run.report();
+diff --git a/tests/integration/mujoco-payload-campaign.test.ts b/tests/integration/mujoco-payload-campaign.test.ts
+new file mode 100644
+index 0000000..2075d0d
+--- /dev/null
++++ b/tests/integration/mujoco-payload-campaign.test.ts
+@@ -0,0 +1,143 @@
++import {afterEach,expect,test} from 'vitest';
++import {mkdtemp,readFile,rm} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {createMujocoCompiler} from '../../packages/lab-runtime/src/engineering/mujoco-compiler';
++import {createEngineeringService} from '../../packages/lab-runtime/src/engineering/gateway';
++import {validateEngineeringProject} from '../../packages/lab-runtime/src/engineering/contracts';
++import {navigationFixture} from '../support/navigation2d';
++import {testCompiler,writeFixtureCatalog} from '../support/engineering';
++const dirs:string[]=[];
++const temp=async()=>{const p=await mkdtemp(join(tmpdir(),'payload-test-'));dirs.push(p);return p;};
++afterEach(async()=>{for(const p of dirs.splice(0))await rm(p,{recursive:true,force:true});});
++async function compile(id:string){
++ const f=navigationFixture('serve-3d').fixture;f.project={...f.project,requestedProfile:'engineering-mujoco-3d-v1',mujocoExperimentId:id} as typeof f.project;
++ const catalogRoot=await temp();await writeFixtureCatalog(catalogRoot,f);
++ const service=createEngineeringService({directory:await temp(),catalogRoot,compiler:testCompiler,compilers:{'engineering-mujoco-3d-v1':createMujocoCompiler({workerRoot:resolve('robotics/simulation-mujoco')})}});
++ const receipt=await service.compileEngineeringProject(f.project,'owner');expect(receipt.state,JSON.stringify(receipt.problems)).toBe('compiled');
++ const read=async(p:string)=>JSON.parse(Buffer.from(await service.bundleFile(receipt.bundleDigest!,p)).toString());return {service,scene:await read('navigation-scene.json'),read,receipt};
++}
++test('registered empty and offset select genuine frozen load fixtures; browser cannot supply physics',async()=>{
++ for(const id of ['payload-empty-v1','payload-offset-v1']){const {scene,read}=await compile(id);const load=await read(scene.engine.loadProfileRef.path);expect(load.id).toBe(id.includes('empty')?'empty':'cup-offset');expect(load.props.length).toBe(id.includes('empty')?0:1);}
++ const project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json','utf8'));
++ expect(validateEngineeringProject({...project,mujocoExperimentId:'../../custom.json'}).ok).toBe(false);
++ expect(validateEngineeringProject({...project,physics:{contact:{sliding:0}}}).ok).toBe(false);
++});
++test('speed experiments bind applied policy and projection while preserving mechanics and controller algorithm bytes',async()=>{
++ const base=await compile('payload-center-v1'),slow=await compile('payload-slow-v1');
++ expect(slow.scene.policy.id).toBe('payload-slow-v1-navigation-policy');expect(slow.scene.policy.source.documentId).toBe('payload-experiments-v1');
++ expect(slow.scene.policy.parameters.maxLinearMps).toBe(.2);expect(slow.scene.policy.parameters.maxAngularRadps).toBe(.4);
++ expect(slow.scene.robots[0].model.kinematics.maxLinearMps).toBe(.2);
++ expect(slow.scene.engine.physicsProfileRef).toEqual(base.scene.engine.physicsProfileRef);
++ expect(slow.scene.engine.controllerPolicyRef).toEqual(base.scene.engine.controllerPolicyRef);
++ expect(slow.scene.files.find((f:{path:string})=>f.path==='canonical-physical-model.json')).toEqual(base.scene.files.find((f:{path:string})=>f.path==='canonical-physical-model.json'));
++ expect((await slow.read('cup-center.json')).modelRef.sha256).not.toBe((await base.read('cup-center.json')).modelRef.sha256);
++ expect(slow.scene.policy.hash).not.toBe(base.scene.policy.hash);expect(slow.scene.sceneDigest).not.toBe(base.scene.sceneDigest);expect(slow.receipt.projectDigest).not.toBe(base.receipt.projectDigest);
++});
++
++test('mobile committed payload samples carry admitted geometry and map pose without custody; empty has none',async()=>{
++ const {createFixedStepScenarioRun}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');
++ const {defaultCatalog}=await import('../../packages/lab-runtime/src/v2/capabilities');
++ const {mujocoMobilePlant}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile');
++ const {lockDigestOf}=await import('../../packages/lab-runtime/src/engineering/linkforge');
++ const {validateTwinSampleV2}=await import('../../packages/lab-runtime/src/v2/contracts');
++ for(const id of ['payload-center-v1','payload-empty-v1']){
++  const {service,receipt}=await compile(id),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
++  const workerRoot=resolve('robotics/simulation-mujoco'),runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
++  const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'telemetry-test',engineering:locked},{directory:await temp(),catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant:mujocoMobilePlant(runtime),runtime});
++  try{await run.start();const v=await run.snapshot();await run.action({actionId:'step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:5}});const report=await run.report();
++   const payload=report.telemetry.samples.filter(s=>s.entityId.startsWith('payload:'));
++   if(id==='payload-empty-v1'){expect(payload).toEqual([]);expect(report.entities.filter(e=>e.kind==='payload')).toEqual([]);}
++   else{expect(payload.length).toBeGreaterThan(0);for(const s of payload){expect(validateTwinSampleV2(s).ok).toBe(true);expect(s).toMatchObject({origin:'physics_sim',frameId:'map',quality:'valid',observed:{payloadKind:'free',geometry:{kind:'cylinder',radiusM:.04,heightM:.1}}});expect(s.observed).not.toHaveProperty('ownerKind');}expect(report.entities.find(e=>e.kind==='payload')).toMatchObject({id:'payload:cup-1',plant:{payloadKind:'free'},distanceM:null,moving:expect.any(Boolean)});}
++  }finally{await run.close();}
++ }
++},30000);
++
++test('campaign readback refuses a missing run set instead of trusting a summary',async()=>{
++ const module=await import('../../packages/lab-runtime/src/v2/simulation3d/payload-campaign');
++ const d=await temp();const {writeFile}=await import('node:fs/promises');await writeFile(join(d,'summary.json'),JSON.stringify({accepted:true,completedCases:18}));
++ const verdict=await module.verifyPayloadCampaign(d);expect(verdict.expectedRuns).toBe(19);expect(verdict.completedCases).toBe(0);expect(verdict.missingArtifacts.length).toBeGreaterThan(0);
++});
++
++test('actual 19-run campaign round-trips, and missing/skip/seed/profile/corrupt/fault mutations cannot pass',async()=>{
++ const {runPayloadCampaign,verifyPayloadCampaign}=await import('../../packages/lab-runtime/src/v2/simulation3d/payload-campaign');
++ const {writeFile,rename,cp,readdir,lstat}=await import('node:fs/promises');const {createHash}=await import('node:crypto');
++ const out=join(await temp(),'campaign');
++ // Optional fresh output from this build's CLI recording avoids a second native campaign; mutation tests always use a private temporary copy.
++ if(process.env.PAYLOAD_CAMPAIGN_EVIDENCE)await cp(process.env.PAYLOAD_CAMPAIGN_EVIDENCE,out,{recursive:true,errorOnExist:true});
++ const {execFileSync}=await import('node:child_process');const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim();
++ const inventory=async()=>Promise.all((await readdir(out,{recursive:true})).sort().map(async p=>{const info=await lstat(join(out,p));return info.isFile()?[p,info.size,createHash('sha256').update(await readFile(join(out,p))).digest('hex')]:[p,'directory'];}));
++ const before=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await inventory():null;
++ const verdict=process.env.PAYLOAD_CAMPAIGN_EVIDENCE?await verifyPayloadCampaign(out):await runPayloadCampaign({root:resolve('.'),out,sourceCommit:head+(dirty?'-dirty':'')});
++ expect(verdict,JSON.stringify(verdict)).toMatchObject({expectedRuns:19,completedCases:19,issues:[],missingArtifacts:[]});expect(verdict.faultCases.every(f=>f.detected&&!f.falseServed)).toBe(true);
++ if(before)expect(await inventory()).toEqual(before);const retained=await inventory();expect(await verifyPayloadCampaign(out)).toEqual(verdict);expect(await inventory()).toEqual(retained);
++ const reject=async()=>{const retained=await inventory(),v=await verifyPayloadCampaign(out);expect(v.completedCases).toBeLessThan(19);expect(v.issues.length).toBeGreaterThan(0);expect(await inventory()).toEqual(retained);};
++ const missing=join(out,'turn-empty-s7');await rename(missing,missing+'-hidden');try{await reject();}finally{await rename(missing+'-hidden',missing);}
++ const file=join(out,'turn-center-s7','case.json'),original=await readFile(file);
++ for(const mutate of [(r:Record<string,Record<string,unknown>>)=>r.case.seed=99,(r:Record<string,Record<string,unknown>>)=>r.case.experimentId='payload-empty-v1',(r:Record<string,Record<string,unknown>>)=>r.case.skip=true]){const r=JSON.parse(original.toString());mutate(r);await writeFile(file,JSON.stringify(r));try{await reject();}finally{await writeFile(file,original);}}
++ const artifact=join(out,'turn-offset-s7','run','physics','manifest.json'),bytes=await readFile(artifact);await writeFile(artifact,'{}');try{await reject();}finally{await writeFile(artifact,bytes);}
++ const faultFile=join(out,'ack-loss','case.json'),faultBytes=await readFile(faultFile),fault=JSON.parse(faultBytes.toString());fault.case.kind='worker-kill';await writeFile(faultFile,JSON.stringify(fault));try{await reject();}finally{await writeFile(faultFile,faultBytes);}
++},1500000);
++
++test('health exposes registered selectors only with engineering and an enabled reachable mobile provider',async()=>{
++ const {startLabGateway}=await import('../../packages/lab-runtime/src/gateway');const {defaultCatalog}=await import('../../packages/lab-runtime/src/v2/capabilities');
++ const {service}=await compile('payload-center-v1');
++ for(const enabled of [false,true]){
++  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
++  const gateway=await startLabGateway({port:0,directory:await temp(),sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:enabled?['mujoco_3d']:[],engineering:service}});
++  try{const health=await (await fetch(gateway.url+'/lab/v2/health')).json();if(enabled){expect(health.mobilePayloadExperiments.map((e:{id:string})=>e.id)).toContain('payload-empty-v1');expect(health.capabilities).toContain('sim3d_payload_experiments_v1');expect(JSON.stringify(health.mobilePayloadExperiments)).not.toContain('path');}else{expect(health.mobilePayloadExperiments).toBeUndefined();expect(health.capabilities).not.toContain('sim3d_payload_experiments_v1');}}
++  finally{await gateway.close();}
++ }
++});
++
++test('a registered real impulse reaches LOAD_FELL after contact without serving or respawning',async()=>{
++ const {createFixedStepScenarioRun}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');const {defaultCatalog}=await import('../../packages/lab-runtime/src/v2/capabilities');
++ const {mujocoMobilePlant,MOBILE_PAYLOAD_IMPULSE}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile');const {lockDigestOf}=await import('../../packages/lab-runtime/src/engineering/linkforge');
++ const {service,receipt}=await compile('payload-center-v1'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
++ const workerRoot=resolve('robotics/simulation-mujoco'),runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++ const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
++ const directory=await temp(),run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'fall-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant:mujocoMobilePlant(runtime,'payload-cup-forward-impulse-v1'),runtime});
++ try{await run.start();let v=await run.snapshot(),i=0;while(v.tick<650&&!v.attention.some(a=>a.reason==='LOAD_FELL')){v=await run.action({actionId:`step-${++i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:25}});}
++ const report=await run.report();expect(report.attention.map(a=>a.reason)).toContain('LOAD_FELL');expect(report.outcome.served).toBe('0');expect(report.entities.find(e=>e.kind==='payload')?.moving).toBe(true);expect(report.manifest.simulationPerturbation).toEqual(MOBILE_PAYLOAD_IMPULSE);expect(report.physicsEvidence?.issues).toEqual(['PHYSICS_COVERAGE_INCOMPLETE']);expect(report.physicsEvidence?.manifest.gaps).toEqual([]);
++ await expect(run.action({actionId:'again',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('PLANT_LOST');
++ console.log('PAYLOAD_FALL',JSON.stringify({tick:v.tick,attention:report.attention,receipt:JSON.parse(await readFile(join(directory,'worker/payload-perturbation.json'),'utf8'))}));
++ }finally{await run.close();}
++},60000);
++
++test.each(['complete','restart','ack-loss'])('registered braking observation tail has a durable terminal boundary: %s',async mode=>{
++ const {createFixedStepScenarioRun}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');const {defaultCatalog}=await import('../../packages/lab-runtime/src/v2/capabilities');
++ const {mujocoMobilePlant}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile');const {lockDigestOf}=await import('../../packages/lab-runtime/src/engineering/linkforge');
++ const {service,receipt}=await compile('payload-slow-v1'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
++ const workerRoot=resolve('robotics/simulation-mujoco'),runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++ const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
++ const {WorkerLostError}=await import('../../packages/lab-runtime/src/v2/navigation2d/plant');
++ let loseAck=false,spawns=0;const steps:{tick:number;velocities:unknown}[]=[];
++ const plant=mujocoMobilePlant(runtime,'payload-brake-observation-v1'),spawn=plant.spawn;
++ plant.spawn=async options=>{spawns++;const w=await spawn(options);return {get state(){return w.state;},get pid(){return w.pid;},get bootId(){return w.bootId;},get stderrTail(){return w.stderrTail;},close:(reason:string)=>w.close(reason),async request(req){const r=await w.request(req);if(req.op==='step'){steps.push({tick:req.expectedTick+1,velocities:(req.payload as {velocities:unknown}).velocities});if(loseAck)throw new WorkerLostError('WORKER_TIMEOUT','unknown','tail ACK lost after actual advancement');}return r;}};};
++ const directory=await temp(),open=()=>createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'brake-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});
++ let run=await open();
++ try{await run.start();let v=await run.snapshot();v=await run.action({actionId:'drive',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});v=await run.action({actionId:'cancel',expectedRevision:v.run.runRevision,kind:'cancel',payload:{}});
++ let cp=JSON.parse(await readFile(join(directory,'run.json'),'utf8')),i=0;
++ // A real one-tick consumer stops on terminal status; that must not strand the observation window.
++ while(v.run.status==='running'&&!cp.completionTail&&i<250){v=await run.action({actionId:`stop-${++i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}});cp=JSON.parse(await readFile(join(directory,'run.json'),'utf8'));}
++ expect(cp.completionTail).toBeDefined();expect(v.tick).toBe(cp.completionTail.firstTick);expect(v.run.status).toBe('running');
++ const mid=await run.report();expect(mid.outcome.status).toBe('running');expect(mid.businessEvents.some(e=>e.type==='RobotCommandObserved'&&e.state.status==='cancelled')).toBe(true);
++ const effectIds=mid.effects.map(e=>e.id),confirmed=mid.confirmations;
++ if(mode==='restart'){
++  await run.close();run=await open();v=await run.snapshot();expect(v.run.status).toBe('needs_attention');expect(v.attention.map(a=>a.reason)).toContain('RECOVERY_UNKNOWN');
++  expect((await run.report()).outcome.status).toBe('needs_attention');await expect(run.action({actionId:'after-restart',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('PLANT_LOST');expect(spawns).toBe(1);return;
++ }
++ if(mode==='ack-loss')loseAck=true;
++ while(v.run.status==='running'&&v.tick<cp.completionTail.lastTick){v=await run.action({actionId:`tail-${++i}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}});}
++ const report=await run.report();expect(report.effects.map(e=>e.id)).toEqual(effectIds);expect(report.confirmations).toEqual(confirmed);expect(report.outcome.served).toBe('0');expect(spawns).toBe(1);
++ for(const step of steps.filter(s=>s.tick>cp.completionTail.firstTick))expect(step.velocities).toEqual([{robotId:'amr-1',vMps:0,omegaRadps:0}]);
++ if(mode==='ack-loss'){
++  expect(v.run.status).toBe('needs_attention');expect(v.tick).toBe(cp.completionTail.firstTick);expect(steps.at(-1)?.tick).toBe(v.tick+1);expect(report.physicsEvidence?.complete).toBe(false);
++  await expect(run.action({actionId:'retry',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('PLANT_LOST');expect(steps.at(-1)?.tick).toBe(v.tick+1);
++ }else{
++  expect(v.tick).toBe(cp.completionTail.lastTick);expect(v.run.status).toBe('cancelled');expect(report.outcome.status).toBe('cancelled');expect(report.physicsEvidence?.metrics.stopDistanceM.available).toBe(true);expect(report.physicsEvidence?.complete).toBe(true);expect(report.manifest.completionObservation).toEqual({id:'payload-brake-observation-v1',extraTicks:5});
++  await expect(run.action({actionId:'extra',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('RUN_FINISHED');
++ }
++ }finally{await run.close();}
++},60000);
+diff --git a/tests/unit/payload-experiments.test.ts b/tests/unit/payload-experiments.test.ts
+new file mode 100644
+index 0000000..d216f58
+--- /dev/null
++++ b/tests/unit/payload-experiments.test.ts
+@@ -0,0 +1,19 @@
++import {expect,test} from 'vitest';
++import {PAYLOAD_EXPERIMENTS,payloadExperiment} from '../../packages/lab-runtime/src/v2/simulation3d/payload-experiments';
++test('server selector objects are immutable and speed experiments change no load or physics input',()=>{
++ for(const id of ['payload-slow-v1','payload-fast-v1']){const e=payloadExperiment(id);expect(e.load).toBe('cup-center');expect(e.physics).toBe('drive-contact-profile');expect(Object.isFrozen(e)).toBe(true);}
++ expect(Object.isFrozen(PAYLOAD_EXPERIMENTS)).toBe(true);expect(()=>payloadExperiment('__proto__')).toThrow('UNREGISTERED');
++});
++
++test('the launch-only payload perturbation is refused by other worker providers before process spawn',async()=>{
++ const {spawnIRSimWorker}=await import('../../packages/lab-runtime/src/v2/navigation2d/worker-client');
++ const {mkdtemp,rm}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join}=await import('node:path');const directory=await mkdtemp(join(tmpdir(),'perturbation-refuse-'));
++ try{const result=await spawnIRSimWorker({python:'/no-such-interpreter',workerRoot:directory,bundleRoot:directory,runDirectory:directory,runId:'refusal',lockDigest:'a'.repeat(64),schemaDir:directory,payloadPerturbationId:'payload-cup-forward-impulse-v1'}).then(async w=>{await w.close('test');return 'accepted';},e=>e.message);expect(result).toBe('PERTURBATION_PROVIDER_UNSUPPORTED');}finally{await rm(directory,{recursive:true,force:true});}
++});
++
++test('the registered impulse changes source run input identity while baseline mobile identity stays absent',async()=>{
++ const {mujocoMobilePlant}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile');
++ const runtime={python:'unused',workerRoot:'unused',schemaDir:'unused',lockDigest:'a'.repeat(64),engineVersion:'3.17.0'};
++ const baseline=mujocoMobilePlant(runtime),stress=mujocoMobilePlant(runtime,'payload-cup-forward-impulse-v1');
++ expect(baseline.identity.simulationPerturbation).toBeUndefined();expect(stress.identity.simulationPerturbation).toMatchObject({id:'payload-cup-forward-impulse-v1',revision:1,parameters:{targetTick:501,forceN:[30,0,0],frameId:'support',durationS:.02}});
++});

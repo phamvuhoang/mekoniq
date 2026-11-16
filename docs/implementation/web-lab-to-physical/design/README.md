@@ -1,5 +1,8 @@
 # MEKONIQ — Lab trên web và lộ trình tới máy thật sau R2a
 
+**Cập nhật ghi bằng chứng cuối16/11:** [trạng thái actual](../final-recording-status.md), [tái hiện](../reproduce-final-recording.md) và [disposition cụ thể](../final-deferred-dispositions.md) là nguồn hiện trạng. Phần dưới giữ snapshot chuẩn bị trước các lượt ghi cuối; không dùng trạng thái cũ để retag producer, nhận native/physical hoặc công bố live realtime.
+
+
 **Ngày thiết kế:** 2026-11-13 · **Trạng thái cập nhật 15/11:** đang implement trên hai worktree riêng theo yêu cầu người dùng, chưa nghiệm thu. Xem [tiến độ implementation](00-implementation-status.md) để phân biệt phần đã làm với kế hoạch còn lại.
 
 **Định hướng người dùng đã chốt:** chưa chọn phần cứng; chuẩn bị cả nhánh xArm/ROS 2 và tay máy tự chế/PUMA/LinuxCNC; ưu tiên trải nghiệm web.

@@ -1,0 +1,1186 @@
+# Review package: e07685d947bad36a175b930031e0997e2991799e..709a797fa791727d0a8c830e935e0d80192843b0
+
+## Commits
+709a797 feat: compare physics experiments within explicit evidence scopes
+
+## Files changed
+ packages/contracts/generated/navigation2d.ts       | 102 +++++
+ .../schemas/semantic-study-v1.schema.json          | 435 +++++++++++++++++++++
+ .../src/v2/simulation3d/payload-experiments.ts     |   4 +-
+ .../src/v2/simulation3d/physics-comparison.ts      |  32 ++
+ .../src/v2/simulation3d/physics-inputs.ts          |  54 +++
+ .../src/v2/simulation3d/semantic-study-policy.ts   |   6 +
+ .../src/v2/simulation3d/semantic-study.ts          |  71 ++++
+ .../src/v2/simulation3d/simulation-input.ts        |  35 ++
+ .../src/v2/simulation3d/study-navigation.ts        |  22 ++
+ .../src/v2/simulation3d/study-physics.ts           |  27 ++
+ scripts/compare-simulations.mjs                    |  13 +
+ scripts/generate-contracts.mjs                     |   2 +-
+ .../simulation-study/mismatched-world.json         |   5 +
+ tests/integration/cross-engine-fd01.test.ts        |  54 +++
+ tests/support/simulation-study.ts                  |  65 +++
+ tests/unit/physics-comparison.test.ts              |  30 ++
+ tests/unit/semantic-study.test.ts                  |  62 +++
+ 17 files changed, 1017 insertions(+), 2 deletions(-)
+
+## Diff
+diff --git a/packages/contracts/generated/navigation2d.ts b/packages/contracts/generated/navigation2d.ts
+index 8d4982b..269a198 100644
+--- a/packages/contracts/generated/navigation2d.ts
++++ b/packages/contracts/generated/navigation2d.ts
+@@ -2240,10 +2240,112 @@ export interface WebReplayPackageV1 {
+     repository: string;
+     commit: string;
+     recordPath: string;
+     noticePath: string;
+     /**
+      * @maxItems 100
+      */
+     matchedAssets: string[];
+   }[];
+ }
++/**
++ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
++ * via the `definition` "SemanticStudyV1".
++ */
++export interface SemanticStudyV1 {
++  schemaVersion: 1;
++  documentType: 'semantic-study';
++  accepted: false;
++  status: 'complete' | 'incomparable' | 'failed';
++  /**
++   * @maxItems 100
++   */
++  reasonCodes: string[];
++  equivalence: {
++    model: {
++      id: string;
++      sha256: string;
++    };
++    world: {
++      id: string;
++      sha256: string;
++    };
++    task: {
++      id: string;
++      sha256: string;
++    };
++    commonProjection: {
++      id: string;
++      sha256: string;
++    };
++  };
++  invariantPolicy: {
++    id: 'fd01-source-causal-v1';
++    revision: 1;
++  };
++  /**
++   * @maxItems 3
++   */
++  runs: {
++    runId: string;
++    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
++    reportRef: {
++      path: string;
++      sha256: string;
++      bytes: number;
++    };
++    /**
++     * @maxItems 4000
++     */
++    artifactRefs: {
++      path: string;
++      sha256: string;
++      bytes: number;
++    }[];
++    sceneDigest: string;
++    modelDigest: string;
++    firstTick: number;
++    lastTick: number;
++    replay: {
++      runId: string;
++      tick: number;
++    };
++  }[];
++  /**
++   * @maxItems 30
++   */
++  invariants: {
++    runId: string;
++    id: string;
++    status: 'pass' | 'fail' | 'not_run';
++    /**
++     * @maxItems 50
++     */
++    reasonCodes: string[];
++    tick: number | null;
++  }[];
++  /**
++   * @maxItems 30
++   */
++  differences: {
++    runId: string;
++    dimension: string;
++    value: number | null;
++    unit: string;
++    status: 'observed' | 'unavailable';
++    reason: string | null;
++  }[];
++  /**
++   * @maxItems 9
++   */
++  unsupportedDimensions: {
++    engine: 'irsim_2d' | 'webots_3d' | 'mujoco_3d';
++    dimension: 'contact' | 'slip' | 'tipping';
++    status: 'unsupported';
++    reason: string;
++  }[];
++  percentiles: null;
++  /**
++   * @maxItems 20
++   */
++  limitations: string[];
++}
+diff --git a/packages/contracts/schemas/semantic-study-v1.schema.json b/packages/contracts/schemas/semantic-study-v1.schema.json
+new file mode 100644
+index 0000000..9828440
+--- /dev/null
++++ b/packages/contracts/schemas/semantic-study-v1.schema.json
+@@ -0,0 +1,435 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "mekoniq.semantic-study.v1",
++  "title": "SemanticStudyV1",
++  "type": "object",
++  "additionalProperties": false,
++  "properties": {
++    "schemaVersion": {
++      "const": 1
++    },
++    "documentType": {
++      "const": "semantic-study"
++    },
++    "accepted": {
++      "const": false
++    },
++    "status": {
++      "enum": [
++        "complete",
++        "incomparable",
++        "failed"
++      ]
++    },
++    "reasonCodes": {
++      "type": "array",
++      "maxItems": 100,
++      "items": {
++        "type": "string",
++        "minLength": 1,
++        "maxLength": 512
++      }
++    },
++    "equivalence": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "model": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "id": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 512
++            },
++            "sha256": {
++              "type": "string",
++              "pattern": "^[a-f0-9]{64}$"
++            }
++          },
++          "required": [
++            "id",
++            "sha256"
++          ]
++        },
++        "world": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "id": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 512
++            },
++            "sha256": {
++              "type": "string",
++              "pattern": "^[a-f0-9]{64}$"
++            }
++          },
++          "required": [
++            "id",
++            "sha256"
++          ]
++        },
++        "task": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "id": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 512
++            },
++            "sha256": {
++              "type": "string",
++              "pattern": "^[a-f0-9]{64}$"
++            }
++          },
++          "required": [
++            "id",
++            "sha256"
++          ]
++        },
++        "commonProjection": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "id": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 512
++            },
++            "sha256": {
++              "type": "string",
++              "pattern": "^[a-f0-9]{64}$"
++            }
++          },
++          "required": [
++            "id",
++            "sha256"
++          ]
++        }
++      },
++      "required": [
++        "model",
++        "world",
++        "task",
++        "commonProjection"
++      ]
++    },
++    "invariantPolicy": {
++      "type": "object",
++      "additionalProperties": false,
++      "properties": {
++        "id": {
++          "const": "fd01-source-causal-v1"
++        },
++        "revision": {
++          "const": 1
++        }
++      },
++      "required": [
++        "id",
++        "revision"
++      ]
++    },
++    "runs": {
++      "type": "array",
++      "maxItems": 3,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "runId": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "engine": {
++            "enum": [
++              "irsim_2d",
++              "webots_3d",
++              "mujoco_3d"
++            ]
++          },
++          "reportRef": {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "path": {
++                "type": "string",
++                "minLength": 1,
++                "maxLength": 512
++              },
++              "sha256": {
++                "type": "string",
++                "pattern": "^[a-f0-9]{64}$"
++              },
++              "bytes": {
++                "type": "integer",
++                "minimum": 0,
++                "maximum": 16777216
++              }
++            },
++            "required": [
++              "path",
++              "sha256",
++              "bytes"
++            ]
++          },
++          "artifactRefs": {
++            "type": "array",
++            "maxItems": 4000,
++            "items": {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "path": {
++                  "type": "string",
++                  "minLength": 1,
++                  "maxLength": 512
++                },
++                "sha256": {
++                  "type": "string",
++                  "pattern": "^[a-f0-9]{64}$"
++                },
++                "bytes": {
++                  "type": "integer",
++                  "minimum": 0,
++                  "maximum": 16777216
++                }
++              },
++              "required": [
++                "path",
++                "sha256",
++                "bytes"
++              ]
++            }
++          },
++          "sceneDigest": {
++            "type": "string",
++            "pattern": "^[a-f0-9]{64}$"
++          },
++          "modelDigest": {
++            "type": "string",
++            "pattern": "^[a-f0-9]{64}$"
++          },
++          "firstTick": {
++            "type": "integer",
++            "minimum": 0,
++            "maximum": 30000
++          },
++          "lastTick": {
++            "type": "integer",
++            "minimum": 0,
++            "maximum": 30000
++          },
++          "replay": {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "runId": {
++                "type": "string",
++                "minLength": 1,
++                "maxLength": 512
++              },
++              "tick": {
++                "type": "integer",
++                "minimum": 0,
++                "maximum": 30000
++              }
++            },
++            "required": [
++              "runId",
++              "tick"
++            ]
++          }
++        },
++        "required": [
++          "runId",
++          "engine",
++          "reportRef",
++          "artifactRefs",
++          "sceneDigest",
++          "modelDigest",
++          "firstTick",
++          "lastTick",
++          "replay"
++        ]
++      }
++    },
++    "invariants": {
++      "type": "array",
++      "maxItems": 30,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "runId": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "id": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "status": {
++            "enum": [
++              "pass",
++              "fail",
++              "not_run"
++            ]
++          },
++          "reasonCodes": {
++            "type": "array",
++            "maxItems": 50,
++            "items": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 512
++            }
++          },
++          "tick": {
++            "anyOf": [
++              {
++                "type": "integer",
++                "minimum": 0,
++                "maximum": 30000
++              },
++              {
++                "type": "null"
++              }
++            ]
++          }
++        },
++        "required": [
++          "runId",
++          "id",
++          "status",
++          "reasonCodes",
++          "tick"
++        ]
++      }
++    },
++    "differences": {
++      "type": "array",
++      "maxItems": 30,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "runId": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "dimension": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "value": {
++            "type": [
++              "number",
++              "null"
++            ]
++          },
++          "unit": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          },
++          "status": {
++            "enum": [
++              "observed",
++              "unavailable"
++            ]
++          },
++          "reason": {
++            "type": [
++              "string",
++              "null"
++            ],
++            "maxLength": 512
++          }
++        },
++        "required": [
++          "runId",
++          "dimension",
++          "value",
++          "unit",
++          "status",
++          "reason"
++        ]
++      }
++    },
++    "unsupportedDimensions": {
++      "type": "array",
++      "maxItems": 9,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "engine": {
++            "enum": [
++              "irsim_2d",
++              "webots_3d",
++              "mujoco_3d"
++            ]
++          },
++          "dimension": {
++            "enum": [
++              "contact",
++              "slip",
++              "tipping"
++            ]
++          },
++          "status": {
++            "const": "unsupported"
++          },
++          "reason": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 512
++          }
++        },
++        "required": [
++          "engine",
++          "dimension",
++          "status",
++          "reason"
++        ]
++      }
++    },
++    "percentiles": {
++      "type": "null"
++    },
++    "limitations": {
++      "type": "array",
++      "maxItems": 20,
++      "items": {
++        "type": "string",
++        "minLength": 1,
++        "maxLength": 512
++      }
++    }
++  },
++  "required": [
++    "schemaVersion",
++    "documentType",
++    "accepted",
++    "status",
++    "reasonCodes",
++    "equivalence",
++    "invariantPolicy",
++    "runs",
++    "invariants",
++    "differences",
++    "unsupportedDimensions",
++    "percentiles",
++    "limitations"
++  ]
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts b/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts
+index d8d2374..20a40ce 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/payload-experiments.ts
+@@ -8,13 +8,15 @@ export const PAYLOAD_EXPERIMENTS={
+  'payload-friction-low-v1':{load:'cup-center',physics:'drive-contact-low-v1',maxLinearMps:.5,maxAngularRadps:1},
+  'payload-friction-high-v1':{load:'cup-center',physics:'drive-contact-high-v1',maxLinearMps:.5,maxAngularRadps:1},
+ } as const;
+ for(const value of Object.values(PAYLOAD_EXPERIMENTS))Object.freeze(value);Object.freeze(PAYLOAD_EXPERIMENTS);
+ export type PayloadExperimentId=keyof typeof PAYLOAD_EXPERIMENTS;
+ export const payloadExperiment=(id:string)=>{if(!Object.hasOwn(PAYLOAD_EXPERIMENTS,id))throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');return PAYLOAD_EXPERIMENTS[id as PayloadExperimentId];};
+ 
+ /** B08 must compare exact fields, after verifying all digests. These are allowed differences, not a mask for arbitrary model/policy edits. */
+ export const PAYLOAD_SPEED_DIFFERENCES=Object.freeze({
+  selectedInputs:['mujocoExperimentId','policy.parameters.maxLinearMps','policy.parameters.maxAngularRadps'] as const,
+- derivedInputs:['projectDigest','physical.inputs.project.digest','physical.modelDigest','physical file sha256','load.modelRef.sha256','load.digest','load file sha256','navigation.inputs.project.digest','navigation.physicalModelDigest','navigation.modelDigest','navigation.kinematics.maxLinearMps','navigation.kinematics.maxAngularRadps','policy.id','policy.source','policy.hash','scene.inputs.project.digest','scene.sceneDigest','bundleDigest','runId'] as const,
++ derivedInputs:['projectDigest','physical.inputs.project.digest','physical.modelDigest','physical file sha256','load.modelRef.sha256','load.digest','load file sha256','navigation.inputs.project.digest','navigation.physicalModelDigest','navigation.modelDigest','navigation.kinematics.maxLinearMps','navigation.kinematics.maxAngularRadps','navigation.navigationPolicyRef.id','navigation.navigationPolicyRef.hash','policy.id','policy.source','policy.hash','scene.inputs.project.digest','scene.robots[0].model.inputs.project.digest','scene.robots[0].model.physicalModelDigest','scene.robots[0].model.modelDigest','scene.robots[0].model.kinematics.maxLinearMps','scene.robots[0].model.kinematics.maxAngularRadps','scene.robots[0].model.navigationPolicyRef.id','scene.robots[0].model.navigationPolicyRef.hash','scene.policy.id','scene.policy.source','scene.policy.parameters.maxLinearMps','scene.policy.parameters.maxAngularRadps','scene.policy.hash','scene.files[physical-model/amr-1.json].sha256','scene.files[cup-center.json].sha256','scene.engine.loadProfileRef.sha256','scene.sceneDigest','navigation-scene.json file sha256/bytes','scene.json file sha256/bytes','navigation-policy.json file sha256/bytes','navigation-model/amr-1.json file sha256/bytes','engineering-project.json file sha256/bytes','physical-model/amr-1.json file sha256','cup-center.json file sha256','bundleDigest','runId'] as const,
++ // B08 operational admission reconstructs these complete documents from closed registry inputs. No subtree is ignored.
++ validation:'physics-inputs.verifiedPhysicsInputs: exact reconstructed physical/navigation/policy/scene documents; all remaining documents and project fields must match',
+  unchanged:['runSeed','sourceCommit','engineVersion','lockDigest','platform','clock','simulationPerturbation','completionObservation','assemblyDigest','world','canonical physical file sha256','physical mechanics excluding inputs/modelDigest','load props/supports','physics profile file sha256','controller algorithm/version/ramp policy','stop policy','all other navigation policy/kinematics fields','entitySpeedLimitMps'] as const,
+ });
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-comparison.ts b/packages/lab-runtime/src/v2/simulation3d/physics-comparison.ts
+new file mode 100644
+index 0000000..c8e508a
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-comparison.ts
+@@ -0,0 +1,32 @@
++import {verifiedStudyPhysics} from './study-physics';
++import {PAYLOAD_SPEED_DIFFERENCES} from './payload-experiments';
++import {hashJson} from '../hash';
++import {verifiedSimulationInput,type SimulationRunInput} from './simulation-input';
++import {verifiedPhysicsInputs,changedLeaves} from './physics-inputs';
++/** Descriptive deltas in the producer's verified report window; never an engine-accuracy or performance ranking. */
++export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
++ const reasons:string[]=[],deltas:{id:string;unit:string;a:number|null;b:number|null;delta:number|null;reasons:string[];samplesA:number;samplesB:number}[]=[],inputs:string[]=[];
++ let window:{kind:string;a:{firstTick:number;lastTick:number};b:{firstTick:number;lastTick:number}}|null=null;
++ try{
++  const va=verifiedSimulationInput(a),vb=verifiedSimulationInput(b),pa=verifiedPhysicsInputs(va),pb=verifiedPhysicsInputs(vb);
++  const same=(x:unknown,y:unknown,code:string)=>{if(hashJson(x??null)!==hashJson(y??null))reasons.push(code);};
++  const {mujocoExperimentId:_a,...projectA}=pa.project,{mujocoExperimentId:_b,...projectB}=pb.project;void _a;void _b;
++  same(projectA,projectB,'UNCHANGED_INPUTS_DIFFER');same(pa.resolved,pb.resolved,'MECHANICS_DIFFER');
++  for(const p of ['assets.json','recipes.json','bom.json','assumptions.json','cell-layout.json','canonical-physical-model.json'])same(va.get(p),vb.get(p),'UNCHANGED_INPUTS_DIFFER');
++  const changes=['load','physics','maxLinearMps','maxAngularRadps'].filter(k=>pa.experiment[k as keyof typeof pa.experiment]!==pb.experiment[k as keyof typeof pb.experiment]);
++  const dimensions=new Set(changes.map(k=>k.startsWith('max')?'speed':k));if(dimensions.size>1)reasons.push('MULTIPLE_EXPERIMENT_DIMENSIONS');
++  const ma=va.report.manifest,mb=vb.report.manifest,na=va.report.navigation2d!,nb=vb.report.navigation2d!;
++  const engine=(n:typeof na)=>{const e={...n.engine} as Record<string,unknown>;delete e.loadProfileRef;delete e.physicsProfileRef;return e;};
++  same(engine(na),engine(nb),'ENGINE_DIFFERS');same(na.controller,nb.controller,'CONTROLLER_DIFFERS');same(na.identity,nb.identity,'PRODUCER_DIFFERS');
++  for(const k of ['sourceCommit','clock','seed','scenario','simulationPerturbation','completionObservation','world','assets','prng'] as const)same(ma[k],mb[k],`${k.toUpperCase()}_DIFFERS`);
++  same(va.report.outcome.status,vb.report.outcome.status,'WINDOW_DIFFERS');
++  if(!['completed','cancelled'].includes(va.report.outcome.status))reasons.push('WINDOW_INCOMPLETE');
++  if(va.report.outcome.status==='cancelled')same(va.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),vb.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),'CANCEL_SCHEDULE_DIFFERS');
++  window={kind:va.report.outcome.status==='completed'?'completed-fd01':'registered-cancel',a:{firstTick:1,lastTick:va.report.outcome.tick},b:{firstTick:1,lastTick:vb.report.outcome.tick}};
++  for(const [p,doc]of va.documents)if(!p.startsWith('evidence/')&&!p.startsWith('physics/'))inputs.push(...changedLeaves(doc,vb.documents.get(p),p));
++  const metricsA=verifiedStudyPhysics(va,pa),metricsB=verifiedStudyPhysics(vb,pb);
++  for(const id of Object.keys(metricsA) as (keyof typeof metricsA)[]){const x=metricsA[id],y=metricsB[id];if(!y){reasons.push('METRIC_POLICY_DIFFERS');continue;}const available=x.available&&y.available&&x.unit===y.unit&&Number.isFinite(x.value)&&Number.isFinite(y.value);deltas.push({id,unit:x.unit,a:x.value,b:y.value,delta:available&&!reasons.length?y.value!-x.value!:null,reasons:[...!x.available?[x.reason]:[],...!y.available?[y.reason]:[],...x.unit!==y.unit?['UNIT_DIFFERS']:[]],samplesA:x.available?x.samples:0,samplesB:y.available?y.samples:0});}
++ }catch(e){reasons.push('EVIDENCE_INVALID',e instanceof Error?e.message:'INVALID_INPUT');}
++ if(reasons.length)for(const d of deltas)d.delta=null;
++ return {registeredDifferences:PAYLOAD_SPEED_DIFFERENCES,comparable:!reasons.length,reasons:[...new Set(reasons)],window,population:{runsA:1,runsB:1},inputs:[...new Set(inputs)].sort(),deltas,percentiles:null,note:'One run per side; no p50/p95 or performance ranking. not_calibrated. Stop distance begins at the first actual zero plant target, after the command ramp; it excludes reaction and ramp-down distance. Low sliding input 0.3 is masked by floor 0.8/cup 0.6 maximum contact mixing; no lower effective floor friction is established.'};
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-inputs.ts b/packages/lab-runtime/src/v2/simulation3d/physics-inputs.ts
+new file mode 100644
+index 0000000..85082a4
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-inputs.ts
+@@ -0,0 +1,54 @@
++/** A closed experiment declaration is checked by reconstructing every derived document, not by masking subtrees. */
++import {projectPhysicalModel} from '../../engineering/physical-model';
++import {projectNavigationModel} from '../../engineering/navigation-model';
++import {compileNavigationScene,withSceneFiles} from '../../engineering/navigation-compiler';
++import {WORLD3D_DEFAULT} from '../../engineering/webots-compiler';
++import {prepareEngineeringCompileInput} from '../../engineering/assembly';
++import type {EngineeringProject,ResolvedAssembly} from '../../engineering/contracts';
++import {defaultNavigationPolicy,sealDocument,type LoadProfileV1} from '../navigation2d/contracts';
++import {hashJson} from '../hash';
++import {MOBILE_CONTROLLER_POLICY,MOBILE_STOP_POLICY} from './mujoco-mobile';
++import {payloadExperiment} from './payload-experiments';
++import {verifiedSimulationInput} from './simulation-input';
++const CANONICAL='830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9';
++const LOAD_SHAPES={'empty':'43176b16326df374a96e5e35a7924172f78a040072aacc7383b053a2362b684c','cup-center':'8c8916aa043c53fc9758c4ee6595a6271a899d2207dd70a30f82127e05cc4299','cup-offset':'0b2bd1dddfa00c2d18450fb536553f1cdc91a8b507a293714689705d308d1187'};
++const PHYSICS={'drive-contact-profile':'9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3','drive-contact-low-v1':'c9aec2a6a250e81f4c5c1d1372e88d7d90340b7e42f7526fe90a7ad3d1d4ad9c','drive-contact-high-v1':'9d1f7f3315cfe9df89ed8b8b15361b3fd09d66dedbe4ea5240a5c04b54ecbe8a'};
++const equal=(a:unknown,b:unknown)=>{if(hashJson(a)!==hashJson(b))throw Error('UNDECLARED_INPUT_CHANGE');};
++export function verifiedPhysicsInputs(v:ReturnType<typeof verifiedSimulationInput>){
++ const {scene,get,refs,report}=v,project=v.project as unknown as EngineeringProject;
++ if(scene.engine.id!=='mujoco_3d'||scene.engine.version!=='3.17.0')throw Error('PHYSICS_ENGINE_UNSUPPORTED');
++ const experiment=payloadExperiment(project.mujocoExperimentId??'payload-center-v1'),baseline=defaultNavigationPolicy(),parameters={...baseline.parameters,maxLinearMps:experiment.maxLinearMps,maxAngularRadps:experiment.maxAngularRadps};
++ const policy=hashJson(parameters)===hashJson(baseline.parameters)?baseline:sealDocument({...baseline,id:`${project.mujocoExperimentId}-navigation-policy`,parameters,source:{kind:'assumed' as const,documentId:'payload-experiments-v1',revision:'1',locator:`registered ${project.mujocoExperimentId} speed caps; all other parameters retain baseline`,contentSha256:hashJson(parameters)}},'hash');
++ equal(scene.policy,policy);equal(get('navigation-policy.json'),policy);
++ const resolved=get<ResolvedAssembly>('resolved-assembly.json'),input=prepareEngineeringCompileInput(project,resolved,get('recipes.json'));
++ equal(input.projectDigest,scene.inputs.project.digest);equal(input.runtimeProjection.project,get('runtime-project.json'));equal(input.runtimeProjection.assets,get('assets.json'));
++ const physical=projectPhysicalModel(input,scene.robots[0]!.robotId,scene.schemaHash),physicalPath=`physical-model/${physical.robotId}.json`;
++ equal(physical,get(physicalPath));
++ const {inputs:_inputs,modelDigest:_digest,...mechanics}=physical;void _inputs;void _digest;
++ const canonical=get<typeof physical>('canonical-physical-model.json'),{inputs:_canonicalInputs,modelDigest:_canonicalDigest,...canonicalMechanics}=canonical;void _canonicalInputs;void _canonicalDigest;
++ equal(mechanics,canonicalMechanics);if(refs.get('canonical-physical-model.json')?.sha256!==CANONICAL)throw Error('CANONICAL_MODEL_DIFFERS');
++ const model=projectNavigationModel(physical,policy,{entitySpeedLimitMps:project.runtimeProject.entities[0]!.speedLimitMps});
++ equal(model,scene.robots[0]!.model);equal(get(`navigation-model/${physical.robotId}.json`),model);
++ const load=get<LoadProfileV1>(`${experiment.load}.json`),{digest,modelRef,...loadShape}=load;
++ if(hashJson(loadShape)!==LOAD_SHAPES[experiment.load]||digest!==sealDocument(load,'digest').digest||modelRef.path!==physicalPath||modelRef.sha256!==refs.get(physicalPath)?.sha256)throw Error('LOAD_INPUT_DIFFERS');
++ if(refs.get(`${experiment.physics}.json`)?.sha256!==PHYSICS[experiment.physics])throw Error('PHYSICS_PROFILE_DIFFERS');
++ equal(get('mobile-controller-policy.json'),MOBILE_CONTROLLER_POLICY);equal(get('mobile-stop-policy.json'),MOBILE_STOP_POLICY);
++ const ref=(path:string,id:string,revision:number)=>({id,revision,path,sha256:refs.get(path)!.sha256});
++ const physics=get<{id:string;revision:number}>(`${experiment.physics}.json`);
++ const expectedFiles=['mobile-controller-policy.json','mobile-stop-policy.json',physicalPath,`${experiment.load}.json`,`${experiment.physics}.json`,'assumptions.json','cell-layout.json','canonical-physical-model.json'].map(path=>{const r=refs.get(path);if(!r)throw Error('ARTIFACT_MISSING');return {...r};});
++ const expected=withSceneFiles(compileNavigationScene(input,[model],policy,scene.schemaHash,{world3d:{...WORLD3D_DEFAULT},engine:{id:'mujoco_3d',version:'3.17.0',timestepMs:2,substeps:10,controllerPolicyRef:ref('mobile-controller-policy.json',MOBILE_CONTROLLER_POLICY.id,1),stopPolicyRef:ref('mobile-stop-policy.json',MOBILE_STOP_POLICY.id,1),loadProfileRef:ref(`${experiment.load}.json`,load.id,load.revision),physicsProfileRef:ref(`${experiment.physics}.json`,physics.id,physics.revision)}}),expectedFiles);
++ equal(expected,scene);if(v.documents.has('scene.json'))equal(get('scene.json'),scene);
++ const n=report.navigation2d!,e=n.engine;
++ if(e.id!=='mujoco_3d'||e.engineVersion!==scene.engine.version)throw Error('ENGINE_IDENTITY_DIFFERS');
++ equal(e.controllerPolicyRef,scene.engine.controllerPolicyRef);equal(e.stopPolicyRef,scene.engine.stopPolicyRef);equal(e.loadProfileRef,scene.engine.loadProfileRef);equal(e.physicsProfileRef,scene.engine.physicsProfileRef);
++ equal(n.controller,MOBILE_CONTROLLER_POLICY.controller);
++ const p=report.physicsEvidence;
++ if(!p||!p.complete||p.issues.length||!p.manifest.coverage.complete||p.manifest.coverage.firstTick!==0||p.manifest.coverage.lastTick!==report.outcome.tick||p.manifest.gaps.length||p.manifest.terminalReason||p.manifest.identity.runId!==report.manifest.runId||p.manifest.identity.sceneDigest!==scene.sceneDigest||p.manifest.identity.loadProfileDigest!==scene.engine.loadProfileRef.sha256||p.manifest.identity.physicsProfileDigest!==scene.engine.physicsProfileRef.sha256)throw Error('PHYSICS_COVERAGE_INCOMPLETE');
++ return {experiment,project,resolved,physical,model,policy,load,physics};
++}
++/** Concrete leaf changes, including mirrored file/scene references, remain reviewable in the result. */
++export function changedLeaves(a:unknown,b:unknown,path=''):string[]{
++ if(hashJson(a??null)===hashJson(b??null))return [];
++ if(a&&b&&typeof a==='object'&&typeof b==='object'&&Array.isArray(a)===Array.isArray(b))return [...new Set([...Object.keys(a),...Object.keys(b)])].sort().flatMap(k=>changedLeaves((a as Record<string,unknown>)[k],(b as Record<string,unknown>)[k],`${path}/${k}`));
++ return [path];
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/semantic-study-policy.ts b/packages/lab-runtime/src/v2/simulation3d/semantic-study-policy.ts
+new file mode 100644
+index 0000000..a5c56e0
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/semantic-study-policy.ts
+@@ -0,0 +1,6 @@
++import type {PlantPort} from '../navigation2d/plant';
++import {MOBILE_CONTROLLER_POLICY} from './mujoco-mobile';
++/** Server-owned X01 admission. This is the same algorithm/ramp, not a new controller version or a browser override. */
++export function withSemanticStudyController(plant:PlantPort):PlantPort{
++ return {...plant,identity:{...plant.identity,controller:{identity:{id:'grid-diff-v1',version:MOBILE_CONTROLLER_POLICY.controller.version},options:{ramp:'previous-sent-command-v1'}}}};
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts b/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts
+new file mode 100644
+index 0000000..609d898
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts
+@@ -0,0 +1,71 @@
++import {hashJson} from '../hash';
++import {scenarioRegistry,scenarioHash,resolveRoles} from '../scenario-registry';
++import type {BusinessEvent} from '../report';
++import type {EngineeringProject} from '../../engineering/contracts';
++import {verifiedSimulationInput,type SimulationRunInput,type StudyRef} from './simulation-input';
++import {navigationMetrics} from '../navigation2d/evidence';
++import {studyTrajectory} from './study-navigation';
++export interface EquivalenceRef {id:string;sha256:string}
++export interface SemanticStudyInput {equivalence:Record<'model'|'world'|'task'|'commonProjection',EquivalenceRef>;runs:(SimulationRunInput&{commonProjection:EquivalenceRef})[];invariantPolicy:{id:string;revision:number}}
++export interface StudyInvariant {runId:string;id:string;status:'pass'|'fail'|'not_run';reasonCodes:string[];tick:number|null}
++export interface SemanticStudyV1 {schemaVersion:1;documentType:'semantic-study';accepted:false;status:'complete'|'incomparable'|'failed';reasonCodes:string[];equivalence:SemanticStudyInput['equivalence'];invariantPolicy:SemanticStudyInput['invariantPolicy'];runs:{runId:string;engine:string;reportRef:StudyRef;artifactRefs:StudyRef[];sceneDigest:string;modelDigest:string;firstTick:number;lastTick:number;replay:{runId:string;tick:number}}[];invariants:StudyInvariant[];differences:{runId:string;dimension:string;value:number|null;unit:string;status:'observed'|'unavailable';reason:string|null}[];unsupportedDimensions:{engine:string;dimension:string;status:'unsupported';reason:string}[];percentiles:null;limitations:string[]}
++const ref=(id:string,v:unknown):EquivalenceRef=>({id,sha256:hashJson(v)});
++/** Common planar projection includes every model field except its explicitly derived input identities. */
++export function semanticEquivalence(input:SimulationRunInput):SemanticStudyInput['equivalence']{
++ const {scene,report,project}=verifiedSimulationInput(input),robot=scene.robots[0]!,{inputs:_inputs,modelDigest:_digest,physicalModelDigest:_physical,...model}=robot.model;void _inputs;void _digest;void _physical;
++ const scenario=scenarioRegistry.get(report.manifest.scenario.id),base=report.manifest.scenario.basedOn;
++ if(!scenario||base?.id!=='FD01'||base.revision!==1||scenarioHash(scenario)!==report.manifest.scenario.hash||scenario.confirm.mode!=='scripted'||scene.actors.length||scene.zones.length||robot.model.sensors.some(s=>s.noise.stddevM!==0||s.noise.distribution!=='none')||scene.clock.tickMs!==20||report.manifest.simulationPerturbation)throw Error('INPUTS_NOT_EQUIVALENT');
++ if(scene.engine.id==='mujoco_3d'&&(scene.engine.loadProfileRef.id!=='empty'||scene.engine.physicsProfileRef.id!=='serve-drive-contact-v1'))throw Error('INPUTS_NOT_EQUIVALENT');
++ const task={basedOn:base,orders:scenario.orders,confirm:scenario.confirm,park:scenario.park,roles:resolveRoles(scenario,(project as unknown as EngineeringProject).runtimeProject),seed:report.manifest.seed,controller:report.navigation2d!.controller,policy:scene.policy};
++ const common={model,world:scene.world,initialPoseMap:robot.initialPoseMap,goals:robot.targetBindings,clock:scene.clock,task,noise:'off',load:'empty',actors:[]};
++ return {model:ref('serve-empty-geometric-v1',model),world:ref(scene.world.id,scene.world),task:ref('FD01-scripted-v1',task),commonProjection:ref('serve-empty-fd01-planar-v1',common)};
++}
++const before=(a:BusinessEvent,b:BusinessEvent)=>Date.parse(a.at)<=Date.parse(b.at)&&BigInt(a.sequence)<=BigInt(b.sequence);
++function sourceInvariants(v:ReturnType<typeof verifiedSimulationInput>):StudyInvariant[]{
++ const r=v.report,n=r.navigation2d!,rows:StudyInvariant[]=[],tick=(e:BusinessEvent)=>Math.round((Date.parse(e.at)-n.clock.businessEpochMs)/20);
++ const result=(id:string,ok:boolean,reasons:string[],at:number|null)=>rows.push({runId:r.manifest.runId,id,status:ok?'pass':'fail',reasonCodes:reasons,tick:at});
++ const arrivals=r.businessEvents.filter(e=>e.type==='MissionArrived'),confirmations=r.businessEvents.filter(e=>['CargoLoaded','DeliveryHandedOff','CargoReturned'].includes(e.type)),handoffs=confirmations.filter(e=>e.type==='DeliveryHandedOff'),served=r.businessEvents.filter(e=>e.kind==='fulfillment'&&BigInt(String(e.state.served??'0'))>0n);
++ let bad:BusinessEvent|undefined;
++ for(const c of confirmations){const arrival=arrivals.find(a=>before(a,c)&&a.id===c.state.missionId&&Array.isArray(a.state.stops)&&a.state.stops.some(s=>s&&typeof s==='object'&&!Array.isArray(s)&&Array.isArray(s.allocationIds)&&s.allocationIds.includes(c.id)&&s.status==='awaiting_action'&&s.action===({CargoLoaded:'load',DeliveryHandedOff:'handoff',CargoReturned:'return'} as Record<string,string>)[c.type]));if(!arrival){bad=c;break;}const action=({CargoLoaded:'load',DeliveryHandedOff:'handoff',CargoReturned:'return'} as Record<string,string>)[c.type]!,stop=(arrival.state.stops as unknown as {id:string;action:string;allocationIds:string[];status:string}[]).find(s=>s.action===action&&s.status==='awaiting_action'&&s.allocationIds.includes(c.id))!;if(tick(c)-tick(arrival)!==scenarioRegistry.get(r.manifest.scenario.id)!.confirm.delayTicks||!r.confirmations.some(x=>x.subjectId===stop.id&&x.confirmationType===action&&x.provenance==='scripted'&&x.tick===tick(c))){bad=c;break;}}
++ for(const s of served)if(!handoffs.some(h=>h.state.lineId===s.id&&before(h,s))){bad=s;break;}
++ const complete=r.outcome.status==='completed',causal=!bad&&(!complete||arrivals.length>0&&handoffs.length>0&&served.length>0&&r.outcome.served==='1');
++ result('arrival-confirmation-served',causal,causal?[]:['SOURCE_CAUSAL_RELATION_FAILED'],bad?tick(bad):null);
++ const unknown=r.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.state.status==='unknown');
++ const duplicate=r.effects.some(e=>e.type==='robot.execute'&&e.attempts>1)||unknown.some(u=>r.businessEvents.some(e=>e.type==='RobotCommandIssued'&&(e.id===u.id||typeof u.state.missionId==='string'&&e.state.missionId===u.state.missionId)&&before(u,e)&&e!==u));
++ result('unknown-no-redispatch',!duplicate,duplicate?['DISPATCH_AFTER_UNKNOWN']:[],unknown[0]?tick(unknown[0]):null);if(!unknown.length&&!duplicate)Object.assign(rows.at(-1)!,{status:'not_run',reasonCodes:['NO_UNKNOWN_TRIGGER']});
++ const cancel=r.businessEvents.filter(e=>e.type==='MissionCancelled'),requests=r.businessEvents.filter(e=>e.type==='MissionCancellationRequested');
++ const invalidCancel=cancel.find(c=>!requests.some(x=>x.id===c.id&&before(x,c)));
++ result('cancel-causality',!invalidCancel,invalidCancel?['CANCEL_WITHOUT_REQUEST']:[],invalidCancel?tick(invalidCancel):null);if(!requests.length&&!cancel.length)Object.assign(rows.at(-1)!,{status:'not_run',reasonCodes:['NO_CANCEL_TRIGGER']});
++ return rows;
++}
++/** Cross-engine differences are observations. Only a registered input/scenario constraint can fail this study. */
++export function buildSemanticStudy(input:SemanticStudyInput):SemanticStudyV1{
++ const out:SemanticStudyV1={schemaVersion:1,documentType:'semantic-study',accepted:false,status:'complete',reasonCodes:[],equivalence:input.equivalence,invariantPolicy:input.invariantPolicy,runs:[],invariants:[],differences:[],unsupportedDimensions:[],percentiles:null,limitations:['not_calibrated; no measured ground truth or engine-accuracy winner.','One run per engine; no statistical p50/p95, performance ranking or uncertainty estimate.','Same seed does not imply the same engine noise stream; this study disables noise and stochastic actors.','Source journal governs mission, confirmation and served; the trajectory supplies drive geometry only.','Nominal runs do not exercise cancellation or unknown-ACK handling; absent triggers are not_run.','Contact, slip and tipping are unsupported by IR-SIM. Byte hashes establish input integrity, not producer trust or human acceptance.']};
++ const incomparable=(reason:string)=>{out.status='incomparable';out.reasonCodes.push('INPUTS_NOT_EQUIVALENT',reason);};
++ if(input.runs.length<2||input.runs.length>3||input.invariantPolicy.id!=='fd01-source-causal-v1'||input.invariantPolicy.revision!==1)incomparable('STUDY_POLICY_UNSUPPORTED');
++ const engines=new Set<string>(),ids=new Set<string>();
++ for(const run of input.runs){try{
++  const v=verifiedSimulationInput(run),equivalence=semanticEquivalence(run),r=v.report,engine=v.scene.engine.id;
++  if(hashJson(equivalence)!==hashJson(input.equivalence)||hashJson(run.commonProjection)!==hashJson(equivalence.commonProjection)||engines.has(engine)||ids.has(r.manifest.runId)){incomparable('EQUIVALENCE_BINDING_MISMATCH');continue;}
++  engines.add(engine);ids.add(r.manifest.runId);
++  const trajectory=studyTrajectory(v),robot=v.scene.robots[0]!,replay={runId:r.manifest.runId,tick:r.outcome.tick};
++  out.runs.push({runId:r.manifest.runId,engine,reportRef:run.report.ref,artifactRefs:run.artifacts.map(a=>a.ref),sceneDigest:v.scene.sceneDigest,modelDigest:robot.model.modelDigest,firstTick:0,lastTick:r.outcome.tick,replay});
++  out.invariants.push(...sourceInvariants(v));
++  const boundGoals=robot.targetBindings,arrivals=r.businessEvents.filter(e=>e.type==='MissionArrived'),errors:number[]=[],windowErrors:number[]=[];let unbound=false,arrivalViolation=false;const policy=v.scene.policy.parameters;
++  for(const arrival of arrivals){const stops=arrival.state.stops as unknown as {targetId:string;status:string}[]|undefined;const stop=stops?.find(s=>s.status==='awaiting_action'),goal=boundGoals.find(g=>g.pointId===stop?.targetId);if(!goal){unbound=true;continue;}const tick=Math.round((Date.parse(arrival.at)-r.navigation2d!.clock.businessEpochMs)/20),pose=trajectory[tick]?.robots.find(x=>x.robotId===robot.robotId)?.poseDriveMap;if(!pose){unbound=true;continue;}errors.push(Math.hypot(pose[0]-goal.x,pose[1]-goal.y));const hold=trajectory.slice(Math.max(0,tick-policy.arrivalHoldTicks+1),tick+1);if(hold.length!==policy.arrivalHoldTicks)arrivalViolation=true;for(const row of hold){const observed=row.robots.find(x=>x.robotId===robot.robotId)!;const error=Math.hypot(observed.poseDriveMap[0]-goal.x,observed.poseDriveMap[1]-goal.y),yaw=Math.abs(Math.atan2(Math.sin(observed.poseDriveMap[2]-goal.yaw),Math.cos(observed.poseDriveMap[2]-goal.yaw)));windowErrors.push(error);if(error>policy.goalPositionToleranceM||yaw>policy.goalYawToleranceRad||Math.abs(observed.bodyVelocity[0])>policy.stoppedLinearMps||Math.abs(observed.bodyVelocity[1])>policy.stoppedAngularRadps)arrivalViolation=true;}}
++  out.invariants.push({runId:r.manifest.runId,id:'goal-frame-world-bindings',status:unbound?'fail':'pass',reasonCodes:unbound?['GOAL_BINDING_MISMATCH']:[],tick:null});
++  out.invariants.push({runId:r.manifest.runId,id:'arrival-policy-window',status:unbound||arrivalViolation?'fail':arrivals.length?'pass':'not_run',reasonCodes:unbound||arrivalViolation?['ARRIVAL_POLICY_VIOLATION']:arrivals.length?[]:['NO_ARRIVAL_TRIGGER'],tick:null});
++  // No extra corridor tolerance is invented. The registered policy's safety envelope is the constraint.
++  const geometry=navigationMetrics(v.scene,{trajectory,control:[],sensors:[],collisions:[],issues:[],gaps:[],horizon:r.outcome.tick,complete:true,reasons:[],terminal:null,text:{trajectory:'',control:'',sensors:'',collisions:''}});
++  const constraintFailure=geometry.coverage!=='complete'||(geometry.collisionEpisodes??0)>0;
++  out.invariants.push({runId:r.manifest.runId,id:'registered-navigation-constraints',status:constraintFailure?'fail':'pass',reasonCodes:constraintFailure?['REGISTERED_NAVIGATION_CONSTRAINT_FAILED']:[],tick:null});
++  out.differences.push({runId:r.manifest.runId,dimension:'arrivalGoalErrorMaxM',value:errors.length?Math.max(...errors):null,unit:'m',status:errors.length?'observed':'unavailable',reason:errors.length?null:'NO_BOUND_ARRIVAL'},
++   {runId:r.manifest.runId,dimension:'driveDistanceM',value:geometry.driveDistanceM?.[robot.robotId]??null,unit:'m',status:geometry.driveDistanceM?'observed':'unavailable',reason:geometry.driveDistanceM?null:'NO_VERIFIED_DISTANCE'},
++   {runId:r.manifest.runId,dimension:'minObstacleClearanceM',value:geometry.minClearanceM??null,unit:'m',status:geometry.minClearanceM!=null?'observed':'unavailable',reason:geometry.minClearanceM!=null?null:'NO_VERIFIED_CLEARANCE'});
++  out.differences.push({runId:r.manifest.runId,dimension:'arrivalWindowPositionErrorMaxM',value:windowErrors.length?Math.max(...windowErrors):null,unit:'m',status:windowErrors.length?'observed':'unavailable',reason:windowErrors.length?null:'NO_BOUND_ARRIVAL'});
++  const limits=`Arrival measurement: drive-frame pose at Source MissionArrived; acceptance checks that tick and preceding ${policy.arrivalHoldTicks-1} recorded ticks against bound policy position ${policy.goalPositionToleranceM} m, yaw ${policy.goalYawToleranceRad} rad, stopped linear ${policy.stoppedLinearMps} m/s and angular ${policy.stoppedAngularRadps} rad/s. Cross-engine differences within these constraints do not imply an accuracy winner.`;if(!out.limitations.includes(limits))out.limitations.push(limits);
++  if(engine==='irsim_2d')for(const dimension of ['contact','slip','tipping'])out.unsupportedDimensions.push({engine,dimension,status:'unsupported',reason:'PLANAR_KINEMATICS_NO_CONTACT_DYNAMICS'});
++ }catch(e){incomparable(e instanceof Error?e.message:'EVIDENCE_INVALID');}}
++ if(out.status!=='incomparable'&&out.invariants.some(i=>i.status==='fail')){out.status='failed';out.reasonCodes.push('SCENARIO_INVARIANT_FAILED');}
++ out.reasonCodes=[...new Set(out.reasonCodes)];return out;
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/simulation-input.ts b/packages/lab-runtime/src/v2/simulation3d/simulation-input.ts
+new file mode 100644
+index 0000000..e7fc245
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/simulation-input.ts
+@@ -0,0 +1,35 @@
++/** Byte-bound inputs shared by the two comparison scopes. No paths or URLs are fetched by a comparison. */
++import {createHash} from 'node:crypto';
++import {hashJson} from '../hash';
++import type {RunReport} from '../report';
++import {validateNavigationDocument,validateNavigationEvidence,type NavigationSceneV1} from '../navigation2d/contracts';
++export interface StudyRef {path:string;sha256:string;bytes:number}
++export interface StudyArtifact {ref:StudyRef;content:string;encoding?:'base64'}
++export interface SimulationRunInput {report:StudyArtifact;artifacts:StudyArtifact[]}
++export const bytesSha=(bytes:string|Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
++export function artifactBytes(a:StudyArtifact):Buffer{
++ if(!a||!a.ref||typeof a.content!=='string'||a.content.length>24*1024*1024||a.encoding!==undefined&&a.encoding!=='base64')throw Error('ARTIFACT_LIMIT');
++ const b=Buffer.from(a.content,a.encoding==='base64'?'base64':'utf8');if(b.length>16*1024*1024||b.length!==a.ref.bytes||bytesSha(b)!==a.ref.sha256)throw Error('ARTIFACT_DIGEST_MISMATCH');return b;
++}
++export function artifactJson(a:StudyArtifact):unknown{
++ if(!a||!a.ref||typeof a.content!=='string'||Buffer.byteLength(a.content)>8*1024*1024||a.ref.bytes!==Buffer.byteLength(a.content)||a.ref.sha256!==bytesSha(a.content)||!a.ref.path||a.ref.path.length>512)throw Error('ARTIFACT_DIGEST_MISMATCH');
++ return JSON.parse(a.content);
++}
++export function verifiedSimulationInput(input:SimulationRunInput){
++ const report=artifactJson(input.report) as RunReport;
++ if(!Array.isArray(input.artifacts)||input.artifacts.length>4000)throw Error('ARTIFACT_LIMIT');
++ const documents=new Map<string,unknown>(),refs=new Map<string,StudyRef>();
++ for(const a of input.artifacts){if(refs.has(a.ref.path))throw Error('DUPLICATE_ARTIFACT');artifactBytes(a);documents.set(a.ref.path,a.ref.path.endsWith('.json')?JSON.parse(artifactBytes(a).toString()):artifactBytes(a));refs.set(a.ref.path,a.ref);}
++ const get=<T>(path:string):T=>{if(!documents.has(path))throw Error(`ARTIFACT_MISSING:${path}`);return documents.get(path) as T;};
++ const scene=get<NavigationSceneV1>('navigation-scene.json');
++ if(!validateNavigationDocument(scene).ok||scene.robots.length!==1||report.schemaVersion!==2||!report.manifest||!report.outcome||!Array.isArray(report.businessEvents)||!Array.isArray(report.effects)||!Array.isArray(report.confirmations)||!report.navigation2d)throw Error('INPUT_DOCUMENT_INVALID');
++ const n=report.navigation2d,m=report.manifest;
++ if(!validateNavigationEvidence(n).ok||n.runId!==m.runId||n.sceneRef.path!=='bundle/navigation-scene.json'||n.sceneDigest!==scene.sceneDigest||n.sceneRef.sha256!==refs.get('navigation-scene.json')?.sha256||n.sceneRef.bytes!==refs.get('navigation-scene.json')?.bytes||hashJson(n.modelDigests)!==hashJson(scene.robots.map(r=>r.model.modelDigest))||n.policyRef.hash!==scene.policy.hash||n.policyRef.id!==scene.policy.id||n.seed.runSeed!==m.seed||m.clock.tickMs!==scene.clock.tickMs||m.models.find(x=>x.id===scene.engine.id)?.hash!==scene.sceneDigest||m.backends.length!==1||m.backends[0]!.id!==scene.engine.id)throw Error('REPORT_INPUT_IDENTITY_MISMATCH');
++ for(const f of scene.files){const ref=refs.get(f.path);if(!ref||ref.bytes!==f.bytes||ref.sha256!==f.sha256)throw Error('SCENE_FILE_MISMATCH');}
++ const project=get<Record<string,unknown>>('engineering-project.json');
++ if(hashJson(project)!==scene.inputs.project.digest||m.engineering?.projectDigest!==scene.inputs.project.digest)throw Error('PROJECT_INPUT_IDENTITY_MISMATCH');
++ const runtime=project.runtimeProject as {world:Record<string,unknown>};
++ const {revision:_revision,...world}=runtime.world;void _revision;
++ if(hashJson(runtime.world)!==scene.inputs.world.hash||hashJson(world)!==m.world.hash||m.world.id!==scene.world.id||m.world.revision!==scene.world.revision||hashJson(get('runtime-project.json'))!==m.project.hash)throw Error('WORLD_INPUT_IDENTITY_MISMATCH');
++ return {report,scene,project,get,documents,refs};
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/study-navigation.ts b/packages/lab-runtime/src/v2/simulation3d/study-navigation.ts
+new file mode 100644
+index 0000000..24e4b6f
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/study-navigation.ts
+@@ -0,0 +1,22 @@
++/** Only byte-bound durable drive poses support geometric study statements; lossy display telemetry is never the authority. */
++import {gunzipSync} from 'node:zlib';
++import type {TrajectoryRecord} from '../navigation2d/evidence';
++import type {verifiedSimulationInput} from './simulation-input';
++export function studyTrajectory(v:ReturnType<typeof verifiedSimulationInput>):TrajectoryRecord[]{
++ const n=v.report.navigation2d!,rows:TrajectoryRecord[]=[];let total=0;
++ if(n.completeness?.status!=='complete'||n.recording?.terminal||n.recording?.gaps.length||n.recording?.lastTick!==v.report.outcome.tick||n.recording.runTick!==v.report.outcome.tick||n.recordingGaps.length)throw Error('NAVIGATION_COVERAGE_INCOMPLETE');
++ for(const ref of n.artifacts.trajectory){
++  const actual=v.refs.get('evidence/'+ref.path),raw=v.documents.get('evidence/'+ref.path);
++  if(!actual||actual.sha256!==ref.sha256||actual.bytes!==ref.bytes||!Buffer.isBuffer(raw))throw Error('TRAJECTORY_ARTIFACT_MISSING');
++  const bytes=gunzipSync(raw,{maxOutputLength:64*1024*1024});total+=bytes.length;if(total>400*1024*1024)throw Error('TRAJECTORY_LIMIT');
++  const lines=bytes.toString().trimEnd().split('\n');if(lines.length>65536||lines.some(l=>Buffer.byteLength(l)>256*1024))throw Error('TRAJECTORY_LIMIT');
++  const parsed=lines.map(l=>JSON.parse(l) as TrajectoryRecord);
++  if(parsed[0]?.tick!==ref.firstTick||parsed.at(-1)?.tick!==ref.lastTick)throw Error('TRAJECTORY_REF_WINDOW');rows.push(...parsed);
++ }
++ if(rows.length!==v.report.outcome.tick+1||rows.length>30001)throw Error('TRAJECTORY_WINDOW');
++ for(let tick=0;tick<rows.length;tick++){
++  const r=rows[tick]!;if(r.tick!==tick||r.simTimeNs!==String(BigInt(tick)*20000000n)||r.robots.length!==v.scene.robots.length)throw Error('TRAJECTORY_CLOCK_OR_IDENTITY');
++  for(const robot of r.robots)if(!v.scene.robots.some(x=>x.robotId===robot.robotId)||robot.poseDriveMap.length!==3||!robot.poseDriveMap.every(Number.isFinite)||robot.bodyVelocity.length!==2||!robot.bodyVelocity.every(Number.isFinite)||!Array.isArray(robot.collisionIds))throw Error('TRAJECTORY_SHAPE');
++ }
++ return rows;
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/study-physics.ts b/packages/lab-runtime/src/v2/simulation3d/study-physics.ts
+new file mode 100644
+index 0000000..f77224c
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/study-physics.ts
+@@ -0,0 +1,27 @@
++import {gunzipSync} from 'node:zlib';
++import {hashJson} from '../hash';
++import {validatePhysicsEvidenceShape,type PhysicsTickRecord} from '../navigation2d/contracts';
++import type {ControlRecord} from '../navigation2d/evidence';
++import {validatePhysicsRecord,type PhysicsAdmission} from './physics-evidence';
++import {physicsMetrics} from './physics-metrics';
++import {MOBILE_STOP_POLICY} from './mujoco-mobile';
++import {studyTrajectory} from './study-navigation';
++import type {verifiedSimulationInput} from './simulation-input';
++import type {verifiedPhysicsInputs} from './physics-inputs';
++export function verifiedStudyPhysics(v:ReturnType<typeof verifiedSimulationInput>,inputs:ReturnType<typeof verifiedPhysicsInputs>){
++ const p=v.report.physicsEvidence!,manifest=v.get('physics/manifest.json');
++ if(!validatePhysicsEvidenceShape(manifest)||hashJson(manifest)!==hashJson(p.manifest)||v.refs.get('physics/manifest.json')?.sha256!==p.manifestSha256)throw Error('PHYSICS_MANIFEST_MISMATCH');
++ const admission:PhysicsAdmission={maxAbsRollPitchRad:MOBILE_STOP_POLICY.maxAbsRollPitchRad,robotId:inputs.physical.robotId,props:inputs.load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...inputs.physical.links.flatMap(l=>l.collision.map((_,i)=>`${inputs.physical.robotId}/${l.id}/c${i}`)),...inputs.load.props.map(p=>`prop/${p.propId}`),...[...v.scene.world.obstacles,...v.scene.world.boundaries].map(o=>`static/${o.id}`)],tickMs:20,substeps:10,driveFrameInBase:v.scene.robots[0]!.model.driveFrameInBase};
++ const records:PhysicsTickRecord[]=[],control:ControlRecord[]=[];let total=0;
++ const decode=(ref:{path:string;sha256:string;bytes:number},prefix:string)=>{
++  const actual=v.refs.get(prefix+ref.path),b=v.documents.get(prefix+ref.path);if(!actual||actual.sha256!==ref.sha256||actual.bytes!==ref.bytes||!Buffer.isBuffer(b))throw Error('PHYSICS_OR_CONTROL_ARTIFACT_MISSING');
++  const inflated=gunzipSync(b,{maxOutputLength:64*1024*1024});total+=inflated.length;if(total>400*1024*1024)throw Error('PHYSICS_READ_LIMIT');const lines=inflated.toString().trimEnd().split('\n');if(lines.length>65536||lines.some(l=>Buffer.byteLength(l)>256*1024))throw Error('PHYSICS_READ_LIMIT');return lines.map(l=>JSON.parse(l));
++ };
++ for(const ref of p.manifest.streams[0]!.chunks)records.push(...decode(ref,'physics/'));
++ if(records.length!==v.report.outcome.tick+1)throw Error('PHYSICS_WINDOW_MISMATCH');records.forEach((r,i)=>validatePhysicsRecord(r,admission,i));
++ for(const ref of v.report.navigation2d!.artifacts.control)control.push(...decode(ref,'evidence/'));
++ if(control.length!==v.report.outcome.tick||control.some((c,i)=>c.tick!==i||c.targetTick!==i+1||c.velocities.length!==1||c.velocities[0]!.robotId!==admission.robotId||!Number.isFinite(c.velocities[0]!.vMps)||!Number.isFinite(c.velocities[0]!.omegaRadps)||c.actorUpdates.length))throw Error('CONTROL_WINDOW_MISMATCH');
++ const trajectory=studyTrajectory(v),metrics=physicsMetrics({complete:true,records,gaps:[],issues:[]},admission,{complete:true,trajectory,control,policy:v.scene.policy.parameters});
++ if(hashJson(metrics)!==hashJson(p.metrics))throw Error('PHYSICS_METRIC_MISMATCH');
++ return metrics;
++}
+diff --git a/scripts/compare-simulations.mjs b/scripts/compare-simulations.mjs
+new file mode 100644
+index 0000000..e4f16ce
+--- /dev/null
++++ b/scripts/compare-simulations.mjs
+@@ -0,0 +1,13 @@
++#!/usr/bin/env node
++// Offline consumer. Input JSON embeds byte-bound report/documents/chunks; comparison opens no runtime or database.
++import {readFile,writeFile,lstat} from 'node:fs/promises';
++import {tsImport} from 'tsx/esm/api';
++const {buildSemanticStudy}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/semantic-study.ts',import.meta.url);
++const args=process.argv.slice(2);
++try{
++ if(args.length!==4||args[0]!=='--study'||args[2]!=='--out'||args[1]===args[3])throw Error('Usage: node scripts/compare-simulations.mjs --study STUDY_INPUT_JSON --out NEW_REPORT_JSON');
++ const stat=await lstat(args[1]);if(!stat.isFile()||stat.isSymbolicLink()||stat.size>200*1024*1024)throw Error('STUDY_INPUT_LIMIT_OR_PATH');
++ const study=buildSemanticStudy(JSON.parse(await readFile(args[1],'utf8')));
++ await writeFile(args[3],JSON.stringify(study,null,2)+'\n',{flag:'wx',mode:0o600});
++ console.log(JSON.stringify({status:study.status,accepted:study.accepted,reasonCodes:study.reasonCodes,runs:study.runs.length}));process.exitCode=study.status==='complete'?0:1;
++}catch(e){console.error(e instanceof Error?e.message:String(e));process.exitCode=2;}
+diff --git a/scripts/generate-contracts.mjs b/scripts/generate-contracts.mjs
+index 2d1d403..db31ead 100644
+--- a/scripts/generate-contracts.mjs
++++ b/scripts/generate-contracts.mjs
+@@ -35,21 +35,21 @@ const engDefinitions = {};
+ for (const [name, type] of Object.entries(engFiles)) {
+   const root = JSON.parse(await readFile(new URL(`${name}.schema.json`, v2Dir), 'utf8'));
+   const definitions = root.definitions ?? {};
+   for (const k of ['$schema', '$id', 'title', 'definitions']) delete root[k];
+   Object.assign(engDefinitions, fold(definitions));
+   if (type) engDefinitions[type] = fold({ title: type, ...root });
+ }
+ const engOutput = "/* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */\nimport type { LabProjectV2, AssetRevision, CoffeeRecipe } from './lab-v2';\n" + await compile({ title: 'EngineeringContracts', type: 'object', additionalProperties: false, properties: {}, definitions: engDefinitions }, 'EngineeringContracts', { bannerComment: '', style: { singleQuote: true, semi: true, tabWidth: 2 }, unknownAny: false, unreachableDefinitions: true });
+ const engFile = new URL('../packages/contracts/generated/engineering.ts', import.meta.url);
+ // Navigation/validation schemas reference each other by file and the engineering schemas by type name (imported, never re-declared).
+-const navFiles = { 'robot-physical-model-v1': 'RobotPhysicalModelV1', 'navigation-model-2d-v1': 'NavigationModel2DV1', 'navigation-scene-v1': 'NavigationSceneV1', 'model-validation-report-v1': 'ModelValidationReportV1', 'irsim-worker-v1': 'IRSimRequestV1', 'navigation-run-evidence-v1': 'NavigationRunEvidenceV1', 'algorithm-result-v1': 'AlgorithmResultV1', 'sim3d-worker-v1': 'Sim3DRequestV1', 'arm-scene-3d-v1': 'ArmScene3DV1', 'arm-cell-scene-v1': 'ArmCellSceneV1', 'load-profile-v1': 'LoadProfileV1', 'physics-evidence-v1': 'PhysicsEvidenceV1', 'lab-world-scene-v1': 'LabWorldSceneV1', 'world-evidence-v1': 'WorldEvidenceV1', 'web-replay-package-v1': 'WebReplayPackageV1' };
++const navFiles = { 'robot-physical-model-v1': 'RobotPhysicalModelV1', 'navigation-model-2d-v1': 'NavigationModel2DV1', 'navigation-scene-v1': 'NavigationSceneV1', 'model-validation-report-v1': 'ModelValidationReportV1', 'irsim-worker-v1': 'IRSimRequestV1', 'navigation-run-evidence-v1': 'NavigationRunEvidenceV1', 'algorithm-result-v1': 'AlgorithmResultV1', 'sim3d-worker-v1': 'Sim3DRequestV1', 'arm-scene-3d-v1': 'ArmScene3DV1', 'arm-cell-scene-v1': 'ArmCellSceneV1', 'load-profile-v1': 'LoadProfileV1', 'physics-evidence-v1': 'PhysicsEvidenceV1', 'lab-world-scene-v1': 'LabWorldSceneV1', 'world-evidence-v1': 'WorldEvidenceV1', 'web-replay-package-v1': 'WebReplayPackageV1', 'semantic-study-v1': 'SemanticStudyV1' };
+ const navRoots = Object.fromEntries(Object.entries(navFiles).map(([n, t]) => [`${n}.schema.json`, `#/definitions/${t}`]));
+ const foldNav = (v) => Array.isArray(v) ? v.map(foldNav) : v && typeof v === 'object'
+   ? (typeof v.$ref === 'string' && !v.$ref.startsWith('#') ? (v.$ref.startsWith('engineering-component.schema.json#/definitions/') ? { tsType: v.$ref.split('/').pop() } : { $ref: navRoots[v.$ref] ?? v.$ref.replace(/^[^#]*#/, '#') }) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, foldNav(x)])))
+   : v;
+ const navDefinitions = {};
+ for (const [name, type] of Object.entries(navFiles)) {
+   const root = JSON.parse(await readFile(new URL(`${name}.schema.json`, v2Dir), 'utf8'));
+   const definitions = root.definitions ?? {};
+   for (const k of ['$schema', '$id', 'definitions']) delete root[k];
+   Object.assign(navDefinitions, foldNav(definitions));
+diff --git a/tests/fixtures/simulation-study/mismatched-world.json b/tests/fixtures/simulation-study/mismatched-world.json
+new file mode 100644
+index 0000000..e4587eb
+--- /dev/null
++++ b/tests/fixtures/simulation-study/mismatched-world.json
+@@ -0,0 +1,5 @@
++{
++ "equivalence":{"model":{"id":"serve-empty","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},"world":{"id":"world-a","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},"task":{"id":"FD01","sha256":"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},"commonProjection":{"id":"serve-empty-v1","sha256":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}},
++ "runs":[{"report":{"ref":{"path":"irsim/report.json","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bytes":2},"content":"{}"},"artifacts":[],"commonProjection":{"id":"serve-empty-v1","sha256":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}},{"report":{"ref":{"path":"mujoco/report.json","sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","bytes":2},"content":"{}"},"artifacts":[],"commonProjection":{"id":"serve-empty-v1","sha256":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}}],
++ "invariantPolicy":{"id":"fd01-source-causal-v1","revision":1}
++}
+diff --git a/tests/integration/cross-engine-fd01.test.ts b/tests/integration/cross-engine-fd01.test.ts
+new file mode 100644
+index 0000000..e0b1860
+--- /dev/null
++++ b/tests/integration/cross-engine-fd01.test.ts
+@@ -0,0 +1,54 @@
++import {expect,test} from 'vitest';
++import {execFileSync} from 'node:child_process';
++import {mkdtemp,readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {createFixedStepScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
++import {irsimPlant} from '../../packages/lab-runtime/src/v2/navigation2d/plant';
++import {webotsPlant} from '../../packages/lab-runtime/src/v2/simulation3d/webots';
++import {mujocoMobilePlant} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile';
++import {withSemanticStudyController} from '../../packages/lab-runtime/src/v2/simulation3d/semantic-study-policy';
++import {buildSemanticStudy,semanticEquivalence} from '../../packages/lab-runtime/src/v2/simulation3d/semantic-study';
++import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
++import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
++import {readNavigationEvidence} from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
++import {compileStudy,sha,artifact} from '../support/simulation-study';
++import {OwnedProcesses} from '../support/owned-processes';
++import type {SimulationRunInput,StudyArtifact} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
++const root=resolve('.'),home=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',exe=join(home,'Contents/MacOS/webots');
++/** Native work is deliberately one serialized test. No skip, fallback, installation or hidden engine double. */
++test('X01: actual IR-SIM, Webots and MuJoCo on fresh empty Serve geometry with deterministic confirmations',async()=>{
++ const out=process.env.SIMULATION_STUDY_OUT??await mkdtemp(join(tmpdir(),'mekoniq-b08-x01-')),owned=new OwnedProcesses(),runs:SimulationRunInput[]=[];
++ const sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()+(execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()?'-dirty':'');
++ await mkdir(out,{recursive:true});await writeFile(join(out,'recording.json'),JSON.stringify({accepted:false,sourceCommit,status:'started',engineRuns:[]},null,2),{flag:'wx'});
++ console.log('X01_OUTPUT',out);
++ for(const engine of ['irsim_2d','webots_3d','mujoco_3d']){
++  const packageRoot=engine==='irsim_2d'?'navigation-2d':engine==='webots_3d'?'simulation-3d':'simulation-mujoco',venv=engine==='irsim_2d'?'.venv-irsim':engine==='webots_3d'?'.venv-webots':'.venv-mujoco',python=join(root,venv,'bin/python'),workerRoot=join(root,'robotics',packageRoot),directory=join(out,engine);
++  await mkdir(directory);const c=await compileStudy('payload-empty-v1',engine);await mkdir(join(directory,'compiled'));
++  for(const a of c.artifacts){await mkdir(join(directory,'compiled',a.ref.path,'..'),{recursive:true});await writeFile(join(directory,'compiled',a.ref.path),a.content);}
++  try{
++   if(engine==='webots_3d')expect(execFileSync(exe,['--version'],{encoding:'utf8',timeout:30000})).toContain('R2025a');
++   const runtime={python,workerRoot,schemaDir:join(root,'packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),maxActiveRuns:1,...engine==='mujoco_3d'?{engineVersion:'3.17.0'}:{},...engine==='webots_3d'?{webotsHome:home,executableSha256:sha(await readFile(exe)),basicTimeStepMs:20 as const}:{}};
++   const plant=withSemanticStudyController(engine==='irsim_2d'?irsimPlant():engine==='webots_3d'?webotsPlant(runtime as never):mujocoMobilePlant(runtime as never));
++   const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id===engine?{...b,installed:true,compatible:true,reachable:true}:b)};
++   const scenarioId=engine==='irsim_2d'?'IR-FD01':engine==='webots_3d'?'WB-FD01':'MJ-FD01';
++   const run=owned.observeRun(await createFixedStepScenarioRun({project:c.locked.runtimeProjection.project,scenarioId,scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:c.set,sourceCommit,engineering:c.locked},{directory:join(directory,'run'),catalog,enabledBackends:[engine],bundleFile:(d,p)=>c.service.bundleFile(d,p),plant,runtime}));
++   owned.addDirectory(join(directory,'run'));let report;
++   try{
++    await run.start();let v=await run.snapshot(),step=0;
++    while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<12000){const before=v.tick;v=await run.action({actionId:`x01-${engine}-${++step}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:250}});if(v.tick===before&&v.run.status==='running')throw Error('X01_RUN_STALLED');}
++    report=await run.report();await writeFile(join(directory,'report.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx'});
++    expect(report.outcome,engine).toMatchObject({status:'completed',served:'1'});expect(report.navigation2d!.controller).toEqual({id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'});
++    console.log('X01_ENGINE',engine,JSON.stringify({outcome:report.outcome,scene:c.scene.sceneDigest,model:c.scene.robots[0].model.modelDigest,controller:report.navigation2d!.controller}));
++   }finally{await run.close();expect(owned.processes()).toEqual([]);}
++   const manifest=JSON.parse(await readFile(join(directory,'run/evidence/manifest.json'),'utf8')),read=await readNavigationEvidence(join(directory,'run/evidence'),manifest,{scene:c.scene,runTick:report!.outcome.tick});expect(read.complete).toBe(true);expect(read.issues).toEqual([]);
++   const artifacts:StudyArtifact[]=[...c.artifacts];
++   for(const path of await readdir(join(directory,'run/evidence'))){if(!path.endsWith('.gz'))continue;const b=await readFile(join(directory,'run/evidence',path));artifacts.push({ref:{path:'evidence/'+path,bytes:b.length,sha256:sha(b)},encoding:'base64',content:b.toString('base64')});}
++   runs.push({report:artifact('report.json',report!),artifacts});
++  }finally{await c.close();}
++ }
++ const equivalence=semanticEquivalence(runs[0]!),input={equivalence,runs:runs.map(r=>({...r,commonProjection:equivalence.commonProjection})),invariantPolicy:{id:'fd01-source-causal-v1',revision:1}},study=buildSemanticStudy(input);
++ await writeFile(join(out,'study-input.json'),JSON.stringify(input,null,2)+'\n',{flag:'wx'});await writeFile(join(out,'semantic-study.json'),JSON.stringify(study,null,2)+'\n',{flag:'wx'});
++ expect(study.reasonCodes,JSON.stringify(study)).toEqual([]);expect(study.status).toBe('complete');expect(study.runs).toHaveLength(3);expect(study.unsupportedDimensions.filter(d=>d.engine==='irsim_2d')).toHaveLength(3);
++ await writeFile(join(out,'recording-complete.json'),JSON.stringify({accepted:false,sourceCommit,status:study.status,engineRuns:study.runs.map(r=>({engine:r.engine,runId:r.runId,sceneDigest:r.sceneDigest,modelDigest:r.modelDigest}))},null,2)+'\n',{flag:'wx'});
++},1_200_000);
+diff --git a/tests/support/simulation-study.ts b/tests/support/simulation-study.ts
+new file mode 100644
+index 0000000..685b531
+--- /dev/null
++++ b/tests/support/simulation-study.ts
+@@ -0,0 +1,65 @@
++import {mkdtemp,readFile,rm,writeFile,mkdir} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {createHash} from 'node:crypto';
++import {gzipSync} from 'node:zlib';
++import type {PhysicsEvidenceV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
++import type {StudyArtifact} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
++import {createEngineeringService} from '../../packages/lab-runtime/src/engineering/gateway';
++import {createMujocoCompiler} from '../../packages/lab-runtime/src/engineering/mujoco-compiler';
++import {createWebotsCompiler} from '../../packages/lab-runtime/src/engineering/webots-compiler';
++import {createNavigationCompiler} from '../../packages/lab-runtime/src/engineering/navigation-compiler';
++export const sha=(b:string|Uint8Array)=>createHash('sha256').update(b).digest('hex');
++export const artifact=(path:string,value:unknown)=>{const content=JSON.stringify(value,null,2)+'\n';return {ref:{path,sha256:sha(content),bytes:Buffer.byteLength(content)},content};};
++export async function compileStudy(experiment='payload-center-v1',engine='mujoco_3d'){
++ const dir=await mkdtemp(join(tmpdir(),'b08-compile-')),fixture=resolve('robotics/simulation-mujoco/fixtures/serve-payload-v1'),catalogRoot=join(dir,'catalog');
++ const c=JSON.parse(await readFile(join(fixture,'serve-3d-components.json'),'utf8'));
++ for(const sub of ['components','models','documents'])await mkdir(join(catalogRoot,sub),{recursive:true});
++ for(const [id,doc]of Object.entries(c.components))await writeFile(join(catalogRoot,'components',id+'.json'),JSON.stringify(doc));
++ for(const [id,doc]of Object.entries(c.models))await writeFile(join(catalogRoot,'models',id+'.json'),JSON.stringify(doc));
++ await writeFile(join(catalogRoot,'catalog.json'),JSON.stringify({schemaVersion:1,id:'b08',components:Object.keys(c.components).map(digest=>({digest,file:`components/${digest}.json`})),quotes:[]}));
++ const set=engine==='mujoco_3d'?'engineering-mujoco-3d-v1':engine==='webots_3d'?'engineering-webots-3d-v1':'engineering-irsim-2d-v1';
++ const project={...JSON.parse(await readFile(join(fixture,'serve-3d-project.json'),'utf8')),requestedProfile:set,...engine==='mujoco_3d'?{mujocoExperimentId:experiment}:{}};
++ const compiler=engine==='mujoco_3d'?createMujocoCompiler({workerRoot:resolve('robotics/simulation-mujoco')}):engine==='webots_3d'?createWebotsCompiler():createNavigationCompiler({python:resolve('.venv-irsim/bin/python'),workerRoot:resolve('robotics/navigation-2d'),descriptionHelperRoot:resolve('robotics/simulation')});
++ const service=createEngineeringService({directory:join(dir,'engineering'),catalogRoot,compiler,compilers:{[set]:compiler}});
++ const receipt=await service.compileEngineeringProject(project,'study');if(receipt.state!=='compiled')throw Error(JSON.stringify(receipt.problems));
++ const locked=await service.admitRun('study',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},set,undefined);
++ const manifest=await service.readManifest('study',receipt.bundleDigest!);
++ const artifacts=[];
++ for(const f of manifest.files){const content=Buffer.from(await service.bundleFile(receipt.bundleDigest!,f.path)).toString();artifacts.push({ref:{path:f.path,sha256:sha(content),bytes:Buffer.byteLength(content)},content});}
++ const scene=JSON.parse(artifacts.find(f=>f.ref.path==='navigation-scene.json')!.content);
++ return {dir,service,locked,scene,project,artifacts,set,close:()=>rm(dir,{recursive:true,force:true})};
++}
++/** Unit-only report assembled on real compiled input bytes. It is never native execution evidence. */
++export async function unitRun(c:Awaited<ReturnType<typeof compileStudy>>,runId='unit-a'){
++ const {hashJson}=await import('../../packages/lab-runtime/src/v2/hash');
++ const {buildNavigationEvidence,navigationMetrics}=await import('../../packages/lab-runtime/src/v2/navigation2d/evidence');
++ const {scene}=c,sceneRef=c.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.ref;
++ const read={trajectory:[],control:[],sensors:[],collisions:[],issues:[],gaps:[],horizon:100,complete:true,reasons:[],terminal:null,text:{trajectory:'',control:'',sensors:'',collisions:''}};
++ const profile=scene.engine.id==='mujoco_3d'?{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'UNIT ONLY',engine:()=>({...scene.engine,engineVersion:'3.17.0',pythonVersion:'3.11.15',platform:'unit',lockDigest:'a'.repeat(64)})}:scene.engine.id==='webots_3d'?{seedAlgorithm:'webots-worldinfo-seed-v1',limitation:'UNIT ONLY',engine:()=>({id:'webots_3d',engineVersion:'R2025a',pythonVersion:'3.11.15',platform:'unit',lockDigest:'b'.repeat(64),basicTimeStepMs:20,executableSha256:'c'.repeat(64)})}:undefined;
++ const nav=buildNavigationEvidence(scene,{runId,sourceCommit:'d'.repeat(40),sceneRef:{...sceneRef,path:'bundle/navigation-scene.json'},engine:{version:scene.engine.version,pythonVersion:'3.11.15'},lockDigest:'a'.repeat(64),numpyVersion:'2.2.6',runSeed:7,actorRng:{algorithm:'unit',seed:7},controller:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},businessEpochMs:0},{chunks:{trajectory:[],control:[],sensors:[],collisions:[]},gaps:[],terminal:null,lastTick:100},read,navigationMetrics(scene,read),100,undefined,profile);
++ // scene engine has compiler-only fields; evidence's closed engine branch has its own supported shape.
++ if(nav.engine.id==='mujoco_3d'){delete (nav.engine as unknown as Record<string,unknown>).version;delete (nav.engine as unknown as Record<string,unknown>).id;Object.assign(nav.engine,{id:'mujoco_3d'});}
++ const world={...c.project.runtimeProject.world};delete world.revision;
++ const at=(tick:number)=>new Date(tick*20).toISOString();
++ const stops=[{id:'stop-1',action:'handoff',status:'awaiting_action',targetId:'bay-1',allocationIds:['allocation-1']}];
++ const events=[{sequence:'1',at:at(10),type:'MissionArrived',kind:'mission',id:'mission-1',state:{currentStopId:'stop-1',stops}},{sequence:'2',at:at(60),type:'DeliveryHandedOff',kind:'allocation',id:'allocation-1',state:{missionId:'mission-1',lineId:'fulfillment-1'}},{sequence:'2',at:at(60),type:'FulfillmentServed',kind:'fulfillment',id:'fulfillment-1',state:{served:'1'}}];
++ const metric={available:true,value:.1,unit:'m',samples:101};
++ const report={schemaVersion:2,manifest:{runId,sourceCommit:'d'.repeat(40),mode:'simulation',access:'simulated',backends:[{id:scene.engine.id,version:scene.engine.version,model:'unit',dynamics:scene.engine.id!=='irsim_2d'}],clock:{tickMs:20,businessEpochMs:0},seed:7,scenario:{id:scene.engine.id==='mujoco_3d'?'MJ-FD01':scene.engine.id==='webots_3d'?'WB-FD01':'IR-FD01',revision:1,hash:'f'.repeat(64),basedOn:{id:'FD01',revision:1}},project:{id:c.project.runtimeProject.id,revision:1,hash:hashJson(c.locked.runtimeProjection.project)},world:{id:scene.world.id,revision:scene.world.revision,hash:hashJson(world)},engineering:c.locked.ref,models:[{id:scene.engine.id,hash:scene.sceneDigest}],configuration:{revision:1,hash:'e'.repeat(64)},assets:[],calibration:{status:'not_calibrated'}},outcome:{status:'completed',served:'1',tick:100,simTimeNs:'2000000000'},navigation2d:nav,businessEvents:events,effects:[],coverage:{},metrics:{distanceM:{'amr-1':1},collision:{available:true,contacts:0,minSeparationM:null}},confirmations:[{subjectId:'stop-1',confirmationType:'handoff',provenance:'scripted',tick:60}],physicsEvidence:scene.engine.id==='mujoco_3d'?{complete:true,issues:[],manifest:{identity:{runId,sceneDigest:scene.sceneDigest,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256},coverage:{firstTick:0,lastTick:100,complete:true},gaps:[],terminalReason:null},metrics:{stopDistanceM:metric,maxTiltRad:{...metric,unit:'rad'}}}:undefined};
++ const {scenarioRegistry,scenarioHash}=await import('../../packages/lab-runtime/src/v2/scenario-registry');report.manifest.scenario.hash=scenarioHash(scenarioRegistry.get(report.manifest.scenario.id)!);
++ const artifacts:StudyArtifact[]=[...c.artifacts];await syntheticStreams(report as unknown as RunReport,c,artifacts);
++ return {report:artifact('report.json',report),artifacts};
++}
++
++async function syntheticStreams(report:RunReport,c:Awaited<ReturnType<typeof compileStudy>>,artifacts:StudyArtifact[]){
++ const {tick}=await import('./physics'),{physicsMetrics}=await import('../../packages/lab-runtime/src/v2/simulation3d/physics-metrics'),{preparePhysicsAdmission}=await import('../../packages/lab-runtime/src/v2/simulation3d/physics-evidence');
++ const add=(prefix:string,stream:string,rows:unknown[])=>{const content=gzipSync(rows.map(r=>JSON.stringify(r)).join('\n')+'\n'),path=stream+'-000000-aaaaaaaa.ndjson.gz',ref={path,sha256:sha(content),bytes:content.length};artifacts.push({ref:{...ref,path:prefix+'/'+path},encoding:'base64',content:content.toString('base64')});return ref;};
++ const trajectory=Array.from({length:101},(_,n)=>({tick:n,simTimeNs:String(BigInt(n)*20000000n),robots:[{robotId:'amr-1',poseDriveMap:c.scene.robots[0].initialPoseMap,bodyVelocity:[0,0],collisionIds:[]}]})),control=Array.from({length:100},(_,n)=>({tick:n,targetTick:n+1,singleStep:false,velocities:[{robotId:'amr-1',vMps:0,omegaRadps:0}],actorUpdates:[]}));
++ report.navigation2d!.artifacts.trajectory=[{...add('evidence','trajectory',trajectory),firstTick:0,lastTick:100}];report.navigation2d!.artifacts.control=[{...add('evidence','control',control),firstTick:0,lastTick:99}];report.navigation2d!.completeness={status:'complete',reasons:[]};
++ if(c.scene.engine.id!=='mujoco_3d')return;
++ const prepared=await preparePhysicsAdmission(c.scene,async p=>Buffer.from(c.artifacts.find(a=>a.ref.path===p)!.content));
++ const records=Array.from({length:101},(_,n)=>{const r=tick(n);r.contacts=[];for(const key of ['base','wheels','odometry'] as const)r[key][0]!.robotId='amr-1';r.loads=prepared.load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null,poseMap:{positionM:[0,0,1],quaternionXyzw:[0,0,0,1]},poseInSupport:{positionM:[0,0,0],quaternionXyzw:[0,0,0,1]},linearVelocityMapMps:[0,0,0],angularVelocityMapRadps:[0,0,0]}));return r;});
++ const manifest:PhysicsEvidenceV1={schemaVersion:1,documentType:'physics-evidence',identity:{...report.physicsEvidence!.manifest.identity,bootId:'unit-boot'},streams:[{stream:'physics',chunks:[add('physics','physics',records)]}],coverage:{firstTick:0,lastTick:100,complete:true},gaps:[],terminalReason:null,metricsPolicyDigest:c.scene.engine.stopPolicyRef.sha256,assumptions:prepared.load.assumptions};
++ const m=artifact('physics/manifest.json',manifest);artifacts.push(m);report.physicsEvidence={complete:true,issues:[],manifest,manifestSha256:m.ref.sha256,metrics:physicsMetrics({complete:true,records,gaps:[],issues:[]},prepared.admission,{complete:true,trajectory,control,policy:c.scene.policy.parameters} as never)};
++}
+diff --git a/tests/unit/physics-comparison.test.ts b/tests/unit/physics-comparison.test.ts
+new file mode 100644
+index 0000000..22d0329
+--- /dev/null
++++ b/tests/unit/physics-comparison.test.ts
+@@ -0,0 +1,30 @@
++import {expect,test} from 'vitest';
++import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
++import type {RobotPhysicalModelV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import {comparePhysicsRuns} from '../../packages/lab-runtime/src/v2/simulation3d/physics-comparison';
++test('missing verified native evidence is unavailable, never a zero physics effect',()=>{
++ const c=comparePhysicsRuns({} as never,{} as never);expect(c.comparable).toBe(false);expect(c.reasons).toContain('EVIDENCE_INVALID');expect(c.deltas).toEqual([]);expect(c.percentiles).toBeNull();
++});
++import {afterAll,beforeAll} from 'vitest';
++import {compileStudy,unitRun,artifact} from '../support/simulation-study';
++let base:Awaited<ReturnType<typeof unitRun>>,slow:typeof base,fast:typeof base;
++const compiled:Awaited<ReturnType<typeof compileStudy>>[]=[];
++beforeAll(async()=>{for(const id of ['payload-center-v1','payload-slow-v1','payload-fast-v1']){const c=await compileStudy(id);compiled.push(c);}base=await unitRun(compiled[0]!);slow=await unitRun(compiled[1]!,'unit-slow');fast=await unitRun(compiled[2]!,'unit-fast');});
++afterAll(async()=>{for(const c of compiled)await c.close();});
++test.each([['default','slow'],['default','fast'],['slow','fast']])('accepts only registered speed caps and their completely verified derived references: %s / %s',(a,b)=>{
++ const runs={default:base,slow,fast};const c=comparePhysicsRuns(runs[a as keyof typeof runs],runs[b as keyof typeof runs]);expect(c.reasons).toEqual([]);expect(c.comparable).toBe(true);expect(c.percentiles).toBeNull();expect(c.population).toMatchObject({runsA:1,runsB:1});expect(c.deltas.length).toBeGreaterThan(0);
++});
++test('an extra adjacent geometry/contact/controller change is incomparable even when its bytes are rehashed',()=>{
++ for(const [path,mutate]of [['physical-model/amr-1.json',(d:RobotPhysicalModelV1)=>d.links[0].massKg.value+=1],['drive-contact-profile.json',(d:{contact:{sliding:number}})=>d.contact.sliding+=.01],['mobile-controller-policy.json',(d:{ramp:string})=>d.ramp='measured-velocity']] as const){
++  const copy=structuredClone(slow),i=copy.artifacts.findIndex(a=>a.ref.path===path),doc=JSON.parse(copy.artifacts[i]!.content);mutate(doc);copy.artifacts[i]=artifact(path,doc);expect(comparePhysicsRuns(base,copy).comparable).toBe(false);
++ }
++});
++test('unmatched clock/window and engine/controller identities have no causal deltas',()=>{
++ for(const mutate of [(r:RunReport)=>r.outcome.tick++, (r:RunReport)=>r.navigation2d!.controller.version='future', (r:RunReport)=>{if(r.navigation2d!.engine.id==='mujoco_3d')Object.assign(r.navigation2d!.engine,{engineVersion:'future'});}, (r:RunReport)=>r.manifest.seed++]){
++  const copy=structuredClone(slow),r=JSON.parse(copy.report.content);mutate(r);copy.report=artifact('report.json',r);const c=comparePhysicsRuns(base,copy);expect(c.comparable).toBe(false);expect(c.deltas.every((d)=>d.delta===null)).toBe(true);
++ }
++});
++test('a rehashed report cannot invent measured metrics or omit the raw physics stream',()=>{
++ const copy=structuredClone(slow),r=JSON.parse(copy.report.content);r.physicsEvidence.metrics.maxTiltRad.value=123;copy.report=artifact('report.json',r);expect(comparePhysicsRuns(base,copy).comparable).toBe(false);
++ const missing=structuredClone(slow);missing.artifacts=missing.artifacts.filter(a=>!a.ref.path.startsWith('physics/'));expect(comparePhysicsRuns(base,missing).comparable).toBe(false);
++});
+diff --git a/tests/unit/semantic-study.test.ts b/tests/unit/semantic-study.test.ts
+new file mode 100644
+index 0000000..3ee26ea
+--- /dev/null
++++ b/tests/unit/semantic-study.test.ts
+@@ -0,0 +1,62 @@
++import {expect,test} from 'vitest';
++import fixture from '../fixtures/simulation-study/mismatched-world.json';
++import {buildSemanticStudy} from '../../packages/lab-runtime/src/v2/simulation3d/semantic-study';
++test('explicit two-report mismatched common projection is incomparable and never ranked',()=>{
++ const study=buildSemanticStudy(fixture as never);
++ expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(Object.hasOwn(study,'winner')).toBe(false);
++});
++import {afterAll,beforeAll} from 'vitest';
++import {compileStudy,unitRun,artifact} from '../support/simulation-study';
++import {semanticEquivalence} from '../../packages/lab-runtime/src/v2/simulation3d/semantic-study';
++const runs:Awaited<ReturnType<typeof unitRun>>[]=[];const compiled:Awaited<ReturnType<typeof compileStudy>>[]=[];
++beforeAll(async()=>{
++ for(const engine of ['irsim_2d','webots_3d','mujoco_3d']){const c=await compileStudy('payload-empty-v1',engine);compiled.push(c);const run=await unitRun(c,engine);
++  runs.push(run);
++ }
++});
++afterAll(async()=>{for(const c of compiled)await c.close();});
++const input=()=>{const equivalence=semanticEquivalence(runs[0]!);return {equivalence,runs:structuredClone(runs).map(r=>({...r,commonProjection:equivalence.commonProjection})),invariantPolicy:{id:'fd01-source-causal-v1',revision:1}};};
++test('fresh equivalent geometric inputs compare source causality with IR-SIM dynamics unsupported, without ranking',()=>{
++ const study=buildSemanticStudy(input());expect(study.reasonCodes).toEqual([]);expect(study.status).toBe('complete');expect(study.runs).toHaveLength(3);expect(study.unsupportedDimensions).toContainEqual(expect.objectContaining({engine:'irsim_2d',dimension:'contact',status:'unsupported'}));expect(study).not.toHaveProperty('winner');expect(study).not.toHaveProperty('rank');
++});
++test.each(['world','frame','goal','digest'])('rejects a %s binding or input mismatch without treating it as engine behavior',kind=>{
++ const i=input();if(kind==='digest')i.runs[1]!.report.ref.sha256='0'.repeat(64);else{const j=i.runs[1]!.artifacts.findIndex(a=>a.ref.path==='navigation-scene.json'),s=JSON.parse(i.runs[1]!.artifacts[j]!.content);if(kind==='world')s.world.id='another-world';if(kind==='frame')s.robots[0].model.baseFrameId='another-frame';if(kind==='goal')s.robots[0].targetBindings[0].x+=.5;i.runs[1]!.artifacts[j]=artifact('navigation-scene.json',s);}
++ const study=buildSemanticStudy(i);expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');
++});
++test('source served before its own handoff fails causality; unrelated global event ordering is not compared',()=>{
++ const i=input(),r=JSON.parse(i.runs[1]!.report.content);r.businessEvents[2].at=new Date(0).toISOString();i.runs[1]!.report=artifact('report.json',r);
++ const study=buildSemanticStudy(i);expect(study.status).toBe('failed');expect(study.invariants.some((x)=>x.id==='arrival-confirmation-served'&&x.status==='fail')).toBe(true);
++});
++test('unknown followed by another dispatch attempt fails independently of trajectory equality',()=>{
++ const i=input(),r=JSON.parse(i.runs[0]!.report.content);r.businessEvents.push({sequence:'3',at:new Date(2000).toISOString(),type:'RobotCommandObserved',kind:'robot-command',id:'unknown-command',state:{status:'unknown'}});r.effects=[{id:'effect-unknown',type:'robot.execute',status:'unknown',attempts:2,payload:{commandId:'unknown-command'}}];i.runs[0]!.report=artifact('report.json',r);
++ expect(buildSemanticStudy(i).invariants.some((x)=>x.id==='unknown-no-redispatch'&&x.status==='fail')).toBe(true);
++});
++test('registered study controller selects the actual sent-command ramp and preserves the legacy plant',async()=>{
++ const {withSemanticStudyController}=await import('../../packages/lab-runtime/src/v2/simulation3d/semantic-study-policy');const {irsimPlant}=await import('../../packages/lab-runtime/src/v2/navigation2d/plant');
++ const original=irsimPlant(),study=withSemanticStudyController(original);expect(original.identity.controller).toBeUndefined();expect(study.identity.controller).toEqual({identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}});expect(study.spawn).toBe(original.spawn);
++});
++test('trajectory bytes determine corridor metrics even if a report summary is changed',()=>{
++ const i=input(),r=JSON.parse(i.runs[0]!.report.content);r.metrics.navigation={driveDistanceM:{'amr-1':999},minClearanceM:999};i.runs[0]!.report=artifact('report.json',r);
++ const study=buildSemanticStudy(i);expect(study.differences.find(d=>d.runId===r.manifest.runId&&d.dimension==='driveDistanceM')?.value).toBe(0);
++});
++test('study schema rejects ranking and the offline CLI preserves existing reports',async()=>{
++ const {default:Ajv}=await import('ajv'),schema=(await import('../../packages/contracts/schemas/semantic-study-v1.schema.json')).default,validate=new Ajv({strict:true}).compile(schema),study=buildSemanticStudy(input());expect(validate(study),JSON.stringify(validate.errors)).toBe(true);expect(validate({...study,winner:'mujoco_3d'})).toBe(false);
++ const {mkdtemp,writeFile,readFile,rm}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path'),{spawnSync}=await import('node:child_process'),dir=await mkdtemp(join(tmpdir(),'study-cli-'));
++ try{const source=join(dir,'input.json'),out=join(dir,'output.json');await writeFile(source,JSON.stringify(input()));const args=['scripts/compare-simulations.mjs','--study',source,'--out',out],run=()=>spawnSync(process.execPath,args,{encoding:'utf8',timeout:30000});expect(run()).toMatchObject({status:0});const retained=await readFile(out,'utf8');expect(JSON.parse(retained)).toMatchObject({status:'complete',accepted:false,percentiles:null});expect(run()).toMatchObject({status:2});expect(await readFile(out,'utf8')).toBe(retained);}finally{await rm(dir,{recursive:true,force:true});}
++});
++test('a new command id for the same unknown mission is still a redispatch',()=>{
++ const i=input(),r=JSON.parse(i.runs[0]!.report.content);r.businessEvents.push({sequence:'3',at:new Date(2000).toISOString(),type:'RobotCommandObserved',kind:'robot-command',id:'lost',state:{status:'unknown',missionId:'mission-1'}},{sequence:'4',at:new Date(2020).toISOString(),type:'RobotCommandIssued',kind:'robot-command',id:'new-id',state:{missionId:'mission-1'}});i.runs[0]!.report=artifact('report.json',r);expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='unknown-no-redispatch')?.status).toBe('fail');
++});
++test('arrival is judged against the registered five-tick position, yaw and stopped window',()=>{
++ const i=input(),r=JSON.parse(i.runs[0]!.report.content);r.businessEvents[0].state.stops[0].targetId='t-01';i.runs[0]!.report=artifact('report.json',r);
++ expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='arrival-policy-window')?.status).toBe('fail');
++});
++test('legacy compareRuns keeps cross-backend deltas null',async()=>{
++ const {compareRuns}=await import('../../packages/lab-runtime/src/v2/comparison');const a=JSON.parse(runs[0]!.report.content),b=JSON.parse(runs[1]!.report.content),comparison=compareRuns(a,b);expect(comparison.comparable).toBe(false);expect(comparison.reasons).toContain('BACKENDS_DIFFER');expect(comparison.kpis.every(k=>k.delta===null)).toBe(true);
++});
++test('nominal cancel and unknown clauses are explicitly unexercised',()=>{
++ const study=buildSemanticStudy(input());expect(study.invariants.filter(x=>['cancel-causality','unknown-no-redispatch'].includes(x.id)).every(x=>x.status==='not_run')).toBe(true);
++});
++test('a load arrival cannot stand in for a handoff and scripted confirmations retain their admitted delay',()=>{
++ for(const mutate of [(r:Record<string,unknown>)=>{const events=r.businessEvents as {state:{stops:{action:string}[]}}[];events[0]!.state.stops[0]!.action='load';},(r:Record<string,unknown>)=>{const confirmations=r.confirmations as {provenance:string}[];confirmations[0]!.provenance='manual';}]){const i=input(),r=JSON.parse(i.runs[0]!.report.content);mutate(r);i.runs[0]!.report=artifact('report.json',r);expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='arrival-confirmation-served')?.status).toBe('fail');}
++});

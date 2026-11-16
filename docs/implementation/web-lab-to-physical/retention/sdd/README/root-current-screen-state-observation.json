@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-16T00:05:41.784Z",
+  "argv": [
+    "ioreg",
+    "-n",
+    "Root",
+    "-d1",
+    "-a"
+  ],
+  "timeoutMs": 5000,
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "stdoutBytes": 204958,
+  "stdoutSha256": "a19f31374d20cc86ee8fa70deaf06e187132947e0656441bce5090d4799cc44d",
+  "rawOutputRetained": false,
+  "rawOutputPolicy": "OS plist remains private; only its byte identity and the existing public screen parser result are retained.",
+  "validPlistEnvelope": true,
+  "lockKeyPresent": false,
+  "screenLocked": false,
+  "scope": "One read-only current OS screen-state observation. No Webots/preflight/engine launch, unlock, settings change, or qualification inferred."
+}

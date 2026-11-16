@@ -1,0 +1,33 @@
+source
+commit 229efa7f565876f8f9d69634f8fbc24b9196ed3f
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 21:05:30 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 21:05:30 2026 +0700
+
+    test: align native gateway and closure fixtures
+
+ tests/integration/lab-v2-bv01-sil.test.ts       | 4 ++--
+ tests/integration/lab-v2-native-gateway.test.ts | 9 +++++----
+ tests/integration/lab-v2-readiness.test.ts      | 6 ++++--
+ 3 files changed, 11 insertions(+), 8 deletions(-)
+
+lab
+commit ba1d0e01b9542dbefe8e21a95a561ea2d0b83f59
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 21:07:45 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 21:07:45 2026 +0700
+
+    fix: load report JSON imports and pin source runtime 229efa7
+
+ config/source-runtime.lock.json    |  4 ++--
+ src/project/engineering-archive.ts |  2 +-
+ src/reports/compare.ts             |  2 +-
+ src/reports/navigation2d.ts        |  4 ++--
+ src/reports/report-shape.ts        |  4 ++--
+ src/scenarios/model-validation.ts  |  4 ++--
+ src/shared/engineering.ts          |  2 +-
+ src/shared/navigation2d.ts         |  2 +-
+ src/twin/payload.ts                | 22 +++++++++++-----------
+ 9 files changed, 23 insertions(+), 23 deletions(-)

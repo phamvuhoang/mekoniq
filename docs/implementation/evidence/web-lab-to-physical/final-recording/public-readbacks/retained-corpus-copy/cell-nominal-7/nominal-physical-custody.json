@@ -1,0 +1,14 @@
+[
+  {
+    "cupId": "cup-1",
+    "parent": "table:table-1",
+    "status": "known",
+    "lastObservationId": "domain-delivery:9821d890-85d2-41f0-91f8-d070ab7c222a:cup-1:table:table-1"
+  },
+  {
+    "cupId": "cup-2",
+    "parent": "table:table-1",
+    "status": "known",
+    "lastObservationId": "domain-delivery:9821d890-85d2-41f0-91f8-d070ab7c222a:cup-2:table:table-1"
+  }
+]

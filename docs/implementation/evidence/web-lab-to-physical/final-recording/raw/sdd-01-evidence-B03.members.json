@@ -1,0 +1,331 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:40:17.705784+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/evidence-B03",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-01-evidence-B03.tar.gz",
+  "archiveBytes": 51545,
+  "archiveSha256": "e2bc4edd100341af292e0fcd5acb955e2f9fd0fa2c66072a945aaefce4592137",
+  "memberCount": 44,
+  "memberBytes": 216377,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "b03-contracts-final.log",
+      "bytes": 192,
+      "sha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161929249318
+    },
+    {
+      "path": "b03-evidence-final.log",
+      "bytes": 487,
+      "sha256": "18ac5b1a59bbd3d2854d26c17a869cf4aa3479aa14ce323ddb7413013c07b60a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161929697608
+    },
+    {
+      "path": "b03-export.log",
+      "bytes": 78680,
+      "sha256": "9c215ceba329da46629ac1f4f9f589ca3a600f8d2664e4b772469d1e9259710a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161930198149
+    },
+    {
+      "path": "b03-focused-final.log",
+      "bytes": 2184,
+      "sha256": "75250d01082421cc48cf15039b3d14df46f56b877c20df8b70e0c8b65bccfae9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161930639481
+    },
+    {
+      "path": "b03-green-contact.log",
+      "bytes": 98,
+      "sha256": "f7da7f86cbf89957a3d2994d522437ec98ca4c257402418f86bbcbd223cc7b9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161931022022
+    },
+    {
+      "path": "b03-green-expanded.log",
+      "bytes": 7071,
+      "sha256": "b6da95df8c158ac9262d042e2f76fb40557fcc9a49ff8dfe0f44df705339ccc7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161931614645
+    },
+    {
+      "path": "b03-green-first.log",
+      "bytes": 1786,
+      "sha256": "f0deb5839ff0e88b422f24aafc27b6490ac99723b4e2a85011cd0146591918ba",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161931994478
+    },
+    {
+      "path": "b03-green-lab.log",
+      "bytes": 254,
+      "sha256": "57dc41ad353644de6ae041bfb750d21c27cabebd3c6dc728beeac229024e18af",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161932300352
+    },
+    {
+      "path": "b03-green-lifecycle.log",
+      "bytes": 1411,
+      "sha256": "bc840bbefba313114bd5cf2c97afd642fafc3be494c6e9491f3d71234cc3ab84",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161932688518
+    },
+    {
+      "path": "b03-green-order.log",
+      "bytes": 1329,
+      "sha256": "93f33eb366fa1076a8139b7f43c979122b8f28e3841601846740ba29f0e994f3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161933086058
+    },
+    {
+      "path": "b03-import.log",
+      "bytes": 418,
+      "sha256": "4c8c642ac141119f52da967a9acb2e285d1cac2a1c9622b5dea321cb8c2abcb9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161933538141
+    },
+    {
+      "path": "b03-irsim-final.log",
+      "bytes": 4065,
+      "sha256": "346b060f12235575d882293eb97ee4dee3c15d6fb443055d47c8d6b5af168e47",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161933935140
+    },
+    {
+      "path": "b03-lab-final.log",
+      "bytes": 254,
+      "sha256": "6e648148ec92f06c56361c9dfd36dd8db2eb73c0182b74582095ce350fdb8125",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161934299514
+    },
+    {
+      "path": "b03-lab-pin-final.log",
+      "bytes": 254,
+      "sha256": "86843c5458eb4553dbeb2bab0258b2ce7626506fdaa48fd0f9a609a2e121d2e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161934612346
+    },
+    {
+      "path": "b03-lab-types.log",
+      "bytes": 122,
+      "sha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161934942971
+    },
+    {
+      "path": "b03-lint-final.log",
+      "bytes": 110,
+      "sha256": "17170178a2b3abc32dbd25e1070c0587eb0ec51a83f04325ff52e53d0bd31013",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161935452719
+    },
+    {
+      "path": "b03-mobile-final.log",
+      "bytes": 3940,
+      "sha256": "bda7cd3cf827309a2fb6ee28d1b9f322875993d64e2e25135dc6194b7338c1da",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161935791427
+    },
+    {
+      "path": "b03-pin-check.log",
+      "bytes": 295,
+      "sha256": "a6e0c85dfbab89a3a7bf1ef4cbccdf0792344f3c935b3441937d88f7c54289ba",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161936167384
+    },
+    {
+      "path": "b03-python-final.log",
+      "bytes": 99,
+      "sha256": "db0573a794dd3185ce6955e6a55f49352fd66d942862713d23d608d40d0614b1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161936534133
+    },
+    {
+      "path": "b03-r1-export.log",
+      "bytes": 78683,
+      "sha256": "470b3f94a1f2b0adf5df395a8d994cc0384b03828953781984b3a0932814de3d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943730470794
+    },
+    {
+      "path": "b03-r1-green-first.log",
+      "bytes": 487,
+      "sha256": "c521ab2976aa500ccf620d35d336a7f0c31deca42b6178b51f753b11ff4cb5c0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943731009836
+    },
+    {
+      "path": "b03-r1-green.log",
+      "bytes": 2134,
+      "sha256": "617da7754143870168b64261f3090e96a7571c13cfce377245bf982e664acc73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943731432878
+    },
+    {
+      "path": "b03-r1-import.log",
+      "bytes": 418,
+      "sha256": "11bd76eefb8154d6c53a0e09752a3cbf5c71b3958bcb1370e2b42aed027ee3c8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943731889128
+    },
+    {
+      "path": "b03-r1-lab-types.log",
+      "bytes": 122,
+      "sha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943732227087
+    },
+    {
+      "path": "b03-r1-lint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943732392378
+    },
+    {
+      "path": "b03-r1-pin-check.log",
+      "bytes": 295,
+      "sha256": "43968f1c08da530da9c2e984726ac4c1a70bc5ed4a1af6ed75dff405f612c334",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943732897503
+    },
+    {
+      "path": "b03-r1-red.log",
+      "bytes": 4211,
+      "sha256": "dceb86f4bffc405e839b6d22a4099e1db02e2b38f2a24bb64fed849a5a229a78",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943733373295
+    },
+    {
+      "path": "b03-r1-typecheck.log",
+      "bytes": 232,
+      "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620943733727295
+    },
+    {
+      "path": "b03-red-concurrent.log",
+      "bytes": 2981,
+      "sha256": "f033cea19be2a99ad80fd7e861ff5b307ad8cae2e7294d1139a719e9b2396423",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161936851216
+    },
+    {
+      "path": "b03-red-contact.log",
+      "bytes": 1301,
+      "sha256": "e648c65ef34a373d864c4e319d9b3d1480b1a0fee6791bf9d63fdc695334a00e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161937199298
+    },
+    {
+      "path": "b03-red-flush.log",
+      "bytes": 1914,
+      "sha256": "1922965413ac0d84e45479f4dd5174f5517e32cb767e76a3de219a880df2d00a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161937659214
+    },
+    {
+      "path": "b03-red-initial.log",
+      "bytes": 1924,
+      "sha256": "a4b6d7831eff0e1fdddcacd158b8ec9bb69b327c77cf116caa0f970ad0c376c0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161938000005
+    },
+    {
+      "path": "b03-red-lab-contradiction.log",
+      "bytes": 861,
+      "sha256": "e748593dc1e7915ceaee8b11ce975d0072d1c464989965d1f74934899aaa1461",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161938476004
+    },
+    {
+      "path": "b03-red-lab.log",
+      "bytes": 862,
+      "sha256": "43e03d0fda4d2637b12b591a395cc40f70ed75cfb0c8e7a2045abb992bcad0f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161938775503
+    },
+    {
+      "path": "b03-red-order.log",
+      "bytes": 1764,
+      "sha256": "9457bddd911415be48579116eb12cc168d41a36b1c52e1614c47218e1c9a897f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161939164627
+    },
+    {
+      "path": "b03-red-policy.log",
+      "bytes": 2741,
+      "sha256": "40b7d0040221f3cd4f8cb2ba5db4b983e013366c09d4406fb8a0f6af839dd7f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161939460502
+    },
+    {
+      "path": "b03-red-pose.log",
+      "bytes": 2057,
+      "sha256": "37145109c7bf86491a4cb2dfcc18dd1e467e86f34b9f419780ccf597cd59f0f8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161939906875
+    },
+    {
+      "path": "b03-red-priming.log",
+      "bytes": 1865,
+      "sha256": "2ea85d2044d232ec885e260a4ec87d80768795c1863a8b61625604d441b8d5e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161940323958
+    },
+    {
+      "path": "b03-red-restart.log",
+      "bytes": 2174,
+      "sha256": "7421b05e39f19b4fccea9b00ca0af45bf5bda5bf34145d77c9d6c82abdc79b09",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161940642165
+    },
+    {
+      "path": "b03-red-stop.log",
+      "bytes": 1415,
+      "sha256": "ae1f35987bf1de5af7580593ffae8650ef89b8005fffd7724da929f71e43c89b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161940966581
+    },
+    {
+      "path": "b03-red-tilt.log",
+      "bytes": 1843,
+      "sha256": "11268e5aae34e06e86f708d7f0e2d581ae75b705ba65684bc4e69cde10f4949e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161941369330
+    },
+    {
+      "path": "b03-types-final.log",
+      "bytes": 232,
+      "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161941659621
+    },
+    {
+      "path": "b03-types.log",
+      "bytes": 232,
+      "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161941946079
+    },
+    {
+      "path": "b03-webots-final.log",
+      "bytes": 2580,
+      "sha256": "cdf20621cf0ac81aed61fb5b5d465121ac1a0a931675b42d9df036c16f0f9cfb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794620161942343995
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

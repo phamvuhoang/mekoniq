@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:28:06.005545+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-response-finished-reproduction.tar.gz",
+  "archiveBytes": 1438,
+  "archiveSha256": "58253cc89ca73f508af7347fe5fc546e09100c2b07ffc26bfa9c8f1ab237e3f9",
+  "memberCount": 5,
+  "memberBytes": 8143,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "before-target-close.json",
+      "bytes": 3359,
+      "sha256": "e31fa918af78cebbd76694db1e29fe1e3ea2a9413c69b6d2ccf334e69b2c830d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794781241026432387
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 125,
+      "sha256": "e46b89c4edda3b851b0755e4b06d50777289dc132e5ad73b9158f9e13db085d1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794781241264327990
+    },
+    {
+      "path": "downloaded.bin",
+      "bytes": 41,
+      "sha256": "7271eff14679ab960b986156df859caf315f7cc9837e01e46374914bd6908202",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794781238020607121
+    },
+    {
+      "path": "fixture.bin",
+      "bytes": 41,
+      "sha256": "7271eff14679ab960b986156df859caf315f7cc9837e01e46374914bd6908202",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794781236573947053
+    },
+    {
+      "path": "result.json",
+      "bytes": 4577,
+      "sha256": "0a930057f22a8c0f378f2786775987195bd364c5da29913ce0088bdd7f46738f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794781241054596638
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

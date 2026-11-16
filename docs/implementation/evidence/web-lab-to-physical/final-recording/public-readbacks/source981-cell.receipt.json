@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/lab-mujoco.mjs",
+    "verify",
+    "--input",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-cell-campaign"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T00:32:18.855359+00:00",
+  "finishedAt": "2026-11-16T00:33:00.782284+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "source981-cell.log",
+  "logBytes": 89,
+  "logSha256": "feb1d6c24cc371a6b0435bea3ae55dba063016480d002e9d9cc4b45085c2d63b",
+  "expectedHistoricalDisposition": null,
+  "scope": "Public retained-data readback only, extracted copies; no campaign/native/engine execution or status rewriting"
+}

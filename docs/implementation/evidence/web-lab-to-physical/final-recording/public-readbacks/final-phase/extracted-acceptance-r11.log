@@ -1,0 +1,15 @@
+
+> mekoniq-platform@ test:acceptance /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source
+> node scripts/test-runner.mjs acceptance -- sim-extension --reporter=default --reporter=json --outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/extracted-acceptance-r11.json
+
+
+ RUN  v4.1.12 /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source
+
+ ✓ tests/acceptance/sim-extension.acceptance.test.ts (12 tests) 22ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  08:10:14
+   Duration  375ms (transform 80ms, setup 0ms, import 250ms, tests 22ms, environment 0ms)
+
+JSON report written to /var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/extracted-acceptance-r11.json

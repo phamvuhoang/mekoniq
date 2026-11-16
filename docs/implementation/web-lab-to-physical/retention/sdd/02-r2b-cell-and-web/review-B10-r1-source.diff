@@ -1,0 +1,480 @@
+diff --git a/docs/implementation/web-lab-to-physical/retention/retained-input-catalog.json b/docs/implementation/web-lab-to-physical/retention/retained-input-catalog.json
+index aac3588..6906969 100644
+--- a/docs/implementation/web-lab-to-physical/retention/retained-input-catalog.json
++++ b/docs/implementation/web-lab-to-physical/retention/retained-input-catalog.json
+@@ -627,6 +627,22 @@
+           "sha256": "2f2199f0f8063c1ea287822fd71b116d25ed8767b54a543a4ef77e4b69d42149"
+         }
+       ]
++    },
++    "cell-nominal-export": {
++      "directory": "b10-historical-expected-export",
++      "files": [
++        {
++          "path": "manifest.json",
++          "bytes": 26525,
++          "sha256": "b3eb6e7cc0e6c2287092c358e02ab3c860e76e5bc828a5ed41bae4e83bbebaea"
++        }
++      ],
++      "producer": {
++        "originalPath": "/tmp/b07a-final-packages-ZYL6r5/nominal/manifest.json",
++        "scope": "Historical B07a exact expected export inventory of B06 nominal7; imported integrity only, not current qualification",
++        "runId": "9821d890-85d2-41f0-91f8-d070ab7c222a",
++        "accepted": false
++      }
+     }
+   }
+ }
+diff --git a/docs/operations/r2b-qualification.md b/docs/operations/r2b-qualification.md
+index 6611ef1..9046708 100644
+--- a/docs/operations/r2b-qualification.md
++++ b/docs/operations/r2b-qualification.md
+@@ -50,11 +50,11 @@ Image execution remains unbuilt/not_run under R76 until the final Docker prerequ
+ 
+ ## Retained-input portability
+ 
+-The replay tests no longer default to a developer's `/tmp` directory. They require `MEKONIQ_RETAINED_INPUTS` and `MEKONIQ_RETAINED_INPUTS_SHA256`. Missing inputs fail explicitly; portable reader tests remain independently runnable. Obtain the retained B06 nominal7 and B04a cup-fall directories from the preserved task evidence archive, place them under a chosen parent using the relative directory names in the [catalog](../implementation/web-lab-to-physical/retention/retained-input-catalog.json), and place a byte-exact catalog copy in that parent. The catalog's SHA256 is `d46dfb3e521af516b4b31269f8a3bf755de1301935a6cc0bee9369ef679f9a51`.
++The replay tests no longer default to a developer's `/tmp` directory. They require `MEKONIQ_RETAINED_INPUTS` and `MEKONIQ_RETAINED_INPUTS_SHA256`. Missing inputs fail explicitly; portable reader tests remain independently runnable. Obtain the retained B06 nominal7 and B04a cup-fall directories and the historical B07a expected export manifest (the `cell-nominal-export` entry) from the preserved task evidence archive, place them under a chosen parent using the relative directory names in the [catalog](../implementation/web-lab-to-physical/retention/retained-input-catalog.json), and place a byte-exact catalog copy in that parent. The catalog's SHA256 is `86f905eee94c022acaafa0c8800c57eb290e4b64628a024b300669ca215c7a15`.
+ 
+ ```sh
+ node scripts/prepare-retained-inputs.mjs /chosen/parent/inputs.json \
+-  d46dfb3e521af516b4b31269f8a3bf755de1301935a6cc0bee9369ef679f9a51 /tmp/NEW-retained-inputs
++  86f905eee94c022acaafa0c8800c57eb290e4b64628a024b300669ca215c7a15 /tmp/NEW-retained-inputs
+ # Export both selectors printed by the command, then run the retained tests.
+ pnpm exec vitest run tests/unit/web-replay-reader.test.ts
+ ```
+@@ -86,3 +86,13 @@ Primary references checked 2026-11-15: [Docker exporter overview](https://docs.d
+ ### Partial qualification records
+ 
+ R2b `artifactDispositions` is provisional per-case metadata. The mandatory asynchronous directory verifier recomputes it from actual artifacts and rejects a caller-supplied mismatch. Missing input/cases remain not_run, corruption or an observed assertion failure remains failed, and a missing WEB05 image does not erase independently qualified mobility/cell/web-reader evidence. Gates require every registered case. Synchronous structural success remains insufficient and the historical public dispatcher always returns `R2B_ARTIFACT_READBACK_REQUIRED` for R2b.
++
++### Current browser and WEB05 observation contracts
++
++`verifyR2bDirectory` performs the mandatory async readback. `assessCapture` derives active/full-cell drawing duration from RAF samples, bounds render events to the browser clock window, and binds each worker step to the Node clock origin and an observed HTTP action/tick interval. Worker observations outside the active window remain explicitly partitioned before/after it. Actual Source step progression, one correlated pause response and the final/stable/post-export horizon are required. Missing data produces unavailable metrics or failure. The existing33ms render,15ms worker and500ms last-step receipt targets remain; the last metric is an observer receipt upper bound, not internal commit time. ACK-to-UI latency has no newly imposed budget.
++
++After a clean final Source export and Lab pin/build, `measure-cell-production.ts --exported-runtime --verify-browser --out NEW_DIR` prepares a separate browser invocation. It records clean Source/Lab identities and the exact production-dist inventory before/after, the Playwright argv/own exit/result hash, and a unique invocation ID in the JSON reporter metadata. The closed required case is `WEB-CELL-LIVE-REPLAY-390-v1` in `mujoco-cell.spec.ts`; aggregate passing stats alone cannot qualify it. The case records its own test/run identity, simultaneous390px DOM and screenshot, screenshot dimensions/hash and DOM hash. Readback requires the same Lab commit and dist bytes as the long capture; the two flows may have different run IDs. Standard Lab typecheck covers the e2e producer; the standalone measurement script also needs a targeted TypeScript check because `scripts/` is outside the default Lab tsconfig.
++
++At the deferred Docker prerequisite stage only, `LAB_WEB05_EVIDENCE_DIR=NEW_DIR` on the existing container suite retains `lifecycle-observations.json`: ordered command argv, own exit/signal/stdout/stderr, and HTTP method/path/status/request/response observations. Known credentials and proof fields are redacted at collection; no request authorization headers are retained. WEB05 version2 binds those observations to one invocation, exact image/config ID, health tuple, active recovery run, finished run and named mounted volume. The reader derives contention refusal, kill/restart, read-only reclaim/resume refusal, zero workers and nonempty unchanged committed chunk hashes. It requires identical standalone/package replay manifests and binds the independently opened captured report to an observed post-reclaim report of the same finished run/horizon/source. The earlier report must show completed/served2; after reopening, the existing read-only needs_attention state and newly finalized stream metadata are retained explicitly, not relabelled as the earlier state. Incomplete suite execution retains observations and a failed/incomplete record; it cannot become a successful lifecycle assertion. This is preparation, not an actual container result.
++
++For this working copy, lint authored Source with `pnpm exec eslint . --ignore-pattern '.superpowers/**'`: ignored SDD retention includes generated historical runtime bundles. A fresh clone has no such retained ignored bundles. This exclusion does not waive any versioned product or frozen historical script.
+diff --git a/scripts/browser-capture-clock.mjs b/scripts/browser-capture-clock.mjs
+index bbf7870..b947dd9 100644
+--- a/scripts/browser-capture-clock.mjs
++++ b/scripts/browser-capture-clock.mjs
+@@ -14,14 +14,35 @@ export function checkCaptureClock(record){
+ }
+ 
+ export function assessCapture(record){
+- const issues=checkCaptureClock(record),c=record.capture,p=record.pause,finite=x=>typeof x==='number'&&Number.isFinite(x),events=c?.renderEvents??[],intervals=events.slice(1).map((s,i)=>s.atMs-events[i].atMs),worker=(record.workerRaw??[]).map(s=>s.elapsedMs);
+- if(!finite(c?.elapsedMs)||c.elapsedMs<180000||!finite(c?.activeCellMs)||c.activeCellMs<180000||Math.abs(c.elapsedMs-(record.clock?.endEpochMs-record.clock?.startEpochMs))>1)issues.push('CAPTURE_DURATION');
+- if(events.length<2||intervals.some(x=>!finite(x)||x<=0)||events.at(-1)?.atMs-events[0]?.atMs<c?.elapsedMs*.9||!(c?.fullCellDrawingFrames>0))issues.push('CAPTURE_RENDER_STREAM');
+- if(!worker.length||worker.some(x=>!finite(x)||x<0))issues.push('CAPTURE_WORKER_STREAM');
+- if(!finite(p?.clickEpochMs)||!finite(p?.uiObservedAtEpochMs)||p.uiObservedAtEpochMs<p.clickEpochMs)issues.push('CAPTURE_PAUSE_CLOCK');
+- if(!Array.isArray(record.errors)||record.errors.length)issues.push('CAPTURE_OBSERVER_ERRORS');
+- const p95=a=>[...a].sort((a,b)=>a-b)[Math.ceil(a.length*.95)-1]??Infinity;
+- const lastStepReceiptMs=Math.max(0,...(record.actions??[]).filter(a=>a.kind==='step').map(a=>a.observedAtEpochMs-p?.clickEpochMs));
+- const metrics={renderIntervalP95Ms:p95(intervals),workerP95Ms:p95(worker),lastStepReceiptMs,pauseAckUiMs:p?.uiObservedAtEpochMs-p?.clickEpochMs};
+- return {valid:!issues.length,meetsTargets:!issues.length&&metrics.renderIntervalP95Ms<=33&&metrics.workerP95Ms<=15&&metrics.lastStepReceiptMs<=500,metrics,issues};
++ const issues=checkCaptureClock(record),c=record?.capture,p=record?.pause,k=record?.clock,finite=x=>typeof x==='number'&&Number.isFinite(x),integer=x=>Number.isSafeInteger(x)&&x>=0,list=x=>Array.isArray(x)?x:[],fail=code=>issues.push(code);
++ const events=list(c?.renderEvents),samples=list(c?.samples),actions=list(record?.actions),steps=actions.filter(a=>a.kind==='step').sort((a,b)=>a.requestStartEpochMs-b.requestStartEpochMs),pauses=actions.filter(a=>a.kind==='pause'),activeSteps=steps.filter(a=>a.observedAtEpochMs>=k?.startEpochMs&&a.observedAtEpochMs<=k?.endEpochMs);
++ const windowMs=k?.endEpochMs-k?.startEpochMs;
++ if(!finite(c?.elapsedMs)||c.elapsedMs<180000||!finite(windowMs)||Math.abs(c.elapsedMs-windowMs)>1)fail('CAPTURE_DURATION');
++ if(activeSteps.length<2||activeSteps.at(-1)?.tick<=activeSteps[0]?.tick||steps.some((a,i)=>!integer(a.tick)||!Number.isSafeInteger(a.payload?.ticks)||a.payload.ticks<1||a.payload.ticks>30000||i>0&&a.tick-steps[i-1].tick!==a.payload.ticks))fail('CAPTURE_STEP_PROGRESSION');
++ if(pauses.length!==1||p?.actionId!==pauses[0]?.actionId||!finite(p?.clickEpochMs)||p.clickEpochMs<k?.endEpochMs||!finite(p?.uiObservedAtEpochMs)||p.uiObservedAtEpochMs<p.clickEpochMs||pauses[0]?.requestStartEpochMs<p.clickEpochMs||pauses[0]?.responseEndEpochMs>p.uiObservedAtEpochMs||pauses[0]?.status!=='paused')fail('CAPTURE_PAUSE_CORRELATION');
++ const pause=pauses[0],last=steps.at(-1);
++ if(!last||pause?.tick!==last.tick||p?.lastCommittedTick!==pause?.tick||p?.stableAfterTick!==pause?.tick||p?.status!=='paused'||steps.some(a=>a.requestStartEpochMs>pause?.responseEndEpochMs)||['finalView','stableView','afterExportView'].some(key=>p?.[key]?.run?.id!==record?.runId||p?.[key]?.run?.status!=='paused'||p?.[key]?.tick!==pause?.tick))fail('CAPTURE_FINAL_HORIZON');
++ let activeCellMs=0,fullCellDrawingMs=0,fullCellDrawingFrames=0;
++ if(samples.length<2)fail('CAPTURE_ACTIVITY_STREAM');
++ for(const [i,s]of samples.entries()){
++  const previous=samples[i-1],delta=i?s.at-previous.at:0;
++  if(!finite(s.at)||s.at<0||s.at>windowMs||i>0&&delta<=0||!finite(s.interval)||Math.abs(s.interval-(i?delta:s.at))>.01||typeof s.fullCell!=='boolean'||typeof s.drawn!=='boolean'||!integer(s.drawCalls)||s.drawn!==(s.drawCalls>0)||!integer(s.tick)||s.tick>pause?.tick||s.fullCell&&(!integer(s.worldTick)||s.worldTick>pause?.tick))fail('CAPTURE_ACTIVITY_STREAM');
++  if(i&&previous.fullCell&&s.fullCell)activeCellMs+=delta;if(s.fullCell&&s.drawn)fullCellDrawingFrames++;if(i&&previous.fullCell&&s.fullCell&&s.drawn)fullCellDrawingMs+=delta;
++ }
++ if(activeCellMs<180000||fullCellDrawingMs<180000)fail('CAPTURE_ACTIVE_DRAWING_DURATION');
++ const intervals=events.slice(1).map((s,i)=>s.atMs-events[i].atMs);
++ if(events.length<2||events.some(e=>e.runId!==record?.runId||!finite(e.atMs)||e.atMs<k?.browserStartMs||e.atMs>k?.browserEndMs||!finite(e.durationMs)||e.durationMs<0||!integer(e.drawCalls)||e.drawCalls<1||!integer(e.worldTick)||e.worldTick>pause?.tick)||intervals.some(x=>!finite(x)||x<=0)||events.at(-1)?.atMs-events[0]?.atMs<windowMs*.9)fail('CAPTURE_RENDER_STREAM');
++ const worker=list(record?.workerRaw),before=list(record?.workerOutsideWindow?.before),after=list(record?.workerOutsideWindow?.after),all=[...before,...worker,...after],ids=new Set(),ticks=new Set();
++ for(const [group,rows]of [['active',worker],['before',before],['after',after]])for(const w of rows){
++  if(w.runId!==record?.runId||w.op!=='step'||typeof w.requestId!=='string'||!w.requestId||ids.has(w.requestId)||!integer(w.targetTick)||w.targetTick<1||ticks.has(w.targetTick)||w.expectedTick!==w.targetTick||w.ok!==true||!finite(w.elapsedMs)||w.elapsedMs<0||!finite(w.atEpochMs)||!finite(w.wallMs)||Math.abs(k?.nodeTimeOriginEpochMs+w.wallMs-w.atEpochMs)>.01)fail('CAPTURE_WORKER_IDENTITY');ids.add(w.requestId);ticks.add(w.targetTick);
++  if(group==='active'?(w.atEpochMs<k?.startEpochMs||w.atEpochMs>k?.endEpochMs):group==='before'?w.atEpochMs>=k?.startEpochMs:w.atEpochMs<=k?.endEpochMs)fail('CAPTURE_WORKER_WINDOW');
++  const action=steps.find(a=>w.targetTick>a.tick-a.payload?.ticks&&w.targetTick<=a.tick);if(!action||w.atEpochMs<action.requestStartEpochMs-2||w.atEpochMs>action.responseEndEpochMs+2)fail('CAPTURE_WORKER_ACTION_CORRELATION');
++ }
++ if(worker.length<2||Math.max(...worker.map(w=>w.atEpochMs))-Math.min(...worker.map(w=>w.atEpochMs))<windowMs*.9||activeSteps.some(a=>!all.some(w=>w.targetTick===a.tick))||last&&!all.some(w=>w.targetTick===last.tick))fail('CAPTURE_WORKER_COVERAGE');
++ const requiredTicks=steps.reduce((n,a)=>n+(Number.isSafeInteger(a.payload?.ticks)?a.payload.ticks:30001),0);if(requiredTicks>30000)fail('CAPTURE_WORKER_COVERAGE');else for(const a of steps)for(let tick=a.tick-a.payload?.ticks+1;tick<=a.tick;tick++)if(!ticks.has(tick))fail('CAPTURE_WORKER_COVERAGE');
++ if(!Array.isArray(record?.errors)||record.errors.length)fail('CAPTURE_OBSERVER_ERRORS');
++ const p95=a=>a.length?[...a].sort((a,b)=>a-b)[Math.ceil(a.length*.95)-1]:null;
++ const boundaryAvailable=steps.length&&finite(p?.clickEpochMs)&&steps.every(a=>finite(a.observedAtEpochMs));
++ const metrics={renderIntervalP95Ms:p95(intervals),workerP95Ms:p95(worker.map(s=>s.elapsedMs)),lastStepReceiptMs:boundaryAvailable?Math.max(0,...steps.map(a=>a.observedAtEpochMs-p.clickEpochMs)):null,pauseAckUiMs:finite(p?.uiObservedAtEpochMs)&&finite(p?.clickEpochMs)?p.uiObservedAtEpochMs-p.clickEpochMs:null,activeCellMs,fullCellDrawingMs,fullCellDrawingFrames};
++ const valid=issues.length===0;return {valid,meetsTargets:valid&&metrics.renderIntervalP95Ms!==null&&metrics.renderIntervalP95Ms<=33&&metrics.workerP95Ms!==null&&metrics.workerP95Ms<=15&&metrics.lastStepReceiptMs!==null&&metrics.lastStepReceiptMs<=500,metrics,issues:[...new Set(issues)]};
+ }
+diff --git a/scripts/browser-evidence-readback.mjs b/scripts/browser-evidence-readback.mjs
+new file mode 100644
+index 0000000..3115f07
+--- /dev/null
++++ b/scripts/browser-evidence-readback.mjs
+@@ -0,0 +1,21 @@
++import {createHash} from 'node:crypto';
++const sha=b=>createHash('sha256').update(b).digest('hex'),same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
++export const BROWSER_CASE_ID='WEB-CELL-LIVE-REPLAY-390-v1';
++export const BROWSER_CASE_TITLE='cell starts at tick zero, explicit 1×, exact admitted moving world, known pause/resume and registered new-run choices';
++export function verifyBrowserArtifacts(read,capture,tuple){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push('WEB_BROWSER_'+code);},json=p=>{const b=read(p);if(!b)throw Error('MISSING:'+p);return JSON.parse(b);};
++ try{
++  const invocation=json('browser-runtime-identity.json'),result=json('browser-result.json'),closed=json('browser-case.json'),dom=json('report-replay-fetched-cursor0-390-dom.json'),image=json('report-replay-fetched-cursor0-390-image.json'),png=read('report-replay-fetched-cursor0-390.png');
++  const build=b=>b?.labHead===tuple.labCommit&&b.labStatus===''&&b.sourceHead===tuple.sourceCommit&&b.sourceStatus===''&&b.sourceCommit===tuple.sourceCommit&&b.runtimeArtifact===tuple.artifactSha256&&b.schemaHash===tuple.schemaHash&&Array.isArray(b.files)&&b.files.length>0&&new Set(b.files.map(f=>f.path)).size===b.files.length&&b.files.every(f=>/^[\w.-]+(?:\/[\w.-]+)*$/.test(f.path)&&!f.path.split('/').some(p=>p==='.'||p==='..')&&/^[a-f0-9]{64}$/.test(f.sha256)&&Number.isSafeInteger(f.bytes)&&f.bytes>=0)&&sha(JSON.stringify(b.files))===b.buildSha256;
++  check(build(capture.buildIdentity)&&build(invocation.before)&&build(invocation.after)&&same(invocation.before,invocation.after)&&same(invocation.before.files,capture.buildIdentity?.files)&&invocation.before.buildSha256===capture.buildIdentity?.buildSha256,'BUILD_TUPLE');
++  const args=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'];
++  check(invocation.version===2&&typeof invocation.invocationId==='string'&&invocation.invocationId.length>0&&invocation.exported===true&&invocation.command==='pnpm'&&same(invocation.args,args)&&invocation.exitCode===0&&invocation.signal===null&&sha(read('browser-result.json'))===invocation.resultSha256&&result.config?.metadata?.invocationId===invocation.invocationId,'INVOCATION');
++  const bounded=(a,b)=>Number.isFinite(a)&&Number.isFinite(b)&&a>=invocation.startedAtEpochMs&&a<=b&&b<=invocation.finishedAtEpochMs;
++  check(Number.isFinite(invocation.startedAtEpochMs)&&Number.isFinite(invocation.finishedAtEpochMs)&&invocation.startedAtEpochMs<invocation.finishedAtEpochMs&&bounded(closed.startedAtEpochMs,closed.finishedAtEpochMs),'CLOCK');
++  const specs=[],walk=s=>{for(const x of s??[]){specs.push(...x.specs??[]);walk(x.suites);}};walk(result.suites);const spec=specs[0],tests=spec?.tests,results=tests?.[0]?.results;
++  check(specs.length===1&&spec?.file==='mujoco-cell.spec.ts'&&spec.title===BROWSER_CASE_TITLE&&spec.id===closed.testId&&spec.ok===true&&tests?.length===1&&tests[0].status==='expected'&&tests[0].expectedStatus==='passed'&&results?.length===1&&results[0].status==='passed'&&results[0].retry===0&&bounded(Date.parse(results[0].startTime),Date.parse(results[0].startTime)+results[0].duration)&&result.stats?.expected===1&&result.stats?.unexpected===0&&result.stats?.skipped===0&&result.stats?.flaky===0&&closed.caseId===BROWSER_CASE_ID&&closed.title===BROWSER_CASE_TITLE&&closed.file==='mujoco-cell.spec.ts'&&closed.status==='passed'&&closed.expectedStatus==='passed'&&closed.retry===0,'REQUIRED_CASE');
++  check(typeof closed.runId==='string'&&closed.runId.length>0&&typeof closed.testId==='string'&&closed.testId.length>0&&[closed,dom,image].every(x=>x.invocationId===invocation.invocationId&&x.caseId===BROWSER_CASE_ID&&x.testId===closed.testId&&x.runId===closed.runId),'ARTIFACT_CORRELATION');
++  check(dom.flow==='live-report-replay'&&dom.topbarCount===1&&dom.headers?.filter(h=>h.className.split(/\s+/).includes('topbar')).length===1&&typeof dom.html==='string'&&dom.html.length>0&&dom.viewport?.width===390&&dom.runtimeIdentity?.sourceCommit===tuple.sourceCommit&&dom.runtimeIdentity?.schemaHash===tuple.schemaHash&&bounded(image.startedAtEpochMs,image.finishedAtEpochMs)&&image.startedAtEpochMs>=closed.startedAtEpochMs&&image.finishedAtEpochMs<=closed.finishedAtEpochMs&&dom.atEpochMs>=image.startedAtEpochMs&&dom.atEpochMs<=image.finishedAtEpochMs&&image.domSha256===sha(read('report-replay-fetched-cursor0-390-dom.json')),'DOM');
++  check(png?.length>=24&&png.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))&&png.readUInt32BE(16)===dom.viewport?.width&&png.readUInt32BE(20)===dom.viewport?.height&&image.sha256===sha(png)&&image.bytes===png.length,'SCREENSHOT');
++ }catch(e){issues.push('WEB_BROWSER_RAW_INVALID:'+e.message);}return [...new Set(issues)];
++}
+diff --git a/scripts/r2b-readback.mjs b/scripts/r2b-readback.mjs
+index 3423d07..f7f3de1 100644
+--- a/scripts/r2b-readback.mjs
++++ b/scripts/r2b-readback.mjs
+@@ -5,6 +5,8 @@ import {createHash} from 'node:crypto';
+ import {checkR2bStructure,tableR2b} from './sim-extension-r2b.mjs';
+ import {checkQualification,GATES_R2A} from './sim-extension-qualification.mjs';
+ import {checkCaptureClock,assessCapture} from './browser-capture-clock.mjs';
++import {verifyBrowserArtifacts} from './browser-evidence-readback.mjs';
++import {verifyWeb05Artifacts} from './web05-readback.mjs';
+ import {tsImport} from 'tsx/esm/api';
+ const sha=b=>createHash('sha256').update(b).digest('hex');
+ export function boundedEvidenceRead(root,path){
+@@ -54,14 +56,11 @@ export async function collectR2bArtifactDispositions(root,m){
+    if(web.version!==2||web.accepted!==false||web.sourceCommit!==source||web.runtimeArtifact!==m.lab?.pin?.artifactSha256||web.buildIdentity?.labHead!==lab||web.buildIdentity?.labStatus!=='')r.push('WEB_CAPTURE_TUPLE');
+    r.push(...checkCaptureClock(web));const assessment=assessCapture(web);r.push(...assessment.issues);if(!assessment.meetsTargets)r.push('WEB_PERFORMANCE_TARGETS_NOT_MET');if(!web.sourceExecution?.startsWith('unchanged hash-verified exported runtime CLI'))r.push('WEB_EXPORTED_RUNTIME_REQUIRED');
+    if(!Number.isFinite(web.capture?.elapsedMs)||!Number.isFinite(web.capture?.activeCellMs)||web.capture?.elapsedMs<180000||web.capture?.activeCellMs<180000||!web.capture?.renderEvents?.length||!web.workerRaw?.length||web.errors?.length)r.push('WEB_CAPTURE_INCOMPLETE');
+-   try{const dom=read('inputs/web/report-replay-fetched-cursor0-390-dom.json');if(!dom)r.push('WEB_390_DOM_MISSING');else{const d=JSON.parse(dom);if(d.topbarCount!==1||d.viewport?.width!==390||!d.runId||d.runtimeIdentity?.sourceCommit!==source||d.runtimeIdentity?.schemaHash!==m.lab?.pin?.schemaHash||d.flow!=='live-report-replay'||!read('inputs/web/report-replay-fetched-cursor0-390.png'))r.push('WEB_390_DOM_CORRELATION');}
+-   }catch{r.push('WEB_390_DOM_CORRUPT');}
+-   const browser=read('inputs/web/browser-result.json');try{const stats=JSON.parse(browser).stats;if(stats.expected<1||stats.unexpected!==0||stats.skipped!==0)r.push('WEB_BROWSER_NOT_TESTED');}catch{r.push('WEB_BROWSER_MISSING');}
++   r.push(...verifyBrowserArtifacts(p=>read('inputs/web/'+p),web,{sourceCommit:source,labCommit:lab,artifactSha256:m.lab?.pin?.artifactSha256,schemaHash:m.lab?.pin?.schemaHash}));
+   }
+   collect('web');
+   // Container lifecycle proof is independent of a Linux-native campaign. The raw persisted reports/replay accompany its suite receipt.
+-  const container=ref('containerRecord','inputs/container/web05.json','WEB05');if(container){if(container.accepted!==false||container.execution!=='actual_container'||container.sourceCommit!==source||container.schemaHash!==m.lab?.pin?.schemaHash||container.image?.sourceCommit!==source||!/^sha256:[a-f0-9]{64}$/.test(container.image?.id??''))r.push('WEB05_IDENTITY');for(const p of ['health.json','before-crash-report.json','after-crash-report.json','finished-report.json','committed-before.json','committed-after.json','replay-manifest.json','image-inspect.json'])if(!read('inputs/container/'+p))r.push('WEB05_ARTIFACT_MISSING:'+p);
+-   try{const j=p=>JSON.parse(read('inputs/container/'+p)),before=j('before-crash-report.json'),after=j('after-crash-report.json'),finished=j('finished-report.json'),replay=j('replay-manifest.json');if(before.outcome.tick!==100||after.outcome.tick!==100||finished.outcome.status!=='completed'||finished.outcome.served!=='2'||JSON.stringify(j('committed-before.json'))!==JSON.stringify(j('committed-after.json'))||replay.runId!==finished.manifest.runId||finished.manifest.sourceCommit!==source||replay.horizon?.tick!==finished.outcome.tick)r.push('WEB05_LIFECYCLE');const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);const replayReader=await openReplayPackage(read('inputs/container/replay/manifest.json'),async function*(asset){const b=read('inputs/container/replay/'+asset.path);if(!b)throw Error('WEB05_REPLAY_ASSET_MISSING');yield b;});replayReader.close();}catch{r.push('WEB05_RAW_INVALID');}}
++  const container=ref('containerRecord','inputs/container/web05.json','WEB05');if(container)r.push(...await verifyWeb05Artifacts(p=>read('inputs/container/'+p),container,{sourceCommit:source,schemaHash:m.lab?.pin?.schemaHash}));
+   collect('container');
+  }
+  return {issues:[...new Set(r)],artifactDispositions:artifactDispositionsFromGroups(m.scope,groups)};
+diff --git a/scripts/web05-observations.mjs b/scripts/web05-observations.mjs
+new file mode 100644
+index 0000000..41d2859
+--- /dev/null
++++ b/scripts/web05-observations.mjs
+@@ -0,0 +1,3 @@
++// Fixed read-only programs; retained argv binds the measurement, not a caller boolean.
++export const CHUNK_PROGRAM="const fs=require('fs'),path=require('path'),crypto=require('crypto');const root='/data/runs',id=process.argv[1];const dir=fs.readdirSync(root).find(n=>{try{return JSON.parse(fs.readFileSync(path.join(root,n,'reclaim.json'))).runId===id}catch{return false}});const evidence=path.join(root,dir,'world-evidence');console.log(JSON.stringify(Object.fromEntries(fs.readdirSync(evidence).filter(n=>n.endsWith('.ndjson.gz')).map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(evidence,n))).digest('hex')]))))";
++export const WORKER_PROGRAM="const fs=require('fs');console.log(fs.readdirSync('/proc').filter(n=>/^\\d+$/.test(n)).filter(n=>{try{return fs.readFileSync('/proc/'+n+'/cmdline','utf8').split('\\0').includes('mujoco_worker')}catch{return false}}).length)";
+diff --git a/scripts/web05-readback.mjs b/scripts/web05-readback.mjs
+new file mode 100644
+index 0000000..996a772
+--- /dev/null
++++ b/scripts/web05-readback.mjs
+@@ -0,0 +1,36 @@
++import {tsImport} from 'tsx/esm/api';
++import {CHUNK_PROGRAM,WORKER_PROGRAM} from './web05-observations.mjs';
++const canonical=v=>JSON.stringify(v&&typeof v==='object'?Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))])):v);
++const equal=(a,b)=>canonical(a)===canonical(b);
++export async function verifyWeb05Artifacts(read,record,tuple){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push('WEB05_'+code);},json=p=>{const b=read(p);if(!b)throw Error('MISSING:'+p);return JSON.parse(b);};let replay;
++ try{
++  const {sourceCommit:source,schemaHash:schema}=tuple,v=record,active=v.activeRunId,finished=v.finishedRunId,name=v.containerName,contender=v.contenderName;
++  check(v.version===2&&v.accepted===false&&v.execution==='actual_container'&&v.sourceCommit===source&&v.schemaHash===schema&&v.image?.sourceCommit===source&&/^sha256:[a-f0-9]{64}$/.test(v.image?.id??'')&&typeof active==='string'&&active.length&&typeof finished==='string'&&finished.length&&active!==finished&&[name,contender,v.volumeName,v.invocationId].every(x=>typeof x==='string'&&x.length>0)&&name!==contender,'IDENTITY');
++  const log=json('lifecycle-observations.json'),rows=log.observations;check(log.invocationId===v.invocationId&&Array.isArray(rows)&&rows.length<=100000,'OBSERVATION_IDENTITY');
++  const ids=new Set();for(const [i,o]of rows.entries()){check(typeof o.id==='string'&&!ids.has(o.id)&&o.sequence===i&&Number.isFinite(o.startedAtEpochMs)&&Number.isFinite(o.finishedAtEpochMs)&&o.startedAtEpochMs<=o.finishedAtEpochMs,'OBSERVATION_ORDER');ids.add(o.id);}
++  const seen=new Set(),get=key=>{const id=v.observations?.[key],o=rows.find(o=>o.id===id);if(!o||seen.has(id))throw Error('OBSERVATION_REF:'+key);seen.add(id);return o;};
++  const command=(key,args)=>{const o=get(key);check(o.kind==='command'&&o.command==='docker'&&equal(o.args,args)&&o.exitCode===0&&o.signal===null&&typeof o.stdout==='string'&&typeof o.stderr==='string','COMMAND:'+key);return o;};
++  const http=(key,path,method='GET',status=200)=>{const o=get(key);check(o.kind==='http'&&o.method===method&&o.path===path&&o.status===status,'HTTP:'+key);return o;};
++  const image=json('image-inspect.json'),imageObservation=command('image',['image','inspect',v.image.id]),container=command('container',['inspect',name]);
++  check(equal(JSON.parse(imageObservation.stdout),[image])&&image.Id===v.image.id&&image.Config?.Labels?.['org.opencontainers.image.revision']===source&&image.Os===v.image.os&&image.Architecture===v.image.architecture,'IMAGE');
++  const inspected=JSON.parse(container.stdout);check(inspected.length===1&&inspected[0].Name==='/'+name&&inspected[0].Image===image.Id&&inspected[0].Mounts?.some(m=>m.Type==='volume'&&m.Name===v.volumeName&&m.Destination==='/data/runs'&&m.RW===true),'RUNNING_IMAGE');
++  const health=json('health.json'),h=http('health','/health');check(equal(h.response,health)&&health.sourceCommit===source&&health.schemaHash===schema,'HEALTH');
++  const before=json('before-crash-report.json'),after=json('after-crash-report.json'),done=json('finished-report.json'),b=http('before',`/runs/${active}/report`),a=http('after',`/runs/${active}/report`),f=http('finished',`/runs/${finished}/report`);
++  const report=(r,id,status,tick)=>r.manifest?.runId===id&&r.manifest?.sourceCommit===source&&r.schemaHash===schema&&r.outcome?.status===status&&r.outcome?.tick===tick;
++  check(report(before,active,'running',100)&&report(after,active,'needs_attention',100)&&report(done,finished,'completed',done.outcome?.tick)&&Number.isSafeInteger(done.outcome?.tick)&&done.outcome.tick>0&&done.outcome.served==='2'&&equal(b.response,before)&&equal(a.response,after)&&equal(f.response,done),'REPORT_CHAIN');
++  const cb=command('chunksBefore',['exec',name,'node','-e',CHUNK_PROGRAM,active]),ca=command('chunksAfter',['exec',name,'node','-e',CHUNK_PROGRAM,active]),chunks=json('committed-before.json'),afterChunks=json('committed-after.json');
++  check(Object.keys(chunks).length>0&&Object.entries(chunks).every(([p,h])=>/^[\w.-]+\.ndjson\.gz$/.test(p)&&/^[a-f0-9]{64}$/.test(h))&&equal(chunks,afterChunks)&&equal(JSON.parse(cb.stdout),chunks)&&equal(JSON.parse(ca.stdout),afterChunks),'CHUNKS');
++  const start=get('contenderStart');check(start.kind==='command'&&start.command==='docker'&&start.exitCode===0&&start.signal===null&&start.args[0]==='run'&&start.args.includes('-d')&&start.args[start.args.indexOf('--name')+1]===contender&&start.args[start.args.indexOf('-v')+1]===v.volumeName+':/data/runs'&&start.args.at(-1)===v.image.id,'CONTENDER_START');
++  const wait=command('contenderWait',['wait',contender]),logs=command('contenderLogs',['logs','--tail','20',contender]);check(wait.stdout.trim()==='1'&&/LAB_DATA_DIR_BUSY/.test(logs.stdout+'\n'+logs.stderr),'OWNERSHIP');
++  const kill=command('kill',['kill','--signal','KILL',name]),restart=command('restart',['start',name]),ha=http('healthAfter','/health');check(ha.response?.sourceCommit===source&&ha.response?.schemaHash===schema,'RECOVERY_HEALTH');
++  const reclaim=http('reclaim',`/runs/${active}/reclaim`,'POST'),resume=http('resume',`/runs/${active}/actions`,'POST',403),workers=command('workers',['exec',name,'node','-e',WORKER_PROGRAM]);
++  check(reclaim.response?.run?.id===active&&reclaim.response?.run?.status==='needs_attention'&&reclaim.response?.tick===100&&reclaim.response?.controlAccess==='view_reconcile'&&resume.request?.kind==='resume'&&resume.response?.error==='RECLAIM_READ_ONLY'&&workers.stdout.trim()==='0','RECOVERY');
++  const finishedReclaim=http('finishedReclaim',`/runs/${finished}/reclaim`,'POST'),replayObservation=http('replayReport',`/runs/${finished}/report`),replayReport=json('replay-report.json');
++  check(finishedReclaim.response?.run?.id===finished&&finishedReclaim.response?.run?.status==='needs_attention'&&finishedReclaim.response?.tick===done.outcome.tick&&finishedReclaim.response?.controlAccess==='view_reconcile'&&report(replayReport,finished,'needs_attention',done.outcome.tick)&&replayReport.outcome.served===done.outcome.served&&equal(replayReport.manifest,done.manifest)&&equal(replayReport.businessEvents,done.businessEvents)&&equal(replayObservation.response,replayReport),'FINISHED_RECLAIM');
++  const publication=http('replay',`/runs/${finished}/replay`,'POST',201),manifest=json('replay-manifest.json'),actual=json('replay/manifest.json');check(equal(manifest,actual)&&equal(publication.response?.manifest,actual),'REPLAY_MANIFEST_BINDING');
++  const chain=[h,f,b,cb,start,wait,logs,kill,restart,ha,reclaim,a,ca,resume,workers,finishedReclaim,replayObservation,publication];check(chain.every((o,i)=>!i||o.sequence>chain[i-1].sequence&&o.startedAtEpochMs>=chain[i-1].finishedAtEpochMs),'LIFECYCLE_ORDER');
++  const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);replay=await openReplayPackage(read('replay/manifest.json'),async function*(asset){const bytes=read('replay/'+asset.path);if(!bytes)throw Error('REPLAY_ASSET_MISSING');yield bytes;});
++  check(replay.manifest.runId===finished&&replay.manifest.horizon.tick===done.outcome.tick&&replay.manifest.coverage.prefixCovered&&replay.manifest.coverage.streamFinalized&&replay.manifest.streams.some(s=>s.kind==='world')&&['manifest','outcome','worldSweep','businessEvents'].every(k=>equal(replay.capturedReport[k],replayReport[k])),'REPLAY_REPORT_BINDING');
++ }catch(e){issues.push('WEB05_RAW_INVALID:'+e.message);}finally{replay?.close();}return [...new Set(issues)];
++}
+diff --git a/tests/integration/lab-runtime-container.test.ts b/tests/integration/lab-runtime-container.test.ts
+index b12994a..e5e827b 100644
+--- a/tests/integration/lab-runtime-container.test.ts
++++ b/tests/integration/lab-runtime-container.test.ts
+@@ -8,10 +8,12 @@ import {createServer} from 'node:net';
+ import {readFile,mkdir,writeFile} from 'node:fs/promises';
+ import {join,resolve} from 'node:path';
+ import {afterAll,describe,expect,test} from 'vitest';
++// @ts-expect-error shared standalone artifact observer programs
++import {CHUNK_PROGRAM,WORKER_PROGRAM} from '../../scripts/web05-observations.mjs';
+ import {xarmProject} from '../support/mujoco-arm';
+ 
+ const image=process.env.LAB_CONTAINER_IMAGE??'',LABEL='mekoniq-lab-container-test',ORIGIN='http://127.0.0.1:4175';
+-const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000,killSignal:'SIGKILL'});return {ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
++const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000,killSignal:'SIGKILL'});return {exitCode:r.status,signal:r.signal,ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
+ const dockerUp=!!image&&(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:15_000,killSignal:'SIGKILL'});return true;}catch{return false;}})();
+ const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+ const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
+@@ -84,15 +86,25 @@ describe.skipIf(!dockerUp||!image)('lab runtime container',()=>{
+ // WEB05 actual worker + local Docker named volume. Never counted as native-amd64 or public HTTPS.
+ describe.skipIf(!dockerUp||!image)('persistent mobile/cell image',()=>{
+  test('compiles mobile, excludes a competing container, recovers committed active chunks and replays a finished cell',async()=>{
++  const evidenceOut=process.env.LAB_WEB05_EVIDENCE_DIR?resolve(process.env.LAB_WEB05_EVIDENCE_DIR):undefined;if(evidenceOut)await mkdir(evidenceOut,{recursive:false});
++  const invocationId=randomUUID(),observations:Record<string,any>[]=[],refs:Record<string,string>={},bodies=new WeakMap<object,string>();let key='',token='';
++  const redact=(v:any):any=>Array.isArray(v)?v.map(redact):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,/^(token|sessionToken|csrfToken|reclaimToken|proof|authorization|cookie|password|secret|credentials|accessKey)$/i.test(k)?'[redacted]':redact(x)])):typeof v==='string'?[key,token].filter(Boolean).reduce((text,secret)=>text.replaceAll(secret,'[redacted]'),v):v;
++  const observe=(o:Record<string,any>)=>{const id='observation-'+observations.length;observations.push({...redact(o),id,sequence:observations.length});return id;};
++  const command=(ref:string,args:string[],env?:Record<string,string>)=>{const startedAtEpochMs=Date.now(),r=docker(args,env);refs[ref]=observe({kind:'command',command:'docker',args,startedAtEpochMs,finishedAtEpochMs:Date.now(),exitCode:r.exitCode,signal:r.signal,stdout:r.out,stderr:r.err});return r;};
++  const bind=(ref:string,body:object)=>{refs[ref]=bodies.get(body)!;};
++  const retain=async()=>{if(!evidenceOut)return;await writeFile(join(evidenceOut,'lifecycle-observations.json'),JSON.stringify({invocationId,observations},null,2));try{await writeFile(join(evidenceOut,'web05.json'),JSON.stringify({version:2,accepted:false,execution:'actual_container',invocationId,sourceCommit:head,incomplete:true,observations:refs},null,2),{flag:'wx'});}catch(error){if((error as NodeJS.ErrnoException).code!=='EEXIST')throw error;}};
++  try{
+   const name=`mekoniq-b09-${runId.slice(0,8)}`,contender=name+'-contender',volume=name+'-runs';names.push(name,contender);volumes.push(volume);
+   expect(docker(['volume','create','--label',`${LABEL}=${runId}`,volume]).ok).toBe(true);
+-  const port=await freePort(),key=randomBytes(24).toString('hex');let token='';
++  const port=await freePort();key=randomBytes(24).toString('hex');
++  const inspected=JSON.parse(docker(['image','inspect',image]).out)[0],imageId=inspected.Id;command('image',['image','inspect',imageId]);
+   const env={MEKONIQ_LAB_ACCESS_KEY:key},common=['--read-only','--tmpfs','/tmp','-v',`${volume}:/data/runs`,'-e','LAB_DATA_DIR=/data/runs','-e','MEKONIQ_LAB_ACCESS_KEY'];
+-  expect(docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,...common,'-p',`127.0.0.1:${port}:8080`,'-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,image],env).ok).toBe(true);
+-  const api=async(path:string,body?:unknown)=>{const r=await fetch(`http://127.0.0.1:${port}/lab/v2${path}`,{method:body===undefined?'GET':'POST',signal:AbortSignal.timeout(60_000),headers:{origin:ORIGIN,'content-type':'application/json',...token?{authorization:`Bearer ${token}`} :{}},...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:r.status,body:await r.json() as Record<string,any>};};
++  expect(docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,...common,'-p',`127.0.0.1:${port}:8080`,'-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,imageId],env).ok).toBe(true);
++  command('container',['inspect',name]);
++  const api=async(path:string,body?:unknown)=>{const startedAtEpochMs=Date.now();const r=await fetch(`http://127.0.0.1:${port}/lab/v2${path}`,{method:body===undefined?'GET':'POST',signal:AbortSignal.timeout(60_000),headers:{origin:ORIGIN,'content-type':'application/json',...token?{authorization:`Bearer ${token}`} :{}},...body!==undefined?{body:JSON.stringify(body)}:{}});const response=await r.json() as Record<string,any>;const id=observe({kind:'http',path,method:body===undefined?'GET':'POST',request:body,response,status:r.status,startedAtEpochMs,finishedAtEpochMs:Date.now()});bodies.set(response,id);return {status:r.status,body:response};};
+   const healthy=async()=>{for(let n=0;n<120;n++){try{const r=await api('/health');if(r.status===200)return r.body;}catch{/* owned container may still be starting */}await sleep(500);}throw Error('HEALTH_TIMEOUT');};
+   const ok=async(path:string,body?:unknown)=>{const r=await api(path,body);expect(r.status,JSON.stringify(r.body).slice(0,700)).toBeLessThan(300);return r.body;};
+-  const health=await healthy();expect(health.sourceCommit,'IMAGE_STALE').toBe(head);expect(health.engineeringCompilerProfiles).toEqual(['engineering-mujoco-3d-v1']);token=(await ok('/sessions',{token:key})).sessionToken;
++  const health=await healthy();bind('health',health);expect(health.sourceCommit,'IMAGE_STALE').toBe(head);expect(health.engineeringCompilerProfiles).toEqual(['engineering-mujoco-3d-v1']);token=(await ok('/sessions',{token:key})).sessionToken;
+   const runtimeIdentity={sourceCommit:health.sourceCommit,schemaHash:health.schemaHash};
+   const project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json','utf8'));project.requestedProfile='engineering-mujoco-3d-v1';
+   const receipt=await ok('/engineering/compile',{project});expect(receipt.state).toBe('compiled');const engineeringRef={bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest};
+@@ -102,23 +114,24 @@ describe.skipIf(!dockerUp||!image)('persistent mobile/cell image',()=>{
+   const moved=await action(await action(mobile,'start'),'step',{ticks:100});expect(moved.tick).toBe(100);const mobileReport=await ok(`/runs/${mobile.run.id}/report`);expect(mobileReport.manifest.backends.some((b:{id:string})=>b.id==='mujoco_3d')).toBe(true);expect(mobileReport.physicsEvidence.manifest.identity.runId).toBe(mobile.run.id);await ok(`/runs/${mobile.run.id}/archive`,{});
+   const cellProject=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
+   const createCell=()=>ok('/runs',{project:cellProject,scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',runtimeIdentity});
+-  const finished=await createCell();let view=await action(finished,'start');while(['running','created','paused'].includes(view.run.status)){if(view.tick>30000)throw Error('CELL_STEP_LIMIT');view=await action(view,'step',{ticks:100});}expect(view.run.status).toBe('completed');const finishedReport=await ok(`/runs/${finished.run.id}/report`);await ok(`/runs/${finished.run.id}/archive`,{});
+-  const active=await createCell(),stepped=await action(await action(active,'start'),'step',{ticks:100});expect(stepped.tick).toBe(100);const before=await ok(`/runs/${active.run.id}/report`);
+-  const committedFiles=(id:string)=>{const result=docker(['exec',name,'node','-e',"const fs=require('fs'),path=require('path'),crypto=require('crypto');const root='/data/runs',id=process.argv[1];const dir=fs.readdirSync(root).find(n=>{try{return JSON.parse(fs.readFileSync(path.join(root,n,'reclaim.json'))).runId===id}catch{return false}});const evidence=path.join(root,dir,'world-evidence');console.log(JSON.stringify(Object.fromEntries(fs.readdirSync(evidence).filter(n=>n.endsWith('.ndjson.gz')).map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(evidence,n))).digest('hex')]))))",id]);expect(result.ok,result.err).toBe(true);return JSON.parse(result.out);};
+-  const committed=committedFiles(active.run.id);expect(Object.keys(committed).length).toBeGreaterThan(0);
++  const finished=await createCell();let view=await action(finished,'start');while(['running','created','paused'].includes(view.run.status)){if(view.tick>30000)throw Error('CELL_STEP_LIMIT');view=await action(view,'step',{ticks:100});}expect(view.run.status).toBe('completed');const finishedReport=await ok(`/runs/${finished.run.id}/report`);bind('finished',finishedReport);await ok(`/runs/${finished.run.id}/archive`,{});
++  const active=await createCell(),stepped=await action(await action(active,'start'),'step',{ticks:100});expect(stepped.tick).toBe(100);const before=await ok(`/runs/${active.run.id}/report`);bind('before',before);
++  const committedFiles=(id:string,ref:string)=>{const result=command(ref,['exec',name,'node','-e',CHUNK_PROGRAM,id]);expect(result.ok,result.err).toBe(true);return JSON.parse(result.out);};
++  const committed=committedFiles(active.run.id,'chunksBefore');expect(Object.keys(committed).length).toBeGreaterThan(0);
+ 
+-  expect(docker(['run','-d','--name',contender,'--label',`${LABEL}=${runId}`,...common,image],env).ok).toBe(true);expect(docker(['wait',contender]).out).toBe('1');expect(logs(contender,key)).toContain('LAB_DATA_DIR_BUSY');
+-  expect(docker(['kill','--signal','KILL',name]).ok).toBe(true);expect(docker(['start',name]).ok).toBe(true);await healthy();token=(await ok('/sessions',{token:key})).sessionToken;
+-  const reclaimed=await ok(`/runs/${active.run.id}/reclaim`,{proof:active.reclaimToken});expect(reclaimed.controlAccess).toBe('view_reconcile');expect(reclaimed.tick).toBe(100);expect(reclaimed.run.status).toBe('needs_attention');const after=await ok(`/runs/${active.run.id}/report`);expect(after.outcome.tick).toBe(before.outcome.tick);expect(committedFiles(active.run.id)).toMatchObject(committed);expect((await api(`/runs/${active.run.id}/actions`,{actionId:'resume-refused',expectedRevision:reclaimed.run.runRevision,kind:'resume',payload:{}})).body.error).toBe('RECLAIM_READ_ONLY');
+-  const workers=docker(['exec',name,'node','-e',"const fs=require('fs');console.log(fs.readdirSync('/proc').filter(n=>/^\\d+$/.test(n)).filter(n=>{try{return fs.readFileSync('/proc/'+n+'/cmdline','utf8').split('\\0').includes('mujoco_worker')}catch{return false}}).length)"]);expect(workers.out).toBe('0');
+-  await ok(`/runs/${active.run.id}/archive`,{});await ok(`/runs/${finished.run.id}/reclaim`,{proof:finished.reclaimToken});const replay=await ok(`/runs/${finished.run.id}/replay`,{});expect(replay.manifest.provenance.accepted).toBe(false);expect(replay.manifest.assets.length).toBeGreaterThan(0);
++  expect(command('contenderStart',['run','-d','--name',contender,'--label',`${LABEL}=${runId}`,...common,imageId],env).ok).toBe(true);expect(command('contenderWait',['wait',contender]).out).toBe('1');const contenderLogs=command('contenderLogs',['logs','--tail','20',contender]);expect(contenderLogs.out+'\n'+contenderLogs.err).toContain('LAB_DATA_DIR_BUSY');
++  expect(command('kill',['kill','--signal','KILL',name]).ok).toBe(true);expect(command('restart',['start',name]).ok).toBe(true);const healthAfter=await healthy();bind('healthAfter',healthAfter);token=(await ok('/sessions',{token:key})).sessionToken;
++  const reclaimed=await ok(`/runs/${active.run.id}/reclaim`,{proof:active.reclaimToken});bind('reclaim',reclaimed);expect(reclaimed.controlAccess).toBe('view_reconcile');expect(reclaimed.tick).toBe(100);expect(reclaimed.run.status).toBe('needs_attention');const after=await ok(`/runs/${active.run.id}/report`);bind('after',after);expect(after.outcome.tick).toBe(before.outcome.tick);const committedAfter=committedFiles(active.run.id,'chunksAfter');expect(committedAfter).toEqual(committed);const resume=await api(`/runs/${active.run.id}/actions`,{actionId:'resume-refused',expectedRevision:reclaimed.run.runRevision,kind:'resume',payload:{}});bind('resume',resume.body);expect(resume.status).toBe(403);expect(resume.body.error).toBe('RECLAIM_READ_ONLY');
++  const workers=command('workers',['exec',name,'node','-e',WORKER_PROGRAM]);expect(workers.out).toBe('0');
++  await ok(`/runs/${active.run.id}/archive`,{});const finishedReclaim=await ok(`/runs/${finished.run.id}/reclaim`,{proof:finished.reclaimToken});bind('finishedReclaim',finishedReclaim);const replayReport=await ok(`/runs/${finished.run.id}/report`);bind('replayReport',replayReport);const replay=await ok(`/runs/${finished.run.id}/replay`,{});bind('replay',replay);expect(replay.manifest.provenance.accepted).toBe(false);expect(replay.manifest.assets.length).toBeGreaterThan(0);
+   const downloaded=await fetch(`http://127.0.0.1:${port}/lab/v2/runs/${finished.run.id}/replay/${replay.exportId}/assets/0`,{headers:{authorization:`Bearer ${token}`,origin:ORIGIN}});expect(downloaded.status).toBe(200);expect((await downloaded.arrayBuffer()).byteLength).toBe(replay.manifest.assets[0].bytes);
+   if(process.env.LAB_WEB05_EVIDENCE_DIR){
+-   const out=resolve(process.env.LAB_WEB05_EVIDENCE_DIR);await mkdir(out,{recursive:false});const inspected=JSON.parse(docker(['image','inspect',image]).out)[0],imageIdentity={id:inspected.Id,sourceCommit:inspected.Config.Labels['org.opencontainers.image.revision'],os:inspected.Os,architecture:inspected.Architecture};
+-   const records={'health.json':health,'before-crash-report.json':before,'after-crash-report.json':after,'finished-report.json':finishedReport,'committed-before.json':committed,'committed-after.json':committedFiles(active.run.id),'replay-manifest.json':replay.manifest,'image-inspect.json':{...imageIdentity,rootfs:inspected.RootFS},'web05.json':{version:1,accepted:false,execution:'actual_container',sourceCommit:head,schemaHash:health.schemaHash,image:imageIdentity,competingWriter:{exitCode:1,reason:'LAB_DATA_DIR_BUSY'},crash:{signal:'KILL',committedTick:100,workerCountAfterReclaim:0}}};for(const [file,value]of Object.entries(records))await writeFile(join(out,file),JSON.stringify(value,null,2));
++   const out=evidenceOut!;const imageIdentity={id:inspected.Id,sourceCommit:inspected.Config.Labels['org.opencontainers.image.revision'],os:inspected.Os,architecture:inspected.Architecture};
++   const records={'health.json':health,'before-crash-report.json':before,'after-crash-report.json':after,'finished-report.json':finishedReport,'replay-report.json':replayReport,'committed-before.json':committed,'committed-after.json':committedAfter,'replay-manifest.json':replay.manifest,'image-inspect.json':inspected,'lifecycle-observations.json':{invocationId,observations},'web05.json':{version:2,accepted:false,execution:'actual_container',invocationId,sourceCommit:head,schemaHash:health.schemaHash,image:imageIdentity,activeRunId:active.run.id,finishedRunId:finished.run.id,containerName:name,contenderName:contender,volumeName:volume,observations:refs}};for(const [file,value]of Object.entries(records))await writeFile(join(out,file),JSON.stringify(redact(value),null,2));
+    const replayRoot=join(out,'replay');await mkdir(replayRoot);await writeFile(join(replayRoot,'manifest.json'),JSON.stringify(replay.manifest));for(const [index,asset]of replay.manifest.assets.entries()){const response=await fetch(`http://127.0.0.1:${port}/lab/v2/runs/${finished.run.id}/replay/${replay.exportId}/assets/${index}`,{headers:{authorization:`Bearer ${token}`,origin:ORIGIN}});expect(response.status).toBe(200);const bytes=Buffer.from(await response.arrayBuffer());await mkdir(join(replayRoot,asset.path,'..'),{recursive:true});await writeFile(join(replayRoot,asset.path),bytes);}
+   }
+   const stop=docker(['stop','-t','20',name]);expect(stop.ok).toBe(true);expect(docker(['inspect','--format','{{.State.ExitCode}}',name]).out).toBe('0');
+   console.log('B09 WEB05',JSON.stringify({platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,sourceCommit:head,imageId:docker(['image','inspect','--format','{{.Id}}',image]).out,volumeRecovery:true,finishedReplay:true,accepted:false}));
++  }finally{await retain();}
+  },800_000);
+ });
+diff --git a/tests/security/web-replay-export.test.ts b/tests/security/web-replay-export.test.ts
+index 3f00861..90d3f1d 100644
+--- a/tests/security/web-replay-export.test.ts
++++ b/tests/security/web-replay-export.test.ts
+@@ -11,7 +11,7 @@ const compression=vi.hoisted(()=>({started:()=>{}}));
+ vi.mock('node:zlib',async importOriginal=>{const actual=await importOriginal<typeof import('node:zlib')>();return {...actual,gzipSync:vi.fn(actual.gzipSync),gzip:vi.fn((...args:Parameters<typeof actual.gzip>)=>{compression.started();return actual.gzip(...args);})};});
+ const owned:string[]=[];afterEach(async()=>{compression.started=()=>{};for(const p of owned.splice(0))await rm(p,{recursive:true,force:true});});
+ async function output(){const root=await mkdtemp(join(tmpdir(),'web-replay-test-'));owned.push(root);return join(root,'package');}
+-const nominal=retainedInput('cell-nominal-7');
++const nominal=retainedInput('cell-nominal-7'),expectedExport=retainedInput('cell-nominal-export');
+ test('exports actual retained B06 captured horizon without changing evidence or sampling',async()=>{
+  const captured=await loadRetainedReplay(nominal),out=await output(),m=await exportWebReplay(captured,out);
+  expect(m.documentType).toBe('web-replay-package');expect(m.horizon.tick).toBe(10850);expect(m.coverage.sampled).toBe(false);expect(m.provenance.accepted).toBe(false);expect(m.coverage.prefixCovered).toBe(true);expect(m.coverage.streamFinalized).toBe(false);
+@@ -47,6 +47,6 @@ test('receipt inventory, run identity, applied horizon and measured force/pose a
+ });
+ 
+ test('detached export uses sequential asynchronous compression and preserves exact stored/decoded gzip identities',async()=>{const capture=await loadRetainedReplay(retainedInput('payload-cup-fall')),out=await output(),sync=zlib.gzipSync;const trap=vi.spyOn(zlib,'gzipSync').mockImplementation(()=>{throw Error('SYNCHRONOUS_EXPORT_COMPRESSION');});let manifest;try{manifest=await exportWebReplay(capture,out);}finally{trap.mockRestore();}for(const a of manifest.assets){const bytes=await readFile(join(out,a.path)),plain=a.encoding==='gzip'?zlib.gunzipSync(bytes):bytes;expect(createHash('sha256').update(bytes).digest('hex')).toBe(a.sha256);expect(createHash('sha256').update(plain).digest('hex')).toBe(a.decodedSha256);if(a.encoding==='gzip')expect(bytes).toEqual(sync(plain));}});
+-test('the same genuine captured world input retains every original encoded and decoded asset hash',async()=>{const capture=await loadRetainedReplay(nominal),expected=JSON.parse(await readFile('/tmp/b07a-final-packages-ZYL6r5/nominal/manifest.json','utf8')),actual=await exportWebReplay(capture,await output());expect(actual.assets).toEqual(expected.assets);expect(actual.streams).toEqual(expected.streams);});
++test('the same genuine captured world input retains every original encoded and decoded asset hash',async()=>{const capture=await loadRetainedReplay(nominal),expected=JSON.parse(await readFile(join(expectedExport,'manifest.json'),'utf8')),actual=await exportWebReplay(capture,await output());expect(actual.assets).toEqual(expected.assets);expect(actual.streams).toEqual(expected.streams);});
+ 
+ test('abort during asynchronous compression releases the owned publication only after cleanup and allows retry',async()=>{const capture=await loadRetainedReplay(retainedInput('payload-cup-fall')),out=await output(),abort=new AbortController();compression.started=()=>abort.abort();await expect(exportWebReplay(capture,out,{signal:abort.signal})).rejects.toThrow('REPLAY_ABORTED');expect((await readdir(join(out,'..'))).filter(p=>p.startsWith('.replay-'))).toEqual([]);compression.started=()=>{};expect((await exportWebReplay(capture,out)).horizon.tick).toBe(520);});
+diff --git a/tests/support/r2b-capture.ts b/tests/support/r2b-capture.ts
+new file mode 100644
+index 0000000..678c4f2
+--- /dev/null
++++ b/tests/support/r2b-capture.ts
+@@ -0,0 +1,8 @@
++// Synthetic complete observer record. No browser, worker or native execution is claimed.
++export function captureFixture(){
++ const start=100200,end=285200,origin=100100,nodeOrigin=100000;
++ const steps=Array.from({length:185},(_,i)=>({runId:'r',actionId:'step-'+(i+1),kind:'step',payload:{ticks:1},tick:i+1,requestStartEpochMs:start+80+i*1000,responseEndEpochMs:start+95+i*1000,observedAtEpochMs:start+100+i*1000,status:'running'}));
++ const tail={runId:'r',actionId:'tail',kind:'step',payload:{ticks:1},tick:186,requestStartEpochMs:end+30,responseEndEpochMs:end+55,observedAtEpochMs:end+60,status:'running'},pause={runId:'r',actionId:'pause',kind:'pause',tick:186,requestStartEpochMs:end+110,responseEndEpochMs:end+140,observedAtEpochMs:end+145,status:'paused'},actions=[...steps,tail,pause];
++ const worker=(a:typeof tail)=>({runId:'r',requestId:'worker-'+a.tick,op:'step',targetTick:a.tick,expectedTick:a.tick,ok:true,elapsedMs:10,atEpochMs:a.responseEndEpochMs-5,wallMs:a.responseEndEpochMs-5-nodeOrigin});
++ const view={run:{id:'r',status:'paused'},tick:186};return {runId:'r',clock:{nodeTimeOriginEpochMs:nodeOrigin,browserTimeOriginEpochMs:origin,startEpochMs:start,endEpochMs:end,browserStartMs:start-origin,browserEndMs:end-origin},actions,responses:actions.map(a=>({runId:a.runId,actionId:a.actionId,tick:a.tick,requestStartEpochMs:a.requestStartEpochMs,responseEndEpochMs:a.responseEndEpochMs,status:200})),capture:{elapsedMs:end-start,activeCellMs:end-start,fullCellDrawingFrames:9251,samples:Array.from({length:9251},(_,i)=>({at:i*20,interval:i?20:0,drawn:true,drawCalls:1,fullCell:true,tick:Math.min(185,Math.floor(i/50)),worldTick:Math.min(185,Math.floor(i/50))})),renderEvents:Array.from({length:9251},(_,i)=>({runId:'r',atMs:start-origin+i*20,durationMs:1,count:i+1,drawCalls:1,worldTick:Math.min(185,Math.floor(i/50))}))},workerRaw:steps.map(worker),workerOutsideWindow:{before:[],after:[worker(tail)]},pause:{actionId:'pause',clickEpochMs:end+100,uiObservedAtEpochMs:end+150,lastCommittedTick:186,stableAfterTick:186,status:'paused',finalView:structuredClone(view),stableView:structuredClone(view),afterExportView:structuredClone(view)},errors:[]};
++}
+diff --git a/tests/support/r2b-web05.ts b/tests/support/r2b-web05.ts
+new file mode 100644
+index 0000000..e7cf0ca
+--- /dev/null
++++ b/tests/support/r2b-web05.ts
+@@ -0,0 +1,34 @@
++/* eslint-disable @typescript-eslint/no-explicit-any -- raw synthetic command/HTTP observations */
++/* Synthetic artifact reader fixture; no container or native execution. */
++import {createHash} from 'node:crypto';
++export const sha=(v:string|Uint8Array)=>createHash('sha256').update(v).digest('hex');
++export const CHUNK_PROGRAM="const fs=require('fs'),path=require('path'),crypto=require('crypto');const root='/data/runs',id=process.argv[1];const dir=fs.readdirSync(root).find(n=>{try{return JSON.parse(fs.readFileSync(path.join(root,n,'reclaim.json'))).runId===id}catch{return false}});const evidence=path.join(root,dir,'world-evidence');console.log(JSON.stringify(Object.fromEntries(fs.readdirSync(evidence).filter(n=>n.endsWith('.ndjson.gz')).map(n=>[n,crypto.createHash('sha256').update(fs.readFileSync(path.join(evidence,n))).digest('hex')]))))";
++export const WORKER_PROGRAM="const fs=require('fs');console.log(fs.readdirSync('/proc').filter(n=>/^\\d+$/.test(n)).filter(n=>{try{return fs.readFileSync('/proc/'+n+'/cmdline','utf8').split('\\0').includes('mujoco_worker')}catch{return false}}).length)";
++export function web05Fixture(){
++ const source='a'.repeat(40),schema='b'.repeat(64),image='sha256:'+'c'.repeat(64),active='active-run',finished='finished-run',invocationId='web05-invocation';
++ const files:Record<string,unknown>={},observations:any[]=[],refs:Record<string,string>={};
++ const put=(p:string,v:unknown)=>files[p]=v;
++ const command=(key:string,args:string[],out='',exitCode=0)=>{refs[key]=key;observations.push({id:key,sequence:observations.length,kind:'command',startedAtEpochMs:1000+observations.length*10,finishedAtEpochMs:1005+observations.length*10,command:'docker',args,exitCode,signal:null,stdout:out,stderr:''});};
++ const http=(key:string,path:string,response:unknown,request?:unknown,status=200)=>{refs[key]=key;observations.push({id:key,sequence:observations.length,kind:'http',startedAtEpochMs:1000+observations.length*10,finishedAtEpochMs:1005+observations.length*10,method:request===undefined?'GET':'POST',path,status,request,response});};
++ const inspect={Id:image,Os:'linux',Architecture:'amd64',Config:{Labels:{'org.opencontainers.image.revision':source}}},health={sourceCommit:source,schemaHash:schema};
++ put('health.json',health);put('image-inspect.json',inspect);command('image',['image','inspect',image],JSON.stringify([inspect]));command('container',['inspect','main'],JSON.stringify([{Name:'/main',Image:image,Mounts:[{Type:'volume',Name:'volume',Destination:'/data/runs',RW:true}]}]));http('health','/health',health);
++ const report=(id:string,tick:number,status:string)=>({schemaVersion:2,schemaHash:schema,manifest:{runId:id,sourceCommit:source},outcome:{tick,status,served:status==='completed'?'2':'0'},businessEvents:[]});
++ const finishedReport={...report(finished,2,'completed'),worldSweep:{scope:{identity:{runId:finished,bootId:'boot',sceneDigest:'d'.repeat(64)},publicCommittedTick:2,prefixCovered:true,streamFinalized:true}}};
++ const replayReport=structuredClone(finishedReport);replayReport.outcome.status='needs_attention';finishedReport.worldSweep.scope.streamFinalized=false;
++ put('finished-report.json',finishedReport);http('finished',`/runs/${finished}/report`,finishedReport);
++ const before=report(active,100,'running'),after=report(active,100,'needs_attention'),chunks={'chunk-00000.ndjson.gz':'e'.repeat(64)};
++ put('before-crash-report.json',before);http('before',`/runs/${active}/report`,before);put('committed-before.json',chunks);command('chunksBefore',['exec','main','node','-e',CHUNK_PROGRAM,active],JSON.stringify(chunks));
++ command('contenderStart',['run','-d','--name','contender','-v','volume:/data/runs',image],'container-2');command('contenderWait',['wait','contender'],'1');command('contenderLogs',['logs','--tail','20','contender'],'LAB_DATA_DIR_BUSY');
++ command('kill',['kill','--signal','KILL','main'],'main');command('restart',['start','main'],'main');http('healthAfter','/health',health);
++ http('reclaim',`/runs/${active}/reclaim`,{run:{id:active,status:'needs_attention'},tick:100,controlAccess:'view_reconcile'},{proof:'[redacted]'});
++ put('after-crash-report.json',after);http('after',`/runs/${active}/report`,after);put('committed-after.json',chunks);command('chunksAfter',['exec','main','node','-e',CHUNK_PROGRAM,active],JSON.stringify(chunks));
++ http('resume',`/runs/${active}/actions`,{error:'RECLAIM_READ_ONLY'},{actionId:'resume-refused',kind:'resume',payload:{}},403);command('workers',['exec','main','node','-e',WORKER_PROGRAM],'0');
++ http('finishedReclaim',`/runs/${finished}/reclaim`,{run:{id:finished,status:'needs_attention'},tick:2,controlAccess:'view_reconcile'},{proof:'[redacted]'});put('replay-report.json',replayReport);http('replayReport',`/runs/${finished}/report`,replayReport);
++ const replay=(id:string)=>{const r=structuredClone(replayReport);r.manifest.runId=id;r.worldSweep.scope.identity.runId=id;const raw=JSON.stringify(r),scene=JSON.stringify({sceneDigest:'d'.repeat(64),files:[]}),rows=[0,1,2].map(tick=>JSON.stringify({tick,snapshot:{runId:id,bootId:'boot',sceneDigest:'d'.repeat(64),simTimeNs:String(tick*20000000)}})).join('\n')+'\n';
++ const assets=[['report.json',raw,'report','application/json'],['scene.json',scene,'scene','application/json'],['world.ndjson',rows,'world','application/x-ndjson']].map(([path,bytes,role,mediaType])=>{put('replay/'+path,Buffer.from(bytes!));return {path,sha256:sha(bytes!),decodedSha256:sha(bytes!),bytes:Buffer.byteLength(bytes!),decodedBytes:Buffer.byteLength(bytes!),role,mediaType,encoding:'identity'};});
++ return {schemaVersion:1,documentType:'web-replay-package',runId:id,horizon:{tick:2,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(raw)},coverage:{prefixCovered:true,streamFinalized:true,sampled:false,terminal:'completed',gaps:[],issues:[]},assets,streams:[{kind:'world',chunks:['world.ndjson'],firstTick:0,lastTick:2,samples:3}],licensing:[]};};
++ const manifest=replay(finished);put('replay/manifest.json',manifest);put('replay-manifest.json',manifest);http('replay',`/runs/${finished}/replay`,{exportId:'export',manifest},{},201);
++ const record={version:2,accepted:false,execution:'actual_container',invocationId,sourceCommit:source,schemaHash:schema,activeRunId:active,finishedRunId:finished,containerName:'main',contenderName:'contender',volumeName:'volume',image:{id:image,sourceCommit:source,os:'linux',architecture:'amd64'},observations:refs};
++ put('web05.json',record);put('lifecycle-observations.json',{invocationId,observations});
++ return {source,schema,files,record,observations,replay,put};
++}
+diff --git a/tests/unit/browser-capture-clock.test.ts b/tests/unit/browser-capture-clock.test.ts
+index 0faa82e..97e8ba0 100644
+--- a/tests/unit/browser-capture-clock.test.ts
++++ b/tests/unit/browser-capture-clock.test.ts
+@@ -8,10 +8,15 @@ test('explicit clocks and unique run/action/tick correlation are required; respo
+  expect(clock.checkCaptureClock({...f,clock:undefined})).toContain('CAPTURE_CLOCK_MISSING');
+ });
+ 
+-test('performance targets are recalculated from observations and reject empty/slow streams despite claimed booleans',()=>{
+- const f={...fixture(),clock:{...fixture().clock,endEpochMs:280200,browserEndMs:180100},capture:{elapsedMs:180000,activeCellMs:180000,renderEvents:Array.from({length:9001},(_,i)=>({atMs:100+i*20})),fullCellDrawingFrames:9001},workerRaw:[{elapsedMs:10}],pause:{clickEpochMs:280300,uiObservedAtEpochMs:280400},errors:[],targets:{durationMet:true,displayMet:true,workerMet:true,pauseMet:true}};
+- expect(clock.assessCapture(f).meetsTargets).toBe(true);
+- expect(clock.assessCapture({...f,workerRaw:[]}).valid).toBe(false);
+- expect(clock.assessCapture({...f,workerRaw:[{elapsedMs:100}]}).meetsTargets).toBe(false);
+- expect(clock.assessCapture({...f,capture:{...f.capture,renderEvents:[]}}).valid).toBe(false);
++import {captureFixture} from '../support/r2b-capture';
++test('complete coherent observer fixture qualifies with an explicitly separated trailing worker receipt',()=>{const f=captureFixture();expect(clock.assessCapture(f).valid).toBe(true);expect(clock.assessCapture(f).meetsTargets).toBe(true);});
++test('review reproducer cannot qualify start-only actions, unbound worker and out-of-window renders',()=>{const record={runId:'r',clock:{nodeTimeOriginEpochMs:100000,browserTimeOriginEpochMs:100100,startEpochMs:100200,endEpochMs:280200,browserStartMs:100,browserEndMs:180100},actions:[{runId:'r',actionId:'start-only',kind:'start',tick:0,requestStartEpochMs:100220,responseEndEpochMs:100250,observedAtEpochMs:100260}],responses:[{runId:'r',actionId:'start-only',tick:0,requestStartEpochMs:100220,responseEndEpochMs:100250,status:200}],capture:{elapsedMs:180000,activeCellMs:180000,fullCellDrawingFrames:1,renderEvents:Array.from({length:9001},(_,i)=>({atMs:1000000000+i*20}))},workerRaw:[{elapsedMs:10}],pause:{clickEpochMs:280300,uiObservedAtEpochMs:1280300},errors:[]};expect(clock.assessCapture(record).meetsTargets).toBe(false);});
++test.each(['step','pause','render-window','worker-run','worker-tick','worker-origin','worker-window','active-summary','drawing-summary','final-horizon','pause-correlation','tail-window'])('coherent %s mutation reaches performance observation rejection',kind=>{const f=captureFixture();expect(clock.assessCapture(f).valid).toBe(true);switch(kind){case 'step':for(const a of f.actions)if(a.kind==='step')a.kind='start';break;case 'pause':f.actions=f.actions.filter(a=>a.kind!=='pause');f.responses=f.responses.filter(a=>a.actionId!=='pause');break;case 'render-window':for(const e of f.capture.renderEvents)e.atMs+=1000000000;break;case 'worker-run':f.workerRaw[50]!.runId='other';break;case 'worker-tick':f.workerRaw[50]!.targetTick=1000;f.workerRaw[50]!.expectedTick=1000;break;case 'worker-origin':f.workerRaw[50]!.wallMs+=200;break;case 'worker-window':f.workerRaw[50]!.atEpochMs+=1000000;f.workerRaw[50]!.wallMs+=1000000;break;case 'active-summary':for(const s of f.capture.samples)s.fullCell=false;break;case 'drawing-summary':for(const s of f.capture.samples){s.drawn=false;s.drawCalls=0;}break;case 'final-horizon':f.pause.finalView.tick=100;break;case 'pause-correlation':f.pause.actionId='different';break;case 'tail-window':f.workerOutsideWindow.after[0]!.atEpochMs=f.clock.endEpochMs-1;f.workerOutsideWindow.after[0]!.wallMs=f.clock.endEpochMs-1-f.clock.nodeTimeOriginEpochMs;break;}expect(clock.assessCapture(f).valid).toBe(false);});
++
++test('existing latency budgets apply to coherent observations; pause UI has no added budget',()=>{
++ const slowWorker=captureFixture();for(const w of slowWorker.workerRaw)w.elapsedMs=16;const worker=clock.assessCapture(slowWorker);expect(worker.valid).toBe(true);expect(worker.meetsTargets).toBe(false);
++ const slowRender=captureFixture();slowRender.capture.renderEvents=slowRender.capture.renderEvents.filter((_,i)=>i%2===0);const render=clock.assessCapture(slowRender);expect(render.valid).toBe(true);expect(render.metrics.renderIntervalP95Ms).toBe(40);expect(render.meetsTargets).toBe(false);
++ const lateReceipt=captureFixture(),tail=lateReceipt.actions.find(a=>a.actionId==='tail')!;tail.observedAtEpochMs=lateReceipt.pause.clickEpochMs+501;const receipt=clock.assessCapture(lateReceipt);expect(receipt.valid).toBe(true);expect(receipt.metrics.lastStepReceiptMs).toBe(501);expect(receipt.meetsTargets).toBe(false);
++ const slowUI=captureFixture();slowUI.pause.uiObservedAtEpochMs+=1000000;expect(clock.assessCapture(slowUI).meetsTargets).toBe(true);
+ });
++test('missing streams remain unavailable rather than a zero latency pass',()=>{for(const stream of ['workerRaw','renders','steps']){const f=captureFixture();if(stream==='workerRaw')f.workerRaw=[];else if(stream==='renders')f.capture.renderEvents=[];else f.actions=f.actions.filter(a=>a.kind!=='step');const result=clock.assessCapture(f);expect(result.valid).toBe(false);expect(result.meetsTargets).toBe(false);if(stream==='workerRaw')expect(result.metrics.workerP95Ms).toBeNull();if(stream==='renders')expect(result.metrics.renderIntervalP95Ms).toBeNull();if(stream==='steps')expect(result.metrics.lastStepReceiptMs).toBeNull();}});
+diff --git a/tests/unit/r2b-browser-readback.test.ts b/tests/unit/r2b-browser-readback.test.ts
+new file mode 100644
+index 0000000..1a4b492
+--- /dev/null
++++ b/tests/unit/r2b-browser-readback.test.ts
+@@ -0,0 +1,30 @@
++/* eslint-disable @typescript-eslint/no-explicit-any -- coherent portable JSON artifacts */
++import {expect,test} from 'vitest';import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join,dirname} from 'node:path';
++// @ts-expect-error standalone directory reader
++import {collectR2bArtifactDispositions,evidenceInventory,verifyR2bDirectory} from '../../scripts/r2b-readback.mjs';
++import {captureFixture} from '../support/r2b-capture';import {sha} from '../support/r2b-web05';
++function fixture(){
++ const source='a'.repeat(40),lab='b'.repeat(40),artifact='c'.repeat(64),schema='d'.repeat(64),invocationId='browser-invocation',caseId='WEB-CELL-LIVE-REPLAY-390-v1',testId='playwright-cell',runId='separate-browser-run',title='cell starts at tick zero, explicit 1×, exact admitted moving world, known pause/resume and registered new-run choices';
++ const files:Record<string,any>={},put=(p:string,v:any)=>files[p]=v,buildFiles=[{path:'index.html',sha256:'e'.repeat(64),bytes:123}],build={labHead:lab,labStatus:'',sourceHead:source,sourceStatus:'',sourceCommit:source,runtimeArtifact:artifact,schemaHash:schema,buildSha256:sha(JSON.stringify(buildFiles)),files:buildFiles};
++ const capture={...captureFixture(),version:2,accepted:false,sourceCommit:source,runtimeArtifact:artifact,buildIdentity:build,sourceExecution:'unchanged hash-verified exported runtime CLI'};put('actual-cell-production.json',capture);
++ const identity={invocationId,caseId,testId,runId},dom={...identity,atEpochMs:1000200,flow:'live-report-replay',topbarCount:1,headers:[{className:'topbar'}],viewport:{width:390,height:900},runtimeIdentity:{sourceCommit:source,schemaHash:schema},html:'<html><header class="topbar"></header></html>'};put('report-replay-fetched-cursor0-390-dom.json',dom);const png=Buffer.from('89504e470d0a1a0a0000000d494844520000018600000384','hex');put('report-replay-fetched-cursor0-390.png',png);
++ put('browser-case.json',{...identity,title,file:'mujoco-cell.spec.ts',status:'passed',expectedStatus:'passed',retry:0,startedAtEpochMs:1000100,finishedAtEpochMs:1000900});
++ put('browser-result.json',{config:{metadata:{invocationId}},stats:{expected:1,unexpected:0,skipped:0,flaky:0},suites:[{specs:[{id:testId,title,file:'mujoco-cell.spec.ts',ok:true,tests:[{expectedStatus:'passed',status:'expected',results:[{status:'passed',retry:0,startTime:new Date(1000100).toISOString(),duration:800}]}]}]}]});
++ put('browser-runtime-identity.json',{version:2,invocationId,exported:true,startedAtEpochMs:1000000,finishedAtEpochMs:1001000,before:build,after:build,command:'pnpm',args:['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'],exitCode:0,signal:null,resultSha256:''});
++ put('report-replay-fetched-cursor0-390-image.json',{...identity,startedAtEpochMs:1000190,finishedAtEpochMs:1000250,domSha256:'',sha256:sha(png),bytes:png.length});
++ return {source,lab,artifact,schema,files,put};
++}
++async function check(mutate:(f:ReturnType<typeof fixture>)=>void=()=>{}){const f=fixture();mutate(f);if(f.files['browser-runtime-identity.json'])f.files['browser-runtime-identity.json'].resultSha256=sha(JSON.stringify(f.files['browser-result.json']));f.files['report-replay-fetched-cursor0-390-image.json'].domSha256=sha(JSON.stringify(f.files['report-replay-fetched-cursor0-390-dom.json']));const root=mkdtempSync(join(tmpdir(),'b10-i4-'));try{for(const [p,v]of Object.entries(f.files)){const path=join(root,'inputs/web',p);mkdirSync(dirname(path),{recursive:true});writeFileSync(path,Buffer.isBuffer(v)?v:JSON.stringify(v));}const m={scope:'full',identity:{before:{sourceCommit:f.source}},lab:{commit:f.lab,pin:{artifactSha256:f.artifact,schemaHash:f.schema}},webCapture:{file:'inputs/web/actual-cell-production.json',sha256:sha(JSON.stringify(f.files['actual-cell-production.json']))},artifacts:evidenceInventory(root)};const r=await collectR2bArtifactDispositions(root,m);writeFileSync(join(root,'qualification.json'),JSON.stringify({...m,artifactDispositions:r.artifactDispositions}));const publicIssues=await verifyR2bDirectory(root);expect(publicIssues).not.toContain('ARTIFACT_INVENTORY_MISMATCH');expect(publicIssues.filter((x:string)=>x.startsWith('WEB_BROWSER_'))).toEqual(r.issues.filter((x:string)=>x.startsWith('WEB_BROWSER_')));return r.artifactDispositions.WEB01;}finally{rmSync(root,{recursive:true,force:true});}}
++test('separate complete browser invocation may use its own run at the identical final build',async()=>expect(await check()).toEqual({status:'tested',issues:[]}));
++const cases:Record<string,(f:ReturnType<typeof fixture>)=>void>={
++ 'different Lab revision at same Source':f=>{for(const k of ['before','after'])f.files['browser-runtime-identity.json'][k]={...f.files['browser-runtime-identity.json'][k],labHead:'f'.repeat(40)};},
++ 'different dist build':f=>{for(const k of ['before','after']){const b={...f.files['browser-runtime-identity.json'][k],files:[{path:'index.html',sha256:'f'.repeat(64),bytes:123}]};b.buildSha256=sha(JSON.stringify(b.files));f.files['browser-runtime-identity.json'][k]=b;}},
++ 'unrelated successful test':f=>{f.files['browser-result.json'].suites[0].specs[0].title='unrelated';f.files['browser-case.json'].title='unrelated';},
++ 'cross DOM invocation':f=>{f.files['report-replay-fetched-cursor0-390-dom.json'].invocationId='other';},
++ 'cross screenshot invocation':f=>{f.files['report-replay-fetched-cursor0-390-image.json'].invocationId='other';},
++ 'cross DOM run':f=>{f.files['report-replay-fetched-cursor0-390-dom.json'].runId='other';},
++ 'failed required test despite aggregate stats':f=>{f.files['browser-result.json'].suites[0].specs[0].tests[0].results[0].status='failed';},
++ 'changed Source tree':f=>{f.files['browser-runtime-identity.json'].after={...f.files['browser-runtime-identity.json'].after,sourceStatus:' M runtime.ts'};},
++ 'missing invocation':f=>{delete f.files['browser-runtime-identity.json'];},
++};
++for(const [name,mutate]of Object.entries(cases))test('rejects '+name+' with resealed artifacts',async()=>{const r=await check(mutate);expect(r.status).toBe('failed');expect(r.issues.some((s:string)=>s.startsWith('WEB_BROWSER_'))).toBe(true);});
+diff --git a/tests/unit/r2b-web05-readback.test.ts b/tests/unit/r2b-web05-readback.test.ts
+new file mode 100644
+index 0000000..eec14cc
+--- /dev/null
++++ b/tests/unit/r2b-web05-readback.test.ts
+@@ -0,0 +1,36 @@
++/* eslint-disable @typescript-eslint/no-explicit-any -- coherent portable JSON artifacts */
++import {expect,test} from 'vitest';
++import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
++import {tmpdir} from 'node:os';import {join,dirname} from 'node:path';
++import {openReplayPackage} from '../../packages/lab-runtime/src/v2/replay/reader';
++// @ts-expect-error standalone qualification reader
++import {collectR2bArtifactDispositions,evidenceInventory,verifyR2bDirectory} from '../../scripts/r2b-readback.mjs';
++import {web05Fixture,sha} from '../support/r2b-web05';
++async function check(mutate:(f:ReturnType<typeof web05Fixture>)=>void=()=>{}){
++ const f=web05Fixture();mutate(f);const bytes=(p:string)=>Buffer.isBuffer(f.files[p])?f.files[p] as Buffer:Buffer.from(JSON.stringify(f.files[p]));
++ // Every mutation still admits a complete valid replay and recomputes every inventory/hash.
++ const replay=await openReplayPackage(bytes('replay/manifest.json'),async function*(a){yield bytes('replay/'+a.path);});expect(replay.manifest.coverage.prefixCovered).toBe(true);replay.close();
++ const root=mkdtempSync(join(tmpdir(),'b10-i3-'));try{for(const [p]of Object.entries(f.files)){const path=join(root,'inputs/container',p);mkdirSync(dirname(path),{recursive:true});writeFileSync(path,bytes(p));}const m={scope:'full',identity:{before:{sourceCommit:f.source}},lab:{commit:'f'.repeat(40),pin:{schemaHash:f.schema}},containerRecord:{file:'inputs/container/web05.json',sha256:sha(bytes('web05.json'))},artifacts:evidenceInventory(root)};
++ const r=await collectR2bArtifactDispositions(root,m);writeFileSync(join(root,'qualification.json'),JSON.stringify({...m,artifactDispositions:r.artifactDispositions}));const publicIssues=await verifyR2bDirectory(root);expect(publicIssues).not.toContain('ARTIFACT_INVENTORY_MISMATCH');expect(publicIssues.filter((x:string)=>x.startsWith('WEB05_'))).toEqual(r.issues.filter((x:string)=>x.startsWith('WEB05_')));return r.artifactDispositions.WEB05;}finally{rmSync(root,{recursive:true,force:true});}}
++test('complete raw lifecycle and opened replay reach tested WEB05 boundary',async()=>expect(await check()).toEqual({status:'tested',issues:[]}));
++const cases:Record<string,(f:ReturnType<typeof web05Fixture>)=>void>={
++ 'unrelated valid opened replay':f=>f.put('replay/manifest.json',f.replay('unrelated')),
++ 'opened report source differs at same run':f=>{const m=f.files['replay/manifest.json'] as any,r=JSON.parse(String(f.files['replay/report.json']));r.manifest.sourceCommit='9'.repeat(40);const bytes=Buffer.from(JSON.stringify(r));f.put('replay/report.json',bytes);Object.assign(m.assets[0],{sha256:sha(bytes),decodedSha256:sha(bytes),bytes:bytes.length,decodedBytes:bytes.length});},
++ 'crossed recovery volume':f=>{const o=f.observations.find(o=>o.id==='container'),v=JSON.parse(o.stdout);v[0].Mounts[0].Name='other-volume';o.stdout=JSON.stringify(v);},
++ 'observations reordered':f=>{const o=f.observations.find(o=>o.id==='reclaim');o.startedAtEpochMs=1000;o.finishedAtEpochMs=1001;},
++ 'wrong finished reclaim run':f=>{f.observations.find(o=>o.id==='finishedReclaim').response.run.id='other';},
++ 'changed replay horizon':f=>{(f.files['replay-report.json'] as any).outcome.tick=3;},
++ 'other active run':f=>{(f.files['before-crash-report.json'] as any).manifest.runId='other';},
++ 'wrong image':f=>{(f.files['image-inspect.json'] as any).Id='sha256:'+'9'.repeat(64);f.observations.find(o=>o.id==='image').stdout=JSON.stringify([f.files['image-inspect.json']]);},
++ 'wrong health tuple':f=>{(f.files['health.json'] as any).sourceCommit='9'.repeat(40);},
++ 'empty chunks':f=>{f.put('committed-before.json',{});f.put('committed-after.json',{});for(const id of ['chunksBefore','chunksAfter'])f.observations.find(o=>o.id===id).stdout='{}';},
++ 'successful competing writer':f=>{f.observations.find(o=>o.id==='contenderWait').stdout='0';f.observations.find(o=>o.id==='contenderLogs').stdout='started';},
++ 'failed crash':f=>{f.observations.find(o=>o.id==='kill').exitCode=1;},
++ 'failed restart':f=>{f.observations.find(o=>o.id==='restart').exitCode=1;},
++ 'reclaim writable':f=>{f.observations.find(o=>o.id==='reclaim').response.controlAccess='control';},
++ 'resume accepted':f=>{const o=f.observations.find(o=>o.id==='resume');o.status=200;o.response={};},
++ 'worker remains':f=>{f.observations.find(o=>o.id==='workers').stdout='1';},
++ 'changed recovery state':f=>{(f.files['after-crash-report.json'] as any).outcome.status='running';},
++ 'cross invocation':f=>{(f.files['lifecycle-observations.json'] as any).invocationId='different';},
++};
++for(const [name,mutate]of Object.entries(cases))test('rejects '+name+' after hash and replay admission',async()=>{const r=await check(mutate);expect(r.status).toBe('failed');expect(r.issues.some((s:string)=>s.startsWith('WEB05_'))).toBe(true);});

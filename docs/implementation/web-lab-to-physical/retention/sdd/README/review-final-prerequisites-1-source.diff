@@ -1,0 +1,234 @@
+diff --git a/docs/operations/native-profile-case-matrix.md b/docs/operations/native-profile-case-matrix.md
+index e538d20..351c256 100644
+--- a/docs/operations/native-profile-case-matrix.md
++++ b/docs/operations/native-profile-case-matrix.md
+@@ -47,6 +47,8 @@ ROS profiles require Ubuntu 24.04. The current LinuxCNC candidate requires Debia
+ | DEP-SEC-01 | Profile-specific isolation, allowlists, one writer, endpoint/MDI/HAL refusals and no Lab→hardware route | No complete host artifact producer/reader exists. Docker containment flags, doctor output and portable security tests are insufficient. | Implement/review the explicit security observation contract and collector/reader before host qualification. |
+ | PHYS-PREP-01 | Both target dossiers, unknown-field/refusal, calibration/signature/conformance preparation | Existing L05 assessor checks reference structure only. This R3 recorder retains not_run; it cannot convert reference strings into measurements, signatures or live admission. | Use [target selection](physical-target-selection.md) and [arm preparation](arm-commissioning-preparation.md); review their separately recorded checks at the final tuple. |
+ 
++For `mujoco-linux-arm64`, the DEP-MJ-01 case, blocked-case list and native-gate blocker expose both `ASSIGNED_HOST_CASE_ARTIFACTS_MISSING` and `MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED` as a tooling-and-observation gap. Assigning a host alone does not supply the absent adapter. Prepared scope still requires only DEP-PREP-01; no native case becomes tested through this diagnostic distinction.
++
+ ## Input directories and interfaces
+ 
+ `record-sim-extension.mjs --release r3 --handoff DIR --native-records DIR --profile PROFILE --scope SCOPE --out NEW_DIR [--lab DIR] [--candidate-id ID]` copies bounded input files into a fresh external directory and recomputes qualification. It requires a clean audited Source checker and clean matching Lab pin. It does not launch a native/browser campaign, Docker, doctor, install, host provisioning or hardware command. `--plan` prints only the fixed matrix and performs no prerequisite probe. Duplicate/unknown options are rejected. Exit 0 means the requested scope is internally consistent, never accepted; exit 1 is a failed/incomplete requested scope; exit 2 is usage/preparation refusal.
+diff --git a/docs/operations/r2b-qualification.md b/docs/operations/r2b-qualification.md
+index 9046708..97ce906 100644
+--- a/docs/operations/r2b-qualification.md
++++ b/docs/operations/r2b-qualification.md
+@@ -63,7 +63,7 @@ Preparation checks the full inventory, copies into a new owned directory, verifi
+ 
+ ## Owned Source CI services
+ 
+-At the final prerequisite stage, `node scripts/owned-source-ci.mjs -- pnpm test` checks fixed service ports, creates a unique `mekoniq-ci-<random>` Supabase project under a new temporary workdir, and stops only that namespace afterward. Port conflicts or start failures are not_run prerequisites. It never resets, stops, prunes or migrates an unrelated service. Auth/Storage and PostgreSQL credentials come from that same new namespace. `setupWave02` requires its receipt and checks the actual owned container ID before any role/migration action. Setting only `MEKONIQ_TEST_DB` is insufficient. Local service credentials stay in process environment/private temporary logs, not committed evidence. This prepared path has not started Docker or Supabase during B10 tooling.
++At the final prerequisite stage, `node scripts/owned-source-ci.mjs -- pnpm test` checks Docker-published ports and then reserves the fixed host ports before creating a unique `mekoniq-ci-<random>` Supabase project under a new temporary workdir. OrbStack forwarding can allow a localhost bind despite an existing published service, so both checks are required. Read-only Docker list/inspect calls are bounded to five seconds each and 1 MiB of output, with at most 1,000 full container IDs. Exact structured port bindings must be readable and complete; conflicts, malformed/truncated data and command failure refuse before workdir creation or any Supabase start/stop. The inventory and binds are sampled prerequisites, not an atomic lock over unrelated Docker activity. Port conflicts or start failures are not_run prerequisites. The script stops only its created namespace afterward; it never resets, stops, prunes or migrates an unrelated service. Auth/Storage and PostgreSQL credentials come from that same new namespace. `setupWave02` requires its receipt and checks the actual owned container ID before any role/migration action. Setting only `MEKONIQ_TEST_DB` is insufficient. Local service credentials stay in process environment/private temporary logs, not committed evidence. Full real owned-service lifecycle remains an execution prerequisite, separate from portable guard tests.
+ 
+ ## Deferred findings and warning attribution
+ 
+diff --git a/scripts/owned-ci-ports.mjs b/scripts/owned-ci-ports.mjs
+new file mode 100644
+index 0000000..dda4220
+--- /dev/null
++++ b/scripts/owned-ci-ports.mjs
+@@ -0,0 +1,24 @@
++// Docker host forwarding may allow a local bind despite an existing published port.
++import {spawnSync} from 'node:child_process';
++import {isIP} from 'node:net';
++const idPattern=/^[a-f0-9]{64}$/;
++const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
++const keys=(v,wanted)=>object(v)&&JSON.stringify(Object.keys(v).sort())===JSON.stringify(wanted.slice().sort());
++export function requireUnpublishedCiPorts(ports){
++ const command=args=>{const r=spawnSync('docker',args,{encoding:'utf8',timeout:5000,maxBuffer:1024*1024});if(r.error||r.signal||r.status!==0)throw Error('CI_PORT_INVENTORY_COMMAND_FAILED');return r.stdout;};
++ const listed=command(['ps','--quiet','--no-trunc']).trim(),ids=listed?listed.split('\n'):[];
++ if(ids.length>1000||ids.some(id=>!idPattern.test(id))||new Set(ids).size!==ids.length)throw Error('CI_PORT_INVENTORY_IDS_INVALID');
++ if(!ids.length)return;
++ const output=command(['inspect','--format','{"id":{{json .Id}},"ports":{{json .NetworkSettings.Ports}}}',...ids]);
++ let rows;try{rows=output.trim().split('\n').map(line=>JSON.parse(line));}catch{throw Error('CI_PORT_INVENTORY_JSON_INVALID');}
++ if(rows.length!==ids.length||rows.some(r=>!keys(r,['id','ports'])||!ids.includes(r.id)||!object(r.ports))||new Set(rows.map(r=>r.id)).size!==ids.length)throw Error('CI_PORT_INVENTORY_CONTAINER_MISMATCH');
++ for(const row of rows)for(const [containerPort,bindings]of Object.entries(row.ports)){
++  const key=/^([1-9][0-9]{0,4})\/(tcp|udp|sctp)$/.exec(containerPort);if(!key||Number(key[1])>65535)throw Error('CI_PORT_INVENTORY_PORT_INVALID');
++  if(bindings===null)continue;
++  if(!Array.isArray(bindings)||!bindings.length)throw Error('CI_PORT_INVENTORY_BINDINGS_INVALID');
++  for(const binding of bindings){
++   if(!keys(binding,['HostIp','HostPort'])||typeof binding.HostIp!=='string'||!isIP(binding.HostIp)||typeof binding.HostPort!=='string'||! /^[1-9][0-9]{0,4}$/.test(binding.HostPort)||Number(binding.HostPort)>65535)throw Error('CI_PORT_INVENTORY_BINDING_INVALID');
++   if(ports.includes(Number(binding.HostPort)))throw Error('CI_PORT_INVENTORY_CONFLICT:'+binding.HostPort);
++  }
++ }
++}
+diff --git a/scripts/owned-source-ci.mjs b/scripts/owned-source-ci.mjs
+index ba24836..fb78d4b 100644
+--- a/scripts/owned-source-ci.mjs
++++ b/scripts/owned-source-ci.mjs
+@@ -1,9 +1,10 @@
+ #!/usr/bin/env node
+ // Final prerequisite stage only: creates/stops its own fresh namespace. Never reset/migrate the developer Supabase project.
+-import {mkdtemp,cp,readFile,writeFile,mkdir} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join,resolve} from 'node:path';import {randomBytes} from 'node:crypto';import {createServer} from 'node:net';import {spawnSync} from 'node:child_process';import {ownedCiConfig} from './owned-ci-config.mjs';
++import {mkdtemp,cp,readFile,writeFile,mkdir} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join,resolve} from 'node:path';import {randomBytes} from 'node:crypto';import {createServer} from 'node:net';import {spawnSync} from 'node:child_process';import {ownedCiConfig} from './owned-ci-config.mjs';import {requireUnpublishedCiPorts} from './owned-ci-ports.mjs';
+ const args=process.argv.slice(2);if(args[0]!=='--'||args.length<2)throw Error('USAGE: owned-source-ci.mjs -- COMMAND [ARG...]');
+ // Reserve/test every fixed service port before invoking Supabase. Conflict means not_run; no unrelated service is stopped.
+ const source=resolve(import.meta.dirname,'..'),config=await readFile(join(source,'supabase/config.toml'),'utf8'),ports=[...new Set([...config.matchAll(/^\s*port\s*=\s*(\d+)/gm)].map(m=>Number(m[1])))],servers=[];
++try{requireUnpublishedCiPorts(ports);}catch(e){console.error(JSON.stringify({code:'CI_PORT_INVENTORY_NOT_RUN',reason:e.message,accepted:false,servicesStarted:false}));process.exit(2);}
+ try{for(const port of ports){const s=createServer();await new Promise((ok,fail)=>{s.once('error',fail);s.listen(port,'127.0.0.1',ok);});servers.push(s);}}finally{for(const s of servers)await new Promise(r=>s.close(r));}
+ const work=await mkdtemp(join(tmpdir(),'mekoniq-owned-ci-')),projectId='mekoniq-ci-'+randomBytes(8).toString('hex');await cp(join(source,'supabase'),join(work,'supabase'),{recursive:true,filter:p=>!p.includes('/.temp')&&!p.includes('/.branches')});await writeFile(join(work,'supabase/config.toml'),ownedCiConfig(config,projectId));await mkdir(join(work,'logs'));
+ const run=(id,command,args,env=process.env)=>{const startedAt=new Date().toISOString(),r=spawnSync(command,args,{cwd:source,env,encoding:'utf8',timeout:id==='tests'?14400000:300000,maxBuffer:64*1024*1024});return {id,command,args,startedAt,finishedAt:new Date().toISOString(),exitCode:r.status,signal:r.signal,output:(r.stdout??'')+(r.stderr??'')};},save=async r=>{await writeFile(join(work,'logs',r.id+'.log'),r.output,{mode:0o600});await writeFile(join(work,'logs',r.id+'.json'),JSON.stringify({...r,output:undefined}),{mode:0o600});};let exit=2;
+diff --git a/scripts/r3-readback.mjs b/scripts/r3-readback.mjs
+index 1943915..3a1f546 100644
+--- a/scripts/r3-readback.mjs
++++ b/scripts/r3-readback.mjs
+@@ -33,6 +33,7 @@ export async function collectR3Artifacts(root,m){
+  }catch(e){issues.push('R3_HANDOFF_UNREADABLE:'+detail(e));cases['DEP-PREP-01']={status:'failed',reason:issues.at(-1),category:'invalid_artifact'};}
+  // Known producer limitations stay visible even when no host has been assigned.
+  for(const id of t.nativeCases)if(limitations[t.kind].length)cases[id]=missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; '+limitations[t.kind].join(';'),'tooling_and_observation');
++ if(t.kind==='mujoco'&&t.architecture==='arm64')cases['DEP-MJ-01']=missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED','tooling_and_observation');
+  let index;try{index=read(root,'inputs/native/index.json');}catch(e){if(e.code!=='ENOENT')issues.push('R3_NATIVE_INDEX_UNREADABLE:'+detail(e));}
+  if(index){
+   const roles={mujoco:['historical','current','r2bQualification'],engineering:['engineering'],xarm:['xarm'],linuxcnc:['linuxcnc']}[t.kind];
+diff --git a/tests/integration/lab-v2-contracts.test.ts b/tests/integration/lab-v2-contracts.test.ts
+index d4c594d..4ea9261 100644
+--- a/tests/integration/lab-v2-contracts.test.ts
++++ b/tests/integration/lab-v2-contracts.test.ts
+@@ -198,6 +198,7 @@ test('project validation route reports field issues and never applies anything',
+ 
+ test('server denies capability before any run or backend exists',async()=>{
+  const {g,directory}=await setup(),h=await headersV2(g),url=g.url+'/lab/v2/runs';
++ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
+  const denied=async(body:unknown,status:number,codesWanted:string[])=>{const r=await post(url,h,body);expect(r.status).toBe(status);expect((await r.json() as {reasonCodes:string[]}).reasonCodes).toEqual(codesWanted);};
+  await denied(run({mode:'hardware',access:'live',backendSetId:'hardware-live'}),403,['ACCESS_NOT_GRANTED']);
+  await denied(run({mode:'hardware',access:'hil',backendSetId:'hardware-hil'}),403,['ACCESS_NOT_GRANTED']);
+@@ -212,7 +213,7 @@ test('server denies capability before any run or backend exists',async()=>{
+  await denied(run({runtimeIdentity:{sourceCommit:'other',schemaHash:hash}}),409,['CONTRACT_MISMATCH']);
+  // An admissible mock set still starts nothing while only the schema exists.
+  await denied(run(),501,['BACKEND_EXECUTION_DISABLED']);
+- expect(await readdir(directory)).toEqual([]);
++ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
+ });
+ 
+ test('v2 action and read routes validate then deny without a run; mode change is immutable',async()=>{
+@@ -230,10 +231,11 @@ test('a shadow grant cannot carry a hil/live set even when every backend is prov
+  const provisioned:CapabilityCatalog={backends:defaultCatalog.backends.map(b=>({...b,installed:true,compatible:true,reachable:true,commissioned:true})),sets:{...defaultCatalog.sets,'amr-live':{mode:'hardware',access:'live',backends:['valetudo_native']},'amr-hil':{mode:'hardware',access:'hil',backends:['valetudo_native']}}};
+  const directory=await mkdtemp(join(tmpdir(),'lab-v2-'));dirs.push(directory);
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:hash,v2:{catalog:provisioned,enabledBackends:['valetudo_native']}});instances.push(g);
++ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
+  const h=await headersV2(g);
+  for(const backendSetId of ['amr-live','amr-hil','hardware-live']){
+   const r=await post(g.url+'/lab/v2/runs',h,run({mode:'hardware',access:'shadow',backendSetId}));
+   expect(r.status).toBe(422);expect((await r.json() as {reasonCodes:string[]}).reasonCodes).toEqual(['ACCESS_MODE_MISMATCH']);
+  }
+- expect(await readdir(directory)).toEqual([]);
++ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
+ });
+diff --git a/tests/integration/lab-v2-mock.test.ts b/tests/integration/lab-v2-mock.test.ts
+index 0a81539..7e67cfc 100644
+--- a/tests/integration/lab-v2-mock.test.ts
++++ b/tests/integration/lab-v2-mock.test.ts
+@@ -3,7 +3,7 @@ import net from 'node:net';
+ import http from 'node:http';
+ import https from 'node:https';
+ import dgram from 'node:dgram';
+-import {mkdtemp,readdir,rm} from 'node:fs/promises';
++import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {createClock,TICK_MS} from '../../packages/lab-runtime/src/v2/clock';
+@@ -132,7 +132,7 @@ test('no robot network transport is instantiated by a mock run; only enabled moc
+  expect(()=>instantiateBackends('mock-amr',defaultCatalog,[])).toThrow('BACKEND_EXECUTION_DISABLED');
+  expect(instantiateBackends('mock-amr',defaultCatalog,['mock_amr'])).toMatchObject({mode:'mock',access:'simulated',backends:['mock_amr']});
+  expect(instantiateBackends('mock-default',defaultCatalog,['mock_amr','mock_coffee','mock_arm'])).toMatchObject({backends:['mock_amr','mock_coffee','mock_arm']});
+- expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01','MJ-BV01']);
++ expect([...scenarioRegistry.keys()]).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','MJ-FD01','WB-FD01','WB-FD07','WB-BV01','MJ-CELL-BV01','MJ-BV01']);
+ });
+ 
+ // ---- gateway: run ownership and action idempotency (carried from F01) ----
+@@ -144,6 +144,7 @@ async function pair(g:LabGateway){const r=await post(g.url+'/lab/v2/sessions',{O
+ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session and keeps action receipts idempotent',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'lab-v2-gw-'));gwDirs.push(directory);
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:hash,v2:{enabledBackends:['mock_amr']}});gateways.push(g);
++ const ownershipBaseline=(await readdir(directory)).sort();expect(ownershipBaseline).toEqual(['.runtime-owner.sqlite']);
+  const health=await (await fetch(g.url+'/lab/v2/health')).json() as {backends:{id:string;enabled:boolean}[];scenarioIds:string[]};
+  expect(health.backends.filter(b=>b.enabled).map(b=>b.id)).toEqual(['mock_amr']);expect(health.scenarioIds).toEqual(['FD01','FD07','FD02','FD03','FD04','FD04-blocked','FD04-reopen','FD05-payload','FD05-battery','FD05-capability','FD05-binding','BV01','FD02-cups','CAMPAIGN-FD02-FD07-BV01-BV03','IR-FD01','IR-FD03','IR-FD04','IR-FD04-blocked','IR-FD07','WB-FD01','WB-FD07','WB-BV01']);
+  const owner=await pair(g),other=await pair(g);
+@@ -152,8 +153,11 @@ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session a
+  expect((await post(g.url+'/lab/v2/runs',owner,{...body,mode:'hardware',access:'live',backendSetId:'hardware-live'})).status).toBe(403);
+  expect((await post(g.url+'/lab/v2/runs',owner,{...body,scenarioId:'NOPE'})).status).toBe(422);
+  expect((await post(g.url+'/lab/v2/runs',owner,{...body,scenarioRevision:9})).status).toBe(409);
++ expect((await readdir(directory)).sort()).toEqual(ownershipBaseline);
+  const created=await post(g.url+'/lab/v2/runs',owner,body);expect(created.status).toBe(201);
+  const view=await created.json() as {run:{id:string;status:string;runRevision:number}};expect(view.run.status).toBe('ready');
++ const createdEntries=(await readdir(directory)).sort(),runDirectories=createdEntries.filter(name=>!ownershipBaseline.includes(name));expect(runDirectories).toHaveLength(1);
++ const savedRun=JSON.parse(await readFile(join(directory,runDirectories[0]!,'run.json'),'utf8'));expect(savedRun.runId).toBe(view.run.id);
+  const url=`${g.url}/lab/v2/runs/${view.run.id}`;
+  expect((await fetch(url,{headers:other})).status).toBe(404);
+  expect((await post(url+'/actions',other,{actionId:'s1',expectedRevision:0,kind:'start',payload:{}})).status).toBe(404);
+@@ -168,7 +172,7 @@ test('v2 gateway runs the mock AMR set only, binds runs to the pairing session a
+  const report=await (await fetch(url+'/report',{headers:owner})).json() as {manifest:{backends:{model:string}[]}};expect(report.manifest.backends[0]!.model).toBe('mock_kinematic');
+  // F06: the v2 business-event stream is served (SSE); v1 keeps answering 501 for events (lab-runtime-gateway tests)
+  const ctl=new AbortController(),events=await fetch(url+'/events',{headers:owner,signal:ctl.signal});expect(events.status).toBe(200);expect(events.headers.get('content-type')).toMatch(/event-stream/);ctl.abort();
+- expect(await readdir(directory)).toHaveLength(1);
++ expect((await readdir(directory)).sort()).toEqual(createdEntries);
+ });
+ 
+ test('v2 gateway runs the coffee set once every mock backend of it is enabled; hardware stays denied',async()=>{
+diff --git a/tests/unit/owned-ci-ports.test.ts b/tests/unit/owned-ci-ports.test.ts
+new file mode 100644
+index 0000000..2d40c33
+--- /dev/null
++++ b/tests/unit/owned-ci-ports.test.ts
+@@ -0,0 +1,30 @@
++import {expect,test} from 'vitest';
++import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,readdirSync,rmSync,existsSync} from 'node:fs';
++import {join} from 'node:path';
++import {tmpdir} from 'node:os';
++import {spawnSync} from 'node:child_process';
++import {createServer} from 'node:net';
++
++const id='a'.repeat(64),cli=join(process.cwd(),'scripts/owned-source-ci.mjs');
++test.each(['conflict','ipv6-conflict','malformed','missing-container','failure','truncated','timeout','bad-id','duplicate-id','duplicate-container','null-ports','bad-binding','bad-host-port','bad-port-key'])('owned CI refuses %s before workdir, start or stop',mode=>{
++ const root=mkdtempSync(join(tmpdir(),'owned-ci-port-test-')),bin=join(root,'bin'),scratch=join(root,'tmp'),calls=join(root,'calls');mkdirSync(bin);mkdirSync(scratch);
++ const docker=`#!${process.execPath}\nimport {appendFileSync} from 'node:fs';\nappendFileSync(${JSON.stringify(calls)},'docker '+process.argv.slice(2).join(' ')+'\\n');\nconst mode=${JSON.stringify(mode)},id=${JSON.stringify(id)};\nif(mode==='failure')process.exit(1);\nif(mode==='timeout')await new Promise(r=>setTimeout(r,10000));\nelse if(mode==='truncated')process.stdout.write('x'.repeat(2*1024*1024));\nelse if(process.argv[2]==='ps')console.log(mode==='bad-id'?'not-an-id':mode==='duplicate-id'?id+'\\n'+id:id);\nelse if(mode==='malformed')console.log('{');\nelse if(mode==='missing-container')console.log('[]');\nelse {const row={id,ports:mode==='null-ports'?null:mode==='bad-port-key'?{unknown:null}:{'5432/tcp':mode==='bad-binding'?[{}]:[{HostIp:mode==='ipv6-conflict'?'::':'0.0.0.0',HostPort:mode==='bad-host-port'?'57422bad':'57422'}]}};console.log(JSON.stringify(row));if(mode==='duplicate-container')console.log(JSON.stringify(row));}\n`;
++ writeFileSync(join(bin,'docker'),docker,{mode:0o755});writeFileSync(join(bin,'pnpm'),`#!${process.execPath}\nimport {appendFileSync} from 'node:fs';appendFileSync(${JSON.stringify(calls)},'pnpm '+process.argv.slice(2).join(' ')+'\\n');process.exit(2);\n`,{mode:0o755});
++ try{const r=spawnSync(process.execPath,[cli,'--',process.execPath,'-e','process.exit(0)'],{env:{...process.env,PATH:bin+':'+process.env.PATH,TMPDIR:scratch},encoding:'utf8',timeout:15000});expect(r.error).toBeUndefined();expect(r.status).not.toBe(0);expect(r.stdout+r.stderr).toContain('CI_PORT_INVENTORY');expect(existsSync(calls)?readFileSync(calls,'utf8'):'').not.toContain('pnpm ');expect(readdirSync(scratch)).toEqual([]);}finally{rmSync(root,{recursive:true,force:true});}
++},20000);
++
++test('valid nonconflicting structured inventory reaches only the owned start failure boundary',()=>{
++ const root=mkdtempSync(join(tmpdir(),'owned-ci-free-test-')),bin=join(root,'bin'),scratch=join(root,'tmp'),calls=join(root,'calls');mkdirSync(bin);mkdirSync(scratch);
++ writeFileSync(join(bin,'docker'),`#!${process.execPath}\nconsole.log(process.argv[2]==='ps'?${JSON.stringify(id)}:JSON.stringify({id:${JSON.stringify(id)},ports:{'5432/tcp':[{HostIp:'127.0.0.1',HostPort:'12345'}],'8000/tcp':null}}));\n`,{mode:0o755});
++ writeFileSync(join(bin,'pnpm'),`#!${process.execPath}\nimport {appendFileSync} from 'node:fs';appendFileSync(${JSON.stringify(calls)},process.argv.slice(2).join(' ')+'\\n');process.exit(2);\n`,{mode:0o755});
++ try{const r=spawnSync(process.execPath,[cli,'--',process.execPath,'-e','process.exit(0)'],{env:{...process.env,PATH:bin+':'+process.env.PATH,TMPDIR:scratch},encoding:'utf8',timeout:10000});expect(r.error).toBeUndefined();expect(r.status).toBe(1);expect(r.stderr).toContain('OWNED_SUPABASE_NOT_RUN');expect(readFileSync(calls,'utf8')).toContain('supabase start');expect(readFileSync(calls,'utf8')).toContain('supabase stop');expect(readdirSync(scratch).some(n=>n.startsWith('mekoniq-owned-ci-'))).toBe(true);}finally{rmSync(root,{recursive:true,force:true});}
++});
++
++test('host bind refusal retains cleanup after a valid empty Docker inventory',async()=>{
++ const root=mkdtempSync(join(tmpdir(),'owned-ci-bind-test-')),bin=join(root,'bin'),scratch=join(root,'tmp'),calls=join(root,'calls'),listener=createServer();mkdirSync(bin);mkdirSync(scratch);
++ writeFileSync(join(bin,'docker'),'#!/bin/sh\nexit 0\n',{mode:0o755});writeFileSync(join(bin,'pnpm'),`#!/bin/sh\nprintf called > '${calls}'\nexit 2\n`,{mode:0o755});
++ await new Promise<void>((ok,fail)=>{listener.once('error',fail);listener.listen(57429,'127.0.0.1',ok);});
++ try{const r=spawnSync(process.execPath,[cli,'--',process.execPath,'-e','process.exit(0)'],{env:{...process.env,PATH:bin+':'+process.env.PATH,TMPDIR:scratch},encoding:'utf8',timeout:10000});expect(r.error).toBeUndefined();expect(r.status).toBe(1);expect(r.stderr).toContain('EADDRINUSE');expect(existsSync(calls)).toBe(false);expect(readdirSync(scratch)).toEqual([]);
++  const earlier=createServer();await new Promise<void>((ok,fail)=>{earlier.once('error',fail);earlier.listen(57421,'127.0.0.1',ok);});await new Promise<void>(ok=>earlier.close(()=>ok()));
++ }finally{await new Promise<void>(ok=>listener.close(()=>ok()));rmSync(root,{recursive:true,force:true});}
++},15000);
+diff --git a/tests/unit/sim-extension-qualification.test.ts b/tests/unit/sim-extension-qualification.test.ts
+index 479442c..40c95ff 100644
+--- a/tests/unit/sim-extension-qualification.test.ts
++++ b/tests/unit/sim-extension-qualification.test.ts
+@@ -475,7 +475,7 @@ async function r3Fixture(profile='mujoco-linux-amd64',scope='prepared'){
+  // @ts-expect-error plain ESM artifact inventory
+  const {evidenceInventory}=await import('../../scripts/r2b-readback.mjs');
+  const mode=profile.startsWith('engineering-')?'ros_navigation':profile==='xarm6-jazzy-sim'?'ros_xarm':profile==='puma560-linuxcnc-sim'?'native_apt':'oci';
+- const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};await f.reseal();
++ const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};if(profile==='mujoco-linux-arm64'){f.manifest.profile.architecture='arm64';f.manifest.subject.image=null;}await f.reseal();
+  const root=mkdtempSync(join(tmpdir(),'r3-directory-'));await mkdir(join(root,'inputs'));await cp(f.root,join(root,'inputs/handoff'),{recursive:true});await mkdir(join(root,'inputs/native'));await rm(f.root,{recursive:true});
+  const s=f.manifest.subject,m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r3',profile,scope,candidateId:'r3-unit',accepted:false,acceptedBy:null,acceptedAt:null,dynamics:'not_calibrated',subject:s,checker:{sourceCommit:s.sourceCommit,toolSha256:HEX},identity:{before:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},after:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},identityStable:true},lab:{commit:s.labCommit,dirty:false,pin:{sourceCommit:s.sourceCommit,artifactSha256:s.runtimeArtifactSha256,schemaHash:s.schemaHash,portableToolsDigest:s.portableClosureHash}},campaign:null,performance:null};
+  const seal=async()=>{m.artifacts=evidenceInventory(root);await writeFile(join(root,'qualification.json'),JSON.stringify(m));};
+@@ -487,6 +487,15 @@ test('R3 prepared directory is recomputed, retains every missing native case, an
+  const f=await r3Fixture();try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.cases['DEP-PREP-01'].status).toBe('tested');expect(f.m.gates['G-NATIVE-MJ'].status).toBe('not_run');expect(f.m.blockedNativeCases.map((c:M)=>c.id)).toEqual(['DEP-MJ-01','DEP-SEC-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.levels['R3.2']).toBe('not_run');}finally{await f.cleanup();}
+ });
+ 
++test('R3 prepared arm64 exposes the absent adapter and host separately in case, blocked cases and native gate',async()=>{
++ const f=await r3Fixture('mujoco-linux-arm64');try{
++  await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
++  const row={status:'not_run',category:'tooling_and_observation',reason:'ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED'};
++  expect({case:f.m.cases['DEP-MJ-01'],blocked:f.m.blockedNativeCases.find((c:M)=>c.id==='DEP-MJ-01'),gate:f.m.gates['G-NATIVE-MJ']}).toMatchObject({case:row,blocked:{id:'DEP-MJ-01',...row},gate:{status:'not_run',blockers:expect.arrayContaining([{id:'DEP-MJ-01',category:row.category,reason:row.reason}])}});
++  expect(f.m.requiredCases).toEqual(['DEP-PREP-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.accepted).toBe(false);
++ }finally{await f.cleanup();}
++});
++
+ test.each([
+  ['accepted reviewer fields',(m:M)=>{m.accepted=true;m.acceptedBy='invented';m.acceptedAt='today';},'RECORD_ACCEPTED'],
+  ['reduced required cases',(m:M)=>{m.requiredCases=[];},'R3_REQUIRED_CASES'],

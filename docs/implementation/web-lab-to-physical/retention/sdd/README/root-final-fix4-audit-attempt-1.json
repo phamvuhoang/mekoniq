@@ -1,0 +1,17 @@
+{
+  "ownExitCode": 1,
+  "auditScript": "root-final-prerequisites-4-audit.py",
+  "partialPackage": "review-final-prerequisites-4-root-package",
+  "failedCheck": "raw installed manifest equality",
+  "diagnosis": "Root audit assumed byte-identical installed manifest. Normal installRuntime serializes the parsed manifest with indent2/newline; JSON is exactly equal and installed raw bytes equal that prescribed serialization. Product files unchanged.",
+  "exportManifest": {
+    "bytes": 78856,
+    "sha256": "d5a9b7386987437d916c1ab602c8fae36cdb55f2ad59ec41e12ac003b1adb7a8"
+  },
+  "installedManifest": {
+    "bytes": 103198,
+    "sha256": "620b022dafbbe034657decb0f518e4fa4aeb61c916c80af9f85ca029bb83c2ff"
+  },
+  "objectsEqual": true,
+  "installedSerializationExact": true
+}

@@ -1,0 +1,73 @@
+# Review package: 2ccfbddb86282a9547368302f6121c7ee09acb71..b4a9d34f0881b05a76078a5d2b3ce2c189b654a6
+
+## Commits
+b4a9d34 chore: pin source runtime 9fdf4f3
+
+## Files changed
+ config/source-runtime.lock.json | 8 ++++----
+ src/shared/engineering.ts       | 2 +-
+ src/shared/navigation2d.ts      | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+## Diff
+diff --git a/config/source-runtime.lock.json b/config/source-runtime.lock.json
+index 135b4ae..a7edafb 100644
+--- a/config/source-runtime.lock.json
++++ b/config/source-runtime.lock.json
+@@ -1,18 +1,18 @@
+ {
+   "dirty": false,
+   "packageVersion": "0.1.0",
+   "toolchain": {
+     "node": "v24.22.2"
+   },
+-  "sourceCommit": "7d8bededd7b0ca57984d6f0d000eaa74ddea839d",
+-  "schemaHash": "9e869f41bd7dbbbae1f26f81b75449b727e7160fdfb1a3b32cf3b23a5cb034e4",
++  "sourceCommit": "9fdf4f382c19d6dbbc3cf64c231561ced71e786d",
++  "schemaHash": "c2bdaca0b5ce9b03ee52a8c497719f4ea83b2cbb0e23c4e18365099fd163fa12",
+   "protocolMajor": 2,
+   "protocolMajors": [
+     1,
+     2
+   ],
+   "nodeMajor": 24,
+-  "artifactSha256": "a3a54f2664a60724344f7b05bf7265ed280fc036498a5e77e87b30102c138737",
++  "artifactSha256": "c2a23416054e96edec32978936a2e265271f40bcdbf8f7c0bae6c6bbf57d5ee2",
+   "entrypoint": "runtime.mjs",
+-  "portableToolsDigest": "1fb6f053d4903a109a41f862556a02c2fd71c60d5011d94d27463165ad697d82"
++  "portableToolsDigest": "778c336cd3bcffa975cbea2967915f27fd5f94124ec986e75f2dac031d55df93"
+ }
+diff --git a/src/shared/engineering.ts b/src/shared/engineering.ts
+index 3690227..3d31428 100644
+--- a/src/shared/engineering.ts
++++ b/src/shared/engineering.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/engineering.ts @ 7d8bededd7b0ca57984d6f0d000eaa74ddea839d (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/engineering.ts @ 9fdf4f382c19d6dbbc3cf64c231561ced71e786d (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
+ import type {LabProjectV2,AssetRevision} from './types';
+ export type CoffeeRecipe=Record<string,unknown>;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Digest".
+  */
+ export type Digest = string;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+diff --git a/src/shared/navigation2d.ts b/src/shared/navigation2d.ts
+index ee25895..7ffde48 100644
+--- a/src/shared/navigation2d.ts
++++ b/src/shared/navigation2d.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/navigation2d.ts @ 7d8bededd7b0ca57984d6f0d000eaa74ddea839d (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/navigation2d.ts @ 9fdf4f382c19d6dbbc3cf64c231561ced71e786d (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
+ import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+ /**
+  * @minItems 2
+  * @maxItems 2
+  *
+  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+  * via the `definition` "Vec2".
+  */
+ export type Vec2 = number[];

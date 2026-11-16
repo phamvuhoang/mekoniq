@@ -1,0 +1,2186 @@
+# Review package: 298db9bdbc207b14bdbef78ec8d70adf4e901c71..2f4837d10d746a7c8c5e5ca5675ec57db4111c28
+
+## Commits
+2f4837d feat: prepare exact R2a MuJoCo native compatibility probe
+
+## Files changed
+ docs/operations/mujoco-native-probe.md             |  64 ++
+ docs/operations/native-simulation-handoff.md       |   2 +-
+ .../src/v2/sil/native-handoff-documents.ts         |   3 +
+ .../lab-runtime/src/v2/sil/native-handoff-r2a.ts   |  28 +
+ .../simulation-mujoco/profiles/linux-amd64.json    | 380 ++++++++++++
+ scripts/native-handoff.mjs                         |   8 +-
+ scripts/native-sim/mujoco-probe-container.mjs      |  88 +++
+ scripts/native-sim/mujoco-probe-engine.py          | 103 ++++
+ scripts/native-sim/mujoco-probe-evidence.d.mts     |   9 +
+ scripts/native-sim/mujoco-probe-evidence.mjs       | 102 ++++
+ scripts/native-sim/mujoco-probe-observer.d.mts     |   1 +
+ scripts/native-sim/mujoco-probe-observer.mjs       |  37 ++
+ scripts/native-sim/mujoco-probe-process.d.mts      |   1 +
+ scripts/native-sim/mujoco-probe-process.mjs        |  25 +
+ scripts/native-sim/mujoco-probe.d.mts              |   3 +
+ scripts/native-sim/mujoco-probe.mjs                | 147 +++++
+ scripts/native-sim/prepare-mujoco-r2a.mjs          |  35 ++
+ scripts/native-sim/r2a-arm-baseline.json           | 680 +++++++++++++++++++++
+ scripts/record-sim-extension.mjs                   |   7 +-
+ tests/unit/mujoco-native-probe.test.ts             | 166 +++++
+ 20 files changed, 1882 insertions(+), 7 deletions(-)
+
+## Diff
+diff --git a/docs/operations/mujoco-native-probe.md b/docs/operations/mujoco-native-probe.md
+new file mode 100644
+index 0000000..a289b0e
+--- /dev/null
++++ b/docs/operations/mujoco-native-probe.md
+@@ -0,0 +1,64 @@
++# Prepared MuJoCo Linux amd64 compatibility probe (L01)
++
++L01 is prepared tooling. No native Linux host is assigned and no image was fetched, built or executed during implementation. DEP-MJ-01 is `not_run` / `blocked_external`; candidates remain `accepted:false`, dynamics `not_calibrated`. The existing 2026-11-14 cloud MJ-BV01 record is narrower historical evidence, not this matrix. Nothing here qualifies G-NATIVE-ARM, hardware, commissioning or physical safety.
++
++## Identity and preparation
++
++The supported subject is exactly Source `4f893ac6fb75dff414a3ee42a726defb7935c734`, Lab `a6ec316fb3ac2f71afff25e6fa77e931f4439e00`, runtime SHA256 `55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270`, schema `9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4`, portable closure `3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d`. `scripts/native-sim/r2a-arm-baseline.json` fixes the old fixture, engine lock, relevant typed schemas, SI/frame/joint mapping and static ArmCellScene. The adapter is `mujoco_r2a_arm_v1`; it does not substitute B05/B06 world files.
++
++The recorded registry digest is `sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009`. Its platform manifest/config bytes are not yet verified here. The historical local config ID `f650a257…` is a different identity and is not assumed to be that registry image's config. A tag or base multiarch index cannot close this prerequisite. If the historical registry digest proves to be an index rather than the single-platform manifest, stop for an explicit resolution adapter/review; do not change the known digest or accept an unrelated image.
++
++Use the pinned Node 24.22.2/pnpm 10.32.1 environment. From a clean committed observer Source checkout:
++
++```sh
++export PATH="$HOME/.nvm/versions/node/v24.22.2/bin:$PATH"
++# Set these to absolute existing paths and a NEW task-owned output directory.
++# runtime_cache is read-only; no commands execute through it.
++perl -e 'alarm 180; exec @ARGV' node scripts/native-sim/prepare-mujoco-r2a.mjs \
++  --runtime-cache "$runtime_cache" --lab "$lab_repo" --out "$handoff_dir"
++perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$handoff_dir"
++```
++
++Preparation reads the frozen Source/Lab Git objects, compares every portable closure entry with its archived receipt, and copies the verified cached runtime. It never resets a checkout, rebuilds the old runtime, runs input code or mutates the original cache. The new `robotics/simulation-mujoco/profiles/linux-amd64.json` is observer-authored compatibility data, not a file from the historical build. Derived refs retain their *subject* binding through `sourceCommit`; `derived/observer/…` and `preparation.json` separately identify their producer. The derived world is the frozen arm-only builder's seed-42 scene with arm-1 and two cups; business cases produce their own actual scenes inside the old runtime. `prepared:true` does not mean native ready. The initial image is null and the installed engine artifact hash is deliberately unresolved.
++
++## Before an assigned-host run
++
++The user must assign a native Linux amd64 machine or same-ISA VM. This command does not provision or contact cloud services. Run on that host outside any container; a Mac-hosted Linux container is refused before Docker is contacted. The Docker daemon must be local over a Unix socket and the exact image must already be installed. There is no image pull/build path, device mount, privileged mode, host-network mode or hardware endpoint.
++
++In a new copy of the handoff, retain the real single-platform manifest/config bytes and L00's hash-bound inventory/provenance record. Resolve `subject.image`, including the exact manifest and config digests, from those bytes. Resolve the single required `mujoco==3.17.0` package SHA256 to the actual installed `libmujoco` artifact in that image; retain its path, bytes, version and digest. Update the profile bytes/ref and `subject.profileSha256` together. Do not use a wheel lock hash as the installed-library hash. L00 validates supplied records; the probe independently measures the installed image runtime, its worker/schema files, package list, actual library and Python/Node/OS versions before cases start.
++
++Supply `inventory.json` using the L00 OCI inventory contract and its real provenance artifacts (see [native handoff](native-simulation-handoff.md)). Inventory describes the Debian 12 image execution environment; `host-observed.json` separately records the host. Supply `host-assignment.json` with `{schemaVersion:1, assigned:true, assignedBy:<operator>, machineIdSha256:<SHA256 of exact /etc/machine-id bytes>, hostOs:"linux", hostArchitecture:"amd64", emulation:"none", virtualization:"bare_metal"|"vm"}`. The assignment is an explicit operator attestation, not cryptographic host authentication. The probe checks the local machine identity, host ISA/OS, container indicators, registered QEMU/Rosetta handlers and local daemon ISA. Unknown origin or emulation cannot pass. Preserve the host provider's independent provenance alongside the L00 receipt.
++
++Image inventory must be obtained from the exact already-installed subject under the assigned-host task, never synthesized to match the profile. Missing image/config/provenance/package data remains a prerequisite failure. Do not run Docker on the implementation Mac to fill it in.
++
++## Execution and readback
++
++```sh
++# Both paths absolute; output must be NEW and outside the Source tree.
++perl -e 'alarm 1800; exec @ARGV' node scripts/native-sim/mujoco-probe.mjs \
++  --handoff "$handoff_dir" --out "$native_evidence_dir"
++perl -e 'alarm 180; exec @ARGV' node scripts/native-sim/mujoco-probe.mjs \
++  --verify "$native_evidence_dir"
++```
++
++The CLI requires a clean, byte-verified Git checker before execution and after assessment. Its identity is separate from the old subject. Readback uses the same observer code pin and compares retained observer files with the reader's fixed code. The subject's own pinned runtime produces the reports; the reader checks their Source/schema identity, raw trace hashes, inputs and copied journal bytes. A unit log or a caller's `passed` string is insufficient.
++
++Cases run serially in private containers (`--pull never`, network none, read-only root, all capabilities dropped, no-new-privileges, nonroot user, bounded memory/PIDs). Loopback HTTP is internal to that container; no host port is exposed. Only read-only observer files and the task's evidence output are mounted. A container is cleaned up only if its unique ownership label matches this invocation.
++
++| Cases | Scope and required evidence |
++| --- | --- |
++| M00 seeds 1–10 | Verbatim `scene.py` / `run.py` fenced blocks from the frozen spike document; document and extracted-byte hashes are retained. Exact 20 ms tick, ten 2 ms substeps, original randomized ±5 mm offsets and no tuning. Require ten complete contact grasps, lift/slip/tracking/release thresholds, raw pose/contact traces and zero warnings. |
++| MJ-BV01 seeds 7, 42, 99 | Unchanged historical subject **bytes** with separately hashed passive Node wire observation. The real gateway runs the full business scenario, Source reports two served cups and the actual arm/prop traces. |
++| bad-state | R82: original WorkerSession plus real original MuJoCo engine, with observer-owned qvel-NaN injection at the first post-start step. Retain compiled MJCF, request/response bytes, before/injected/after NPZ states and actual warning deltas. Require PLANT_UNSTABLE, failed state, bounded stop and no successful post-fault step. This component subcase makes no Source custody/served claim. |
++| worker-loss | SIGKILL only the task-owned worker PID observed in this run's passive spawn trace. Require Source WORKER_LOST/latched stop, unknown program, zero served, five further observations, no respawn, no repeated/overlapping worker request and no successful post-loss ACK. |
++| long-run | 180,000 real M00 engine ticks (1,800,000 substeps), 3,600 simulated seconds. Retain clock drift, timing samples, periodic raw poses, final pose and warnings. This is an engine clock/stability check, not a Source long-run journal campaign. |
++
++The observer forwards the exact spawn arguments/options, original child object and stdin write arguments/return value; it never rewrites requests/ACKs or pauses subject pipes. No environment or bearer credentials are recorded. It bounds its trace and records a completion seal. Overflow, invalid/truncated lines, unobserved exit, missing ACKs or an incomplete seal fail relevant assertions. Timing includes observer overhead: M00/long-run engine-step timing, worker step IPC roundtrip, and HTTP action timing are distinct. p50/p95 use nearest rank; max and samples are retained. Memory is Python peak RSS for engine-only cases and the peak *sampled* process-namespace RSS at HTTP action boundaries for business cases.
++
++Each process writes stdout/stderr incrementally and retains a receipt on failure, timeout or abort. The outer budget is 25 minutes, with case-specific bounds and owned-container cleanup inside the 30-minute wrapper. The runtime is closed before retained journals are copied and byte-verified; original journals exist only in the disposable container's private `/tmp`. Inputs, warnings and unsuccessful artifacts remain. Never retry/resume a lost run or overwrite an evidence directory; choose a new output for a new attempt. Spontaneous BADQACC/PLANT_UNSTABLE fails the nominal case and requires a separate investigation. Tuning or engine upgrades establish a new baseline and require rerunning every claimed architecture.
++
++`record-sim-extension.mjs --mujoco-probe DIR` optionally copies and re-verifies this supplemental record. It keeps the old subject and observer identities and does not change existing release/hardware gate tables or acceptance. A claimed pass that fails readback is refused.
++
++## Explicit remaining work
++
++The entire native matrix is `not_run` until an assigned host, verified original image records and measured locked engine artifact exist. Native arm64 requires an independent profile and record. R83 assigns the executable current R2b payload/cell native adapter to B10 tooling before final tooling review; it uses its own current Source/Lab/schema/image tuple. The R2a image can never stand in for it. R84's passive observation adds measurement overhead and may refuse qualification when trace completeness cannot be established; it does not manufacture missing observations.
+diff --git a/docs/operations/native-simulation-handoff.md b/docs/operations/native-simulation-handoff.md
+index 682a988..c0ee68d 100644
+--- a/docs/operations/native-simulation-handoff.md
++++ b/docs/operations/native-simulation-handoff.md
+@@ -99,11 +99,11 @@ perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "
+ ```
+ 
+ This is a selected-file transfer, not a provisioning or archive extraction tool. Provision the subject checkout and engine from the locked sources under a separately assigned task. When runtime/schema/tool inputs change, first commit Source, export cleanly, import/sync/check/typecheck Lab and commit its pin; then assemble a new handoff with the new tuple. Keep the checker and subject commits independent.
+ 
+ ## Historical R2a and current R2b
+ 
+ The historical R2a record has Source `4f893ac6fb75dff414a3ee42a726defb7935c734`, recorded Lab `a6ec316fb3ac2f71afff25e6fa77e931f4439e00`, schema `9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4`, portable closure `3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d`, and runtime `55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270`. Its deployed linux/amd64 registry digest is `sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009`; local config ID `sha256:f650a2576cf7d44e8f9bf40934d862d8120170dd701e7da502a6ee032d12bd05` is a different identity, not a replacement for platform resolution evidence. Local records are under `docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/` and `production/r2a-2026-11-14/`. HTTP MJ-BV01 completed tick 4800 / served 2; Chrome production completed tick 4810 / served 2. These remain historical `accepted:false`, not L01's 10-grasp/three-seed/fault/inventory/performance campaign.
+ 
+ Current R2b must use its own committed/exported/pinned tuple. Under controller ruling R76 its image remains `null`/unbuilt, actual WEB05 `not_run` / `blocked_environment`. A clean runtime artifact does not establish an image digest. L00 does not call Docker again or infer native/TLS/cloud/hardware qualification. A later image build/campaign produces a new handoff and evidence; it never relabels the old R2a image as current R2b.
+ 
+-Historical R2a arm-only preparation is **not supported by the current document kinds**. Its original runtime4f893ac project, ArmCellSceneV1, component/model, engine/profile and file closure require a distinct adapter bound to that exact historical schema/model/frame/unit tuple, with its original controller/case semantics. L01 must implement or explicitly review that adapter before claiming L00 prepared admission of the old image. It must not borrow B05/B06 world files or current schemas/workers to make the old subject pass. This limitation does not request an old-image rebuild or change the retained R2a evidence.
++L00's five original document kinds do not admit historical R2a arm-only. L01 adds the exact `mujoco_r2a_arm_v1` adapter and [prepared probe workflow](mujoco-native-probe.md), bound to the frozen `4f893ac` tuple; this does not broaden any original kind. Its original runtime4f893ac project, ArmCellSceneV1, component/model, engine/profile and file closure require a distinct adapter bound to that exact historical schema/model/frame/unit tuple, with its original controller/case semantics. The L01 adapter validates the exact frozen arm-only documents and schemas before prepared admission of the old image; its profile is separately identified observer-authored data. It must not borrow B05/B06 world files or current schemas/workers to make the old subject pass. This limitation does not request an old-image rebuild or change the retained R2a evidence.
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts b/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
+index ce62a1c..a3bfac0 100644
+--- a/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
++++ b/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
+@@ -1,11 +1,12 @@
+ // Static admission for explicitly pinned preparation profiles. No workers, imports from input, or live probes.
++import {r2aDocumentBinding,validateR2aDocuments} from './native-handoff-r2a';
+ import {createHash} from 'node:crypto';
+ import {canonicalize} from 'json-canonicalize';
+ import {isDeepStrictEqual as same} from 'node:util';
+ import type {NativeHandoffV1,HandoffDocumentBinding} from '../../../../contracts/generated/native-handoff';
+ import {validateProjectV2} from '../contracts';
+ import {validateComponentRevision,validateEngineeringProject,type ComponentRevision,type Joint,type Link} from '../../engineering/contracts';
+ import {inertiaProblems} from '../../engineering/inertia';
+ import {projectNavigationModel} from '../../engineering/navigation-model';
+ import {validateNavigationDocument,validateArmCellScene,type RobotPhysicalModelV1,type LabWorldSceneV1,type NavigationSceneV1} from '../navigation2d/contracts';
+ import {validateWorldScene} from '../simulation3d/world-scene';
+@@ -35,20 +36,21 @@ import navScene from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1
+ import navPhysical from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json';
+ import engineeringProjectSchema from '../../../../contracts/schemas/engineering-project.schema.json';
+ import loadSchema from '../../../../contracts/schemas/load-profile-v1.schema.json';
+ const SCHEMAS={'load-profile-v1.schema.json':loadSchema,'engineering-project.schema.json':engineeringProjectSchema,'lab-project-v2.schema.json':projectSchema,'engineering-component.schema.json':componentSchema,'lab-world-scene-v1.schema.json':worldSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':navigationSchema,'navigation-scene-v1.schema.json':sceneSchema,'arm-cell-scene-v1.schema.json':cellSchema};
+ export type DocumentIssue={code:string;path:string;severity:'error'|'prerequisite'};
+ const hash=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),canonical=(v:unknown)=>hash(canonicalize(v));
+ const pumaModel=toSI({id:pumaDh.id,convention:'modified_dh',provenance:'illustrative_reference',mekoniqRobotCode:null,units:pumaDh.units as ArmSourceModel['units'],joints:pumaDh.joints.map(j=>({name:j.name,alpha:j.alpha,a:j.a,d:j.d,thetaOffset:j.thetaOffset,min:j.min,max:j.max,maxVelocity:j.maxVelocity})),toolTranslation:pumaDh.toolTranslation as [number,number,number],tolerances:pumaManifest.tolerances});
+ const WORLD_KINDS=['mujoco_world_v1','mujoco_cell_v1','xarm_ros_canonical_v1'];
+ /** Authoring helper for the supported pinned reference profiles; this never derives expected compatibility from caller documents. */
+ export function nativeDocumentBinding(kind:string):HandoffDocumentBinding{
++ if(kind==='mujoco_r2a_arm_v1')return r2aDocumentBinding();
+  if(kind==='puma_controller_reference_v1')return {
+   kind,modelRevision:pumaManifest.hashes['modified-dh.json'],siModelRevision:pumaModel.revision,sourceUnits:{length:'inch',angle:'deg',alpha:'rad'},lengthToM:0.0254,angleToRad:Math.PI/180,
+   frameMap:{world:'world',robotBase:pumaManifest.frames.base,armBase:pumaManifest.frames.base,flange:pumaManifest.frames.flange,tcp:pumaManifest.frames.tcp,tree:pumaFrames.frames,toolRevision:pumaFrames.toolRevision,drive:null,tray:null,sensors:[],simulationPlacement:pumaConfig.simulationScene.worldFromArmBaseM,placementProvenance:'illustrative_simulation_only'},
+   jointMap:pumaModel.jointNames.map((id,i)=>({id,controllerJoint:`JOINT_${i}`,sign:pumaManifest.axisSign[i] as 1,zeroOffsetRad:pumaManifest.zeroOffsetDeg[i]!*Math.PI/180,lowerRad:pumaModel.limits[i]!.min,upperRad:pumaModel.limits[i]!.max,velocityRadS:pumaModel.limits[i]!.maxVelocity})),inertiaOrder:'unknown'};
+  if(kind==='engineering_navigation_ros_canonical_v1'){
+   const physical=navPhysical as unknown as RobotPhysicalModelV1;
+   return {kind,modelRevision:physical.modelDigest,siModelRevision:physical.modelDigest,sourceUnits:{length:'m',angle:'rad',alpha:'rad'},lengthToM:1,angleToRad:1,
+    frameMap:{world:'map',robotBase:physical.baseFrameId,armBase:null,flange:null,tcp:null,mobileTree:physical.joints.map(j=>({id:j.child,parent:j.parent,origin:j.origin,kind:j.kind})),drive:{parent:physical.baseFrameId,pose:physical.drive!.driveFrameInBase},tray:null,sensors:physical.sensors.map(s=>({id:s.sensorId,parent:s.parentLinkId,pose:s.poseInBase}))},
+    jointMap:physical.joints.filter((j):j is Extract<Joint,{kind:'continuous'}>=>j.kind==='continuous').map(j=>({id:j.id,controllerJoint:j.id,sign:1,zeroOffsetRad:0,lowerRad:null,upperRad:null,velocityRadS:j.limits.velocity.value})),inertiaOrder:'xx_xy_xz_yy_yz_zz'};
+  }
+@@ -65,20 +67,21 @@ function physicalTree(links:Link[],joints:Joint[],root:string){
+  for(let count=0;count<links.length;count++){const before=seen.size;for(const j of joints)if(seen.has(j.parent))seen.add(j.child);if(seen.size===before)break;}
+  if(seen.size!==ids.size)throw Error('MODEL_FRAME_INVALID');
+  for(const l of links)if(l.massKg.unit!=='kg'||l.massKg.value<=0||l.inertiaKgM2===null||inertiaProblems(l.inertiaKgM2).length)throw Error('MODEL_INERTIA_INVALID');
+ }
+ /** Full JSON is compared to a supported pinned adaptation, not an ignore mask over standalone scene errors. */
+ export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<string,Buffer>):DocumentIssue[]{
+  const issues:DocumentIssue[]=[],add=(code:string,path:string,severity:DocumentIssue['severity']='error')=>issues.push({code,path,severity});
+  const read=(role:'project'|'world'|'model')=>{try{return JSON.parse(contents.get(m.refs[role][0].path)!.toString('utf8')) as unknown;}catch{throw Error('DOCUMENT_JSON_INVALID');}};
+  const all=Object.values(m.refs).flat(),bySource=(path:string)=>{const refs=all.filter(r=>r.sourcePath===path);if(refs.length!==1)throw Error('DOCUMENT_DEPENDENCY_MISSING');return contents.get(refs[0]!.path)!;};
+  try{
++  if(m.profile.documents.kind==='mujoco_r2a_arm_v1'){validateR2aDocuments(m,contents);return issues;}
+   for(const [name,schema]of Object.entries(SCHEMAS)){const ref=m.refs.schema.find(r=>r.sourcePath===name);if(!ref)throw Error('DOCUMENT_SCHEMA_MISSING');if(!same(JSON.parse(contents.get(ref.path)!.toString()),schema))throw Error('DOCUMENT_SCHEMA_UNSUPPORTED');}
+   const p=read('project'),w=read('world'),model=read('model'),kind=m.profile.documents.kind,binding=nativeDocumentBinding(kind);
+   if(kind==='engineering_navigation_ros_canonical_v1'){
+    if(m.subject.executionKind!=='ros2_native'||m.profile.installation.kind!=='native_apt')throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
+    if(!validateEngineeringProject(p).ok||!validateNavigationDocument(w).ok||!validateNavigationDocument(model).ok)throw Error('DOCUMENT_NAVIGATION_INVALID');
+    const scene=w as NavigationSceneV1,mobile=model as RobotPhysicalModelV1;
+    physicalTree(mobile.links,mobile.joints,mobile.baseFrameId);
+    if(mobile.robotId!==m.profile.modelId||!same(m.profile.documents,binding)||m.frames.world!=='map'||m.frames.robotBase!==mobile.baseFrameId||m.frames.tool!==null)throw Error('DOCUMENT_MAPPING_MISMATCH');
+    if(!same(p,navProject)||!same(w,navScene)||!same(model,navPhysical)||canonical(p)!==mobile.inputs.project.digest||!same(scene.inputs,mobile.inputs)||canonical((p as typeof navProject).runtimeProject.world)!==scene.inputs.world.hash||!same(projectNavigationModel(mobile,scene.policy),scene.robots[0]!.model))throw Error('NAVIGATION_PROJECT_MODEL_MISMATCH');
+    if(!m.refs.engine.some(r=>r.sourcePath==='robotics/simulation-3d/requirements.lock'))throw Error('DOCUMENT_ENGINE_MISMATCH');
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff-r2a.ts b/packages/lab-runtime/src/v2/sil/native-handoff-r2a.ts
+new file mode 100644
+index 0000000..a1ff4bf
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/sil/native-handoff-r2a.ts
+@@ -0,0 +1,28 @@
++// Exact historical arm-only adapter. The reference was extracted from frozen Git 4f893ac,
++// not inferred from caller data or the current shared-world model. Nothing here executes input.
++import Ajv from 'ajv';
++import addFormats from 'ajv-formats';
++import {createHash} from 'node:crypto';
++import {isDeepStrictEqual as same} from 'node:util';
++import reference from '../../../../../scripts/native-sim/r2a-arm-baseline.json';
++import type {NativeHandoffV1,HandoffDocumentBinding} from '../../../../contracts/generated/native-handoff';
++const hash=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
++export const r2aDocumentBinding=()=>structuredClone(reference.binding) as HandoffDocumentBinding;
++export function validateR2aDocuments(m:NativeHandoffV1,contents:ReadonlyMap<string,Buffer>):void{
++ for(const [key,value]of Object.entries(reference.subject))if(m.subject[key as keyof typeof reference.subject]!==value)throw Error('R2A_SUBJECT_MISMATCH');
++ if(m.subject.executionKind!=='mujoco_image'||m.profile.installation.kind!=='oci'||m.profile.modelId!=='xarm6-g2-v1')throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
++ if(!same(m.profile.documents,reference.binding)||!same(m.frames,{world:'map',robotBase:'base',tool:'tcp',handedness:'right'}))throw Error('DOCUMENT_MAPPING_MISMATCH');
++ const all=Object.values(m.refs).flat(),get=(path:string)=>{const rows=all.filter(r=>r.sourcePath===path);if(rows.length!==1)throw Error('R2A_DEPENDENCY_MISSING');const b=contents.get(rows[0]!.path);if(!b)throw Error('R2A_DEPENDENCY_MISSING');return b;};
++ for(const f of reference.files){const b=get(f.path);if(hash(b)!==f.sha256||b.length!==f.bytes)throw Error('R2A_FROZEN_INPUT_MISMATCH');}
++ const ajv=new Ajv({strict:true,discriminator:true});addFormats(ajv);
++ for(const s of reference.schemas){const b=get(s.name);if(hash(b)!==s.sha256)throw Error('DOCUMENT_SCHEMA_UNSUPPORTED');ajv.addSchema(JSON.parse(b.toString()),s.name);}
++ const read=(role:'project'|'world'|'model')=>JSON.parse(contents.get(m.refs[role][0].path)!.toString());
++ const p=read('project'),w=read('world'),model=read('model');
++ for(const [name,value]of [['lab-project-v2.schema.json',p],['engineering-component.schema.json',model],['arm-cell-scene-v1.schema.json',w]] as const)if(!ajv.getSchema(name)!(value))throw Error('R2A_DOCUMENT_INVALID');
++ const root='robotics/simulation-mujoco/fixtures/xarm6-g2-v1/';
++ if(!same(p,JSON.parse(get(root+'coffee-cell-project.json').toString()))||!same(model,JSON.parse(get(root+'component.json').toString()))||!same(w,reference.world))throw Error('R2A_DOCUMENT_BINDING_MISMATCH');
++ // Exact manifest bytes bind model/program/physics/blobs/NOTICE; hashes above also bind the full frozen engine lock.
++ const manifest=JSON.parse(get(root+'manifest.json').toString());
++ for(const f of manifest.files){const b=get(root+f.path);if(hash(b)!==f.sha256||b.length!==f.bytes)throw Error('R2A_MODEL_REF_MISMATCH');}
++ for(const f of manifest.blobs){const b=get(root+'blobs/'+f.sha256+'.stl');if(hash(b)!==f.sha256||b.length!==f.bytes)throw Error('R2A_MODEL_REF_MISMATCH');}
++}
+diff --git a/robotics/simulation-mujoco/profiles/linux-amd64.json b/robotics/simulation-mujoco/profiles/linux-amd64.json
+new file mode 100644
+index 0000000..2e2489b
+--- /dev/null
++++ b/robotics/simulation-mujoco/profiles/linux-amd64.json
+@@ -0,0 +1,380 @@
++{
++  "id": "mujoco-r2a-linux-amd64-v1",
++  "modelId": "xarm6-g2-v1",
++  "modelSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
++  "architecture": "amd64",
++  "os": {
++    "id": "debian",
++    "version": "12"
++  },
++  "requiredPackages": [
++    {
++      "name": "mujoco",
++      "version": "3.17.0",
++      "sha256": null
++    }
++  ],
++  "forbiddenPackages": [
++    "mujoco-core"
++  ],
++  "clockDomains": [
++    "engine_fixed_20ms",
++    "source_monotonic"
++  ],
++  "installation": {
++    "kind": "oci"
++  },
++  "documents": {
++    "kind": "mujoco_r2a_arm_v1",
++    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
++    "siModelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
++    "sourceUnits": {
++      "length": "m",
++      "angle": "rad",
++      "alpha": "rad"
++    },
++    "lengthToM": 1,
++    "angleToRad": 1,
++    "frameMap": {
++      "world": "map",
++      "robotBase": "base",
++      "armBase": "base",
++      "baseInMap": {
++        "position": [
++          2.65,
++          0.65,
++          0.7
++        ],
++        "quaternionXyzw": [
++          0,
++          0,
++          0,
++          1
++        ]
++      },
++      "flange": "link6",
++      "tcp": "tcp",
++      "tcpInFlange": {
++        "translationM": [
++          0,
++          0,
++          0.172
++        ],
++        "quaternionXyzw": [
++          0,
++          0,
++          0,
++          1
++        ]
++      },
++      "armTree": [
++        {
++          "id": "link1",
++          "parent": "base",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0,
++              0.267
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link2",
++          "parent": "link1",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link3",
++          "parent": "link2",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0.0535,
++              -0.2845,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link4",
++          "parent": "link3",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0.0775,
++              0.3425,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link5",
++          "parent": "link4",
++          "origin": {
++            "quaternionXyzw": [
++              0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link6",
++          "parent": "link5",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0.076,
++              0.097,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "xarm_gripper_base_link",
++          "parent": "link6",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "fixed"
++        },
++        {
++          "id": "left_outer_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.035,
++              0.059098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "left_finger",
++          "parent": "left_outer_knuckle",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.035465,
++              0.042039
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "left_inner_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.02,
++              0.074098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_outer_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.035,
++              0.059098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_finger",
++          "parent": "right_outer_knuckle",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.035465,
++              0.042039
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_inner_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.02,
++              0.074098
++            ]
++          },
++          "kind": "revolute"
++        }
++      ],
++      "drive": null,
++      "tray": {
++        "frame": "arm_base",
++        "centerM": [
++          0.35,
++          0.35,
++          0.03
++        ],
++        "sizeM": [
++          0.2,
++          0.2,
++          0.06
++        ]
++      },
++      "sensors": []
++    },
++    "jointMap": [
++      {
++        "id": "J1",
++        "controllerJoint": "J1",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J2",
++        "controllerJoint": "J2",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -2.059,
++        "upperRad": 2.0944,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J3",
++        "controllerJoint": "J3",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -3.927,
++        "upperRad": 0.19198,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J4",
++        "controllerJoint": "J4",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J5",
++        "controllerJoint": "J5",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -1.69297,
++        "upperRad": 3.14159265359,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J6",
++        "controllerJoint": "J6",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      }
++    ],
++    "inertiaOrder": "xx_xy_xz_yy_yz_zz"
++  }
++}
+diff --git a/scripts/native-handoff.mjs b/scripts/native-handoff.mjs
+index 8060a4e..01c9f87 100644
+--- a/scripts/native-handoff.mjs
++++ b/scripts/native-handoff.mjs
+@@ -1,41 +1,41 @@
+ #!/usr/bin/env node
+ // Only fixed verifier code is imported. Manifest content is data, never argv/shell/module input.
+ import {tsImport} from 'tsx/esm/api';
+ import {readFile,lstat,realpath} from 'node:fs/promises';
+ import {createHash} from 'node:crypto';
+ import {execFileSync} from 'node:child_process';
+ import {dirname,resolve,basename} from 'node:path';
+-import {fileURLToPath} from 'node:url';
++import {fileURLToPath,pathToFileURL} from 'node:url';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+ // Require a complete clean Git checker; this is independent of the received subject identity.
+ // Raw Git-blob comparisons cover fixed imports/reference trees even when index flags hide edits.
+-async function checkedCheckerCommit(){
++export async function checkedCheckerCommit(){
+  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
+  let sourceCommit,tree;
+  try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
+  if(git('status','--porcelain','--untracked-files=all'))throw Error('CHECKER_CHECKOUT_DIRTY');
+  let total=0;const entries=tree.split('\0').filter(Boolean);if(!entries.length||entries.length>20000)throw Error('CHECKER_INPUT_MISMATCH');
+  for(const entry of entries){
+   const match=/^(100644|100755) blob ([a-f0-9]{40})\t(.+)$/.exec(entry);if(!match)throw Error('CHECKER_INPUT_MISMATCH');
+   const [,mode,expected,path]=match;void mode;const file=resolve(root,path),stat=await lstat(file);
+   if(!stat.isFile()||stat.isSymbolicLink()||await realpath(file)!==file||stat.size>64*1024*1024||(total+=stat.size)>256*1024*1024)throw Error('CHECKER_INPUT_MISMATCH');
+   const bytes=await readFile(file),actual=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');if(actual!==expected)throw Error('CHECKER_INPUT_MISMATCH');
+  }
+  return sourceCommit;
+ }
+-try{
++if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)try{
+  const sourceCommit=await checkedCheckerCommit();
+  const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
+  const [command,...args]=process.argv.slice(2),allowed=command==='export'?['--input','--out']:command==='verify'?['--input','--inventory']:[];
+  if(!allowed.length)throw new Error('USAGE: native-handoff.mjs export --input DIR --out NEW_DIR | verify --input DIR [--inventory FILE]');
+  const options={};for(let i=0;i<args.length;i+=2){const key=args[i],value=args[i+1];if(!allowed.includes(key)||key in options||!value||value.startsWith('--'))throw new Error('INVALID_ARGUMENT');options[key]=value;}
+  if(!options['--input']||command==='export'&&!options['--out'])throw new Error('MISSING_ARGUMENT');
+  const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
+  const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
+  const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
+- const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
++ const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','packages/lab-runtime/src/v2/sil/native-handoff-r2a.ts','scripts/native-sim/r2a-arm-baseline.json','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
+  for(const file of files)hash.update(file+'\n').update(await readFile(resolve(root,file)));
+  if(await checkedCheckerCommit()!==sourceCommit)throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
+  console.log(JSON.stringify({...result,subject:manifest.subject,checker:{sourceCommit,toolSha256:hash.digest('hex')},inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false,dynamics:'not_calibrated'},null,2));
+  process.exitCode=result.prepared?0:1;
+ }catch(error){console.error(JSON.stringify({code:'NATIVE_HANDOFF_FAILED',message:error.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
+diff --git a/scripts/native-sim/mujoco-probe-container.mjs b/scripts/native-sim/mujoco-probe-container.mjs
+new file mode 100644
+index 0000000..61a8bfd
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-container.mjs
+@@ -0,0 +1,88 @@
++// Observer entrypoint inside the already-installed exact image. No network except private loopback.
++import {performance} from 'node:perf_hooks';
++import {spawn} from 'node:child_process';
++import {readFile,writeFile,mkdir,readdir,lstat,copyFile,open} from 'node:fs/promises';
++import {join} from 'node:path';
++import {once} from 'node:events';
++import {randomBytes} from 'node:crypto';
++import {runProbeCommand} from './mujoco-probe-process.mjs';
++import {sha256,probeFile,analyseWire,mujocoCases,assessCase} from './mujoco-probe-evidence.mjs';
++const [id,out]=process.argv.slice(2),handoff=JSON.parse(await readFile('/probe/handoff.json','utf8')),python='/opt/venv-mujoco/bin/python';
++const save=(name,value)=>writeFile(join(out,name),JSON.stringify(value)+'\n',{mode:0o600}),read=async p=>JSON.parse(await readFile(p,'utf8'));
++const abort=new globalThis.AbortController();for(const s of ['SIGTERM','SIGINT'])process.once(s,()=>abort.abort());
++await mkdir(out,{recursive:true});
++async function engine(mode,seed){const dir=join(out,'engine');await mkdir(dir);return runProbeCommand(python,['-I','-B','/probe/mujoco-probe-engine.py',mode,dir,...seed!==undefined?[String(seed)]:[]],{out:dir,cwd:dir,timeoutMs:mode==='long_run'?300000:120000,signal:abort.signal});}
++async function imageInventory(){
++ if(sha256(await probeFile('/app','runtime.mjs'))!==handoff.subject.runtimeArtifactSha256)throw Error('IMAGE_RUNTIME_MISMATCH');
++ const checked=[];
++ for(const r of Object.values(handoff.refs).flat()){
++  const path=handoff.refs.schema.includes(r)?'packages/contracts/schemas/'+r.sourcePath:r.sourcePath;
++  if(!path.startsWith('robotics/simulation-mujoco/')&&!path.startsWith('packages/contracts/schemas/'))continue;
++  const b=await probeFile('/app',path);if(sha256(b)!==r.sha256||b.length!==r.bytes)throw Error('IMAGE_CLOSURE_MISMATCH:'+path);checked.push({path,sha256:r.sha256,bytes:r.bytes});
++ }
++ const observed=[];async function walk(p){for(const name of await readdir('/app/'+p)){const q=p+'/'+name,s=await lstat('/app/'+q);if(s.isSymbolicLink())throw Error('IMAGE_TOOL_SYMLINK');if(s.isDirectory())await walk(q);else observed.push(q);}}
++ await walk('robotics/simulation-mujoco');await walk('packages/contracts/schemas');
++ if(observed.some(p=>!checked.some(r=>r.path===p)))throw Error('IMAGE_EXTRA_TOOL_FILE');
++ const r=await engine('inventory');if(r.status!=='completed')throw Error('ENGINE_INVENTORY_FAILED');
++ return {subject:handoff.subject,checked,osRelease:await readFile('/etc/os-release','utf8'),architecture:process.arch,node:process.version,engine:await read(join(out,'engine/engine.json'))};
++}
++async function business(spec){
++ const data='/tmp/L01-'+id,key=randomBytes(24).toString('hex'),wirePath=join(out,'wire.jsonl'),base='http://127.0.0.1:39176/lab/v2';await mkdir(data);
++ const stdout=await open(join(out,'runtime.stdout.log'),'wx'),stderr=await open(join(out,'runtime.stderr.log'),'wx');let logs=Promise.resolve(),runtimeClosed=false;
++ const runtime=spawn(process.execPath,['--import','/probe/mujoco-probe-observer.mjs','/app/runtime.mjs','--bind','127.0.0.1','--port','39176','--data-dir',data,'--mujoco-python',python,'--mujoco-worker','/app/robotics/simulation-mujoco','--mujoco-lock','/app/robotics/simulation-mujoco/requirements.lock'],{env:{...process.env,MEKONIQ_LAB_ACCESS_KEY:key,L01_OBSERVER_FILE:wirePath,L01_OWNED_ROOT:data},stdio:['ignore','pipe','pipe']});
++ runtime.stdout.on('data',b=>{logs=logs.then(()=>stdout.write(b));});runtime.stderr.on('data',b=>{logs=logs.then(()=>stderr.write(b));});runtime.once('close',()=>{runtimeClosed=true;});
++ const closed=once(runtime,'close');let token,runDir,runId,raw,view,revision=0,action=0,injection=null,afterLossSteps=0,maxRssKiB=0;
++ const requests=[],httpMs=[];
++ const api=async(path,method='GET',body)=>{const r=await fetch(base+path,{method,headers:{origin:'http://127.0.0.1:4175','content-type':'application/json',...token?{authorization:'Bearer '+token}:{}},...body!==undefined?{body:JSON.stringify(body)}:{},signal:AbortSignal.any([abort.signal,AbortSignal.timeout(20000)])});const value=await r.json();if(!r.ok)throw Error(`HTTP_${r.status}:${JSON.stringify(value).slice(0,300)}`);return value;};
++ const wire=async()=>{try{return (await readFile(wirePath,'utf8')).split('\n').filter(Boolean).map(s=>JSON.parse(s));}catch{return [];}};
++ const memory=async()=>{let sum=0;for(const name of await readdir('/proc'))if(/^\d+$/.test(name))try{const status=await readFile('/proc/'+name+'/status','utf8');sum+=Number(status.match(/^VmRSS:\s+(\d+)/m)?.[1]??0);}catch{/* exited */}maxRssKiB=Math.max(maxRssKiB,sum);};
++ try{
++  let health;for(const deadline=Date.now()+60000;Date.now()<deadline;){try{health=await api('/health');break;}catch{abort.signal.throwIfAborted();if(runtimeClosed)throw Error('RUNTIME_EXITED');await new Promise(r=>setTimeout(r,200));}}
++  if(!health||health.sourceCommit!==handoff.subject.sourceCommit||health.schemaHash!==handoff.subject.schemaHash)throw Error('RUNTIME_IDENTITY_MISMATCH');await save('health.json',health);
++  token=(await api('/sessions','POST',{token:key})).sessionToken;if(!token)throw Error('PAIRING_FAILED');
++  const project=await read('/app/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json');
++  view=await api('/runs','POST',{project,scenarioId:'MJ-BV01',scenarioRevision:1,seed:spec.seed,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}});runId=view.run.id;revision=view.run.runRevision;
++  for(const d of await readdir(data)){try{const cp=await read(join(data,d,'run.json'));if(cp.runId===runId){runDir=join(data,d);break;}}catch{/* readiness dir */}}
++  if(!runDir)throw Error('RUN_DIRECTORY_MISSING');
++  const act=async(kind,payload={})=>{const actionId='native-'+(++action),r={actionId,kind,payload,received:false},t=performance.now();requests.push(r);await save('requests.json',requests);const next=await api('/runs/'+runId+'/actions','POST',{actionId,expectedRevision:revision,kind,payload});r.received=true;httpMs.push(performance.now()-t);revision=next.run.runRevision;await memory();return next;};
++  view=await act('start');
++  while(view.tick<10000&&['running','created','paused'].includes(view.run.status)){
++   if(spec.kind==='worker_loss'&&!injection&&view.coffee?.jobs?.some(j=>j.status==='transferring')){
++    const spawned=(await wire()).filter(e=>e.event==='spawn'&&e.runId===runId);if(spawned.length!==1||!Number.isInteger(spawned[0].pid))throw Error('OWNED_WORKER_UNOBSERVED');
++    const pid=spawned[0].pid,cmd=(await readFile('/proc/'+pid+'/cmdline')).toString();
++    if(!cmd.includes('mujoco_worker')||!cmd.includes(runDir))throw Error('WORKER_OWNERSHIP_MISMATCH');
++    injection={kind:'owned_pid_sigkill',pid,atTick:view.tick,atMs:Number(process.hrtime.bigint())/1e6};await save('injection.json',injection);process.kill(pid,'SIGKILL');
++   }
++   abort.signal.throwIfAborted();view=await act('step',{ticks:spec.kind==='worker_loss'?5:50});
++  }
++  if(spec.kind==='worker_loss'&&injection)for(let i=0;i<5;i++){view=await act('step',{ticks:5});afterLossSteps++;}
++  const report=await api('/runs/'+runId+'/report');await save('report.json',report);
++  const traceBytes=await probeFile(runDir,report.arm.trace.path),propsBytes=await probeFile(runDir,report.arm.props.path);
++  if(sha256(traceBytes)!==report.arm.trace.sha256||sha256(propsBytes)!==report.arm.props.sha256)throw Error('SUBJECT_TRACE_HASH_MISMATCH');
++  await api('/runs/'+runId+'/archive','POST',{});
++  // Give passive diagnostics time to finish after the subject closed its own worker; no pipe is paused.
++  for(const deadline=Date.now()+3000;Date.now()<deadline;){const e=(await wire()).filter(e=>e.runId===runId);if(e.some(e=>e.event==='exit'))break;await new Promise(r=>setTimeout(r,20));}
++  raw={scope:spec.scope,engineVersion:report.arm.armPlant.engineVersion,report,trace:JSON.parse(traceBytes),props:JSON.parse(propsBytes),checkpoint:await read(join(runDir,'run.json')),requests,httpMs,injection,afterLossSteps,maxRssKiB};
++ }finally{
++  if(!runtimeClosed)runtime.kill('SIGTERM');const kill=setTimeout(()=>{if(!runtimeClosed)runtime.kill('SIGKILL');},10000);await closed;clearTimeout(kill);await logs;await stdout.close();await stderr.close();
++  // Retained journals are verified byte copies after the runtime closed, never the runtime's live originals.
++  const copies=[];async function copy(source,target,path=''){await mkdir(target,{recursive:true});for(const name of await readdir(source)){const p=path?path+'/'+name:name,s=await lstat(join(source,name));if(s.isDirectory())await copy(join(source,name),join(target,name),p);else{const b=await probeFile(data,p);await copyFile(join(source,name),join(target,name));if(sha256(await probeFile(join(out,'runtime'),p))!==sha256(b))throw Error('RUNTIME_COPY_CHANGED');copies.push({path:'runtime/'+p,sha256:sha256(b),bytes:b.length});}}}
++  await copy(data,join(out,'runtime'));await save('runtime-copies.json',{afterRuntimeClose:true,copies});
++ }
++ const events=(await wire()).filter(e=>e.runId===runId||e.event==='incomplete'),analysis=analyseWire(events);await save('run-wire.json',events);
++ const missing=await lstat(wirePath+'.incomplete').then(()=>true,()=>false);const seal=await read(wirePath+'.seal');if(missing||seal.complete!==true||!analysis.valid)throw Error('WIRE_OBSERVATION_INCOMPLETE');
++ raw.wire=events;raw.ipcMs=analysis.ipcMs;raw.workerObservation={maxActive:analysis.maxActive,spawned:analysis.spawned,afterLoss:injection?events.filter(e=>e.event==='spawn'&&e.atMs>injection.atMs).map(e=>e.pid):[]};
++ return raw;
++}
++try{
++ if(id==='inventory'){await save('result.json',await imageInventory());}
++ else{
++  const spec=mujocoCases().find(c=>c.id===id);if(!spec)throw Error('CASE_UNSUPPORTED');let raw;
++  if(['business','worker_loss'].includes(spec.kind))raw=await business(spec);
++  else{const r=await engine(spec.kind,spec.seed);if(r.status!=='completed')throw Error('ENGINE_CASE_INCOMPLETE');
++   if(spec.kind==='m00'){const lines=(await readFile(join(out,'engine/stdout.log'),'utf8')).split('\n').filter(s=>s.startsWith('{')).map(s=>JSON.parse(s));const trial=lines.find(r=>r.seed===spec.seed),trace=await read(join(out,'engine/trace-'+spec.seed+'.json'));raw={scope:spec.scope,engineVersion:lines[0]?.version,trial,trace,tickMs:trace.map(t=>t.ms),...await read(join(out,'engine/resource.json'))};}
++   else raw=await read(join(out,'engine/result.json'));
++  }
++  await save('result.json',raw);const verdict=assessCase(spec,raw);await save('assertions.json',verdict);if(!verdict.passed)process.exitCode=1;
++ }
++}catch(e){await save('failure.json',{status:'failed',message:e.message,accepted:false});console.error(e.stack);process.exitCode=1;}
+diff --git a/scripts/native-sim/mujoco-probe-engine.py b/scripts/native-sim/mujoco-probe-engine.py
+new file mode 100644
+index 0000000..170779d
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-engine.py
+@@ -0,0 +1,103 @@
++"""Observer-only harness, never a replacement subject worker. Runs only inside an admitted image.
++M00 imports verbatim frozen recipe blocks. Bad-state uses the original WorkerSession and engine;
++only one real qvel element is fault-injected. No Source custody assertion is made here.
++"""
++import hashlib
++import importlib.metadata
++import json
++from pathlib import Path
++import resource
++import sys
++import time
++
++MODE, OUT = sys.argv[1], Path(sys.argv[2])
++OUT.mkdir(exist_ok=True, parents=True)
++
++def save(name, value):
++    (OUT / name).write_text(json.dumps(value, allow_nan=False, separators=(",", ":")) + "\n")
++
++try:
++    import mujoco
++    import numpy as np
++    if mujoco.__version__ != "3.17.0":
++        raise RuntimeError("ENGINE_VERSION_MISMATCH")
++    if MODE == "inventory":
++        artifacts = []
++        root = Path(mujoco.__file__).parent
++        for path in sorted(root.rglob("*")):
++            if path.is_file() and ("libmujoco" in path.name or path.name == "__init__.py"):
++                b = path.read_bytes()
++                artifacts.append({"path": str(path), "bytes": len(b), "digest": "sha256:" + hashlib.sha256(b).hexdigest()})
++        save("engine.json", {"version": mujoco.__version__, "python": sys.version, "artifacts": artifacts,
++                             "packages": sorted({d.metadata["Name"]: d.version for d in importlib.metadata.distributions()}.items())})
++    elif MODE in ("m00", "long_run"):
++        sys.path.insert(0, "/probe/m00")
++        import run as recipe
++        if MODE == "m00":
++            seed = int(sys.argv[3])
++            sys.argv = ["/probe/m00/run.py", "trials", json.dumps({"seeds": [seed], "dump": str(OUT / "trace")})]
++            recipe.main()
++        else:
++            P, T = dict(recipe.scene.DEFAULTS), recipe.tunables({})
++            m = mujoco.MjModel.from_xml_string(recipe.scene.build(P))
++            W, _ = recipe.waypoints(m, P, T)
++            sim, tick_ms, samples = recipe.Sim(P, W["home"]), [], []
++            for tick in range(180000):
++                sim.tick(W["home"], "hold")
++                tick_ms.append(sim.log[-1]["ms"])
++                if tick % 1000 == 0:
++                    samples.append({"tick": tick + 1, "engineTimeS": float(sim.d.time), "q": sim.log[-1]["q"], "cup": sim.log[-1]["cup"]})
++                # Clear the observer log only; the real engine state and clock are never reset.
++                sim.log.clear()
++            save("result.json", {"scope": "frozen_m00_recipe", "engineVersion": mujoco.__version__, "ticks": 180000,
++                                 "substeps": 1800000, "driftS": float(sim.d.time) - 3600.0,
++                                 "tickMs": tick_ms, "warnings": sim.warnings(), "lastPose": sim.d.qpos[:6].tolist(),
++                                 "samples": samples, "maxRssKiB": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss})
++    elif MODE == "bad_state":
++        sys.path.insert(0, "/app/robotics/simulation-mujoco")
++        from mujoco_worker.session import WorkerSession
++        from mujoco_worker.engine import BAD_STATE
++        from mujoco_worker.protocol import load_validators
++        from mujoco_worker.compile import compile_cell
++        bundle = Path("/probe/bad-state-bundle")
++        scene = json.loads((bundle / "arm-cell-scene.json").read_text())
++        component = json.loads((bundle / "component.json").read_text())
++        physics = json.loads((bundle / "physics.json").read_text())
++        (OUT / "compiled.xml").write_text(compile_cell(scene, component, physics, str(bundle / "blobs"))[0])
++        session = WorkerSession(run_id="native-bad-state", bundle_root=str(bundle), lock_digest=hashlib.sha256(Path("/app/robotics/simulation-mujoco/requirements.lock").read_bytes()).hexdigest(), expected_scene_digest=scene["sceneDigest"])
++        validator, _ = load_validators("/app/packages/contracts/schemas")
++        requests, responses = [], []
++        def call(op, payload=None):
++            request = {"protocol": "mekoniq-sim3d/1", "requestId": "probe-" + str(len(requests)), "runId": "native-bad-state", "expectedTick": session.tick, "op": op, "payload": payload or {}}
++            validator.validate(request)
++            requests.append(request)
++            response = session.handle(request)
++            responses.append(response)
++            save("requests.json", requests)
++            save("responses.json", responses)
++            return response
++        created = call("create", {"sceneRef": "arm-cell-scene.json", "seed": 42, "arms": [{"armId": "arm-1", "sceneRef": "arm-cell-scene.json"}]})
++        started = call("start")
++        if not created["ok"] or not started["ok"]:
++            raise RuntimeError("BAD_STATE_CREATE_FAILED")
++        data = session.engine.data
++        before = {"tick": session.tick, "state": session.state}
++        old_warnings = {k: int(data.warning[w].number) for k, w in BAD_STATE.items()}
++        np.savez(OUT / "before-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
++        data.qvel[session.engine.arm_qvel[0]] = float("nan")
++        np.savez(OUT / "injected-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
++        payload = {"targetTick": 1, "velocities": [], "actorUpdates": [], "jointTargets": [{"armId": "arm-1", "positionsRad": scene["arm"]["homeRad"]}]}
++        t0 = time.perf_counter()
++        response = call("step", payload)
++        elapsed = (time.perf_counter() - t0) * 1000
++        after = {"tick": session.tick, "state": session.state}
++        warnings = {k: int(data.warning[w].number) - old_warnings[k] for k, w in BAD_STATE.items()}
++        np.savez(OUT / "after-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
++        post_fault = call("step", payload)
++        save("result.json", {"scope": "instrumented_historical_worker", "engineVersion": mujoco.__version__, "injection": {"kind": "qvel_nan", "atTick": 1}, "before": before, "after": after,
++                             "response": response, "postFault": post_fault, "warningDelta": warnings, "elapsedMs": elapsed})
++        session.end()
++    else:
++        raise RuntimeError("UNKNOWN_PROBE_MODE")
++finally:
++    save("resource.json", {"maxRssKiB": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss})
+diff --git a/scripts/native-sim/mujoco-probe-evidence.d.mts b/scripts/native-sim/mujoco-probe-evidence.d.mts
+new file mode 100644
+index 0000000..052f502
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-evidence.d.mts
+@@ -0,0 +1,9 @@
++export interface ProbeCase {id:string;kind:string;seed:number;scope:string}
++export function mujocoCases():ProbeCase[];
++export function probePrerequisites(manifest:unknown,inventory:unknown,host:unknown,engine:unknown):string[];
++export function assessCase(spec:ProbeCase,raw:unknown):{passed:boolean;issues:string[]};
++export function sha256(bytes:string|Uint8Array):string;
++export function probeFile(root:string,path:string,max?:number):Promise<Buffer>;
++export function probeArtifacts(root:string):Promise<{path:string;bytes:number;sha256:string}[]>;
++export function analyseWire(events:unknown[]):{valid:boolean;issues:string[];spawned:number[];maxActive:number;ipcMs:number[];pending:unknown[];active:number[]};
++export function timingSummary(values:number[]):{samples:number;p50Ms:number;p95Ms:number;maxMs:number};
+diff --git a/scripts/native-sim/mujoco-probe-evidence.mjs b/scripts/native-sim/mujoco-probe-evidence.mjs
+new file mode 100644
+index 0000000..390d1d3
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-evidence.mjs
+@@ -0,0 +1,102 @@
++import {createHash} from 'node:crypto';
++import {lstat,open,readdir,realpath} from 'node:fs/promises';
++import {constants} from 'node:fs';
++import {join} from 'node:path';
++export const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
++export function mujocoCases(){return [
++ ...Array.from({length:10},(_,i)=>({id:`m00-${i+1}`,kind:'m00',seed:i+1,scope:'frozen_m00_recipe'})),
++ ...[7,42,99].map(seed=>({id:`mj-bv01-${seed}`,kind:'business',seed,scope:'unchanged_runtime'})),
++ {id:'bad-state',kind:'bad_state',seed:42,scope:'instrumented_historical_worker'},
++ {id:'worker-loss',kind:'worker_loss',seed:42,scope:'unchanged_runtime'},
++ {id:'long-run',kind:'long_run',seed:42,scope:'frozen_m00_recipe'}];}
++export function probePrerequisites(manifest,inventory,host,engine){
++ const issues=[];
++ if(!inventory?.provenance||inventory.provenance.emulation!=='none'||inventory.provenance.origin!=='linux_native')issues.push('HOST_PROVENANCE_UNRESOLVED');
++ if(JSON.stringify(inventory?.image)!==JSON.stringify(manifest?.subject?.image))issues.push('HOST_IMAGE_MISMATCH');
++ if(host?.os?.platform!=='linux'||host.architecture!==manifest.profile.architecture||host.provenance?.origin!=='linux_native'||host.provenance.emulation!=='none')issues.push('ACTUAL_HOST_NOT_NATIVE');
++ if(!engine||engine.version!=='3.17.0'||!Array.isArray(engine.artifacts)||!engine.artifacts.length||engine.artifacts.some(f=>!/^sha256:[a-f0-9]{64}$/.test(f.digest)||!Number.isInteger(f.bytes)||f.bytes<1)||!engine.artifacts.some(f=>f.path.includes('libmujoco')))issues.push('ENGINE_ARTIFACT_MISSING');
++ return [...new Set(issues)];
++}
++const finite=v=>typeof v==='number'&&Number.isFinite(v),positive=v=>finite(v)&&v>0;
++const quantiles=a=>Array.isArray(a)&&a.length>0&&a.every(v=>finite(v)&&v>=0);
++export function assessCase(spec,raw){
++ const issues=[],check=(v,code)=>{if(!v)issues.push(code);};
++ check(raw?.scope===spec.scope,'CASE_SCOPE');check(raw?.engineVersion==='3.17.0','ENGINE_VERSION');
++ if(spec.kind==='bad_state'){
++  check(raw?.injection?.kind==='qvel_nan'&&raw.injection.atTick===1&&raw.before?.tick===0&&raw.before?.state==='running','BAD_STATE_INJECTION');
++  check(Object.entries(raw?.warningDelta??{}).some(([k,n])=>['BADQPOS','BADQVEL','BADQACC'].includes(k)&&Number.isInteger(n)&&n>0),'REAL_ENGINE_WARNING_REQUIRED');
++  check(raw?.response?.ok===false&&raw.response.error?.code==='PLANT_UNSTABLE'&&raw.after?.state==='failed'&&raw.after.tick===0&&raw.postFault?.ok===false,'FAULT_STOP');
++  check(finite(raw?.elapsedMs)&&raw.elapsedMs<5000,'FAULT_BOUND');
++ }else if(spec.kind==='m00'){
++  const r=raw?.trial;check(r?.seed===spec.seed&&!r.nan&&r.heldAllCarry===true&&r.notHeldCarry===0,'GRASP_HELD');
++  check(finite(r?.liftM)&&r.liftM>=0.15&&finite(r?.slipM)&&r.slipM<=0.005&&positive(r?.dropTicks)&&r.dropTicks<=50&&finite(r?.placeErrM)&&r.placeErrM<=0.01,'GRASP_LIMITS');
++  check(finite(r?.peakFollowRad)&&r.peakFollowRad<=0.05&&Object.values(r?.settle??{}).length===7&&Object.values(r.settle).every(s=>positive(s.ticks)&&s.ticks<=25),'TRACKING_LIMITS');
++  check(r?.warnings&&typeof r.warnings==='object'&&Object.values(r.warnings).every(n=>n===0),'ENGINE_WARNINGS');
++  check(Array.isArray(raw?.trace)&&raw.trace.length>=800&&raw.trace.every(t=>Array.isArray(t.q)&&t.q.length===6&&t.q.every(finite)&&Array.isArray(t.cup)&&t.cup.every(finite)&&Array.isArray(t.cupquat)&&t.cupquat.every(finite)&&typeof t.held==='boolean'),'RAW_CONTACT_POSE_REQUIRED');
++  check(quantiles(raw?.tickMs)&&raw.tickMs.length===raw.trace?.length,'TICK_TIMING_REQUIRED');
++  try{
++   const t=raw.trace,close=t.filter(s=>s.label==='close:settle').at(-1),lift=t.filter(s=>s.label==='move:lift').at(-1),place=t.filter(s=>s.label==='dwell:place').at(-1);
++   const from=t.indexOf(close),to=t.indexOf(place),carry=t.slice(from+1,to+1),opened=t.filter(s=>s.label==='open'||s.label==='open:settle');
++   check(from>=0&&to>from&&carry.length>0&&carry.every(s=>s.held&&s.L&&s.R),'RAW_GRASP_CONTINUITY');
++   check(!!lift&&!!close&&lift.cup[2]-close.cup[2]>=0.15&&carry.every(s=>s.rel?.length===3&&Math.hypot(...s.rel.map((v,i)=>v-close.rel[i]))<=0.005),'RAW_LIFT_SLIP');
++   const settled=opened.findIndex((_,i)=>opened.slice(i).every(s=>s.tray&&!s.L&&!s.R&&s.cupv<0.005&&s.cupw<0.05));
++   check(settled>=0&&settled<50&&Math.hypot(opened.at(-1).cup[0]-0.35,opened.at(-1).cup[1]-0.35)<=0.01,'RAW_RELEASE');
++   check(t.every(s=>s.arm===false&&s.cmd?.length===6&&s.q.every((q,i)=>Math.abs(q-s.cmd[i])<=0.05)),'RAW_TRACKING_CONTACT');
++  }catch{check(false,'RAW_GRASP_RECIPE_INCOMPLETE');}
++
++ }else if(spec.kind==='long_run'){
++  check(raw?.ticks===180000&&raw?.substeps===1800000&&finite(raw?.driftS)&&Math.abs(raw.driftS)<=1e-5,'LONG_RUN_DRIFT');
++  check(quantiles(raw?.tickMs)&&raw.tickMs.length===180000&&raw?.warnings&&typeof raw.warnings==='object'&&Object.values(raw.warnings).every(n=>n===0),'LONG_RUN_OBSERVATIONS');
++  check(Array.isArray(raw?.lastPose)&&raw.lastPose.length===6&&raw.lastPose.every(finite),'RAW_POSE_REQUIRED');
++ }else{
++  const report=raw?.report,trace=raw?.trace,props=raw?.props,steps=raw?.requests;
++  check(report?.manifest?.scenario?.id==='MJ-BV01'&&report.manifest.seed===spec.seed&&report.manifest.mode==='simulation'&&report.manifest.access==='simulated'&&report.manifest.backendSetId==='engineering-mujoco-arm-v1','BUSINESS_MANIFEST');
++  check(report?.arm?.armPlant?.engineVersion==='3.17.0'&&report.arm.armPlant.calibration==='not_calibrated','BUSINESS_ENGINE');
++  check(Array.isArray(trace?.samples)&&trace.samples.length>0&&trace.samples.every(s=>s.actualRad?.length===6&&s.actualRad.every(finite))&&Array.isArray(props?.samples)&&props.samples.length===trace.samples.length&&props.frame==='map','RAW_CONTACT_POSE_REQUIRED');
++  check(Array.isArray(steps)&&steps.length>0&&new Set(steps.map(x=>x.actionId)).size===steps.length&&steps.every(x=>x.received===true)&&raw?.workerObservation?.maxActive===1,'SERIAL_NO_RESEND');
++  const wire=Array.isArray(raw?.wire)?analyseWire(raw.wire):{valid:false,ipcMs:[]};
++  check(wire.valid,'WORKER_WIRE_REQUIRED');
++  check(quantiles(raw?.ipcMs)&&JSON.stringify(raw.ipcMs)===JSON.stringify(wire.ipcMs),'IPC_TIMING_REQUIRED');
++  if(spec.kind==='business'){
++   check(wire.pending?.length===0,'WIRE_ACK_MISSING');
++   check(report?.outcome?.status==='completed'&&String(report.outcome.served)==='2'&&report.coffee?.cups?.length===2&&report.coffee.cups.every(c=>c.ownerKind==='customer'&&c.ownerId==='table-1'),'BUSINESS_OUTCOME');
++   check(report?.coffee?.armTrace?.stop===null&&report?.arm?.collision?.result==='pass','NOMINAL_ARM_STOP');
++  }else{
++   check(raw?.injection?.kind==='owned_pid_sigkill'&&Number.isInteger(raw.injection.pid)&&raw.injection.pid>1,'WORKER_LOSS_INJECTION');
++   check(report?.outcome?.status==='needs_attention'&&String(report.outcome.served)==='0'&&report.coffee?.armTrace?.stop?.reason==='WORKER_LOST'&&report.coffee.armTrace.stop.latched===true,'WORKER_LOSS_STOP');
++   check(Array.isArray(raw?.checkpoint?.coffee?.arm?.programs)&&raw.checkpoint.coffee.arm.programs.length===1&&raw.checkpoint.coffee.arm.programs[0].state==='unknown','SOURCE_UNKNOWN');
++   check(raw?.workerObservation?.spawned?.length===1&&raw.workerObservation.spawned[0]===raw.injection?.pid&&raw.workerObservation.afterLoss?.length===0&&raw.afterLossSteps>=5,'NO_RESPAWN');
++  }
++ }
++ if(spec.kind!=='bad_state')check(positive(raw?.maxRssKiB),'MEMORY_REQUIRED');
++ return {passed:issues.length===0,issues};
++}
++// Shared strict reader: regular non-symlink files, no traversal, bounded reads, no input imports.
++export async function probeFile(root,path,max=64*1024*1024){
++ if(typeof path!=='string'||path.length>240||!/^[-A-Za-z0-9_.]+(?:\/[-A-Za-z0-9_.]+)*$/.test(path)||path.split('/').some(p=>p==='.'||p==='..'))throw Error('PROBE_PATH_REJECTED');
++ const base=await realpath(root);let file=base;for(const p of path.split('/')){file=join(file,p);if((await lstat(file)).isSymbolicLink())throw Error('PROBE_PATH_REJECTED');}
++ const handle=await open(file,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
++ try{const before=await handle.stat();if(!before.isFile()||before.size>max)throw Error('PROBE_FILE_LIMIT');const b=Buffer.alloc(before.size+1);let n=0;while(n<b.length){const r=await handle.read(b,n,b.length-n,n);if(!r.bytesRead)break;n+=r.bytesRead;}const after=await handle.stat(),pathStat=await lstat(file);if(n!==before.size||after.size!==before.size||after.ctimeMs!==before.ctimeMs||pathStat.ino!==after.ino||pathStat.dev!==after.dev||await realpath(file)!==file)throw Error('PROBE_FILE_CHANGED');return b.subarray(0,n);}finally{await handle.close();}
++}
++export async function probeArtifacts(root,base='',budget={files:0,bytes:0}){
++ const result=[];for(const name of (await readdir(join(root,base))).sort()){if(!base&&name==='manifest.json')continue;const path=base?base+'/'+name:name;if(++budget.files>10000||path.split('/').length>14)throw Error('PROBE_ARTIFACT_LIMIT');const st=await lstat(join(root,path));if(st.isSymbolicLink())throw Error('PROBE_PATH_REJECTED');if(st.isDirectory())result.push(...await probeArtifacts(root,path,budget));else{const b=await probeFile(root,path);budget.bytes+=b.length;if(budget.bytes>1024**3)throw Error('PROBE_ARTIFACT_LIMIT');result.push({path,bytes:b.length,sha256:sha256(b)});}}return result;
++}
++export function analyseWire(events){
++ const seen=new Set(),pending=new Map(),spawned=[],ipcMs=[],issues=[];let maxActive=0,active=new Set();
++ for(const e of events){
++  if(e.event==='spawn'){spawned.push(e.pid);active.add(e.pid);maxActive=Math.max(maxActive,active.size);}
++  else if(e.event==='exit')active.delete(e.pid);
++  else if(e.event==='request'){
++   const key=e.pid+':'+e.value?.requestId;if(!spawned.includes(e.pid)||seen.has(key)||pending.has(e.pid)||!Number.isFinite(e.atMs))issues.push('WIRE_RESEND_OR_OVERLAP');seen.add(key);pending.set(e.pid,e);
++  }else if(e.event==='ack'){
++   const p=pending.get(e.pid);if(!p||p.value?.requestId!==e.value?.requestId||!Number.isFinite(e.atMs)||e.atMs<p.atMs)issues.push('WIRE_ACK_MISMATCH');else if(p.value.op==='step')ipcMs.push(e.atMs-p.atMs);pending.delete(e.pid);
++  }else issues.push('WIRE_OBSERVATION_INCOMPLETE');
++ }
++ if(active.size)issues.push('WIRE_EXIT_MISSING');
++ if(spawned.length!==1||maxActive!==1)issues.push('WIRE_RESPAWN_OR_MISSING');
++ return {valid:issues.length===0,issues,spawned,maxActive,ipcMs,pending:[...pending.values()],active:[...active]};
++}
++export function timingSummary(values){
++ if(!quantiles(values))throw Error('TIMING_SAMPLES_INVALID');const sorted=[...values].sort((a,b)=>a-b);
++ return {samples:sorted.length,p50Ms:sorted[Math.ceil(sorted.length*0.5)-1],p95Ms:sorted[Math.ceil(sorted.length*0.95)-1],maxMs:sorted.at(-1)};
++}
+diff --git a/scripts/native-sim/mujoco-probe-observer.d.mts b/scripts/native-sim/mujoco-probe-observer.d.mts
+new file mode 100644
+index 0000000..37343a2
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-observer.d.mts
+@@ -0,0 +1 @@
++export function observeSpawn<T>(original:(...args:unknown[])=>T,record:(event:unknown)=>void,ownedRoot:string):(...args:unknown[])=>T;
+diff --git a/scripts/native-sim/mujoco-probe-observer.mjs b/scripts/native-sim/mujoco-probe-observer.mjs
+new file mode 100644
+index 0000000..38ba2d4
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-observer.mjs
+@@ -0,0 +1,37 @@
++// Passive observer of unchanged subject bytes. Never changes argv/options/return values or wire bytes.
++import childProcess from 'node:child_process';
++import {syncBuiltinESMExports} from 'node:module';
++import {writeFileSync} from 'node:fs';
++import {appendFile,writeFile} from 'node:fs/promises';
++import {resolve,sep} from 'node:path';
++export function observeSpawn(original,record,ownedRoot){
++ return function(...args){
++  const child=Reflect.apply(original,this,args),argv=args[1],options=args[2];
++  const cwd=typeof options?.cwd==='string'?resolve(options.cwd):'';
++  if(!Array.isArray(argv)||!argv.some((x,i)=>x==='-m'&&argv[i+1]==='mujoco_worker')||!cwd.startsWith(resolve(ownedRoot)+sep))return child;
++  const at=()=>Number(process.hrtime.bigint())/1e6,pid=child.pid,runId=argv[argv.indexOf('--run-id')+1];
++  record({event:'spawn',pid,runId,command:args[0],args:argv,cwd,atMs:at()});
++  let input='',output='',bad=false;
++  const consume=(kind,chunk)=>{
++   if(bad)return;let b=(kind==='request'?input:output)+chunk.toString();
++   if(b.length>2*1024*1024){bad=true;record({event:'incomplete',pid,reason:'line_limit',atMs:at()});return;}
++   for(let p;(p=b.indexOf('\n'))>=0;){const line=b.slice(0,p);b=b.slice(p+1);try{record({event:kind,pid,runId,atMs:at(),value:JSON.parse(line)});}catch{bad=true;record({event:'incomplete',pid,reason:'invalid_wire_json',atMs:at()});}}
++   if(kind==='request')input=b;else output=b;
++  };
++  const write=child.stdin.write;
++  child.stdin.write=function(...values){try{consume('request',values[0]);}catch{record({event:'incomplete',pid,reason:'observer_error'});}return Reflect.apply(write,this,values);};
++  child.stdout.on('data',chunk=>consume('ack',chunk));
++  child.once('close',(code,signal)=>{if(input||output)record({event:'incomplete',pid,reason:'partial_wire_line',atMs:at()});record({event:'exit',pid,runId,code,signal,atMs:at()});});
++  return child;
++ };
++}
++if(process.env.L01_OBSERVER_FILE&&process.env.L01_OWNED_ROOT){
++ const file=process.env.L01_OBSERVER_FILE,ownedRoot=process.env.L01_OWNED_ROOT;delete process.env.L01_OBSERVER_FILE;delete process.env.L01_OWNED_ROOT;
++ let pending=Promise.resolve(),total=0,buffered=0,failed=false;
++ const fail=reason=>{if(failed)return;failed=true;pending=pending.then(()=>writeFile(file+'.incomplete',reason+'\n')).catch(()=>{});};
++ const record=e=>{if(failed)return;const text=JSON.stringify(e)+'\n',bytes=Buffer.byteLength(text);total+=bytes;buffered+=bytes;if(total>64*1024*1024||buffered>4*1024*1024){fail('observation_limit');return;}pending=pending.then(()=>appendFile(file,text,{mode:0o600})).catch(()=>fail('observation_write_failed')).finally(()=>{buffered-=bytes;});};
++ childProcess.spawn=observeSpawn(childProcess.spawn,record,ownedRoot);syncBuiltinESMExports();
++ process.on('beforeExit',()=>pending);
++ // A small exit receipt never delays or rewrites subject streams; pending/lost diagnostics refuse qualification.
++ process.on('exit',()=>{try{writeFileSync(file+'.seal',JSON.stringify({complete:!failed&&buffered===0,totalBytes:total})+'\n',{mode:0o600});}catch{/* missing seal is incomplete */}});
++}
+diff --git a/scripts/native-sim/mujoco-probe-process.d.mts b/scripts/native-sim/mujoco-probe-process.d.mts
+new file mode 100644
+index 0000000..eb696b4
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-process.d.mts
+@@ -0,0 +1 @@
++export function runProbeCommand(command:string,args:string[],options:{out:string;cwd?:string;env?:NodeJS.ProcessEnv;timeoutMs:number;signal?:AbortSignal;maxBytes?:number}):Promise<{status:string;reason:string|null;exitCode:number|null;[key:string]:unknown}>;
+diff --git a/scripts/native-sim/mujoco-probe-process.mjs b/scripts/native-sim/mujoco-probe-process.mjs
+new file mode 100644
+index 0000000..4d680a1
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-process.mjs
+@@ -0,0 +1,25 @@
++// Finite, owned process group. Streams are written as received, including on timeout/abort.
++import {spawn} from 'node:child_process';
++import {open,writeFile} from 'node:fs/promises';
++import {join} from 'node:path';
++export async function runProbeCommand(command,args,{out,cwd,env=process.env,timeoutMs,signal,maxBytes=32*1024*1024}){
++ if(!Number.isInteger(timeoutMs)||timeoutMs<1||timeoutMs>1800000)throw Error('PROBE_DEADLINE_REQUIRED');
++ const stdout=await open(join(out,'stdout.log'),'wx',0o600),stderr=await open(join(out,'stderr.log'),'wx',0o600),startedAt=new Date().toISOString();
++ let reason=null,killTimer,child,timer,bytes=0,pending=Promise.resolve(),writeError=null;
++ const send=s=>{if(!child?.pid)return;try{process.kill(-child.pid,s);}catch{try{child.kill(s);}catch{/* already exited */}}};
++ const stop=why=>{reason??=why;send('SIGTERM');killTimer??=setTimeout(()=>send('SIGKILL'),1000);};
++ const abort=()=>stop('aborted');
++ const append=(file,data)=>{bytes+=data.length;if(bytes>maxBytes){stop('output_limit');return;}pending=pending.then(()=>file.write(data)).catch(e=>{writeError=e;stop('write_failed');});};
++ let exitCode=null,exitSignal=null,spawnError=null;
++ try{
++  if(signal?.aborted)reason='aborted';
++  else await new Promise(done=>{
++   child=spawn(command,args,{cwd,env,stdio:['ignore','pipe','pipe'],detached:true});
++   child.stdout.on('data',d=>append(stdout,d));child.stderr.on('data',d=>append(stderr,d));
++   child.once('error',e=>{spawnError=String(e);});child.once('close',(code,sig)=>{exitCode=code;exitSignal=sig;done();});
++   timer=setTimeout(()=>stop('timeout'),timeoutMs);signal?.addEventListener('abort',abort,{once:true});
++  });
++ }finally{clearTimeout(timer);clearTimeout(killTimer);signal?.removeEventListener('abort',abort);await pending;await stdout.close();await stderr.close();}
++ const receipt={schemaVersion:1,startedAt,finishedAt:new Date().toISOString(),status:reason?'incomplete':exitCode===0?'completed':'failed',reason,exitCode,exitSignal,spawnError,writeError:writeError?String(writeError):null,command,args,stdout:'stdout.log',stderr:'stderr.log'};
++ await writeFile(join(out,'process.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});return receipt;
++}
+diff --git a/scripts/native-sim/mujoco-probe.d.mts b/scripts/native-sim/mujoco-probe.d.mts
+new file mode 100644
+index 0000000..17120b2
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe.d.mts
+@@ -0,0 +1,3 @@
++export function runMujocoProbe(options:{handoff:string;out:string;checker:{sourceCommit:string;toolSha256:string};signal?:AbortSignal}):Promise<{qualification:string;accepted:boolean;DEP_MJ_01:string;cases:{status:string}[]}>;
++export function verifyMujocoProbe(root:string):Promise<{passed:boolean;issues:string[];qualification:string;accepted:boolean}>;
++export function readMujocoProbeSupplement(root:string):Promise<{status:string;accepted:boolean;[key:string]:unknown}>;
+diff --git a/scripts/native-sim/mujoco-probe.mjs b/scripts/native-sim/mujoco-probe.mjs
+new file mode 100644
+index 0000000..7ff3599
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe.mjs
+@@ -0,0 +1,147 @@
++#!/usr/bin/env node
++// L01: orchestration, never provisioning. The subject image and observer checker are independent identities.
++import {mkdir,writeFile,readFile,lstat,readdir} from 'node:fs/promises';
++import {execFileSync} from 'node:child_process';
++import {join,dirname,resolve} from 'node:path';
++import {fileURLToPath,pathToFileURL} from 'node:url';
++import {randomUUID} from 'node:crypto';
++import {isDeepStrictEqual as same} from 'node:util';
++import {platform,arch} from 'node:os';
++import {tsImport} from 'tsx/esm/api';
++import {checkedCheckerCommit} from '../native-handoff.mjs';
++import {collectNativeInventory} from './native-inventory.mjs';
++import {runProbeCommand} from './mujoco-probe-process.mjs';
++import {probeFile,probeArtifacts,sha256,mujocoCases,assessCase,analyseWire,probePrerequisites,timingSummary} from './mujoco-probe-evidence.mjs';
++import baseline from './r2a-arm-baseline.json' with {type:'json'};
++const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),json=v=>JSON.stringify(v,null,2)+'\n';
++const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-engine.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
++const read=async(root,path,max)=>JSON.parse((await probeFile(root,path,max??1024*1024)).toString());
++async function stageObserver(out,handoff,manifest){
++ const dest=join(out,'observer');await mkdir(dest,{mode:0o700});
++ for(const name of OBSERVER)await writeFile(join(dest,name),await probeFile(ROOT,'scripts/native-sim/'+name),{flag:'wx',mode:0o600});
++ await writeFile(join(dest,'handoff.json'),json(manifest),{flag:'wx'});
++ const doc=execFileSync('git',['show',baseline.m00.sourceCommit+':'+baseline.m00.sourcePath],{cwd:ROOT,timeout:10000,maxBuffer:1024*1024});
++ if(sha256(doc)!==baseline.m00.documentSha256)throw Error('M00_DOCUMENT_CHANGED');await mkdir(join(dest,'m00'));await writeFile(join(dest,'m00-source.md'),doc);
++ const blocks=[...doc.toString().matchAll(/```python\n([\s\S]*?)```/g)].map(m=>m[1]);
++ for(const f of baseline.m00.files){const b=blocks.find(b=>sha256(b)===f.sha256);if(!b)throw Error('M00_RECIPE_CHANGED');await writeFile(join(dest,'m00',f.path),b,{flag:'wx'});}
++ const bundle=join(dest,'bad-state-bundle');await mkdir(join(bundle,'blobs'),{recursive:true});await writeFile(join(bundle,'arm-cell-scene.json'),JSON.stringify(baseline.world));
++ const base='robotics/simulation-mujoco/fixtures/xarm6-g2-v1/';
++ for(const ref of Object.values(manifest.refs).flat())if(ref.sourcePath.startsWith(base)&&(ref.sourcePath.endsWith('/component.json')||ref.sourcePath.endsWith('/physics.json')||ref.sourcePath.includes('/blobs/'))){const b=await probeFile(handoff,ref.path);if(sha256(b)!==ref.sha256)throw Error('SUBJECT_CHANGED');await writeFile(join(bundle,ref.sourcePath.slice(base.length)),b,{flag:'wx'});}
++ return dest;
++}
++export async function runMujocoProbe({handoff,out,checker,signal}){
++ out=resolve(out);handoff=resolve(handoff);if(out===ROOT||out.startsWith(ROOT+'/'))throw Error('EVIDENCE_MUST_BE_OUTSIDE_SOURCE');
++ await mkdir(out,{mode:0o700});
++ const manifest={schemaVersion:1,kind:'mujoco-native-probe',profileId:'mujoco-linux-amd64',subject:null,checker,accepted:false,dynamics:'not_calibrated',qualification:'not_run',DEP_MJ_01:'not_run',startedAt:new Date().toISOString(),issues:[],host:null,inventory:null,engine:null,cases:mujocoCases().map(c=>({...c,status:'not_run'})),r2b:{status:'not_run',reason:'image_unbuilt; separate current subject adapter owned by B10 (R83)'},artifacts:[]};
++ const save=()=>writeFile(join(out,'manifest.json'),json(manifest),{mode:0o600});await save();let executed=false;
++ try{
++  const {readNativeHandoff,validateNativeHandoff,exportNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
++  const subject=await readNativeHandoff(handoff);manifest.subject=subject.subject;
++  const prepared=await validateNativeHandoff(handoff,subject);await writeFile(join(out,'preparation.json'),json(prepared));if(!prepared.prepared)throw Error('HANDOFF_NOT_PREPARED');
++  await exportNativeHandoff(handoff,join(out,'handoff'));
++  // This guard precedes ALL Docker commands. A Mac container is never native Linux evidence.
++  const observed=await collectNativeInventory();manifest.host=observed;await writeFile(join(out,'host-observed.json'),json(observed));
++  if(platform()!=='linux'||arch()!=='x64')throw Error('NATIVE_AMD64_HOST_UNASSIGNED');
++  if(subject.profile.documents.kind!=='mujoco_r2a_arm_v1'||subject.profile.architecture!=='amd64')throw Error('R2A_PROFILE_REQUIRED');
++  const inventory=await read(handoff,'inventory.json'),assignment=await read(handoff,'host-assignment.json');
++  const machine=sha256(await readFile('/etc/machine-id'));
++  if(assignment.schemaVersion!==1||assignment.assigned!==true||assignment.machineIdSha256!==machine||assignment.hostOs!=='linux'||assignment.hostArchitecture!=='amd64'||assignment.emulation!=='none'||!['bare_metal','vm'].includes(assignment.virtualization)||typeof assignment.assignedBy!=='string'||!assignment.assignedBy.trim())throw Error('HOST_ASSIGNMENT_REQUIRED');
++  // Refuse nested containers and registered cross-ISA handlers; external provenance remains an operator attestation.
++  if(await lstat('/.dockerenv').then(()=>true,()=>false)||await lstat('/run/.containerenv').then(()=>true,()=>false))throw Error('HOST_CONTAINER_NOT_ASSIGNED');
++  for(const name of await readdir('/proc/sys/fs/binfmt_misc').catch(()=>[]))if(/qemu|rosetta/i.test(name)&&(await readFile('/proc/sys/fs/binfmt_misc/'+name,'utf8')).startsWith('enabled'))throw Error('HOST_EMULATION_ENABLED');
++  observed.provenance={origin:'linux_native',hostOs:'linux',hostArchitecture:'amd64',emulation:'none',virtualization:assignment.virtualization,assignmentSha256:sha256(json(assignment))};manifest.host=observed;manifest.inventory=inventory;await writeFile(join(out,'host-observed.json'),json(observed));
++  const admission=await validateNativeHandoff(handoff,subject,inventory);await writeFile(join(out,'admission.json'),json(admission));if(!admission.nativeReady)throw Error('HANDOFF_NOT_NATIVE_READY:'+admission.issues.map(i=>i.code).join(','));
++  if(subject.subject.image.manifestDigest!==baseline.historicalRegistryDigest)throw Error('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
++  // L00's exported refs exclude host provenance. Copy precisely the validated inventory/provenance records too.
++  const provenance=await read(handoff,inventory.provenance.evidencePath);
++  for(const p of ['inventory.json','host-assignment.json',inventory.provenance.evidencePath,provenance.platformManifestPath,provenance.imageConfigPath]){const b=await probeFile(handoff,p);await mkdir(dirname(join(out,'handoff',p)),{recursive:true});await writeFile(join(out,'handoff',p),b,{flag:'wx',mode:0o600});}
++  const observer=await stageObserver(out,handoff,subject),owner=randomUUID();await mkdir(join(out,'commands'));await mkdir(join(out,'cases'));
++  let seq=0;const command=async(args,timeoutMs=20000)=>{const d=join(out,'commands',String(++seq));await mkdir(d);const r=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});if(r.status!=='completed')throw Error('DOCKER_COMMAND_FAILED:'+args[0]);return (await readFile(join(d,'stdout.log'),'utf8')).trim();};
++  if(process.env.DOCKER_HOST||process.env.DOCKER_CONTEXT)throw Error('REMOTE_DOCKER_UNSUPPORTED');
++  const context=JSON.parse(await command(['context','inspect']));if(context.length!==1||!context[0]?.Endpoints?.docker?.Host?.startsWith('unix://'))throw Error('LOCAL_DOCKER_REQUIRED');
++  const info=JSON.parse(await command(['info','--format','{{json .}}']));if(info.OSType!=='linux'||!['x86_64','amd64'].includes(info.Architecture))throw Error('DAEMON_ARCH_MISMATCH');
++  const image=JSON.parse(await command(['image','inspect',subject.subject.image.configDigest]))[0];
++  if(image.Id!==subject.subject.image.configDigest||image.Os!=='linux'||image.Architecture!=='amd64'||image.Config?.Labels?.['org.opencontainers.image.revision']!==subject.subject.sourceCommit||!image.RepoDigests?.some(x=>x.endsWith('@'+subject.subject.image.manifestDigest)))throw Error('LOCAL_IMAGE_IDENTITY_MISMATCH');
++  await writeFile(join(out,'image-inspect.json'),json({id:image.Id,os:image.Os,architecture:image.Architecture,repoDigests:image.RepoDigests,sourceCommit:image.Config.Labels['org.opencontainers.image.revision'],rootfs:image.RootFS}));
++  const uid=process.getuid(),gid=process.getgid();if(uid===0)throw Error('NONROOT_PROBE_REQUIRED');
++  const run=async(id,timeoutMs)=>{
++   const d=join(out,'cases',id);await mkdir(d);const name='l01-'+owner+'-'+id;const args=['run','--pull','never','--name',name,'--label','mekoniq.l01.owner='+owner,'--network','none','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--pids-limit','128','--memory','2g','--cpus','2','--user',`${uid}:${gid}`,'--tmpfs','/tmp:rw,nosuid,nodev,size=768m','--mount',`type=bind,src=${observer},dst=/probe,readonly`,'--mount',`type=bind,src=${d},dst=/evidence`,'--entrypoint','node',subject.subject.image.configDigest,'/probe/mujoco-probe-container.mjs',id,'/evidence'];
++   let result;try{result=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});}
++   finally{
++    // Only a container with this invocation's unguessable ownership label is ever stopped/removed.
++    const cleanup=join(d,'cleanup');await mkdir(cleanup);const inspected=await runProbeCommand('docker',['inspect','--format','{{index .Config.Labels "mekoniq.l01.owner"}}',name],{out:cleanup,timeoutMs:10000});
++    if(inspected.status==='completed'&&(await readFile(join(cleanup,'stdout.log'),'utf8')).trim()===owner){for(const [label,args]of [['stop',['stop','-t','20',name]],['remove',['rm','-f',name]]]){const p=join(cleanup,label);await mkdir(p);await runProbeCommand('docker',args,{out:p,timeoutMs:30000});}}
++   }return result;
++  };
++  const pre=await run('inventory',120000);if(pre.status!=='completed')throw Error('IMAGE_INVENTORY_FAILED');
++  const imageInventory=await read(out,'cases/inventory/result.json');manifest.engine=imageInventory.engine;
++  if(!same(imageInventory.subject,subject.subject))throw Error('IMAGE_SUBJECT_MISMATCH');
++  const failures=probePrerequisites(subject,inventory,observed,manifest.engine);
++  if(imageInventory.architecture!=='x64'||imageInventory.node!=='v24.22.2'||!/^3\.11\./.test(manifest.engine.python)||!/^ID=debian$/m.test(imageInventory.osRelease)||!/^VERSION_ID="12"$/m.test(imageInventory.osRelease))failures.push('IMAGE_PLATFORM_TOOLCHAIN_MISMATCH');
++  if(manifest.engine.packages.some(([name])=>subject.profile.forbiddenPackages.includes(name.toLowerCase())))failures.push('IMAGE_FORBIDDEN_PACKAGE');
++  if(subject.profile.requiredPackages.length!==1)failures.push('UNMEASURED_PACKAGE_LOCK');const engineLib=manifest.engine.artifacts.find(f=>f.path.includes('libmujoco'));
++  const lock=subject.profile.requiredPackages.find(p=>p.name==='mujoco');if(!lock||lock.version!=='3.17.0'||'sha256:'+lock.sha256!==engineLib?.digest)failures.push('ENGINE_ARTIFACT_LOCK_MISMATCH');
++  if(failures.length)throw Error(failures.join(','));
++  executed=true;
++  for(const spec of manifest.cases){if(signal?.aborted)throw Error('PROBE_ABORTED');spec.status='incomplete';await save();const result=await run(spec.id,spec.kind==='long_run'?360000:180000);spec.status=result.status==='completed'?'passed':result.status==='incomplete'?'incomplete':'failed';if(spec.status==='passed'){const raw=await read(out,'cases/'+spec.id+'/result.json',64*1024*1024);const verdict=assessCase(spec,raw);spec.assertions=verdict;spec.performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};if(!verdict.passed)spec.status='failed';}await save();}
++  manifest.qualification=manifest.cases.every(c=>c.status==='passed')?'passed':manifest.cases.some(c=>c.status==='incomplete')?'incomplete':'failed';manifest.DEP_MJ_01=manifest.qualification;
++ }catch(e){manifest.issues.push(e.message);if(executed){manifest.qualification='incomplete';manifest.DEP_MJ_01='incomplete';}}
++ manifest.finishedAt=new Date().toISOString();try{manifest.artifacts=await probeArtifacts(out);}catch(e){manifest.issues.push('ARTIFACT_COLLECTION_FAILED:'+e.message);manifest.qualification=executed?'incomplete':'not_run';manifest.DEP_MJ_01=manifest.qualification;}await save();return manifest;
++}
++export async function verifyMujocoProbe(root){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push(code);};let manifest;
++ try{
++  manifest=await read(root,'manifest.json');check(manifest.schemaVersion===1&&manifest.kind==='mujoco-native-probe'&&manifest.accepted===false&&manifest.dynamics==='not_calibrated','PROBE_MANIFEST');
++  const actual=await probeArtifacts(root),refs=manifest.artifacts??[];check(actual.length===refs.length,'ARTIFACT_SET');
++  for(const ref of refs){const a=actual.find(a=>a.path===ref.path);check(a&&same(a,ref),'ARTIFACT_HASH:'+ref.path);}check(new Set(refs.map(r=>r.path)).size===refs.length,'ARTIFACT_DUPLICATE');
++  check(manifest.qualification==='passed'&&manifest.DEP_MJ_01==='passed','NATIVE_CAMPAIGN_NOT_PASSED');
++  for(const name of OBSERVER)check(sha256(await probeFile(root,'observer/'+name))===sha256(await probeFile(ROOT,'scripts/native-sim/'+name)),'OBSERVER_PIN:'+name);
++  for(const f of baseline.m00.files)check(sha256(await probeFile(root,'observer/m00/'+f.path))===f.sha256,'M00_RECIPE_PIN');
++  check(sha256(await probeFile(root,'observer/m00-source.md'))===baseline.m00.documentSha256,'M00_SOURCE_PIN');
++  check(same(await read(root,'host-observed.json'),manifest.host),'HOST_MEASUREMENT');
++  const specs=mujocoCases();check(Array.isArray(manifest.cases)&&manifest.cases.length===specs.length,'CASE_MATRIX');
++  const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),handoff=await read(root,'handoff/manifest.json'),inventory=await read(root,'handoff/inventory.json');
++  const admitted=await validateNativeHandoff(join(root,'handoff'),handoff,inventory);check(admitted.nativeReady,'HANDOFF_NOT_NATIVE_READY');check(same(handoff.subject,manifest.subject),'SUBJECT_MISMATCH');
++  for(const issue of probePrerequisites(handoff,inventory,manifest.host,manifest.engine))issues.push(issue);
++  const image=await read(root,'image-inspect.json'),measured=await read(root,'cases/inventory/result.json');check(image.id===manifest.subject.image.configDigest&&image.os==='linux'&&image.architecture==='amd64'&&image.sourceCommit===manifest.subject.sourceCommit&&image.repoDigests.some(s=>s.endsWith('@'+manifest.subject.image.manifestDigest)),'IMAGE_MEASUREMENT');check(same(measured.engine,manifest.engine)&&same(measured.subject,manifest.subject),'ENGINE_MEASUREMENT');
++  check(measured.architecture==='x64'&&measured.node==='v24.22.2'&&/^3\.11\./.test(measured.engine.python)&&/^ID=debian$/m.test(measured.osRelease)&&/^VERSION_ID="12"$/m.test(measured.osRelease),'IMAGE_PLATFORM_TOOLCHAIN');
++  const lib=manifest.engine.artifacts.find(f=>f.path.includes('libmujoco')),lock=handoff.profile.requiredPackages.find(p=>p.name==='mujoco');check(lock&&'sha256:'+lock.sha256===lib?.digest,'ENGINE_ARTIFACT_LOCK_MISMATCH');
++  for(const spec of specs){try{
++   const entry=manifest.cases.find(c=>c.id===spec.id);check(entry&&spec.kind===entry.kind&&entry.scope===spec.scope&&entry.seed===spec.seed&&entry.status==='passed','CASE_STATUS:'+spec.id);
++   const dir='cases/'+spec.id+'/',proc=await read(root,dir+'process.json'),raw=await read(root,dir+'result.json',64*1024*1024);check(proc.status==='completed'&&proc.exitCode===0&&proc.command==='docker'&&proc.args.includes(manifest.subject.image.configDigest)&&proc.args.includes('/probe/mujoco-probe-container.mjs'),'EXECUTION_RECEIPT:'+spec.id);
++   for(const issue of assessCase(spec,raw).issues)issues.push(spec.id+':'+issue);
++   const performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};check(same(entry?.performance,performance),'PERFORMANCE_SUMMARY:'+spec.id);
++   if(['business','worker_loss'].includes(spec.kind)){
++    check((await read(root,dir+'wire.jsonl.seal')).complete===true,'WIRE_SEAL');
++    const report=await read(root,dir+'report.json'),wire=await read(root,dir+'run-wire.json',64*1024*1024);check(same(report,raw.report)&&report.manifest.sourceCommit===manifest.subject.sourceCommit&&report.schemaHash===manifest.subject.schemaHash&&same(wire,raw.wire)&&analyseWire(wire).valid,'SUBJECT_READER:'+spec.id);
++    const copies=await read(root,dir+'runtime-copies.json');check(copies.afterRuntimeClose===true&&copies.copies.some(c=>c.path.endsWith('/journal.db')),'SQLITE_VERIFIED_COPY');
++    for(const r of copies.copies){const b=await probeFile(root,dir+r.path);check(b.length===r.bytes&&sha256(b)===r.sha256,'RUNTIME_COPY_HASH');}
++    const traceRef=copies.copies.find(r=>r.path.endsWith('/'+report.arm.trace.path)),propsRef=copies.copies.find(r=>r.path.endsWith('/'+report.arm.props.path));check(traceRef?.sha256===report.arm.trace.sha256&&propsRef?.sha256===report.arm.props.sha256,'SUBJECT_TRACE_REFS');
++    if(traceRef&&propsRef)check(same(await read(root,dir+traceRef.path,64*1024*1024),raw.trace)&&same(await read(root,dir+propsRef.path,64*1024*1024),raw.props),'SUBJECT_TRACE_BYTES');
++    if(spec.kind==='worker_loss'){const a=analyseWire(wire);check(a.spawned.length===1&&a.spawned[0]===raw.injection.pid&&!wire.some(e=>e.event==='ack'&&e.atMs>raw.injection.atMs&&e.value.ok),'NO_POST_LOSS_ACK');}
++   }else if(spec.kind==='bad_state'){
++    for(const name of ['before-state.npz','injected-state.npz','after-state.npz','compiled.xml','requests.json','responses.json'])check(refs.some(r=>r.path===dir+'engine/'+name),'BAD_STATE_RAW:'+name);
++    const responses=await read(root,dir+'engine/responses.json');check(same(responses.at(-2),raw.response)&&same(responses.at(-1),raw.postFault),'BAD_STATE_RESPONSE_BYTES');
++   }else if(spec.kind==='m00')check(same(await read(root,dir+'engine/trace-'+spec.seed+'.json',64*1024*1024),raw.trace),'M00_RAW_TRACE');
++  }catch(e){issues.push('CASE_UNREADABLE:'+spec.id+':'+e.message);}}
++ }catch(e){issues.push('PROBE_UNREADABLE:'+e.message);}
++ return {passed:issues.length===0,issues,subject:manifest?.subject??null,qualification:issues.length?'not_qualified':'passed',accepted:false,dynamics:'not_calibrated'};
++}
++
++export async function readMujocoProbeSupplement(root){
++ const manifest=await read(root,'manifest.json'),artifacts=await probeArtifacts(root);
++ if(manifest.schemaVersion!==1||manifest.kind!=='mujoco-native-probe'||manifest.accepted!==false||!same(artifacts,manifest.artifacts)||!['passed','failed','incomplete','not_run'].includes(manifest.qualification))throw Error('PROBE_SUPPLEMENT_INVALID');
++ const verdict=await verifyMujocoProbe(root);
++ if(manifest.qualification==='passed'&&!verdict.passed)throw Error('PROBE_SUPPLEMENT_INVALID:'+verdict.issues.join(','));
++ if(!manifest.subject||!same(Object.fromEntries(Object.keys(baseline.subject).map(k=>[k,manifest.subject[k]])),baseline.subject))throw Error('PROBE_SUPPLEMENT_INVALID:SUBJECT');
++ return {status:manifest.qualification,DEP_MJ_01:verdict.passed?'passed':manifest.qualification==='passed'?'not_run':manifest.qualification,subject:manifest.subject,checker:manifest.checker,manifestSha256:sha256(await probeFile(root,'manifest.json')),accepted:false,dynamics:'not_calibrated',issues:verdict.issues};
++}
++export async function copyMujocoProbeSupplement(input,out){
++ const summary=await readMujocoProbeSupplement(input),manifest=await read(input,'manifest.json');await mkdir(out,{mode:0o700});
++ for(const r of manifest.artifacts){const b=await probeFile(input,r.path);if(b.length!==r.bytes||sha256(b)!==r.sha256)throw Error('PROBE_CHANGED');await mkdir(dirname(join(out,r.path)),{recursive:true});await writeFile(join(out,r.path),b,{flag:'wx',mode:0o600});}
++ const b=await probeFile(input,'manifest.json');if(sha256(b)!==summary.manifestSha256)throw Error('PROBE_CHANGED');await writeFile(join(out,'manifest.json'),b,{flag:'wx'});await readMujocoProbeSupplement(out);return summary;
++}
++
++if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
++ try{const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--handoff','--out','--verify'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('USAGE: mujoco-probe.mjs --handoff DIR --out NEW_DIR | --verify DIR');o[args[i]]=resolve(args[i+1]);}if(o['--verify']?Object.keys(o).length!==1:!o['--handoff']||!o['--out'])throw Error('MISSING_ARGUMENT');const sourceCommit=await checkedCheckerCommit(),checker={sourceCommit,toolSha256:sha256(await readFile(fileURLToPath(import.meta.url)))};const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP','SIGALRM'])process.once(s,()=>abort.abort());const result=o['--verify']?await verifyMujocoProbe(o['--verify']):await runMujocoProbe({handoff:o['--handoff'],out:o['--out'],checker,signal:AbortSignal.any([abort.signal,AbortSignal.timeout(1500000)])});if(await checkedCheckerCommit()!==sourceCommit)throw Error('CHECKER_CHANGED_DURING_PROBE');console.log(json(result));process.exitCode=o['--verify']?(result.passed?0:1):result.DEP_MJ_01==='passed'?0:2;}catch(e){console.error(json({error:e.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
++}
+diff --git a/scripts/native-sim/prepare-mujoco-r2a.mjs b/scripts/native-sim/prepare-mujoco-r2a.mjs
+new file mode 100644
+index 0000000..dc7c5f0
+--- /dev/null
++++ b/scripts/native-sim/prepare-mujoco-r2a.mjs
+@@ -0,0 +1,35 @@
++#!/usr/bin/env node
++// Read-only frozen Git objects + verified archived runtime; never checks out, rebuilds or runs R2a.
++import {readFile,mkdir,writeFile} from 'node:fs/promises';
++import {execFileSync} from 'node:child_process';
++import {dirname,join,resolve} from 'node:path';
++import {fileURLToPath,pathToFileURL} from 'node:url';
++import {tsImport} from 'tsx/esm/api';
++import reference from './r2a-arm-baseline.json' with {type:'json'};
++import profile from '../../robotics/simulation-mujoco/profiles/linux-amd64.json' with {type:'json'};
++import {checkedCheckerCommit} from '../native-handoff.mjs';
++import {probeFile,sha256} from './mujoco-probe-evidence.mjs';
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
++export async function prepareR2aHandoff({runtimeCache,lab,out,checkerCommit}){
++ const old=reference.subject,git=(repo,commit,path)=>execFileSync('git',['show',commit+':'+path],{cwd:repo,timeout:10000,maxBuffer:64*1024*1024});
++ const runtime=await probeFile(runtimeCache,'runtime.mjs'),manifestBytes=await probeFile(runtimeCache,'manifest.json'),runtimeManifest=JSON.parse(manifestBytes),lockBytes=git(lab,old.labCommit,'config/source-runtime.lock.json');
++ if(sha256(runtime)!==old.runtimeArtifactSha256||runtimeManifest.sourceCommit!==old.sourceCommit||runtimeManifest.schemaHash!==old.schemaHash||runtimeManifest.dirty!==false||runtimeManifest.portableSimulationTools.closure.digest!==old.portableClosureHash)throw Error('R2A_CACHE_IDENTITY');
++ await mkdir(out,{mode:0o700});const refs={};
++ const put=async(role,path,bytes,sourcePath=path,sourceCommit=old.sourceCommit)=>{await mkdir(dirname(join(out,path)),{recursive:true,mode:0o700});await writeFile(join(out,path),bytes,{flag:'wx',mode:0o600});const ref={path,sourcePath,sourceCommit,bytes:bytes.length,sha256:sha256(bytes)};(refs[role]??=[]).push(ref);return ref;};
++ for(const f of runtimeManifest.portableSimulationTools.closure.files){
++  const bytes=git(root,old.sourceCommit,f.path);if(bytes.length!==f.bytes||sha256(bytes)!==f.sha256)throw Error('R2A_CLOSURE_MISMATCH:'+f.path);
++  const schema=f.path.startsWith('packages/contracts/schemas/'),role=schema?'schema':f.path.endsWith('/xarm6-g2-v1/component.json')?'model':f.path.endsWith('/xarm6-g2-v1/coffee-cell-project.json')?'project':f.path==='robotics/simulation-mujoco/requirements.lock'?'engine':'tool';
++  await put(role,'subject/'+f.path,bytes,schema?f.path.split('/').at(-1):f.path);
++ }
++ await put('runtime','runtime.mjs',runtime);await put('runtimeManifest','runtime-manifest.json',manifestBytes);await put('labLock','lab-lock.json',lockBytes,'config/source-runtime.lock.json',old.labCommit);
++ await put('world','derived/arm-cell-scene.json',Buffer.from(JSON.stringify(reference.world)),'derived/r2a-arm-cell-scene.json');
++ const p=await put('profile','derived/linux-amd64.json',Buffer.from(JSON.stringify(profile,null,2)+'\n'),'derived/observer/linux-amd64.json');
++ const manifest={schemaVersion:1,subject:{...old,id:'r2a-4f893ac-linux-amd64',executionKind:'mujoco_image',profileSha256:p.sha256,nativeClosureHash:null,image:null},checker:{sourceCommit:checkerCommit,toolSha256:sha256(await readFile(fileURLToPath(import.meta.url)))},refs,profile,frames:{world:'map',robotBase:'base',tool:'tcp',handedness:'right'},units:{length:'m',angle:'rad',mass:'kg',time:'s'},seeds:[7,42,99],casePolicy:{required:['m00-seeds-1-10','MJ-BV01-seeds-7-42-99','bad_state','worker_loss','long_run'],lostAck:'unknown_no_resend',authority:'source'},accepted:false,dynamics:'not_calibrated'};
++ await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
++ const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),assessment=await validateNativeHandoff(out,manifest);
++ await writeFile(join(out,'preparation.json'),JSON.stringify({subject:manifest.subject,checker:manifest.checker,derived:{world:{producer:'frozen arm-cell builder; seed42 arm-1 cups1,2',sourceCommit:old.sourceCommit},profile:{producer:'observer',sourceCommit:checkerCommit}},...assessment,accepted:false,qualification:'not_run',dynamics:'not_calibrated',imageRecordsVerified:false},null,2)+'\n',{flag:'wx'});
++ if(!assessment.prepared)throw Error('R2A_PREPARATION_FAILED:'+JSON.stringify(assessment.issues));return assessment;
++}
++if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
++ try{const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--runtime-cache','--lab','--out'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('USAGE: prepare-mujoco-r2a.mjs --runtime-cache DIR --lab REPO --out NEW_DIR');o[args[i]]=resolve(args[i+1]);}if(Object.keys(o).length!==3)throw Error('MISSING_ARGUMENT');const checkerCommit=await checkedCheckerCommit();const result=await prepareR2aHandoff({runtimeCache:o['--runtime-cache'],lab:o['--lab'],out:o['--out'],checkerCommit});if(await checkedCheckerCommit()!==checkerCommit)throw Error('CHECKER_CHANGED');console.log(JSON.stringify(result));}catch(e){console.error(e.message);process.exitCode=1;}
++}
+diff --git a/scripts/native-sim/r2a-arm-baseline.json b/scripts/native-sim/r2a-arm-baseline.json
+new file mode 100644
+index 0000000..0b755cf
+--- /dev/null
++++ b/scripts/native-sim/r2a-arm-baseline.json
+@@ -0,0 +1,680 @@
++{
++  "schemaVersion": 1,
++  "subject": {
++    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
++    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
++    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
++    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
++    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270"
++  },
++  "historicalRegistryDigest": "sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009",
++  "imageRecordsVerified": false,
++  "files": [
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/NOTICE",
++      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
++      "bytes": 1840
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/README.md",
++      "sha256": "df05605c06720016a640746dc5ec4f09e2f91c3b315c059d283e8c30fe347316",
++      "bytes": 5711
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
++      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
++      "bytes": 22284
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
++      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
++      "bytes": 242684
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
++      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
++      "bytes": 563584
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
++      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
++      "bytes": 290784
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
++      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
++      "bytes": 243084
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
++      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
++      "bytes": 2505834
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
++      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
++      "bytes": 150084
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
++      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
++      "bytes": 340884
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
++      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
++      "bytes": 202384
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
++      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
++      "bytes": 242684
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
++      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
++      "bytes": 366284
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
++      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
++      "bytes": 291584
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
++      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
++      "bytes": 366284
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
++      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
++      "bytes": 22284
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/cell-layout.json",
++      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
++      "bytes": 967
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json",
++      "sha256": "c22cc9d91c261e6b23d27c99472e5545c1a8fd9b564421fa86a4996f3f49ca7e",
++      "bytes": 2917
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/component.json",
++      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
++      "bytes": 69507
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/fk-golden.json",
++      "sha256": "87dc76938e7687fb9543046c0fc1c3c8b522bf78c0ec286d9cd6d88206137d90",
++      "bytes": 8008
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/manifest.json",
++      "sha256": "51bad5842206673d9f417a5f0f4813ac904f64b12a53cbfb403e1e12294b3407",
++      "bytes": 7983
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/physics.json",
++      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
++      "bytes": 3930
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/programs.json",
++      "sha256": "af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48",
++      "bytes": 3914
++    },
++    {
++      "path": "robotics/simulation-mujoco/fixtures/xarm6-g2-v1/vendor-manifest.json",
++      "sha256": "4c8e12ba58f748c0a5aefd879a5b349261fe0ea10d0255f2c3485cd1c5c2dbfe",
++      "bytes": 12148
++    },
++    {
++      "path": "robotics/simulation-mujoco/requirements.lock",
++      "sha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84",
++      "bytes": 37555
++    }
++  ],
++  "schemas": [
++    {
++      "name": "lab-project-v2.schema.json",
++      "sha256": "29737e456a2fc664d174e03c4dc501a369341d893ef7f9e0a099e15a5a77bd22"
++    },
++    {
++      "name": "lab-fault-schedule.schema.json",
++      "sha256": "bdfac85d58c0b0887ad9cda85d3881480039a81a5d6226a55e5f5738db5e1062"
++    },
++    {
++      "name": "engineering-component.schema.json",
++      "sha256": "5e535859cfe6afa3f04fd46d137370b3b6d776762a657ba957f5c5ad041eae55"
++    },
++    {
++      "name": "arm-cell-scene-v1.schema.json",
++      "sha256": "c5acf75b8194cb306fee9714c2b9f3e24d1d55b7851b507c249607731f38901e"
++    },
++    {
++      "name": "arm-scene-3d-v1.schema.json",
++      "sha256": "5ce0150cfbcb61c0da229d8fccb15812500bbd4c80b236e7af3945bb20df5255"
++    }
++  ],
++  "binding": {
++    "kind": "mujoco_r2a_arm_v1",
++    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
++    "siModelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
++    "sourceUnits": {
++      "length": "m",
++      "angle": "rad",
++      "alpha": "rad"
++    },
++    "lengthToM": 1,
++    "angleToRad": 1,
++    "frameMap": {
++      "world": "map",
++      "robotBase": "base",
++      "armBase": "base",
++      "baseInMap": {
++        "position": [
++          2.65,
++          0.65,
++          0.7
++        ],
++        "quaternionXyzw": [
++          0,
++          0,
++          0,
++          1
++        ]
++      },
++      "flange": "link6",
++      "tcp": "tcp",
++      "tcpInFlange": {
++        "translationM": [
++          0,
++          0,
++          0.172
++        ],
++        "quaternionXyzw": [
++          0,
++          0,
++          0,
++          1
++        ]
++      },
++      "armTree": [
++        {
++          "id": "link1",
++          "parent": "base",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0,
++              0.267
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link2",
++          "parent": "link1",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link3",
++          "parent": "link2",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0.0535,
++              -0.2845,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link4",
++          "parent": "link3",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0.0775,
++              0.3425,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link5",
++          "parent": "link4",
++          "origin": {
++            "quaternionXyzw": [
++              0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "link6",
++          "parent": "link5",
++          "origin": {
++            "quaternionXyzw": [
++              -0.707108079859,
++              0,
++              0,
++              0.707105482511
++            ],
++            "xyzM": [
++              0.076,
++              0.097,
++              0
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "xarm_gripper_base_link",
++          "parent": "link6",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0,
++              0
++            ]
++          },
++          "kind": "fixed"
++        },
++        {
++          "id": "left_outer_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.035,
++              0.059098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "left_finger",
++          "parent": "left_outer_knuckle",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.035465,
++              0.042039
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "left_inner_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              0.02,
++              0.074098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_outer_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.035,
++              0.059098
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_finger",
++          "parent": "right_outer_knuckle",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.035465,
++              0.042039
++            ]
++          },
++          "kind": "revolute"
++        },
++        {
++          "id": "right_inner_knuckle",
++          "parent": "xarm_gripper_base_link",
++          "origin": {
++            "quaternionXyzw": [
++              0,
++              0,
++              0,
++              1
++            ],
++            "xyzM": [
++              0,
++              -0.02,
++              0.074098
++            ]
++          },
++          "kind": "revolute"
++        }
++      ],
++      "drive": null,
++      "tray": {
++        "frame": "arm_base",
++        "centerM": [
++          0.35,
++          0.35,
++          0.03
++        ],
++        "sizeM": [
++          0.2,
++          0.2,
++          0.06
++        ]
++      },
++      "sensors": []
++    },
++    "jointMap": [
++      {
++        "id": "J1",
++        "controllerJoint": "J1",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J2",
++        "controllerJoint": "J2",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -2.059,
++        "upperRad": 2.0944,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J3",
++        "controllerJoint": "J3",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -3.927,
++        "upperRad": 0.19198,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J4",
++        "controllerJoint": "J4",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J5",
++        "controllerJoint": "J5",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -1.69297,
++        "upperRad": 3.14159265359,
++        "velocityRadS": 3.14
++      },
++      {
++        "id": "J6",
++        "controllerJoint": "J6",
++        "sign": 1,
++        "zeroOffsetRad": 0,
++        "lowerRad": -6.28318530718,
++        "upperRad": 6.28318530718,
++        "velocityRadS": 3.14
++      }
++    ],
++    "inertiaOrder": "xx_xy_xz_yy_yz_zz"
++  },
++  "world": {
++    "schemaVersion": 1,
++    "sceneDigest": "8d153bdfeeb3b1bd27dad9b64475ada4edde6be65fa97a81a541d244cdd74ce1",
++    "arm": {
++      "armId": "arm-1",
++      "modelId": "xarm6-g2-v1",
++      "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
++      "baseInMap": {
++        "position": [
++          2.65,
++          0.65,
++          0.7
++        ],
++        "quaternionXyzw": [
++          0,
++          0,
++          0,
++          1
++        ]
++      },
++      "homeRad": [
++        -4.93613604879e-10,
++        -1.14779631171,
++        -0.324460234973,
++        -3.14159266066,
++        0.098539780113,
++        7.05694566235e-09
++      ]
++    },
++    "statics": [
++      {
++        "id": "fixture:counter",
++        "kind": "box",
++        "min": [
++          -0.6499999999999999,
++          0.85,
++          -0.7
++        ],
++        "max": [
++          1.35,
++          1.4500000000000002,
++          0.30000000000000004
++        ]
++      }
++    ],
++    "supports": [
++      {
++        "id": "nozzle-stand",
++        "centerM": [
++          3.1399999999999997,
++          0.65,
++          0.75
++        ],
++        "sizeM": [
++          0.1,
++          0.1,
++          0.1
++        ]
++      },
++      {
++        "id": "tray",
++        "centerM": [
++          3,
++          1,
++          0.73
++        ],
++        "sizeM": [
++          0.2,
++          0.2,
++          0.06
++        ]
++      }
++    ],
++    "props": [
++      {
++        "propId": "cup-1",
++        "kind": "cup",
++        "radiusM": 0.04,
++        "heightM": 0.1,
++        "massKg": 0.32,
++        "provenance": "assumed"
++      },
++      {
++        "propId": "cup-2",
++        "kind": "cup",
++        "radiusM": 0.04,
++        "heightM": 0.1,
++        "massKg": 0.32,
++        "provenance": "assumed"
++      }
++    ],
++    "graspFrames": {
++      "pick": {
++        "position": [
++          3.162,
++          0.65,
++          0.85
++        ],
++        "quaternionXyzw": [
++          0,
++          0.7071067811865475,
++          0,
++          0.7071067811865475
++        ]
++      },
++      "place": {
++        "position": [
++          3.015556349186,
++          1.015556349186,
++          0.8119999999999999
++        ],
++        "quaternionXyzw": [
++          -0.27059805007308096,
++          0.6532814824381955,
++          0.27059805007308096,
++          0.6532814824381955
++        ]
++      }
++    },
++    "allowedContacts": [
++      {
++        "a": "gripper",
++        "b": "nozzle-stand"
++      },
++      {
++        "a": "gripper",
++        "b": "tray"
++      },
++      {
++        "a": "held_prop",
++        "b": "nozzle-stand"
++      },
++      {
++        "a": "held_prop",
++        "b": "tray"
++      }
++    ],
++    "world3d": {
++      "padFriction": 1,
++      "propFriction": 0.6,
++      "supportFriction": 1,
++      "provenance": "assumed"
++    },
++    "engine": {
++      "id": "mujoco_3d",
++      "timestepMs": 2,
++      "substeps": 10
++    },
++    "engineSeed": 42
++  },
++  "m00": {
++    "sourcePath": "docs/research/2026-11-mujoco-arm-spike.md",
++    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
++    "documentSha256": "1e2a32fe1516a0a8a0951799896c3921651eb1e37171dc619ad834ffd941621f",
++    "extraction": "verbatim python fenced blocks under scene.py and run.py; no tuning",
++    "files": [
++      {
++        "path": "scene.py",
++        "sha256": "d4b24ba7a0e3446ca02937c85a5de732246e2bbf3bdd8b040c3d62c6a27fd2a3"
++      },
++      {
++        "path": "run.py",
++        "sha256": "02163a31bad7f5a5d3ae8467da15239a8bc92919c92f2d508e7900b10e1f7962"
++      }
++    ]
++  }
++}
+diff --git a/scripts/record-sim-extension.mjs b/scripts/record-sim-extension.mjs
+index 3e04edf..8775282 100644
+--- a/scripts/record-sim-extension.mjs
++++ b/scripts/record-sim-extension.mjs
+@@ -25,22 +25,22 @@ import {copyFileSync,existsSync,mkdtempSync,readFileSync,readdirSync,renameSync,
+ import {mkdir,readFile,writeFile} from 'node:fs/promises';
+ import {arch,homedir,hostname,platform,release,tmpdir} from 'node:os';
+ import {dirname,join,relative,resolve} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+ import {closureIdentity,ownOutput,treeState} from './lab-irsim.mjs';
+ import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.mjs';
+ import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkLabCommits,preflight,screenLockedFromIoreg,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
+ import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+ const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
+-const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined};
+-const VALUE={'--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--r1-record':'r1Record','--r11-record':'r11Record','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython','--blocked':'blocked','--blocked-reason':'blockedReason'};
++const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined,mujocoProbe:undefined};
++const VALUE={'--mujoco-probe':'mujocoProbe','--release':'release','--out':'out','--candidate-id':'candidateId','--irsim-record':'irsimRecord','--r1-record':'r1Record','--r11-record':'r11Record','--mock-regression':'mock','--lab':'lab','--webots-home':'webotsHome','--webots-python':'webotsPython','--blocked':'blocked','--blocked-reason':'blockedReason'};
+ for(let i=0;i<raw.length;i++){const a=raw[i];if(a==='--skip-suites')own.skipSuites=true;else if(a==='--plan')own.plan=true;else if(VALUE[a]){const v=raw[++i];if(v===undefined||v.startsWith('--'))fail('NOT_RUN',`MISSING_VALUE:${a}`);own[VALUE[a]]=v;}else fail('NOT_RUN',`UNKNOWN_OPTION:${a}`);}
+ if(!['r1','r1.1','r2a'].includes(own.release))fail('NOT_RUN',`MISSING_OPTION:--release r1|r1.1|r2a${own.release?` (got ${own.release})`:''}`);
+ const R11=own.release==='r1.1',R2A=own.release==='r2a';
+ if(own.irsimRecord&&own.release!=='r1')fail('NOT_RUN','UNKNOWN_OPTION:--irsim-record (R1.1 and R2a take the IR-SIM record from the record they build on)');
+ if(own.r1Record&&!R11)fail('NOT_RUN','UNKNOWN_OPTION:--r1-record (only Release 1.1)');
+ for(const [k,f] of [['r11Record','--r11-record'],['blocked','--blocked'],['blockedReason','--blocked-reason']])if(own[k]!==undefined&&!R2A)fail('NOT_RUN',`UNKNOWN_OPTION:${f} (only Release R2a)`);
+ // --blocked (D70): part A gates only, with a reason, and only when the M00 spike note concludes failure; checked before anything else is read or written
+ const blocked=R2A&&(own.blocked!==undefined||own.blockedReason!==undefined)?{gates:(own.blocked??'').split(',').filter(Boolean),reason:own.blockedReason??''}:null;
+ if(blocked){const p=checkBlocked(blocked,existsSync(join(root,SPIKE_NOTE))?readFileSync(join(root,SPIKE_NOTE),'utf8'):'');if(p.length)fail('NOT_RUN',p.join('; '));}
+ const table=R2A?tableR2a(blocked?.gates??[],blocked?.reason):null,SUITES_RUN=R2A?table.suites:R11?SUITES_R11:SUITES;
+@@ -191,31 +191,34 @@ if(!signalled){
+ // ---- 5. the inputs this record builds on, copied byte for byte (the check reads them back from here, never from a claim) ----
+ if(R11){copyFileSync(join(r1Dir,'qualification.json'),join(out,'r1-record.json'));copyFileSync(join(r1Dir,r1Doc.irsimRecord.file),join(out,'irsim-record.json'));}
+ else if(R2A){copyFileSync(join(r11Dir,'qualification.json'),join(out,'r11-record.json'));copyFileSync(join(r11Dir,r11Doc.r1Record.file),join(out,'r1-record.json'));copyFileSync(join(r11Dir,r11Doc.irsimRecord.file),join(out,'irsim-record.json'));
+  if(blocked)copyFileSync(join(root,SPIKE_NOTE),join(out,'spike-note.md'));}
+ else copyFileSync(join(irsimDir,'qualification.json'),join(out,'irsim-record.json'));
+ copyFileSync(join(mockDir,'manifest.json'),join(out,'mock-regression.json'));
+ const ref=(file,extra={})=>({file,sha256:sha(readFileSync(join(out,file))),...extra});
+ const irsimRecord=ref('irsim-record.json',{candidate:R11?r1Doc.irsimRecord.candidate:R2A?r11Doc.irsimRecord.candidate:irsimDir.replace(/\/+$/,'').split('/').pop(),sourceCommit:irsimDoc.identity.before.sourceCommit});
+ const r1Record=R11?ref('r1-record.json',{candidate:r1Dir.replace(/\/+$/,'').split('/').pop(),sourceCommit:r1Doc.identity.before.sourceCommit}):R2A?ref('r1-record.json',{candidate:r11Doc.r1Record.candidate,sourceCommit:r1Doc.identity.before.sourceCommit}):null;
+ const r11Record=R2A?ref('r11-record.json',{candidate:r11Dir.replace(/\/+$/,'').split('/').pop(),sourceCommit:r11Doc.identity.before.sourceCommit}):null;
++// Optional L01 supplement retains its own historical subject/checker identity; it changes no release gate.
++const nativeMujocoProbe=own.mujocoProbe?await (await import('./native-sim/mujoco-probe.mjs')).copyMujocoProbeSupplement(resolve(own.mujocoProbe),join(out,'native-mujoco-probe')):null;
+ const r2aExtra=R2A?{r11Record,image,...blocked?{blocked:{...blocked,spikeNote:ref('spike-note.md')}}:{}}:{};
+ const mockRegression={file:'mock-regression.json',sha256:sha(readFileSync(join(out,'mock-regression.json'))),labCommit:mockDoc.identity?.start?.lab?.commit??null,source:mockDir.includes('/docs/')?mockDir.slice(mockDir.indexOf('/docs/')+1):'(outside the repositories)'};
+ 
+ // ---- 6. identity after, statuses, the record ----
+ const after=identity(),labAfter=labInfo();
+ const identityStable=before.sourceCommit===after.sourceCommit&&!after.dirty&&before.toolClosures.portable===after.toolClosures.portable&&before.toolClosures.native===after.toolClosures.native&&JSON.stringify(before.locks)===JSON.stringify(after.locks)&&before.webots.executableSha256===after.webots?.executableSha256&&before.oracleProfileDigest===after.oracleProfileDigest&&(!labBefore||labBefore.commit===labAfter.commit&&!labAfter.dirty);
+ const algorithmDoc=algorithm?JSON.parse(readFileSync(join(out,algorithm.file),'utf8')):null;
+ const labRecorded=!!labDir&&suites.some(s=>s.id.startsWith('lab-e2e'));
+ const q=R2A?qualifyR2a({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r11:r11Doc,r1:r1Doc,irsim:irsimDoc,mock:mockDoc,blocked}):R11?qualifyR11({suites,lab:labRecorded,sourceCommit:before.sourceCommit,r1:r1Doc,irsim:irsimDoc,mock:mockDoc}):qualify({campaign:summary&&summary.status==='completed'?summary:null,suites,lab:labRecorded,sourceCommit:before.sourceCommit,algorithm:algorithmDoc,irsim:irsimDoc,mock:mockDoc});
+ const walk=(d,rel='')=>readdirSync(d,{withFileTypes:true}).sort((a,b)=>a.name<b.name?-1:1).flatMap(e=>e.isDirectory()?walk(join(d,e.name),`${rel}${e.name}/`):e.isFile()&&`${rel}${e.name}`!=='qualification.json'?[{file:`${rel}${e.name}`,sha256:sha(readFileSync(join(d,e.name))),bytes:statSync(join(d,e.name)).size}]:[]);
+ const recordDoc={schemaVersion:1,documentType:'sim-extension-qualification',release:own.release,candidateId,accepted:false,acceptedBy:null,acceptedAt:null,
+  note:R2A?'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the MuJoCo arm is a plant with manufacturer-nominal and assumed parameters (not_calibrated) that grips by contact; a container run is not evidence for G-MA1/G-MA2 (D50); G-CLOUD1 is blocked_external until CL01 runs on a deployed service; no real arm, real amd64 machine, Cloud Run or hardware gate is in its scope':R11?'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; the arm is a Webots plant with assumed parameters (not_calibrated), gripping is an event, and no real arm, MuJoCo, Linux or hardware gate is in its scope':'evidence input for review; implemented/tested/accepted are independent and no gate status is changed by this record; MuJoCo, Linux and hardware gates are outside its scope',
++ ...nativeMujocoProbe?{nativeMujocoProbe:{...nativeMujocoProbe,path:'native-mujoco-probe/manifest.json'}}:{},
+  identity:{before,after,identityStable},lab:labBefore?{commit:labBefore.commit,dirty:labAfter.dirty,pin:labBefore.pin}:null,campaign,algorithm,...R11||R2A?{r1Record}:{},...r2aExtra,irsimRecord,mockRegression,suites,commands,performance:existsSync(join(out,'performance.json'))?'performance.json':null,
+  cases:q.cases,gates:q.gates,notRun:[...q.notRun,...notRun],interrupted:signalled||undefined,artifacts:walk(out)};
+ await writeFile(join(out,'qualification.json'),JSON.stringify(recordDoc,null,1)+'\n',{flag:'wx'});
+ const problems=checkQualification(recordDoc,(p)=>{const f=join(out,p);return existsSync(f)?readFileSync(f):null;});
+ console.log(JSON.stringify({candidateId,cases:Object.fromEntries(Object.entries(q.cases).map(([k,v])=>[k,v.status])),gates:Object.fromEntries(Object.entries(q.gates).map(([k,v])=>[k,v.status])),notRun:recordDoc.notRun,problems}));
+ if(signalled)process.exit(signalled);
+ if(!identityStable){console.error('NOT_RUN: the source commit, the Lab, a tool closure, a lock or the Webots executable changed, or a tree became dirty, while recording');process.exit(2);}
+ if(!NOCAMPAIGN&&(!summary||campaignCmd.exitCode===2))process.exit(2);
+ process.exit(problems.filter(p=>!/^CASE_STATUS_MISMATCH|^GATE_STATUS_MISMATCH/.test(p)).length||Object.values(q.cases).some(c=>c.status==='failed')||suites.some(s=>s.exitCode!==0)||commands.some(c=>c.exitCode!==0)?1:0);
+diff --git a/tests/unit/mujoco-native-probe.test.ts b/tests/unit/mujoco-native-probe.test.ts
+new file mode 100644
+index 0000000..2489473
+--- /dev/null
++++ b/tests/unit/mujoco-native-probe.test.ts
+@@ -0,0 +1,166 @@
++import {describe,expect,test} from 'vitest';
++import {readFile} from 'node:fs/promises';
++import {createHash} from 'node:crypto';
++import {nativeDocumentBinding,validateNativeDocuments} from '../../packages/lab-runtime/src/v2/sil/native-handoff-documents';
++import {buildArmCellScene,readXArmFixture} from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
++import type {NativeHandoffV1} from '../../packages/contracts/generated/native-handoff';
++import type {LabProjectV2} from '../../packages/lab-runtime/src/v2/contracts';
++const OLD='4f893ac6fb75dff414a3ee42a726defb7935c734',base='robotics/simulation-mujoco/fixtures/xarm6-g2-v1';
++async function documents(){
++ const refs:Record<string,unknown[]>={},contents=new Map<string,Buffer>();
++ const put=async(role:string,path:string,bytes?:Buffer)=>{const b=bytes??await readFile(path);contents.set(path,b);(refs[role]??=[]).push({path,sourcePath:path,sourceCommit:OLD,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});};
++ const project=JSON.parse(await readFile(base+'/coffee-cell-project.json','utf8')) as LabProjectV2;
++ await put('project',base+'/coffee-cell-project.json');await put('model',base+'/component.json');
++ const world=buildArmCellScene(project,readXArmFixture('robotics/simulation-mujoco'),42,{armId:'arm-1',propIds:['cup-1','cup-2']});
++ await put('world','derived/r2a-arm-cell-scene.json',Buffer.from(JSON.stringify(world)));
++ const fx=JSON.parse(await readFile(base+'/manifest.json','utf8'));
++ await put('tool',base+'/manifest.json');await put('tool',base+'/README.md');await put('tool',base+'/NOTICE');await put('tool',base+'/vendor-manifest.json');for(const f of fx.files)if(!['component.json','coffee-cell-project.json','NOTICE','README.md','vendor-manifest.json'].includes(f.path))await put('tool',base+'/'+f.path);
++ for(const f of fx.blobs)await put('tool',base+'/blobs/'+f.sha256+'.stl');
++ await put('engine','robotics/simulation-mujoco/requirements.lock');
++ for(const name of ['lab-project-v2.schema.json','lab-fault-schedule.schema.json','engineering-component.schema.json','arm-cell-scene-v1.schema.json','arm-scene-3d-v1.schema.json']){await put('schema','packages/contracts/schemas/'+name);const r=refs.schema.at(-1) as {sourcePath:string};r.sourcePath=name;}
++ const manifest={subject:{sourceCommit:OLD,labCommit:'a6ec316fb3ac2f71afff25e6fa77e931f4439e00',schemaHash:'9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4',portableClosureHash:'3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d',runtimeArtifactSha256:'55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270',executionKind:'mujoco_image'},refs,profile:{modelId:'xarm6-g2-v1',installation:{kind:'oci'},documents:{kind:'mujoco_r2a_arm_v1'}},frames:{world:'map',robotBase:'base',tool:'tcp',handedness:'right'}} as unknown as NativeHandoffV1;
++ return {manifest,contents,world};
++}
++describe('historical R2a arm-only static admission',()=>{
++ test('admits the old ArmCellScene and frozen mappings without requiring a B05/B06 world',async()=>{
++  const f=await documents();f.manifest.profile.documents=nativeDocumentBinding('mujoco_r2a_arm_v1');
++  expect(validateNativeDocuments(f.manifest,f.contents)).toEqual([]);
++ });
++ test.each(['model','world','engine','frame','source'])('rejects a self-consistent replacement %s',async change=>{
++  const f=await documents();f.manifest.profile.documents=nativeDocumentBinding('mujoco_r2a_arm_v1');
++  if(change==='source')f.manifest.subject.sourceCommit='1'.repeat(40);
++  else if(change==='frame')f.manifest.profile.documents.frameMap.robotBase='link1';
++  else {const ref=f.manifest.refs[change as 'model'|'world'|'engine'][0];const b=Buffer.from(change==='engine'?'mujoco==4.0.1':JSON.stringify({...JSON.parse(f.contents.get(ref.path)!.toString()),unexpected:true}));f.contents.set(ref.path,b);ref.sha256=createHash('sha256').update(b).digest('hex');ref.bytes=b.length;}
++  expect(validateNativeDocuments(f.manifest,f.contents).some(i=>i.severity==='error')).toBe(true);
++ });
++});
++
++// Real local subprocesses exercise retention; none of these records is native evidence.
++describe('bounded probe command retention',()=>{
++ test('preserves both streams and an incomplete receipt when a subprocess times out',async()=>{
++  const {runProbeCommand}=await import('../../scripts/native-sim/mujoco-probe-process.mjs');
++  const {mkdtemp}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++  const out=await mkdtemp(join(tmpdir(),'L01-timeout-'));
++  const r=await runProbeCommand(process.execPath,['-e','process.stdout.write("partial-out");process.stderr.write("partial-err");setInterval(()=>{},1000)'],{out,timeoutMs:300});
++  expect(r).toMatchObject({status:'incomplete',reason:'timeout'});
++  expect(await readFile(join(out,'stdout.log'),'utf8')).toBe('partial-out');
++  expect(await readFile(join(out,'stderr.log'),'utf8')).toBe('partial-err');
++  expect(JSON.parse(await readFile(join(out,'process.json'),'utf8')).status).toBe('incomplete');
++ });
++ test('retains a failed exit and abort without converting either to pass',async()=>{
++  const {runProbeCommand}=await import('../../scripts/native-sim/mujoco-probe-process.mjs');
++  const {mkdtemp}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++  const failed=await mkdtemp(join(tmpdir(),'L01-failed-'));
++  expect(await runProbeCommand(process.execPath,['-e','console.error("failure");process.exit(7)'],{out:failed,timeoutMs:2000})).toMatchObject({status:'failed',exitCode:7});
++  const out=await mkdtemp(join(tmpdir(),'L01-abort-')),abort=new AbortController();setTimeout(()=>abort.abort(),300);
++  expect(await runProbeCommand(process.execPath,['-e','console.log("started");setInterval(()=>{},1000)'],{out,timeoutMs:2000,signal:abort.signal})).toMatchObject({status:'incomplete',reason:'aborted'});
++ });
++});
++describe('native campaign admission and scope',()=>{
++ test('rejects emulated, wrong-image and absent engine artifact evidence',async()=>{
++  const {nativeHandoffFixture}=await import('../fixtures/native-handoff');const f=await nativeHandoffFixture();
++  const {probePrerequisites}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++  const host={os:{platform:'linux'},architecture:'amd64',provenance:{origin:'linux_native',emulation:'none'}};
++  expect(probePrerequisites(f.manifest,f.inventory,host,{})).toContain('ENGINE_ARTIFACT_MISSING');
++  f.inventory.provenance.emulation='qemu';expect(probePrerequisites(f.manifest,f.inventory,host,{})).toContain('HOST_PROVENANCE_UNRESOLVED');
++  f.inventory.image={...f.inventory.image!,manifestDigest:'sha256:'+'0'.repeat(64)};expect(probePrerequisites(f.manifest,f.inventory,host,{})).toContain('HOST_IMAGE_MISMATCH');
++ });
++ test('requires all ten M00 seeds, three business seeds, scoped faults and long-run observations',async()=>{
++  const {mujocoCases,assessCase}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++  const cases=mujocoCases();expect(cases.filter(c=>c.kind==='m00').map(c=>c.seed)).toEqual([1,2,3,4,5,6,7,8,9,10]);
++  expect(cases.filter(c=>c.kind==='business').map(c=>c.seed)).toEqual([7,42,99]);
++  expect(cases.filter(c=>c.kind==='bad_state').map(c=>c.scope)).toEqual(['instrumented_historical_worker']);
++  expect(cases.filter(c=>c.kind==='worker_loss').map(c=>c.scope)).toEqual(['unchanged_runtime']);
++  for(const c of cases)expect(assessCase(c,{unitTests:{passed:100},status:'passed'}).passed).toBe(false);
++ });
++ test('a worker fault cannot claim full-runtime success or accept a successful post-fault step',async()=>{
++  const {mujocoCases,assessCase}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++  const spec=mujocoCases().find(c=>c.kind==='bad_state')!;
++  const raw={scope:spec.scope,engineVersion:'3.17.0',injection:{kind:'qvel_nan',atTick:1},before:{tick:0,state:'running'},warningDelta:{BADQVEL:1},response:{ok:false,error:{code:'PLANT_UNSTABLE'}},after:{tick:0,state:'failed'},postFault:{ok:false},elapsedMs:2};
++  expect(assessCase(spec,raw).passed).toBe(true);
++  expect(assessCase(spec,{...raw,scope:'unchanged_runtime'}).passed).toBe(false);
++  expect(assessCase(spec,{...raw,postFault:{ok:true}}).passed).toBe(false);
++  expect(assessCase(spec,{...raw,warningDelta:{}}).passed).toBe(false);
++ });
++});
++
++test('wire evidence detects resend, overlapping requests and a replacement worker',async()=>{
++ const {analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const wire=[{event:'spawn',pid:42},{event:'request',pid:42,value:{requestId:'a',op:'step'},atMs:1},{event:'ack',pid:42,value:{requestId:'a',ok:true},atMs:3},{event:'exit',pid:42}];
++ expect(analyseWire(wire)).toMatchObject({valid:true,spawned:[42],ipcMs:[2]});
++ expect(analyseWire([...wire,{event:'request',pid:42,value:{requestId:'a',op:'step'},atMs:4}]).valid).toBe(false);
++ expect(analyseWire([wire[0],wire[1],{event:'request',pid:42,value:{requestId:'b',op:'step'},atMs:2},wire[2]]).valid).toBe(false);
++ expect(analyseWire([...wire,{event:'spawn',pid:43}]).valid).toBe(false);
++});
++
++test('passive spawn tap forwards exact values and refuses incomplete observation',async()=>{
++ const {observeSpawn}=await import('../../scripts/native-sim/mujoco-probe-observer.mjs');
++ const {EventEmitter}=await import('node:events');const input=new EventEmitter() as InstanceType<typeof EventEmitter>&{write:(...args:unknown[])=>boolean};
++ const output=new EventEmitter(),child=Object.assign(new EventEmitter(),{pid:42,stdin:input,stdout:output}),received:unknown[][]=[],events:unknown[]=[];
++ input.write=(...args:unknown[])=>{received.push(args);return false;};const options={cwd:'/tmp/owned/run',env:{SECRET:'must-not-be-recorded'}},argv=['-m','mujoco_worker','--run-id','r'];
++ const spawnCalls:unknown[][]=[];const tapped=observeSpawn((...args:unknown[])=>{spawnCalls.push(args);return child;},(e:unknown)=>events.push(e),'/tmp/owned');
++ expect(tapped('python',argv,options)).toBe(child);expect(spawnCalls[0]).toEqual(['python',argv,options]);
++ const cb=()=>{};expect(child.stdin.write('{"requestId":"x","op":"step"}\n','utf8',cb)).toBe(false);expect(received[0][2]).toBe(cb);
++ output.emit('data',Buffer.from('{"requestId":"x",'));output.emit('data',Buffer.from('"ok":true}\n'));child.emit('close',0,null);
++ expect(JSON.stringify(events)).not.toContain('must-not-be-recorded');expect(events.map((x:unknown)=>(x as {event:string}).event)).toEqual(['spawn','request','ack','exit']);
++ const {analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');expect(analyseWire(events).valid).toBe(true);
++ expect(analyseWire([...events,{event:'incomplete'}]).valid).toBe(false);
++ const untouched=tapped('python',argv,{cwd:'/tmp/someone-else'});expect(untouched).toBe(child);expect(events).toHaveLength(4);
++});
++
++test('prepared execution on an unassigned host retains a not_run manifest without touching Docker',async()=>{
++ const {runMujocoProbe,verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {mkdtemp}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const parent=await mkdtemp(join(tmpdir(),'L01-prepared-')),out=join(parent,'out');
++ const r=await runMujocoProbe({handoff:join(parent,'missing'),out,checker:{sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)}});
++ expect(r).toMatchObject({qualification:'not_run',accepted:false,DEP_MJ_01:'not_run'});
++ expect(r.cases.every((c:{status:string})=>c.status==='not_run')).toBe(true);
++ expect((await verifyMujocoProbe(out)).passed).toBe(false);
++ await expect(runMujocoProbe({handoff:join(parent,'missing'),out,checker:{sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)}})).rejects.toThrow();
++});
++
++test('reader rejects a resealed unit-log-only manifest and artifact substitution',async()=>{
++ const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const {mujocoCases,sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const root=await mkdtemp(join(tmpdir(),'L01-unit-only-'));await writeFile(join(root,'unit.log'),'100 tests passed');
++ const manifest={schemaVersion:1,accepted:false,qualification:'passed',DEP_MJ_01:'passed',cases:mujocoCases().map(c=>({...c,status:'passed'})),artifacts:[{path:'unit.log',bytes:16,sha256:sha256('100 tests passed')}]};
++ await writeFile(join(root,'manifest.json'),JSON.stringify(manifest));expect((await verifyMujocoProbe(root)).passed).toBe(false);
++ await writeFile(join(root,'unit.log'),'changed');expect((await verifyMujocoProbe(root)).issues).toContain('ARTIFACT_HASH:unit.log');
++});
++
++test('the actual Node preload observes imported spawn without changing a child byte stream',async()=>{
++ const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join,resolve}=await import('node:path');
++ const {runProbeCommand}=await import('../../scripts/native-sim/mujoco-probe-process.mjs'),{analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const root=await mkdtemp(join(tmpdir(),'L01-preload-'));await mkdir(join(root,'child'));
++ const script=`import {spawn} from 'node:child_process';const c=spawn(process.execPath,['-e','process.stdin.on("data",b=>process.stdout.write(b))','--','-m','mujoco_worker','--run-id','protocol-double'],{cwd:${JSON.stringify(join(root,'child'))},stdio:['pipe','pipe','pipe']});c.stdout.on('data',b=>process.stdout.write(b));c.stdin.write('{"requestId":"a","op":"step"}\\n');c.stdin.end();`;
++ await writeFile(join(root,'launch.mjs'),script);
++ const result=await runProbeCommand(process.execPath,['--import',resolve('scripts/native-sim/mujoco-probe-observer.mjs'),join(root,'launch.mjs')],{out:root,timeoutMs:3000,env:{...process.env,L01_OBSERVER_FILE:join(root,'wire.jsonl'),L01_OWNED_ROOT:root}});
++ expect(result.status).toBe('completed');expect(await readFile(join(root,'stdout.log'),'utf8')).toBe('{"requestId":"a","op":"step"}\n');
++ const events=(await readFile(join(root,'wire.jsonl'),'utf8')).trim().split('\n').map(s=>JSON.parse(s));expect(analyseWire(events).valid).toBe(true);
++});
++
++test('recorder supplement refuses unverified passed claims',async()=>{
++ const {readMujocoProbeSupplement}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const root=await mkdtemp(join(tmpdir(),'L01-supplement-'));await writeFile(join(root,'manifest.json'),JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',qualification:'passed',DEP_MJ_01:'passed',accepted:false,artifacts:[]}));
++ await expect(readMujocoProbeSupplement(root)).rejects.toThrow('PROBE_SUPPLEMENT_INVALID');
++});
++
++test('reports p50/p95/max from real timing samples without rounding away the tail',async()=>{
++ const {timingSummary}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ expect(timingSummary([1,2,3,4,100])).toEqual({samples:5,p50Ms:3,p95Ms:100,maxMs:100});
++ expect(()=>timingSummary([])).toThrow();expect(()=>timingSummary([NaN])).toThrow();
++});
++
++test('a truncated observer tail cannot establish a completed worker lifecycle',async()=>{
++ const {analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ expect(analyseWire([{event:'spawn',pid:99},{event:'request',pid:99,value:{requestId:'x',op:'step'},atMs:1},{event:'ack',pid:99,value:{requestId:'x',ok:true},atMs:2}]).valid).toBe(false);
++});
++
++test('grasp assertions read raw contact continuity instead of trusting the recipe summary',async()=>{
++ const {assessCase,mujocoCases}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const spec=mujocoCases()[0],row={q:[0,0,0,0,0,0],cmd:[0,0,0,0,0,0],cup:[0.35,0.35,0.15],cupquat:[1,0,0,0],rel:[0,0,0],held:false,L:false,R:false,tray:true,arm:false,cupv:0,cupw:0,label:'dwell:place'};
++ const trace=Array.from({length:882},()=>({...row})),raw={scope:spec.scope,engineVersion:'3.17.0',trial:{seed:1,nan:false,heldAllCarry:true,notHeldCarry:0,liftM:0.15,slipM:0,dropTicks:1,placeErrM:0,peakFollowRad:0,settle:Object.fromEntries(['pregrasp','grasp','lift','preplace','place','retreat','home'].map(k=>[k,{ticks:1}])),warnings:{}},trace,tickMs:trace.map(()=>1),maxRssKiB:100};
++ expect(assessCase(spec,raw).passed).toBe(false);
++});

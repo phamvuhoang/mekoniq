@@ -1,0 +1,963 @@
+{
+  "source": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+  "lab": "283696be56bdaea1d310a1e56182f49792cf3b2c",
+  "clean": true,
+  "trees": [
+    {
+      "name": "source",
+      "base": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+      "head": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+      "status": "",
+      "patchBytes": 23431,
+      "patchSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+      "files": [
+        {
+          "path": "docs/operations/native-profile-case-matrix.md",
+          "bytes": 20212,
+          "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+        },
+        {
+          "path": "scripts/r3-native-readback.mjs",
+          "bytes": 13174,
+          "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+        },
+        {
+          "path": "tests/unit/r3-native-readback.test.ts",
+          "bytes": 19282,
+          "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+        }
+      ]
+    },
+    {
+      "name": "lab",
+      "base": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+      "head": "283696be56bdaea1d310a1e56182f49792cf3b2c",
+      "status": "",
+      "patchBytes": 2624,
+      "patchSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+      "files": [
+        {
+          "path": "config/source-runtime.lock.json",
+          "bytes": 534,
+          "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+        },
+        {
+          "path": "src/shared/engineering.ts",
+          "bytes": 46638,
+          "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+        },
+        {
+          "path": "src/shared/navigation2d.ts",
+          "bytes": 48892,
+          "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+        }
+      ]
+    }
+  ],
+  "patches": {
+    "source": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-L06-r1-source.diff",
+      "bytes": 23431,
+      "sha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+      "files": 3
+    },
+    "lab": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/review-L06-r1-lab.diff",
+      "bytes": 2624,
+      "sha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+      "files": 3
+    }
+  },
+  "report": {
+    "bytes": 31598,
+    "sha256": "f0236adbd71ffe0119f02d4f87d1321d9dd5133ee512e0f1dfe47c022ad36325"
+  },
+  "export": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L06/fix1/export-final",
+  "runtimeArtifactSha256": "17bbdc1a92569f8fcb2de02b25e55ba3c774a515ca4f70ae917bd6e97964e3af",
+  "schemaHash": "c2bdaca0b5ce9b03ee52a8c497719f4ea83b2cbb0e23c4e18365099fd163fa12",
+  "schemas": 58,
+  "closures": {
+    "native": {
+      "files": 226,
+      "bytes": 1578329,
+      "digest": "35aebff4ba065eae48c088a91c94fd7a08af6fd723560e0fdb68cbdc112cce0b"
+    },
+    "portable": {
+      "files": 238,
+      "bytes": 8115933,
+      "digest": "778c336cd3bcffa975cbea2967915f27fd5f94124ec986e75f2dac031d55df93"
+    }
+  },
+  "checker": {
+    "sourceCommit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+    "toolSha256": "2c65f80647bc1bca34be17954c67e2a6c180b830360ee7b6a90808036547246c"
+  },
+  "checks": {
+    "combined": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 240; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/sim-extension-qualification.test.ts",
+        "tests/unit/r3-native-readback.test.ts",
+        "tests/unit/native-handoff.test.ts",
+        "tests/integration/engineering-native-evidence.test.ts",
+        "tests/integration/xarm-native-contract.test.ts",
+        "tests/unit/r2b-readback.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:04:28.180Z",
+      "finishedAt": "2026-11-15T11:05:00.886Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "dcadcf2f759826958fceda415e7eaf640a34c3f0723a37ec0772acf8d5b07f94",
+      "receiptSha256": "4d41e73eac1274db06f70e526fa4195854e133895266065c36a7c013ac208b4d"
+    },
+    "contracts": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "contracts:check"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:04:28.180Z",
+      "finishedAt": "2026-11-15T11:04:28.944Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "receiptSha256": "e5824c76d0aa3a2930b15dd0be52a934ffe1784fc8341b1eda5819cdafd0708a"
+    },
+    "diff-check": {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:33.523Z",
+      "finishedAt": "2026-11-15T11:05:33.548Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "f725ffc37fc06f7b27cc060951c15d1ee4d493e1037e3cb359bc3082b120d24f"
+    },
+    "export-clean": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        "scripts/export-lab-runtime.mjs",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L06/fix1/export-final"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:40.409Z",
+      "finishedAt": "2026-11-15T11:05:41.237Z",
+      "before": {
+        "commit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "82ae6455c0858365879b46556491dc282e8c5699b0d1267cf494c3b48cd0697f",
+      "receiptSha256": "cd6768137306662c490da51b275cf0f51ce16cc0a7c016c47f08190a991785a6"
+    },
+    "final-audit": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        ".superpowers/sdd/03-r3-linux-readiness/evidence-L06/fix1/audit.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:06:42.120Z",
+      "finishedAt": "2026-11-15T11:06:43.101Z",
+      "before": {
+        "commit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "dedd60de3ad093f7e80162edeb8a458bc00c98d62308ca45c9b893657ebf8ea0",
+      "receiptSha256": "a0b929bc7f592db1b4fd76531f71df74d59b10e8ac2dee7e4328ccb74742ba1c"
+    },
+    "lab-check-source": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "check:source"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:58.924Z",
+      "finishedAt": "2026-11-15T11:05:59.199Z",
+      "before": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+          }
+        ]
+      },
+      "after": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e38442b95a5839b75cd31fdea4613afc65bcbc5b1f12802503a84a94c26f29a2",
+      "receiptSha256": "868f7cf5c205e2b416c9bacf5f51b4be4cb42a42fbb4d63b62eb95cf576984f8"
+    },
+    "lab-commit": {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "chore: pin source runtime 6e5eee9"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:06:41.645Z",
+      "finishedAt": "2026-11-15T11:06:41.686Z",
+      "before": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": "M  config/source-runtime.lock.json\nM  src/shared/engineering.ts\nM  src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": []
+      },
+      "after": {
+        "commit": "283696be56bdaea1d310a1e56182f49792cf3b2c",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "5de614377385fde161b3686239c3d43e9ff9cbb13f067d46ba781e0934ea739a",
+      "receiptSha256": "59ad87ef87b596a64e816ed9d3928dab947d421126946b07ebf10aeeb4af582f"
+    },
+    "lab-import": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/import-runtime.mjs",
+        "../source/.superpowers/sdd/03-r3-linux-readiness/evidence-L06/fix1/export-final"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:51.383Z",
+      "finishedAt": "2026-11-15T11:05:51.862Z",
+      "before": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n",
+        "diffSha256": "7ca6f0bb2b17c1f3e3a18631dc14f4659f98cd11569ae629b2b4d052c091e844",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "abd1e7fd69a001513f0e9b5faa2a1c76e662efce7948b0070e6bf4a86b1c4183",
+      "receiptSha256": "191cd4dcd0e5d57cb7f848816488e2ac8df4269becb9dc4468ad599b21f5f183"
+    },
+    "lab-sync": {
+      "argv": [
+        "node",
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:52.088Z",
+      "finishedAt": "2026-11-15T11:05:52.227Z",
+      "before": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n",
+        "diffSha256": "7ca6f0bb2b17c1f3e3a18631dc14f4659f98cd11569ae629b2b4d052c091e844",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          }
+        ]
+      },
+      "after": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837",
+      "receiptSha256": "4ef55b1a1d79ab284f21328c6986da9c3e5428bc6895fd531be69108abdc0664"
+    },
+    "lab-type": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:58.924Z",
+      "finishedAt": "2026-11-15T11:06:01.854Z",
+      "before": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+          }
+        ]
+      },
+      "after": {
+        "commit": "c41f715bca9c224328879b44e3cbf5a296b59e06",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "dd246e57e592e4d481161337db2c856cba245f65e3d814b2f62131aca6b253e4",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "receiptSha256": "2ad3b9be2cadf4dbdbc09724e7d2a097ef8fa32a957a8557410cf2e9861a5c68"
+    },
+    "producer-green": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r3-native-readback.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:03:36.884Z",
+      "finishedAt": "2026-11-15T11:03:44.147Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "01bb9b243015c091e55cd026be5016d6556eab57f1a94a280010fab8e83e83ee",
+        "changed": [
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "01bb9b243015c091e55cd026be5016d6556eab57f1a94a280010fab8e83e83ee",
+        "changed": [
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "0a137bb7eb85cdf3daf51db77626ab2ede9cc003139a420b7ebfbbcd96c7fe16",
+      "receiptSha256": "c13fca0a7a68a0e9fbf6e585c6a83723dfb10648233e3a43bb6350f259721a6f"
+    },
+    "producer-red": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r3-native-readback.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:02:45.390Z",
+      "finishedAt": "2026-11-15T11:02:52.982Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "e1eb5b91a466f389c1b5c21f8596aa8755169a23eb47ac2aae6755495be60c8b",
+        "changed": [
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "e1eb5b91a466f389c1b5c21f8596aa8755169a23eb47ac2aae6755495be60c8b",
+        "changed": [
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 1,
+      "signal": null,
+      "logSha256": "9dbce721a5f36291df5bc9657b728ce0c92c9397b6d0ca85a189200e87d1bdb5",
+      "receiptSha256": "180fb0c8c2c492fc7e841021ef89087a550e7e1114485e8ecfe71c28f7973f8d"
+    },
+    "source-commit": {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "fix: preserve native observation clock and inventory boundaries"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": null,
+        "MEKONIQ_RETAINED_INPUTS_SHA256": null,
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:05:33.924Z",
+      "finishedAt": "2026-11-15T11:05:33.976Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": "M  docs/operations/native-profile-case-matrix.md\nM  scripts/r3-native-readback.mjs\nM  tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": []
+      },
+      "after": {
+        "commit": "6e5eee9d7d504b0365422eb0ef7096e74e72e210",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "36b83f1f635d156abb0290a2bfbd09d505920b9781ccb1f7fbc9216d20b84b52",
+      "receiptSha256": "2c24f87daf5962122f81e12119441b2577020953338badd0f1495b30e63fb72c"
+    },
+    "source-lint": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "scripts/r3-native-readback.mjs",
+        "tests/unit/r3-native-readback.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:04:28.180Z",
+      "finishedAt": "2026-11-15T11:04:29.321Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "a6ec1f8e460eeaaecb3a87b66674d6573a4e03acf25976011cd86b99399846af"
+    },
+    "source-type": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null
+      },
+      "startedAt": "2026-11-15T11:04:28.180Z",
+      "finishedAt": "2026-11-15T11:04:37.779Z",
+      "before": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "after": {
+        "commit": "6bf54aa5cab5bc63bc32c1fae471606d71061a78",
+        "status": " M docs/operations/native-profile-case-matrix.md\n M scripts/r3-native-readback.mjs\n M tests/unit/r3-native-readback.test.ts\n",
+        "diffSha256": "a58d9f8bcbe33f7844feccaa75ea4c7e61308da325fce3209d31cb54cf889c5a",
+        "changed": [
+          {
+            "path": "docs/operations/native-profile-case-matrix.md",
+            "sha256": "40be5e94abd9c512ffbadb657a893f92d93b518e70cf7747436dc534f1986b12"
+          },
+          {
+            "path": "scripts/r3-native-readback.mjs",
+            "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8"
+          },
+          {
+            "path": "tests/unit/r3-native-readback.test.ts",
+            "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "receiptSha256": "c36ec61fdaba3a7c3dc4057ac3b7f4444334af4cdef34117ed054cc920547dcd"
+    }
+  },
+  "finalByteAttribution": {
+    "source/scripts/r3-native-readback.mjs": {
+      "sha256": "530db9125d9742aebf85d7097c140161122914c9589e5a2f1c3257ec2505ecd8",
+      "sameBytesAtChecks": [
+        "combined",
+        "contracts",
+        "diff-check",
+        "export-clean",
+        "final-audit",
+        "producer-green",
+        "source-commit",
+        "source-lint",
+        "source-type"
+      ]
+    },
+    "source/tests/unit/r3-native-readback.test.ts": {
+      "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335",
+      "sameBytesAtChecks": [
+        "combined",
+        "contracts",
+        "diff-check",
+        "export-clean",
+        "final-audit",
+        "producer-green",
+        "source-commit",
+        "source-lint",
+        "source-type"
+      ]
+    },
+    "lab/config/source-runtime.lock.json": {
+      "sha256": "29de837d96523b3bf8cb23a502320988dd77fc789f0e6e1faa2730f71a483a23",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-import",
+        "lab-sync",
+        "lab-type"
+      ]
+    },
+    "lab/src/shared/engineering.ts": {
+      "sha256": "6164eb819c2377c26261bffda448b2dd0c8181c786f99c49d09f423d4edb01a1",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-sync",
+        "lab-type"
+      ]
+    },
+    "lab/src/shared/navigation2d.ts": {
+      "sha256": "5c015b9eaab3c5f1d33d87c8a278c39d444fce8c93d4c6034182b4b6469a0082",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-sync",
+        "lab-type"
+      ]
+    }
+  },
+  "preserved": [
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-evidence-file-index.json",
+      "files": 469
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-r1-evidence-file-index.json",
+      "files": 254
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-smoke-27d6be9-file-index.json",
+      "files": 83
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L06-evidence-file-index.json",
+      "files": 136
+    }
+  ],
+  "limits": [
+    "Byte/receipt attribution is not semantic code review, host authentication or proof that each command covered every file behavior.",
+    "Final audit receipt follows its 14-entry index; 15 actual check receipts exist.",
+    "No suites, native/browser/Docker execution or original SQLite engine opens in this audit."
+  ]
+}

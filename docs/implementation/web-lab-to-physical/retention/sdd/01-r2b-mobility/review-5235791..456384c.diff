@@ -1,0 +1,1911 @@
+# Review package: 5235791218c6330c358676fe36ae0ed978be3654..456384cc9a737083c972babcd9f92ed6a47d7510
+
+## Commits
+456384c fix: integrate frozen R2a baseline and isolate native test processes
+4f893ac fix: make native runtime exports independent of Python install metadata
+a8d5450 fix: capture regression identity for large Git trees
+02d4d3f docs: keep qualification updates outside the pinned tool closure
+0a0d21f fix: close R2a arm and runtime review findings
+
+## Files changed
+ docs/implementation/post-r2a-baseline.md           | 14 ++++
+ .../04-qualification.md                            |  4 +-
+ packages/lab-runtime/src/v2/fault-schedule.ts      |  8 +-
+ packages/lab-runtime/src/v2/gateway.ts             | 12 ++-
+ .../lab-runtime/src/v2/models/arm-collision.ts     |  9 ++-
+ packages/lab-runtime/src/v2/scenario-runner.ts     |  4 +-
+ .../src/v2/simulation3d/mujoco-arm-ports.ts        |  5 +-
+ robotics/simulation-mujoco/README.md               | 10 ++-
+ scripts/native-sim/tool-identity.mjs               |  8 +-
+ scripts/record-sim-extension.mjs                   |  2 +-
+ tests/integration/lab-v2-arm.test.ts               |  4 +-
+ tests/integration/lab-v2-bv01-sil.test.ts          |  2 +-
+ .../lab-v2-native-wire-deadline.test.ts            |  2 +-
+ tests/integration/lab-v2-sil-review.test.ts        |  4 +-
+ tests/integration/mujoco-arm-faults.test.ts        |  2 +-
+ tests/integration/mujoco-arm-gateway.test.ts       | 43 +++++++++++
+ tests/integration/mujoco-arm-programs.test.ts      |  8 +-
+ tests/integration/mujoco-arm-readiness.test.ts     |  6 +-
+ tests/integration/mujoco-arm-worker.test.ts        |  8 +-
+ tests/integration/sim-recorder-python.test.ts      | 24 ++++++
+ tests/integration/webots-arm-faults.test.ts        |  8 +-
+ tests/integration/webots-arm-programs.test.ts      |  8 +-
+ tests/integration/webots-arm-worker.test.ts        |  8 +-
+ tests/integration/webots-batch.test.ts             |  4 +-
+ tests/integration/webots-faults.test.ts            | 13 +---
+ tests/integration/webots-worker.test.ts            | 13 ++--
+ tests/support/mujoco-arm.ts                        | 18 ++---
+ tests/support/owned-processes.ts                   | 87 +++++++++++++++++++++
+ tests/support/regression-identity.ts               |  3 +-
+ tests/support/webots-arm.ts                        | 20 +++--
+ tests/support/webots-mission.ts                    | 10 ++-
+ tests/unit/arm-collision-geometry.test.ts          |  8 ++
+ tests/unit/lab-regression-identity.test.ts         | 11 +++
+ tests/unit/mujoco-arm-ports.test.ts                |  4 +-
+ tests/unit/native-tool-identity.test.ts            | 29 +++++++
+ tests/unit/owned-processes.test.ts                 | 90 ++++++++++++++++++++++
+ tests/unit/xarm6-cell-dock.test.ts                 | 35 +++++++++
+ 37 files changed, 457 insertions(+), 91 deletions(-)
+
+## Diff
+diff --git a/docs/implementation/post-r2a-baseline.md b/docs/implementation/post-r2a-baseline.md
+index 271fdc6..5aa0a1b 100644
+--- a/docs/implementation/post-r2a-baseline.md
++++ b/docs/implementation/post-r2a-baseline.md
+@@ -77,10 +77,24 @@ On 2026-11-14, with Node v24.22.2 / pnpm 10.32.1:
+ LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-01 \
+   perl -e 'alarm 180; exec @ARGV' pnpm test:acceptance -- sim-extension
+ perl -e 'alarm 180; exec @ARGV' pnpm exec vitest run \
+   tests/unit/capabilities-mujoco-arm.test.ts \
+   tests/contracts/sim3d-mujoco-schema.test.ts tests/unit/bv01-mock-golden.test.ts
+ ```
+ 
+ The candidate guard passed 12/12 in B00; the selected schema/capability/mock-golden command above passed 14/14 (8 + 5 + 1). The controller also reported the same guard 12/12, source capability/schema/mock-golden tests 18/18 and paired Lab `pnpm test:unit` 426/426 before B00, with no intervening code change. The controller independently ran MuJoCo pytest: 43/43 in 9.61 s with `PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS="-p no:cacheprovider"`. These are current-checkout regression checks, not a newly recorded qualification. The recorder's pytest cache issue remains: use the cache-provider override when recording or running workers.
+ 
+ Before dependent runtime implementation: reconcile current export/pin and closure identities, retain engine lock and old goldens, then follow B01 onward. Before a new qualification: clean source/Lab, matching new pin/closures, full required suites and new evidence directory. Human acceptance, Cloud Run deployment, native host execution and hardware commissioning remain outside this task.
++
++## Frozen upstream refresh — 2026-11-14 (B00R)
++
++The isolated R2b source branch integrates frozen R2a source `4f893ac6fb75dff414a3ee42a726defb7935c734` (including `0a0d21f`, `02d4d3f`, `a8d5450`, `4f893ac`) onto reviewed feature base `5235791218c6330c358676fe36ae0ed978be3654`. The paired Lab integrates `a6ec316fb3ac2f71afff25e6fa77e931f4439e00`, including the touch watch-mode exit fix `748be82`, onto feature base `57705211a231c41e5636566a416737f6bc14faef`. Its runtime pin and generated headers are regenerated from the clean merged feature source, rather than taking upstream's runtime artifact identities.
++
++The refresh preserves serialized expired-owner cleanup through readiness/create/gateway close, conservative palm/gripper sweep geometry and early MuJoCo `arm-drop` refusal. It also retains B02b's shared arm/mobile slot until process close, startup-unknown durable latch and observation-before-cancellation checks. Native tool identity now excludes Python installation metadata; portable tool identity remains strict. The recorder suppresses pytest cache generation, large Git trees are captured without truncation, and qualification prose points to the evidence index without making closure documentation candidate-specific. The worker README now identifies B02a's earlier Python-only boundary as historical and describes the integrated Source mobile provider.
++
++Incident retained: B02b's regression executed the existing Webots worker-kill test with a global module-name selector while the original checkout's qualification was active. The retained test log has no target IDs, so the exact workers killed and whether any belonged to the original pipeline cannot be established. Earlier global-empty failures listed transient PIDs 31619/31632/31633, whose ownership was not captured. Read-only original logs later show the campaign 20/20 pass and Webots suite exits 0; those observations do not prove isolation or erase the incident.
++
++B00R replaces global Webots/MuJoCo fault-kill selectors with ownership established from this test process's ancestry and registered absolute bundle directories. Cleanup covers owned workers, engines and controller descendants, including captured reparented children and detached process groups. PID start identities are revalidated before signalling; directory boundaries exclude similarly prefixed sibling runs. Generic sentinel tests prove a sibling survives a worker fault and that an orphan controller remains visible as a cleanup leak. The original IR-SIM fault helpers already limit candidates to direct children of their own test PID and compare before/after workers; recorder process-group signals use captured spawned children. Those selectors were audited without launching engines.
++
++Original qualification `/Users/hoangpham/source/prv/robot/.qualification/r2a-final-20261114-xqub7yqk/progress.json` still reported `r2a-candidate-02` running (started 2026-11-14T00:31:31Z) at this refresh. No original files, qualification state or processes were altered or restarted. Because its old global kills/assertions can interfere in the opposite direction, real Webots/MuJoCo/IR-SIM worker and runtime-browser checks are explicitly **not_run** until the controller releases the scheduling hold. Pure ownership, geometry, identity, mock-golden and engine-free gateway tests plus contracts/typecheck/lint support this integration; they do not replace the deferred engine checks. Export/import performs no worker launch. Exact commands, results, new feature/pin identities and deferred suites are in the B00R implementation report.
++
++All earlier recorded identities and gate statuses above remain historical. Integrating these code corrections does not requalify an old candidate, transfer acceptance or close native/device/hardware gates. New candidates remain `accepted:false` until human review.
+diff --git a/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md b/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
+index 19cec96..0e37eac 100644
+--- a/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
++++ b/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
+@@ -44,11 +44,13 @@
+   ```sh
+   (cd ../lab && node scripts/record-regression.mjs --suite physical-robot-lab --out $S/regression)
+   node scripts/record-irsim.mjs --out $S/candidate-N --candidate-id candidate-N
+   node scripts/record-sim-extension.mjs --release r1 --out $S/r1-candidate-N --candidate-id r1-candidate-N --irsim-record $S/candidate-N --mock-regression $S/regression
+   node scripts/record-sim-extension.mjs --release r1.1 --out $S/r11-candidate-N --candidate-id r11-candidate-N --r1-record $S/r1-candidate-N --mock-regression $S/regression
+   node scripts/record-sim-extension.mjs --release r2a --out $S/r2a-candidate-01 --candidate-id r2a-candidate-01 --r11-record $S/r11-candidate-N --mock-regression $S/regression
+   ```
+   Khoảng 2,5 giờ máy; Webots chiếm màn hình trong hai bước giữa. Bản ghi exit 1/2 không sửa tay: sửa nguyên nhân, ghi candidate kế tiếp.
+ - [ ] **Step 2:** Kiểm tay và ghi vào `$S/r2a-candidate-01/manual/`: Lab đã deploy (hoặc bản build phục vụ qua HTTPS) nối `http://127.0.0.1:4176` trên Chrome và Firefox, có ảnh hộp hỏi quyền và ảnh run `completed`; ảnh thông báo trên Safari. Chưa làm được thì ghi rõ `not_run` và lý do.
+ - [ ] **Step 3:** Chép năm bản ghi vào cây, xóa các candidate bị thay thế trong cùng commit, viết README cho bản ghi R2a: định danh (commit, pin Lab, bản MuJoCo, commit các repo hãng), bảng gate/case, mọi tham số `assumed`, số đo thời gian tick và tỉ lệ nhịp, mục "Không được suy ra" của spec §6.4, trạng thái `G-CLOUD1`. Chạy guard: `LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-01 pnpm test:acceptance -- sim-extension` và `LAB_IRSIM_EVIDENCE_DIR=… pnpm test:acceptance -- linkforge-irsim`. Commit `docs: record sim-extension r2a-candidate-01 …` (source) và `docs: record … R-MOCK regression` (Lab).
+-- [ ] **Step 4:** Cập nhật `CLAUDE.md` của workspace và `robotics/simulation-mujoco/README.md`. Báo cáo: gate nào `tested`, gate nào `blocked`/`blocked_external`, mọi `not_run`. Không push, không deploy.
++- [ ] **Step 4:** Cập nhật `CLAUDE.md` của workspace và chỉ mục `docs/implementation/README.md`. Báo cáo: gate nào `tested`, gate nào `blocked`/`blocked_external`, mọi `not_run`. Không push, không deploy.
++
++**Ghi lại sau code review (2026-11-14):** tăng số candidate của cả bốn dòng và dùng thư mục regression Lab mới. Mọi thay đổi dưới tool root, kể cả `robotics/simulation-mujoco/README.md`, phải được commit và ghim lại Lab **trước Step 1**. README của worker trỏ tới chỉ mục bằng chứng ổn định; cập nhật chỉ mục và các README của bản ghi sau khi ghi, tránh đổi closure portable khiến launcher từ chối pin. Recorder R2a từ commit `0a0d21f` đã tự tắt pytest cache provider; không cần đặt `PYTEST_ADDOPTS` để tránh lỗi cache của lần ghi trước.
+diff --git a/packages/lab-runtime/src/v2/fault-schedule.ts b/packages/lab-runtime/src/v2/fault-schedule.ts
+index f137750..0e31c4e 100644
+--- a/packages/lab-runtime/src/v2/fault-schedule.ts
++++ b/packages/lab-runtime/src/v2/fault-schedule.ts
+@@ -1,28 +1,30 @@
+ import Ajv from 'ajv';
+ import schema from '../../../contracts/schemas/lab-fault-schedule.schema.json';
+ import type {FaultScheduleEntry} from '../../../contracts/generated/lab-v2';
+ export type {FaultScheduleEntry};
+ export type FaultPhase='brew'|'grasp'|'handoff'|'delivery';
+ const shape=new Ajv({strict:true}).compile<FaultScheduleEntry>(schema);
+ export const COFFEE_FAULT_IDS=['ice-jam','milk-empty','dose-low','measure-unknown','measure-missing','measure-outlier','milk-expired','milk-warm','milk-unknown','cup-removed','coffee-reboot','drop-ack','duplicate-completion','machine-not-ready'];
+ export const ARM_FAULT_IDS=['arm-reboot','arm-drop','arm-following-error','arm-stop','arm-estop','arm-reset','arm-collision'];
+ export const AMR_FAULT_IDS=['collide','reboot','duplicate-arrival','localization-lost','map-changed','dock-offset','reorder-observations','delay-observation','crash-after-commit'];
+ export const NATIVE_FAULT_KINDS:Readonly<Record<string,string>>={'cup-removed':'coffee_machine','missing-cup':'coffee_machine','grip-failure':'arm','arm-drop':'arm','arm-reboot':'arm','controller-restart':'arm','tunnel-loss':'arm','amr-disconnect':'amr','amr-delay':'amr','delay-observation':'amr','blocker':'amr'};
+-export function validateFaultTarget(faultId:string,targetId:string,entities:readonly {id:string;kind:string}[],mode:string):void{
++export function validateFaultTarget(faultId:string,targetId:string,entities:readonly {id:string;kind:string}[],mode:string,armPlantId?:string):void{
++ // The contact plant cannot drop a cup by changing mock custody. Admit this fault only on plants that implement it.
++ if(armPlantId==='mujoco_arm'&&faultId==='arm-drop')throw new Error('FAULT_BACKEND_UNSUPPORTED');
+  if(mode==='simulation'){if(!Object.hasOwn(NATIVE_FAULT_KINDS,faultId))throw new Error('FAULT_BACKEND_UNSUPPORTED');if(!entities.some(e=>e.id===targetId&&e.kind===NATIVE_FAULT_KINDS[faultId]))throw new Error('FAULT_TARGET_INVALID');return;}
+  const kind=COFFEE_FAULT_IDS.includes(faultId)?'coffee_machine':ARM_FAULT_IDS.includes(faultId)?'arm':AMR_FAULT_IDS.includes(faultId)?'amr':null;
+  if(!kind)throw new Error('FAULT_UNKNOWN');
+  if(!entities.some(e=>e.id===targetId&&e.kind===kind))throw new Error('FAULT_TARGET_INVALID');
+  if(mode!=='mock')throw new Error('FAULT_BACKEND_UNSUPPORTED');
+ }
+-export function validateFaultSchedule(value:unknown,entities:readonly {id:string;kind:string}[],mode:string):FaultScheduleEntry[]{
++export function validateFaultSchedule(value:unknown,entities:readonly {id:string;kind:string}[],mode:string,armPlantId?:string):FaultScheduleEntry[]{
+  if(!Array.isArray(value)||value.length>100)throw new Error('FAULT_SCHEDULE_INVALID');const ids=new Set<string>();
+- for(const e of value){if(!shape(e)||ids.has(e.id))throw new Error('FAULT_SCHEDULE_INVALID');ids.add(e.id);validateFaultTarget(e.faultId,e.targetId,entities,mode);}
++ for(const e of value){if(!shape(e)||ids.has(e.id))throw new Error('FAULT_SCHEDULE_INVALID');ids.add(e.id);validateFaultTarget(e.faultId,e.targetId,entities,mode,armPlantId);}
+  return structuredClone(value);
+ }
+ /** Overdue entries fire in declared order; callers persist the returned ids before dispatch. */
+ export function dueFaults(entries:readonly FaultScheduleEntry[],firedIds:ReadonlySet<string>,elapsedSimMs:number,phase:FaultPhase):readonly FaultScheduleEntry[]{
+  if(!Number.isFinite(elapsedSimMs)||elapsedSimMs<0)throw new Error('FAULT_CLOCK_INVALID');
+  return entries.filter(e=>!firedIds.has(e.id)&&(e.trigger.kind==='elapsed_sim_ms'?elapsedSimMs>=e.trigger.value:e.trigger.value===phase));
+ }
+ export interface FaultFireRecord {id:string;tick:number;expiresAtMs:number;outcome:'dispatching'|'applied'|'unknown';windowEnded?:boolean}
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index ad6e9c9..50a9380 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -39,26 +39,31 @@ export interface V2Deps {
+  wall?:WallClock;
+ }
+ const COOKIE='mekoniq_lab_session_v2';
+ // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
+ const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
+ const UUID='[0-9a-f-]{36}';
+ // D55: failed pairings are counted for the whole runtime (a proxy hides client addresses)
+ const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
+ const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
+ // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
+-const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_SCHEDULE_UNSUPPORTED$)/.test(m)?422:500;
++const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+ export function createV2Gateway(deps:V2Deps){
+  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
+  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
+  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
+  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
++ // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
++ let expiryCleanup=Promise.resolve();
++ const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
++  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
++ });
+  const reclaiming=new Set<string>();
+  let pairingFailures:number[]=[];
+  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
+  const token=()=>randomBytes(32).toString('base64url');
+  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
+  const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
+  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
+  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
+@@ -143,20 +148,21 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+     if(params.size||Object.keys(body).some(k=>!['scenarioId','backendSetId','project','engineeringRef'].includes(k))||['scenarioId','backendSetId'].some(k=>typeof body[k]!=='string'||!/^[A-Za-z0-9_.:-]{1,200}$/.test(body[k] as string))||!Object.hasOwn(body,'project')&&!Object.hasOwn(body,'engineeringRef'))return deny(response,400,'INVALID_READINESS_QUERY',[]);
+     context={scenarioId:body.scenarioId as string,backendSetId:body.backendSetId as string,project:body.project};
+     if(Object.hasOwn(body,'engineeringRef')){
+      // the project is the bundle's locked projection; a supplied one can only be checked for equality against it
+      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
+      try{const locked=await deps.engineering.admitRun(sessionId,body.engineeringRef,context.backendSetId,body.project);context.project=locked.runtimeProjection.project;context.engineering=locked.ref;engineeringChecked=true;}catch(e){return engineeringFailed(response,e);}
+     }
+    }else return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+    const readinessSet=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;
+    if(readinessSet?.scenarioIds&&readinessSet.bundle!==false&&!(method==='POST'&&context.project!==undefined&&engineeringChecked))return deny(response,422,'ENGINEERING_REF_REQUIRED',['ENGINEERING_REF_REQUIRED']);
++   await closeExpiredRuns();
+    return send(response,200,await collectReadiness(context,readinessOptions()));
+   }
+   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
+   const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
+   const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
+   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
+   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+   if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
+   if(route?.name==='validate'){
+    const result=validateProjectV2(await deps.readBody(request));
+@@ -187,21 +193,21 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+    if(!scenario)return deny(response,422,'SCENARIO_UNSUPPORTED',[]);
+    const resolution=r.mode==='hardware'?undefined:resolveBackends(scenario,r.mode,r.backendSetId,catalog);
+    if(resolution&&!resolution.ok)return deny(response,422,'BACKEND_UNAVAILABLE',resolution.reasonCodes);
+    const required=resolution?resolution.required:set.backends;
+    if(!required.every(id=>set.backends.includes(id)))return deny(response,422,'BACKEND_UNAVAILABLE',['SCENARIO_BACKEND_MISSING']);
+    const admission=admitBackend(r.mode,required,catalog,r.access);
+    if(!admission.ok)return deny(response,422,'BACKEND_UNAVAILABLE',admission.reasonCodes);
+    // Contract admission and execution availability are separate; native runs require a server-owned factory.
+    if((set.mode!=='mock'&&!(set.mode==='simulation'&&deps.simulationFactory))||!required.every(b=>enabled.has(b)))return deny(response,501,'BACKEND_UNAVAILABLE',['BACKEND_EXECUTION_DISABLED']);
+    // Expired sessions free active slots (before readiness: a single-slot provider must not count a run that is already due to close). Their durable checkpoints can later be reclaimed with local ownership proof.
+-   for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){runs.delete(id);await e.run.close().catch(()=>{});}}
++   await closeExpiredRuns();
+    const readiness=await collectReadiness({scenarioId:r.scenarioId,backendSetId:r.backendSetId,project,...engineering?{engineering:engineering.ref}:{}},readinessOptions());
+    if(!readiness.canStart)return deny(response,422,'BACKEND_UNAVAILABLE',readiness.checks.flatMap(c=>c.reasonCodes));
+    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
+    try{
+     const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...engineering?{engineering}:{}};
+     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
+     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
+     // the run → bundle association is durable before the client hears about the run
+     if(engineering)await deps.engineering!.bindRun(run.id,engineering.ref);
+@@ -256,12 +262,12 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+     await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
+     await entry.run.close();runs.delete(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
+    }catch(e){entry.archiving=false;return failed(response,e);}
+   }
+   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
+   try{return send(response,200,kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),...entry.readOnly?{controlAccess:'view_reconcile'}:{}});}catch(e){return failed(response,e);}
+  };
+  return Object.assign(handle,{
+   /** Ends open SSE connections so the HTTP server can close. */
+   endStreams(){for(const r of streams)r.end();streams.clear();},
+-  close:async()=>{await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
++  close:async()=>{await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();}});
+ }
+diff --git a/packages/lab-runtime/src/v2/models/arm-collision.ts b/packages/lab-runtime/src/v2/models/arm-collision.ts
+index 660be06..cb71f2e 100644
+--- a/packages/lab-runtime/src/v2/models/arm-collision.ts
++++ b/packages/lab-runtime/src/v2/models/arm-collision.ts
+@@ -1,19 +1,20 @@
+ // Conservative, SI-only geometric mock checker. Capsule geometry is illustrative, not a measured robot mesh.
+ // Adaptive subdivision uses a reach * sum(|dq|) movement bound; uncertain intervals are blocked, never passed.
+ import {forwardKinematics,type ArmModelSI} from './arm-kinematics';
+ import {qrotate,type Vec3} from '../frames';
+ import {hashJson} from '../hash';
+ export type ArmObstacle={id:string;kind:'sphere';center:Vec3;radiusM:number}|{id:string;kind:'box';min:Vec3;max:Vec3};
+ /** `linkRadiiM` (one per link, link-1..link-6) replaces `linkRadiusM` link by link. `cupAxisInTool` lays the held cup along that tool-frame axis, centred on the TCP (side grip);
+- * absent, the cup stands on the tool axis beyond the gripper as before. Without the two fields every result is the same, number for number. */
+-export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number]}
++ * absent, the cup stands on the tool axis beyond the gripper as before. `gripperBackM` extends the gripper behind the TCP along tool -z to cover the palm;
++ * `gripperLengthM` remains its forward reach along tool +z. Omitted fields preserve the reference geometry exactly. */
++export interface ArmGeometry {linkRadiusM:number;gripperRadiusM:number;gripperLengthM:number;cupRadiusM:number;cupHeightM:number;provenance:'illustrative'|'assumed';linkRadiiM?:number[];cupAxisInTool?:[number,number,number];gripperBackM?:number}
+ export const DEFAULT_ARM_GEOMETRY:ArmGeometry={linkRadiusM:0.025,gripperRadiusM:0.02,gripperLengthM:0.025,cupRadiusM:0.035,cupHeightM:0.09,provenance:'illustrative'};
+ /** `allowed` is present only when allowed pairs were given: the pairs, and those of them that were in contact (clearance <= 0) at any evaluated configuration of the sweep, in the given order. */
+ export interface SweepResult {ok:boolean;engine:'capsule-sweep-v1';modelRevision:string;geometryRevision:string;toleranceM:number;evaluations:number;reason?:'COLLISION'|'SWEEP_UNCERTAIN';pair?:[string,string];fraction?:number;clearanceM?:number;
+  allowed?:{pairs:[string,string][];inContact:[string,string][]}}
+ interface Capsule {id:string;a:Vec3;b:Vec3;radius:number;link:number;kind:'link'|'gripper'|'cup'}
+ const add=(a:Vec3,b:Vec3):Vec3=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+ const sub=(a:Vec3,b:Vec3):Vec3=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+ const dot=(a:Vec3,b:Vec3)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+ const at=(a:Vec3,d:Vec3,t:number):Vec3=>[a[0]+d[0]*t,a[1]+d[1]*t,a[2]+d[2]*t];
+ const clamp=(n:number)=>Math.min(1,Math.max(0,n));
+@@ -38,21 +39,21 @@ function boxDistance(a:Vec3,b:Vec3,min:Vec3,max:Vec3){
+   for(let k=0;k<3;k++){const p=a[k]!+d[k]!*mid,bound=p<min[k]!?min[k]:p>max[k]!?max[k]:undefined;
+    if(bound!==undefined){numerator+=d[k]!*(a[k]!-bound);denominator+=d[k]!**2;}}
+   if(denominator>0)best=Math.min(best,distance(Math.max(lo,Math.min(hi,-numerator/denominator))));
+  }
+  return best;
+ }
+ function bodies(model:ArmModelSI,q:readonly number[],geometry:ArmGeometry,heldCup:boolean):Capsule[]{
+  const fk=forwardKinematics(model,q),points:Vec3[]=[[0,0,0],...fk.frames.map(f=>f.position)],out:Capsule[]=[];
+  for(let i=1;i<points.length;i++)if(Math.hypot(...sub(points[i]!,points[i-1]!))>1e-9)out.push({id:`link-${i}`,a:points[i-1]!,b:points[i]!,radius:geometry.linkRadiiM?.[i-1]??geometry.linkRadiusM,link:out.length,kind:'link'});
+  const link=out.length;
+- out.push({id:'gripper',a:fk.tcp.position,b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),radius:geometry.gripperRadiusM,link,kind:'gripper'});
++ out.push({id:'gripper',a:geometry.gripperBackM?sub(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperBackM])):fk.tcp.position,b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),radius:geometry.gripperRadiusM,link,kind:'gripper'});
+  const axis=geometry.cupAxisInTool;
+  if(heldCup&&axis){const n=Math.hypot(...axis),half=qrotate(fk.tcp.quaternionXyzw,axis.map(v=>v/n*geometry.cupHeightM/2) as Vec3);out.push({id:'held-cup',a:sub(fk.tcp.position,half),b:add(fk.tcp.position,half),radius:geometry.cupRadiusM,link,kind:'cup'});}
+  else if(heldCup)out.push({id:'held-cup',a:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM])),b:add(fk.tcp.position,qrotate(fk.tcp.quaternionXyzw,[0,0,geometry.gripperLengthM+geometry.cupHeightM])),radius:geometry.cupRadiusM,link,kind:'cup'});
+  return out;
+ }
+ function clearance(capsules:Capsule[],world:readonly ArmObstacle[],allowed:readonly (readonly [string,string])[]=[],touched?:Set<number>){
+  let clearanceM=Infinity,pair:[string,string]|undefined;
+  // phase-scoped allowed contact (gripper/held cup only; the caller validates). A skipped pair still counts as touched when it is in contact.
+  const allowedIndex=(a:string,b:string)=>allowed.findIndex(([x,y])=>x===a&&y===b||x===b&&y===a);
+  const skip=(a:string,b:string,distance?:()=>number)=>{const i=allowedIndex(a,b);if(i<0)return false;if(touched&&distance&&!touched.has(i)&&distance()<=0)touched.add(i);return true;};
+@@ -73,21 +74,21 @@ export function checkArmSweep(model:ArmModelSI,from:readonly number[],to:readonl
+  const geometry=options.geometry??DEFAULT_ARM_GEOMETRY,toleranceM=options.toleranceM??0.0005;
+  const vector=(v:Vec3)=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
+  const positive=(v:unknown)=>typeof v==='number'&&Number.isFinite(v)&&v>0;
+  if(!Number.isFinite(toleranceM)||toleranceM<=0||toleranceM>0.01||Object.entries(geometry).some(([k,v])=>k!=='provenance'&&k!=='linkRadiiM'&&k!=='cupAxisInTool'&&!positive(v)))throw new Error('COLLISION_GEOMETRY_INVALID');
+  if(geometry.linkRadiiM!==undefined&&(!Array.isArray(geometry.linkRadiiM)||geometry.linkRadiiM.length!==model.links.length||!geometry.linkRadiiM.every(positive)))throw new Error('COLLISION_GEOMETRY_INVALID');
+  if(geometry.cupAxisInTool!==undefined&&(!vector(geometry.cupAxisInTool)||!(Math.hypot(...geometry.cupAxisInTool)>1e-9)))throw new Error('COLLISION_GEOMETRY_INVALID');
+  if(options.allowedPairs?.some(p=>!p.some(id=>id==='gripper'||id==='held-cup')))throw new Error('ALLOWED_PAIR_INVALID');
+  for(const o of options.world)if(!o.id||(o.kind==='sphere'?(!vector(o.center)||!Number.isFinite(o.radiusM)||o.radiusM<=0):o.kind!=='box'||!vector(o.min)||!vector(o.max)||o.min.some((n,k)=>n>=o.max[k]!)))throw new Error('COLLISION_WORLD_INVALID');
+  forwardKinematics(model,from);forwardKinematics(model,to);
+  const result:SweepResult={ok:true,engine:'capsule-sweep-v1',modelRevision:model.revision,geometryRevision:hashJson({geometry,world:options.world}),toleranceM,evaluations:0};
+- const reach=model.links.reduce((sum,l)=>sum+Math.abs(l.a)+Math.abs(l.d),Math.hypot(...model.toolM))+geometry.gripperLengthM+geometry.cupHeightM;
++ const reach=model.links.reduce((sum,l)=>sum+Math.abs(l.a)+Math.abs(l.d),Math.hypot(...model.toolM))+Math.max(geometry.gripperBackM??0,geometry.gripperLengthM)+geometry.cupHeightM;
+  const totalMovement=reach*from.reduce((sum,q,i)=>sum+Math.abs(to[i]!-q),0);
+  const pairs=options.allowedPairs??[],touched=pairs.length?new Set<number>():undefined;
+  const evaluate=(fraction:number)=>{result.evaluations++;return clearance(bodies(model,from.map((q,i)=>q+(to[i]!-q)*fraction),geometry,options.heldCup??false),options.world,pairs,touched);};
+  const fail=(fraction:number,c:ReturnType<typeof clearance>,reason:SweepResult['reason'])=>{Object.assign(result,{ok:false,reason,pair:c.pair,fraction,clearanceM:c.clearanceM});};
+  const done=()=>{if(touched)result.allowed={pairs:pairs.map(p=>[p[0],p[1]]),inContact:pairs.filter((_,i)=>touched.has(i)).map(p=>[p[0],p[1]])};return result;};
+  for(const t of [0,1]){const c=evaluate(t);if(c.clearanceM<=0){fail(t,c,'COLLISION');return done();}}
+  const visit=(lo:number,hi:number,depth:number):void=>{
+   if(!result.ok)return;
+   const mid=(lo+hi)/2,c=evaluate(mid),bound=totalMovement*(hi-lo)/2;
+   if(c.clearanceM<=0){fail(mid,c,'COLLISION');return;}
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index e6de711..df0e757 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -84,21 +84,21 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
+  const backends=instantiateBackends(input.backendSetId,capabilities,providers.enabledBackends??[],requiredBackends(registered,plantSet?'simulation':'mock',input.backendSetId,capabilities));
+  if(input.mode!==backends.mode||input.access!==backends.access)throw new Error('MODE_BACKEND_MISMATCH');
+  const valid=validateProjectV2(input.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
+  const project=structuredClone(valid.value);checkWorld(project,armModel);
+  const scenario=structuredClone(registered);
+  checkScenario(scenario);if(scenario.revision!==input.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
+  // A coffee scenario needs the coffee and arm backends of the locked set; there is no fallback to an AMR-only run.
+  if(scenario.coffee&&!(backends.backends.includes('mock_coffee')&&(backends.backends.includes('mock_arm')||backends.backends.includes('webots_arm')||backends.backends.includes(MUJOCO_ARM.id))))throw new Error('SCENARIO_BACKEND_MISSING');
+  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
+  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
+- const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock');
++ const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock',runSet?.providers?.arm);
+  const assets=project.entities.map(e=>{
+   const supplied=catalog.find(a=>a.contentHash===e.assetRef.contentHash);
+   if(supplied&&(!verifyAssetHash(supplied)||supplied.id!==e.assetRef.id||supplied.revision!==e.assetRef.revision))throw new Error('ASSET_HASH_MISMATCH');
+   // An unresolved asset is unknown geometry: point model for motion, and no collision metric is reported.
+   const compiled=supplied?compileAsset(supplied):null;radius[e.id]=compiled?.collision.radiusM??null;
+   trays[e.id]=supplied?Math.max(1,supplied.frames.filter(f=>/^tray_\d+$/.test(f.id)).length):1;
+   return {...e.assetRef,resolved:!!compiled};
+  });
+  const armCollisionScene=scenario.coffee?declareArmScene(project,radius,roles.robots.map(r=>r.id),armModel):undefined;
+  // a plant arm that runs its fixture's program (MuJoCo) records that program, its motion and its geometry; every other run keeps the mock arm's parameters
+@@ -391,21 +391,21 @@ class Run implements ScenarioRun {
+   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
+   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
+   const view=await this.view(),status=view.run.status;
+   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
+   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
+   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
+   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
+   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
+   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
+   const cellFault=COFFEE_FAULTS.includes(String(p.faultId))?c.coffee?.cellId:ARM_FAULTS.includes(String(p.faultId))?c.coffee?.armId:null;
+-  if(a.kind==='injectFault'){try{validateFaultTarget(String(p.faultId),String(p.entityId??cellFault??c.roles.robots[0]!.id),activeFaultEntities(this.project,c.roles),'mock');}catch{throw new Error('INVALID_FAULT');}}
++  if(a.kind==='injectFault'){try{validateFaultTarget(String(p.faultId),String(p.entityId??cellFault??c.roles.robots[0]!.id),activeFaultEntities(this.project,c.roles),'mock',c.coffee?.arm.plantId);}catch{throw new Error('INVALID_FAULT');}}
+   const pending=a.kind==='confirm'?Object.entries(c.confirmations).find(([k,x])=>x.due===null&&k.endsWith(`/${String(p.subjectId)}`)):undefined;
+   if(a.kind==='confirm'&&!pending)throw new Error('CONFIRMATION_NOT_PENDING');
+   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');
+   if(pending&&this.plant.robot(pending[1].robotId).stale)throw new Error('INVALID_STATE:LOCALIZATION_LOST');
+   if(a.kind==='restoreCup'&&!await this.coffee?.canRestoreJob(String(p.subjectId)))throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');
+   // Admission applies only to a new action, inside the same queue as receipt replay and execution.
+   // A lost response can therefore be retried even if providers became unavailable after success.
+   await beforeExecute?.();
+   c.inFlight=true;await this.persist();
+   try{
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts
+index 7a62e50..3a8f68b 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts
+@@ -35,23 +35,26 @@ const workerDetail=(code:string,detail?:string)=>FIXED_DETAIL.has(code)&&detail?
+ /** A lost worker: the client's code, plus the exit code or signal of a process that died, or a bare code the client names (WORKER_FATAL's); never its stderr. */
+ const lostDetail=(e:WorkerLostError)=>{const d=e.message.slice(e.code.length+2),exit=/^worker exited \(([A-Za-z0-9]{1,16})\)/.exec(d)?.[1];return exit?`${e.code}: exit ${exit}`:/^[A-Z0-9_]{1,64}$/.test(d)?`${e.code}: ${d}`:e.code;};
+ /** Any other error: its name, and the CODE of a `CODE` or `CODE: detail` message of this codebase; never the free text. */
+ const errorDetail=(e:unknown)=>{const name=e instanceof Error?e.name.slice(0,64):'Error',code=/^([A-Z][A-Z0-9_]{1,63})(?::|$)/.exec(e instanceof Error?e.message:String(e))?.[1];return code?`${name}: ${code}`:name;};
+ 
+ /** The fixture's programs verbatim, plus grip by contact (open = the gripper's full opening, closed = 0, counts and lift from the oracle profile) and the ARM03 capsule geometry of the xArm:
+  * its capsule radii, the cup of the layout lying across the tool (the cup stands upright while the tool approaches it sideways: its axis in the tool frame is the map vertical seen from the
+  * pick grasp frame) and the scene's allowed contacts as sweep pairs. No IK at run time. */
+ export function mujocoProgramSet(fixture:Pick<XArmFixture,'programs'|'physics'|'layout'>,oracle:{gripSettleTicks:number;dropTicks:number;liftMinM:number},allowed:Readonly<ArmCellSceneV1['allowedContacts']>):ArmProgramSet{
+  const {physics,layout}=fixture,axis=qrotate(qconj(layout.grasp.pick.quaternionXyzw),[0,0,1]);
++ // The palm starts behind the TCP: enclose its box with the xy half-diagonal radius and an axis beginning at its back face.
++ // For the pinned xarm6-g2-v1, this also encloses both pads from open to closed; keep the 25 mm forward reach beyond the TCP.
++ // This is a conservative, assumed proxy of the plant's collision shapes, not measured gripper geometry.
+  return {...structuredClone(fixture.programs),
+   contact:{openM:physics.gripper.openingMaxM,closedM:0,gripSettleTicks:oracle.gripSettleTicks,dropTicks:oracle.dropTicks,liftMinM:oracle.liftMinM,releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS},
+-  collision:{geometry:{...DEFAULT_ARM_GEOMETRY,provenance:'assumed',linkRadiiM:[...physics.capsuleRadiusM],cupRadiusM:layout.cup.radiusM,cupHeightM:layout.cup.heightM,cupAxisInTool:[axis[0]!,axis[1]!,axis[2]!]},
++  collision:{geometry:{...DEFAULT_ARM_GEOMETRY,provenance:'assumed',linkRadiiM:[...physics.capsuleRadiusM],gripperBackM:XARM6_SI.toolM[2]-physics.palm.centerM[2]+physics.palm.sizeM[2]/2,gripperRadiusM:Math.hypot(physics.palm.sizeM[0]/2,physics.palm.sizeM[1]/2),cupRadiusM:layout.cup.radiusM,cupHeightM:layout.cup.heightM,cupAxisInTool:[axis[0]!,axis[1]!,axis[2]!]},
+    allowedPairs:allowed.map(c=>[c.a==='held_prop'?'held-cup':c.a,c.b] as const)}};
+ }
+ /** The cell's two supports as ARM03 obstacles (arm base frame, the layout's boxes, ids as in the scene): the gripper and the held cup may touch them through the allowed pairs, nothing else may. */
+ export const cellSupports=(layout:Pick<CellLayout,'nozzleStand'|'tray'>):ArmObstacle[]=>([['nozzle-stand',layout.nozzleStand],['tray',layout.tray]] as const).map(([id,b])=>
+  ({id,kind:'box',min:b.centerM.map((c,i)=>c-b.sizeM[i]!/2),max:b.centerM.map((c,i)=>c+b.sizeM[i]!/2)}));
+ const SUPPORT_IDS=new Set(['nozzle-stand','tray']);
+ /** The report's statements about this plant (SX-41, D49), with the numbers they qualify. */
+ const mujocoArmCellEvidence=(engineVersion:string,fixture:Pick<XArmFixture,'waypoints'>,allowed:ArmCellSceneV1['allowedContacts'],inputs:NonNullable<ArmCellEvidence['inputs']>):ArmCellEvidence=>({waypoints:structuredClone(fixture.waypoints),inputs:{...inputs},
+  allowedContacts:allowed.map(c=>({a:c.a,b:c.b})),releaseTimeoutTicks:MUJOCO_ARM_RELEASE_TIMEOUT_TICKS,notes:[
+  `Plant: MuJoCo ${engineVersion}, xArm 6 with Gripper G2 under position actuators; not_calibrated: masses, inertia, limits and forces are manufacturer nominal values, gains, friction, contact, pads and the cell layout assumed.`,
+diff --git a/robotics/simulation-mujoco/README.md b/robotics/simulation-mujoco/README.md
+index c0d0e2a..18ebe39 100644
+--- a/robotics/simulation-mujoco/README.md
++++ b/robotics/simulation-mujoco/README.md
+@@ -19,45 +19,49 @@ The plant of the `mujoco_arm` provider (R2a): UFACTORY xArm 6 + Gripper G2, a no
+   the worker places them (and must reset geom and body contact bits, see `compile.py`). Keyframe `home` = `homeRad`, gripper open.
+ - `python -m mujoco_worker` is the plant worker (M04): `mekoniq-sim3d/1` NDJSON on stdio with the Webots worker's envelope, ops, ACK, clock, priming and idempotency
+   rules (`protocol.py`, `session.py`); `engine.py` owns the arm engine (one tick = ctrl, cup placements, re-pin parked cups,
+   then `substeps` single `mj_step` calls, one substep at a time), `snapshot.py` turns a reading into the snapshot (held cups, `restingOn`, `collisionIds`, `PLANT_UNSTABLE`). The bundle holds
+   `arm-cell-scene.json`, `component.json`, `physics.json` and `blobs/`.
+ - Contacts: `collisionIds` are the union over every substep of the tick (the engine steps one substep at a time); held cups, `restingOn`, the opening and
+   every pose are read at the end of the tick. Two arm links, or any gripper part (palm, pads) against an arm link, is `"self"` (with these contact bits pads
+   cannot touch arm links; the rule is stated for any model). A MuJoCo bad-state warning (`BADQPOS`/`BADQVEL`/`BADQACC`, after which MuJoCo resets the
+   state) is `PLANT_UNSTABLE`.
+ - `physics.capsuleRadiusM`/`capsuleSegmentsM` are not used here: they are the TS capsule sweep's (ARM03), not the engine's collision.
++  ARM03 also uses a conservative gripper capsule extending behind the TCP to the palm's back face, with the palm's xy half-diagonal as its radius.
++  For the pinned fixture it encloses the palm and both pads from open to closed; the geometry remains assumed.
++- `arm-drop` is unsupported on this contact plant: both scheduled and immediate injections are refused before being recorded. Cup-loss tests use physical contact faults.
+ 
+ Friction: MuJoCo combines two geoms of equal `priority` by taking the larger of each coefficient; a geom with a higher `priority` imposes its own. Pads have
+ `priority 1`, so cup–pad contact uses the pad: `world3d.padFriction` (torsional and rolling from `physics.contact.padFriction`). Every other cup contact is
+ max(cup, other): the cup has `world3d.propFriction`, the stand, the tray, the floor and the statics have `world3d.supportFriction` (torsional and rolling of all of
+ these from `physics.contact.propFriction`). So cup–stand and cup–tray are governed by `max(propFriction, supportFriction)`: with the spike's 0.6 and 1.0 that is 1.0,
+ the value the spike had in effect (its stand and tray carried MuJoCo's default 1.0).
+ 
+-In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`. Latest record:
+-`docs/implementation/evidence/sim-extension/r2a-candidate-01/` (every gate `tested` except `G-CLOUD1`, `blocked_external`; not accepted).
++In the Lab, `pnpm lab:mujoco` (`lab/`) starts the pinned runtime with this worker (provider `mujoco_arm`, scenario `MJ-BV01`); the container image is `deploy/lab-runtime/`.
++The [implementation evidence index](../../docs/implementation/README.md) names the current qualification records and their gate and acceptance status. Keep candidate-specific updates in that index:
++this README belongs to the pinned portable tool closure, so editing it after a recording would invalidate the Lab's pin.
+ 
+ The B02a mobile worker path takes `create.payload={sceneRef:'navigation-scene.json',seed:7}`; robot identity comes from the scene, with no new create-envelope fields.
+ `compile_mobile.py` builds canonical primitive colliders, every link's mass/COM/full inertia, two wheel hinges, a free chassis and free payload cylinders.
+ `mobile_engine.py` advances ten 2 ms substeps per logical tick, updates the velocity servo torque envelope from actual wheel speed, and reads map pose/twist,
+ wheel-angle odometry, engine LiDAR raycasts, payload support-relative poses and force/impulse contact aggregates. The create priming step is tick zero;
+ engine time is `(tick+1)*20ms`, while snapshot time is `tick*20ms`, as in the arm worker.
+ 
+ The bundle must contain every hashed `scene.files` input and the load/physics profile refs. Admission checks schemas, safe paths, byte hashes, document digests,
+ model/projection IDs, physical support geometry, finite torque/speed limits, initial penetration and the closed numerical lock before stepping. This slice admits
+ one differential AMR, one noiseless LiDAR, convex extruded world obstacles, fixed sphere caster supports, and up to eight cylinder payloads. Actors, arm commands
+ and interaction placements are refused in the mobile-only world. Canonical robot parts intentionally overlap, so robot self-contact is masked; world and payload
+ contacts remain active. Chassis roll/pitch are unconstrained. Caster-floor friction uses explicit pairs; floor-wheel friction uses MuJoCo's componentwise max.
+ 
+ `fixtures/serve-payload-v1/drive-contact-profile.json` freezes numerical inputs before measurement; its result is recorded separately, preventing a hash cycle.
+ See `docs/research/2026-11-mujoco-mobility-spike.md` and `probe_mobile.py` for the bounded probe, raw records and observed slip/odometry differences. These are
+-uncalibrated software measurements. Provider/runtime readiness, shared engine capacity and campaign evidence are subsequent slices; no mobile backend is advertised here.
++uncalibrated software measurements. B02a originally stopped at the Python worker boundary. The integrated Source mobile provider below now supplies runtime readiness and shared arm/mobile engine capacity; campaign and durable payload evidence remain subsequent work.
+ 
+ ```sh
+ node scripts/bootstrap-portable-simulation.mjs mujoco
+ PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider' perl -e 'alarm 300; exec @ARGV' .venv-mujoco/bin/python -m pytest robotics/simulation-mujoco/tests -q
+ ```
+ 
+ ### Source mobile provider
+ 
+ `MEKONIQ_LAB_MUJOCO=1` now exposes the arm provider plus the mobile `mujoco_3d` plant when an engineering bundle service is configured. Mobile uses `engineering-mujoco-3d-v1` and `MJ-FD01`; the compiler accepts one registered canonical Serve AMR and selects the center load server-side. The existing arm-only CLI options remain sufficient for R2a.
+ 
+diff --git a/scripts/native-sim/tool-identity.mjs b/scripts/native-sim/tool-identity.mjs
+index 9c0ddb5..baf0f17 100644
+--- a/scripts/native-sim/tool-identity.mjs
++++ b/scripts/native-sim/tool-identity.mjs
+@@ -1,15 +1,17 @@
+ // The executable Python import closure and its consumed local resources. Export and native admission share this definition.
+ import {readdirSync,readFileSync,realpathSync} from 'node:fs';
+ import {join,resolve} from 'node:path';
+ import {createHash} from 'node:crypto';
+-function toolClosure(root,paths,symlink){
++function toolClosure(root,paths,symlink,ignorePythonMetadata=false){
+  root=realpathSync(root);const files=[];
+- const walk=(relative)=>{const path=join(root,relative);if(realpathSync(path)!==resolve(path))throw new Error(symlink);for(const e of readdirSync(path,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name,'en'))){if(['__pycache__','.pytest_cache','.venv','tests'].includes(e.name)&&relative!=='tests/fixtures')continue;const r=relative+'/'+e.name;if(e.isDirectory())walk(r);else if(e.isFile()&&!/\.(pyc|pyo)$/.test(e.name)){const full=join(root,r);if(realpathSync(full)!==full)throw new Error(symlink);const bytes=readFileSync(full);files.push({path:r,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length});}else if(e.isSymbolicLink())throw new Error(symlink);}};
++ const walk=(relative)=>{const path=join(root,relative);if(realpathSync(path)!==resolve(path))throw new Error(symlink);for(const e of readdirSync(path,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name,'en'))){if(['__pycache__','.pytest_cache','.venv','tests'].includes(e.name)&&relative!=='tests/fixtures')continue;if(ignorePythonMetadata&&/\.(egg|dist)-info$/.test(e.name))continue;const r=relative+'/'+e.name;if(e.isDirectory())walk(r);else if(e.isFile()&&!/\.(pyc|pyo)$/.test(e.name)){const full=join(root,r);if(realpathSync(full)!==full)throw new Error(symlink);const bytes=readFileSync(full);files.push({path:r,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length});}else if(e.isSymbolicLink())throw new Error(symlink);}};
+  for(const path of paths)walk(path);
+  files.sort((a,b)=>a.path<b.path?-1:1);return {version:1,digest:createHash('sha256').update(JSON.stringify(files)).digest('hex'),files};
+ }
+-export const nativeToolClosure=(root)=>toolClosure(root,['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK');
++// Editable installs generate distribution metadata in robotics/agent. It is not an imported tool or consumed resource; including it makes a clean clone export a different runtime.
++// Portable roots keep their strict file inventory (the Lab launcher verifies every distributed file).
++export const nativeToolClosure=(root)=>toolClosure(root,['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK',true);
+ /** Portable (macOS/Linux developer) Python tools: IR-SIM worker + its fixtures, LinkForge shadow worker, the Robotics Toolbox/PID algorithm checker, the Webots 3D plant compiler/worker (the engine is a host install), the MuJoCo arm cell compiler (the engine is the pinned wheel of its lock) with its xarm6 fixture, the shared description/compiler helper with the robotics/simulation
+  * packages it imports (compiler/__init__ -> compile_world -> worlds.generate_restaurant, actors.blocker/scenario/pedestrian) and the contract schemas. Separate from the native closure; neither replaces the other. */
+ export const PORTABLE_TOOL_PATHS=['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation-3d','robotics/simulation-mujoco','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas'];
+ export const portableToolClosure=(root)=>toolClosure(root,PORTABLE_TOOL_PATHS,'PORTABLE_TOOL_SYMLINK');
+diff --git a/scripts/record-sim-extension.mjs b/scripts/record-sim-extension.mjs
+index 86dd42b..3e04edf 100644
+--- a/scripts/record-sim-extension.mjs
++++ b/scripts/record-sim-extension.mjs
+@@ -43,21 +43,21 @@ for(const [k,f] of [['r11Record','--r11-record'],['blocked','--blocked'],['block
+ // --blocked (D70): part A gates only, with a reason, and only when the M00 spike note concludes failure; checked before anything else is read or written
+ const blocked=R2A&&(own.blocked!==undefined||own.blockedReason!==undefined)?{gates:(own.blocked??'').split(',').filter(Boolean),reason:own.blockedReason??''}:null;
+ if(blocked){const p=checkBlocked(blocked,existsSync(join(root,SPIKE_NOTE))?readFileSync(join(root,SPIKE_NOTE),'utf8'):'');if(p.length)fail('NOT_RUN',p.join('; '));}
+ const table=R2A?tableR2a(blocked?.gates??[],blocked?.reason):null,SUITES_RUN=R2A?table.suites:R11?SUITES_R11:SUITES;
+ for(const [k,f] of [['out','--out'],[R2A?'r11Record':R11?'r1Record':'irsimRecord',R2A?'--r11-record':R11?'--r1-record':'--irsim-record'],['mock','--mock-regression']])if(!own[k])fail('NOT_RUN',`MISSING_OPTION:${f}`);
+ const out=resolve(own.out),r11Dir=R2A?resolve(own.r11Record):null,r1Dir=R11?resolve(own.r1Record):null,irsimDir=R2A?r11Dir:R11?r1Dir:resolve(own.irsimRecord),mockDir=resolve(own.mock);
+ const labDir=own.lab==='none'?null:own.lab?resolve(own.lab):existsSync(join(root,'../lab/config/source-runtime.lock.json'))?resolve(root,'../lab'):null;
+ const imageTag=`mekoniq-lab-runtime:record-${process.pid}`,imagePlatform=`linux/${arch()==='x64'?'amd64':arch()}`;
+ /** How a suite of the table is run: the same for the plan and the recording. */
+ const suiteRun=(s,cwd,abs,env={})=>s.kind==='vitest'?{cmd:process.execPath,args:[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`,'--reporter=default'],env}
+- :s.kind==='pytest'?{cmd:join(root,s.python),args:['-m','pytest',...s.files,'-q',`--junitxml=${abs}`],env}:{cmd:process.execPath,args:s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),env};
++ :s.kind==='pytest'?{cmd:join(root,s.python),args:['-m','pytest','-p','no:cacheprovider',...s.files,'-q',`--junitxml=${abs}`],env}:{cmd:process.execPath,args:s.command.map(a=>a.endsWith('.mjs')?join(cwd,a):a),env};
+ const PLANNED=own.skipSuites?[]:SUITES_RUN;
+ const probes={docker:()=>spawnSync('docker',['info'],{stdio:'ignore',timeout:30_000}).status===0,exists:(p)=>existsSync(join(root,p)),platform:platform(),
+  screenLocked:()=>screenLockedFromIoreg(spawnSync('ioreg',['-n','Root','-d1','-a'],{encoding:'utf8',timeout:10_000}).stdout)};
+ const checks=()=>preflight({release:own.release,suites:PLANNED},probes);
+ if(own.plan){
+  const line=(id,cwd,cmd,args)=>console.log(`${id}\t${cwd}\t${[cmd,...args].join(' ')}`);
+  for(const c of checks())console.log(`preflight\t${c.id}\t${c.ok?'ok':c.code}\t${c.message}`);
+  console.log(`# record-sim-extension --release ${own.release}: the steps it would run, in order (id, working directory, command); nothing is run`);
+  if(!R11&&!R2A){line('algorithm',root,process.execPath,['scripts/lab-algorithm.mjs','run','--out','<scratch>']);line('campaign',root,process.execPath,['scripts/lab-irsim.mjs','run','--provider','webots','--campaign','r1-qualification','--out',join(out,'campaign'),'…']);}
+  if(R2A&&SUITES_RUN.some(s=>s.image))line('rt-image',root,'sh',['deploy/lab-runtime/build.sh',imageTag,'--platform',imagePlatform,'(before the record directory exists; the image is removed when the recording ends, on every exit path)']);
+diff --git a/tests/integration/lab-v2-arm.test.ts b/tests/integration/lab-v2-arm.test.ts
+index 86e014f..c637942 100644
+--- a/tests/integration/lab-v2-arm.test.ts
++++ b/tests/integration/lab-v2-arm.test.ts
+@@ -157,24 +157,24 @@ test('the adapter renews its lease before expiry and, after losing it, reconcile
+ 
+ test('status frames with reconcile state and lifecycle events reach the domain as reports',async()=>{
+  const {adapter,double,reports,pick}=rig();await adapter.open();
+  await adapter.execute(cmd('stage_program',{profileId:'puma560-sim-1'},'c-stage',pick));await adapter.execute(cmd('start_job',{jobId:'job-1'},'c-run',pick));
+  double.emitEvent('owner_revoked',null,['OPERATOR']);double.emitEvent('outcome_unknown','c-run',['REVOKED']);
+  expect(reports.at(-1)).toMatchObject({observation:{commandId:'c-run',result:'outcome_unknown',reasonCodes:['REVOKED']}});
+  double.emitStatus({reconcileRequired:true,unknownCommands:['c-run']});
+  expect(reports.at(-1)).toMatchObject({status:{status:'fault',reasonCodes:['RECONCILE_REQUIRED']}});
+ });
+ 
+-const PY=resolve('.venv/bin/python'),pyOk=existsSync(PY)&&spawnSync(PY,['-c','import jsonschema, referencing'],{encoding:'utf8'}).status===0;
++const PY=resolve('.venv/bin/python'),pyOk=existsSync(PY)&&spawnSync(PY,['-B','-c','import jsonschema, referencing'],{encoding:'utf8'}).status===0;
+ test.skipIf(!pyOk)('the real Python bridge service (fake controller) accepts the adapter end to end over its Unix socket',async()=>{
+  const dir=mkdtempSync(join(tmpdir(),'arm-bridge-')),sock=join(dir,'bridge.sock');
+- const child=spawn(PY,['tests/fake_service.py','--socket',sock,'--journal',join(dir,'journal.jsonl')],{cwd:'integrations/arm-controller',stdio:['ignore','pipe','inherit']});
++ const child=spawn(PY,['-B','tests/fake_service.py','--socket',sock,'--journal',join(dir,'journal.jsonl')],{cwd:'integrations/arm-controller',stdio:['ignore','pipe','inherit']});
+  try{
+   await new Promise<void>((ok,fail)=>{child.stdout.once('data',()=>ok());child.once('exit',c=>fail(new Error(`fake service exit ${c}`)));});
+   const cap=await connectArmBackend({socketPath:sock,timeoutMs:3000});
+   expect(cap).toMatchObject({backendId:'linuxcnc_sim',available:true,evidence:'controller_sim',machineId:'puma560-sim-1'});
+   const adapter=new LinuxcncArmAdapter({port:cap.port!,profile:loadArmProfile(PROFILE_PATH),runId:RUN,cellId:CELL,deviceId:ARM,nowMs:()=>Date.now()});
+   await adapter.open();
+   const pick={id:'cup-pick',hash:loadArmProfile(PROFILE_PATH).programs['cup-pick']!.sha256},now=Date.now();
+   const stage={...cmd('stage_program',{profileId:'puma560-sim-1'},'py-stage',pick),expiresAt:new Date(now+30000).toISOString()},run={...cmd('start_job',{jobId:'job-1'},'py-run',pick),expiresAt:new Date(now+30000).toISOString()};
+   expect(await adapter.execute(stage)).toEqual({accepted:true,unknown:false});
+   expect(await adapter.execute(run)).toEqual({accepted:true,unknown:false});
+diff --git a/tests/integration/lab-v2-bv01-sil.test.ts b/tests/integration/lab-v2-bv01-sil.test.ts
+index 87dc725..c356901 100644
+--- a/tests/integration/lab-v2-bv01-sil.test.ts
++++ b/tests/integration/lab-v2-bv01-sil.test.ts
+@@ -5,21 +5,21 @@ test('BV01 native admission requires all three registered providers and its pinn
+ });
+ import {mkdtemp,rm,readFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join,resolve} from 'node:path';
+ import {spawnSync} from 'node:child_process';
+ import {beforeAll,afterAll} from 'vitest';
+ import {nativeProviderFactory} from '../../packages/lab-runtime/src/v2/sil/native-providers';
+ import {createNativeScenarioRun,assertNativeAdmission} from '../../packages/lab-runtime/src/v2/sil/native-lifecycle';
+ import {nativeBv01Double} from '../support/native-bv01-double';
+ let directory:string,bundle:string;const root=resolve('.');
+-beforeAll(async()=>{directory=await mkdtemp(join(tmpdir(),'native-bv01-'));bundle=join(directory,'bundle');const f=join(root,'tests/fixtures/digital-twin/sil/bv01.json');const r=spawnSync(join(root,'.venv/bin/python'),['-m','compiler','--fixture',f,'--scenario',f,'--out',bundle],{env:{...process.env,PYTHONPATH:join(root,'robotics/simulation')+':'+join(root,'robotics/agent')},encoding:'utf8'});if(r.status!==0)throw new Error(r.stderr);});
++beforeAll(async()=>{directory=await mkdtemp(join(tmpdir(),'native-bv01-'));bundle=join(directory,'bundle');const f=join(root,'tests/fixtures/digital-twin/sil/bv01.json');const r=spawnSync(join(root,'.venv/bin/python'),['-B','-m','compiler','--fixture',f,'--scenario',f,'--out',bundle],{env:{...process.env,PYTHONPATH:join(root,'robotics/simulation')+':'+join(root,'robotics/agent')},encoding:'utf8'});if(r.status!==0)throw new Error(r.stderr);});
+ afterAll(async()=>{await rm(directory,{recursive:true,force:true});});
+ const config=()=>({sourceRoot:root,bundleDirectory:bundle,environmentProfile:'utm-ubuntu-arm64',arm:{socketPath:'/unused-protocol-double.sock'}});
+ async function open(mode:Parameters<typeof nativeBv01Double>[1]='happy',deadlineMs=40000){const double=nativeBv01Double(root,mode),factory=await nativeProviderFactory(config(),double.transports),input={project:factory.project,scenarioId:'BV01',scenarioRevision:1,seed:23,mode:'simulation' as const,access:'simulated' as const,backendSetId:'coffee-simulation',sourceCommit:'90a5d74'},providers={directory:await mkdtemp(join(directory,'run-'))};return {run:await createNativeScenarioRun(input,providers,factory,{paceMs:2,deadlineMs}),double,factory,input,providers};}
+ test('production native composition rejects incompatible project and unsupported schedules before provider effects',async()=>{
+  const d=nativeBv01Double(root),factory=await nativeProviderFactory(config(),d.transports),input={project:{...factory.project,id:'mock-only'},scenarioId:'BV01',scenarioRevision:1,seed:23,mode:'simulation' as const,access:'simulated' as const,backendSetId:'coffee-simulation',sourceCommit:'90a5d74'};
+  expect(()=>assertNativeAdmission(input,{directory},factory)).toThrow('NATIVE_FIXTURE_MISMATCH');expect(d.bridge.sends).toBe(0);
+ });
+ test('protocol_double production composition runs both recipes with source handoffs and never claims native proof',async()=>{
+  const {run,double,providers}=await open();try{await run.start();let v=await run.snapshot();const end=Date.now()+39000;while(v.run.status==='running'&&Date.now()<end){await new Promise(r=>setTimeout(r,25));v=await run.snapshot();}
+  expect(v.attention).toEqual([]);const report=await run.report();expect(report.attention).toEqual([]);expect(report.outcome.status).toBe('completed');expect(report.outcome.served).toBe('2');expect(report.businessEvents.some(e=>e.type==='CargoLoaded')).toBe(true);expect(report.verification?.result).toBe('not_run');expect(report.verification?.blockers).toContain('PROTOCOL_DOUBLE');expect(report.coffee?.armTrace.samples).toEqual([]);expect(report.verification?.transfers.length).toBeGreaterThanOrEqual(6);
+diff --git a/tests/integration/lab-v2-native-wire-deadline.test.ts b/tests/integration/lab-v2-native-wire-deadline.test.ts
+index 8e41c38..d72f31d 100644
+--- a/tests/integration/lab-v2-native-wire-deadline.test.ts
++++ b/tests/integration/lab-v2-native-wire-deadline.test.ts
+@@ -1,18 +1,18 @@
+ import {expect,test} from 'vitest';
+ import {mkdtempSync,rmSync} from 'node:fs';import {join,resolve} from 'node:path';import {tmpdir} from 'node:os';import {spawnSync} from 'node:child_process';
+ import {DatabaseSync} from 'node:sqlite';
+ import {LinuxcncArmAdapter,loadArmProfile} from '../../packages/lab-runtime/src/v2/arm/adapter';
+ import type {CellCommand} from '../../packages/cell-adapters/src/contract';
+ import {hashJson} from '../../packages/lab-runtime/src/v2/hash';import {ArmBridgeDouble} from '../support/arm-bridge-double';
+ const epoch=Date.parse('2026-11-06T00:00:00Z');
+-function validate(command:unknown,now:number){const p=spawnSync(resolve('.venv/bin/python'),['-c',"import json,sys; from bridge.protocol import check_command; x=json.load(sys.stdin); print(json.dumps(check_command(x['envelope'], x['profile'], x['now'])))"],{cwd:'integrations/arm-controller',input:JSON.stringify({envelope:command,profile:loadArmProfile('integrations/arm-controller/configs/sim/puma560/profile.json'),now}),encoding:'utf8'});if(p.status!==0)throw new Error(p.stderr);return JSON.parse(p.stdout) as string[];}
++function validate(command:unknown,now:number){const p=spawnSync(resolve('.venv/bin/python'),['-B','-c',"import json,sys; from bridge.protocol import check_command; x=json.load(sys.stdin); print(json.dumps(check_command(x['envelope'], x['profile'], x['now'])))"],{cwd:'integrations/arm-controller',input:JSON.stringify({envelope:command,profile:loadArmProfile('integrations/arm-controller/configs/sim/puma560/profile.json'),now}),encoding:'utf8'});if(p.status!==0)throw new Error(p.stderr);return JSON.parse(p.stdout) as string[];}
+ function rig(skew=0,rtt=0){const path=join(mkdtempSync(join(tmpdir(),'wire-clock-')),'arm.sqlite'),profile=loadArmProfile('integrations/arm-controller/configs/sim/puma560/profile.json');let logical=epoch,wall=epoch+60000,mono=0;const bridge=new ArmBridgeDouble(profile,()=>wall+skew),send=bridge.send.bind(bridge);bridge.send=async m=>{if(m.renew)mono+=rtt;return send(m);};const options={port:bridge,profile,runId:'3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c',cellId:'coffee-1',deviceId:'arm-1',nowMs:()=>logical,journalPath:path,wireDeadline:{wallNowMs:()=>wall,monotonicMs:()=>mono}};
+  const command=(id='pick'):CellCommand=>({commandId:id,runId:options.runId,deviceId:'arm-1',controlEpoch:1,expiresAt:new Date(logical+30000).toISOString(),recipeRevision:null,programRef:{id:'cup-pick',hash:profile.programs['cup-pick']!.sha256},capability:'start_job',payloadHash:hashJson({jobId:id}),payload:{jobId:id}});
+  return {path,bridge,options,command,advance:(l:number,w:number)=>{logical+=l;wall+=w;},wall:()=>wall,clean:()=>rmSync(resolve(path,'..'),{recursive:true,force:true})};}
+ test.each([0,100000])('native fresh wire deadline survives startup/ready wait and logical clock rate %s',async logicalAdvance=>{const r=rig(),a=new LinuxcncArmAdapter(r.options);try{await a.open();r.advance(logicalAdvance,90000);const c=r.command();expect(await a.execute(c)).toMatchObject({accepted:true});const sent=r.bridge.log.filter(m=>m.command).map(m=>m);expect(sent).toHaveLength(2);expect(sent[0]!.command!.expiresAt).toBe(sent[1]!.command!.expiresAt);expect(Date.parse(sent[1]!.command!.expiresAt)-r.wall()).toBeGreaterThan(29000);for(const wire of sent)expect(validate(wire,r.wall())).toEqual([]);expect(sent[1]!.command!.commandId).toBe(c.commandId);expect(sent[1]!.command!.payloadHash).toBe(c.payloadHash);}finally{await a.close();r.clean();}});
+ test.each([[6000,0],[0,300]])('unbounded controller skew/roundtrip is refused before motion (%s,%s)',async(skew,rtt)=>{const r=rig(skew,rtt),a=new LinuxcncArmAdapter(r.options);try{await a.open();await expect(a.execute(r.command())).rejects.toThrow(/WIRE_CLOCK/);expect(r.bridge.sends).toBe(0);expect(r.bridge.log.some(m=>m.command)).toBe(false);}finally{await a.close();r.clean();}});
+ test('the first wire expiry is durable, unchanged across stage/start and recovery, and never renewed on duplicate',async()=>{const r=rig(),a=new LinuxcncArmAdapter(r.options),command=r.command();try{await a.open();await a.execute(command);const sent=r.bridge.log.filter(m=>m.command),expiry=sent[0]!.command!.expiresAt;r.advance(0,31000);expect(validate(sent[1],r.wall())).toContain('COMMAND_EXPIRED');await a.execute(command);expect(r.bridge.sends).toBe(1);await a.close();const reopened=new LinuxcncArmAdapter(r.options);try{await reopened.open();await reopened.execute(command);expect(r.bridge.sends).toBe(1);const db=new DatabaseSync(r.path);const saved=JSON.parse(String(db.prepare('SELECT record FROM arm_wire_deadlines WHERE id=?').get(command.commandId)!.record));db.close();expect(saved.expiresAt).toBe(expiry);expect(saved.logicalExpiresAt).toBe(command.expiresAt);}finally{await reopened.close();}}finally{r.clean();}});
+ test('stage delay cannot refresh the logical start deadline and expired logical work never stages',async()=>{
+  const r=rig(),a=new LinuxcncArmAdapter(r.options),send=r.bridge.send.bind(r.bridge);r.bridge.send=async m=>{if(m.command){const codes=validate(m,r.wall());if(codes.length)return {schemaVersion:1,kind:'arm.reply.v1',commandId:m.command.commandId,status:'rejected',lifecycle:'none',duplicate:false,reasonCodes:codes};}const reply=await send(m);if(m.command?.capability==='stage_program')r.advance(0,31000);return reply;};
+  try{await a.open();expect(await a.execute(r.command())).toMatchObject({accepted:false,reason:'COMMAND_EXPIRED'});expect(r.bridge.sends).toBe(0);const old=r.command('old');r.advance(31001,0);await expect(a.execute(old)).rejects.toThrow('WIRE_CLOCK_LOGICAL_DEADLINE_INVALID');expect(r.bridge.log.filter(m=>m.command?.capability==='stage_program')).toHaveLength(1);}finally{await a.close();r.clean();}
+ });
+diff --git a/tests/integration/lab-v2-sil-review.test.ts b/tests/integration/lab-v2-sil-review.test.ts
+index f542aa8..ea3c53e 100644
+--- a/tests/integration/lab-v2-sil-review.test.ts
++++ b/tests/integration/lab-v2-sil-review.test.ts
+@@ -6,21 +6,21 @@ import {join,resolve} from 'node:path';
+ import {runSilScenario} from '../../packages/lab-runtime/src/v2/sil/campaign';
+ import {readCompiledWorld,startGazeboBackend,StdioWorkerPort} from '../../packages/lab-runtime/src/v2/backends/gazebo-nav2';
+ import {FakeWorkerPort,compiledWorld} from '../support/sil-rig';
+ import {restaurant,corridor} from '../support/lab-v2';
+ import type {JsonObject} from '../../packages/contracts/src/index';
+ const dirs:string[]=[];
+ afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+ async function directory(){const d=await mkdtemp(join(tmpdir(),'sil-review-'));dirs.push(d);return d;}
+ test('compiled handoff pose, yaw and map identity reach the production adapter unchanged',async()=>{
+  const out=await directory(),bundle=join(out,'bundle'),fixture=resolve('tests/fixtures/digital-twin/restaurant-v2.json');
+- execFileSync(resolve('.venv/bin/python'),['-m','compiler','--fixture',fixture,'--out',bundle,'--map-id','review-map'],{cwd:resolve('robotics/simulation')});
++ execFileSync(resolve('.venv/bin/python'),['-B','-m','compiler','--fixture',fixture,'--out',bundle,'--map-id','review-map'],{cwd:resolve('robotics/simulation')});
+  const world=await readCompiledWorld(bundle),project=JSON.parse(await readFile(fixture,'utf8')).project;
+  const compiled=JSON.parse(await readFile(join(bundle,'bindings.json'),'utf8')),targets:JsonObject[]=[];
+  const result=await runSilScenario({scenarioId:'FD01',scenarioRevision:1,seed:17,project,sourceCommit:'test',outDir:out,world,backendSetId:'simulation-default',maxIterations:6000,paceMs:0,
+   backendFactory:async(w,id)=>{const port=new FakeWorkerPort({nativeResult:'completed'}),request=port.request.bind(port);port.request=async(op,a)=>{if(op==='execute')targets.push(a.target as JsonObject);return request(op,a);};return startGazeboBackend(w,id,{port});}});
+  expect(targets.find(t=>t.waypointId==='table-1')).toEqual(Object.fromEntries(['waypointId','mapId','mapRevision','frame','x','y','yaw'].map(k=>[k,compiled.bindings['table-1'][k]])));
+  expect(result.manifest.status).toBe('completed');
+ });
+ for(const barrier of ['missing','error','late','wrong-participant'] as const)for(const transfer of [1,2])test(`${barrier} barrier ACK at transfer ${transfer} preserves unresolved custody`,async()=>{
+  const out=await directory();let calls=0;
+  const result=await runSilScenario({scenarioId:'FD01',scenarioRevision:1,seed:17,project:restaurant(),sourceCommit:'test',outDir:out,world:compiledWorld(out),backendSetId:'simulation-default',maxIterations:300,paceMs:0,
+@@ -101,21 +101,21 @@ test('real stdio capability replies can outlive the normal request timeout withi
+   expect(await backend.capability()).toMatchObject({available:true,evidence:'protocol_double'});
+   // The longer readiness deadline must not permanently extend ordinary command deadlines.
+   await expect(port.request('query',{commandId:'none',robotId:'robot_amr_1'})).rejects.toThrow('WORKER_TIMEOUT');
+  }finally{await port.close();}
+ });
+ test('actual Python SceneLoop telemetry passes the canonical validator and gateway ingest',async()=>{
+  const {validateTwinSampleV2}=await import('../../packages/lab-runtime/src/v2/contracts');
+  const {createTelemetryIngest}=await import('../../packages/lab-runtime/src/v2/backends/telemetry-ingest');
+  const {TelemetryRecorder}=await import('../../packages/lab-runtime/src/v2/telemetry');
+  const runId='3f1c2b7e-9a4d-4c6e-8b2a-1d5e6f7a8b9c';
+- const events=JSON.parse(execFileSync(resolve('.venv/bin/python'),['-c',`
++ const events=JSON.parse(execFileSync(resolve('.venv/bin/python'),['-B','-c',`
+ import json,time
+ from types import SimpleNamespace
+ from bridge.scene_loop import SceneLoop
+ clock=[0]
+ pose={'value':{'position':{'x':1.,'y':2.,'z':0.},'orientation':{'x':0.,'y':0.,'z':0.,'w':1.}},'simTimeNs':0,'receivedMonotonicNs':time.monotonic_ns(),'sequence':1}
+ poses={'robot_amr_1':pose}
+ ports=SimpleNamespace(clock_ns=lambda:clock[0],poses=lambda:poses,contacts=lambda:{})
+ events=[]
+ loop=SceneLoop(ports,{'seed':0,'actors':[],'blockers':[],'faults':[]},[{'namespace':'robot_amr_1','entityId':'amr-1','footprint':{'min':[-.3,-.3],'max':[.3,.3]}}],run_id='${runId}',boot_id='worker-1',emit=lambda event,payload:events.append({'event':event,'payload':payload}))
+ loop.step()
+diff --git a/tests/integration/mujoco-arm-faults.test.ts b/tests/integration/mujoco-arm-faults.test.ts
+index a60ba45..0019c13 100644
+--- a/tests/integration/mujoco-arm-faults.test.ts
++++ b/tests/integration/mujoco-arm-faults.test.ts
+@@ -95,21 +95,21 @@ describe.skipIf(!mujocoReady)('MuJoCo arm faults (MA06)', () => {
+     const cup = last.props.find((p) => p.propId === 'cup-1')!;
+     expect(cup.positionM.every(Number.isFinite)).toBe(true); expect(cup.held).toBe(false);
+     neverOpened(r);
+   }, 300_000);
+ 
+   test('SIGKILL of the worker in the middle of cup-pick: the outcome is unknown, nothing is resent, no process is left', async () => {
+     const gw = await mujocoGateway(), { run, directory } = await openMujocoRun(gw);
+     const r = await outcome(run, directory, async (run) => {
+       await run.start();
+       await stepUntil(run, (v) => v.coffee?.jobs.some((j) => j.status === 'transferring') ?? false, 5, 60_000);
+-      expect(killMujocoWorkers().length).toBe(1);
++      expect(killMujocoWorkers(directory).length).toBe(1);
+       return toEnd(run);
+     });
+     console.log('MA06 kill', JSON.stringify({ tick: r.view.tick, stopTick: firstStop(r), stop: r.stop, cups: r.cups, reasons: r.reasons, programs: r.arm.programs.map((p) => p.state) }));
+     expect(r.stop).toMatchObject({ latched: true, reason: 'WORKER_LOST' });
+     expect(r.arm.programs.map((p) => p.state)).toEqual(['unknown']);
+     expect(r.view.run.status).toBe('needs_attention'); expect(r.reasons).toContain('TRANSFER_UNKNOWN'); expect(r.cups[0]).toBe('cell:coffee-1');
+   }, 300_000);
+ 
+   // Where a cancel lands decides how the run ends, on this plant as on the Webots arm (the shared runner): the coffee mission is created when the drink is ready and its robot reaches
+   // the load stop at tick 1666 on both plants. Before that, Mission.Cancel leaves the mission `cancelling` (the robot still drives), the run keeps ticking and the job's
+diff --git a/tests/integration/mujoco-arm-gateway.test.ts b/tests/integration/mujoco-arm-gateway.test.ts
+index a57bc2b..7842544 100644
+--- a/tests/integration/mujoco-arm-gateway.test.ts
++++ b/tests/integration/mujoco-arm-gateway.test.ts
+@@ -1,31 +1,68 @@
+ // M07b: MJ-BV01 through the HTTP gateway. Readiness (engine-free, runs everywhere): the MuJoCo arm set is an arm plant set like the Webots arm's, so no separate gripper provider is
+ // asked for, and the mock and Webots readiness rows are exactly what they were. Real engine (skips without .venv-mujoco): a run created, stepped and reported over HTTP with a session.
+ // Worker double (skips without .venv-mujoco): a lost worker's stop names why.
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { join, resolve } from 'node:path';
++import { randomUUID } from 'node:crypto';
++import { mkdir } from 'node:fs/promises';
++import { createScenarioRun, type ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import { collectReadiness } from '../../packages/lab-runtime/src/v2/readiness';
+ import { defaultCatalog } from '../../packages/lab-runtime/src/v2/capabilities';
+ import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
+ import { startLabGateway, type LabGateway } from '../../packages/lab-runtime/src/gateway';
+ import type { RunReport } from '../../packages/lab-runtime/src/v2/report';
+ import { stepUntil } from '../support/lab-v2';
+ import { coffeeProject } from '../support/lab-v2';
+ import { mujocoGateway, mujocoReady, mujocoTemp, mujocoWorkers, openMujocoRun, removeMujocoDirs, xarmProject } from '../support/mujoco-arm';
+ 
+ const gateways: LabGateway[] = [];
+ afterEach(async () => { for (const g of gateways.splice(0)) await g.close(); await removeMujocoDirs(); });
+ const installed = (id: string) => ({ ...defaultCatalog, backends: defaultCatalog.backends.map((b) => b.id === id ? { ...b, installed: true, compatible: true, reachable: true, reason: undefined } : b) });
+ const rows = (r: { checks: { id: string; status: string; reasonCodes: string[] }[] }) => r.checks.map((c) => [c.id, c.status, c.reasonCodes]);
+ const PLACEHOLDER = (id: string) => [id, 'unknown', ['IRSIM_PROVIDER_UNAVAILABLE']];
+ 
+ describe('readiness of the arm plant sets (no engine)', () => {
++  for (const cause of ['expiry', 'eviction'] as const) for (const method of ['GET', 'POST'] as const)
++    test(`${method} readiness releases the expired owner slot after ${cause}, including concurrent probes`, async () => {
++      let now = 1_000_000, active = 0, closed = 0;
++      const key = 'r'.repeat(40), context = { scenarioId: 'MJ-BV01', backendSetId: 'engineering-mujoco-arm-v1' };
++      const g = await startLabGateway({ port: 0, directory: await mujocoTemp('mj-expired-'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), accessKey: key, nowMs: () => now,
++        v2: { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'],
++          simulationFactory: async (_input, providers) => {
++            await mkdir(providers.directory, { recursive: true }); active++; const id = randomUUID();
++            return { id, snapshot: async () => ({ run: { id, status: 'ready', runRevision: 0 }, tick: 0 }), close: async () => { await new Promise(r => setTimeout(r, 30)); active--; closed++; } } as unknown as ScenarioRun;
++          },
++          portableChecks: async () => ['model', 'clock', 'fixture', 'profile', 'runner'].map(id => ({ id, status: id === 'runner' && active ? 'blocked' as const : 'ready' as const, reasonCodes: id === 'runner' && active ? ['MUJOCO_CAPACITY'] : [], evidenceRef: 'capacity-double' })) } });
++      gateways.push(g);
++      const pair = async () => { const r = await fetch(g.url + '/lab/v2/sessions', { method: 'POST', headers: { origin: 'http://127.0.0.1:4175', 'content-type': 'application/json' }, body: JSON.stringify({ token: key }) }); expect(r.status).toBe(201); return (await r.json()).sessionToken as string; };
++      let token = await pair();
++      const call = async (path: string, method: string, body?: unknown) => { const r = await fetch(g.url + '/lab/v2' + path, { method, headers: { origin: 'http://127.0.0.1:4175', authorization: `Bearer ${token}`, 'content-type': 'application/json' }, ...body ? { body: JSON.stringify(body) } : {} }); return { status: r.status, body: await r.json() }; };
++      const create = () => call('/runs', 'POST', { ...context, project: xarmProject(), scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', runtimeIdentity: { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) } });
++      const readiness = () => call(method === 'GET' ? `/readiness?${new URLSearchParams(context)}` : '/readiness', method, method === 'POST' ? { ...context, project: xarmProject() } : undefined);
++      expect((await create()).status).toBe(201);
++      expect((await readiness()).body.canStart).toBe(false); expect(closed).toBe(0); // live owners keep their slot
++      if (cause === 'expiry') { now += 3_600_001; token = await pair(); }
++      else for (let i = 0; i < 10; i++) token = await pair();
++      for (const r of await Promise.all([readiness(), readiness()])) {
++        expect(r.status).toBe(200);
++        expect(r.body.checks.find((c: { id: string }) => c.id === 'runner')).toMatchObject({ status: 'ready', reasonCodes: [] });
++        if (method === 'POST') expect(r.body.canStart).toBe(true);
++      }
++      expect(active).toBe(0); expect(closed).toBe(1);
++      expect((await create()).status).toBe(201); expect(active).toBe(1);
++    });
++  test('a MuJoCo arm-drop schedule is refused before the plant starts', async () => {
++    const project = xarmProject(); project.faultSchedule = [{ id: 'unsupported-drop', faultId: 'arm-drop', targetId: 'arm-1', trigger: { kind: 'phase', value: 'grasp' }, durationMs: 1000 }];
++    await expect(createScenarioRun({ project, scenarioId: 'MJ-BV01', scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-mujoco-arm-v1', sourceCommit: 'test-commit' },
++      { directory: await mujocoTemp('mj-drop-'), catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], coffeePorts: async () => { throw new Error('PLANT_MUST_NOT_START'); } })).rejects.toThrow('FAULT_BACKEND_UNSUPPORTED');
++  });
+   test('a MuJoCo capacity refusal is a 409 conflict and a failed create a 503 with its cause as the reason code (no leading space); the Webots codes keep their status', async () => {
+     let thrown = '';
+     const g = await startLabGateway({ port: 0, directory: await mujocoTemp('mj-status-'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: installed('mujoco_arm'), enabledBackends: ['mock_amr', 'mock_coffee', 'mujoco_arm'], simulationFactory: async () => { throw new Error(thrown); },
+       portableChecks: async () => ['model', 'clock', 'fixture', 'profile', 'runner'].map((id) => ({ id, status: 'ready' as const, reasonCodes: [], evidenceRef: 'test-double' })) } });
+     gateways.push(g);
+     const paired = await fetch(g.url + '/lab/v2/sessions', { method: 'POST', headers: { origin: 'http://127.0.0.1:4175', 'content-type': 'application/json' }, body: JSON.stringify({ token: g.issuePairingToken() }) });
+     const h = { cookie: paired.headers.get('set-cookie')!.split(';')[0]!, origin: 'http://127.0.0.1:4175', 'content-type': 'application/json', 'x-csrf-token': String((await paired.json()).csrfToken) };
+     const create = async (message: string) => { thrown = message; const r = await fetch(g.url + '/lab/v2/runs', { method: 'POST', headers: h, body: JSON.stringify({ project: xarmProject(), scenarioId: 'MJ-BV01', scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-mujoco-arm-v1', runtimeIdentity: { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) } }) }); return { status: r.status, body: await r.json() }; };
+     expect(await create('MUJOCO_CAPACITY')).toEqual({ status: 409, body: { error: 'MUJOCO_CAPACITY', reasonCodes: [] } });
+     expect(await create('MUJOCO_ARM_CREATE_FAILED: MESH_BLOB_MISSING')).toEqual({ status: 503, body: { error: 'MUJOCO_ARM_CREATE_FAILED', reasonCodes: ['MESH_BLOB_MISSING'] } });
+@@ -56,20 +93,26 @@ describe.skipIf(!mujocoReady)('MJ-BV01 over HTTP on the real engine', () => {
+     const g = await startLabGateway({ port: 0, directory: join(d, 'runs'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: sim.catalog, enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm', ...sim.enabledBackends], simulationFactory: sim.simulationFactory, ...sim.readinessChecks ? { portableChecks: sim.readinessChecks } : {} } });
+     gateways.push(g);
+     const paired = await fetch(g.url + '/lab/v2/sessions', { method: 'POST', headers: { origin: 'http://127.0.0.1:4175', 'content-type': 'application/json' }, body: JSON.stringify({ token: g.issuePairingToken() }) });
+     const h = { cookie: paired.headers.get('set-cookie')!.split(';')[0]!, origin: 'http://127.0.0.1:4175', 'content-type': 'application/json', 'x-csrf-token': String((await paired.json()).csrfToken) };
+     const post = async (path: string, body: unknown) => { const r = await fetch(g.url + '/lab/v2' + path, { method: 'POST', headers: h, body: JSON.stringify(body) }); return { status: r.status, body: await r.json() as { run: { id: string; runRevision: number; status: string }; tick: number } }; };
+     const created = await post('/runs', { project: xarmProject(), scenarioId: 'MJ-BV01', scenarioRevision: 1, seed: 42, mode: 'simulation', access: 'simulated', backendSetId: 'engineering-mujoco-arm-v1', runtimeIdentity: { sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64) } });
+     expect(created.status, JSON.stringify(created.body).slice(0, 300)).toBe(201);
+     const url = `/runs/${created.body.run.id}`; let rev = created.body.run.runRevision as number, n = 0;
+     const act = async (kind: string, payload: Record<string, unknown>) => { const r = await post(`${url}/actions`, { actionId: `a-${++n}`, expectedRevision: rev, kind, payload }); expect(r.status, JSON.stringify(r.body).slice(0, 300)).toBe(200); rev = r.body.run.runRevision; return r.body; };
+     let view = await act('start', {});
++    const beforeFault = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
++    const refused = await post(`${url}/actions`, { actionId: 'unsupported-drop', expectedRevision: rev, kind: 'injectFault', payload: { faultId: 'arm-drop', entityId: 'arm-1' } });
++    expect(refused).toMatchObject({ status: 422, body: { error: 'INVALID_FAULT' } });
++    const afterFault = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
++    expect(afterFault.faults).toEqual(beforeFault.faults);
++    expect((await (await fetch(g.url + '/lab/v2' + url, { headers: { cookie: h.cookie } })).json()).run.runRevision).toBe(rev);
+     while (['running', 'ready', 'paused'].includes(view.run.status)) { if (view.tick > 6000) throw new Error(`STEP_LIMIT at ${view.tick}`); view = await act('step', { ticks: 100 }); }
+     const report = await (await fetch(g.url + '/lab/v2' + url + '/report', { headers: { cookie: h.cookie } })).json() as RunReport;
+     console.log('MJ-BV01 http', JSON.stringify({ tick: view.tick, status: view.run.status, coverage: report.coverage, scene: report.arm?.collision.coverage, robotAsset: report.manifest.assets.find((a) => a.id === 'service-robot-asset')}));
+     expect(view.run.status).toBe('completed'); expect(report.outcome).toMatchObject({ status: 'completed', served: '2', tick: 4800 });
+     expect(report.manifest).toMatchObject({ scenario: { id: 'MJ-BV01' }, backendSetId: 'engineering-mujoco-arm-v1', calibration: { status: 'not_calibrated' } });
+     expect(report.arm!.armPlant).toMatchObject({ engine: 'mujoco_3d', grip: 'contact', calibration: 'not_calibrated' });
+     expect(report.arm!.collision).toMatchObject({ id: 'ARM03', result: 'pass', modelRevision: XARM6_SI.revision });
+     for (const c of report.coffee!.cups) for (const m of c.movements.filter((m) => m.from.kind === 'arm' || m.to.kind === 'arm')) expect(((m.evidence?.giver ?? m.evidence) as Record<string, unknown>).grip).toBe('contact');
+     // the project's robot (service-robot-asset@1) is in the server asset catalog, so a gateway run resolves it: the arm scene holds the robot and ARM03 swept against it every tick
+     expect(report.manifest.assets.find((a) => a.id === 'service-robot-asset')).toMatchObject({ resolved: true });
+diff --git a/tests/integration/mujoco-arm-programs.test.ts b/tests/integration/mujoco-arm-programs.test.ts
+index cc89512..e29dbee 100644
+--- a/tests/integration/mujoco-arm-programs.test.ts
++++ b/tests/integration/mujoco-arm-programs.test.ts
+@@ -1,10 +1,11 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // M06 / MA04 on the real MuJoCo 3.17.0 (.venv-mujoco): cup-pick and cup-place run through mujocoArmPorts on the xArm coffee cell; the cup is gripped, lifted and released by contact.
+ // Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync } from 'node:fs';
+ import { mkdtemp, readFile, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { MockArmPlant } from '../../packages/cell-adapters/src/mock-arm';
+ import { MockCoffeePlant } from '../../packages/cell-adapters/src/mock-coffee';
+@@ -15,30 +16,31 @@ import { armCollisionRecord } from '../../packages/lab-runtime/src/v2/beverage/a
+ import type { CoffeeContext, CoffeeState } from '../../packages/lab-runtime/src/v2/scenarios/coffee';
+ import type { CoffeePlantPorts } from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
+ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+ import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
+ import { XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+ import { mujocoArmPorts } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
+ import type { MujocoRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+ 
+ const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID);
+ const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
+-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ const dirs: string[] = [], open: CoffeePlantPorts[] = [];
+-afterEach(async () => { for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
++afterEach(async () => { ownedProcesses.capture(); for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => ({ runId: 'run-a', commandId: id, deviceId: 'arm-1', controlEpoch: 1, expiresAt: '2026-11-06T00:00:00Z', recipeRevision: 1,
+   programRef: { id: program, hash: 'a'.repeat(64) }, payloadHash: 'a'.repeat(64), capability: 'start_job', payload: { jobId: 'j' } });
+ const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.commandId === id)?.state;
+ 
+ async function ports() {
+   const runtime: MujocoRuntimeOptions = { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), engineVersion: '3.17.0', maxActiveRuns: 1 };
+-  const directory = await mkdtemp(join(tmpdir(), 'mujoco-programs-')); dirs.push(directory);
++  const directory = await mkdtemp(join(tmpdir(), 'mujoco-programs-')); dirs.push(directory); ownedProcesses.addDirectory(directory);
+   const st = { stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [{ cupId: 'cup-1' }], plant: MockCoffeePlant.initial('cell-1'), arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState;
+   const ctx = { runId: 'run-a', nowMs: () => Date.parse('2026-11-05T00:00:00Z'), tick: () => 0, receiver: () => ({ robotId: 'amr-1', slot: 1 }) } as unknown as CoffeeContext;
+   const project = JSON.parse(await readFile(join(FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
+   const p = await mujocoArmPorts(runtime, { project, seed: 42 })(st, ctx, () => 'boot-1', directory);
+   open.push(p);
+   return { p, st, directory };
+ }
+ type Seen = { tick: number; holding: string | null; z: number | null; restingOn: string | null };
+ async function drive(p: CoffeePlantPorts, st: CoffeeState, id: string, program: 'cup-pick' | 'cup-place', seen: Seen[]) {
+   expect(p.mockArm!.execute(command(id, program)).accepted).toBe(true);
+diff --git a/tests/integration/mujoco-arm-readiness.test.ts b/tests/integration/mujoco-arm-readiness.test.ts
+index 4e4de20..58a2f3a 100644
+--- a/tests/integration/mujoco-arm-readiness.test.ts
++++ b/tests/integration/mujoco-arm-readiness.test.ts
+@@ -1,33 +1,35 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // M06 step 4: the MuJoCo arm provider's registration, readiness, dispatch and health capability. The flag, interpreter, worker and lock are operator options. The provider rows run
+ // the real worker (.venv-mujoco): a describe at boot and a create smoke on the project's cell scene. Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
+ import { afterEach, describe, expect, test, vi } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync } from 'node:fs';
+ import { mkdtemp, readFile, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { MUJOCO_ARM_UNCONFIGURED } from '../../packages/lab-runtime/src/v2/capabilities';
+ import { plantDispatcher, portableSimulationFromOptions } from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
+ import { holdSlot, releaseSlot } from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+ import { mujocoFromOptions, MUJOCO_SLOT } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+ import { XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+ import { startLabGateway, type LabGateway } from '../../packages/lab-runtime/src/gateway';
+ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+ import { coffeeProject } from '../support/lab-v2';
+ 
+ const otherVenv = resolve('.venv-webots/bin/python'), root = resolve('robotics/simulation-mujoco'), lockPath = join(root, 'requirements.lock'), python = resolve('.venv-mujoco/bin/python');
+ const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
+-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ const dirs: string[] = [], gateways: LabGateway[] = [];
+ afterEach(async () => { releaseSlot(MUJOCO_SLOT, 'other-run'); for (const g of gateways.splice(0)) await g.close(); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+-const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'mujoco-ready-')); dirs.push(d); return d; };
++const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'mujoco-ready-')); dirs.push(d); ownedProcesses.addDirectory(d); return d; };
+ const opts = async (over: Partial<Parameters<typeof mujocoFromOptions>[0]> = {}) => ({ enabled: true, python, workerRoot: root, lockPath, directory: await temp(), ...over });
+ const base = async () => ({ enabled: false, python: 'python3', workerRoot: resolve('robotics/navigation-2d'), lockPath: resolve('robotics/navigation-2d/requirements.lock'), directory: await temp() });
+ const arm = (c: { backends: readonly { id: string }[] }) => c.backends.find((b) => b.id === 'mujoco_arm') as unknown as { installed: boolean; reason?: string };
+ const xarm = async () => JSON.parse(await readFile(join(root, 'fixtures', XARM_FIXTURE_ID, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
+ const ctx = (project: unknown, runId?: string) => ({ scenarioId: 'MJ-BV01', backendSetId: 'engineering-mujoco-arm-v1', project, ...runId ? { runId } : {} });
+ const rows = (r: { id: string; reasonCodes: string[] }[]) => Object.fromEntries(r.map((x) => [x.id, x.reasonCodes]));
+ async function health(sim: Awaited<ReturnType<typeof portableSimulationFromOptions>>) {
+   const g = await startLabGateway({ port: 0, directory: await temp(), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { catalog: sim.catalog, enabledBackends: ['mock_amr', 'mock_coffee', 'mock_arm', ...sim.enabledBackends], simulationFactory: sim.simulationFactory, ...sim.readinessChecks ? { portableChecks: sim.readinessChecks } : {} } });
+   gateways.push(g);
+   return await (await fetch(g.url + '/lab/v2/health')).json() as { capabilities: string[]; backends: { id: string; installed: boolean; enabled: boolean; reason?: string }[] };
+diff --git a/tests/integration/mujoco-arm-worker.test.ts b/tests/integration/mujoco-arm-worker.test.ts
+index f37de0b..e3d04ef 100644
+--- a/tests/integration/mujoco-arm-worker.test.ts
++++ b/tests/integration/mujoco-arm-worker.test.ts
+@@ -1,37 +1,39 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // M04 on the real MuJoCo 3.17.0 (.venv-mujoco): the arm cell worker through the TypeScript client. Skipped, with the reason, where .venv-mujoco is missing (not_run, never a pass).
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync } from 'node:fs';
+ import { mkdtemp, readFile, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkforge';
+ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
+ import { qrotate } from '../../packages/lab-runtime/src/v2/frames';
+ import type { Sim3DSnapshotV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+ import { spawnMujocoWorker } from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+ import { buildArmCellScene, readXArmFixture, writeArmCellBundle, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+ 
+ const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), XARM6_FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID);
+ const mujocoReady = existsSync(python) && (() => { try { return execFileSync(python, ['-I', '-B', '-c', 'import mujoco;print(mujoco.__version__)'], { encoding: 'utf8', timeout: 30_000 }).trim() === '3.17.0'; } catch { return false; } })();
+-const running = () => { try { return execFileSync('pgrep', ['-f', 'mujoco_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ 
+ type Component = { links: { id: string; massKg: { value: number } }[]; joints: { id: string; kind: string; origin: { quaternionXyzw: [number, number, number, number] }; axis: number[]; limits: { lower: { value: number }; upper: { value: number }; effort: { value: number } } }[] };
+ const component = JSON.parse(await readFile(join(XARM6_FX, 'component.json'), 'utf8')) as Component;
+ const dirs: string[] = [];
+ const opened: { close(r: string): Promise<void> }[] = [];
+-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
++afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ 
+ async function start() {
+-  const root = await mkdtemp(join(tmpdir(), 'mujoco-arm-w-')); dirs.push(root);
++  const root = await mkdtemp(join(tmpdir(), 'mujoco-arm-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
+   const fixture = readXArmFixture(workerRoot), project = JSON.parse(await readFile(join(XARM6_FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
+   const scene = buildArmCellScene(project, fixture, 7, { armId: 'xarm-1', propIds: ['cup-1'] }); // the xArm coffee cell project: base at (2.65, 0.65, 0.7), the counter as a static
+   await writeArmCellBundle(join(root, 'bundle'), scene, fixture);
+   const runId = 'ma-1';
+   const w = await spawnMujocoWorker({ python, workerRoot, runId, bundleRoot: join(root, 'bundle'), runDirectory: join(root, 'run'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), schemaDir: resolve('packages/contracts/schemas'), sceneDigest: scene.sceneDigest });
+   opened.push(w);
+   let n = 0;
+   const ask = (op: string, payload: unknown, tick: number) => w.request({ protocol: 'mekoniq-sim3d/1', requestId: `${op}-${++n}`, runId, expectedTick: tick, op, payload });
+   const create = async () => { const r = await ask('create', { sceneRef: 'arm-cell-scene.json', seed: 7, arms: [{ armId: 'xarm-1', sceneRef: 'arm-cell-scene.json' }] }, 0); if (!r.ok) throw new Error(JSON.stringify(r)); await ask('start', {}, 0); return r.result as Sim3DSnapshotV1; };
+   const step = (tick: number, q: number[]) => ask('step', { targetTick: tick + 1, velocities: [], actorUpdates: [], jointTargets: [{ armId: 'xarm-1', positionsRad: q }] }, tick);
+diff --git a/tests/integration/sim-recorder-python.test.ts b/tests/integration/sim-recorder-python.test.ts
+new file mode 100644
+index 0000000..1c166a4
+--- /dev/null
++++ b/tests/integration/sim-recorder-python.test.ts
+@@ -0,0 +1,24 @@
++import {expect,test} from 'vitest';
++import {spawnSync} from 'node:child_process';
++import {existsSync} from 'node:fs';
++import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++
++test.skipIf(!existsSync('.venv-mujoco/bin/python'))('the recorder pytest command writes JUnit without polluting the tool tree or relying on PYTEST_ADDOPTS',async()=>{
++ const dir=await mkdtemp(join(tmpdir(),'recorder-pytest-'));
++ try{
++  const plan=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r2a','--out',join(dir,'record'),'--r11-record','unused','--mock-regression','unused','--plan'],{encoding:'utf8',timeout:60_000});
++  expect(plan.status,plan.stderr).toBe(0);
++  const command=plan.stdout.split('\n').find(l=>l.startsWith('ma-py\t'))!.split('\t')[2]!.split(' ');
++  const python=command.shift()!,target=join(dir,'test_clean.py'),junit=join(dir,'result.xml');
++  await writeFile(target,'def test_pass():\n    assert 2 + 2 == 4\n');
++  const args=command.map(a=>a==='robotics/simulation-mujoco/tests'?target:a.startsWith('--junitxml=')?`--junitxml=${junit}`:a);
++  const env={...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTEST_ADDOPTS:''};
++  const run=spawnSync(resolve(python),args,{cwd:dir,env,encoding:'utf8',timeout:30_000});
++  expect(run.status,run.stdout+run.stderr).toBe(0);
++  expect(await readFile(junit,'utf8')).toContain('failures="0"');
++  expect(existsSync(join(dir,'.pytest_cache'))).toBe(false);
++  expect(existsSync(join(dir,'__pycache__'))).toBe(false);
++ }finally{await rm(dir,{recursive:true,force:true});}
++},90_000);
+diff --git a/tests/integration/webots-arm-faults.test.ts b/tests/integration/webots-arm-faults.test.ts
+index 62f537a..14601e9 100644
+--- a/tests/integration/webots-arm-faults.test.ts
++++ b/tests/integration/webots-arm-faults.test.ts
+@@ -52,38 +52,38 @@ describe.skipIf(!armWebotsAvailable)('Webots arm faults (WA06)', () => {
+     const r = await outcome(run, async (run) => { await run.start(); return toEnd(run); });
+     expect(r.stop).toMatchObject({ latched: true, reason: 'ARM_FOLLOWING_ERROR' });
+     const firstTick = r.report.coffee!.armTrace.stop!.events[0]!.tick;
+     expect(firstTick).toBeLessThanOrEqual(profile.followTicks + 10); // the arm sags from the first tick: the deviation passes followTolRad within a few ticks, then followTicks of it
+     expect(r.view.run.status).toBe('needs_attention'); expect(r.view.tick).toBeLessThan(20_000); // not the scenario's 180,000-tick bound
+     expect(r.cups.every((c) => c === 'cell:coffee-1')).toBe(true); // the arm never took a cup
+     nothingLeft();
+   }, 300_000);
+ 
+   test('SIGKILL of the worker in the middle of cup-pick: the outcome is unknown, nothing is resent, no process is left', async () => {
+-    const gw = await armGateway(), { run } = await openArmRun(gw);
++    const gw = await armGateway(), { run, directory } = await openArmRun(gw);
+     const r = await outcome(run, async (run) => {
+       await run.start();
+       await stepUntil(run, (v) => v.coffee?.jobs.some((j) => j.status === 'transferring') ?? false, 5, 60_000);
+-      expect(killProcesses('webots_worker.*--run-id').length).toBeGreaterThan(0);
++      expect(killProcesses(directory, 'worker').length).toBeGreaterThan(0);
+       return toEnd(run);
+     });
+     expect(r.stop).toMatchObject({ latched: true, reason: 'WORKER_LOST' });
+     expect(r.view.run.status).toBe('needs_attention'); expect(r.reasons).toContain('TRANSFER_UNKNOWN'); expect(r.cups[0]).toBe('cell:coffee-1');
+     nothingLeft();
+   }, 300_000);
+ 
+   test('SIGKILL of Webots in the middle of cup-place: unknown, the cup is still the arm\'s, no process is left', async () => {
+-    const gw = await armGateway(), { run } = await openArmRun(gw);
++    const gw = await armGateway(), { run, directory } = await openArmRun(gw);
+     const r = await outcome(run, async (run) => {
+       await run.start();
+       await stepUntil(run, heldByArm, 5, 60_000);
+-      expect(killProcesses('^[^ ]*/Contents/MacOS/webots ').length).toBe(1);
++      expect(killProcesses(directory, 'engine').length).toBe(1);
+       return toEnd(run);
+     });
+     expect(r.stop?.latched).toBe(true); expect(['ENGINE_LOST', 'ENGINE_TIMEOUT', 'WORKER_LOST', 'WORKER_FAILED']).toContain(r.stop!.reason);
+     expect(r.view.run.status).toBe('needs_attention'); expect(r.cups[0]).toBe('arm:arm-1');
+     nothingLeft();
+   }, 300_000);
+ 
+   test('a cancel while the arm holds the cup does not release it: the job needs a reconcile', async () => {
+     const gw = await armGateway(), { run } = await openArmRun(gw);
+     const r = await outcome(run, async (run) => {
+diff --git a/tests/integration/webots-arm-programs.test.ts b/tests/integration/webots-arm-programs.test.ts
+index 457500c..710ce75 100644
+--- a/tests/integration/webots-arm-programs.test.ts
++++ b/tests/integration/webots-arm-programs.test.ts
+@@ -1,10 +1,11 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // X05 / WA04 (R1.1) on the real Webots R2025a: cup-pick and cup-place run through webotsArmPorts. Skipped, with the reason, where Webots or .venv-webots is missing.
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync } from 'node:fs';
+ import { mkdtemp, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { MockArmPlant } from '../../packages/cell-adapters/src/mock-arm';
+ import { MockCoffeePlant } from '../../packages/cell-adapters/src/mock-coffee';
+ import type { CellCommand } from '../../packages/cell-adapters/src/contract';
+@@ -13,32 +14,33 @@ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/c
+ import type { CoffeeContext, CoffeeState } from '../../packages/lab-runtime/src/v2/scenarios/coffee';
+ import type { CoffeePlantPorts } from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
+ import { webotsArmPorts } from '../../packages/lab-runtime/src/v2/simulation3d/arm-ports';
+ import type { WebotsRuntimeOptions } from '../../packages/lab-runtime/src/v2/simulation3d/webots';
+ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+ import { coffeeProject } from '../support/lab-v2';
+ 
+ const HOME = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', python = resolve('.venv-webots/bin/python'), workerRoot = resolve('robotics/simulation-3d');
+ const exe = join(HOME, 'Contents', 'MacOS', 'webots');
+ const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { return execFileSync(exe, ['--version'], { encoding: 'utf8', timeout: 30_000 }).includes('R2025a'); } catch { return false; } })();
+-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller|arm_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ 
+ const dirs: string[] = [], open: CoffeePlantPorts[] = [];
+-afterEach(async () => { for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
++afterEach(async () => { ownedProcesses.capture(); for (const p of open.splice(0)) await p.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => ({ runId: 'run-a', commandId: id, deviceId: 'arm', controlEpoch: 1, expiresAt: '2026-11-06T00:00:00Z', recipeRevision: 1,
+   programRef: { id: program, hash: 'a'.repeat(64) }, payloadHash: 'a'.repeat(64), capability: 'start_job', payload: { jobId: 'j' } });
+ const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.commandId === id)?.state;
+ 
+ async function ports() {
+   const runtime: WebotsRuntimeOptions = { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), webotsHome: HOME,
+     executableSha256: 'a'.repeat(64), basicTimeStepMs: 20, maxActiveRuns: 1 };
+-  const directory = await mkdtemp(join(tmpdir(), 'arm-programs-')); dirs.push(directory);
++  const directory = await mkdtemp(join(tmpdir(), 'arm-programs-')); dirs.push(directory); ownedProcesses.addDirectory(directory);
+   const st = { stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [], plant: MockCoffeePlant.initial('cell-1'), arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState;
+   const ctx = { runId: 'run-a', nowMs: () => Date.parse('2026-11-05T00:00:00Z'), tick: () => 0, receiver: () => ({ robotId: 'amr-1', slot: 1 }) } as unknown as CoffeeContext;
+   const p = await webotsArmPorts(runtime, { project: coffeeProject() as unknown as LabProjectV2, seed: 42 })(st, ctx, () => 'boot-1', directory);
+   open.push(p);
+   return { p, st };
+ }
+ async function drive(p: CoffeePlantPorts, st: CoffeeState, id: string, program: 'cup-pick' | 'cup-place') {
+   expect(p.mockArm!.execute(command(id, program)).accepted).toBe(true);
+   let n = 0;
+   while (n < 3000 && state(st, id) === 'running') { n++; await p.advance(); }
+diff --git a/tests/integration/webots-arm-worker.test.ts b/tests/integration/webots-arm-worker.test.ts
+index 1048591..d62d8d2 100644
+--- a/tests/integration/webots-arm-worker.test.ts
++++ b/tests/integration/webots-arm-worker.test.ts
+@@ -1,43 +1,45 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // X04 (R1.1) on the real Webots R2025a: the plant worker steps an arm by joint targets through the TypeScript client. Skipped, with the reason, where Webots or .venv-webots is missing.
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync, readdirSync } from 'node:fs';
+ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkforge';
+ import { sealDocument, validateArmScene3D, type ArmScene3DV1, type Sim3DSnapshotV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
+ import { qrotate } from '../../packages/lab-runtime/src/v2/frames';
+ import { spawnSim3DWorker } from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+ 
+ const HOME_DIR = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', python = resolve('.venv-webots/bin/python'), workerRoot = resolve('robotics/simulation-3d'), FX = join(workerRoot, 'fixtures', 'arm-ref-3d-v1');
+ const exe = join(HOME_DIR, 'Contents', 'MacOS', 'webots');
+ const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { return execFileSync(exe, ['--version'], { encoding: 'utf8', timeout: 30_000 }).includes('R2025a'); } catch { return false; } })();
+ const HOME = [0, -0.6, 1.2, 0, 0.6, 0];
+ 
+ const dirs: string[] = [];
+ const opened: { close(r: string): Promise<void> }[] = [];
+-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
++afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ // anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
+-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller|arm_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ const webotsStateDirs = () => { try { return readdirSync('/tmp/webots/default').sort(); } catch { return []; } };
+ 
+ type Component = { links: { id: string; massKg: { value: number } }[]; joints: { id: string; origin: { xyzM: number[]; quaternionXyzw: [number, number, number, number] }; axis: number[]; limits: { lower: { value: number }; upper: { value: number } } }[] };
+ const manifest = JSON.parse(await readFile(join(FX, 'manifest.json'), 'utf8')) as { componentDigest: string };
+ const component = JSON.parse(await readFile(join(FX, 'component.json'), 'utf8')) as Component;
+ const golden = JSON.parse(await readFile(join(FX, 'fk-golden.json'), 'utf8')) as { poses: { q: number[]; flangeM: number[] }[] };
+ 
+ /** An arm bundle: the sealed arm scene and the component whose digest it names. */
+ async function bundle(statics: ArmScene3DV1['statics'] = []) {
+-  const root = await mkdtemp(join(tmpdir(), 'webots-arm-w-')); dirs.push(root);
++  const root = await mkdtemp(join(tmpdir(), 'webots-arm-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
+   const scene = sealDocument({ schemaVersion: 1, sceneDigest: '', arm: { armId: 'arm-1', modelId: 'arm-ref-3d-v1', modelRevision: manifest.componentDigest, baseInMap: { position: [2, 1, 0.75], quaternionXyzw: [0, 0, 0, 1] }, homeRad: HOME },
+     statics, world3d: { floorFriction: 0.8, provenance: 'assumed' }, engine: { id: 'webots_3d', basicTimeStepMs: 20 }, engineSeed: 7 } as ArmScene3DV1, 'sceneDigest');
+   expect(validateArmScene3D(scene).ok).toBe(true);
+   await mkdir(join(root, 'bundle'), { recursive: true });
+   await writeFile(join(root, 'bundle', 'arm-scene.json'), JSON.stringify(scene));
+   await writeFile(join(root, 'bundle', 'arm-component.json'), await readFile(join(FX, 'component.json')));
+   return { root, scene };
+ }
+ async function start(statics?: ArmScene3DV1['statics']) {
+   const b = await bundle(statics), runId = 'wa-1';
+diff --git a/tests/integration/webots-batch.test.ts b/tests/integration/webots-batch.test.ts
+index cfba5e6..476cbd0 100644
+--- a/tests/integration/webots-batch.test.ts
++++ b/tests/integration/webots-batch.test.ts
+@@ -1,19 +1,19 @@
+ // W09 campaign on the Webots plant: the batch runner picks the plant from the campaign's fixtures (serve-3d-*), runs WB cases on the real Webots R2025a one world at a
+ // time, judges repeats by pose within the oracle profile's tolerance (the engine is not bit-reproducible: 1e-12 m was measured), and labels every run webots_3d.
+ // The loader tests need no engine; the run tests are skipped, with the reason, where Webots is not installed.
+ import {afterAll,expect,test} from 'vitest';
+ import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join,resolve} from 'node:path';
+ import {loadCampaign,runIRSimBatch} from '../../packages/lab-runtime/src/v2/navigation2d/batch';
+-import {webotsAvailable,webotsProcesses,temp} from '../support/webots-mission';
++import {webotsAvailable,webotsProcesses,webotsProcessScope,temp} from '../support/webots-mission';
+ 
+ const dirs:string[]=[];
+ afterAll(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+ const campaign=(id:string)=>resolve('robotics/simulation-3d/campaigns',`${id}.json`);
+ const json=async<T>(p:string)=>JSON.parse(await readFile(p,'utf8')) as T;
+ const ORACLES=['EVIDENCE_COMPLETE','IDENTITY_BOUND','NO_SERVED_BEFORE_HANDOFF','BUSINESS_OUTCOME','NO_PHYSICAL_CONTACT'];
+ const entry=(scenarioId:string,fixtureId:string,over:Record<string,unknown>={})=>({scenarioId,scenarioRevision:1,fixtureId,seed:5,repeat:1,policyRef:{id:'x',revision:1,hash:'a'.repeat(64)},expectedAssertions:ORACLES,...over});
+ async function tempCampaign(runs:unknown[]){
+  // a campaign file must sit in a campaigns directory under a source root; a temp root with the real fixtures and schemas is not needed to LOAD one
+  const root=await mkdtemp(join(tmpdir(),'webots-campaign-'));dirs.push(root);
+@@ -41,18 +41,18 @@ test('a campaign may not mix plants, nor run an IR-SIM scenario on a 3D fixture
+  }
+ });
+ test('a Webots campaign needs concurrency 1 (one Webots per host)',async()=>{
+  const {root,path}=await tempCampaign([entry('WB-FD01','serve-3d-v1')]);
+  const out=await temp('webots-batch-conc-');dirs.push(out);
+  await expect(runIRSimBatch({campaignPath:path,outDir:out,concurrency:2,sourceCommit:'t',sourceRoot:root})).rejects.toThrow(/concurrency/);
+ });
+ 
+ test.skipIf(!webotsAvailable)('smoke campaign on the real Webots: same-seed repeats agree within the profile tolerance, a mid-route cancel is bounded, every run is labelled webots_3d and leaves no process',async()=>{
+  const out=await temp('webots-batch-');dirs.push(out);
+- const s=await runIRSimBatch({campaignPath:campaign('r1-smoke'),outDir:join(out,'c'),concurrency:1,sourceCommit:'test-commit'});
++ const s=await webotsProcessScope.observe(()=>runIRSimBatch({campaignPath:campaign('r1-smoke'),outDir:join(out,'c'),concurrency:1,sourceCommit:'test-commit'}));
+  const summary=await json<{status:string;complete:boolean;provider:{id:string;kind:string};runs:{id:string;scenarioId:string;result:string;reasons:string[];assertions?:{id:string;result:string}[]}[]}>(s.summaryPath);
+  expect(summary.runs.map(r=>`${r.scenarioId}:${r.result}:${r.reasons.join('|')}`)).toEqual(['WB-FD01:pass:','WB-FD01:pass:','WB-FD01-cancel:pass:']);
+  expect(summary.provider).toEqual({id:'webots_3d',kind:'webots_engine'});
+  expect(summary.status).toBe('completed');expect(summary.complete).toBe(true);
+  expect(summary.runs[0]!.assertions!.concat(summary.runs[1]!.assertions!).filter(a=>a.id==='REPEATABLE').map(a=>a.result)).toEqual(['pass','pass']);
+  expect(webotsProcesses()).toEqual([]);
+ },900_000);
+diff --git a/tests/integration/webots-faults.test.ts b/tests/integration/webots-faults.test.ts
+index 2f0a06c..11e647f 100644
+--- a/tests/integration/webots-faults.test.ts
++++ b/tests/integration/webots-faults.test.ts
+@@ -1,17 +1,16 @@
+ // WB05 + Review Focus #2/#4: operator cancel, a lost or slow worker, a lost or quit engine, and a robot that tips over. Every one of them ends the run honestly:
+ // unknown / needs_attention with the exact reason, nothing served, nothing resent, no second engine, no process left behind.
+ import { afterAll, afterEach, beforeAll, expect, test } from 'vitest';
+ import { rm } from 'node:fs/promises';
+-import { execFileSync } from 'node:child_process';
+ import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
+-import { act, openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsDouble, webotsProcesses } from '../support/webots-mission';
++import { act, openWebotsRun, removeBundles, stepUntil, temp, webotsAvailable, webotsBundle, webotsDouble, webotsProcesses, webotsProcessScope } from '../support/webots-mission';
+ 
+ let bundle: Awaited<ReturnType<typeof webotsBundle>>;
+ const runs: ScenarioRun[] = [], dirs: string[] = [];
+ beforeAll(async () => { if (webotsAvailable) bundle = await webotsBundle(); }, 120_000);
+ afterEach(async () => { for (const r of runs.splice(0)) await r.close().catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ afterAll(removeBundles);
+ async function open(over: Parameters<typeof openWebotsRun>[2] = {}) { const dir = await temp('webots-faults-'); dirs.push(dir); const run = await openWebotsRun(dir, bundle, over); runs.push(run); return { run, dir }; }
+ const fake = (mode: string, n: number) => [webotsDouble('fake_plant.py'), mode, String(n)];
+ const reasons = (v: { attention?: { reason: string; subjectId?: string }[] }) => (v.attention ?? []).map((a) => a.reason);
+ const settle = () => new Promise((r) => setTimeout(r, 500));
+@@ -66,41 +65,37 @@ test.skipIf(!webotsAvailable)('WB05 cancel mid-route on the real plant: cancelle
+   const r = await run.report();
+   expect(r.outcome).toMatchObject({ status: 'cancelled', served: '0' });
+   await run.close(); runs.length = 0; await settle();
+   expect(webotsProcesses()).toEqual([]);
+ }, 300_000);
+ 
+ test.skipIf(!webotsAvailable)('WB05 killing Webots on the real plant mid-run: the leg is unknown, nothing is resent, no second engine starts, nothing is left running', async () => {
+   const { run, dir } = await open();
+   await run.start();
+   await stepUntil(run, async (x) => x.tick >= 200, 50, 3000);
+-  const pids = execFileSync('pgrep', ['-f', `Webots.app/Contents/MacOS/webots.*${dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+-  expect(pids).toHaveLength(1);
+-  process.kill(Number(pids[0]), 'SIGKILL');
++  expect(webotsProcessScope.kill(dir, /\/Contents\/MacOS\/webots(?: |$)/)).toHaveLength(1);
+   let v = await run.snapshot();
+   for (let i = 0; i < 10 && v.run.status === 'running'; i++) v = await act(run, 'step', { ticks: 5 });
+   expect(v.run.status).toBe('needs_attention');
+   expect(reasons(v)).toContain('WORKER_LOST');
+   const r = await run.report();
+   expect(r.outcome.served).toBe('0');
+   expect(r.navigation2d!.recording!.gaps.some((g) => g.reason === 'STEP_ACK_LOST')).toBe(true);
+   await run.close(); runs.length = 0; await settle();
+   expect(webotsProcesses()).toEqual([]);
+ }, 300_000);
+ 
+ test.skipIf(!webotsAvailable)('WB05 killing the WORKER on the real plant mid-run: the leg is unknown, nothing is resent, and Webots plus its controllers go with it', async () => {
+-  const { run } = await open();
++  const { run, dir } = await open();
+   await run.start();
+   await stepUntil(run, async (x) => x.tick >= 200, 50, 3000);
+-  const workers = execFileSync('pgrep', ['-f', ' -m webots_worker --run-id'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+-  expect(workers.length).toBeGreaterThanOrEqual(1); // the venv launcher and the interpreter it re-execs into may both match
+-  for (const pid of workers) process.kill(Number(pid), 'SIGKILL'); // the worker only: the parent must reap the engine and the controllers it left behind
++  expect(webotsProcessScope.kill(dir, / -m webots_worker(?: |$)/)).toHaveLength(1); // worker only: its captured engine/controllers must also be reaped
+   let v = await run.snapshot();
+   for (let i = 0; i < 10 && v.run.status === 'running'; i++) v = await act(run, 'step', { ticks: 5 }).catch(() => run.snapshot());
+   expect(v.run.status).toBe('needs_attention');
+   expect(reasons(v)).toContain('WORKER_LOST');
+   expect((await run.report()).outcome.served).toBe('0');
+   await run.close(); runs.length = 0; await settle();
+   expect(webotsProcesses()).toEqual([]);
+ }, 300_000);
+ 
+ test.skipIf(!webotsAvailable)('a 3D plant puts the base height and tilt into the twin samples; a planar sample has none', async () => {
+diff --git a/tests/integration/webots-worker.test.ts b/tests/integration/webots-worker.test.ts
+index 6b7ef92..74c8e1b 100644
+--- a/tests/integration/webots-worker.test.ts
++++ b/tests/integration/webots-worker.test.ts
+@@ -1,10 +1,11 @@
++import { OwnedProcesses } from '../support/owned-processes';
+ // W06 on the real Webots R2025a: the plant worker through the TypeScript client. Skipped, with the reason, where Webots or the .venv-webots interpreter is missing.
+ import { afterEach, describe, expect, test } from 'vitest';
+ import { execFileSync } from 'node:child_process';
+ import { existsSync } from 'node:fs';
+ import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+ import { createHash } from 'node:crypto';
+ import { tmpdir } from 'node:os';
+ import { join, resolve } from 'node:path';
+ import { lockDigestOf } from '../../packages/lab-runtime/src/engineering/linkforge';
+ import { sealDocument, type NavigationSceneV1, type Sim3DSnapshotV1 } from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+@@ -12,27 +13,28 @@ import { WorkerLostError } from '../../packages/lab-runtime/src/v2/navigation2d/
+ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
+ import { castScan, lidarAgrees } from '../../packages/lab-runtime/src/v2/simulation3d/lidar-oracle';
+ import { spawnSim3DWorker } from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+ 
+ const HOME = process.env.MEKONIQ_WEBOTS_HOME ?? '/Applications/Webots.app', python = resolve('.venv-webots/bin/python'), workerRoot = resolve('robotics/simulation-3d'), FX = join(workerRoot, 'fixtures', 'serve-3d-v1');
+ const exe = join(HOME, 'Contents', 'MacOS', 'webots');
+ const webotsReady = existsSync(exe) && existsSync(python) && (() => { try { return execFileSync(exe, ['--version'], { encoding: 'utf8', timeout: 30_000 }).includes('R2025a'); } catch { return false; } })();
+ 
+ const dirs: string[] = [];
+ const opened: { close(r: string): Promise<void> }[] = [];
+-afterEach(async () => { for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
++afterEach(async () => { ownedProcesses.capture(); for (const w of opened.splice(0)) await w.close('test done').catch(() => {}); for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true }); });
+ // anchored at the start of the command line: only the Webots executable and the controller scripts started with the interpreter, never a shell that merely mentions them
+-const running = () => { try { return execFileSync('pgrep', ['-f', '^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py'], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
++const ownedProcesses = new OwnedProcesses();
++const running = () => ownedProcesses.processes().map(p => String(p.pid));
+ 
+ /** The single-robot scene as a bundle: the scene lists its physical model with the sha the worker checks. */
+ async function bundle() {
+-  const root = await mkdtemp(join(tmpdir(), 'webots-w-')); dirs.push(root);
++  const root = await mkdtemp(join(tmpdir(), 'webots-w-')); dirs.push(root); ownedProcesses.addDirectory(root);
+   const scene = JSON.parse(await readFile(join(FX, 'navigation-scene.json'), 'utf8')) as NavigationSceneV1;
+   const model = await readFile(join(FX, 'physical-model-amr-1.json'));
+   await mkdir(join(root, 'bundle', 'physical-model'), { recursive: true });
+   await cp(join(FX, 'physical-model-amr-1.json'), join(root, 'bundle', 'physical-model', 'amr-1.json'));
+   const sealed = sealDocument({ ...scene, files: [{ path: 'physical-model/amr-1.json', sha256: createHash('sha256').update(model).digest('hex'), bytes: model.length }] } as NavigationSceneV1, 'sceneDigest');
+   await writeFile(join(root, 'bundle', 'navigation-scene.json'), JSON.stringify(sealed));
+   return { root, scene: sealed, physical: JSON.parse(model.toString()) as { links: { id: string; massKg: { value: number } }[]; joints: { parent: string; child: string; origin: { xyzM: number[]; quaternionXyzw: number[] } }[]; baseFrameId: string } };
+ }
+ async function start() {
+   const b = await bundle(), runId = 'wb-1';
+@@ -104,24 +106,23 @@ describe.skipIf(!webotsReady)('Webots plant worker', () => {
+     for (let k = 0; k < 100; k++) last = (await t.step(k, 0.3)).robots[0]!;
+     expect(last.poseDriveMap[0]! - first.poseDriveMap[0]!).toBeGreaterThan(0.55); expect(last.poseDriveMap[0]! - first.poseDriveMap[0]!).toBeLessThan(0.65);
+     expect(Math.abs(last.poseDriveMap[1]! - first.poseDriveMap[1]!)).toBeLessThanOrEqual(0.02);
+     expect(last.bodyVelocity[0]).toBeGreaterThan(0.25);
+   }, 120_000);
+ 
+   test('killing Webots mid-run loses the worker within 5 s as unknown and leaves no process behind', async () => {
+     const t = await start();
+     await t.create();
+     await t.step(0, 0.1);
+-    const pids = execFileSync('pgrep', ['-f', `Webots.app/Contents/MacOS/webots.*${t.root.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+-    expect(pids.length).toBe(1);
+     const started = Date.now();
+-    process.kill(Number(pids[0]), 'SIGKILL');
++    const targets = ownedProcesses.kill(t.root, /\/Contents\/MacOS\/webots(?: |$)/);
++    expect(targets).toHaveLength(1);
+     const answer = await t.ask('step', { targetTick: 2, velocities: [{ robotId: 'amr-1', vMps: 0.1, omegaRadps: 0 }], actorUpdates: [] }, 1).catch((e: unknown) => e);
+     expect(Date.now() - started).toBeLessThanOrEqual(5000);
+     // the worker notices first and answers once with the engine fault, or the client loses the worker: either way the step is not an applied tick and nothing resends it
+     if (answer instanceof WorkerLostError) expect(answer.outcome).toBe('unknown');
+     else expect((answer as { ok: boolean; error?: { code: string } }).ok === false && ['ENGINE_LOST', 'ENGINE_TIMEOUT'].includes((answer as { error: { code: string } }).error.code)).toBe(true);
+     await expect(t.ask('step', { targetTick: 2, velocities: [{ robotId: 'amr-1', vMps: 0.1, omegaRadps: 0 }], actorUpdates: [] }, 1)).rejects.toBeInstanceOf(WorkerLostError);
+     await t.w.close('after kill');
+     await new Promise((r) => setTimeout(r, 500));
+     expect(running()).toEqual([]);
+   }, 120_000);
+diff --git a/tests/support/mujoco-arm.ts b/tests/support/mujoco-arm.ts
+index e30f5d2..640f16e 100644
+--- a/tests/support/mujoco-arm.ts
++++ b/tests/support/mujoco-arm.ts
+@@ -1,67 +1,65 @@
+ // MJ-BV01 through the gateway factory on the real MuJoCo 3.17.0 (.venv-mujoco): the flag-on provider (a real describe), the portable dispatcher, the fixture's xArm coffee cell project.
+ // Fault variants are runtime options set here in code (never a request field), or a copy of the worker root whose fixture differs in one value. Nothing here marks a provider installed
+ // that the production readiness would not.
++import {OwnedProcesses} from './owned-processes';
+ import {execFileSync} from 'node:child_process';
+ import {existsSync,readFileSync} from 'node:fs';
+ import {cp,mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
+ import {createHash} from 'node:crypto';
+ import {tmpdir} from 'node:os';
+ import {join,resolve} from 'node:path';
+ import {portableSimulationFromOptions,type PortableSimulation} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
+ import {mujocoFromOptions,type MujocoRuntimeOptions} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+ import {XARM_FIXTURE_ID} from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+ import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import type {AssetRevision} from '../../packages/lab-runtime/src/v2/contracts';
+ import type {LabProjectV2} from '../../packages/lab-runtime/src/v2/contracts';
+ import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
+ import {amrAsset} from './lab-v2';
+ 
+ export const mujocoPython=resolve('.venv-mujoco/bin/python'),mujocoRoot=resolve('robotics/simulation-mujoco');
+ export const mujocoReady=existsSync(mujocoPython)&&(()=>{try{return execFileSync(mujocoPython,['-I','-B','-c','import mujoco;print(mujoco.__version__)'],{encoding:'utf8',timeout:30_000}).trim()==='3.17.0';}catch{return false;}})();
+-/** Every MuJoCo worker process of this host (a run's, a describe's or a smoke's). */
+-export const mujocoWorkers=()=>{try{return execFileSync('pgrep',['-f','mujoco_worker'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
++/** Live processes belonging to this helper's registered test runs/probes only. */
++export const mujocoProcessScope=new OwnedProcesses();
++export const mujocoWorkers=()=>mujocoProcessScope.processes().map(p=>String(p.pid));
+ /** The fixture's xArm coffee cell project, verbatim. */
+ export const xarmProject=()=>JSON.parse(readFileSync(join(mujocoRoot,'fixtures',XARM_FIXTURE_ID,'coffee-cell-project.json'),'utf8')) as LabProjectV2;
+ /** The project's AMR asset (service-robot-asset@1, bf15015a…) is the server catalog's 3-tray lidar service robot (backend-registry.ts serverAssets, the same as lab-v2.ts amrAsset):
+  * every run resolves it by content hash, a gateway run too. Passing it as a run asset changes nothing. */
+ export const xarmAmrAsset:AssetRevision=amrAsset;
+ 
+ const dirs:string[]=[];
+ export const removeMujocoDirs=()=>Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
+-export const mujocoTemp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));dirs.push(d);return d;};
++export const mujocoTemp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));dirs.push(d);mujocoProcessScope.addDirectory(d);return d;};
+ 
+ export interface MujocoGateway {sim:PortableSimulation;runtime:MujocoRuntimeOptions}
+ /** The flag-on provider (a real describe) and the dispatcher over it; `over` replaces arm runtime options (the fault options, or another worker root). */
+ export async function mujocoGateway(over:Partial<MujocoRuntimeOptions>={}):Promise<MujocoGateway>{
+  const directory=await mujocoTemp('mj-gw-');
+- const p=await mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe')});
++ const p=await mujocoProcessScope.observe(()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe')}));
+  if(!p.arm.capability.installed||!p.arm.runtime)throw new Error(`MUJOCO_ARM_NOT_INSTALLED: ${p.arm.capability.reason}`);
+  const runtime={...p.arm.runtime,...over};
+  const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:resolve('robotics/navigation-2d'),lockPath:resolve('robotics/navigation-2d/requirements.lock'),directory,mujoco:{arm:{...p.arm,runtime}}});
+  return {sim,runtime};
+ }
+ export const mujocoInput=(project:unknown,seed:number,scenarioId='MJ-BV01',backendSetId='engineering-mujoco-arm-v1'):RunManifestInput=>({project,scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId,sourceCommit:'test-commit'});
+ export async function openMujocoRun(gw:MujocoGateway,over:{project?:unknown;seed?:number}={}):Promise<{run:ScenarioRun;directory:string}>{
+  const directory=join(await mujocoTemp('mj-run-'),'run');await mkdir(directory,{recursive:true});
+  const run=await gw.sim.simulationFactory(mujocoInput(over.project??xarmProject(),over.seed??42),{directory,assets:[xarmAmrAsset],catalog:gw.sim.catalog,enabledBackends:['mock_amr','mock_coffee','mock_arm',...gw.sim.enabledBackends]});
+- return {run,directory};
++ return {run:mujocoProcessScope.observeRun(run),directory};
+ }
+ /** A copy of the worker root (package, lock, fixture) whose fixture gives arm joint `joint` (0-based) `fraction` of its manufacturer effort: the compiled actuator's force range is that effort.
+  * The manifest's file hash and component digest are recomputed so the runtime reads it; the model revision (kinematics) is unchanged. */
+ export async function weakJointRoot(joint:number,fraction:number):Promise<{root:string;effortNm:number;fromNm:number}>{
+  const root=join(await mujocoTemp('mj-weak-'),'simulation-mujoco'),fx=join(root,'fixtures',XARM_FIXTURE_ID);
+  await cp(join(mujocoRoot,'mujoco_worker'),join(root,'mujoco_worker'),{recursive:true,filter:s=>!s.includes('__pycache__')});
+  await cp(join(mujocoRoot,'requirements.lock'),join(root,'requirements.lock'));
+  await cp(join(mujocoRoot,'fixtures',XARM_FIXTURE_ID),fx,{recursive:true});
+  const component=JSON.parse(await readFile(join(fx,'component.json'),'utf8')) as {joints:{id:string;limits?:{effort?:{value:number}}}[]};
+  const arm=component.joints.filter(j=>/^J\d$/.test(j.id)),effort=arm[joint]!.limits!.effort!,fromNm=effort.value;effort.value=fromNm*fraction;
+  const text=JSON.stringify(component,null,2)+'\n',manifest=JSON.parse(await readFile(join(fx,'manifest.json'),'utf8')) as {componentDigest:string;files:{path:string;bytes:number;sha256:string}[]};
+  const row=manifest.files.find(f=>f.path==='component.json')!;row.bytes=Buffer.byteLength(text);row.sha256=createHash('sha256').update(text).digest('hex');manifest.componentDigest=hashJson(component as never);
+  await writeFile(join(fx,'component.json'),text);await writeFile(join(fx,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+  return {root,effortNm:effort.value,fromNm};
+ }
+-export const killMujocoWorkers=(signal:NodeJS.Signals='SIGKILL')=>{
+- const pids=(()=>{try{return execFileSync('pgrep',['-f','mujoco_worker --run-id'],{encoding:'utf8'}).trim().split('\n').filter(Boolean).map(Number);}catch{return [] as number[];}})();
+- for(const p of pids)process.kill(p,signal);
+- return pids;
+-};
++export const killMujocoWorkers=(directory:string,signal:NodeJS.Signals='SIGKILL')=>mujocoProcessScope.kill(directory,/ -m mujoco_worker(?: |$)/,signal).map(p=>p.pid);
+diff --git a/tests/support/owned-processes.ts b/tests/support/owned-processes.ts
+new file mode 100644
+index 0000000..5f1443e
+--- /dev/null
++++ b/tests/support/owned-processes.ts
+@@ -0,0 +1,87 @@
++// Test-only ownership: absolute bundle directories AND ancestry from this test process,
++// never a host-wide executable/module selector. Keep detached worker groups and the
++// identities of all descendants so reparented Webots/controllers still count as leaks.
++import { execFileSync } from 'node:child_process';
++import { resolve, sep } from 'node:path';
++import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
++
++export interface ProcessRow { pid: number; ppid: number; pgid: number; started: string; command: string }
++export function processTable(): ProcessRow[] {
++  return execFileSync('ps', ['-wwaxo', 'pid=,ppid=,pgid=,stat=,lstart=,command='], { encoding: 'utf8' }).split('\n').flatMap(line => {
++    const m = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\d+)\s+(.*)$/.exec(line);
++    return m && !m[4]!.startsWith('Z') ? [{ pid: Number(m[1]), ppid: Number(m[2]), pgid: Number(m[3]), started: m[5]!, command: m[6]! }] : [];
++  });
++}
++const under = (path: string, directory: string) => path === directory || path.startsWith(directory + sep);
++const identity = (p: ProcessRow) => `${p.pid}:${p.started}`;
++export class OwnedProcesses {
++  private directories = new Set<string>();
++  private known = new Map<string, { row: ProcessRow; bundle: string }>();
++  private groups = new Map<number, { leader: string; bundle: string }>();
++  constructor(private readonly snapshot = processTable) {}
++  addDirectory(directory: string) { this.directories.add(resolve(directory)); }
++  capture(): ProcessRow[] {
++    const rows = this.snapshot(), byPid = new Map(rows.map(p => [p.pid, p]));
++    const owned = new Map<number, { row: ProcessRow; bundle: string }>();
++    const descendant = (p: ProcessRow) => {
++      const seen = new Set<number>();
++      while (!seen.has(p.pid)) { seen.add(p.pid); if (p.ppid === process.pid) return true; const parent = byPid.get(p.ppid); if (!parent) break; p = parent; }
++      return false;
++    };
++    for (const p of rows) {
++      const old = this.known.get(identity(p)); if (old) owned.set(p.pid, { row: p, bundle: old.bundle });
++      const bundle = /(?:^| )--bundle-root (.+?)(?= --[a-z-]+(?: |$)|$)/.exec(p.command)?.[1];
++      if (bundle && [...this.directories].some(d => under(bundle, d)) && descendant(p)) {
++        owned.set(p.pid, { row: p, bundle });
++        if (p.pgid === p.pid) this.groups.set(p.pgid, { leader: identity(p), bundle });
++      }
++    }
++    for (const [pgid, group] of this.groups) {
++      const leader = byPid.get(pgid);
++      // A reused PID/group is not ours. A surviving previously captured member is
++      // required before extending an orphan group; a stale numeric PGID is insufficient.
++      if ((leader && identity(leader) !== group.leader) || ![...owned.values()].some(p => p.row.pgid === pgid)) { this.groups.delete(pgid); continue; }
++      for (const p of rows) if (p.pgid === pgid) owned.set(p.pid, { row: p, bundle: group.bundle });
++    }
++    let changed = true;
++    while (changed) { changed = false; for (const p of rows) { const parent = owned.get(p.ppid); if (parent && !owned.has(p.pid)) { owned.set(p.pid, { row: p, bundle: parent.bundle }); changed = true; } } }
++    this.known = new Map([...owned.values()].map(p => [identity(p.row), p]));
++    return [...owned.values()].map(p => p.row).sort((a, b) => a.pid - b.pid);
++  }
++  processes() { return this.capture(); }
++  /** Observe long operations (startup/campaign) while roots are still alive, so
++   * a worker that exits before the caller resumes cannot hide orphan children. */
++  async observe<T>(operation: () => Promise<T>): Promise<T> {
++    this.capture(); let samplingError: unknown;
++    const timer = setInterval(() => { try { this.capture(); } catch (e) { samplingError ??= e; } }, 50); timer.unref();
++    let result: T;
++    try { result = await operation(); }
++    finally { clearInterval(timer); this.capture(); }
++    if (samplingError) throw samplingError;
++    return result;
++  }
++  kill(directory: string, command: RegExp, signal: NodeJS.Signals = 'SIGKILL'): ProcessRow[] {
++    this.capture(); const target = resolve(directory);
++    const candidates = [...this.known.values()].filter(p => under(p.bundle, target) && command.test(p.row.command));
++    const killed: ProcessRow[] = [];
++    for (const { row } of candidates) {
++      // Revalidate the captured PID identity immediately before signalling; never
++      // turn a stale observation into a kill of a newly allocated process.
++      const current = this.snapshot().find(p => p.pid === row.pid);
++      if (!current || identity(current) !== identity(row) || current.command !== row.command) continue;
++      console.log('owned process fault', JSON.stringify({ directory: target, pid: current.pid, ppid: current.ppid, pgid: current.pgid, started: current.started, runId: /(?:^| )--run-id (\S+)/.exec(current.command)?.[1], signal }));
++      try { process.kill(row.pid, signal); killed.push(current); } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ESRCH') throw e; }
++    }
++    return killed;
++  }
++  /** Capture a healthy run's complete tree before close or an injected worker loss.
++   * Detached workers inherit their group to Webots and controllers (engine.py uses
++   * Popen without start_new_session); capture also follows PPIDs for other children. */
++  observeRun(run: ScenarioRun): ScenarioRun {
++    const start = run.start.bind(run), action = run.action.bind(run), close = run.close.bind(run);
++    run.start = () => this.observe(start);
++    run.action = async (...args) => { try { return await action(...args); } finally { this.capture(); } };
++    run.close = async () => { this.capture(); try { return await close(); } finally { this.capture(); } };
++    return run;
++  }
++}
+diff --git a/tests/support/regression-identity.ts b/tests/support/regression-identity.ts
+index 733fe45..8c0de17 100644
+--- a/tests/support/regression-identity.ts
++++ b/tests/support/regression-identity.ts
+@@ -3,21 +3,22 @@ import {execFileSync} from 'node:child_process';
+ import {createHash} from 'node:crypto';
+ import {resolve} from 'node:path';
+ export const LAB_EVIDENCE_MUTABLE_PATHS=['docs/','README.md','config/simulation-compatibility.json'] as const;
+ export interface RepositoryIdentity {commit:string;codeHash:string;dirtyCodePaths:string[]}
+ export interface RegressionIdentity {source:RepositoryIdentity;lab:RepositoryIdentity}
+ export interface RegressionIdentityRecord {
+  revisions:{source:string;sourceDirty:boolean;lab:string;labDirty:boolean};
+  identity:{schema:'regression-identity/1';start:RegressionIdentity;end:RegressionIdentity;checkpoints:{id:string;identity:RegressionIdentity}[]};
+  commands:{id:string}[];
+ }
+-const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,...args],{encoding:'utf8'});
++// Qualification artifacts make ls-tree exceed Node's default 1 MiB buffer. Keep the complete listing (and a bounded failure), never truncate the identity input.
++const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,...args],{encoding:'utf8',maxBuffer:64*1024*1024});
+ const mutableLabPath=(path:string)=>LAB_EVIDENCE_MUTABLE_PATHS.some(p=>p.endsWith('/')?path.startsWith(p):path===p);
+ function treeHash(directory:string,revision:string,lab:boolean){
+  const entries=git(directory,['ls-tree','-r','-z',revision]).split('\0').filter(Boolean).filter(e=>!lab||!mutableLabPath(e.slice(e.indexOf('\t')+1))).sort();
+  return createHash('sha256').update(entries.join('\0')).digest('hex');
+ }
+ function repositoryIdentity(directory:string,lab:boolean):RepositoryIdentity {
+  const commit=git(directory,['rev-parse','HEAD']).trim();
+  // --no-renames includes both ends of a move: moving code under docs cannot make the deletion invisible.
+  const dirty=[...git(directory,['diff','--cached','--no-renames','--name-only','-z','HEAD']).split('\0'),...git(directory,['diff','--no-renames','--name-only','-z']).split('\0'),...git(directory,['ls-files','--others','--exclude-standard','-z']).split('\0')].filter(Boolean);
+  return {commit,codeHash:treeHash(directory,commit,lab),dirtyCodePaths:[...new Set(dirty.filter(p=>!lab||!mutableLabPath(p)))].sort()};
+diff --git a/tests/support/webots-arm.ts b/tests/support/webots-arm.ts
+index 9771727..e99324c 100644
+--- a/tests/support/webots-arm.ts
++++ b/tests/support/webots-arm.ts
+@@ -1,64 +1,62 @@
+ // WB-BV01 through the gateway factory on the real Webots R2025a: the flag-on provider (a real describe), the portable dispatcher, the Lab coffee project. Nothing here marks a provider installed
+ // that the production readiness would not. Fault variants swap the arm fixture (a weaker joint) or the project (an obstacle on the path) and nothing else.
++import {OwnedProcesses} from './owned-processes';
+ import {execFileSync} from 'node:child_process';
+ import {existsSync} from 'node:fs';
+ import {cp,mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join,resolve} from 'node:path';
+ import {portableSimulationFromOptions,type PortableSimulation} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
+ import {webotsFromOptions,type WebotsProvider} from '../../packages/lab-runtime/src/v2/simulation3d/readiness';
+ import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import type {ArmObstacle} from '../../packages/lab-runtime/src/v2/models/arm-collision';
+ import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
+ import {forwardKinematics,PUMA560_SI} from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
+ import {amrAsset,coffeeProject} from './lab-v2';
+ 
+ export const WEBOTS_HOME=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',armPython=resolve('.venv-webots/bin/python'),armWorkerRoot=resolve('robotics/simulation-3d');
+ const exe=join(WEBOTS_HOME,'Contents','MacOS','webots');
+ export const armWebotsAvailable=existsSync(exe)&&existsSync(armPython)&&(()=>{try{return execFileSync(exe,['--version'],{encoding:'utf8',timeout:30_000}).includes('R2025a');}catch{return false;}})();
+-/** Webots, its supervisor and the controllers started by a run (anchored at the start of the command line, so a shell that merely mentions them never matches). */
+-export const armProcesses=()=>{try{return execFileSync('pgrep',['-f','^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller|arm_controller)\\.py'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
+-export const armWorkers=()=>{try{return execFileSync('pgrep',['-f','^[^ ]+ -I -B [^ ]* ?-m webots_worker |webots_worker --run-id'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
++/** Owned workers, engine and all controller descendants, including reparented ones. */
++export const armProcessScope=new OwnedProcesses();
++export const armProcesses=()=>armProcessScope.processes().map(p=>String(p.pid));
++export const armWorkers=()=>armProcessScope.processes().filter(p=>/ -m webots_worker(?: |$)/.test(p.command)).map(p=>String(p.pid));
+ 
+ const dirs:string[]=[];
+ export const removeArmDirs=()=>Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
+-export const armTemp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));dirs.push(d);return d;};
++export const armTemp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));dirs.push(d);armProcessScope.addDirectory(d);return d;};
+ 
+ export interface ArmGateway {sim:PortableSimulation;webots:WebotsProvider;directory:string}
+ /** The flag-on provider and the dispatcher over it. `armRuntime` overrides the arm runtime options (a fixture variant). */
+ export async function armGateway(armRuntime:Partial<NonNullable<WebotsProvider['arm']['runtime']>>={}):Promise<ArmGateway>{
+  const directory=await armTemp('arm-gw-');
+- const webots=await webotsFromOptions({enabled:true,python:armPython,workerRoot:armWorkerRoot,lockPath:join(armWorkerRoot,'requirements.lock'),webotsHome:WEBOTS_HOME,directory:join(directory,'probe')});
++ const webots=await armProcessScope.observe(()=>webotsFromOptions({enabled:true,python:armPython,workerRoot:armWorkerRoot,lockPath:join(armWorkerRoot,'requirements.lock'),webotsHome:WEBOTS_HOME,directory:join(directory,'probe')}));
+  if(!webots.arm.capability.installed||!webots.arm.runtime)throw new Error(`WEBOTS_ARM_NOT_INSTALLED: ${webots.arm.capability.reason}`);
+  const provider:WebotsProvider={...webots,arm:{...webots.arm,runtime:{...webots.arm.runtime,...armRuntime}}};
+  const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:resolve('robotics/navigation-2d'),lockPath:resolve('robotics/navigation-2d/requirements.lock'),directory,webots:provider});
+  return {sim,webots:provider,directory};
+ }
+ export const armInput=(project:unknown,seed:number,scenarioId='WB-BV01',backendSetId='engineering-webots-arm-v1'):RunManifestInput=>({project,scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId,sourceCommit:'test-commit'});
+ export async function openArmRun(gw:ArmGateway,over:{project?:unknown;seed?:number;scenarioId?:string;backendSetId?:string}={}):Promise<{run:ScenarioRun;directory:string}>{
+  const directory=join(await armTemp('arm-run-'),'run');await mkdir(directory,{recursive:true});
+  const run=await gw.sim.simulationFactory(armInput(over.project??coffeeProject(),over.seed??42,over.scenarioId,over.backendSetId),{directory,assets:[amrAsset],catalog:gw.sim.catalog,enabledBackends:['mock_amr','mock_coffee','mock_arm',...gw.sim.enabledBackends]}); // what the server enables: the mock backends, plus the portable provider
+- return {run,directory};
++ return {run:armProcessScope.observeRun(run),directory};
+ }
+ 
+ /** A copy of the arm-ref-3d-v1 fixture whose joint `joint` (0-based) has `effortNm` of motor torque: the digest in its manifest is recomputed, so the scene and the worker accept it. */
+ export async function weakJointFixture(joint:number,effortNm:number):Promise<string>{
+  const dir=join(await armTemp('arm-weak-'),'arm-ref-3d-v1');
+  await cp(join(armWorkerRoot,'fixtures','arm-ref-3d-v1'),dir,{recursive:true});
+  const component=JSON.parse(await readFile(join(dir,'component.json'),'utf8')) as {joints:{limits:{effort:{value:number}}}[]};
+  component.joints[joint]!.limits.effort.value=effortNm;
+  const manifest=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8')) as Record<string,unknown>;
+  await writeFile(join(dir,'component.json'),JSON.stringify(component,null,2)+'\n');
+  await writeFile(join(dir,'manifest.json'),JSON.stringify({...manifest,componentDigest:hashJson(component)},null,2)+'\n');
+  return dir;
+ }
+ /** A box in the Webots arm world only (arm base frame) square on where the flange is when the arm stands at `q`: whatever program moves the arm there touches it. */
+ export function obstacleAtPose(q:number[],half=0.06,id='crate'):ArmObstacle{
+  const [x,y,z]=forwardKinematics(PUMA560_SI,q).flange.position;
+  return {id,kind:'box',min:[x-half,y-half,z-half],max:[x+half,y+half,z+half]};
+ }
+-export const killProcesses=(pattern:string,signal:NodeJS.Signals='SIGKILL')=>{
+- const pids=(()=>{try{return execFileSync('pgrep',['-f',pattern],{encoding:'utf8'}).trim().split('\n').filter(Boolean).map(Number);}catch{return [] as number[];}})();
+- for(const p of pids)process.kill(p,signal);
+- return pids;
+-};
++export const killProcesses=(directory:string,kind:'worker'|'engine',signal:NodeJS.Signals='SIGKILL')=>armProcessScope.kill(directory,kind==='worker'?/ -m webots_worker(?: |$)/:/\/Contents\/MacOS\/webots(?: |$)/,signal).map(p=>p.pid);
+diff --git a/tests/support/webots-mission.ts b/tests/support/webots-mission.ts
+index f32f07f..7d119f5 100644
+--- a/tests/support/webots-mission.ts
++++ b/tests/support/webots-mission.ts
+@@ -1,35 +1,37 @@
+ // WB-FD01 / WB-FD07 through the real source domain on a compiled Webots bundle. The bundle comes from the engineering service (the TypeScript Webots compiler); the plant is
+ // the real Webots R2025a, or a double in tests/support/webots_doubles. Nothing here sets the production provider installed.
++import {OwnedProcesses} from './owned-processes';
+ import {execFileSync} from 'node:child_process';
+ import {createHash} from 'node:crypto';
+ import {existsSync,readFileSync} from 'node:fs';
+ import {mkdtemp,rm} from 'node:fs/promises';
+ import {join,resolve} from 'node:path';
+ import {tmpdir} from 'node:os';
+ import {createEngineeringService,type EngineeringService,type LockedEngineering} from '../../packages/lab-runtime/src/engineering/gateway';
+ import {createWebotsCompiler} from '../../packages/lab-runtime/src/engineering/webots-compiler';
+ import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
+ import {defaultCatalog,type CapabilityCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {createFixedStepScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+ import {webotsPlant,type WebotsRuntimeOptions} from '../../packages/lab-runtime/src/v2/simulation3d/webots';
+ import type {RunManifestInput,RunProviders,ScenarioRun,RunView} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {testCompiler,writeFixtureCatalog} from './engineering';
+ import {navigationFixture} from './navigation2d';
+ 
+ export const WEBOTS_HOME=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Webots.app',webotsPython=resolve('.venv-webots/bin/python'),webotsRoot=resolve('robotics/simulation-3d'),schemaDir=resolve('packages/contracts/schemas');
+ const exe=join(WEBOTS_HOME,'Contents','MacOS','webots');
+ export const webotsAvailable=existsSync(exe)&&existsSync(webotsPython)&&(()=>{try{return execFileSync(exe,['--version'],{encoding:'utf8',timeout:30_000}).includes('R2025a');}catch{return false;}})();
+ export const webotsDouble=(name:string)=>resolve('tests/support/webots_doubles',name);
+-export const temp=(p:string)=>mkdtemp(join(tmpdir(),p));
+-/** Webots processes started by a run: anchored at the start of the command line, so a shell that merely mentions them never matches. */
+-export const webotsProcesses=()=>{try{return execFileSync('pgrep',['-f','^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
++export const temp=async(p:string)=>{const d=await mkdtemp(join(tmpdir(),p));webotsProcessScope.addDirectory(d);return d;};
++/** Owned workers, engine and all controller descendants, including reparented ones. */
++export const webotsProcessScope=new OwnedProcesses();
++export const webotsProcesses=()=>webotsProcessScope.processes().map(p=>String(p.pid));
+ 
+ const bundleDirs:string[]=[];
+ export const removeBundles=()=>Promise.all(bundleDirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));
+ /** Compiles the 3D fixture once through the engineering service and admits it for `owner`. */
+ export async function webotsBundle(name:'serve-3d'|'fleet-3d'='serve-3d',owner='owner'):Promise<{service:EngineeringService;locked:LockedEngineering}>{
+  const f=navigationFixture(name).fixture,catalogRoot=await temp('webots-cat-'),engineering=await temp('webots-eng-');bundleDirs.push(catalogRoot,engineering);
+  await writeFixtureCatalog(catalogRoot,f as never);
+  const service=createEngineeringService({directory:engineering,catalogRoot,compiler:testCompiler,compilers:{'engineering-webots-3d-v1':createWebotsCompiler()}});
+  const receipt=await service.compileEngineeringProject(f.project,owner);
+  if(receipt.state!=='compiled')throw new Error(`WEBOTS_BUNDLE_NOT_COMPILED ${JSON.stringify(receipt.problems)}`);
+@@ -37,21 +39,21 @@ export async function webotsBundle(name:'serve-3d'|'fleet-3d'='serve-3d',owner='
+ }
+ /** The catalog with webots_3d marked usable: test wiring only (the production readiness decides this from a real describe and smoke). */
+ export const webotsCatalog=():CapabilityCatalog=>({...defaultCatalog,backends:defaultCatalog.backends.map(b=>{if(b.id!=='webots_3d')return b;const {reason:_r,...rest}=b;void _r;return {...rest,installed:true,compatible:true,reachable:true};})});
+ let sha:string|undefined;
+ const executableSha=()=>sha??=createHash('sha256').update(readFileSync(exe)).digest('hex');
+ export const webotsInput=(locked:LockedEngineering,seed=5,scenarioId='WB-FD01'):RunManifestInput=>({project:locked.runtimeProjection.project,scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:'engineering-webots-3d-v1',sourceCommit:'test-commit',engineering:locked});
+ export async function webotsProviders(directory:string,service:EngineeringService,over:{entry?:string[];deadlinesMs?:Record<string,number>;evidence?:WebotsRuntimeOptions['evidence']}={}):Promise<RunProviders&{plant:ReturnType<typeof webotsPlant>;runtime:WebotsRuntimeOptions}>{
+  const runtime:WebotsRuntimeOptions={python:webotsPython,workerRoot:webotsRoot,schemaDir,lockDigest:await lockDigestOf(join(webotsRoot,'requirements.lock')),webotsHome:WEBOTS_HOME,executableSha256:over.entry?'a'.repeat(64):executableSha(),basicTimeStepMs:20,maxActiveRuns:1,...over};
+  return {directory,catalog:webotsCatalog(),enabledBackends:['webots_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant:webotsPlant(runtime),runtime};
+ }
+-export async function openWebotsRun(directory:string,b:Awaited<ReturnType<typeof webotsBundle>>,over:Parameters<typeof webotsProviders>[2]={},seed=5,scenarioId='WB-FD01'){return createFixedStepScenarioRun(webotsInput(b.locked,seed,scenarioId),await webotsProviders(directory,b.service,over));}
++export async function openWebotsRun(directory:string,b:Awaited<ReturnType<typeof webotsBundle>>,over:Parameters<typeof webotsProviders>[2]={},seed=5,scenarioId='WB-FD01'){webotsProcessScope.addDirectory(directory);return webotsProcessScope.observeRun(await createFixedStepScenarioRun(webotsInput(b.locked,seed,scenarioId),await webotsProviders(directory,b.service,over)));}
+ let n=0;
+ export async function act(run:ScenarioRun,kind:string,payload:Record<string,unknown>={}){const v=await run.snapshot();return run.action({actionId:`webots-${++n}`,expectedRevision:v.run.runRevision,kind,payload});}
+ /** Step until the run leaves running/awaiting_confirmation or reaches `limit` ticks. A step that advances neither tick nor status is a stall and fails at once. */
+ export async function finish(run:ScenarioRun,ticks=500,limit=30000){
+  let v=await run.snapshot();
+  while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<limit){const next=await act(run,'step',{ticks});if(next.tick===v.tick&&next.run.status===v.run.status)throw new Error(`RUN_STALLED at tick ${v.tick}: ${v.run.status} ${JSON.stringify(next.attention??null)}`);v=next;}
+  return v;
+ }
+ export async function stepUntil(run:ScenarioRun,until:(v:RunView)=>boolean|Promise<boolean>,chunk=25,limit=30000){
+  let v=await run.snapshot();
+diff --git a/tests/unit/arm-collision-geometry.test.ts b/tests/unit/arm-collision-geometry.test.ts
+index 8619eae..95e7e8f 100644
+--- a/tests/unit/arm-collision-geometry.test.ts
++++ b/tests/unit/arm-collision-geometry.test.ts
+@@ -34,10 +34,18 @@ test('linkRadiiM: link 2 twice as thick turns a clear input into a COLLISION on
+ test('cupAxisInTool [1,0,0]: the held cup lies across the tool axis, centred on the TCP; allowedPairs clears that contact', () => {
+   const geometry = { ...DEFAULT_ARM_GEOMETRY, cupAxisInTool: [1, 0, 0] as [number, number, number], provenance: 'assumed' as const };
+   const ahead = [sphere('ahead', [1, 0, 0.06])], beside = [sphere('beside', [1.04, 0, 0])];
+   expect(checkArmSweep(simple, q(0), q(0), { world: ahead, heldCup: true }).ok).toBe(false); // the default upright cup would hit it
+   expect(checkArmSweep(simple, q(0), q(0), { world: ahead, heldCup: true, geometry }).ok).toBe(true);
+   expect(checkArmSweep(simple, q(0), q(0), { world: beside, heldCup: true, geometry })).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['held-cup', 'beside'] });
+   expect(checkArmSweep(simple, q(0), q(0), { world: beside, heldCup: true, geometry, allowedPairs: [['held-cup', 'beside']] }).ok).toBe(true);
+   expect(checkArmSweep(simple, q(0), q(0), { world: beside, heldCup: false, geometry }).ok).toBe(true);
+   expect(() => checkArmSweep(simple, q(0), q(0), { world: ahead, geometry: { ...geometry, cupAxisInTool: [0, 0, 0] } })).toThrow('COLLISION_GEOMETRY_INVALID');
+ });
++
++test('gripperBackM checks the palm behind an offset TCP and rejects invalid lengths', () => {
++  const model = { ...simple, toolM: [0, 0, 0.172] as [number, number, number] }, world = [sphere('palm-stop', [1, 0.045, 0.06])];
++  expect(checkArmSweep(model, q(0), q(0), { world }).ok).toBe(true);
++  const geometry = { ...DEFAULT_ARM_GEOMETRY, gripperBackM: 0.181, gripperRadiusM: 0.064 };
++  expect(checkArmSweep(model, q(0), q(0), { world, geometry })).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['gripper', 'palm-stop'] });
++  for (const invalid of [0, -0.1, NaN, Infinity]) expect(() => checkArmSweep(model, q(0), q(0), { world, geometry: { ...geometry, gripperBackM: invalid } })).toThrow('COLLISION_GEOMETRY_INVALID');
++});
+diff --git a/tests/unit/lab-regression-identity.test.ts b/tests/unit/lab-regression-identity.test.ts
+index 00d0a70..d534901 100644
+--- a/tests/unit/lab-regression-identity.test.ts
++++ b/tests/unit/lab-regression-identity.test.ts
+@@ -13,20 +13,31 @@ function fixture(){
+  for(const repo of [source,lab]){
+   mkdirSync(join(repo,'src'),{recursive:true});mkdirSync(join(repo,'docs'),{recursive:true});mkdirSync(join(repo,'config'),{recursive:true});
+   git(repo,'init','-q');git(repo,'config','user.name','Identity fixture');git(repo,'config','user.email','fixture@example.invalid');
+   write(repo,'src/main.ts','export const value=1;\n');write(repo,'README.md','Documentation\n');write(repo,'docs/evidence.json','{}\n');
+   write(repo,'config/source-runtime.lock.json','{"sourceCommit":"pinned"}\n');write(repo,'config/simulation-compatibility.json','{}\n');commit(repo);
+  }
+  return {source,lab,start:captureRegressionIdentity(source,lab)};
+ }
+ const recording=(start:RegressionIdentity):RegressionIdentityRecord=>({revisions:{source:start.source.commit,sourceDirty:false,lab:start.lab.commit,labDirty:false},identity:{schema:'regression-identity/1',start:structuredClone(start),end:structuredClone(start),checkpoints:[{id:'suite:before',identity:structuredClone(start)},{id:'suite:after',identity:structuredClone(start)}]},commands:[{id:'suite'}]});
+ afterEach(()=>{for(const path of roots.splice(0))rmSync(path,{recursive:true,force:true});});
++test('recording captures a Git tree larger than 1 MiB without losing entries at its end',()=>{
++ const f=fixture(),files=Array.from({length:5000},(_,i)=>`docs/${String(i).padStart(5,'0')}-${'e'.repeat(170)}.json`);
++ for(const path of files)write(f.source,path,'{}\n');commit(f.source);
++ const listing=execFileSync('git',['ls-tree','-r','-z','HEAD'],{cwd:f.source,maxBuffer:16*1024*1024});
++ expect(listing.byteLength).toBeGreaterThan(1024*1024);
++ const before=captureRegressionIdentity(f.source,f.lab);
++ expect(()=>assertRecordableIdentity(before)).not.toThrow();expect(before.source.codeHash).toMatch(/^[a-f0-9]{64}$/);
++ write(f.source,files.at(-1)!,'{"changed":true}\n');commit(f.source);
++ const after=captureRegressionIdentity(f.source,f.lab);
++ expect(after.source.codeHash).not.toBe(before.source.codeHash);
++});
+ test.each(['source','lab'] as const)('recording rejects dirty %s code before executing suites',repo=>{
+  const f=fixture();write(f[repo],'src/main.ts','changed');expect(()=>assertRecordableIdentity(captureRegressionIdentity(f.source,f.lab))).toThrow(/CODE_DIRTY/);
+ });
+ test('staged code changes remain dirty when the working copy has been restored to HEAD',()=>{
+  const f=fixture();write(f.lab,'src/main.ts','changed');git(f.lab,'add','src/main.ts');write(f.lab,'src/main.ts','export const value=1;\n');
+  expect(()=>assertRecordableIdentity(captureRegressionIdentity(f.source,f.lab))).toThrow('LAB_CODE_DIRTY');
+ });
+ test('the recorder rejects a clean mid-run revision change, including documentation-only commits',()=>{
+  const f=fixture();write(f.lab,'docs/evidence.json','{"new":true}');commit(f.lab);
+  expect(()=>assertStableRecording(f.start,captureRegressionIdentity(f.source,f.lab))).toThrow('LAB_REVISION_CHANGED_DURING_RECORDING');
+diff --git a/tests/unit/mujoco-arm-ports.test.ts b/tests/unit/mujoco-arm-ports.test.ts
+index 268e99f..4608964 100644
+--- a/tests/unit/mujoco-arm-ports.test.ts
++++ b/tests/unit/mujoco-arm-ports.test.ts
+@@ -50,30 +50,30 @@ const state = (st: CoffeeState, id: string) => st.arm.programs.find((x) => x.com
+ const advance = async (p: CoffeePlantPorts, k: number) => { for (let i = 0; i < k; i++) await p.advance(); };
+ const workers = (directory: string) => { try { return execFileSync('pgrep', ['-f', `fake_cell_plant.py.*${directory}`], { encoding: 'utf8' }).trim().split('\n').filter(Boolean); } catch { return []; } };
+ 
+ describe('mujocoProgramSet', () => {
+   test('the cell supports are in the swept world: at the pick pose the held cup reaches into the stand, which only the allowed pairs clear (and they say so)', () => {
+     const set = mujocoProgramSet(fixture, oracle, [{ a: 'gripper', b: 'nozzle-stand' }, { a: 'gripper', b: 'tray' }, { a: 'held_prop', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
+     const world = cellSupports(fixture.layout), pick = fixture.programs.waypoints.pick!, L = fixture.layout;
+     expect(world).toEqual([{ id: 'nozzle-stand', kind: 'box', min: L.nozzleStand.centerM.map((c, i) => c - L.nozzleStand.sizeM[i]! / 2), max: L.nozzleStand.centerM.map((c, i) => c + L.nozzleStand.sizeM[i]! / 2) },
+       { id: 'tray', kind: 'box', min: L.tray.centerM.map((c, i) => c - L.tray.sizeM[i]! / 2), max: L.tray.centerM.map((c, i) => c + L.tray.sizeM[i]! / 2) }]);
+     const allowed = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, ...set.collision! });
+-    expect(allowed.ok).toBe(true); expect(allowed.allowed).toEqual({ pairs: set.collision!.allowedPairs, inContact: [['held-cup', 'nozzle-stand']] });
++    expect(allowed.ok).toBe(true); expect(allowed.allowed).toEqual({ pairs: set.collision!.allowedPairs, inContact: [['gripper', 'nozzle-stand'], ['held-cup', 'nozzle-stand']] });
+     const strict = checkArmSweep(XARM6_SI, pick, pick, { world, heldCup: true, geometry: set.collision!.geometry });
+     expect(strict).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['held-cup', 'nozzle-stand'] }); expect(strict.allowed).toBeUndefined();
+   });
+   test('the fixture programs verbatim, contact from physics and the oracle, collision from the capsule radii, the cup and the scene\'s allowed contacts', () => {
+     const set = mujocoProgramSet(fixture, oracle, [{ a: 'gripper', b: 'nozzle-stand' }, { a: 'held_prop', b: 'tray' }]);
+     expect({ ...set, contact: undefined, collision: undefined }).toEqual({ ...fixture.programs, contact: undefined, collision: undefined });
+     expect(set.contact).toEqual({ openM: 0.0889, closedM: 0, gripSettleTicks: oracle.gripSettleTicks, dropTicks: oracle.dropTicks, liftMinM: oracle.liftMinM, releaseTimeoutTicks: 200 });
+     expect(MUJOCO_ARM_RELEASE_TIMEOUT_TICKS).toBe(200);
+-    expect(set.collision!.geometry).toMatchObject({ ...DEFAULT_ARM_GEOMETRY, provenance: 'assumed', linkRadiiM: fixture.physics.capsuleRadiusM, cupRadiusM: 0.04, cupHeightM: 0.1 });
++    expect(set.collision!.geometry).toMatchObject({ ...DEFAULT_ARM_GEOMETRY, gripperBackM: expect.closeTo(0.181, 12), gripperRadiusM: expect.closeTo(0.06330284353802758, 12), provenance: 'assumed', linkRadiiM: fixture.physics.capsuleRadiusM, cupRadiusM: 0.04, cupHeightM: 0.1 });
+     expect(set.collision!.allowedPairs).toEqual([['gripper', 'nozzle-stand'], ['held-cup', 'tray']]);
+   });
+   test('the held cup lies along the map vertical at the pick pose: the side grip\'s cup axis in the tool frame comes from the grasp frame', () => {
+     const axis = mujocoProgramSet(fixture, oracle, []).collision!.geometry.cupAxisInTool!;
+     for (const w of ['pick', 'lift']) {
+       const tcp = forwardKinematics(XARM6_SI, fixture.programs.waypoints[w]!).tcp, up = qrotate(tcp.quaternionXyzw, axis);
+       expect(Math.abs(up[2]!), w).toBeCloseTo(1, 6); expect(Math.hypot(up[0]!, up[1]!), w).toBeLessThan(1e-6);
+     }
+     expect(Math.abs(axis[2]!)).toBeLessThan(1e-9); // the tool approaches horizontally, so the cup is across the tool axis
+   });
+diff --git a/tests/unit/native-tool-identity.test.ts b/tests/unit/native-tool-identity.test.ts
+new file mode 100644
+index 0000000..0fc6227
+--- /dev/null
++++ b/tests/unit/native-tool-identity.test.ts
+@@ -0,0 +1,29 @@
++import {mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join} from 'node:path';
++import {expect,test} from 'vitest';
++import {nativeToolClosure} from '../../scripts/native-sim/tool-identity.mjs';
++
++test('installing Python distribution metadata leaves tool identity stable while worker edits change it',async()=>{
++ const root=await mkdtemp(join(tmpdir(),'tool-identity-'));
++ try{
++  const roots=['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'];
++  for(const path of roots)await mkdir(join(root,path),{recursive:true});
++  const agent=join(root,'robotics/agent/worker.py');
++  await writeFile(agent,'VALUE = 1\n');
++  const nativeBefore=nativeToolClosure(root);
++  // An editable pip install leaves this metadata in a working checkout; a fresh git clone has none.
++  for(const parent of ['robotics/agent','robotics/simulation']){
++   for(const suffix of ['egg-info','dist-info']){
++    const metadata=join(root,parent,`worker.1.0.${suffix}`);await mkdir(metadata);
++    await writeFile(join(metadata,'PKG-INFO'),'Name: worker\nVersion: 1.0\n');
++    await writeFile(join(metadata,'SOURCES.txt'),'worker.py\n');
++   }
++   // Older Python installations also use a single .egg-info file.
++   await writeFile(join(root,parent,'legacy.egg-info'),'Name: legacy\n');
++  }
++  expect(nativeToolClosure(root)).toEqual(nativeBefore);
++  await writeFile(agent,'VALUE = 2\n');
++  expect(nativeToolClosure(root).digest).not.toBe(nativeBefore.digest);
++ }finally{await rm(root,{recursive:true,force:true});}
++});
+diff --git a/tests/unit/owned-processes.test.ts b/tests/unit/owned-processes.test.ts
+new file mode 100644
+index 0000000..fbb5a0a
+--- /dev/null
++++ b/tests/unit/owned-processes.test.ts
+@@ -0,0 +1,90 @@
++import { afterEach, expect, test } from 'vitest';
++import { spawn, type ChildProcess } from 'node:child_process';
++import { once } from 'node:events';
++import { mkdtemp, rm } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import * as ownership from '../support/owned-processes';
++
++const children: ChildProcess[] = [], dirs: string[] = [];
++const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catch { return false; } };
++afterEach(async () => {
++  for (const c of children.splice(0)) { if (c.pid) { try { process.kill(-c.pid, 'SIGKILL'); } catch { /* already exited */ } c.kill('SIGKILL'); } }
++  for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true });
++});
++async function temp() { const d = await mkdtemp(join(tmpdir(), 'owned-process-')); dirs.push(d); return d; }
++async function sentinel(directory: string, descendants = false) {
++  const code = descendants ? "const {spawn}=require('node:child_process');const c=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});console.log(c.pid);setInterval(()=>{},1000)" : "console.log(process.pid);\nsetInterval(()=>{},1000)";
++  const c = spawn(process.execPath, ['-e', code, '--', '--bundle-root', join(directory, 'bundle'), '--run-id', 'same-id'], { detached: true, stdio: ['ignore', 'pipe', 'inherit'] }); children.push(c);
++  const [line] = await once(c.stdout!, 'data');
++  return { child: c, descendant: Number(String(line).trim()) };
++}
++
++test('an owned fault kills only its exact run family; a sibling with the same run id and directory prefix survives', async () => {
++  expect(ownership.OwnedProcesses).toBeTypeOf('function');
++  const directory = join(await temp(), 'run with spaces'), unrelated = directory + '-other';
++  const scope = new ownership.OwnedProcesses(); scope.addDirectory(directory);
++  const own = await sentinel(directory), sibling = await sentinel(unrelated);
++  const targets = scope.kill(directory, /--run-id same-id(?: |$)/);
++  expect(targets.map(p => p.pid)).toEqual([own.child.pid]);
++  await once(own.child, 'exit');
++  expect(alive(sibling.child.pid!)).toBe(true);
++  expect(scope.processes()).toEqual([]);
++});
++
++test('owned detached group retains reparented children after worker-only death and detects a cleanup leak', async () => {
++  expect(ownership.OwnedProcesses).toBeTypeOf('function');
++  const directory = await temp(), scope = new ownership.OwnedProcesses(); scope.addDirectory(directory);
++  const own = await sentinel(directory, true), sibling = await sentinel(await temp());
++  const before = scope.processes();
++  expect(before.map(p => p.pid)).toEqual(expect.arrayContaining([own.child.pid, own.descendant]));
++  scope.kill(directory, /--run-id same-id(?: |$)/);
++  await once(own.child, 'exit');
++  expect(scope.processes().map(p => p.pid)).toContain(own.descendant);
++  expect(alive(sibling.child.pid!)).toBe(true);
++  process.kill(own.descendant, 'SIGKILL');
++  // macOS reaps promptly; Linux may retain a zombie under PID 1, which is not a live worker.
++  for (let i = 0; i < 50 && scope.processes().length; i++) await new Promise(r => setTimeout(r, 20));
++  expect(scope.processes()).toEqual([]);
++});
++
++test('matching bundle arguments outside the test ancestry never grant ownership', () => {
++  const directory = '/tmp/owned-ancestry', scope = new ownership.OwnedProcesses(() => [
++    { pid: 1001, ppid: 1, pgid: 1001, started: 'old', command: `python -m webots_worker --bundle-root ${directory}/bundle --run-id same` },
++    { pid: 1002, ppid: process.pid, pgid: 1002, started: 'old', command: `python -m webots_worker --bundle-root ${directory}-other/bundle --run-id same` },
++  ]);
++  scope.addDirectory(directory);
++  expect(scope.processes()).toEqual([]);
++});
++
++test('PPID traversal includes children in separate groups and retains them after reparenting', () => {
++  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-tree/bundle' };
++  const controller = { pid: 1002, ppid: 1001, pgid: 1002, started: 'old', command: 'controller' };
++  let rows = [root, controller];
++  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-tree');
++  expect(scope.processes().map(p => p.pid)).toEqual([1001, 1002]);
++  rows = [{ ...controller, ppid: 1 }];
++  expect(scope.processes().map(p => p.pid)).toEqual([1002]);
++});
++
++test('reused root PID/group and reused controller PID do not extend a stale family', () => {
++  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-reuse/bundle' };
++  const controller = { pid: 1002, ppid: 1001, pgid: 1001, started: 'old', command: 'controller' };
++  let rows = [root, controller];
++  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-reuse');
++  expect(scope.processes()).toHaveLength(2);
++  rows = [{ ...root, ppid: 1, started: 'new', command: 'unrelated' }, { ...controller, ppid: 1, started: 'new' }];
++  expect(scope.processes()).toEqual([]);
++});
++
++test('observing a whole operation retains children when the worker exits before the operation returns', async () => {
++  const directory = await temp(), scope = new ownership.OwnedProcesses(); scope.addDirectory(directory);
++  let descendant = 0;
++  await scope.observe(async () => {
++    const own = await sentinel(directory, true); descendant = own.descendant;
++    await new Promise(r => setTimeout(r, 180));
++    own.child.kill('SIGKILL'); await once(own.child, 'exit');
++  });
++  expect(scope.processes().map(p => p.pid)).toContain(descendant);
++  process.kill(descendant, 'SIGKILL');
++});
+diff --git a/tests/unit/xarm6-cell-dock.test.ts b/tests/unit/xarm6-cell-dock.test.ts
+index 76a51d7..40e1239 100644
+--- a/tests/unit/xarm6-cell-dock.test.ts
++++ b/tests/unit/xarm6-cell-dock.test.ts
+@@ -4,20 +4,21 @@
+ import { expect, test } from 'vitest';
+ import { readFile } from 'node:fs/promises';
+ import { join, resolve } from 'node:path';
+ import { quinticSegment } from '../../packages/cell-adapters/src/arm-motion';
+ import { MOCK_ARM_PARAMS } from '../../packages/cell-adapters/src/mock-arm';
+ import { compileAsset } from '../../packages/lab-runtime/src/v2/assets';
+ import { loadOracleProfile } from '../../packages/lab-runtime/src/v2/algorithm/checker';
+ import type { LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
+ import { checkArmSweep, type SweepResult } from '../../packages/lab-runtime/src/v2/models/arm-collision';
+ import { XARM6_SI } from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
++import { composePose, type Pose, type Quat, type Vec3 } from '../../packages/lab-runtime/src/v2/frames';
+ import { declareArmScene, materializeArmScene } from '../../packages/lab-runtime/src/v2/models/arm-scene';
+ import { buildArmCellScene, readXArmFixture, XARM_FIXTURE_ID } from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
+ import { cellSupports, mujocoProgramSet } from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports';
+ import { amrAsset } from '../support/lab-v2';
+ 
+ const workerRoot = resolve('robotics/simulation-mujoco'), fixture = readXArmFixture(workerRoot);
+ const project = async () => JSON.parse(await readFile(join(workerRoot, 'fixtures', XARM_FIXTURE_ID, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
+ // The project's robot is the Lab's service-robot-asset@1 (bf15015a…, lab/fixtures/twins/coffee-cell-v2.json); compiled, its collision radius is 0.40697051490249264 m, the same as this
+ // support asset's (the scenario runner's radius is compileAsset(asset).collision.radiusM).
+ const RADIUS = compileAsset(amrAsset).collision.radiusM;
+@@ -47,10 +48,44 @@ test('with a robot docked at coffee_pickup, every interval of the commanded cup-
+   expect(runs.length).toBeGreaterThan(200);
+   expect(runs.filter((x) => !x.r.ok).map((x) => [x.from, x.to, x.k, x.r.pair, x.r.clearanceM])).toEqual([]);
+   expect(runs.some((x) => x.r.allowed?.inContact.length)).toBe(true); // the held cup does reach the stand and the tray, through the allowed pairs only
+ });
+ 
+ test('negative control: an AMR body as high as the arm base plane (robotHeightM 0.7) is a link-1 collision with the docked robot', async () => {
+   const p = await project(); p.armCollisionProfile!.robotHeightM = 0.7;
+   const bad = sweep(p).filter((x) => !x.r.ok);
+   expect(bad.length).toBeGreaterThan(0); expect(bad[0]!.r).toMatchObject({ reason: 'COLLISION', pair: ['link-1', 'robot:amr-1'] });
+ });
++
++test('the gripper palm beside the TCP cannot pass through a tall AMR body', async () => {
++  const p = await project(); p.armCollisionProfile!.robotHeightM = 0.9; p.world.obstacles = [];
++  const scene = buildArmCellScene(p, fixture, 1, { armId: 'arm-1', propIds: ['cup-1'] });
++  const robot = { id: 'amr-1', radiusM: RADIUS, pose: { x: 3.4469705149024925, y: 1.1019705149024928, yawRad: 0 } };
++  const declared = materializeArmScene(declareArmScene(p, { 'amr-1': RADIUS }, ['amr-1'], XARM6_SI), [robot], 0);
++  expect(declared.available).toBe(true);
++  const set = mujocoProgramSet(fixture, loadOracleProfile().profile.mujocoArm!, scene.allowedContacts), pick = set.waypoints.pick!;
++  const result = checkArmSweep(XARM6_SI, pick, pick, { world: [...declared.world, ...cellSupports(fixture.layout)], ...set.collision! });
++  expect(result).toMatchObject({ ok: false, reason: 'COLLISION', pair: ['gripper', 'robot:amr-1'] });
++});
++
++test('the proxy encloses the fixture palm and both moving pads from open to closed', () => {
++  const geometry = mujocoProgramSet(fixture, loadOracleProfile().profile.mujocoArm!, []).collision!.geometry!;
++  const { joints } = JSON.parse(fixture.componentText) as { joints: { id: string; parent: string; child: string; kind: string; axis: Vec3; origin: { xyzM: Vec3; quaternionXyzw: Quat } }[] };
++  const identity: Pose = { position: [0, 0, 0], quaternionXyzw: [0, 0, 0, 1] };
++  function pose(link: string, drive: number): Pose {
++    if (link === 'link6') return identity;
++    const joint = joints.find(j => j.child === link)!;
++    const ratio = joint.id === fixture.physics.gripper.driveJoint ? 1 : fixture.physics.gripper.mimic.find(m => m.joint === joint.id)?.multiplier ?? 0;
++    const angle = drive * ratio / 2, rotation: Quat = [...joint.axis.map(v => v * Math.sin(angle)), Math.cos(angle)] as Quat;
++    return composePose(composePose(pose(joint.parent, drive), { position: joint.origin.xyzM, quaternionXyzw: joint.origin.quaternionXyzw }), { ...identity, quaternionXyzw: rotation });
++  }
++  // Transform the independently declared plant boxes through the component's revolute joints, rather than reconstructing them from the proxy.
++  for (let step = 0; step <= 100; step++) for (const box of [fixture.physics.palm, ...fixture.physics.pads]) {
++    const transform = pose(box.link, fixture.physics.gripper.closedRad * step / 100);
++    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
++      const corner = composePose(transform, { ...identity, position: box.centerM.map((v, i) => v + [x, y, z][i]! * box.sizeM[i]! / 2) as Vec3 }).position;
++      const axisStart = XARM6_SI.toolM[2] - geometry.gripperBackM!, axisEnd = XARM6_SI.toolM[2] + geometry.gripperLengthM;
++      const distance = Math.hypot(corner[0], corner[1], Math.max(axisStart - corner[2], 0, corner[2] - axisEnd));
++      expect(distance, `${box.link} at gripper step ${step}`).toBeLessThanOrEqual(geometry.gripperRadiusM + 1e-12);
++    }
++  }
++});

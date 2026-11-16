@@ -1,0 +1,69 @@
+{
+  "scope": "Corrected deterministic RED only, not final fix approval or physics qualification. Original fixture timeout remains a separate attempt. Root read full retained RED2 log and own receipt.",
+  "receipt": {
+    "path": ".superpowers/sdd/README/evidence-final-recording/fix4/checks/control-red2.receipt.json",
+    "sha256": "0f651dcae66890aa5ba0962c1dbeb76e85219acd7aaacf7738e14ecdb4a35fe0"
+  },
+  "log": {
+    "path": ".superpowers/sdd/README/evidence-final-recording/fix4/checks/control-red2.log",
+    "sha256": "21f76ddf9b9ae13aa369442be68e80b1e932b5be1e209ca7a129bd97f45dff99"
+  },
+  "raw": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix4-127p5qi7/control-red2.json",
+    "sha256": "b99f179cf14bf282f21315e87796ded2917e2d1e27a59248c22e16b0ca8048d2"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "passed": 3,
+  "failed": 6,
+  "pending": 0,
+  "checkedState": {
+    "commit": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+    "status": "?? tests/security/lab-run-controls.test.ts\n",
+    "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "changed": [
+      {
+        "path": "tests/security/lab-run-controls.test.ts",
+        "sha256": "b357eeedfa7623c99ff4af70c56b65d15e22ff9f7cdd5915c93bfbfd88367824"
+      }
+    ]
+  },
+  "failures": [
+    {
+      "name": "priority pause crosses a held batch boundary while transfer keeps the reservation",
+      "messages": [
+        "AssertionError: {\"error\":\"RUN_WRITER_CONFLICT\",\"reasonCodes\":[]}: expected 409 to be 200 // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:50:120\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "priority cancel crosses a held batch boundary while transfer keeps the reservation",
+      "messages": [
+        "AssertionError: {\"error\":\"RUN_WRITER_CONFLICT\",\"reasonCodes\":[]}: expected 409 to be 200 // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:50:120\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "direct fixed-step queue forwards the control execution callback and does not cache a refused pause",
+      "messages": [
+        "AssertionError: expected null to be 'SESSION_REQUIRED' // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:80:99\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "priority pause settles before reclaim changes or closes the entry",
+      "messages": [
+        "AssertionError: {\"error\":\"RUN_NOT_FOUND\",\"reasonCodes\":[]}: expected 404 to be 200 // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:88:42\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "priority pause settles before archive changes or closes the entry",
+      "messages": [
+        "AssertionError: {\"error\":\"RUN_NOT_FOUND\",\"reasonCodes\":[]}: expected 404 to be 200 // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:88:42\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "name": "a cached control queued inside a later step still needs current execution authority",
+      "messages": [
+        "AssertionError: expected null to be 'SESSION_REQUIRED' // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/lab-run-controls.test.ts:103:22\n    at async file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ]
+}

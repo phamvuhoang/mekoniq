@@ -1,0 +1,125 @@
+diff --git a/tests/integration/lab-v2-bv01-sil.test.ts b/tests/integration/lab-v2-bv01-sil.test.ts
+index c356901669a2ddbb5144a1cab74c536239782094..b53e00dd6da381cb47c80281b2ee5bbe7485aaab 100644
+--- a/tests/integration/lab-v2-bv01-sil.test.ts
++++ b/tests/integration/lab-v2-bv01-sil.test.ts
+@@ -107,22 +107,22 @@ test('declared negative case rejects extra configured and immediate faults befor
+  try{const v=await run.snapshot(),calls=d.bridge.closed;await expect(run.action({actionId:'extra',kind:'injectFault',expectedRevision:v.run.runRevision,payload:{faultId:'tunnel-loss',entityId:'arm-1'}})).rejects.toThrow('NATIVE_FAULT_CASE_EXTRA_SCHEDULE');expect(d.bridge.closed).toBe(calls);expect((await run.snapshot()).run.runRevision).toBe(v.run.runRevision);}finally{await run.close();}
+ });
+ test('autonomous deadline versions durable status without another business event',async()=>{
+  const x=await open('no-samples',40);try{const start=await x.run.start();await new Promise(r=>setTimeout(r,80));const held=await x.run.snapshot();expect(held.run.status).toBe('needs_attention');expect(held.run.runRevision).toBeGreaterThan(start.run.runRevision);const checkpoint=JSON.parse(await readFile(join(x.providers.directory,'run.json'),'utf8'));expect(checkpoint.revision).toBe(held.run.runRevision);await new Promise(r=>setTimeout(r,40));expect((await x.run.snapshot()).run.runRevision).toBe(held.run.runRevision);expect(await x.run.start()).toEqual(start);}finally{await x.run.close();}
+ });
+ test('native run records nonzero provider clock origin after the ready delay',async()=>{
+  const x=await open();try{await new Promise(r=>setTimeout(r,100));await x.run.start();await new Promise(r=>setTimeout(r,70));const r=await x.run.report(),clock=r.manifest.clock as {tickMs:number;native?:{provider:string;originNs:string;businessEpochMs:number}};expect(clock.native?.provider).toBe('gazebo_nav2');expect(BigInt(clock.native!.originNs)).toBeGreaterThan(0n);const cp=JSON.parse(await readFile(join(x.providers.directory,'run.json'),'utf8'));expect(clock.native).toMatchObject({originNs:cp.clockOriginNs,businessEpochMs:cp.epochMs});}finally{await x.run.close();}
+ });
+ test.each(['robotics/simulation/bridge/nav2_session.py','robotics/agent/mekoniq_agent/nav2_adapter.py'])('native tool admission binds exported worker/import bytes: %s',async file=>{
+  const {cp,mkdir,writeFile}=await import('node:fs/promises'),{nativeToolClosure}=await import('../../scripts/native-sim/tool-identity.mjs');const copy=await mkdtemp(join(directory,'source-copy-'));
+- for(const path of ['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin']){await mkdir(resolve(copy,path,'..'),{recursive:true});await cp(join(root,path),join(copy,path),{recursive:true});}
+- const chosen=nativeToolClosure(copy).files.find((f:{path:string})=>f.path===file)!.path;
++ for(const path of ['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin','robotics/manipulation','robotics/simulation-3d/fixtures/serve-3d-v1','robotics/navigation','integrations/arm-controller/scripts','integrations/arm-controller/packaging']){await mkdir(resolve(copy,path,'..'),{recursive:true});await cp(join(root,path),join(copy,path),{recursive:true});}
++ const closure=nativeToolClosure(copy);expect(closure).toEqual(nativeToolClosure(root));const chosen=closure.files.find((f:{path:string})=>f.path===file)!.path;
+  const d=nativeBv01Double(root),f=await nativeProviderFactory({...config(),sourceRoot:copy},d.transports),input={project:f.project,scenarioId:'BV01',scenarioRevision:1,seed:23,mode:'simulation' as const,access:'simulated' as const,backendSetId:'coffee-simulation',sourceCommit:'test'};
+  await writeFile(join(copy,chosen),(await readFile(join(copy,chosen),'utf8'))+'\n# replacement\n');
+  await expect(createNativeScenarioRun(input,{directory:await mkdtemp(join(directory,'tool-pin-'))},f)).rejects.toThrow('NATIVE_PIN_CHANGED');
+  await expect(nativeProviderFactory({...config(),sourceRoot:copy},d.transports)).rejects.toThrow('NATIVE_TOOL_IDENTITY_MISMATCH');expect(d.bridge.log).toEqual([]);
+ });
+ test('autonomous controller ownership loss changes revision without a business transition',async()=>{
+  const x=await open('no-samples');try{const start=await x.run.start();x.double.bridge.emitEvent('owner_revoked',null,['ARM_OWNER_LOST']);await new Promise(r=>setTimeout(r,50));const held=await x.run.snapshot();expect(held.run.status).toBe('needs_attention');expect(held.run.runRevision).toBeGreaterThan(start.run.runRevision);const revision=held.run.runRevision;await new Promise(r=>setTimeout(r,30));expect((await x.run.snapshot()).run.runRevision).toBe(revision);}finally{await x.run.close();}
+ });
+ test('autonomous tunnel supervision failure changes revision even with no business messages',async()=>{
+  const d=nativeBv01Double(root,'no-samples'),f=await nativeProviderFactory(config(),d.transports),acquire=f.open;let lost=false;f.open=async(...args)=>{const p=await acquire(...args),poll=p.poll;return {...p,poll:async(...params)=>{if(lost)throw new Error('ARM_TUNNEL_LOST');await poll(...params);}};};
+diff --git a/tests/integration/lab-v2-native-gateway.test.ts b/tests/integration/lab-v2-native-gateway.test.ts
+index e4691f5e44cbaba686a35b122b37087d8529d414..189d86b99ae6b475905bf4b753aec807aedc713c 100644
+--- a/tests/integration/lab-v2-native-gateway.test.ts
++++ b/tests/integration/lab-v2-native-gateway.test.ts
+@@ -1,14 +1,14 @@
+ // Protocol-double routing only: no simulator or controller executes in this suite.
+ import {afterEach,expect,test,vi} from 'vitest';
+ import {mkdtemp,mkdir,writeFile,readdir,rm} from 'node:fs/promises';
+-import {join} from 'node:path';
++import {basename,join} from 'node:path';
+ import {tmpdir} from 'node:os';
+ import {randomUUID} from 'node:crypto';
+ import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
+ import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {collectReadiness,type ReadinessCheck} from '../../packages/lab-runtime/src/v2/readiness';
+ import {coffeeProject} from '../support/lab-v2';
+ import type {ScenarioRun,RunView,RunProviders} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {TelemetryRecorder} from '../../packages/lab-runtime/src/v2/telemetry';
+ const roots:string[]=[],gateways:LabGateway[]=[];
+ afterEach(async()=>{vi.restoreAllMocks();for(const g of gateways.splice(0))await g.close();for(const d of roots.splice(0))await rm(d,{recursive:true,force:true});});
+@@ -24,14 +24,15 @@ test('native provider checks resolve native placeholders but cannot override hos
+ });
+ test('native create and proof-protected reclaim use the same configured factory and id',async()=>{
+  vi.spyOn(process,'platform','get').mockReturnValue('linux');
+  const directory=await mkdtemp(join(tmpdir(),'native-gateway-'));roots.push(directory);const id=randomUUID(),seen:string[]=[],view={run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:'coffee-simulation',backends:ids,status:'ready',runRevision:0,eventCursor:null,telemetryCursor:null,fidelity:'modeled',ageMs:0,sourceCommit:'test-commit',scenarioId:'BV01',scenarioRevision:1,seed:23},tick:0,simTimeNs:'0',model:'physics_sim',entities:[],workload:[],awaiting:[],attention:[],served:'0',coffee:null} as RunView;
+  const factory=async(i:{mode:string},providers:RunProviders)=>{seen.push(i.mode);await mkdir(providers.directory,{recursive:true});return {id,start:async()=>view,action:async()=>view,report:async()=>{throw new Error('PROTOCOL_DOUBLE_NO_REPORT');},snapshot:async()=>view,holdForReclaim:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:0,paused:true,runRevision:0})} as ScenarioRun;};
+  const options={port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:catalog(),enabledBackends:ids,simulationFactory:factory,nativeChecks:async()=>checks()}};
+  const g=await startLabGateway(options);const headers=await pair(g),r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers,body:JSON.stringify(input())});expect(r.status).toBe(201);const created=await r.json();expect(created.run.id).toBe(id);await g.close();
+  const reopened=await startLabGateway(options);gateways.push(reopened);const h=await pair(reopened),reclaim=await fetch(reopened.url+`/lab/v2/runs/${id}/reclaim`,{method:'POST',headers:h,body:JSON.stringify({proof:created.reclaimToken})});expect(reclaim.status).toBe(200);expect((await reclaim.json()).run.mode).toBe('simulation');expect(seen).toEqual(['simulation','simulation']);
+ });
+ test('native factory failure preserves its attempt journal for diagnosis',async()=>{
+- vi.spyOn(process,'platform','get').mockReturnValue('linux');const directory=await mkdtemp(join(tmpdir(),'native-attempt-'));roots.push(directory);
+- const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:catalog(),enabledBackends:ids,nativeChecks:async()=>checks(),simulationFactory:async(_input,providers)=>{await mkdir(providers.directory,{recursive:true});await writeFile(join(providers.directory,'attempt.json'),'{}');throw new Error('INITIALIZATION_FAILED');}}});gateways.push(g);
+- const response=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:await pair(g),body:JSON.stringify(input())});expect(response.status).toBe(500);const dirs=await readdir(directory);expect(dirs).toHaveLength(1);expect(await readdir(join(directory,dirs[0]!))).toContain('attempt.json');
++ vi.spyOn(process,'platform','get').mockReturnValue('linux');const directory=await mkdtemp(join(tmpdir(),'native-attempt-'));roots.push(directory);let attemptDirectory:string|undefined;
++ const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:catalog(),enabledBackends:ids,nativeChecks:async()=>checks(),simulationFactory:async(_input,providers)=>{attemptDirectory=providers.directory;await mkdir(providers.directory,{recursive:true});await writeFile(join(providers.directory,'attempt.json'),'{}');throw new Error('INITIALIZATION_FAILED');}}});gateways.push(g);
++ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
++ const response=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:await pair(g),body:JSON.stringify(input())});expect(response.status).toBe(500);expect(attemptDirectory).toBeDefined();const attempt=attemptDirectory!;expect(attempt).toBe(join(directory,basename(attempt)));expect((await readdir(directory)).sort()).toEqual([...baseline,basename(attempt)].sort());expect(await readdir(attempt)).toContain('attempt.json');
+ });
+diff --git a/tests/integration/lab-v2-readiness.test.ts b/tests/integration/lab-v2-readiness.test.ts
+index 528fbc423d1800ae1301da6714700474be49abee..c659200fdc91ec55be6a5cddd6a765881c5de5b0 100644
+--- a/tests/integration/lab-v2-readiness.test.ts
++++ b/tests/integration/lab-v2-readiness.test.ts
+@@ -46,48 +46,50 @@ test('create rechecks availability before creating any run journal',async()=>{
+ });
+ test('an available scenario can start without unrelated backends in its set',async()=>{
+  const {g,cookie,csrf}=await gateway(['mock_amr']);
+  const r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:{cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-default',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});
+  expect(r.status).toBe(201);
+  const body=await r.json();expect(body.run.backends).toEqual(['mock_amr']);
+ });
+ test('a readiness probe failure at create is rechecked and leaves no journal',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'lab-probe-'));roots.push(directory);let available=true;
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr'],readinessProbes:{world:async()=>({status:available?'ready':'blocked',reasonCodes:available?[]:['WORLD_REVISION_MISMATCH'],evidenceRef:null})}}});gateways.push(g);
++ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
+  const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})});const cookie=paired.headers.get('set-cookie')!.split(';')[0]!,csrf=(await paired.json()).csrfToken as string;
+  expect((await (await fetch(g.url+'/lab/v2/readiness?scenarioId=FD01&backendSetId=mock-amr',{headers:{cookie}})).json()).canStart).toBe(true);
+  available=false;
+  const r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:{cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':csrf},body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-amr',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});
+- expect(r.status).toBe(422);expect((await r.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');expect(await readdir(directory)).toEqual([]);
++ expect(r.status).toBe(422);expect((await r.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');expect((await readdir(directory)).sort()).toEqual(baseline);
+ });
+ test('native readiness explains actual host, model, clock and fixture dependencies without injected probes',async()=>{
+  const {g,cookie}=await gateway();const snapshot=await (await fetch(g.url+'/lab/v2/readiness?scenarioId=BV01&backendSetId=coffee-simulation',{headers:{cookie}})).json();
+  expect(snapshot.checks.map((c:{id:string})=>c.id)).toEqual(expect.arrayContaining(['host','protocol','model','clock','fixture']));
+  expect(snapshot.canStart).toBe(false);
+ });
+ test('starting a previously created ready run rechecks probes and leaves it ready if blocked',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'lab-start-probe-'));roots.push(directory);let available=true;
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr'],readinessProbes:{world:async()=>({status:available?'ready':'blocked',reasonCodes:available?[]:['WORLD_REVISION_MISMATCH'],evidenceRef:null})}}});gateways.push(g);
+  const pair=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})});const cookie=pair.headers.get('set-cookie')!.split(';')[0]!,csrf=(await pair.json()).csrfToken as string;
+  const headers={cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':csrf};
+  const created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers,body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-amr',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});expect(created.status).toBe(201);const view=await created.json();
+  available=false;const started=await fetch(g.url+`/lab/v2/runs/${view.run.id}/actions`,{method:'POST',headers,body:JSON.stringify({actionId:'start-1',expectedRevision:view.run.runRevision,kind:'start',payload:{}})});
+  expect(started.status).toBe(422);expect((await started.json()).reasonCodes).toContain('WORLD_REVISION_MISMATCH');
+  expect((await (await fetch(g.url+`/lab/v2/runs/${view.run.id}`,{headers:{cookie}})).json()).run).toMatchObject({status:'ready',eventCursor:view.run.eventCursor});
+ });
+ test('project readiness is CSRF protected and validates the caller world before any allocation',async()=>{
+  const {g,cookie,csrf,directory}=await gateway();
++ const baseline=(await readdir(directory)).sort();expect(baseline).toEqual(['.runtime-owner.sqlite']);
+  const body=JSON.stringify({scenarioId:'BV01',backendSetId:'mock-default',project:restaurant()});
+  const headers={cookie,origin:'http://127.0.0.1:4175','content-type':'application/json'};
+  expect((await fetch(g.url+'/lab/v2/readiness',{method:'POST',headers,body})).status).toBe(403);
+  const response=await fetch(g.url+'/lab/v2/readiness',{method:'POST',headers:{...headers,'x-csrf-token':csrf},body});expect(response.status).toBe(200);
+- const snapshot=await response.json();expect(snapshot.canStart).toBe(false);expect(snapshot.checks.find((c:{id:string})=>c.id==='world').status).toBe('blocked');expect(await readdir(directory)).toEqual([]);
++ const snapshot=await response.json();expect(snapshot.canStart).toBe(false);expect(snapshot.checks.find((c:{id:string})=>c.id==='world').status).toBe('blocked');expect((await readdir(directory)).sort()).toEqual(baseline);
+ });
+ test.each(['start','resume'] as const)('an accepted %s replays its receipt after readiness becomes blocked',async kind=>{
+  const directory=await mkdtemp(join(tmpdir(),'lab-retry-probe-'));roots.push(directory);let available=true;
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr'],readinessProbes:{world:async()=>({status:available?'ready':'blocked',reasonCodes:available?[]:['WORLD_REVISION_MISMATCH'],evidenceRef:null})}}});gateways.push(g);
+  const pair=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.pairingToken})});const cookie=pair.headers.get('set-cookie')!.split(';')[0]!,csrf=(await pair.json()).csrfToken as string;
+  const headers={cookie,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':csrf};
+  const created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers,body:JSON.stringify({project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:17,mode:'mock',access:'simulated',backendSetId:'mock-amr',runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)}})});expect(created.status).toBe(201);let view=await created.json();
+  const url=g.url+`/lab/v2/runs/${view.run.id}`,post=(body:unknown)=>fetch(url+'/actions',{method:'POST',headers,body:JSON.stringify(body)});
+  if(kind==='resume'){
+   view=await (await post({actionId:'initial-start',expectedRevision:view.run.runRevision,kind:'start',payload:{}})).json();

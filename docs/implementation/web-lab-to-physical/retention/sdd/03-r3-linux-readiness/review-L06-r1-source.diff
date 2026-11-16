@@ -1,0 +1,177 @@
+diff --git a/docs/operations/native-profile-case-matrix.md b/docs/operations/native-profile-case-matrix.md
+index 7df6ed5..e538d20 100644
+--- a/docs/operations/native-profile-case-matrix.md
++++ b/docs/operations/native-profile-case-matrix.md
+@@ -69,9 +69,11 @@ The example is a shape guide, not valid evidence. Roles are closed by target: Mu
+ 
+ - `historical/` is a complete original L01 record; `current/` is a complete B10 native payload/cell record. They keep different subject tuples. Both require their exact recorded checker revision on readback. `r2bQualification/`, when supplied, is the complete public R2b directory of the R3 tuple; verification delegates to `verifyR2bDirectory`, including its reviewed browser/WEB05 readers. It is never a summary substitute for native execution.
+ - `engineering/` has fixed slots `nominal-7`, `nominal-42`, `nominal-99`, `obstacle-7`, `no-path-7`, `cancel-7`, `worker-loss-7`. Each slot is the **run directory** containing `run-manifest.json`, `bundle/`, Source journal/effects, `engineering-native-evidence.json`, native inventory/events/commands and `rosbag2/`. This is usually the producer's `run-1/`, not the outer campaign envelope. Copy complete retained runs; do not edit them or synthesize case names/results.
+-- `xarm/` has fixed slots `X1-nominal`, `X1-cancel`, `X1-restart`, `X2-nominal`, `X2-cancel`, `X2-restart`, holding original L03 output directories. Required raw files include expanded URDF/mapping, observations, Source/native journals, command/outcome/lifecycle, native-started marker, bag coverage and verified bag. The slot name is checked against actual mode/case. A slot called restart still denotes the current producer's reopen-refusal probe, not a new controller-restart claim.
++- `xarm/` has fixed slots `X1-nominal`, `X1-cancel`, `X1-restart`, `X2-nominal`, `X2-cancel`, `X2-restart`, holding original L03 output directories. Required raw files include hash-bound `native-inventory.json`, expanded URDF/mapping, observations, Source/native journals, command/outcome/lifecycle, native-started marker, bag coverage and verified bag. The slot name is checked against actual mode/case. A slot called restart still denotes the current producer's reopen-refusal probe, not a new controller-restart claim.
+ - `linuxcnc/` retains `actual-joint-trace.json` and the rest of the original L04 output. The strict model/frame/unit/samples/timing validator is reused. A separate `algorithm-results.json` pass label does not override missing controller timing.
+ 
++Engineering readback correlates provider nanoseconds while validating each worker/Source origin and 20 ms tick mapping separately. Repeated worker readiness observations are allowed; receive-monotonic clocks are not compared across processes. xArm readback preserves the original unquoted integer nanosecond tokens exactly, including X1 system epoch timestamps. Its run inventory must report the selected available engineering environment, actual ISA and Ubuntu 24.04 through the shared profile reader. Consistent supplied inventory/mapping hashes do not authenticate the installed host or vendor trust.
++
+ All observed subsets are under `capabilities.observations`; `qualification:not_run` remains explicit. They do not reduce required cases. Preserve original failed/incomplete records. Readback inventories all files; symlinks, traversal and oversized evidence are refused. SQLite runs only against an owned temporary verified byte copy, never the supplied/original database; cleanup removes only that copy. Stop active writers and retain a consistent bag with the producer before transferring it. WAL recovery of original databases is not performed by this reader.
+ 
+ ## Recipient sequence
+diff --git a/scripts/r3-native-readback.mjs b/scripts/r3-native-readback.mjs
+index 1149147..1177e5a 100644
+--- a/scripts/r3-native-readback.mjs
++++ b/scripts/r3-native-readback.mjs
+@@ -11,6 +11,21 @@ import {boundedEvidenceRead as bytes,evidenceInventory} from './r2b-readback.mjs
+ export const ENGINEERING_RUNS=[... [7,42,99].map(seed=>({directory:'nominal-'+seed,nativeCase:'nominal',seed})),...['obstacle','no-path','cancel','worker-loss'].map(nativeCase=>({directory:nativeCase+'-7',nativeCase,seed:7}))];
+ export const XARM_RUNS=['X1','X2'].flatMap(mode=>['nominal','cancel','restart'].map(nativeCase=>({directory:mode+'-'+nativeCase,mode,nativeCase})));
+ const sha=b=>createHash('sha256').update(b).digest('hex'),read=(root,p)=>JSON.parse(bytes(root,p));
++// JSON.parse's source context preserves the Python producer's unquoted integer bytes.
++// Never recover nanoseconds from an already rounded JavaScript Number.
++function xarmObservation(line){
++ return JSON.parse(line,(key,value,context)=>['stampNs','clockNs'].includes(key)&&typeof value==='number'&&/^(0|[1-9][0-9]*)$/.test(context?.source??'')?BigInt(context.source):value);
++}
++function validateWorkerClock(rows){
++ let origin,last,receipt;
++ for(const r of rows){
++  if(!r||!['providerSimNs','receiveMonotonicNs'].every(k=>typeof r[k]==='string'&&/^\d+$/.test(r[k]))||!Number.isSafeInteger(r.sourceTick)||r.sourceTick<0)throw Error('R3_RAW_CLOCK_MAPPING_INVALID');
++  const ns=BigInt(r.providerSimNs),now=BigInt(r.receiveMonotonicNs);origin??=ns;
++  // Health polling emits duplicate provider times; its monotonic receipt is local to the worker.
++  if(last!==undefined&&(ns<last||now<receipt)||BigInt(r.sourceTick)!==(ns-origin)/20_000_000n)throw Error('R3_RAW_CLOCK_MAPPING_INVALID');
++  last=ns;receipt=now;
++ }
++}
+ export async function readEngineeringBag(root){
+  const all=evidenceInventory(root);if(all.some(f=>/\.db3-(wal|shm)$/.test(f.file)))throw Error('R3_BAG_SNAPSHOT_REQUIRED');
+  const entries=all.filter(f=>/^[\w.-]+\.db3$/.test(f.file));if(!entries.length)throw Error('R3_RAW_BAG_MISSING');
+@@ -40,8 +55,11 @@ export async function readEngineeringObservation(root,subject,profile){
+  const bag=await readEngineeringBag(join(root,'rosbag2'));if(!same(bag,e.bag))throw Error('R3_BAG_REPLAY_MISMATCH');
+  for(const f of evidenceInventory(join(root,'rosbag2')))if(!m.outputs.some(x=>x.path==='rosbag2/'+f.file&&x.sha256===f.sha256))throw Error('R3_BAG_NOT_BOUND');
+  const events=bytes(root,'native-events.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)),rawClock=events.filter(x=>x.event==='clock-mapping').map(x=>x.payload);
+- if(rawClock.length<2||!Array.isArray(e.clockMapping)||!e.clockMapping.every(x=>rawClock.some(y=>y.providerSimNs===x.providerSimNs&&y.sourceTick===x.sourceTick)))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
++ if(rawClock.length<2||!Array.isArray(e.clockMapping))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
++ validateWorkerClock(rawClock);
+  const assessment=api.assessEngineeringEvidence({...e,bag});if(assessment.result!=='pass')throw Error('R3_ENGINEERING_COVERAGE:'+assessment.blockers.join(','));
++ // The existing assessor validates Source's separate origin and 20 ms ticks. Only provider time crosses domains.
++ const providerTimes=new Set(rawClock.map(r=>BigInt(r.providerSimNs)));if(!e.clockMapping.every(r=>providerTimes.has(BigInt(r.providerSimNs))))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
+  const journal=read(root,'journal.json'),effects=read(root,'effects.json'),domain=journal.flatMap(x=>x.events),observedCompleted=domain.filter(x=>x.type==='RobotCommandObserved'&&x.state.status==='completed').length;
+  if(!Array.isArray(effects)||effects.some(x=>!Number.isSafeInteger(x.attempts)||x.attempts>1))throw Error('R3_COMMAND_REPLAY');
+  if(['no-path','cancel','worker-loss'].includes(e.nativeCase)){
+@@ -59,17 +77,19 @@ export async function readXarmObservation(root,subject,profile){
+  if(!Array.isArray(m.artifacts)||new Set(m.artifacts.map(f=>f.path)).size!==m.artifacts.length)throw Error('R3_XARM_ARTIFACTS');
+  for(const f of m.artifacts)if(sha(bytes(root,f.path))!==f.sha256)throw Error('R3_XARM_ARTIFACT_HASH');
+  const bags=m.artifacts.filter(f=>f.path.startsWith('verified-bag/')&&f.path.endsWith('.db3'));if(!bags.length)throw Error('R3_RAW_BAG_MISSING');
+- const required=['source-lifecycle.json','source-command.json','source-outcome.json','native-started.json','source-xarm-journal.json','native-journal.json','mapping.json','expanded.urdf','bag-coverage.json','observations.jsonl'];
++ const required=['native-inventory.json','source-lifecycle.json','source-command.json','source-outcome.json','native-started.json','source-xarm-journal.json','native-journal.json','mapping.json','expanded.urdf','bag-coverage.json','observations.jsonl'];
+  for(const path of required)if(!m.artifacts.some(f=>f.path===path))throw Error('R3_XARM_TRACE_MISSING:'+path);
++ const {validNativeProfileReport}=await import('./native-sim/profile-report.mjs'),inventory=read(root,'native-inventory.json');
++ if(inventory.available!==true||!validNativeProfileReport(inventory,m.subjectProfileId))throw Error('R3_NATIVE_PROFILE_INVENTORY');
+  const bag=await readEngineeringBag(join(root,'verified-bag'));if(!same(bag,read(root,'bag-coverage.json')))throw Error('R3_BAG_REPLAY_MISMATCH');
+  for(const topic of ['/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status',...m.mode==='X2'?['/clock']:[]])if(!bag.topics[topic]?.count)throw Error('R3_XARM_BAG_TOPIC:'+topic);
+  const {validateXarmMappingRecord}=await tsImport('../packages/lab-runtime/src/v2/sil/xarm-mapping.ts',import.meta.url),mapping=read(root,'mapping.json');
+  if(mapping.evidenceKind!==m.evidenceKind||mapping.mode!==m.mode)throw Error('R3_XARM_MAPPING_KIND');
+  validateXarmMappingRecord(bytes(root,'expanded.urdf').toString(),mapping,{sourceCommit:subject.sourceCommit,profileId:m.subjectProfileId,architecture:profile.architecture,modelSha256:profile.modelSha256});
+- const samples=bytes(root,'observations.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)).filter(x=>x.kind==='sample').map(x=>x.sample);
++ const samples=bytes(root,'observations.jsonl').toString().trim().split('\n').filter(Boolean).map(xarmObservation).filter(x=>x.kind==='sample').map(x=>x.sample);
+  if(samples.length<2)throw Error('R3_XARM_ACTUAL_SAMPLES_MISSING');
+  for(const [i,s]of samples.entries()){
+-  if(!s||!Number.isSafeInteger(s.seq)||!Number.isSafeInteger(s.stampNs)||!Number.isSafeInteger(s.clockNs)||s.stampNs<0||s.clockNs<s.stampNs||!Number.isFinite(s.receivedMs)||s.receivedMs<0||!['actualRad','commandedRad','tcpM'].every(k=>Array.isArray(s[k])&&s[k].length===(k==='tcpM'?3:6)&&s[k].every(Number.isFinite)))throw Error('R3_XARM_SAMPLE_INVALID');
++  if(!s||!Number.isSafeInteger(s.seq)||typeof s.stampNs!=='bigint'||typeof s.clockNs!=='bigint'||s.stampNs<0n||s.clockNs<s.stampNs||!Number.isFinite(s.receivedMs)||s.receivedMs<0||!['actualRad','commandedRad','tcpM'].every(k=>Array.isArray(s[k])&&s[k].length===(k==='tcpM'?3:6)&&s[k].every(Number.isFinite)))throw Error('R3_XARM_SAMPLE_INVALID');
+   if(i&&(s.seq<=samples[i-1].seq||s.stampNs<=samples[i-1].stampNs||s.clockNs<samples[i-1].clockNs||s.receivedMs<samples[i-1].receivedMs||s.bootId!==samples[0].bootId||s.epoch!==samples[0].epoch))throw Error('R3_XARM_SAMPLE_EPOCH_OR_CLOCK');
+  }
+  const start=read(root,'native-started.json'),source=read(root,'source-xarm-journal.json'),native=read(root,'native-journal.json'),command=read(root,'source-command.json').command;
+diff --git a/tests/unit/r3-native-readback.test.ts b/tests/unit/r3-native-readback.test.ts
+index b33502c..804a8d6 100644
+--- a/tests/unit/r3-native-readback.test.ts
++++ b/tests/unit/r3-native-readback.test.ts
+@@ -47,15 +47,17 @@ test('R3 arm readers reject summary-only contact, absent raw controller traces a
+  }finally{await rm(root,{recursive:true,force:true});}
+ });
+ 
+-async function xarm(){
++async function xarm(mode:'X1'|'X2'='X2'){
+  const f=await engineering(),profile=(await import('../../robotics/manipulation/profiles/xarm6-jazzy-sim.json')).default,target=(await import('../../robotics/manipulation/profiles/xarm6-native-mapping.json')).default;
+  const {cp}=await import('node:fs/promises');await cp(join(f.root,'rosbag2'),join(f.root,'verified-bag'),{recursive:true});const db=new DatabaseSync(join(f.root,'verified-bag/observations.db3'));
+  const topics=['/clock','/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status'];for(const [i,topic]of topics.entries())db.prepare('UPDATE topics SET name=? WHERE id=?').run(topic,i);db.close();await f.put('bag-coverage.json',await readEngineeringBag(join(f.root,'verified-bag')));
+- const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');await f.put('expanded.urdf',xml);
+- const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const mapping={...validateXarmUrdf(xml,'X2'),producer:'native_xarm.robot_description.v1',sourceCommit:commit,subjectProfileId:'engineering-amd64',environmentProfile:'engineering-amd64',sourceModelSha256:target.sourceModelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector,evidenceKind:profile.modes.X2.evidenceKind,controller:{joints:profile.jointMap.map(j=>j.native),commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot name="unit"/>'}};await f.put('mapping.json',mapping);
+- const command={commandId:'c1',runId:'xarm-X2-nominal'},sample=(i:number)=>({seq:i+1,bootId:'boot',epoch:1,receivedMs:1000+i*100,stampNs:1000000000+i*100000000,clockNs:1000000000+i*100000000,actualRad:[0,0,-1,0,0,0],commandedRad:[0,0,-1,0,0,0],tcpM:[0,0,0]});
+- await f.put('observations.jsonl',[0,1].map(i=>JSON.stringify({kind:'sample',sample:sample(i)})).join('\n'));await f.put('source-command.json',{command,ack:{accepted:true,unknown:false}});await f.put('source-outcome.json',{status:'completed'});await f.put('source-lifecycle.json',{startup:'ready'});await f.put('native-started.json',{runId:command.runId,mode:'X2'});await f.put('native-journal.json',{runId:command.runId,bootId:'boot',epoch:1,evidenceKind:profile.modes.X2.evidenceKind,receipts:{c1:{hash:hashJson(command),status:'completed'}}});await f.put('source-xarm-journal.json',{runId:command.runId,mode:'X2',evidenceKind:profile.modes.X2.evidenceKind,receipts:[{command,status:'completed'}]});
+- const m:Doc={sourceCommit:commit,dirty:false,targetProfileId:profile.id,subjectProfileId:'engineering-amd64',profileHash:hashJson(profile),accepted:false,mode:'X2',nativeCase:'nominal',evidenceKind:profile.modes.X2.evidenceKind};
++ let xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
++ if(mode==='X1')xml=xml.replaceAll('file://'+profile.descriptionShare,'package://xarm_description').replaceAll(profile.modes.X2.plugin,profile.modes.X1.plugin).replace(/<gazebo><plugin filename="gz_ros2_control-system"[^]*?<\/plugin><\/gazebo>/,'');
++ await f.put('expanded.urdf',xml);
++ const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const mapping={...validateXarmUrdf(xml,mode),producer:'native_xarm.robot_description.v1',sourceCommit:commit,subjectProfileId:'engineering-amd64',environmentProfile:'engineering-amd64',sourceModelSha256:target.sourceModelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector,evidenceKind:profile.modes[mode].evidenceKind,controller:{joints:profile.jointMap.map(j=>j.native),commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot name="unit"/>'}};await f.put('mapping.json',mapping);
++ const command={commandId:'c1',runId:'xarm-'+mode+'-nominal'},sample=(i:number)=>({seq:i+1,bootId:'boot',epoch:1,receivedMs:1000+i*100,stampNs:1000000000+i*100000000,clockNs:1000000000+i*100000000,actualRad:[0,0,-1,0,0,0],commandedRad:[0,0,-1,0,0,0],tcpM:[0,0,0]});
++ await f.put('observations.jsonl',[0,1].map(i=>JSON.stringify({kind:'sample',sample:sample(i)})).join('\n'));await f.put('source-command.json',{command,ack:{accepted:true,unknown:false}});await f.put('source-outcome.json',{status:'completed'});await f.put('source-lifecycle.json',{startup:'ready'});await f.put('native-started.json',{runId:command.runId,mode});await f.put('native-journal.json',{runId:command.runId,bootId:'boot',epoch:1,evidenceKind:profile.modes[mode].evidenceKind,receipts:{c1:{hash:hashJson(command),status:'completed'}}});await f.put('source-xarm-journal.json',{runId:command.runId,mode,evidenceKind:profile.modes[mode].evidenceKind,receipts:[{command,status:'completed'}]});
++ const m:Doc={sourceCommit:commit,dirty:false,targetProfileId:profile.id,subjectProfileId:'engineering-amd64',profileHash:hashJson(profile),accepted:false,mode,nativeCase:'nominal',evidenceKind:profile.modes[mode].evidenceKind};
+  const seal=async()=>{m.artifacts=evidenceInventory(f.root).filter((r:Doc)=>r.file!=='run-manifest.json').map((r:Doc)=>({path:r.file,sha256:r.sha256}));await f.put('run-manifest.json',m);};await seal();return {...f,m,mapping,seal,profile:{architecture:'amd64',modelSha256:target.sourceModelSha256}};
+ }
+ test('R3 xArm reader recomputes pinned model and raw sample coverage while preserving unqualified native scope',async()=>{
+@@ -74,3 +76,69 @@ test('R3 LinuxCNC validates the exact supplied actual-joint format but never pro
+   trace.model.id='xarm6';await writeFile(join(root,'actual-joint-trace.json'),JSON.stringify(trace));await expect(readLinuxcncObservation(root,{sourceCommit:commit})).rejects.toThrow('PUMA_MODEL_FRAME_HASH_MISMATCH');
+  }finally{await rm(root,{recursive:true,force:true});}
+ });
++
++// Portable producer-shaped protocol fixtures; these do not claim ROS execution.
++const epochNs=1_789_999_999_123_456_789n;
++async function putEpochSamples(f:Awaited<ReturnType<typeof xarm>>,values:{stamp:bigint;clock:bigint}[]){
++ const original=(await readFile(join(f.root,'observations.jsonl'),'utf8')).split('\n').map(line=>JSON.parse(line));
++ const lines=values.map((v,i)=>JSON.stringify({...original[i],sample:{...original[i].sample,stampNs:'STAMP_TOKEN',clockNs:'CLOCK_TOKEN'}}).replace('"STAMP_TOKEN"',String(v.stamp)).replace('"CLOCK_TOKEN"',String(v.clock)));
++ await f.put('observations.jsonl',lines.join('\n'));await f.seal();
++}
++test('I1 X1 admits exact adjacent epoch nanoseconds from unquoted producer integer tokens',async()=>{
++ const f=await xarm('X1');try{
++  await putEpochSamples(f,[{stamp:epochNs,clock:epochNs+100n},{stamp:epochNs+1n,clock:epochNs+101n}]);
++  const before=await readFile(join(f.root,'observations.jsonl'));
++  expect(await readXarmObservation(f.root,{sourceCommit:commit},f.profile)).toMatchObject({mode:'X1',sampleCoverage:'tested',qualification:'not_run'});
++  expect(await readFile(join(f.root,'observations.jsonl'))).toEqual(before);
++ }finally{await f.cleanup();}
++});
++test.each(['stamp reset','stamp repeat','clock reset','clock behind stamp'])('I1 X1 refuses exact adjacent epoch %s after valid mapping and inventory',async mutation=>{
++ const f=await xarm('X1');try{
++  const values=[{stamp:epochNs,clock:epochNs+100n},{stamp:epochNs+1n,clock:epochNs+101n}];
++  if(mutation==='stamp reset')values[1]!.stamp=epochNs-1n;
++  if(mutation==='stamp repeat')values[1]!.stamp=epochNs;
++  if(mutation==='clock reset')values[1]!.clock=epochNs+99n;
++  if(mutation==='clock behind stamp')values[1]!.clock=epochNs;
++  await putEpochSamples(f,values);
++  await expect(readXarmObservation(f.root,{sourceCommit:commit},f.profile)).rejects.toThrow(mutation==='clock behind stamp'?'R3_XARM_SAMPLE_INVALID':'R3_XARM_SAMPLE_EPOCH_OR_CLOCK');
++ }finally{await f.cleanup();}
++});
++async function independentClocks(f:Awaited<ReturnType<typeof engineering>>){
++ const e=JSON.parse(await readFile(join(f.root,'engineering-native-evidence.json'),'utf8'));
++ e.clockMapping=[{providerSimNs:'1500000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:25,receiveMonotonicNs:'500000100'}];
++ // Repeated raw health calls during readiness and after subscription; worker and Source receive domains differ.
++ const raw=[1000000000,1000000000,1500000000,1500000000,2000000000].map((ns,i)=>({providerSimNs:String(ns),sourceTick:(ns-1000000000)/20000000,receiveMonotonicNs:String(9000000000+i*100000000)}));
++ return {e,raw,save:async()=>{await f.put('engineering-native-evidence.json',e);await f.put('native-events.jsonl',raw.map(payload=>JSON.stringify({event:'clock-mapping',payload})).join('\n'));await f.seal();}};
++}
++test('I2 engineering correlates provider time across independent origins and repeated raw readiness observations',async()=>{
++ const f=await engineering();try{const c=await independentClocks(f);await c.save();expect(await readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).toMatchObject({rawCoverage:'tested',qualification:'not_run'});}finally{await f.cleanup();}
++});
++test.each(['missing provider','worker tick','worker origin','worker reset','worker receipt reset','source tick','source origin','source receipt reset'])('I2 engineering refuses inconsistent %s with coherent artifact hashes',async mutation=>{
++ const f=await engineering();try{
++  const c=await independentClocks(f);
++  if(mutation==='missing provider')c.raw.splice(2,2);
++  if(mutation==='worker tick')c.raw[2]!.sourceTick++;
++  if(mutation==='worker origin')c.raw.forEach(r=>r.sourceTick++);
++  if(mutation==='worker reset'){c.raw[3]!.providerSimNs='1000000000';c.raw[3]!.sourceTick=0;}
++  if(mutation==='worker receipt reset')c.raw[3]!.receiveMonotonicNs='1';
++  if(mutation==='source tick')c.e.clockMapping[1].sourceTick++;
++  if(mutation==='source origin')c.e.clockMapping.forEach((r:Doc)=>r.sourceTick++);
++  if(mutation==='source receipt reset')c.e.clockMapping[1].receiveMonotonicNs='1';
++  await c.save();await expect(readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).rejects.toThrow(mutation==='missing provider'?'R3_RAW_CLOCK_MAPPING_MISSING':mutation.startsWith('worker')?'R3_RAW_CLOCK_MAPPING_INVALID':'CLOCK_MAPPING_INVALID');
++ }finally{await f.cleanup();}
++});
++test.each(['missing','unavailable','wrong ISA','wrong OS','wrong environment','unbound','wrong hash'])('I3 xArm refuses %s run inventory after valid X2 admission',async mutation=>{
++ const f=await xarm();try{
++  expect(await readXarmObservation(f.root,{sourceCommit:commit},f.profile)).toMatchObject({mode:'X2',sampleCoverage:'tested',qualification:'not_run'});
++  if(mutation==='missing')await rm(join(f.root,'native-inventory.json'));
++  if(mutation==='unavailable'){f.inventory.available=false;f.inventory.reasonCodes=['INVENTORY_UNRESOLVED'];}
++  if(mutation==='wrong ISA')f.inventory.actual.arch='arm64';
++  if(mutation==='wrong OS')f.inventory.actual.os='ubuntu22.04';
++  if(mutation==='wrong environment')f.inventory.id='engineering-arm64';
++  if(!['missing','unbound','wrong hash'].includes(mutation))await f.put('native-inventory.json',f.inventory);
++  await f.seal();
++  if(mutation==='unbound'){f.m.artifacts=f.m.artifacts.filter((a:Doc)=>a.path!=='native-inventory.json');await f.put('run-manifest.json',f.m);}
++  if(mutation==='wrong hash')await f.put('native-inventory.json',{...f.inventory,available:false});
++  await expect(readXarmObservation(f.root,{sourceCommit:commit},f.profile)).rejects.toThrow(['missing','unbound'].includes(mutation)?'R3_XARM_TRACE_MISSING:native-inventory.json':mutation==='wrong hash'?'R3_XARM_ARTIFACT_HASH':'R3_NATIVE_PROFILE_INVENTORY');
++ }finally{await f.cleanup();}
++});

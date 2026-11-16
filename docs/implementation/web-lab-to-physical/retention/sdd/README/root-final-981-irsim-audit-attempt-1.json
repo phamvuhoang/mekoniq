@@ -1,0 +1,6 @@
+{
+  "ownExitCode": 1,
+  "commandChunk": "495e8c",
+  "cause": "Root incorrectly required campaign.evidenceComplete true. Actual summary is false because IR10 worker-kill intentionally records a gap, with evidenceAsExpected true; batch.ts:122,136,209,319 and unchanged irsim-batch.test.ts:47-48 expressly preserve this distinction.",
+  "disposition": "Correct audit to verify exact declared fault gap. No product/evidence modification or tests rerun."
+}

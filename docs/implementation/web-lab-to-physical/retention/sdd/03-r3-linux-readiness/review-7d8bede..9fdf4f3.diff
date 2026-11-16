@@ -1,0 +1,764 @@
+# Review package: 7d8bededd7b0ca57984d6f0d000eaa74ddea839d..9fdf4f382c19d6dbbc3cf64c231561ced71e786d
+
+## Commits
+9fdf4f3 docs: prepare both physical arm commissioning paths
+
+## Files changed
+ docs/operations/arm-commissioning-preparation.md   |  70 ++++
+ docs/operations/physical-target-selection.md       |  72 ++++
+ docs/operations/robot-commissioning.md             |   2 +
+ .../schemas/physical-target-dossier-v1.schema.json | 384 +++++++++++++++++++++
+ .../src/commissioning/target-dossier.ts            |  28 ++
+ tests/fixtures/physical-target-dossier.ts          |  10 +
+ tests/security/physical-target-admission.test.ts   |  70 ++++
+ tests/unit/physical-target-dossier.test.ts         |  54 +++
+ 8 files changed, 690 insertions(+)
+
+## Diff
+diff --git a/docs/operations/arm-commissioning-preparation.md b/docs/operations/arm-commissioning-preparation.md
+new file mode 100644
+index 0000000..b9b718d
+--- /dev/null
++++ b/docs/operations/arm-commissioning-preparation.md
+@@ -0,0 +1,70 @@
++# Arm commissioning preparation
++
++This is a preparation checklist for both `xarm_ros2` and `custom_linuxcnc`. No robot, host or vendor interface has been assigned. Neither branch earns physical qualification from these documents, doubles, simulation signatures or the target dossier. G-HW, native, calibration and venue gates remain open; automatic records stay `accepted:false`. Dynamics remain `not_calibrated` until measured evidence supports a narrowly stated calibrated capability.
++
++Begin with the [physical target dossier](physical-target-selection.md). Its references may become structurally complete without their claims being true. Review actual retained evidence independently. Existing `tests/hardware/commissioning.py` and `mekoniq_agent.protocol.verify_es256` remain authoritative for the earned **chassis** validation ladder. Arm document validation is separate and grants no admission; a real arm record/admission authority needs its own reviewed driver task after hardware selection. Test-only keys never sign a live manifest.
++
++## Before any physical execution
++
++1. The user assigns the specific hardware, host, venue, scope and responsible operator. Record actual vendor/model/controller/serial, exact firmware/SDK and tool, not the L03 simulation selector or PUMA SIM profile. Select the matching dossier branch and retain both alternatives in the decision history.
++2. Obtain supplier manuals, source-backed interfaces, compatibility, licence/NOTICE, installation and service material. Every electrical pin/register and operating limit needs a vendor document or measurement and an accountable owner. No guessed defaults are allowed. Keep secrets outside version control and Lab.
++3. Resolve the native branch's outstanding host/package/provenance requirements using [xArm native SIM](xarm-native-sim.md) or [LinuxCNC native SIM](linuxcnc-native-sim-handoff.md). Native simulation remains a separate gate from hardware. An installed lock, protocol double or Mac/Linux container cannot substitute for actual native observations.
++4. Implement and review a **separate physical driver task** through Source/coordinator → robotics agent/cell gateway → vendor/controller. Bind physical identity, owner/boot/control epochs and the earned commissioning record at this boundary. Lab retains only simulation/replay, with no physical credential, device/network route, or hardware backend toggle.
++5. Establish vendor/operator motion, joint, speed, force, torque, payload and stop limits **before motion**. Prepare the independent local stop, energy isolation, cleared test area, fixture security, qualified observer and manual recovery procedure under [safety handoff](safety-handoff.md). Record instrument uncertainty and predeclare tolerances; the repository supplies no runnable physical limits.
++6. Obtain execution-specific authorization and reviewed evidence/signature custody. Automatic results remain unaccepted. A human decision is a separate sidecar bound to raw evidence hashes, profile, subject commit and exact scope. A dossier's `signature` field references that process; assessment never verifies the signature.
++
++The existing chassis `active-motion` entrypoint still refuses without explicit target/observer/test-area. Even with those arguments it refuses with `VENDOR_INTERFACE_NOT_PROVIDED`. No arm path bypasses that refusal or causes motion in this task.
++
++## Physical adapter conformance plan
++
++Run doubles first to check the contract, then repeat applicable cases under separately authorized, supervised hardware execution with fresh evidence directories. Keep each command argv, own exit status, subject/producer/checker identity, byte hashes and failed attempts. A double result is portable contract evidence only.
++
++| Case | Contract and required observations |
++| --- | --- |
++| Command identity/idempotency | Source and gateway persist intent before transport; bind command/run/payload hashes. Repeated identical ID returns its original receipt without a second effect; conflicting reuse is refused. One ACK is in flight. Capture SDK/controller goal IDs where available |
++| Owner lease | One active physical command owner. Reject wrong, expired or revoked owner before I/O. Document the actual controller-side enforcement; process observations alone do not prove an atomic fence |
++| Boot/control epoch | Bind controller boot identity and Source control epoch. Reject stale/wrong epochs; changed identity latches unknown. A process restart cannot silently continue the same run |
++| Deadline | Bound dispatch/ACK/result/cancel deadlines from the reviewed physical policy. Expired commands never move. Late messages remain tied to their original command and do not revive a closed run |
++| Freshness | Separate actual feedback from commanded setpoints, clock domains, source sequence and host receive bracket. Reject stale/out-of-order/foreign feedback. Terminal success requires authoritative result plus fresh observed actual state; transport ACK is insufficient |
++| Disconnect or lost ACK/result | Latch unknown; persist uncertainty and original receipt. No automatic resend, respawn, reconnect-to-continue, or same-run resume. Reconnection alone does not complete motion |
++| Local stop | Request stop while confirming the independent physical stop path separately. ACK/cancel acceptance is not a stopped observation. Measure physical stopping evidence under the approved test plan; software never certifies the safety stop |
++| Manual recovery | Operator isolates/inspects hardware, reconciles actual state and ownership, records observer decision, and explicitly authorizes a fresh run/epoch. Reset of an independent stop remains a controller/operator action |
++
++xArm needs actual SDK/controller capability coverage for command/query/cancel/stop and physical tool identity; fixed directFJT simulation motion cannot establish collision-planned hardware behavior. Custom/PUMA needs source-backed drive/feedback/homing/limit topology, actual measured kinematics and controller-side command semantics. LinuxCNC epoch guards are identity observations; the guard-to-NML-write race requires native/physical evidence and a reviewed fencing design. Do not claim the present SIM gateway is a physical driver.
++
++## Measured calibration and validation
++
++Use the existing `engineering-calibration.schema.json`, `assessCalibration(dataset,prediction)` in `packages/lab-runtime/src/engineering/calibration.ts`, and `PredictionSeries` contract. These tools compare measured channels under a declared policy; they do not commission a robot or verify physical safety.
++
++1. Freeze the exact model/config digest, Source revision, controller/firmware/SDK, actual machine/tool revision and placement. Retain base→flange→TCP and world/cell transforms, joint order/sign/offsets, frame names, SI conversion provenance and uncertainties in a hash-bound companion measurement record. Dataset units must match prediction units exactly; the evaluator assumes no conversion or frame equivalence. Keep custom/PUMA raw inches/degrees and converted metres/radians separately where applicable.
++2. Use calibrated real instruments. Preserve instrument ID/revision, measurement method/operator/date, raw files and `rawDigest`. Set dataset `sourceKind:"measured"` only for actual measurements. Simulated/synthetic fixtures, nominal mass/inertia and reference FK cannot become measured evidence by changing a label.
++3. Predeclare conditions, channels, absolute/relative tolerances, uncertainty budget, clock domain/mapping, timestamp origin, mapping uncertainty and maximum clock gap. Supplier/hardware/operator owners establish all operational limits before collection. Retain controller sample time where actually available; host receive brackets, `cycle_time`, ACK serial numbers and UI pacing do not supply missing synchrony.
++4. Separate tuning from validation before fitting. Use distinct trial IDs and raw recordings. Freeze the tuned model before collecting at least **three independent validation trials per condition**; set `policy.minTrialsPerCondition` to at least 3 for this commissioning procedure. The general calibration schema allows smaller policies for other uses, so the operator/reviewer must enforce this procedure's floor. Enumerate every planned condition and verify coverage manually; a wholly omitted condition cannot be detected by counting present trials. Repeated rows, overlapping recording windows, copied traces and duplicate tune/validation trials are not independent trials.
++5. Supply measured channels and aligned timestamps for every validation trial; retain predictions for the identical frozen digest. Check uncertainty against tolerances, units, clocks and interpolation gaps. The evaluator rejects simulated/synthetic data, digest/unit/clock mismatch, split leakage, empty or insufficient validation data and unsupported extrapolation/gaps. Inspect each residual and domain; do not infer synchronized tracking accuracy from unsynchronized command/actual fields.
++6. Review raw evidence, timing monotonicity, frame transformations, condition coverage and trial independence outside the structural evaluator. Record excluded/failed trials with reasons. Model, tool, fixture, firmware, controller or calibration changes invalidate the relevant evidence and require fresh scoped validation; never retune against held-out trials and reuse their pass.
++7. Retain dataset, prediction, raw/companion hashes, policy, assessment, command exits, instrument/operator/observer identities and model revision. State which capability/domain is supported. Leave dynamics outside that domain `not_calibrated`. This numerical/calibration result does not close G-HW, local-stop, controller admission or venue acceptance.
++
++## Handoff for eventual execution
++
++The recipient should be able to identify the selected machine and why it was chosen, retrieve every vendor/measurement reference, find unresolved prerequisites and their owners, and name the separate driver/admission task. Record native terminal/GUI/controller restart/tunnel loss/contact/timing/Cartesian cases as `not_run`/`blocked_external` until performed on assigned targets. Preserve all unsuccessful attempts and historical qualification records; never rewrite an old candidate to make a gate pass. Any retained SQLite is a verified copy, never the original recording. Keep Docker R76 no-retry until the final B10 prerequisite.
++
++Portable preparation checks from Source use Node 24.22.2 / pnpm 10.32.1 and Python 3.11. On a fresh checkout, provision a separate test environment first (these are operator setup commands, not runtime downloads):
++
++```sh
++python3.11 -m venv .venv-commissioning
++.venv-commissioning/bin/python -m pip install 'jsonschema==4.26.0' 'rfc8785==0.1.4' 'rfc3339-validator==0.1.4' 'six==1.17.0' 'pytest==9.2.0'
++export MEKONIQ_COMMISSIONING_PYTHON="$PWD/.venv-commissioning/bin/python"
++```
++
++These are the dependency versions used by the portable checks; they do not resolve a native/vendor lock. The test imports the repository agent through `PYTHONPATH`, uses its existing verifier, and fails on a missing interpreter/dependency. It never silently skips commissioning coverage. A pre-provisioned equivalent Python 3.11 environment can be assigned explicitly. Then run:
++
++```sh
++export PYTHONDONTWRITEBYTECODE=1
++export PYTEST_ADDOPTS='-p no:cacheprovider'
++export MEKONIQ_COMMISSIONING_PYTHON='<absolute Python 3.11 interpreter with commissioning dependencies>'
++perl -e 'alarm 300; exec @ARGV' pnpm exec vitest run tests/unit/physical-target-dossier.test.ts tests/security/physical-target-admission.test.ts
++PYTHONPATH=robotics/agent:tests/hardware perl -e 'alarm 300; exec @ARGV' "$MEKONIQ_COMMISSIONING_PYTHON" -m pytest tests/hardware/test_profile_validation.py -q
++perl -e 'alarm 300; exec @ARGV' pnpm contracts:check
++```
++
++These are validator/protocol refusals and test-only signatures. They open no physical connection, commission no robot and sign no live manifest.
+diff --git a/docs/operations/physical-target-selection.md b/docs/operations/physical-target-selection.md
+new file mode 100644
+index 0000000..8b3ca8b
+--- /dev/null
++++ b/docs/operations/physical-target-selection.md
+@@ -0,0 +1,72 @@
++# Physical target selection dossier
++
++PHYS-PREP-01 prepares a decision and its missing evidence. The target remains **undecided**. No physical driver, hardware admission, operational limits or commissioning signature is supplied by this task. G-HW, measured calibration, native qualification and venue acceptance remain open. Automatic candidates remain `accepted:false`; dynamics remain `not_calibrated`.
++
++`packages/contracts/schemas/physical-target-dossier-v1.schema.json` is an additive document schema. The read-only `assessTargetDossier(value)` in `packages/lab-runtime/src/commissioning/target-dossier.ts` returns `{structurallyValid, readiness, missing, branchRequirements}`. `prepared` means complete sourced references, including references to measurement and signing arrangements. It does not open or authenticate those references, verify a signature, establish measurement quality, or change validation rank. It emits no manifest, `live` capability or admission decision. No runtime route consumes readiness.
++
++## Start a dossier
++
++Copy this template into a new decision record outside historical evidence. Null means missing; do not replace it with guessed values. The template contains no operational register, pinout, speed or force defaults.
++
++```json
++{
++  "schemaVersion": 1,
++  "targetKind": "undecided",
++  "branch": null,
++  "profileId": null,
++  "identity": {"vendor": null, "model": null, "firmware": null, "sdk": null, "serial": null},
++  "modelRevision": null,
++  "prerequisites": {
++    "host": null, "controller": null, "tool": null,
++    "safety": null, "latency": null, "maintenance": null,
++    "calibration": null, "observer": null, "signature": null,
++    "vendorInterface": null, "operatingLimits": null, "conformance": null
++  }
++}
++```
++
++A non-null reference has exactly `value`, `sourceKind` (`vendor`, `measurement` or `owner`), `sourceRef`, and `owner`. `sourceRef` identifies a retained, revisioned document/measurement section and its digest; `owner` names the accountable person. `value` is the asserted identity or a concise description of the referenced prerequisite. Identity accepts only vendor or measurement sources; calibration and latency require measurement sources. Unknown/TBD values stay incomplete. A source kind is an assertion, not proof of authenticity. Actual evidence review remains mandatory even when assessment says prepared.
++
++| Field | Required retained material; supplier/measurement/owner responsibility |
++| --- | --- |
++| identity.vendor/model | Supplier declaration and observed nameplate/readback, model revision, document SHA256 and licence/NOTICE where redistributed |
++| identity.firmware/sdk | Exact controller firmware and SDK versions/commit, compatibility matrix, installed identity and vendor source |
++| identity.serial | Actual device/controller serial read from assigned hardware; owner records method/date. The L03 synthetic selector `XI13050520BB00` cannot fill this field |
++| modelRevision | Exact model/config hashes and Source subject commit; joint order/signs/offsets, SI units, frame/tool revision and measured placement |
++| host | Assigned OS/ISA/host owner, native inventory, installed binary/plugin identities and package/source/trust evidence |
++| controller | Actual controller/drive topology, boot/control identity mechanism, supported command/query/stop semantics and owner |
++| tool | Actual flange/TCP/gripper/tool identity, payload/COM, measurement revision and vendor attachment limits |
++| safety | Independent local stop/watchdog, test area, interlocks, risk assessment and accountable operator; supplier and measured evidence |
++| latency | Measured command/ACK/feedback/stop timings, uncertainty, clock mapping, faults and predeclared acceptance policy |
++| maintenance | Supplier support/spares, firmware changes, recovery/backup/restore and requalification responsibilities |
++| calibration | Measured calibration dataset/raw-data hash, policy, held-out trials and report under the existing calibration protocol |
++| observer | Explicit qualified observer, scope/availability and test-area approval for each planned execution |
++| signature | Commissioning authority/key custody and intended signed-record reference; no private key or fabricated signature belongs in a dossier |
++| vendorInterface | Supplier-sourced physical driver contract, installation/compatibility and licence review; separate implementation task |
++| operatingLimits | Hardware/vendor/operator-established joint, speed, force, torque, load and stop limits, with measurement/source and owner; unresolved before motion |
++| conformance | Planned or retained adapter conformance cases and raw receipt references; distinguish doubles from actual hardware |
++
++Selecting an arm sets `targetKind:"arm"`, `branch:"xarm_ros2"` with `profileId:"arm-xarm-dossier-v1"`, or `branch:"custom_linuxcnc"` with `profileId:"arm-custom-dossier-v1"`. These two profile IDs identify **dossier document kinds only**. They are not executable hardware or simulator profiles and do not imply a physical profile exists. A selected chassis sets `targetKind:"chassis"`, `branch:null` and the existing `wheeltec-s100` or `zltech-differential` profile ID. Its commissioning record must still validate against `robotics/hardware/profiles/<profile>.schema.json` and the [existing Python authority](robot-commissioning.md). Never send arm dossiers to a chassis schema or replace chassis evidence with dossier readiness. Undecided returns both branch requirement lists, in xArm then custom order.
++
++## Compare both arm branches before selecting
++
++| Decision | xArm / xarm_ros2 | Custom or PUMA / custom_linuxcnc |
++| --- | --- | --- |
++| Host | Qualify the assigned Linux/ROS distribution, architecture and installed vendor/ROS stack separately from simulation locks | Qualify assigned Debian/ISA, LinuxCNC package/source/trust and controller hardware separately from SIM |
++| Controller | Confirm exact vendor controller, firmware/SDK, authenticated physical connection, actual serial and supported query/cancel/stop behavior | Identify drives, feedback, homing, watchdog, limits, controller cycle and source-backed wiring; measured machine kinematics may differ from PUMA reference |
++| Tool and process | Confirm actual end effector, TCP/payload/COM and collision/attachment assumptions | Measure actual tool/flange, joint order/signs/zero offsets, base placement and payload/COM; do not import SIM tool offsets as measurements |
++| Safety | Supplier and operator establish independent local stop, permitted motion envelope, speed/force/load and supervised procedure | Machine builder/operator establish independent drive/energy stop, physical limits, interlocks and manual recovery |
++| Latency and faults | Measure actual SDK/controller feedback/ACK/stop behavior; simulation polling bounds do not qualify hardware | Measure controller/drive feedback and clock/synchrony; host receive brackets are not controller timestamps |
++| Maintenance | Evaluate SDK/firmware support, upgrade compatibility, spares and restoration | Evaluate builder ownership, electrical/drive documentation, spares, recovery and ongoing machine calibration |
++
++Record costs, constraints, source documents, missing vendor responses and accountable owners for both branches. Keep `targetKind:undecided` until the user assigns hardware and the decision has evidence. This runbook chooses neither branch for the user.
++
++## Existing producers and unresolved gates
++
++[L00 native handoff](native-simulation-handoff.md) binds model/profile/provenance and supplied prerequisites; it is not physical qualification. Keep Source subject, producer, checker, Lab publication and pinned runtime identities separate, with byte digests and retained command exits.
++
++[L03 xArm preparation](xarm-native-sim.md) provides fixed **simulation** probes. X1/X2/X3 native qualification is incomplete under R88. `syntheticSimModelSelector` is exclusively a simulation xacro selector, never a physical serial. The same-run reopen refusal does not demonstrate a controller restart. Direct FollowJointTrajectory does not establish collision planning. G2 contact/plugin behavior, installed provenance and physical identity remain independent prerequisites.
++
++[L04 LinuxCNC preparation](linuxcnc-native-sim-handoff.md) exposes `validateLinuxcncTrace` / `runLinuxcncAlg04` and the additive `lab-algorithm.mjs linuxcnc` consumer. Raw actual and desired degrees, converted SI and receive brackets remain distinct from unavailable controller clocks/synchrony. FK parity at supplied actual joints establishes numerical model consistency, not measured controller accuracy. Epoch observations do not prove atomic controller fencing. Native terminal/GUI/trust/timing/Cartesian/security and hardware qualification remain unexecuted; the deferred trace/oracle capacity limitation remains a separate L04 issue. Immutable native scripts/packaging belong to nativeTools under R89; generated traces belong to evidence.
++
++After hardware selection, commission a separate physical-driver and admission-authority task against the exact vendor/controller contract. See [arm commissioning preparation](arm-commissioning-preparation.md). Source/coordinator → robotics agent or cell gateway → vendor/controller is the physical path. Source owns mission, journal and custody. Lab remains simulation/replay, with no real credential, device/network route or backend toggle to hardware.
+diff --git a/docs/operations/robot-commissioning.md b/docs/operations/robot-commissioning.md
+index 8e0e888..025e773 100644
+--- a/docs/operations/robot-commissioning.md
++++ b/docs/operations/robot-commissioning.md
+@@ -41,10 +41,12 @@ A household vacuum (Valetudo) has no chassis profile (`PROFILE_UNKNOWN`) and its
+ 
+ ```sh
+ .venv/bin/python tests/hardware/commissioning.py validate record.json --target-payload-kg 20 --capability delivery --key commissioning.public.jwk.json
+ ```
+ 
+ The CLI is read-only: it reads files and prints a verdict (exit 0 only with no reasons). `active-motion` exists only to refuse: it needs `--target`, `--observer` and `--test-area` given at execution, and even then it stops with `VENDOR_INTERFACE_NOT_PROVIDED` because no vendor interface exists here.
+ 
+ ## Limits
+ 
+ A passing test here proves the validator's rules on synthetic data. It is not a measurement, not a payload or safety result, and not a safety certification. Simulation (Gazebo, `geometry_sim.yaml`) never proves load or safety.
++
++For arm target selection and prerequisite documents, see [arm commissioning preparation](arm-commissioning-preparation.md). Arm dossiers grant no chassis or arm admission.
+diff --git a/packages/contracts/schemas/physical-target-dossier-v1.schema.json b/packages/contracts/schemas/physical-target-dossier-v1.schema.json
+new file mode 100644
+index 0000000..6ab5ea9
+--- /dev/null
++++ b/packages/contracts/schemas/physical-target-dossier-v1.schema.json
+@@ -0,0 +1,384 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "https://mekoniq.app/schemas/physical-target-dossier-v1.schema.json",
++  "title": "PhysicalTargetDossierV1",
++  "description": "Preparation references only. Does not verify evidence, signatures, hardware admission or motion limits. Dossier profile IDs for arms are document kinds, never executable profiles.",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schemaVersion",
++    "targetKind",
++    "branch",
++    "profileId",
++    "identity",
++    "modelRevision",
++    "prerequisites"
++  ],
++  "properties": {
++    "schemaVersion": {
++      "const": 1
++    },
++    "targetKind": {
++      "enum": [
++        "undecided",
++        "arm",
++        "chassis"
++      ]
++    },
++    "branch": {
++      "enum": [
++        null,
++        "xarm_ros2",
++        "custom_linuxcnc"
++      ]
++    },
++    "profileId": {
++      "enum": [
++        null,
++        "arm-xarm-dossier-v1",
++        "arm-custom-dossier-v1",
++        "wheeltec-s100",
++        "zltech-differential"
++      ]
++    },
++    "identity": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "vendor",
++        "model",
++        "firmware",
++        "sdk",
++        "serial"
++      ],
++      "properties": {
++        "vendor": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/identityReference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "model": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/identityReference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "firmware": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/identityReference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "sdk": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/identityReference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "serial": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/identityReference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        }
++      }
++    },
++    "modelRevision": {
++      "anyOf": [
++        {
++          "$ref": "#/definitions/reference"
++        },
++        {
++          "type": "null"
++        }
++      ]
++    },
++    "prerequisites": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "host",
++        "controller",
++        "tool",
++        "safety",
++        "latency",
++        "maintenance",
++        "calibration",
++        "observer",
++        "signature",
++        "vendorInterface",
++        "operatingLimits",
++        "conformance"
++      ],
++      "properties": {
++        "host": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "controller": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "tool": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "safety": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "latency": {
++          "anyOf": [
++            {
++              "type": "object",
++              "allOf": [
++                {
++                  "$ref": "#/definitions/reference"
++                }
++              ],
++              "properties": {
++                "sourceKind": {
++                  "const": "measurement"
++                }
++              }
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "maintenance": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "calibration": {
++          "anyOf": [
++            {
++              "type": "object",
++              "allOf": [
++                {
++                  "$ref": "#/definitions/reference"
++                }
++              ],
++              "properties": {
++                "sourceKind": {
++                  "const": "measurement"
++                }
++              }
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "observer": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "signature": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "vendorInterface": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "operatingLimits": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "conformance": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/reference"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        }
++      }
++    }
++  },
++  "oneOf": [
++    {
++      "properties": {
++        "targetKind": {
++          "const": "undecided"
++        },
++        "branch": {
++          "const": null
++        },
++        "profileId": {
++          "const": null
++        }
++      }
++    },
++    {
++      "properties": {
++        "targetKind": {
++          "const": "chassis"
++        },
++        "branch": {
++          "const": null
++        },
++        "profileId": {
++          "enum": [
++            "wheeltec-s100",
++            "zltech-differential"
++          ]
++        }
++      }
++    },
++    {
++      "properties": {
++        "targetKind": {
++          "const": "arm"
++        },
++        "branch": {
++          "const": "xarm_ros2"
++        },
++        "profileId": {
++          "const": "arm-xarm-dossier-v1"
++        }
++      }
++    },
++    {
++      "properties": {
++        "targetKind": {
++          "const": "arm"
++        },
++        "branch": {
++          "const": "custom_linuxcnc"
++        },
++        "profileId": {
++          "const": "arm-custom-dossier-v1"
++        }
++      }
++    }
++  ],
++  "definitions": {
++    "reference": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "value",
++        "sourceKind",
++        "sourceRef",
++        "owner"
++      ],
++      "properties": {
++        "value": {
++          "type": "string",
++          "pattern": "\\S"
++        },
++        "sourceKind": {
++          "enum": [
++            "vendor",
++            "measurement",
++            "owner"
++          ]
++        },
++        "sourceRef": {
++          "type": "string",
++          "pattern": "\\S"
++        },
++        "owner": {
++          "type": "string",
++          "pattern": "\\S"
++        }
++      }
++    },
++    "identityReference": {
++      "type": "object",
++      "allOf": [
++        {
++          "$ref": "#/definitions/reference"
++        }
++      ],
++      "properties": {
++        "sourceKind": {
++          "enum": [
++            "vendor",
++            "measurement"
++          ]
++        }
++      }
++    }
++  }
++}
+diff --git a/packages/lab-runtime/src/commissioning/target-dossier.ts b/packages/lab-runtime/src/commissioning/target-dossier.ts
+new file mode 100644
+index 0000000..e7749e1
+--- /dev/null
++++ b/packages/lab-runtime/src/commissioning/target-dossier.ts
+@@ -0,0 +1,28 @@
++import Ajv from 'ajv';
++import schema from '../../../contracts/schemas/physical-target-dossier-v1.schema.json';
++
++/** Sourced assertions only: this module does not load or authenticate referenced material. */
++export type DossierReference={value:string;sourceKind:'vendor'|'measurement'|'owner';sourceRef:string;owner:string};
++type Branch='xarm_ros2'|'custom_linuxcnc';
++type Dossier={schemaVersion:1;targetKind:'undecided'|'arm'|'chassis';branch:Branch|null;profileId:string|null;identity:Record<string,DossierReference|null>;modelRevision:DossierReference|null;prerequisites:Record<string,DossierReference|null>};
++export type TargetDossierAssessment={structurallyValid:boolean;readiness:'prepared'|'incomplete';missing:string[];branchRequirements:{branch:Branch;requirements:string[]}[]};
++const validate=new Ajv({strict:true,allErrors:true}).compile<Dossier>(schema);
++const requirements:Record<Branch,string[]>={
++ xarm_ros2:['qualified Ubuntu/ROS host and installed vendor provenance','vendor hardware driver and physical identity','controller/SDK/firmware compatibility and tool definition','supervised independent stop, measured latency and calibration','physical adapter conformance and commissioning authority'],
++ custom_linuxcnc:['qualified Debian/ISA host and installed controller provenance','measured machine kinematics and controller/drive interface','sourced drive wiring, homing, feedback and tool definition','supervised independent stop, measured latency and calibration','physical adapter conformance and commissioning authority'],
++};
++const placeholder=/^(unknown|tbd|todo|unassigned|undecided|not[ _-]?(measured|available|run)|blocked_external|n\/?a)$/i;
++function unresolved(ref:DossierReference|null):boolean {
++ return ref===null||[ref.value,ref.sourceRef,ref.owner].some(v=>placeholder.test(v.trim()));
++}
++/** `prepared` means complete sourced references only. Never emits a manifest, validation rank, live capability or admission verdict. */
++export function assessTargetDossier(value:unknown):TargetDossierAssessment {
++ if(!validate(value))return {structurallyValid:false,readiness:'incomplete',missing:['schema'],branchRequirements:[]};
++ const missing:string[]=[];
++ if(value.targetKind==='undecided')missing.push('targetKind');
++ for(const [key,ref]of Object.entries(value.identity))if(unresolved(ref)||(key==='serial'&&ref?.value.trim().toUpperCase()==='XI13050520BB00'))missing.push(`identity.${key}`);
++ if(unresolved(value.modelRevision))missing.push('modelRevision');
++ for(const [key,ref]of Object.entries(value.prerequisites))if(unresolved(ref))missing.push(`prerequisites.${key}`);
++ const branches:Branch[]=value.targetKind==='undecided'?['xarm_ros2','custom_linuxcnc']:value.targetKind==='arm'?[value.branch as Branch]:[];
++ return {structurallyValid:true,readiness:missing.length?'incomplete':'prepared',missing,branchRequirements:branches.map(branch=>({branch,requirements:[...requirements[branch]]}))};
++}
+diff --git a/tests/fixtures/physical-target-dossier.ts b/tests/fixtures/physical-target-dossier.ts
+new file mode 100644
+index 0000000..dc89625
+--- /dev/null
++++ b/tests/fixtures/physical-target-dossier.ts
+@@ -0,0 +1,10 @@
++import type {DossierReference} from '../../packages/lab-runtime/src/commissioning/target-dossier';
++/** Synthetic prerequisite references only. No hardware values, credentials or commissioning keys. */
++export const prerequisiteFields=['host','controller','tool','safety','latency','maintenance','calibration','observer','signature','vendorInterface','operatingLimits','conformance'] as const;
++export function undecidedDossierFixture() {
++ return {schemaVersion:1,targetKind:'undecided',branch:null,profileId:null,identity:{vendor:null,model:null,firmware:null,sdk:null,serial:null},modelRevision:null,prerequisites:Object.fromEntries(prerequisiteFields.map(k=>[k,null]))};
++}
++export function preparedDossierFixture(branch:'xarm_ros2'|'custom_linuxcnc'='xarm_ros2') {
++ const fact=(value:string,sourceKind:DossierReference['sourceKind']='owner'):DossierReference=>({value,sourceKind,sourceRef:'TEST-ONLY/reference-revision-1#section',owner:'TEST-ONLY-owner'});
++ return {...undecidedDossierFixture(),targetKind:'arm',branch,profileId:branch==='xarm_ros2'?'arm-xarm-dossier-v1':'arm-custom-dossier-v1',identity:Object.fromEntries(['vendor','model','firmware','sdk','serial'].map(k=>[k,fact(`TEST-ONLY-${k}`,'vendor')])) as Record<string,DossierReference|null>,modelRevision:fact('TEST-ONLY-model-revision'),prerequisites:Object.fromEntries(prerequisiteFields.map(k=>[k,fact(`TEST-ONLY-${k}`,['calibration','latency'].includes(k)?'measurement':'owner')])) as Record<string,DossierReference|null>};
++}
+diff --git a/tests/security/physical-target-admission.test.ts b/tests/security/physical-target-admission.test.ts
+new file mode 100644
+index 0000000..96a7204
+--- /dev/null
++++ b/tests/security/physical-target-admission.test.ts
+@@ -0,0 +1,70 @@
++/** Portable refusal checks. Synthetic records and ephemeral TEST-ONLY keys never enter a live path. */
++import {spawnSync} from 'node:child_process';
++import {webcrypto} from 'node:crypto';
++import {existsSync,readFileSync} from 'node:fs';
++import {resolve} from 'node:path';
++import {expect,test} from 'vitest';
++import {canonicalBytes} from '../../packages/contracts/src/canonical';
++import type {RobotManifest} from '../../packages/contracts/src/index';
++import {assessTargetDossier} from '../../packages/lab-runtime/src/commissioning/target-dossier';
++import {VendorSdkAdapter,type VendorSdk} from '../../packages/robot-adapters/src/vendor/sdk-adapter';
++import {untestedCoverage,type VendorProfile} from '../../packages/robot-adapters/src/vendor/profile';
++import {Vda5050Adapter,type Vda5050Transport} from '../../packages/robot-adapters/src/vda5050/adapter';
++import {preparedDossierFixture,undecidedDossierFixture} from '../fixtures/physical-target-dossier';
++const python=process.env.MEKONIQ_COMMISSIONING_PYTHON??(existsSync('.venv/bin/python')?resolve('.venv/bin/python'):'python3');
++function commissioned(record:unknown,key:unknown=null) {
++ const result=spawnSync(python,['-c',"import json,sys; from commissioning import validate_commissioning; x=json.load(sys.stdin); print(json.dumps(validate_commissioning(x['record'],target_payload_kg=20,commissioning_key=x['key']).as_json()))"],{input:JSON.stringify({record,key}),encoding:'utf8',timeout:15000,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTEST_ADDOPTS:'-p no:cacheprovider',PYTHONPATH:'tests/hardware:robotics/agent'}});
++ expect(result.status,result.stdout+result.stderr).toBe(0);return JSON.parse(result.stdout) as {status:string;manifest_accepted:boolean;reasons:string[]};
++}
++test('undecided cannot enter the authoritative chassis commissioner',()=>{
++ const dossier=undecidedDossierFixture();expect(assessTargetDossier(dossier).readiness).toBe('incomplete');
++ expect(commissioned(dossier)).toMatchObject({status:'integration_tested',manifest_accepted:false,reasons:['SCHEMA_INVALID']});
++});
++test.each(['vendor','firmware','sdk','serial'])('unknown %s cannot promote physical validation',field=>{
++ const dossier=preparedDossierFixture();dossier.identity[field]=null;
++ expect(assessTargetDossier(dossier).missing).toContain(`identity.${field}`);
++ expect(commissioned(dossier)).toMatchObject({status:'integration_tested',manifest_accepted:false});
++});
++test.each(['calibration','observer','signature'])('missing %s never becomes physical qualification',field=>{
++ const dossier=preparedDossierFixture();dossier.prerequisites[field]=null;
++ expect(assessTargetDossier(dossier).readiness).toBe('incomplete');
++ expect(commissioned(dossier)).toMatchObject({status:'integration_tested',manifest_accepted:false});
++});
++test('the L03 synthetic simulation model selector is not a physical serial',()=>{
++ const dossier=preparedDossierFixture();dossier.identity.serial!.value='XI13050520BB00';
++ expect(assessTargetDossier(dossier)).toMatchObject({readiness:'incomplete',missing:expect.arrayContaining(['identity.serial'])});
++});
++test('owner assertions cannot replace vendor or measured identity',()=>{
++ const dossier=preparedDossierFixture();dossier.identity.firmware!.sourceKind='owner';
++ expect(assessTargetDossier(dossier)).toMatchObject({structurallyValid:false,readiness:'incomplete'});
++});
++test('a valid ES256/JCS signature on simulated geometry cannot earn hardware_validated',async()=>{
++ const record=JSON.parse(readFileSync('tests/fixtures/hardware/commissioning-complete.json','utf8'));
++ record.geometry.illustrative=true;record.manifest.validation='hardware_validated';
++ const keys=await webcrypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
++ const key={...await webcrypto.subtle.exportKey('jwk',keys.publicKey),kid:'TEST-ONLY-L05-ephemeral',alg:'ES256'};
++ const signature=await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},keys.privateKey,canonicalBytes(record));
++ record.signature={keyId:key.kid,alg:'ES256',value:Buffer.from(signature).toString('base64url')};
++ const result=commissioned(record,key);
++ expect(result).toMatchObject({status:'integration_tested',manifest_accepted:false});
++ expect(result.reasons).toEqual(expect.arrayContaining(['GEOMETRY_ILLUSTRATIVE','CLAIM_EXCEEDS_EVIDENCE']));
++ expect(result.reasons).not.toContain('MANIFEST_SIGNATURE_INVALID');
++ // Unsigned, tampered and wrong-key behavior remains covered by the existing Python authority suite.
++});
++test.each(['xarm_ros2','custom_linuxcnc'] as const)('prepared %s documents cannot be passed as chassis evidence',branch=>{
++ const dossier=preparedDossierFixture(branch);expect(assessTargetDossier(dossier).readiness).toBe('prepared');
++ expect(commissioned(dossier)).toMatchObject({status:'integration_tested',manifest_accepted:false});
++});
++test.each(['hardware_validated','venue_approved'] as const)('prepared references cannot bypass existing %s adapter refusals',validation=>{
++ const dossier=preparedDossierFixture();expect(assessTargetDossier(dossier).readiness).toBe('prepared');
++ const manifest={id:'TEST-ONLY',adapter:'vendor-sdk',protocolVersion:'TEST-ONLY@1',firmware:'TEST-ONLY',capabilities:['delivery'],mapId:'test',mapRevision:'1',offlineExecution:false,maxLoadMinor:'1',trays:1,validation,targetKind:'vendor'} as RobotManifest;
++ const profile:VendorProfile={id:'TEST-ONLY',sdkName:'TEST-ONLY',sdkVersion:'1',firmware:'TEST-ONLY',nativeCommandIdentity:'caller-supplied',licence:{redistributable:false,reviewRef:'TEST-ONLY'},coverage:untestedCoverage()};
++ const sdk:VendorSdk={async navigate(){throw new Error('NO_PHYSICAL_IO');},onEvent(){throw new Error('NO_PHYSICAL_IO');}};
++ const transport:Vda5050Transport={async publish(){throw new Error('NO_PHYSICAL_IO');},subscribe(){throw new Error('NO_PHYSICAL_IO');}};
++ expect(()=>new VendorSdkAdapter(manifest,sdk,profile)).toThrow('VALIDATION_LEVEL_NOT_EARNED');
++ expect(()=>new Vda5050Adapter({...manifest,adapter:'vda5050',protocolVersion:'2.0.0'},transport,{identity:{manufacturer:'TEST-ONLY',serialNumber:'TEST-ONLY'}})).toThrow('VALIDATION_LEVEL_NOT_EARNED');
++});
++test('active motion still refuses even explicit target, observer and test area',()=>{
++ const result=spawnSync(python,['tests/hardware/commissioning.py','active-motion','--target','TEST-ONLY','--observer','TEST-ONLY','--test-area','TEST-ONLY'],{encoding:'utf8',timeout:15000,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:'robotics/agent'}});
++ expect(result.status,result.stdout+result.stderr).toBe(2);expect(result.stderr).toContain('VENDOR_INTERFACE_NOT_PROVIDED');
++});
+diff --git a/tests/unit/physical-target-dossier.test.ts b/tests/unit/physical-target-dossier.test.ts
+new file mode 100644
+index 0000000..c15e86d
+--- /dev/null
++++ b/tests/unit/physical-target-dossier.test.ts
+@@ -0,0 +1,54 @@
++import {expect,test} from 'vitest';
++import Ajv from 'ajv';
++import schema from '../../packages/contracts/schemas/physical-target-dossier-v1.schema.json';
++import {assessTargetDossier} from '../../packages/lab-runtime/src/commissioning/target-dossier';
++import {preparedDossierFixture,undecidedDossierFixture,prerequisiteFields} from '../fixtures/physical-target-dossier';
++const validate=new Ajv({strict:true,allErrors:true}).compile(schema);
++test('undecided is a valid incomplete dossier with both independent arm prerequisites',()=>{
++ const dossier=undecidedDossierFixture(),result=assessTargetDossier(dossier);
++ expect(validate(dossier),JSON.stringify(validate.errors)).toBe(true);
++ expect(result.structurallyValid).toBe(true);expect(result.readiness).toBe('incomplete');
++ expect(result.missing).toContain('targetKind');
++ expect(result.branchRequirements.map(x=>x.branch)).toEqual(['xarm_ros2','custom_linuxcnc']);
++ expect(result.branchRequirements[0].requirements).toContain('vendor hardware driver and physical identity');
++ expect(result.branchRequirements[1].requirements).toContain('measured machine kinematics and controller/drive interface');
++});
++test.each(['xarm_ros2','custom_linuxcnc'] as const)('sourced %s references prepare documents without creating approval',branch=>{
++ const dossier=preparedDossierFixture(branch),before=structuredClone(dossier),result=assessTargetDossier(dossier);
++ expect(validate(dossier),JSON.stringify(validate.errors)).toBe(true);
++ expect(result).toMatchObject({structurallyValid:true,readiness:'prepared',missing:[]});
++ expect(result.branchRequirements.map(x=>x.branch)).toEqual([branch]);
++ expect(Object.keys(result).sort()).toEqual(['branchRequirements','missing','readiness','structurallyValid']);
++ expect(dossier).toEqual(before);
++});
++test.each(['vendor','model','firmware','sdk','serial'])('unknown %s cannot prepare a selected target',field=>{
++ const dossier=preparedDossierFixture();
++ for(const value of [null,{value:'unknown',sourceKind:'vendor' as const,sourceRef:'ref',owner:'owner'},{value:' TBD ',sourceKind:'vendor' as const,sourceRef:'ref',owner:'owner'}]) {
++  dossier.identity[field]=value;
++  expect(assessTargetDossier(dossier)).toMatchObject({readiness:'incomplete',missing:expect.arrayContaining([`identity.${field}`])});
++ }
++});
++test.each(prerequisiteFields)('missing %s stays incomplete',field=>{
++ const dossier=preparedDossierFixture();dossier.prerequisites[field]=null;
++ expect(assessTargetDossier(dossier)).toMatchObject({structurallyValid:true,readiness:'incomplete',missing:expect.arrayContaining([`prerequisites.${field}`])});
++});
++test('calibration and latency require measured sources and complete source ownership',()=>{
++ for(const field of ['calibration','latency']) {
++  const dossier=preparedDossierFixture();dossier.prerequisites[field]!.sourceKind='vendor';
++  expect(validate(dossier)).toBe(false);expect(assessTargetDossier(dossier).readiness).toBe('incomplete');
++ }
++ for(const field of ['owner','sourceRef','value']) {
++  const dossier=preparedDossierFixture();Object.assign(dossier.identity.serial!,{[field]:' '});
++  expect(validate(dossier)).toBe(false);expect(assessTargetDossier(dossier).structurallyValid).toBe(false);
++ }
++});
++test('chassis uses its existing profile namespace; arm and simulation profiles cannot substitute',()=>{
++ const dossier={...preparedDossierFixture(),targetKind:'chassis',branch:null,profileId:'wheeltec-s100'};
++ expect(assessTargetDossier(dossier)).toMatchObject({structurallyValid:true,readiness:'prepared',branchRequirements:[]});
++ for(const invalid of [{...dossier,profileId:'arm-xarm-dossier-v1'},{...preparedDossierFixture(),profileId:'wheeltec-s100'},{...preparedDossierFixture(),profileId:'xarm6-jazzy-sim'},{...preparedDossierFixture(),branch:'custom_linuxcnc'}]) {
++  expect(validate(invalid)).toBe(false);expect(assessTargetDossier(invalid).structurallyValid).toBe(false);
++ }
++});
++test.each([null,[],{}, {...undecidedDossierFixture(),schemaVersion:2},{...preparedDossierFixture(),live:true},{...preparedDossierFixture(),signature:{value:'pretend'}},{...preparedDossierFixture(),registers:[1]}])('malformed or authority-bearing input is refused: %j',value=>{
++ expect(validate(value)).toBe(false);expect(assessTargetDossier(value)).toMatchObject({structurallyValid:false,readiness:'incomplete',missing:expect.arrayContaining(['schema'])});
++});

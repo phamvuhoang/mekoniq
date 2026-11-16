@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:27:28.642244+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/safe-fix3",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/fix3.tar.gz",
+  "archiveSha256": "b252752bad46fe3a5eb6a4e5d24c4a7f3c22e1e8f8ce5a634ec3c0587949bbb9",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/fix3.members.json",
+  "memberIndexSha256": "d089ce0b945f064f1a7e29eabf5d20e37429c228093aeec146faf13e392ed7ce",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/fix3",
+  "verifiedFiles": 360,
+  "verifiedBytes": 56068652,
+  "declaredSymlinksNotMaterialized": [
+    {
+      "path": "brand-focus-diagnostic/node_modules",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules",
+      "retention": "descriptor only, never followed or materialized; external dependency provenance is not vendored evidence"
+    },
+    {
+      "path": "browser-diagnostic/node_modules",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules",
+      "retention": "descriptor only, never followed or materialized; external dependency provenance is not vendored evidence"
+    },
+    {
+      "path": "browser-diagnostic/tests/support",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/tests/support",
+      "retention": "descriptor only, never followed or materialized; external dependency provenance is not vendored evidence"
+    }
+  ],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

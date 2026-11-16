@@ -1,0 +1,1593 @@
+# Review package: 2f4837d10d746a7c8c5e5ca5675ec57db4111c28..eeea18db88485e113aafe1cc15edd7f75ced2b66
+
+## Commits
+eeea18d test: isolate recorder plan Docker prerequisite probe
+bb62601 fix: bind native probe checker and retained fault evidence
+
+## Files changed
+ docs/operations/mujoco-native-probe.md             |  10 +-
+ .../tests/test_native_probe_retention.py           | 115 +++++++++++++++
+ scripts/native-checker-bootstrap.mjs               |  22 +++
+ scripts/native-handoff.mjs                         |  22 +--
+ scripts/native-sim/mujoco-probe-container.mjs      |   1 +
+ scripts/native-sim/mujoco-probe-core.d.mts         |   3 +
+ scripts/native-sim/mujoco-probe-core.mjs           | 135 +++++++++++++++++
+ scripts/native-sim/mujoco-probe-engine.py          |  18 ++-
+ scripts/native-sim/mujoco-probe-evidence.d.mts     |   1 +
+ scripts/native-sim/mujoco-probe-evidence.mjs       |  23 ++-
+ scripts/native-sim/mujoco-probe-npz.mjs            |  26 ++++
+ scripts/native-sim/mujoco-probe-raw.d.mts          |   3 +
+ scripts/native-sim/mujoco-probe-raw.mjs            |  68 +++++++++
+ scripts/native-sim/mujoco-probe-retention.py       |  95 ++++++++++++
+ scripts/native-sim/mujoco-probe.d.mts              |   3 +-
+ scripts/native-sim/mujoco-probe.mjs                | 159 ++-------------------
+ scripts/native-sim/prepare-mujoco-r2a-core.mjs     |  31 ++++
+ scripts/native-sim/prepare-mujoco-r2a.mjs          |  40 ++----
+ scripts/native-sim/probe-bootstrap.mjs             |  16 +++
+ scripts/native-sim/probe-worker.mjs                |  21 +++
+ scripts/native-sim/r2a-arm-baseline.json           |  14 ++
+ scripts/native-sim/r2a-arm-compiled.xml            | 121 ++++++++++++++++
+ tests/fixtures/native-probe-state.ts               |  12 ++
+ tests/security/mujoco-native-probe-checker.test.ts |  47 ++++++
+ tests/unit/mujoco-native-probe.test.ts             |  67 ++++++++-
+ tests/unit/sim-extension-qualification.test.ts     |  26 +++-
+ 26 files changed, 889 insertions(+), 210 deletions(-)
+
+## Diff
+diff --git a/docs/operations/mujoco-native-probe.md b/docs/operations/mujoco-native-probe.md
+index a289b0e..868ab39 100644
+--- a/docs/operations/mujoco-native-probe.md
++++ b/docs/operations/mujoco-native-probe.md
+@@ -34,31 +34,33 @@ Image inventory must be obtained from the exact already-installed subject under
+ ## Execution and readback
+ 
+ ```sh
+ # Both paths absolute; output must be NEW and outside the Source tree.
+ perl -e 'alarm 1800; exec @ARGV' node scripts/native-sim/mujoco-probe.mjs \
+   --handoff "$handoff_dir" --out "$native_evidence_dir"
+ perl -e 'alarm 180; exec @ARGV' node scripts/native-sim/mujoco-probe.mjs \
+   --verify "$native_evidence_dir"
+ ```
+ 
+-The CLI requires a clean, byte-verified Git checker before execution and after assessment. Its identity is separate from the old subject. Readback uses the same observer code pin and compares retained observer files with the reader's fixed code. The subject's own pinned runtime produces the reports; the reader checks their Source/schema identity, raw trace hashes, inputs and copied journal bytes. A unit log or a caller's `passed` string is insufficient.
++Every public CLI and imported supplement/preparation API audits the full tracked checker/reference graph before assessment imports and after assessment. A builtin-only bootstrap launches a fresh process with no inherited Node preload options; the caller's ESM reference cache cannot supply assessment bytes. `*-core.mjs` files are internal implementations, not qualification entrypoints. The checker tuple is the exact clean Source commit plus SHA256 of the audited Git tree listing (paths, modes and blob identities across scripts, packages, robotics, integrations, fixtures and dependency/toolchain manifests). It is separate from the old subject. Readback and supplement copying require that exact tuple, as well as retained observer file equality. There is no cross-checker compatibility policy: older evidence remains preserved and requires its original clean observer pin to read. Execution and readback both enforce the exact historical registry digest, the single measured MuJoCo package lock and the forbidden-package policy. The subject's own pinned runtime produces the reports; the reader checks their Source/schema identity, raw trace hashes, inputs and copied journal bytes. A unit log or a caller's `passed` string is insufficient.
+ 
+ Cases run serially in private containers (`--pull never`, network none, read-only root, all capabilities dropped, no-new-privileges, nonroot user, bounded memory/PIDs). Loopback HTTP is internal to that container; no host port is exposed. Only read-only observer files and the task's evidence output are mounted. A container is cleaned up only if its unique ownership label matches this invocation.
+ 
+ | Cases | Scope and required evidence |
+ | --- | --- |
+ | M00 seeds 1–10 | Verbatim `scene.py` / `run.py` fenced blocks from the frozen spike document; document and extracted-byte hashes are retained. Exact 20 ms tick, ten 2 ms substeps, original randomized ±5 mm offsets and no tuning. Require ten complete contact grasps, lift/slip/tracking/release thresholds, raw pose/contact traces and zero warnings. |
+ | MJ-BV01 seeds 7, 42, 99 | Unchanged historical subject **bytes** with separately hashed passive Node wire observation. The real gateway runs the full business scenario, Source reports two served cups and the actual arm/prop traces. |
+ | bad-state | R82: original WorkerSession plus real original MuJoCo engine, with observer-owned qvel-NaN injection at the first post-start step. Retain compiled MJCF, request/response bytes, before/injected/after NPZ states and actual warning deltas. Require PLANT_UNSTABLE, failed state, bounded stop and no successful post-fault step. This component subcase makes no Source custody/served claim. |
+ | worker-loss | SIGKILL only the task-owned worker PID observed in this run's passive spawn trace. Require Source WORKER_LOST/latched stop, unknown program, zero served, five further observations, no respawn, no repeated/overlapping worker request and no successful post-loss ACK. |
+ | long-run | 180,000 real M00 engine ticks (1,800,000 substeps), 3,600 simulated seconds. Retain clock drift, timing samples, periodic raw poses, final pose and warnings. This is an engine clock/stability check, not a Source long-run journal campaign. |
+ 
+-The observer forwards the exact spawn arguments/options, original child object and stdin write arguments/return value; it never rewrites requests/ACKs or pauses subject pipes. No environment or bearer credentials are recorded. It bounds its trace and records a completion seal. Overflow, invalid/truncated lines, unobserved exit, missing ACKs or an incomplete seal fail relevant assertions. Timing includes observer overhead: M00/long-run engine-step timing, worker step IPC roundtrip, and HTTP action timing are distinct. p50/p95 use nearest rank; max and samples are retained. Memory is Python peak RSS for engine-only cases and the peak *sampled* process-namespace RSS at HTTP action boundaries for business cases.
++The observer forwards the exact spawn arguments/options, original child object and stdin write arguments/return value; it never rewrites requests/ACKs or pauses subject pipes. No environment or bearer credentials are recorded. It bounds its trace and records a completion seal. Readback parses the original `wire.jsonl`, requires exact sealed byte accounting and no `.incomplete` marker, validates ordered task-owned spawn/request/ACK/exit lifecycle, and compares both derived arrays with that stream. Overflow, invalid/truncated lines, unobserved exit, missing ACKs or an incomplete seal fail relevant assertions. Worker-loss injection and Source unknown state must match `injection.json` and the retained post-close run checkpoint, respectively. HTTP request and trace summaries must likewise match retained source bytes. Timing includes observer overhead: M00/long-run engine-step timing, worker step IPC roundtrip, and HTTP action timing are distinct. p50/p95 use nearest rank; max and samples are retained. Memory is Python peak RSS for engine-only cases and the peak *sampled* process-namespace RSS at HTTP action boundaries for business cases.
+ 
+-Each process writes stdout/stderr incrementally and retains a receipt on failure, timeout or abort. The outer budget is 25 minutes, with case-specific bounds and owned-container cleanup inside the 30-minute wrapper. The runtime is closed before retained journals are copied and byte-verified; original journals exist only in the disposable container's private `/tmp`. Inputs, warnings and unsuccessful artifacts remain. Never retry/resume a lost run or overwrite an evidence directory; choose a new output for a new attempt. Spontaneous BADQACC/PLANT_UNSTABLE fails the nominal case and requires a separate investigation. Tuning or engine upgrades establish a new baseline and require rerunning every claimed architecture.
++Each process writes stdout/stderr incrementally and retains a receipt on failure, timeout or abort. The outer budget is 25 minutes, with case-specific bounds and owned-container cleanup inside the 30-minute wrapper. The runtime is closed before retained journals are copied and byte-verified; original journals exist only in the disposable container's private `/tmp`. Inputs, warnings and unsuccessful artifacts remain. A separately hashed `mujoco-probe-retention.py` observer wraps the frozen recipe's Sim constructor/tick without changing command values, arguments, returns or engine state. Nominal M00 and long-run retain original scene parameters/MJCF, qpos/qvel/qacc/ctrl, warning counts and the last 128 commands/samples. Atomic checkpoints occur at initialization, every 100 completed ticks, warnings, exceptions and finalization. Abrupt termination may lose at most the work since the last checkpoint; constructor failures explicitly say state unavailable. The first warning/failure state is preserved separately, including explicit `NaN`/infinity strings. Snapshot I/O/copy cost is outside the recipe engine-step timer and inside wall time; these are observer-instrumented executions of unchanged recipe bytes.
+ 
+-`record-sim-extension.mjs --mujoco-probe DIR` optionally copies and re-verifies this supplemental record. It keeps the old subject and observer identities and does not change existing release/hardware gate tables or acceptance. A claimed pass that fails readback is refused.
++Bad-state readback decodes the four bounded uncompressed float64 vectors in each NPZ (no pickle/object arrays), requires finite pre-state and exactly one qvel NaN at J1/index 0, binds before/after ticks and warnings to retained snapshots, and checks all four requests and responses. Retained scene/model/physics bytes and compiled MJCF must match the frozen input identities. The expected MJCF was generated with the frozen stdlib-only compiler over verified historical mesh/input bytes; `badStateCompiled` records compiler/hash/method provenance. That static XML reference is not an engine run. Never retry/resume a lost run or overwrite an evidence directory; choose a new output for a new attempt. Spontaneous BADQACC/PLANT_UNSTABLE fails the nominal case and requires a separate investigation. Tuning or engine upgrades establish a new baseline and require rerunning every claimed architecture.
++
++`record-sim-extension.mjs --mujoco-probe DIR` optionally copies and re-verifies this supplemental record. It keeps the old subject and observer identities and does not change existing release/hardware gate tables or acceptance. A claimed pass that fails readback is refused. Portable test doubles exercise these boundaries but cannot establish a full native-positive readback without the exact historical image and assigned host.
+ 
+ ## Explicit remaining work
+ 
+ The entire native matrix is `not_run` until an assigned host, verified original image records and measured locked engine artifact exist. Native arm64 requires an independent profile and record. R83 assigns the executable current R2b payload/cell native adapter to B10 tooling before final tooling review; it uses its own current Source/Lab/schema/image tuple. The R2a image can never stand in for it. R84's passive observation adds measurement overhead and may refuse qualification when trace completeness cannot be established; it does not manufacture missing observations.
+diff --git a/robotics/simulation-mujoco/tests/test_native_probe_retention.py b/robotics/simulation-mujoco/tests/test_native_probe_retention.py
+new file mode 100644
+index 0000000..b67dcfe
+--- /dev/null
++++ b/robotics/simulation-mujoco/tests/test_native_probe_retention.py
+@@ -0,0 +1,115 @@
++"""Portable observer tests with a fake engine; never native qualification evidence."""
++import importlib.util
++import json
++from pathlib import Path
++from types import SimpleNamespace
++import pytest
++
++SCRIPT = Path(__file__).resolve().parents[3] / 'scripts/native-sim/mujoco-probe-retention.py'
++
++def load():
++    spec = importlib.util.spec_from_file_location('retention', SCRIPT)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++class FakeSim:
++    def __init__(self, parameters, q0, grip0=0):
++        self.d = SimpleNamespace(qpos=[0.0], qvel=[0.0], qacc=[0.0], ctrl=[grip0], time=0.0,
++                                 warning=[SimpleNamespace(number=0)])
++        self.log = []
++    def tick(self, command, label=''):
++        self.d.ctrl = list(command)
++        self.d.time += .02
++        if label in ('throw', 'warn'):
++            self.d.qacc = [float('nan')]
++            self.d.warning[0].number += 1
++            if label == 'throw':
++                raise RuntimeError('PLANT_UNSTABLE fixture')
++        self.log.append({'ms': 1, 'q': self.d.qpos, 'cup': [0, 0, 0], 'label': label})
++        return command
++
++def recipe():
++    return SimpleNamespace(Sim=FakeSim, scene=SimpleNamespace(build=lambda p: '<mujoco model="portable-double"/>'))
++
++@pytest.mark.parametrize('mode', ['m00', 'long_run'])
++@pytest.mark.parametrize('failure', ['throw', 'warn', 'analysis'])
++def test_retains_state_warnings_and_inputs_on_nominal_failure(tmp_path, mode, failure):
++    module = load()
++    r = recipe()
++    capture = module.install_retention(r, tmp_path, {'mode': mode, 'seed': 7})
++    sim = r.Sim({'unchanged': True}, [0])
++    assert sim.tick([1], 'first') == [1]
++    try:
++        sim.tick([2], failure)
++        if failure == 'analysis':
++            raise ValueError('analysis fixture failure after stepping')
++    except (RuntimeError, ValueError):
++        capture.finish('exception')
++    else:
++        capture.finish('returned')
++    state = json.loads((tmp_path / 'last-state.json').read_text())
++    retained = json.loads((tmp_path / 'retention.json').read_text())
++    assert set(state['state']) == {'qpos', 'qvel', 'qacc', 'ctrl'}
++    assert state['state']['ctrl'] == [2]
++    assert retained['inputs'][-1]['command'] == [2]
++    assert retained['scope'] == 'observer_instrumented_frozen_recipe'
++    assert retained['completedTicks'] == (1 if failure == 'throw' else 2)
++    assert (tmp_path / 'nominal-compiled.xml').read_text() == '<mujoco model="portable-double"/>'
++    if failure != 'analysis':
++        fault = json.loads((tmp_path / 'first-failure-state.json').read_text())
++        assert fault['state']['qacc'] == ['NaN']
++        assert fault['warnings'] == [1]
++
++
++def test_periodic_checkpoint_is_bounded_and_does_not_modify_return_or_arguments(tmp_path):
++    module = load()
++    r = recipe()
++    capture = module.install_retention(r, tmp_path, {'mode': 'long_run'})
++    sim = r.Sim({}, [0])
++    command = [3]
++    for _ in range(1005):
++        assert sim.tick(command, 'hold') is command
++    before = json.loads((tmp_path / 'retention.json').read_text())
++    assert before['completedTicks'] == 1000  # retained even without finalization (abrupt process loss)
++    capture.finish('returned')
++    after = json.loads((tmp_path / 'retention.json').read_text())
++    assert after['completedTicks'] == 1005
++    assert len(after['samples']) == 128
++    assert len(after['inputs']) == 128
++    assert command == [3]
++
++@pytest.mark.parametrize('mode', ['m00', 'long_run'])
++def test_actual_harness_installs_and_finalizes_observer_without_engine(tmp_path, monkeypatch, mode):
++    import runpy
++    import sys
++    import types
++    r = types.ModuleType('run')
++    class ThrowingSim(FakeSim):
++        def tick(self, command, label=''):
++            return super().tick(command, 'throw' if self.d.time > 0 else label)
++    r.Sim = ThrowingSim
++    r.scene = SimpleNamespace(DEFAULTS={}, build=lambda p: '<mujoco model="portable-double"/>')
++    r.tunables = lambda p: {}
++    r.waypoints = lambda m, p, t: ({'home': [0]}, None)
++    def main():
++        sim = r.Sim({}, [0])
++        sim.tick([1], 'first')
++        sim.tick([2], 'second')
++    r.main = main
++    fake_engine = types.ModuleType('mujoco')
++    fake_engine.__version__ = '3.17.0'  # fixture protocol value, never installed engine evidence
++    fake_engine.MjModel = SimpleNamespace(from_xml_string=lambda xml: object())
++    monkeypatch.setitem(sys.modules, 'mujoco', fake_engine)
++    monkeypatch.setitem(sys.modules, 'numpy', types.ModuleType('numpy'))
++    monkeypatch.setitem(sys.modules, 'run', r)
++    monkeypatch.setattr(sys, 'argv', ['observer', mode, str(tmp_path), '7'])
++    original_spec = importlib.util.spec_from_file_location
++    def local_observer(name, path, **kwargs):
++        return original_spec(name, SCRIPT if str(path) == '/probe/mujoco-probe-retention.py' else path, **kwargs)
++    monkeypatch.setattr(importlib.util, 'spec_from_file_location', local_observer)
++    with pytest.raises(RuntimeError, match='PLANT_UNSTABLE fixture'):
++        runpy.run_path(str(SCRIPT.with_name('mujoco-probe-engine.py')), run_name='__main__')
++    assert json.loads((tmp_path / 'retention.json').read_text())['reason'] == 'exception'
++    assert json.loads((tmp_path / 'last-state.json').read_text())['state']['qacc'] == ['NaN']
++    assert json.loads((tmp_path / 'resource.json').read_text())['maxRssKiB'] > 0
+diff --git a/scripts/native-checker-bootstrap.mjs b/scripts/native-checker-bootstrap.mjs
+new file mode 100644
+index 0000000..cd7e6b8
+--- /dev/null
++++ b/scripts/native-checker-bootstrap.mjs
+@@ -0,0 +1,22 @@
++// Trusted bootstrap: builtins only; audit before any assessment/reference import.
++import {readFile,lstat,realpath} from 'node:fs/promises';
++import {createHash} from 'node:crypto';
++import {execFileSync} from 'node:child_process';
++import {dirname,resolve} from 'node:path';
++import {fileURLToPath} from 'node:url';
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++export async function checkedCheckerIdentity(){
++ const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
++ let sourceCommit,tree;
++ try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
++ if(git('status','--porcelain','--untracked-files=all'))throw Error('CHECKER_CHECKOUT_DIRTY');
++ let total=0;const entries=tree.split('\0').filter(Boolean);if(!entries.length||entries.length>20000)throw Error('CHECKER_INPUT_MISMATCH');
++ for(const entry of entries){
++  const match=/^(100644|100755) blob ([a-f0-9]{40})\t(.+)$/.exec(entry);if(!match)throw Error('CHECKER_INPUT_MISMATCH');
++  const [,mode,expected,path]=match;void mode;const file=resolve(root,path),stat=await lstat(file);
++  if(!stat.isFile()||stat.isSymbolicLink()||await realpath(file)!==file||stat.size>64*1024*1024||(total+=stat.size)>256*1024*1024)throw Error('CHECKER_INPUT_MISMATCH');
++  const bytes=await readFile(file),actual=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');if(actual!==expected)throw Error('CHECKER_INPUT_MISMATCH');
++ }
++ return {sourceCommit,toolSha256:createHash('sha256').update(tree).digest('hex')};
++}
++export async function checkedCheckerCommit(){return (await checkedCheckerIdentity()).sourceCommit;}
+diff --git a/scripts/native-handoff.mjs b/scripts/native-handoff.mjs
+index 01c9f87..4753e32 100644
+--- a/scripts/native-handoff.mjs
++++ b/scripts/native-handoff.mjs
+@@ -1,35 +1,21 @@
+ #!/usr/bin/env node
+ // Only fixed verifier code is imported. Manifest content is data, never argv/shell/module input.
+ import {tsImport} from 'tsx/esm/api';
+-import {readFile,lstat,realpath} from 'node:fs/promises';
++import {readFile} from 'node:fs/promises';
+ import {createHash} from 'node:crypto';
+-import {execFileSync} from 'node:child_process';
+ import {dirname,resolve,basename} from 'node:path';
+ import {fileURLToPath,pathToFileURL} from 'node:url';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+-// Require a complete clean Git checker; this is independent of the received subject identity.
+-// Raw Git-blob comparisons cover fixed imports/reference trees even when index flags hide edits.
+-export async function checkedCheckerCommit(){
+- const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
+- let sourceCommit,tree;
+- try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
+- if(git('status','--porcelain','--untracked-files=all'))throw Error('CHECKER_CHECKOUT_DIRTY');
+- let total=0;const entries=tree.split('\0').filter(Boolean);if(!entries.length||entries.length>20000)throw Error('CHECKER_INPUT_MISMATCH');
+- for(const entry of entries){
+-  const match=/^(100644|100755) blob ([a-f0-9]{40})\t(.+)$/.exec(entry);if(!match)throw Error('CHECKER_INPUT_MISMATCH');
+-  const [,mode,expected,path]=match;void mode;const file=resolve(root,path),stat=await lstat(file);
+-  if(!stat.isFile()||stat.isSymbolicLink()||await realpath(file)!==file||stat.size>64*1024*1024||(total+=stat.size)>256*1024*1024)throw Error('CHECKER_INPUT_MISMATCH');
+-  const bytes=await readFile(file),actual=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');if(actual!==expected)throw Error('CHECKER_INPUT_MISMATCH');
+- }
+- return sourceCommit;
+-}
++import {checkedCheckerCommit} from './native-checker-bootstrap.mjs';
++export {checkedCheckerCommit};
++
+ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href)try{
+  const sourceCommit=await checkedCheckerCommit();
+  const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
+  const [command,...args]=process.argv.slice(2),allowed=command==='export'?['--input','--out']:command==='verify'?['--input','--inventory']:[];
+  if(!allowed.length)throw new Error('USAGE: native-handoff.mjs export --input DIR --out NEW_DIR | verify --input DIR [--inventory FILE]');
+  const options={};for(let i=0;i<args.length;i+=2){const key=args[i],value=args[i+1];if(!allowed.includes(key)||key in options||!value||value.startsWith('--'))throw new Error('INVALID_ARGUMENT');options[key]=value;}
+  if(!options['--input']||command==='export'&&!options['--out'])throw new Error('MISSING_ARGUMENT');
+  const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
+  const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
+  const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
+diff --git a/scripts/native-sim/mujoco-probe-container.mjs b/scripts/native-sim/mujoco-probe-container.mjs
+index 61a8bfd..a9c1712 100644
+--- a/scripts/native-sim/mujoco-probe-container.mjs
++++ b/scripts/native-sim/mujoco-probe-container.mjs
+@@ -62,20 +62,21 @@ async function business(spec){
+   await api('/runs/'+runId+'/archive','POST',{});
+   // Give passive diagnostics time to finish after the subject closed its own worker; no pipe is paused.
+   for(const deadline=Date.now()+3000;Date.now()<deadline;){const e=(await wire()).filter(e=>e.runId===runId);if(e.some(e=>e.event==='exit'))break;await new Promise(r=>setTimeout(r,20));}
+   raw={scope:spec.scope,engineVersion:report.arm.armPlant.engineVersion,report,trace:JSON.parse(traceBytes),props:JSON.parse(propsBytes),checkpoint:await read(join(runDir,'run.json')),requests,httpMs,injection,afterLossSteps,maxRssKiB};
+  }finally{
+   if(!runtimeClosed)runtime.kill('SIGTERM');const kill=setTimeout(()=>{if(!runtimeClosed)runtime.kill('SIGKILL');},10000);await closed;clearTimeout(kill);await logs;await stdout.close();await stderr.close();
+   // Retained journals are verified byte copies after the runtime closed, never the runtime's live originals.
+   const copies=[];async function copy(source,target,path=''){await mkdir(target,{recursive:true});for(const name of await readdir(source)){const p=path?path+'/'+name:name,s=await lstat(join(source,name));if(s.isDirectory())await copy(join(source,name),join(target,name),p);else{const b=await probeFile(data,p);await copyFile(join(source,name),join(target,name));if(sha256(await probeFile(join(out,'runtime'),p))!==sha256(b))throw Error('RUNTIME_COPY_CHANGED');copies.push({path:'runtime/'+p,sha256:sha256(b),bytes:b.length});}}}
+   await copy(data,join(out,'runtime'));await save('runtime-copies.json',{afterRuntimeClose:true,copies});
+  }
++ raw.checkpoint=await read(join(out,'runtime',runDir.slice(data.length+1),'run.json'));
+  const events=(await wire()).filter(e=>e.runId===runId||e.event==='incomplete'),analysis=analyseWire(events);await save('run-wire.json',events);
+  const missing=await lstat(wirePath+'.incomplete').then(()=>true,()=>false);const seal=await read(wirePath+'.seal');if(missing||seal.complete!==true||!analysis.valid)throw Error('WIRE_OBSERVATION_INCOMPLETE');
+  raw.wire=events;raw.ipcMs=analysis.ipcMs;raw.workerObservation={maxActive:analysis.maxActive,spawned:analysis.spawned,afterLoss:injection?events.filter(e=>e.event==='spawn'&&e.atMs>injection.atMs).map(e=>e.pid):[]};
+  return raw;
+ }
+ try{
+  if(id==='inventory'){await save('result.json',await imageInventory());}
+  else{
+   const spec=mujocoCases().find(c=>c.id===id);if(!spec)throw Error('CASE_UNSUPPORTED');let raw;
+   if(['business','worker_loss'].includes(spec.kind))raw=await business(spec);
+diff --git a/scripts/native-sim/mujoco-probe-core.d.mts b/scripts/native-sim/mujoco-probe-core.d.mts
+new file mode 100644
+index 0000000..3c22a7f
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-core.d.mts
+@@ -0,0 +1,3 @@
++export function runMujocoProbe(options:{handoff:string;out:string;checker:{sourceCommit:string;toolSha256:string};signal?:AbortSignal}):Promise<{qualification:string;accepted:boolean;DEP_MJ_01:string;cases:{status:string}[]}>;
++export function verifyMujocoProbe(root:string,checker?:unknown):Promise<{passed:boolean;issues:string[];qualification:string;accepted:boolean}>;
++export function readMujocoProbeSupplement(root:string,checker?:unknown):Promise<{status:string;accepted:boolean;[key:string]:unknown}>;
+diff --git a/scripts/native-sim/mujoco-probe-core.mjs b/scripts/native-sim/mujoco-probe-core.mjs
+new file mode 100644
+index 0000000..c95b6fe
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-core.mjs
+@@ -0,0 +1,135 @@
++#!/usr/bin/env node
++// L01: orchestration, never provisioning. The subject image and observer checker are independent identities.
++import {mkdir,writeFile,readFile,lstat,readdir} from 'node:fs/promises';
++import {execFileSync} from 'node:child_process';
++import {join,dirname,resolve} from 'node:path';
++import {fileURLToPath} from 'node:url';
++import {randomUUID} from 'node:crypto';
++import {isDeepStrictEqual as same} from 'node:util';
++import {platform,arch} from 'node:os';
++import {tsImport} from 'tsx/esm/api';
++import {collectNativeInventory} from './native-inventory.mjs';
++import {runProbeCommand} from './mujoco-probe-process.mjs';
++import {probeFile,probeArtifacts,sha256,mujocoCases,assessCase,probePrerequisites,imagePrerequisites,timingSummary} from './mujoco-probe-evidence.mjs';
++import {verifyBusinessRaw,verifyBadStateRaw} from './mujoco-probe-raw.mjs';
++import baseline from './r2a-arm-baseline.json' with {type:'json'};
++const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),json=v=>JSON.stringify(v,null,2)+'\n';
++const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-engine.py','mujoco-probe-retention.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
++const read=async(root,path,max)=>JSON.parse((await probeFile(root,path,max??1024*1024)).toString());
++async function stageObserver(out,handoff,manifest){
++ const dest=join(out,'observer');await mkdir(dest,{mode:0o700});
++ for(const name of OBSERVER)await writeFile(join(dest,name),await probeFile(ROOT,'scripts/native-sim/'+name),{flag:'wx',mode:0o600});
++ await writeFile(join(dest,'handoff.json'),json(manifest),{flag:'wx'});
++ const doc=execFileSync('git',['show',baseline.m00.sourceCommit+':'+baseline.m00.sourcePath],{cwd:ROOT,timeout:10000,maxBuffer:1024*1024});
++ if(sha256(doc)!==baseline.m00.documentSha256)throw Error('M00_DOCUMENT_CHANGED');await mkdir(join(dest,'m00'));await writeFile(join(dest,'m00-source.md'),doc);
++ const blocks=[...doc.toString().matchAll(/```python\n([\s\S]*?)```/g)].map(m=>m[1]);
++ for(const f of baseline.m00.files){const b=blocks.find(b=>sha256(b)===f.sha256);if(!b)throw Error('M00_RECIPE_CHANGED');await writeFile(join(dest,'m00',f.path),b,{flag:'wx'});}
++ const bundle=join(dest,'bad-state-bundle');await mkdir(join(bundle,'blobs'),{recursive:true});await writeFile(join(bundle,'arm-cell-scene.json'),JSON.stringify(baseline.world));
++ const base='robotics/simulation-mujoco/fixtures/xarm6-g2-v1/';
++ for(const ref of Object.values(manifest.refs).flat())if(ref.sourcePath.startsWith(base)&&(ref.sourcePath.endsWith('/component.json')||ref.sourcePath.endsWith('/physics.json')||ref.sourcePath.includes('/blobs/'))){const b=await probeFile(handoff,ref.path);if(sha256(b)!==ref.sha256)throw Error('SUBJECT_CHANGED');await writeFile(join(bundle,ref.sourcePath.slice(base.length)),b,{flag:'wx'});}
++ return dest;
++}
++export async function runMujocoProbe({handoff,out,checker,signal}){
++ out=resolve(out);handoff=resolve(handoff);if(out===ROOT||out.startsWith(ROOT+'/'))throw Error('EVIDENCE_MUST_BE_OUTSIDE_SOURCE');
++ await mkdir(out,{mode:0o700});
++ const manifest={schemaVersion:1,kind:'mujoco-native-probe',profileId:'mujoco-linux-amd64',subject:null,checker,accepted:false,dynamics:'not_calibrated',qualification:'not_run',DEP_MJ_01:'not_run',startedAt:new Date().toISOString(),issues:[],host:null,inventory:null,engine:null,cases:mujocoCases().map(c=>({...c,status:'not_run'})),r2b:{status:'not_run',reason:'image_unbuilt; separate current subject adapter owned by B10 (R83)'},artifacts:[]};
++ const save=()=>writeFile(join(out,'manifest.json'),json(manifest),{mode:0o600});await save();let executed=false;
++ try{
++  const {readNativeHandoff,validateNativeHandoff,exportNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
++  const subject=await readNativeHandoff(handoff);manifest.subject=subject.subject;
++  const prepared=await validateNativeHandoff(handoff,subject);await writeFile(join(out,'preparation.json'),json(prepared));if(!prepared.prepared)throw Error('HANDOFF_NOT_PREPARED');
++  await exportNativeHandoff(handoff,join(out,'handoff'));
++  // This guard precedes ALL Docker commands. A Mac container is never native Linux evidence.
++  const observed=await collectNativeInventory();manifest.host=observed;await writeFile(join(out,'host-observed.json'),json(observed));
++  if(platform()!=='linux'||arch()!=='x64')throw Error('NATIVE_AMD64_HOST_UNASSIGNED');
++  if(subject.profile.documents.kind!=='mujoco_r2a_arm_v1'||subject.profile.architecture!=='amd64')throw Error('R2A_PROFILE_REQUIRED');
++  const inventory=await read(handoff,'inventory.json'),assignment=await read(handoff,'host-assignment.json');
++  const machine=sha256(await readFile('/etc/machine-id'));
++  if(assignment.schemaVersion!==1||assignment.assigned!==true||assignment.machineIdSha256!==machine||assignment.hostOs!=='linux'||assignment.hostArchitecture!=='amd64'||assignment.emulation!=='none'||!['bare_metal','vm'].includes(assignment.virtualization)||typeof assignment.assignedBy!=='string'||!assignment.assignedBy.trim())throw Error('HOST_ASSIGNMENT_REQUIRED');
++  // Refuse nested containers and registered cross-ISA handlers; external provenance remains an operator attestation.
++  if(await lstat('/.dockerenv').then(()=>true,()=>false)||await lstat('/run/.containerenv').then(()=>true,()=>false))throw Error('HOST_CONTAINER_NOT_ASSIGNED');
++  for(const name of await readdir('/proc/sys/fs/binfmt_misc').catch(()=>[]))if(/qemu|rosetta/i.test(name)&&(await readFile('/proc/sys/fs/binfmt_misc/'+name,'utf8')).startsWith('enabled'))throw Error('HOST_EMULATION_ENABLED');
++  observed.provenance={origin:'linux_native',hostOs:'linux',hostArchitecture:'amd64',emulation:'none',virtualization:assignment.virtualization,assignmentSha256:sha256(json(assignment))};manifest.host=observed;manifest.inventory=inventory;await writeFile(join(out,'host-observed.json'),json(observed));
++  const admission=await validateNativeHandoff(handoff,subject,inventory);await writeFile(join(out,'admission.json'),json(admission));if(!admission.nativeReady)throw Error('HANDOFF_NOT_NATIVE_READY:'+admission.issues.map(i=>i.code).join(','));
++  if(subject.subject.image.manifestDigest!==baseline.historicalRegistryDigest)throw Error('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
++  // L00's exported refs exclude host provenance. Copy precisely the validated inventory/provenance records too.
++  const provenance=await read(handoff,inventory.provenance.evidencePath);
++  for(const p of ['inventory.json','host-assignment.json',inventory.provenance.evidencePath,provenance.platformManifestPath,provenance.imageConfigPath]){const b=await probeFile(handoff,p);await mkdir(dirname(join(out,'handoff',p)),{recursive:true});await writeFile(join(out,'handoff',p),b,{flag:'wx',mode:0o600});}
++  const observer=await stageObserver(out,handoff,subject),owner=randomUUID();await mkdir(join(out,'commands'));await mkdir(join(out,'cases'));
++  let seq=0;const command=async(args,timeoutMs=20000)=>{const d=join(out,'commands',String(++seq));await mkdir(d);const r=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});if(r.status!=='completed')throw Error('DOCKER_COMMAND_FAILED:'+args[0]);return (await readFile(join(d,'stdout.log'),'utf8')).trim();};
++  if(process.env.DOCKER_HOST||process.env.DOCKER_CONTEXT)throw Error('REMOTE_DOCKER_UNSUPPORTED');
++  const context=JSON.parse(await command(['context','inspect']));if(context.length!==1||!context[0]?.Endpoints?.docker?.Host?.startsWith('unix://'))throw Error('LOCAL_DOCKER_REQUIRED');
++  const info=JSON.parse(await command(['info','--format','{{json .}}']));if(info.OSType!=='linux'||!['x86_64','amd64'].includes(info.Architecture))throw Error('DAEMON_ARCH_MISMATCH');
++  const image=JSON.parse(await command(['image','inspect',subject.subject.image.configDigest]))[0];
++  if(image.Id!==subject.subject.image.configDigest||image.Os!=='linux'||image.Architecture!=='amd64'||image.Config?.Labels?.['org.opencontainers.image.revision']!==subject.subject.sourceCommit||!image.RepoDigests?.some(x=>x.endsWith('@'+subject.subject.image.manifestDigest)))throw Error('LOCAL_IMAGE_IDENTITY_MISMATCH');
++  await writeFile(join(out,'image-inspect.json'),json({id:image.Id,os:image.Os,architecture:image.Architecture,repoDigests:image.RepoDigests,sourceCommit:image.Config.Labels['org.opencontainers.image.revision'],rootfs:image.RootFS}));
++  const uid=process.getuid(),gid=process.getgid();if(uid===0)throw Error('NONROOT_PROBE_REQUIRED');
++  const run=async(id,timeoutMs)=>{
++   const d=join(out,'cases',id);await mkdir(d);const name='l01-'+owner+'-'+id;const args=['run','--pull','never','--name',name,'--label','mekoniq.l01.owner='+owner,'--network','none','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--pids-limit','128','--memory','2g','--cpus','2','--user',`${uid}:${gid}`,'--tmpfs','/tmp:rw,nosuid,nodev,size=768m','--mount',`type=bind,src=${observer},dst=/probe,readonly`,'--mount',`type=bind,src=${d},dst=/evidence`,'--entrypoint','node',subject.subject.image.configDigest,'/probe/mujoco-probe-container.mjs',id,'/evidence'];
++   let result;try{result=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});}
++   finally{
++    // Only a container with this invocation's unguessable ownership label is ever stopped/removed.
++    const cleanup=join(d,'cleanup');await mkdir(cleanup);const inspected=await runProbeCommand('docker',['inspect','--format','{{index .Config.Labels "mekoniq.l01.owner"}}',name],{out:cleanup,timeoutMs:10000});
++    if(inspected.status==='completed'&&(await readFile(join(cleanup,'stdout.log'),'utf8')).trim()===owner){for(const [label,args]of [['stop',['stop','-t','20',name]],['remove',['rm','-f',name]]]){const p=join(cleanup,label);await mkdir(p);await runProbeCommand('docker',args,{out:p,timeoutMs:30000});}}
++   }return result;
++  };
++  const pre=await run('inventory',120000);if(pre.status!=='completed')throw Error('IMAGE_INVENTORY_FAILED');
++  const imageInventory=await read(out,'cases/inventory/result.json');manifest.engine=imageInventory.engine;
++  if(!same(imageInventory.subject,subject.subject))throw Error('IMAGE_SUBJECT_MISMATCH');
++  const failures=probePrerequisites(subject,inventory,observed,manifest.engine);
++  if(imageInventory.architecture!=='x64'||imageInventory.node!=='v24.22.2'||!/^3\.11\./.test(manifest.engine.python)||!/^ID=debian$/m.test(imageInventory.osRelease)||!/^VERSION_ID="12"$/m.test(imageInventory.osRelease))failures.push('IMAGE_PLATFORM_TOOLCHAIN_MISMATCH');
++  failures.push(...imagePrerequisites(subject,manifest.engine,baseline.historicalRegistryDigest));
++  if(failures.length)throw Error(failures.join(','));
++  executed=true;
++  for(const spec of manifest.cases){if(signal?.aborted)throw Error('PROBE_ABORTED');spec.status='incomplete';await save();const result=await run(spec.id,spec.kind==='long_run'?360000:180000);spec.status=result.status==='completed'?'passed':result.status==='incomplete'?'incomplete':'failed';if(spec.status==='passed'){const raw=await read(out,'cases/'+spec.id+'/result.json',64*1024*1024);const verdict=assessCase(spec,raw);spec.assertions=verdict;spec.performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};if(!verdict.passed)spec.status='failed';}await save();}
++  manifest.qualification=manifest.cases.every(c=>c.status==='passed')?'passed':manifest.cases.some(c=>c.status==='incomplete')?'incomplete':'failed';manifest.DEP_MJ_01=manifest.qualification;
++ }catch(e){manifest.issues.push(e.message);if(executed){manifest.qualification='incomplete';manifest.DEP_MJ_01='incomplete';}}
++ manifest.finishedAt=new Date().toISOString();try{manifest.artifacts=await probeArtifacts(out);}catch(e){manifest.issues.push('ARTIFACT_COLLECTION_FAILED:'+e.message);manifest.qualification=executed?'incomplete':'not_run';manifest.DEP_MJ_01=manifest.qualification;}await save();return manifest;
++}
++export async function verifyMujocoProbe(root,checker){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push(code);};let manifest;
++ try{
++  manifest=await read(root,'manifest.json');check(checker&&same(manifest.checker,checker),'CHECKER_PIN');check(manifest.schemaVersion===1&&manifest.kind==='mujoco-native-probe'&&manifest.accepted===false&&manifest.dynamics==='not_calibrated','PROBE_MANIFEST');
++  const actual=await probeArtifacts(root),refs=manifest.artifacts??[];check(actual.length===refs.length,'ARTIFACT_SET');
++  for(const ref of refs){const a=actual.find(a=>a.path===ref.path);check(a&&same(a,ref),'ARTIFACT_HASH:'+ref.path);}check(new Set(refs.map(r=>r.path)).size===refs.length,'ARTIFACT_DUPLICATE');
++  check(manifest.qualification==='passed'&&manifest.DEP_MJ_01==='passed','NATIVE_CAMPAIGN_NOT_PASSED');
++  for(const name of OBSERVER)check(sha256(await probeFile(root,'observer/'+name))===sha256(await probeFile(ROOT,'scripts/native-sim/'+name)),'OBSERVER_PIN:'+name);
++  for(const f of baseline.m00.files)check(sha256(await probeFile(root,'observer/m00/'+f.path))===f.sha256,'M00_RECIPE_PIN');
++  check(sha256(await probeFile(root,'observer/m00-source.md'))===baseline.m00.documentSha256,'M00_SOURCE_PIN');
++  check(same(await read(root,'host-observed.json'),manifest.host),'HOST_MEASUREMENT');
++  const specs=mujocoCases();check(Array.isArray(manifest.cases)&&manifest.cases.length===specs.length,'CASE_MATRIX');
++  const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),handoff=await read(root,'handoff/manifest.json'),inventory=await read(root,'handoff/inventory.json');
++  const admitted=await validateNativeHandoff(join(root,'handoff'),handoff,inventory);check(admitted.nativeReady,'HANDOFF_NOT_NATIVE_READY');check(same(handoff.subject,manifest.subject),'SUBJECT_MISMATCH');
++  for(const issue of probePrerequisites(handoff,inventory,manifest.host,manifest.engine))issues.push(issue);
++  const image=await read(root,'image-inspect.json'),measured=await read(root,'cases/inventory/result.json');check(image.id===manifest.subject.image.configDigest&&image.os==='linux'&&image.architecture==='amd64'&&image.sourceCommit===manifest.subject.sourceCommit&&image.repoDigests.some(s=>s.endsWith('@'+manifest.subject.image.manifestDigest)),'IMAGE_MEASUREMENT');check(same(measured.engine,manifest.engine)&&same(measured.subject,manifest.subject),'ENGINE_MEASUREMENT');
++  check(measured.architecture==='x64'&&measured.node==='v24.22.2'&&/^3\.11\./.test(measured.engine.python)&&/^ID=debian$/m.test(measured.osRelease)&&/^VERSION_ID="12"$/m.test(measured.osRelease),'IMAGE_PLATFORM_TOOLCHAIN');
++  issues.push(...imagePrerequisites(handoff,manifest.engine,baseline.historicalRegistryDigest));
++  for(const spec of specs){try{
++   const entry=manifest.cases.find(c=>c.id===spec.id);check(entry&&spec.kind===entry.kind&&entry.scope===spec.scope&&entry.seed===spec.seed&&entry.status==='passed','CASE_STATUS:'+spec.id);
++   const dir='cases/'+spec.id+'/',proc=await read(root,dir+'process.json'),raw=await read(root,dir+'result.json',64*1024*1024);check(proc.status==='completed'&&proc.exitCode===0&&proc.command==='docker'&&proc.args.includes(manifest.subject.image.configDigest)&&proc.args.includes('/probe/mujoco-probe-container.mjs'),'EXECUTION_RECEIPT:'+spec.id);
++   for(const issue of assessCase(spec,raw).issues)issues.push(spec.id+':'+issue);
++   const performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};check(same(entry?.performance,performance),'PERFORMANCE_SUMMARY:'+spec.id);
++   if(['business','worker_loss'].includes(spec.kind)){
++    issues.push(...(await verifyBusinessRaw(join(root,dir),spec,raw,manifest.subject)).map(i=>spec.id+':'+i));
++   }else if(spec.kind==='bad_state'){
++    issues.push(...(await verifyBadStateRaw(join(root,dir),raw,baseline)).map(i=>spec.id+':'+i));
++   }else if(spec.kind==='m00')check(same(await read(root,dir+'engine/trace-'+spec.seed+'.json',64*1024*1024),raw.trace),'M00_RAW_TRACE');
++  }catch(e){issues.push('CASE_UNREADABLE:'+spec.id+':'+e.message);}}
++ }catch(e){issues.push('PROBE_UNREADABLE:'+e.message);}
++ return {passed:issues.length===0,issues,subject:manifest?.subject??null,qualification:issues.length?'not_qualified':'passed',accepted:false,dynamics:'not_calibrated'};
++}
++
++export async function readMujocoProbeSupplement(root,checker){
++ const manifest=await read(root,'manifest.json'),artifacts=await probeArtifacts(root);
++ if(!checker||!same(manifest.checker,checker))throw Error('PROBE_SUPPLEMENT_INVALID:CHECKER_PIN');
++ if(manifest.schemaVersion!==1||manifest.kind!=='mujoco-native-probe'||manifest.accepted!==false||!same(artifacts,manifest.artifacts)||!['passed','failed','incomplete','not_run'].includes(manifest.qualification))throw Error('PROBE_SUPPLEMENT_INVALID');
++ const verdict=await verifyMujocoProbe(root,checker);
++ if(manifest.qualification==='passed'&&!verdict.passed)throw Error('PROBE_SUPPLEMENT_INVALID:'+verdict.issues.join(','));
++ if(!manifest.subject||!same(Object.fromEntries(Object.keys(baseline.subject).map(k=>[k,manifest.subject[k]])),baseline.subject))throw Error('PROBE_SUPPLEMENT_INVALID:SUBJECT');
++ return {status:manifest.qualification,DEP_MJ_01:verdict.passed?'passed':manifest.qualification==='passed'?'not_run':manifest.qualification,subject:manifest.subject,checker:manifest.checker,manifestSha256:sha256(await probeFile(root,'manifest.json')),accepted:false,dynamics:'not_calibrated',issues:verdict.issues};
++}
++export async function copyMujocoProbeSupplement(input,out,checker){
++ const summary=await readMujocoProbeSupplement(input,checker),manifest=await read(input,'manifest.json');await mkdir(out,{mode:0o700});
++ for(const r of manifest.artifacts){const b=await probeFile(input,r.path);if(b.length!==r.bytes||sha256(b)!==r.sha256)throw Error('PROBE_CHANGED');await mkdir(dirname(join(out,r.path)),{recursive:true});await writeFile(join(out,r.path),b,{flag:'wx',mode:0o600});}
++ const b=await probeFile(input,'manifest.json');if(sha256(b)!==summary.manifestSha256)throw Error('PROBE_CHANGED');await writeFile(join(out,'manifest.json'),b,{flag:'wx'});await readMujocoProbeSupplement(out,checker);return summary;
++}
+diff --git a/scripts/native-sim/mujoco-probe-engine.py b/scripts/native-sim/mujoco-probe-engine.py
+index 170779d..e520c3d 100644
+--- a/scripts/native-sim/mujoco-probe-engine.py
++++ b/scripts/native-sim/mujoco-probe-engine.py
+@@ -1,45 +1,51 @@
+ """Observer-only harness, never a replacement subject worker. Runs only inside an admitted image.
+ M00 imports verbatim frozen recipe blocks. Bad-state uses the original WorkerSession and engine;
+ only one real qvel element is fault-injected. No Source custody assertion is made here.
+ """
+ import hashlib
+ import importlib.metadata
++import importlib.util
+ import json
+ from pathlib import Path
+ import resource
+ import sys
+ import time
+ 
+ MODE, OUT = sys.argv[1], Path(sys.argv[2])
+ OUT.mkdir(exist_ok=True, parents=True)
+ 
+ def save(name, value):
+     (OUT / name).write_text(json.dumps(value, allow_nan=False, separators=(",", ":")) + "\n")
+ 
++capture = None
+ try:
+     import mujoco
+     import numpy as np
+     if mujoco.__version__ != "3.17.0":
+         raise RuntimeError("ENGINE_VERSION_MISMATCH")
+     if MODE == "inventory":
+         artifacts = []
+         root = Path(mujoco.__file__).parent
+         for path in sorted(root.rglob("*")):
+             if path.is_file() and ("libmujoco" in path.name or path.name == "__init__.py"):
+                 b = path.read_bytes()
+                 artifacts.append({"path": str(path), "bytes": len(b), "digest": "sha256:" + hashlib.sha256(b).hexdigest()})
+         save("engine.json", {"version": mujoco.__version__, "python": sys.version, "artifacts": artifacts,
+                              "packages": sorted({d.metadata["Name"]: d.version for d in importlib.metadata.distributions()}.items())})
+     elif MODE in ("m00", "long_run"):
+         sys.path.insert(0, "/probe/m00")
+         import run as recipe
++        observer_spec = importlib.util.spec_from_file_location("probe_retention", "/probe/mujoco-probe-retention.py")
++        observer = importlib.util.module_from_spec(observer_spec)
++        observer_spec.loader.exec_module(observer)
++        capture = observer.install_retention(recipe, OUT, {"mode": MODE, "seed": int(sys.argv[3]) if len(sys.argv) > 3 else 42})
+         if MODE == "m00":
+             seed = int(sys.argv[3])
+             sys.argv = ["/probe/m00/run.py", "trials", json.dumps({"seeds": [seed], "dump": str(OUT / "trace")})]
+             recipe.main()
+         else:
+             P, T = dict(recipe.scene.DEFAULTS), recipe.tunables({})
+             m = mujoco.MjModel.from_xml_string(recipe.scene.build(P))
+             W, _ = recipe.waypoints(m, P, T)
+             sim, tick_ms, samples = recipe.Sim(P, W["home"]), [], []
+             for tick in range(180000):
+@@ -57,47 +63,57 @@ try:
+         sys.path.insert(0, "/app/robotics/simulation-mujoco")
+         from mujoco_worker.session import WorkerSession
+         from mujoco_worker.engine import BAD_STATE
+         from mujoco_worker.protocol import load_validators
+         from mujoco_worker.compile import compile_cell
+         bundle = Path("/probe/bad-state-bundle")
+         scene = json.loads((bundle / "arm-cell-scene.json").read_text())
+         component = json.loads((bundle / "component.json").read_text())
+         physics = json.loads((bundle / "physics.json").read_text())
+         (OUT / "compiled.xml").write_text(compile_cell(scene, component, physics, str(bundle / "blobs"))[0])
++        for name in ("arm-cell-scene.json", "component.json", "physics.json"):
++            (OUT / name).write_bytes((bundle / name).read_bytes())
+         session = WorkerSession(run_id="native-bad-state", bundle_root=str(bundle), lock_digest=hashlib.sha256(Path("/app/robotics/simulation-mujoco/requirements.lock").read_bytes()).hexdigest(), expected_scene_digest=scene["sceneDigest"])
+         validator, _ = load_validators("/app/packages/contracts/schemas")
+         requests, responses = [], []
+         def call(op, payload=None):
+             request = {"protocol": "mekoniq-sim3d/1", "requestId": "probe-" + str(len(requests)), "runId": "native-bad-state", "expectedTick": session.tick, "op": op, "payload": payload or {}}
+             validator.validate(request)
+             requests.append(request)
+             response = session.handle(request)
+             responses.append(response)
+             save("requests.json", requests)
+             save("responses.json", responses)
+             return response
+         created = call("create", {"sceneRef": "arm-cell-scene.json", "seed": 42, "arms": [{"armId": "arm-1", "sceneRef": "arm-cell-scene.json"}]})
+         started = call("start")
+         if not created["ok"] or not started["ok"]:
+             raise RuntimeError("BAD_STATE_CREATE_FAILED")
+         data = session.engine.data
+         before = {"tick": session.tick, "state": session.state}
+         old_warnings = {k: int(data.warning[w].number) for k, w in BAD_STATE.items()}
+         np.savez(OUT / "before-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
++        injection = {"kind": "qvel_nan", "atTick": 1, "index": int(session.engine.arm_qvel[0]), "joint": "J1"}
++        if injection["index"] != 0:
++            raise RuntimeError("INJECTION_JOINT_INDEX_MISMATCH")
++        save("injection.json", injection)
+         data.qvel[session.engine.arm_qvel[0]] = float("nan")
+         np.savez(OUT / "injected-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
+         payload = {"targetTick": 1, "velocities": [], "actorUpdates": [], "jointTargets": [{"armId": "arm-1", "positionsRad": scene["arm"]["homeRad"]}]}
+         t0 = time.perf_counter()
+         response = call("step", payload)
+         elapsed = (time.perf_counter() - t0) * 1000
+         after = {"tick": session.tick, "state": session.state}
+         warnings = {k: int(data.warning[w].number) - old_warnings[k] for k, w in BAD_STATE.items()}
+         np.savez(OUT / "after-state.npz", qpos=data.qpos.copy(), qvel=data.qvel.copy(), qacc=data.qacc.copy(), ctrl=data.ctrl.copy())
++        save("snapshots.json", {"before": {**before, "warnings": old_warnings},
++                                "after": {**after, "warnings": {k: int(data.warning[w].number) for k, w in BAD_STATE.items()}}})
+         post_fault = call("step", payload)
+-        save("result.json", {"scope": "instrumented_historical_worker", "engineVersion": mujoco.__version__, "injection": {"kind": "qvel_nan", "atTick": 1}, "before": before, "after": after,
++        save("result.json", {"scope": "instrumented_historical_worker", "engineVersion": mujoco.__version__, "injection": injection, "before": before, "after": after,
+                              "response": response, "postFault": post_fault, "warningDelta": warnings, "elapsedMs": elapsed})
+         session.end()
+     else:
+         raise RuntimeError("UNKNOWN_PROBE_MODE")
+ finally:
++    if capture is not None:
++        capture.finish("exception" if sys.exc_info()[0] else "returned")
+     save("resource.json", {"maxRssKiB": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss})
+diff --git a/scripts/native-sim/mujoco-probe-evidence.d.mts b/scripts/native-sim/mujoco-probe-evidence.d.mts
+index 052f502..45846c6 100644
+--- a/scripts/native-sim/mujoco-probe-evidence.d.mts
++++ b/scripts/native-sim/mujoco-probe-evidence.d.mts
+@@ -1,9 +1,10 @@
+ export interface ProbeCase {id:string;kind:string;seed:number;scope:string}
+ export function mujocoCases():ProbeCase[];
+ export function probePrerequisites(manifest:unknown,inventory:unknown,host:unknown,engine:unknown):string[];
+ export function assessCase(spec:ProbeCase,raw:unknown):{passed:boolean;issues:string[]};
+ export function sha256(bytes:string|Uint8Array):string;
+ export function probeFile(root:string,path:string,max?:number):Promise<Buffer>;
+ export function probeArtifacts(root:string):Promise<{path:string;bytes:number;sha256:string}[]>;
+ export function analyseWire(events:unknown[]):{valid:boolean;issues:string[];spawned:number[];maxActive:number;ipcMs:number[];pending:unknown[];active:number[]};
+ export function timingSummary(values:number[]):{samples:number;p50Ms:number;p95Ms:number;maxMs:number};
++export function imagePrerequisites(handoff:unknown,engine:unknown,historicalRegistryDigest:string):string[];
+diff --git a/scripts/native-sim/mujoco-probe-evidence.mjs b/scripts/native-sim/mujoco-probe-evidence.mjs
+index 390d1d3..b8a9524 100644
+--- a/scripts/native-sim/mujoco-probe-evidence.mjs
++++ b/scripts/native-sim/mujoco-probe-evidence.mjs
+@@ -77,26 +77,41 @@ export async function probeFile(root,path,max=64*1024*1024){
+  const base=await realpath(root);let file=base;for(const p of path.split('/')){file=join(file,p);if((await lstat(file)).isSymbolicLink())throw Error('PROBE_PATH_REJECTED');}
+  const handle=await open(file,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
+  try{const before=await handle.stat();if(!before.isFile()||before.size>max)throw Error('PROBE_FILE_LIMIT');const b=Buffer.alloc(before.size+1);let n=0;while(n<b.length){const r=await handle.read(b,n,b.length-n,n);if(!r.bytesRead)break;n+=r.bytesRead;}const after=await handle.stat(),pathStat=await lstat(file);if(n!==before.size||after.size!==before.size||after.ctimeMs!==before.ctimeMs||pathStat.ino!==after.ino||pathStat.dev!==after.dev||await realpath(file)!==file)throw Error('PROBE_FILE_CHANGED');return b.subarray(0,n);}finally{await handle.close();}
+ }
+ export async function probeArtifacts(root,base='',budget={files:0,bytes:0}){
+  const result=[];for(const name of (await readdir(join(root,base))).sort()){if(!base&&name==='manifest.json')continue;const path=base?base+'/'+name:name;if(++budget.files>10000||path.split('/').length>14)throw Error('PROBE_ARTIFACT_LIMIT');const st=await lstat(join(root,path));if(st.isSymbolicLink())throw Error('PROBE_PATH_REJECTED');if(st.isDirectory())result.push(...await probeArtifacts(root,path,budget));else{const b=await probeFile(root,path);budget.bytes+=b.length;if(budget.bytes>1024**3)throw Error('PROBE_ARTIFACT_LIMIT');result.push({path,bytes:b.length,sha256:sha256(b)});}}return result;
+ }
+ export function analyseWire(events){
+  const seen=new Set(),pending=new Map(),spawned=[],ipcMs=[],issues=[];let maxActive=0,active=new Set();
+  for(const e of events){
+-  if(e.event==='spawn'){spawned.push(e.pid);active.add(e.pid);maxActive=Math.max(maxActive,active.size);}
+-  else if(e.event==='exit')active.delete(e.pid);
++  if(e.event==='spawn'){if(spawned.includes(e.pid))issues.push('WIRE_DUPLICATE_SPAWN');spawned.push(e.pid);active.add(e.pid);maxActive=Math.max(maxActive,active.size);}
++  else if(e.event==='exit'){if(!active.has(e.pid))issues.push('WIRE_EXIT_WITHOUT_SPAWN');active.delete(e.pid);}
+   else if(e.event==='request'){
+-   const key=e.pid+':'+e.value?.requestId;if(!spawned.includes(e.pid)||seen.has(key)||pending.has(e.pid)||!Number.isFinite(e.atMs))issues.push('WIRE_RESEND_OR_OVERLAP');seen.add(key);pending.set(e.pid,e);
++   const key=e.pid+':'+e.value?.requestId;if(!active.has(e.pid)||seen.has(key)||pending.has(e.pid)||!Number.isFinite(e.atMs))issues.push('WIRE_RESEND_OR_OVERLAP');seen.add(key);pending.set(e.pid,e);
+   }else if(e.event==='ack'){
+-   const p=pending.get(e.pid);if(!p||p.value?.requestId!==e.value?.requestId||!Number.isFinite(e.atMs)||e.atMs<p.atMs)issues.push('WIRE_ACK_MISMATCH');else if(p.value.op==='step')ipcMs.push(e.atMs-p.atMs);pending.delete(e.pid);
++   const p=pending.get(e.pid);if(!active.has(e.pid)||!p||p.value?.requestId!==e.value?.requestId||!Number.isFinite(e.atMs)||e.atMs<p.atMs)issues.push('WIRE_ACK_MISMATCH');else if(p.value.op==='step')ipcMs.push(e.atMs-p.atMs);pending.delete(e.pid);
+   }else issues.push('WIRE_OBSERVATION_INCOMPLETE');
+  }
+  if(active.size)issues.push('WIRE_EXIT_MISSING');
+  if(spawned.length!==1||maxActive!==1)issues.push('WIRE_RESPAWN_OR_MISSING');
+  return {valid:issues.length===0,issues,spawned,maxActive,ipcMs,pending:[...pending.values()],active:[...active]};
+ }
+ export function timingSummary(values){
+  if(!quantiles(values))throw Error('TIMING_SAMPLES_INVALID');const sorted=[...values].sort((a,b)=>a-b);
+  return {samples:sorted.length,p50Ms:sorted[Math.ceil(sorted.length*0.5)-1],p95Ms:sorted[Math.ceil(sorted.length*0.95)-1],maxMs:sorted.at(-1)};
+ }
++// Shared by execution and independent readback; registry and measured package policy are symmetric.
++export function imagePrerequisites(handoff,engine,historicalRegistryDigest){
++ const issues=[],normalize=s=>s.toLowerCase().replace(/[-_.]+/g,'-');
++ if(handoff.subject?.image?.manifestDigest!==historicalRegistryDigest)issues.push('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
++ const required=handoff.profile.requiredPackages,packages=engine?.packages;
++ if(!Array.isArray(required)||required.length!==1)issues.push('UNMEASURED_PACKAGE_LOCK');
++ if(!Array.isArray(packages)||packages.some(p=>!Array.isArray(p)||typeof p[0]!=='string'||typeof p[1]!=='string'))issues.push('IMAGE_PACKAGE_MEASUREMENT');
++ else{
++  if(packages.some(([name])=>handoff.profile.forbiddenPackages.some(p=>normalize(p)===normalize(name))))issues.push('IMAGE_FORBIDDEN_PACKAGE');
++  if(packages.filter(([name,version])=>normalize(name)==='mujoco'&&version==='3.17.0').length!==1)issues.push('IMAGE_ENGINE_PACKAGE');
++ }
++ const lib=engine?.artifacts?.find(f=>f.path.includes('libmujoco')),lock=required?.find(p=>p.name==='mujoco');
++ if(!lock||lock.version!=='3.17.0'||'sha256:'+lock.sha256!==lib?.digest)issues.push('ENGINE_ARTIFACT_LOCK_MISMATCH');
++ return issues;
++}
+diff --git a/scripts/native-sim/mujoco-probe-npz.mjs b/scripts/native-sim/mujoco-probe-npz.mjs
+new file mode 100644
+index 0000000..39eb549
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-npz.mjs
+@@ -0,0 +1,26 @@
++// Deliberately narrow, bounded reader of np.savez's four uncompressed float64 state vectors.
++// No pickle, object arrays, extraction, decompression, arbitrary dtype or ZIP paths.
++import {crc32} from 'node:zlib';
++export function readStateNpz(bytes){
++ const fail=()=>{throw Error('STATE_NPZ_INVALID');};
++ if(bytes.length<22||bytes.length>1024*1024)fail();const end=bytes.length-22;
++ if(bytes.readUInt32LE(end)!==0x06054b50||bytes.readUInt32LE(end+4)!==0||bytes.readUInt16LE(end+8)!==4||bytes.readUInt16LE(end+10)!==4||bytes.readUInt16LE(end+20)!==0)fail();
++ const start=bytes.readUInt32LE(end+16);if(start+bytes.readUInt32LE(end+12)!==end)fail();
++ let cursor=start;const result={},ranges=[];
++ for(let i=0;i<4;i++){
++  if(cursor+46>end||bytes.readUInt32LE(cursor)!==0x02014b50)fail();
++  const flags=bytes.readUInt16LE(cursor+8),method=bytes.readUInt16LE(cursor+10),size=bytes.readUInt32LE(cursor+24),crc=bytes.readUInt32LE(cursor+16),nameSize=bytes.readUInt16LE(cursor+28),extra=bytes.readUInt16LE(cursor+30),comment=bytes.readUInt16LE(cursor+32),offset=bytes.readUInt32LE(cursor+42);
++  if(flags!==0||method!==0||size!==bytes.readUInt32LE(cursor+20)||offset+30>start||bytes.readUInt32LE(offset)!==0x04034b50||bytes.readUInt16LE(offset+6)!==0||bytes.readUInt16LE(offset+8)!==0)fail();
++  const name=bytes.subarray(cursor+46,cursor+46+nameSize).toString(),key=name.replace(/\.npy$/,'');
++  if(!['qpos','qvel','qacc','ctrl'].includes(key)||name!==key+'.npy'||key in result||bytes.readUInt16LE(offset+26)!==nameSize||bytes.subarray(offset+30,offset+30+nameSize).toString()!==name)fail();
++  const dataOffset=offset+30+nameSize+bytes.readUInt16LE(offset+28),stop=dataOffset+size;
++  if(stop>start||ranges.some(([a,b])=>offset<b&&stop>a))fail();ranges.push([offset,stop]);
++  const npy=bytes.subarray(dataOffset,stop);if(crc32(npy)!==crc||npy.length<10||!npy.subarray(0,6).equals(Buffer.from([147,78,85,77,80,89]))||![1,2].includes(npy[6])||npy[7]!==0)fail();
++  const base=npy[6]===1?10:12,headerSize=base===10?npy.readUInt16LE(8):npy.readUInt32LE(8);if(headerSize>1024||base+headerSize>npy.length)fail();
++  const header=npy.subarray(base,base+headerSize).toString(),match=/^\{'descr': '<f8', 'fortran_order': False, 'shape': \((\d+),\), \}\s*$/.exec(header);if(!match)fail();
++  const count=Number(match[1]);if(count<1||count>4096||base+headerSize+count*8!==npy.length)fail();
++  result[key]=Array.from({length:count},(_,i)=>npy.readDoubleLE(base+headerSize+i*8));
++  cursor+=46+nameSize+extra+comment;if(cursor>end)fail();
++ }
++ if(cursor!==end)fail();return result;
++}
+diff --git a/scripts/native-sim/mujoco-probe-raw.d.mts b/scripts/native-sim/mujoco-probe-raw.d.mts
+new file mode 100644
+index 0000000..ae1058c
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-raw.d.mts
+@@ -0,0 +1,3 @@
++export function readSealedWire(root:string,runId:string):Promise<unknown[]>;
++export function verifyBusinessRaw(root:string,spec:unknown,raw:unknown,subject:unknown):Promise<string[]>;
++export function verifyBadStateRaw(root:string,raw:unknown,baseline:unknown):Promise<string[]>;
+diff --git a/scripts/native-sim/mujoco-probe-raw.mjs b/scripts/native-sim/mujoco-probe-raw.mjs
+new file mode 100644
+index 0000000..ed352ae
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-raw.mjs
+@@ -0,0 +1,68 @@
++// Read original observations. Derived summaries never replace missing/contradictory raw evidence.
++import {isDeepStrictEqual as same} from 'node:util';
++import {lstat} from 'node:fs/promises';
++import {join} from 'node:path';
++import {probeFile,sha256,analyseWire} from './mujoco-probe-evidence.mjs';
++const read=async(root,path)=>JSON.parse((await probeFile(root,path)).toString());
++export async function readSealedWire(root,runId){
++ if(await lstat(join(root,'wire.jsonl.incomplete')).then(()=>true,e=>{if(e.code==='ENOENT')return false;throw e;}))throw Error('WIRE_INCOMPLETE_MARKER');
++ const bytes=await probeFile(root,'wire.jsonl'),seal=await read(root,'wire.jsonl.seal');
++ if(seal.complete!==true||seal.totalBytes!==bytes.length||!bytes.length||bytes.at(-1)!==10)throw Error('WIRE_BYTE_ACCOUNTING');
++ const wire=bytes.toString('utf8').slice(0,-1).split('\n').map(s=>JSON.parse(s));
++ let last=-Infinity;
++ for(const e of wire){if(e.runId!==runId||!Number.isSafeInteger(e.pid)||e.pid<2||!Number.isFinite(e.atMs)||e.atMs<last)throw Error('WIRE_SCOPE_OR_ORDER');last=e.atMs;}
++ if(!analyseWire(wire).valid)throw Error('WIRE_LIFECYCLE');return wire;
++}
++export async function verifyBusinessRaw(root,spec,raw,subject){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push(code);};
++ try{
++  const report=await read(root,'report.json'),runId=report.manifest.runId,wire=await readSealedWire(root,runId);
++  check(same(report,raw.report)&&report.manifest.sourceCommit===subject.sourceCommit&&report.schemaHash===subject.schemaHash,'SUBJECT_READER');
++  check(same(wire,raw.wire)&&same(wire,await read(root,'run-wire.json')),'WIRE_DERIVATION');
++  check(same(await read(root,'requests.json'),raw.requests),'HTTP_REQUEST_BYTES');
++  const copies=await read(root,'runtime-copies.json');
++  check(copies.afterRuntimeClose===true&&copies.copies.some(c=>c.path.endsWith('/journal.db')),'SQLITE_VERIFIED_COPY');
++  const checkpoints=[];
++  for(const r of copies.copies){const b=await probeFile(root,r.path);check(b.length===r.bytes&&sha256(b)===r.sha256,'RUNTIME_COPY_HASH');if(r.path.endsWith('/run.json')){const c=JSON.parse(b);if(c.runId===runId)checkpoints.push({path:r.path,value:c});}}
++  check(checkpoints.length===1&&same(checkpoints[0].value,raw.checkpoint),'SOURCE_CHECKPOINT_BYTES');
++  const runRoot=checkpoints[0]?.path.slice(0,-'run.json'.length);
++  const traceRef=copies.copies.find(r=>r.path===runRoot+report.arm.trace.path),propsRef=copies.copies.find(r=>r.path===runRoot+report.arm.props.path);
++  check(traceRef?.sha256===report.arm.trace.sha256&&propsRef?.sha256===report.arm.props.sha256,'SUBJECT_TRACE_REFS');
++  if(traceRef&&propsRef)check(same(await read(root,traceRef.path),raw.trace)&&same(await read(root,propsRef.path),raw.props),'SUBJECT_TRACE_BYTES');
++  if(spec.kind==='worker_loss'){
++   const injection=await read(root,'injection.json'),spawn=wire[0],exit=wire.at(-1);
++   check(same(injection,raw.injection),'INJECTION_BYTES');
++   check(injection.kind==='owned_pid_sigkill'&&spawn.event==='spawn'&&spawn.pid===injection.pid&&exit.event==='exit'&&exit.pid===injection.pid&&exit.signal==='SIGKILL'&&injection.atMs>=spawn.atMs&&injection.atMs<=exit.atMs&&!wire.some(e=>e.event==='ack'&&e.atMs>injection.atMs&&e.value.ok),'NO_POST_LOSS_ACK');
++  }
++ }catch(e){issues.push('RAW_OBSERVATION_UNREADABLE:'+e.message);}
++ return issues;
++}
++
++export async function verifyBadStateRaw(root,raw,baseline){
++ const issues=[],check=(ok,code)=>{if(!ok)issues.push(code);};
++ try{
++  const {readStateNpz}=await import('./mujoco-probe-npz.mjs');
++  const states={};for(const key of ['before','injected','after'])states[key]=readStateNpz(await probeFile(root,'engine/'+key+'-state.npz',1024*1024));
++  const injection=await read(root,'engine/injection.json'),snapshots=await read(root,'engine/snapshots.json');
++  check(same(injection,raw.injection)&&same(injection,{kind:'qvel_nan',atTick:1,index:0,joint:'J1'}),'BAD_STATE_INJECTION_BYTES');
++  check(Object.values(states.before).every(a=>a.every(Number.isFinite)),'BAD_STATE_BEFORE_FINITE');
++  for(const key of ['qpos','qvel','qacc','ctrl']){
++   check(states.before[key].length===baseline.badStateCompiled.stateSizes[key],'BAD_STATE_MODEL_DIMENSIONS');
++   const expected=[...states.before[key]];if(key==='qvel')expected[0]=NaN;
++   check(same(states.injected[key],expected)&&states.after[key].length===expected.length,'BAD_STATE_SINGLE_QVEL_INJECTION');
++  }
++  check(same({tick:snapshots.before.tick,state:snapshots.before.state},raw.before)&&same({tick:snapshots.after.tick,state:snapshots.after.state},raw.after),'BAD_STATE_SNAPSHOT_BYTES');
++  const warningKeys=Object.keys(snapshots.before.warnings);check(same([...warningKeys].sort(),['BADQACC','BADQPOS','BADQVEL'])&&same(warningKeys.sort(),Object.keys(snapshots.after.warnings).sort()),'BAD_STATE_WARNING_KEYS');
++  const delta=Object.fromEntries(warningKeys.map(k=>[k,snapshots.after.warnings[k]-snapshots.before.warnings[k]]));
++  check(Object.values(snapshots.before.warnings).every(n=>Number.isInteger(n)&&n>=0)&&Object.values(snapshots.after.warnings).every(n=>Number.isInteger(n)&&n>=0)&&same(delta,raw.warningDelta),'BAD_STATE_WARNING_BYTES');
++  const scene=await read(root,'engine/arm-cell-scene.json');check(same(scene,baseline.world),'BAD_STATE_SCENE_BYTES');
++  for(const name of ['component.json','physics.json']){const expected=baseline.files.find(r=>r.path==='robotics/simulation-mujoco/fixtures/xarm6-g2-v1/'+name);check(expected&&sha256(await probeFile(root,'engine/'+name))===expected.sha256,'BAD_STATE_INPUT_BYTES:'+name);}
++  check(sha256(await probeFile(root,'engine/compiled.xml'))===baseline.badStateCompiled.sha256,'BAD_STATE_COMPILED_BYTES');
++  const payload={targetTick:1,velocities:[],actorUpdates:[],jointTargets:[{armId:'arm-1',positionsRad:baseline.world.arm.homeRad}]};
++  const expected=['create','start','step','step'].map((op,i)=>({protocol:'mekoniq-sim3d/1',requestId:'probe-'+i,runId:'native-bad-state',expectedTick:0,op,payload:i===0?{sceneRef:'arm-cell-scene.json',seed:42,arms:[{armId:'arm-1',sceneRef:'arm-cell-scene.json'}]}:i<2?{}:payload}));
++  const requests=await read(root,'engine/requests.json'),responses=await read(root,'engine/responses.json');
++  check(same(requests,expected),'BAD_STATE_REQUEST_BYTES');
++  check(responses.length===4&&responses.every((r,i)=>r.requestId===expected[i].requestId)&&responses[0].ok===true&&responses[1].ok===true&&same(responses[2],raw.response)&&same(responses[3],raw.postFault),'BAD_STATE_RESPONSE_BYTES');
++ }catch(e){issues.push('BAD_STATE_RAW_UNREADABLE:'+e.message);}
++ return issues;
++}
+diff --git a/scripts/native-sim/mujoco-probe-retention.py b/scripts/native-sim/mujoco-probe-retention.py
+new file mode 100644
+index 0000000..bc7eb05
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-retention.py
+@@ -0,0 +1,95 @@
++"""Separately hashed observer of the frozen recipe. No engine import or dynamics changes.
++Snapshots every 100 completed ticks and on warning/exception/finalization; the last
++128 commands/samples are bounded diagnostics. Nonfinite numbers use explicit strings.
++Observer copying/I/O cost is outside the recipe's engine-step timer, inside wall time.
++"""
++from collections import deque
++import json
++import math
++from pathlib import Path
++
++
++def plain(value):
++    if hasattr(value, 'tolist'):
++        return plain(value.tolist())
++    if isinstance(value, dict):
++        return {str(k): plain(v) for k, v in value.items()}
++    if isinstance(value, (list, tuple)):
++        return [plain(v) for v in value]
++    if isinstance(value, float) and not math.isfinite(value):
++        return 'NaN' if math.isnan(value) else ('Infinity' if value > 0 else '-Infinity')
++    return value
++
++
++def state(data):
++    return {key: plain(list(getattr(data, key))) for key in ('qpos', 'qvel', 'qacc', 'ctrl')}
++
++
++class Retention:
++    def __init__(self, out, identity):
++        self.out, self.identity = Path(out), identity
++        self.out.mkdir(parents=True, exist_ok=True)
++        self.sim, self.completed, self.attempted = None, 0, 0
++        self.inputs, self.samples = deque(maxlen=128), deque(maxlen=128)
++        self.failed = False
++
++    def save(self, name, value):
++        target = self.out / name
++        temporary = target.with_suffix(target.suffix + '.partial')
++        temporary.write_text(json.dumps(plain(value), allow_nan=False, separators=(',', ':')) + '\n')
++        temporary.replace(target)
++
++    def snapshot(self, reason):
++        data = getattr(self.sim, 'd', None)
++        if data is None:
++            self.save('retention.json', {'scope': 'observer_instrumented_frozen_recipe', 'identity': self.identity,
++                                       'reason': reason, 'stateAvailable': False, 'attemptedTicks': self.attempted})
++            return
++        warnings = [int(w.number) for w in data.warning]
++        captured = {'state': state(data), 'warnings': warnings, 'engineTimeS': float(data.time),
++                    'attemptedTicks': self.attempted, 'completedTicks': self.completed, 'reason': reason}
++        self.save('last-state.json', captured)
++        if not self.failed and (any(warnings) or reason.endswith('exception')):
++            self.save('first-failure-state.json', captured)
++            self.failed = True
++        self.save('retention.json', {'scope': 'observer_instrumented_frozen_recipe', 'identity': self.identity,
++                                   'reason': reason, 'stateAvailable': True, 'attemptedTicks': self.attempted,
++                                   'completedTicks': self.completed, 'checkpointEveryTicks': 100,
++                                   'sampleLimit': 128, 'inputs': list(self.inputs), 'samples': list(self.samples)})
++
++    def finish(self, reason):
++        self.snapshot(reason)
++
++
++def install_retention(recipe, out, identity):
++    capture, original = Retention(out, identity), recipe.Sim
++
++    class ObservedSim(original):
++        def __init__(self, parameters, q0, grip0=0.0):
++            capture.sim = self
++            capture.save('nominal-inputs.json', {'identity': identity, 'parameters': parameters, 'q0': q0, 'grip0': grip0})
++            (capture.out / 'nominal-compiled.xml').write_text(recipe.scene.build(parameters))
++            try:
++                super().__init__(parameters, q0, grip0)
++            except BaseException:
++                capture.snapshot('constructor_exception')
++                raise
++            capture.snapshot('initialized')
++
++        def tick(self, command, label=''):
++            capture.attempted += 1
++            capture.inputs.append({'attempt': capture.attempted, 'command': plain(command), 'label': label})
++            try:
++                result = super().tick(command, label)
++            except BaseException:
++                capture.snapshot('tick_exception')
++                raise
++            capture.completed += 1
++            if self.log:
++                capture.samples.append(plain(self.log[-1]))
++            if capture.completed % 100 == 0 or any(w.number for w in self.d.warning):
++                capture.snapshot('warning' if any(w.number for w in self.d.warning) else 'periodic')
++            return result
++
++    recipe.Sim = ObservedSim
++    return capture
+diff --git a/scripts/native-sim/mujoco-probe.d.mts b/scripts/native-sim/mujoco-probe.d.mts
+index 17120b2..f758296 100644
+--- a/scripts/native-sim/mujoco-probe.d.mts
++++ b/scripts/native-sim/mujoco-probe.d.mts
+@@ -1,3 +1,4 @@
+-export function runMujocoProbe(options:{handoff:string;out:string;checker:{sourceCommit:string;toolSha256:string};signal?:AbortSignal}):Promise<{qualification:string;accepted:boolean;DEP_MJ_01:string;cases:{status:string}[]}>;
++export function runMujocoProbe(options:{handoff:string;out:string;signal?:AbortSignal}):Promise<{qualification:string;accepted:boolean;DEP_MJ_01:string;cases:{status:string}[]}>;
+ export function verifyMujocoProbe(root:string):Promise<{passed:boolean;issues:string[];qualification:string;accepted:boolean}>;
+ export function readMujocoProbeSupplement(root:string):Promise<{status:string;accepted:boolean;[key:string]:unknown}>;
++export function copyMujocoProbeSupplement(input:string,out:string):ReturnType<typeof readMujocoProbeSupplement>;
+diff --git a/scripts/native-sim/mujoco-probe.mjs b/scripts/native-sim/mujoco-probe.mjs
+index 7ff3599..0196f7c 100644
+--- a/scripts/native-sim/mujoco-probe.mjs
++++ b/scripts/native-sim/mujoco-probe.mjs
+@@ -1,147 +1,18 @@
+ #!/usr/bin/env node
+-// L01: orchestration, never provisioning. The subject image and observer checker are independent identities.
+-import {mkdir,writeFile,readFile,lstat,readdir} from 'node:fs/promises';
+-import {execFileSync} from 'node:child_process';
+-import {join,dirname,resolve} from 'node:path';
+-import {fileURLToPath,pathToFileURL} from 'node:url';
+-import {randomUUID} from 'node:crypto';
+-import {isDeepStrictEqual as same} from 'node:util';
+-import {platform,arch} from 'node:os';
+-import {tsImport} from 'tsx/esm/api';
+-import {checkedCheckerCommit} from '../native-handoff.mjs';
+-import {collectNativeInventory} from './native-inventory.mjs';
+-import {runProbeCommand} from './mujoco-probe-process.mjs';
+-import {probeFile,probeArtifacts,sha256,mujocoCases,assessCase,analyseWire,probePrerequisites,timingSummary} from './mujoco-probe-evidence.mjs';
+-import baseline from './r2a-arm-baseline.json' with {type:'json'};
+-const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),json=v=>JSON.stringify(v,null,2)+'\n';
+-const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-engine.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
+-const read=async(root,path,max)=>JSON.parse((await probeFile(root,path,max??1024*1024)).toString());
+-async function stageObserver(out,handoff,manifest){
+- const dest=join(out,'observer');await mkdir(dest,{mode:0o700});
+- for(const name of OBSERVER)await writeFile(join(dest,name),await probeFile(ROOT,'scripts/native-sim/'+name),{flag:'wx',mode:0o600});
+- await writeFile(join(dest,'handoff.json'),json(manifest),{flag:'wx'});
+- const doc=execFileSync('git',['show',baseline.m00.sourceCommit+':'+baseline.m00.sourcePath],{cwd:ROOT,timeout:10000,maxBuffer:1024*1024});
+- if(sha256(doc)!==baseline.m00.documentSha256)throw Error('M00_DOCUMENT_CHANGED');await mkdir(join(dest,'m00'));await writeFile(join(dest,'m00-source.md'),doc);
+- const blocks=[...doc.toString().matchAll(/```python\n([\s\S]*?)```/g)].map(m=>m[1]);
+- for(const f of baseline.m00.files){const b=blocks.find(b=>sha256(b)===f.sha256);if(!b)throw Error('M00_RECIPE_CHANGED');await writeFile(join(dest,'m00',f.path),b,{flag:'wx'});}
+- const bundle=join(dest,'bad-state-bundle');await mkdir(join(bundle,'blobs'),{recursive:true});await writeFile(join(bundle,'arm-cell-scene.json'),JSON.stringify(baseline.world));
+- const base='robotics/simulation-mujoco/fixtures/xarm6-g2-v1/';
+- for(const ref of Object.values(manifest.refs).flat())if(ref.sourcePath.startsWith(base)&&(ref.sourcePath.endsWith('/component.json')||ref.sourcePath.endsWith('/physics.json')||ref.sourcePath.includes('/blobs/'))){const b=await probeFile(handoff,ref.path);if(sha256(b)!==ref.sha256)throw Error('SUBJECT_CHANGED');await writeFile(join(bundle,ref.sourcePath.slice(base.length)),b,{flag:'wx'});}
+- return dest;
+-}
+-export async function runMujocoProbe({handoff,out,checker,signal}){
+- out=resolve(out);handoff=resolve(handoff);if(out===ROOT||out.startsWith(ROOT+'/'))throw Error('EVIDENCE_MUST_BE_OUTSIDE_SOURCE');
+- await mkdir(out,{mode:0o700});
+- const manifest={schemaVersion:1,kind:'mujoco-native-probe',profileId:'mujoco-linux-amd64',subject:null,checker,accepted:false,dynamics:'not_calibrated',qualification:'not_run',DEP_MJ_01:'not_run',startedAt:new Date().toISOString(),issues:[],host:null,inventory:null,engine:null,cases:mujocoCases().map(c=>({...c,status:'not_run'})),r2b:{status:'not_run',reason:'image_unbuilt; separate current subject adapter owned by B10 (R83)'},artifacts:[]};
+- const save=()=>writeFile(join(out,'manifest.json'),json(manifest),{mode:0o600});await save();let executed=false;
+- try{
+-  const {readNativeHandoff,validateNativeHandoff,exportNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
+-  const subject=await readNativeHandoff(handoff);manifest.subject=subject.subject;
+-  const prepared=await validateNativeHandoff(handoff,subject);await writeFile(join(out,'preparation.json'),json(prepared));if(!prepared.prepared)throw Error('HANDOFF_NOT_PREPARED');
+-  await exportNativeHandoff(handoff,join(out,'handoff'));
+-  // This guard precedes ALL Docker commands. A Mac container is never native Linux evidence.
+-  const observed=await collectNativeInventory();manifest.host=observed;await writeFile(join(out,'host-observed.json'),json(observed));
+-  if(platform()!=='linux'||arch()!=='x64')throw Error('NATIVE_AMD64_HOST_UNASSIGNED');
+-  if(subject.profile.documents.kind!=='mujoco_r2a_arm_v1'||subject.profile.architecture!=='amd64')throw Error('R2A_PROFILE_REQUIRED');
+-  const inventory=await read(handoff,'inventory.json'),assignment=await read(handoff,'host-assignment.json');
+-  const machine=sha256(await readFile('/etc/machine-id'));
+-  if(assignment.schemaVersion!==1||assignment.assigned!==true||assignment.machineIdSha256!==machine||assignment.hostOs!=='linux'||assignment.hostArchitecture!=='amd64'||assignment.emulation!=='none'||!['bare_metal','vm'].includes(assignment.virtualization)||typeof assignment.assignedBy!=='string'||!assignment.assignedBy.trim())throw Error('HOST_ASSIGNMENT_REQUIRED');
+-  // Refuse nested containers and registered cross-ISA handlers; external provenance remains an operator attestation.
+-  if(await lstat('/.dockerenv').then(()=>true,()=>false)||await lstat('/run/.containerenv').then(()=>true,()=>false))throw Error('HOST_CONTAINER_NOT_ASSIGNED');
+-  for(const name of await readdir('/proc/sys/fs/binfmt_misc').catch(()=>[]))if(/qemu|rosetta/i.test(name)&&(await readFile('/proc/sys/fs/binfmt_misc/'+name,'utf8')).startsWith('enabled'))throw Error('HOST_EMULATION_ENABLED');
+-  observed.provenance={origin:'linux_native',hostOs:'linux',hostArchitecture:'amd64',emulation:'none',virtualization:assignment.virtualization,assignmentSha256:sha256(json(assignment))};manifest.host=observed;manifest.inventory=inventory;await writeFile(join(out,'host-observed.json'),json(observed));
+-  const admission=await validateNativeHandoff(handoff,subject,inventory);await writeFile(join(out,'admission.json'),json(admission));if(!admission.nativeReady)throw Error('HANDOFF_NOT_NATIVE_READY:'+admission.issues.map(i=>i.code).join(','));
+-  if(subject.subject.image.manifestDigest!==baseline.historicalRegistryDigest)throw Error('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
+-  // L00's exported refs exclude host provenance. Copy precisely the validated inventory/provenance records too.
+-  const provenance=await read(handoff,inventory.provenance.evidencePath);
+-  for(const p of ['inventory.json','host-assignment.json',inventory.provenance.evidencePath,provenance.platformManifestPath,provenance.imageConfigPath]){const b=await probeFile(handoff,p);await mkdir(dirname(join(out,'handoff',p)),{recursive:true});await writeFile(join(out,'handoff',p),b,{flag:'wx',mode:0o600});}
+-  const observer=await stageObserver(out,handoff,subject),owner=randomUUID();await mkdir(join(out,'commands'));await mkdir(join(out,'cases'));
+-  let seq=0;const command=async(args,timeoutMs=20000)=>{const d=join(out,'commands',String(++seq));await mkdir(d);const r=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});if(r.status!=='completed')throw Error('DOCKER_COMMAND_FAILED:'+args[0]);return (await readFile(join(d,'stdout.log'),'utf8')).trim();};
+-  if(process.env.DOCKER_HOST||process.env.DOCKER_CONTEXT)throw Error('REMOTE_DOCKER_UNSUPPORTED');
+-  const context=JSON.parse(await command(['context','inspect']));if(context.length!==1||!context[0]?.Endpoints?.docker?.Host?.startsWith('unix://'))throw Error('LOCAL_DOCKER_REQUIRED');
+-  const info=JSON.parse(await command(['info','--format','{{json .}}']));if(info.OSType!=='linux'||!['x86_64','amd64'].includes(info.Architecture))throw Error('DAEMON_ARCH_MISMATCH');
+-  const image=JSON.parse(await command(['image','inspect',subject.subject.image.configDigest]))[0];
+-  if(image.Id!==subject.subject.image.configDigest||image.Os!=='linux'||image.Architecture!=='amd64'||image.Config?.Labels?.['org.opencontainers.image.revision']!==subject.subject.sourceCommit||!image.RepoDigests?.some(x=>x.endsWith('@'+subject.subject.image.manifestDigest)))throw Error('LOCAL_IMAGE_IDENTITY_MISMATCH');
+-  await writeFile(join(out,'image-inspect.json'),json({id:image.Id,os:image.Os,architecture:image.Architecture,repoDigests:image.RepoDigests,sourceCommit:image.Config.Labels['org.opencontainers.image.revision'],rootfs:image.RootFS}));
+-  const uid=process.getuid(),gid=process.getgid();if(uid===0)throw Error('NONROOT_PROBE_REQUIRED');
+-  const run=async(id,timeoutMs)=>{
+-   const d=join(out,'cases',id);await mkdir(d);const name='l01-'+owner+'-'+id;const args=['run','--pull','never','--name',name,'--label','mekoniq.l01.owner='+owner,'--network','none','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--pids-limit','128','--memory','2g','--cpus','2','--user',`${uid}:${gid}`,'--tmpfs','/tmp:rw,nosuid,nodev,size=768m','--mount',`type=bind,src=${observer},dst=/probe,readonly`,'--mount',`type=bind,src=${d},dst=/evidence`,'--entrypoint','node',subject.subject.image.configDigest,'/probe/mujoco-probe-container.mjs',id,'/evidence'];
+-   let result;try{result=await runProbeCommand('docker',args,{out:d,timeoutMs,signal});}
+-   finally{
+-    // Only a container with this invocation's unguessable ownership label is ever stopped/removed.
+-    const cleanup=join(d,'cleanup');await mkdir(cleanup);const inspected=await runProbeCommand('docker',['inspect','--format','{{index .Config.Labels "mekoniq.l01.owner"}}',name],{out:cleanup,timeoutMs:10000});
+-    if(inspected.status==='completed'&&(await readFile(join(cleanup,'stdout.log'),'utf8')).trim()===owner){for(const [label,args]of [['stop',['stop','-t','20',name]],['remove',['rm','-f',name]]]){const p=join(cleanup,label);await mkdir(p);await runProbeCommand('docker',args,{out:p,timeoutMs:30000});}}
+-   }return result;
+-  };
+-  const pre=await run('inventory',120000);if(pre.status!=='completed')throw Error('IMAGE_INVENTORY_FAILED');
+-  const imageInventory=await read(out,'cases/inventory/result.json');manifest.engine=imageInventory.engine;
+-  if(!same(imageInventory.subject,subject.subject))throw Error('IMAGE_SUBJECT_MISMATCH');
+-  const failures=probePrerequisites(subject,inventory,observed,manifest.engine);
+-  if(imageInventory.architecture!=='x64'||imageInventory.node!=='v24.22.2'||!/^3\.11\./.test(manifest.engine.python)||!/^ID=debian$/m.test(imageInventory.osRelease)||!/^VERSION_ID="12"$/m.test(imageInventory.osRelease))failures.push('IMAGE_PLATFORM_TOOLCHAIN_MISMATCH');
+-  if(manifest.engine.packages.some(([name])=>subject.profile.forbiddenPackages.includes(name.toLowerCase())))failures.push('IMAGE_FORBIDDEN_PACKAGE');
+-  if(subject.profile.requiredPackages.length!==1)failures.push('UNMEASURED_PACKAGE_LOCK');const engineLib=manifest.engine.artifacts.find(f=>f.path.includes('libmujoco'));
+-  const lock=subject.profile.requiredPackages.find(p=>p.name==='mujoco');if(!lock||lock.version!=='3.17.0'||'sha256:'+lock.sha256!==engineLib?.digest)failures.push('ENGINE_ARTIFACT_LOCK_MISMATCH');
+-  if(failures.length)throw Error(failures.join(','));
+-  executed=true;
+-  for(const spec of manifest.cases){if(signal?.aborted)throw Error('PROBE_ABORTED');spec.status='incomplete';await save();const result=await run(spec.id,spec.kind==='long_run'?360000:180000);spec.status=result.status==='completed'?'passed':result.status==='incomplete'?'incomplete':'failed';if(spec.status==='passed'){const raw=await read(out,'cases/'+spec.id+'/result.json',64*1024*1024);const verdict=assessCase(spec,raw);spec.assertions=verdict;spec.performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};if(!verdict.passed)spec.status='failed';}await save();}
+-  manifest.qualification=manifest.cases.every(c=>c.status==='passed')?'passed':manifest.cases.some(c=>c.status==='incomplete')?'incomplete':'failed';manifest.DEP_MJ_01=manifest.qualification;
+- }catch(e){manifest.issues.push(e.message);if(executed){manifest.qualification='incomplete';manifest.DEP_MJ_01='incomplete';}}
+- manifest.finishedAt=new Date().toISOString();try{manifest.artifacts=await probeArtifacts(out);}catch(e){manifest.issues.push('ARTIFACT_COLLECTION_FAILED:'+e.message);manifest.qualification=executed?'incomplete':'not_run';manifest.DEP_MJ_01=manifest.qualification;}await save();return manifest;
+-}
+-export async function verifyMujocoProbe(root){
+- const issues=[],check=(ok,code)=>{if(!ok)issues.push(code);};let manifest;
+- try{
+-  manifest=await read(root,'manifest.json');check(manifest.schemaVersion===1&&manifest.kind==='mujoco-native-probe'&&manifest.accepted===false&&manifest.dynamics==='not_calibrated','PROBE_MANIFEST');
+-  const actual=await probeArtifacts(root),refs=manifest.artifacts??[];check(actual.length===refs.length,'ARTIFACT_SET');
+-  for(const ref of refs){const a=actual.find(a=>a.path===ref.path);check(a&&same(a,ref),'ARTIFACT_HASH:'+ref.path);}check(new Set(refs.map(r=>r.path)).size===refs.length,'ARTIFACT_DUPLICATE');
+-  check(manifest.qualification==='passed'&&manifest.DEP_MJ_01==='passed','NATIVE_CAMPAIGN_NOT_PASSED');
+-  for(const name of OBSERVER)check(sha256(await probeFile(root,'observer/'+name))===sha256(await probeFile(ROOT,'scripts/native-sim/'+name)),'OBSERVER_PIN:'+name);
+-  for(const f of baseline.m00.files)check(sha256(await probeFile(root,'observer/m00/'+f.path))===f.sha256,'M00_RECIPE_PIN');
+-  check(sha256(await probeFile(root,'observer/m00-source.md'))===baseline.m00.documentSha256,'M00_SOURCE_PIN');
+-  check(same(await read(root,'host-observed.json'),manifest.host),'HOST_MEASUREMENT');
+-  const specs=mujocoCases();check(Array.isArray(manifest.cases)&&manifest.cases.length===specs.length,'CASE_MATRIX');
+-  const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),handoff=await read(root,'handoff/manifest.json'),inventory=await read(root,'handoff/inventory.json');
+-  const admitted=await validateNativeHandoff(join(root,'handoff'),handoff,inventory);check(admitted.nativeReady,'HANDOFF_NOT_NATIVE_READY');check(same(handoff.subject,manifest.subject),'SUBJECT_MISMATCH');
+-  for(const issue of probePrerequisites(handoff,inventory,manifest.host,manifest.engine))issues.push(issue);
+-  const image=await read(root,'image-inspect.json'),measured=await read(root,'cases/inventory/result.json');check(image.id===manifest.subject.image.configDigest&&image.os==='linux'&&image.architecture==='amd64'&&image.sourceCommit===manifest.subject.sourceCommit&&image.repoDigests.some(s=>s.endsWith('@'+manifest.subject.image.manifestDigest)),'IMAGE_MEASUREMENT');check(same(measured.engine,manifest.engine)&&same(measured.subject,manifest.subject),'ENGINE_MEASUREMENT');
+-  check(measured.architecture==='x64'&&measured.node==='v24.22.2'&&/^3\.11\./.test(measured.engine.python)&&/^ID=debian$/m.test(measured.osRelease)&&/^VERSION_ID="12"$/m.test(measured.osRelease),'IMAGE_PLATFORM_TOOLCHAIN');
+-  const lib=manifest.engine.artifacts.find(f=>f.path.includes('libmujoco')),lock=handoff.profile.requiredPackages.find(p=>p.name==='mujoco');check(lock&&'sha256:'+lock.sha256===lib?.digest,'ENGINE_ARTIFACT_LOCK_MISMATCH');
+-  for(const spec of specs){try{
+-   const entry=manifest.cases.find(c=>c.id===spec.id);check(entry&&spec.kind===entry.kind&&entry.scope===spec.scope&&entry.seed===spec.seed&&entry.status==='passed','CASE_STATUS:'+spec.id);
+-   const dir='cases/'+spec.id+'/',proc=await read(root,dir+'process.json'),raw=await read(root,dir+'result.json',64*1024*1024);check(proc.status==='completed'&&proc.exitCode===0&&proc.command==='docker'&&proc.args.includes(manifest.subject.image.configDigest)&&proc.args.includes('/probe/mujoco-probe-container.mjs'),'EXECUTION_RECEIPT:'+spec.id);
+-   for(const issue of assessCase(spec,raw).issues)issues.push(spec.id+':'+issue);
+-   const performance={...raw.tickMs?{engineTick:timingSummary(raw.tickMs)}:{},...raw.ipcMs?{workerIpcWithObserver:timingSummary(raw.ipcMs)}:{},...raw.httpMs?{httpAction:timingSummary(raw.httpMs)}:{},maxRssKiB:raw.maxRssKiB??null,longRunDriftS:raw.driftS??null};check(same(entry?.performance,performance),'PERFORMANCE_SUMMARY:'+spec.id);
+-   if(['business','worker_loss'].includes(spec.kind)){
+-    check((await read(root,dir+'wire.jsonl.seal')).complete===true,'WIRE_SEAL');
+-    const report=await read(root,dir+'report.json'),wire=await read(root,dir+'run-wire.json',64*1024*1024);check(same(report,raw.report)&&report.manifest.sourceCommit===manifest.subject.sourceCommit&&report.schemaHash===manifest.subject.schemaHash&&same(wire,raw.wire)&&analyseWire(wire).valid,'SUBJECT_READER:'+spec.id);
+-    const copies=await read(root,dir+'runtime-copies.json');check(copies.afterRuntimeClose===true&&copies.copies.some(c=>c.path.endsWith('/journal.db')),'SQLITE_VERIFIED_COPY');
+-    for(const r of copies.copies){const b=await probeFile(root,dir+r.path);check(b.length===r.bytes&&sha256(b)===r.sha256,'RUNTIME_COPY_HASH');}
+-    const traceRef=copies.copies.find(r=>r.path.endsWith('/'+report.arm.trace.path)),propsRef=copies.copies.find(r=>r.path.endsWith('/'+report.arm.props.path));check(traceRef?.sha256===report.arm.trace.sha256&&propsRef?.sha256===report.arm.props.sha256,'SUBJECT_TRACE_REFS');
+-    if(traceRef&&propsRef)check(same(await read(root,dir+traceRef.path,64*1024*1024),raw.trace)&&same(await read(root,dir+propsRef.path,64*1024*1024),raw.props),'SUBJECT_TRACE_BYTES');
+-    if(spec.kind==='worker_loss'){const a=analyseWire(wire);check(a.spawned.length===1&&a.spawned[0]===raw.injection.pid&&!wire.some(e=>e.event==='ack'&&e.atMs>raw.injection.atMs&&e.value.ok),'NO_POST_LOSS_ACK');}
+-   }else if(spec.kind==='bad_state'){
+-    for(const name of ['before-state.npz','injected-state.npz','after-state.npz','compiled.xml','requests.json','responses.json'])check(refs.some(r=>r.path===dir+'engine/'+name),'BAD_STATE_RAW:'+name);
+-    const responses=await read(root,dir+'engine/responses.json');check(same(responses.at(-2),raw.response)&&same(responses.at(-1),raw.postFault),'BAD_STATE_RESPONSE_BYTES');
+-   }else if(spec.kind==='m00')check(same(await read(root,dir+'engine/trace-'+spec.seed+'.json',64*1024*1024),raw.trace),'M00_RAW_TRACE');
+-  }catch(e){issues.push('CASE_UNREADABLE:'+spec.id+':'+e.message);}}
+- }catch(e){issues.push('PROBE_UNREADABLE:'+e.message);}
+- return {passed:issues.length===0,issues,subject:manifest?.subject??null,qualification:issues.length?'not_qualified':'passed',accepted:false,dynamics:'not_calibrated'};
+-}
+-
+-export async function readMujocoProbeSupplement(root){
+- const manifest=await read(root,'manifest.json'),artifacts=await probeArtifacts(root);
+- if(manifest.schemaVersion!==1||manifest.kind!=='mujoco-native-probe'||manifest.accepted!==false||!same(artifacts,manifest.artifacts)||!['passed','failed','incomplete','not_run'].includes(manifest.qualification))throw Error('PROBE_SUPPLEMENT_INVALID');
+- const verdict=await verifyMujocoProbe(root);
+- if(manifest.qualification==='passed'&&!verdict.passed)throw Error('PROBE_SUPPLEMENT_INVALID:'+verdict.issues.join(','));
+- if(!manifest.subject||!same(Object.fromEntries(Object.keys(baseline.subject).map(k=>[k,manifest.subject[k]])),baseline.subject))throw Error('PROBE_SUPPLEMENT_INVALID:SUBJECT');
+- return {status:manifest.qualification,DEP_MJ_01:verdict.passed?'passed':manifest.qualification==='passed'?'not_run':manifest.qualification,subject:manifest.subject,checker:manifest.checker,manifestSha256:sha256(await probeFile(root,'manifest.json')),accepted:false,dynamics:'not_calibrated',issues:verdict.issues};
+-}
+-export async function copyMujocoProbeSupplement(input,out){
+- const summary=await readMujocoProbeSupplement(input),manifest=await read(input,'manifest.json');await mkdir(out,{mode:0o700});
+- for(const r of manifest.artifacts){const b=await probeFile(input,r.path);if(b.length!==r.bytes||sha256(b)!==r.sha256)throw Error('PROBE_CHANGED');await mkdir(dirname(join(out,r.path)),{recursive:true});await writeFile(join(out,r.path),b,{flag:'wx',mode:0o600});}
+- const b=await probeFile(input,'manifest.json');if(sha256(b)!==summary.manifestSha256)throw Error('PROBE_CHANGED');await writeFile(join(out,'manifest.json'),b,{flag:'wx'});await readMujocoProbeSupplement(out);return summary;
+-}
+-
++// Supported entrypoints use a fresh module graph, independent of the importing recorder's cache.
++import {invokeCheckedProbe} from './probe-bootstrap.mjs';
++import {resolve} from 'node:path';
++import {pathToFileURL} from 'node:url';
++export const runMujocoProbe=options=>invokeCheckedProbe('run',options,options.signal);
++export const verifyMujocoProbe=root=>invokeCheckedProbe('verify',{root});
++export const readMujocoProbeSupplement=root=>invokeCheckedProbe('read',{root});
++export const copyMujocoProbeSupplement=(input,out)=>invokeCheckedProbe('copy',{input,out});
+ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
+- try{const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--handoff','--out','--verify'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('USAGE: mujoco-probe.mjs --handoff DIR --out NEW_DIR | --verify DIR');o[args[i]]=resolve(args[i+1]);}if(o['--verify']?Object.keys(o).length!==1:!o['--handoff']||!o['--out'])throw Error('MISSING_ARGUMENT');const sourceCommit=await checkedCheckerCommit(),checker={sourceCommit,toolSha256:sha256(await readFile(fileURLToPath(import.meta.url)))};const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP','SIGALRM'])process.once(s,()=>abort.abort());const result=o['--verify']?await verifyMujocoProbe(o['--verify']):await runMujocoProbe({handoff:o['--handoff'],out:o['--out'],checker,signal:AbortSignal.any([abort.signal,AbortSignal.timeout(1500000)])});if(await checkedCheckerCommit()!==sourceCommit)throw Error('CHECKER_CHANGED_DURING_PROBE');console.log(json(result));process.exitCode=o['--verify']?(result.passed?0:1):result.DEP_MJ_01==='passed'?0:2;}catch(e){console.error(json({error:e.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
++ try{
++  const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--handoff','--out','--verify'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('INVALID_ARGUMENT');o[args[i]]=resolve(args[i+1]);}
++  if(o['--verify']?Object.keys(o).length!==1:!o['--handoff']||!o['--out'])throw Error('MISSING_ARGUMENT');
++  const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP','SIGALRM'])process.once(s,()=>abort.abort());
++  const result=o['--verify']?await verifyMujocoProbe(o['--verify']):await runMujocoProbe({handoff:o['--handoff'],out:o['--out'],signal:abort.signal});
++  console.log(JSON.stringify(result,null,2));process.exitCode=o['--verify']?(result.passed?0:1):result.DEP_MJ_01==='passed'?0:2;
++ }catch(e){console.error(JSON.stringify({error:e.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
+ }
+diff --git a/scripts/native-sim/prepare-mujoco-r2a-core.mjs b/scripts/native-sim/prepare-mujoco-r2a-core.mjs
+new file mode 100644
+index 0000000..5e67432
+--- /dev/null
++++ b/scripts/native-sim/prepare-mujoco-r2a-core.mjs
+@@ -0,0 +1,31 @@
++#!/usr/bin/env node
++// Read-only frozen Git objects + verified archived runtime; never checks out, rebuilds or runs R2a.
++import {mkdir,writeFile} from 'node:fs/promises';
++import {execFileSync} from 'node:child_process';
++import {dirname,join,resolve} from 'node:path';
++import {fileURLToPath} from 'node:url';
++import {tsImport} from 'tsx/esm/api';
++import reference from './r2a-arm-baseline.json' with {type:'json'};
++import profile from '../../robotics/simulation-mujoco/profiles/linux-amd64.json' with {type:'json'};
++import {probeFile,sha256} from './mujoco-probe-evidence.mjs';
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
++export async function prepareR2aHandoff({runtimeCache,lab,out,checker}){
++ const old=reference.subject,git=(repo,commit,path)=>execFileSync('git',['show',commit+':'+path],{cwd:repo,timeout:10000,maxBuffer:64*1024*1024});
++ const runtime=await probeFile(runtimeCache,'runtime.mjs'),manifestBytes=await probeFile(runtimeCache,'manifest.json'),runtimeManifest=JSON.parse(manifestBytes),lockBytes=git(lab,old.labCommit,'config/source-runtime.lock.json');
++ if(sha256(runtime)!==old.runtimeArtifactSha256||runtimeManifest.sourceCommit!==old.sourceCommit||runtimeManifest.schemaHash!==old.schemaHash||runtimeManifest.dirty!==false||runtimeManifest.portableSimulationTools.closure.digest!==old.portableClosureHash)throw Error('R2A_CACHE_IDENTITY');
++ await mkdir(out,{mode:0o700});const refs={};
++ const put=async(role,path,bytes,sourcePath=path,sourceCommit=old.sourceCommit)=>{await mkdir(dirname(join(out,path)),{recursive:true,mode:0o700});await writeFile(join(out,path),bytes,{flag:'wx',mode:0o600});const ref={path,sourcePath,sourceCommit,bytes:bytes.length,sha256:sha256(bytes)};(refs[role]??=[]).push(ref);return ref;};
++ for(const f of runtimeManifest.portableSimulationTools.closure.files){
++  const bytes=git(root,old.sourceCommit,f.path);if(bytes.length!==f.bytes||sha256(bytes)!==f.sha256)throw Error('R2A_CLOSURE_MISMATCH:'+f.path);
++  const schema=f.path.startsWith('packages/contracts/schemas/'),role=schema?'schema':f.path.endsWith('/xarm6-g2-v1/component.json')?'model':f.path.endsWith('/xarm6-g2-v1/coffee-cell-project.json')?'project':f.path==='robotics/simulation-mujoco/requirements.lock'?'engine':'tool';
++  await put(role,'subject/'+f.path,bytes,schema?f.path.split('/').at(-1):f.path);
++ }
++ await put('runtime','runtime.mjs',runtime);await put('runtimeManifest','runtime-manifest.json',manifestBytes);await put('labLock','lab-lock.json',lockBytes,'config/source-runtime.lock.json',old.labCommit);
++ await put('world','derived/arm-cell-scene.json',Buffer.from(JSON.stringify(reference.world)),'derived/r2a-arm-cell-scene.json');
++ const p=await put('profile','derived/linux-amd64.json',Buffer.from(JSON.stringify(profile,null,2)+'\n'),'derived/observer/linux-amd64.json');
++ const manifest={schemaVersion:1,subject:{...old,id:'r2a-4f893ac-linux-amd64',executionKind:'mujoco_image',profileSha256:p.sha256,nativeClosureHash:null,image:null},checker:{...checker},refs,profile,frames:{world:'map',robotBase:'base',tool:'tcp',handedness:'right'},units:{length:'m',angle:'rad',mass:'kg',time:'s'},seeds:[7,42,99],casePolicy:{required:['m00-seeds-1-10','MJ-BV01-seeds-7-42-99','bad_state','worker_loss','long_run'],lostAck:'unknown_no_resend',authority:'source'},accepted:false,dynamics:'not_calibrated'};
++ await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
++ const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),assessment=await validateNativeHandoff(out,manifest);
++ await writeFile(join(out,'preparation.json'),JSON.stringify({subject:manifest.subject,checker:manifest.checker,derived:{world:{producer:'frozen arm-cell builder; seed42 arm-1 cups1,2',sourceCommit:old.sourceCommit},profile:{producer:'observer',sourceCommit:checker.sourceCommit}},...assessment,accepted:false,qualification:'not_run',dynamics:'not_calibrated',imageRecordsVerified:false},null,2)+'\n',{flag:'wx'});
++ if(!assessment.prepared)throw Error('R2A_PREPARATION_FAILED:'+JSON.stringify(assessment.issues));return assessment;
++}
+\ No newline at end of file
+diff --git a/scripts/native-sim/prepare-mujoco-r2a.mjs b/scripts/native-sim/prepare-mujoco-r2a.mjs
+index dc7c5f0..47139e7 100644
+--- a/scripts/native-sim/prepare-mujoco-r2a.mjs
++++ b/scripts/native-sim/prepare-mujoco-r2a.mjs
+@@ -1,35 +1,11 @@
+ #!/usr/bin/env node
+-// Read-only frozen Git objects + verified archived runtime; never checks out, rebuilds or runs R2a.
+-import {readFile,mkdir,writeFile} from 'node:fs/promises';
+-import {execFileSync} from 'node:child_process';
+-import {dirname,join,resolve} from 'node:path';
+-import {fileURLToPath,pathToFileURL} from 'node:url';
+-import {tsImport} from 'tsx/esm/api';
+-import reference from './r2a-arm-baseline.json' with {type:'json'};
+-import profile from '../../robotics/simulation-mujoco/profiles/linux-amd64.json' with {type:'json'};
+-import {checkedCheckerCommit} from '../native-handoff.mjs';
+-import {probeFile,sha256} from './mujoco-probe-evidence.mjs';
+-const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
+-export async function prepareR2aHandoff({runtimeCache,lab,out,checkerCommit}){
+- const old=reference.subject,git=(repo,commit,path)=>execFileSync('git',['show',commit+':'+path],{cwd:repo,timeout:10000,maxBuffer:64*1024*1024});
+- const runtime=await probeFile(runtimeCache,'runtime.mjs'),manifestBytes=await probeFile(runtimeCache,'manifest.json'),runtimeManifest=JSON.parse(manifestBytes),lockBytes=git(lab,old.labCommit,'config/source-runtime.lock.json');
+- if(sha256(runtime)!==old.runtimeArtifactSha256||runtimeManifest.sourceCommit!==old.sourceCommit||runtimeManifest.schemaHash!==old.schemaHash||runtimeManifest.dirty!==false||runtimeManifest.portableSimulationTools.closure.digest!==old.portableClosureHash)throw Error('R2A_CACHE_IDENTITY');
+- await mkdir(out,{mode:0o700});const refs={};
+- const put=async(role,path,bytes,sourcePath=path,sourceCommit=old.sourceCommit)=>{await mkdir(dirname(join(out,path)),{recursive:true,mode:0o700});await writeFile(join(out,path),bytes,{flag:'wx',mode:0o600});const ref={path,sourcePath,sourceCommit,bytes:bytes.length,sha256:sha256(bytes)};(refs[role]??=[]).push(ref);return ref;};
+- for(const f of runtimeManifest.portableSimulationTools.closure.files){
+-  const bytes=git(root,old.sourceCommit,f.path);if(bytes.length!==f.bytes||sha256(bytes)!==f.sha256)throw Error('R2A_CLOSURE_MISMATCH:'+f.path);
+-  const schema=f.path.startsWith('packages/contracts/schemas/'),role=schema?'schema':f.path.endsWith('/xarm6-g2-v1/component.json')?'model':f.path.endsWith('/xarm6-g2-v1/coffee-cell-project.json')?'project':f.path==='robotics/simulation-mujoco/requirements.lock'?'engine':'tool';
+-  await put(role,'subject/'+f.path,bytes,schema?f.path.split('/').at(-1):f.path);
+- }
+- await put('runtime','runtime.mjs',runtime);await put('runtimeManifest','runtime-manifest.json',manifestBytes);await put('labLock','lab-lock.json',lockBytes,'config/source-runtime.lock.json',old.labCommit);
+- await put('world','derived/arm-cell-scene.json',Buffer.from(JSON.stringify(reference.world)),'derived/r2a-arm-cell-scene.json');
+- const p=await put('profile','derived/linux-amd64.json',Buffer.from(JSON.stringify(profile,null,2)+'\n'),'derived/observer/linux-amd64.json');
+- const manifest={schemaVersion:1,subject:{...old,id:'r2a-4f893ac-linux-amd64',executionKind:'mujoco_image',profileSha256:p.sha256,nativeClosureHash:null,image:null},checker:{sourceCommit:checkerCommit,toolSha256:sha256(await readFile(fileURLToPath(import.meta.url)))},refs,profile,frames:{world:'map',robotBase:'base',tool:'tcp',handedness:'right'},units:{length:'m',angle:'rad',mass:'kg',time:'s'},seeds:[7,42,99],casePolicy:{required:['m00-seeds-1-10','MJ-BV01-seeds-7-42-99','bad_state','worker_loss','long_run'],lostAck:'unknown_no_resend',authority:'source'},accepted:false,dynamics:'not_calibrated'};
+- await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
+- const {validateNativeHandoff}=await tsImport('../../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url),assessment=await validateNativeHandoff(out,manifest);
+- await writeFile(join(out,'preparation.json'),JSON.stringify({subject:manifest.subject,checker:manifest.checker,derived:{world:{producer:'frozen arm-cell builder; seed42 arm-1 cups1,2',sourceCommit:old.sourceCommit},profile:{producer:'observer',sourceCommit:checkerCommit}},...assessment,accepted:false,qualification:'not_run',dynamics:'not_calibrated',imageRecordsVerified:false},null,2)+'\n',{flag:'wx'});
+- if(!assessment.prepared)throw Error('R2A_PREPARATION_FAILED:'+JSON.stringify(assessment.issues));return assessment;
+-}
++import {invokeCheckedProbe} from './probe-bootstrap.mjs';
++import {resolve} from 'node:path';
++import {pathToFileURL} from 'node:url';
++export const prepareR2aHandoff=options=>invokeCheckedProbe('prepare',options);
+ if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
+- try{const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--runtime-cache','--lab','--out'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('USAGE: prepare-mujoco-r2a.mjs --runtime-cache DIR --lab REPO --out NEW_DIR');o[args[i]]=resolve(args[i+1]);}if(Object.keys(o).length!==3)throw Error('MISSING_ARGUMENT');const checkerCommit=await checkedCheckerCommit();const result=await prepareR2aHandoff({runtimeCache:o['--runtime-cache'],lab:o['--lab'],out:o['--out'],checkerCommit});if(await checkedCheckerCommit()!==checkerCommit)throw Error('CHECKER_CHANGED');console.log(JSON.stringify(result));}catch(e){console.error(e.message);process.exitCode=1;}
++ try{
++  const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--runtime-cache','--lab','--out'].includes(args[i])||!args[i+1]||o[args[i]])throw Error('INVALID_ARGUMENT');o[args[i]]=resolve(args[i+1]);}if(Object.keys(o).length!==3)throw Error('MISSING_ARGUMENT');
++  console.log(JSON.stringify(await prepareR2aHandoff({runtimeCache:o['--runtime-cache'],lab:o['--lab'],out:o['--out']})));
++ }catch(e){console.error(e.message);process.exitCode=1;}
+ }
+diff --git a/scripts/native-sim/probe-bootstrap.mjs b/scripts/native-sim/probe-bootstrap.mjs
+new file mode 100644
+index 0000000..9a6c579
+--- /dev/null
++++ b/scripts/native-sim/probe-bootstrap.mjs
+@@ -0,0 +1,16 @@
++// Trusted entry bootstrap. No assessment code or reference data is loaded in this process.
++import {fork} from 'node:child_process';
++import {fileURLToPath} from 'node:url';
++import {isDeepStrictEqual} from 'node:util';
++import {checkedCheckerIdentity} from '../native-checker-bootstrap.mjs';
++export async function invokeCheckedProbe(operation,input,signal){
++ const checker=await checkedCheckerIdentity();signal?.throwIfAborted();
++ const env={...process.env};delete env.NODE_OPTIONS;delete env.NODE_PATH;
++ const child=fork(fileURLToPath(new URL('./probe-worker.mjs',import.meta.url)),[],{execArgv:[],env,stdio:['ignore','inherit','inherit','ipc']});
++ const abort=()=>child.kill('SIGTERM');signal?.addEventListener('abort',abort,{once:true});
++ let message;try{
++  await new Promise((resolve,reject)=>{child.once('error',reject);child.on('message',m=>{message=m;});child.once('exit',(code)=>code===0&&message?resolve():reject(Error('CHECKER_PROCESS_FAILED')));const {signal:ignored,...data}=input;void ignored;child.send({operation,input:data,checker});});
++  if(!isDeepStrictEqual(await checkedCheckerIdentity(),checker))throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
++  if(message.error)throw Error(message.error);return message.result;
++ }finally{signal?.removeEventListener('abort',abort);}
++}
+diff --git a/scripts/native-sim/probe-worker.mjs b/scripts/native-sim/probe-worker.mjs
+new file mode 100644
+index 0000000..b148138
+--- /dev/null
++++ b/scripts/native-sim/probe-worker.mjs
+@@ -0,0 +1,21 @@
++// Fresh trusted worker. Fixed allowlist; no caller-controlled module paths or checker identity override.
++import {checkedCheckerIdentity} from '../native-checker-bootstrap.mjs';
++import {isDeepStrictEqual} from 'node:util';
++const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP','SIGALRM'])process.once(s,()=>abort.abort());
++process.once('message',async({operation,input,checker:expected})=>{
++ let result,error,checker;
++ try{
++  checker=await checkedCheckerIdentity();if(!isDeepStrictEqual(checker,expected))throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
++  if(operation==='prepare'){const m=await import('./prepare-mujoco-r2a-core.mjs');result=await m.prepareR2aHandoff({...input,checker});}
++  else{
++   const m=await import('./mujoco-probe-core.mjs');
++   if(operation==='run')result=await m.runMujocoProbe({...input,checker,signal:AbortSignal.any([abort.signal,AbortSignal.timeout(1500000)])});
++   else if(operation==='verify')result=await m.verifyMujocoProbe(input.root,checker);
++   else if(operation==='read')result=await m.readMujocoProbeSupplement(input.root,checker);
++   else if(operation==='copy')result=await m.copyMujocoProbeSupplement(input.input,input.out,checker);
++   else throw Error('CHECKER_OPERATION_REJECTED');
++  }
++ }catch(e){error=e.message;}
++ try{if(!checker||!isDeepStrictEqual(await checkedCheckerIdentity(),checker))throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');}catch(e){error=e.message;}
++ process.send(error?{error}:{result},()=>process.disconnect());
++});
+diff --git a/scripts/native-sim/r2a-arm-baseline.json b/scripts/native-sim/r2a-arm-baseline.json
+index 0b755cf..859fd53 100644
+--- a/scripts/native-sim/r2a-arm-baseline.json
++++ b/scripts/native-sim/r2a-arm-baseline.json
+@@ -669,12 +669,26 @@
+     "files": [
+       {
+         "path": "scene.py",
+         "sha256": "d4b24ba7a0e3446ca02937c85a5de732246e2bbf3bdd8b040c3d62c6a27fd2a3"
+       },
+       {
+         "path": "run.py",
+         "sha256": "02163a31bad7f5a5d3ae8467da15239a8bc92919c92f2d508e7900b10e1f7962"
+       }
+     ]
++  },
++  "badStateCompiled": {
++    "path": "r2a-arm-compiled.xml",
++    "sha256": "2717a5375922b0e88735859550641e37f8ff664a0f57a10d15bf0f9f585499a8",
++    "compilerSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
++    "compilerSourcePath": "robotics/simulation-mujoco/mujoco_worker/compile.py",
++    "compilerSha256": "9185142c8dc3495790ba46369e07fe2041e439dd03343ff198d59f15950b572d",
++    "method": "frozen stdlib-only compile_cell; verified frozen scene/component/physics/mesh bytes; meshdir normalized to /probe/bad-state-bundle/blobs; no MuJoCo import or execution",
++    "stateSizes": {
++      "qpos": 26,
++      "qvel": 24,
++      "qacc": 24,
++      "ctrl": 7
++    }
+   }
+ }
+diff --git a/scripts/native-sim/r2a-arm-compiled.xml b/scripts/native-sim/r2a-arm-compiled.xml
+new file mode 100644
+index 0000000..de699d9
+--- /dev/null
++++ b/scripts/native-sim/r2a-arm-compiled.xml
+@@ -0,0 +1,121 @@
++<mujoco model="arm_cell">
++ <compiler angle="radian" autolimits="true" meshdir="/probe/bad-state-bundle/blobs" />
++ <option timestep="0.002" integrator="implicitfast" cone="elliptic" impratio="10.0" />
++ <default>
++  <geom solref="0.01 1.0" solimp="0.9 0.95 0.005" />
++ </default>
++ <asset>
++  <mesh name="MESH_1" file="479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_2" file="25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_3" file="d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_4" file="48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_5" file="29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_6" file="25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl" scale="1.0 1.0 1.0" />
++  <mesh name="MESH_7" file="7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl" scale="1.0 1.0 1.0" />
++ </asset>
++ <worldbody>
++  <geom name="FLOOR" type="plane" size="0 0 1" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
++  <geom name="STATIC_1" type="box" size="1.0 0.3000000000000001 0.5" pos="3.0 1.8000000000000003 0.5" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
++  <geom name="SUPPORT_1" type="box" size="0.05 0.05 0.05" pos="3.1399999999999997 0.65 0.75" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
++  <geom name="SUPPORT_2" type="box" size="0.1 0.1 0.03" pos="3.0 1.0 0.73" quat="1.0 0.0 0.0 0.0" friction="1.0 0.005 0.0001" contype="1" conaffinity="3" />
++  <body name="ARM_link0" pos="2.65 0.65 0.7" quat="1.0 0.0 0.0 0.0">
++   <inertial pos="0.0 0.0 0.09103" mass="2.7" fullinertia="0.00494875 0.00494174 0.002219 -3.5e-06 1.25e-05 1.67e-06" />
++   <geom type="mesh" mesh="MESH_1" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++   <body name="ARM_link1" pos="0.0 0.0 0.267" quat="1.0 0.0 0.0 0.0">
++    <inertial pos="0.00022 0.02951 -0.0124" mass="2.3814" fullinertia="0.0058562 0.0050316 0.003536652 -1.79e-05 3.55e-06 -0.000888336" />
++    <joint name="J1" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
++    <geom type="mesh" mesh="MESH_2" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++    <body name="ARM_link2" pos="0.0 0.0 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
++     <inertial pos="0.03881 -0.22783 0.03496" mass="2.2675" fullinertia="0.028315776 0.0058 0.0273447 0.005 0.00066546 -0.0045741" />
++     <joint name="J2" axis="0.0 0.0 1.0" range="-2.059 2.0944" armature="0.1" damping="1.0" frictionloss="1.0" />
++     <geom type="mesh" mesh="MESH_3" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++     <body name="ARM_link3" pos="0.0535 -0.2845 0.0" quat="1.0 0.0 0.0 0.0">
++      <inertial pos="0.07041 0.11631 0.0107" mass="1.875" fullinertia="0.0063483 0.00379758 0.00595768 -0.0015397 0.00096858 0.00186567" />
++      <joint name="J3" axis="0.0 0.0 1.0" range="-3.927 0.19198" armature="0.1" damping="1.0" frictionloss="1.0" />
++      <geom type="mesh" mesh="MESH_4" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++      <body name="ARM_link4" pos="0.0775 0.3425 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
++       <inertial pos="-0.00018 0.01798 -0.02291" mass="1.3192" fullinertia="0.004896 0.00445694 0.00134332 -6.925e-06 -1.418e-05 -0.00023186" />
++       <joint name="J4" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
++       <geom type="mesh" mesh="MESH_5" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++       <body name="ARM_link5" pos="0.0 0.0 0.0" quat="0.707105482511 0.707108079859 0.0 0.0">
++        <inertial pos="0.0651 0.03096 0.00315" mass="1.33854" fullinertia="0.00146378 0.00184192 0.002333524 -0.000450624 0.000284306 0.000130866" />
++        <joint name="J5" axis="0.0 0.0 1.0" range="-1.69297 3.14159265359" armature="0.1" damping="1.0" frictionloss="1.0" />
++        <geom type="mesh" mesh="MESH_6" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++        <body name="ARM_link6" pos="0.076 0.097 0.0" quat="0.707105482511 -0.707108079859 0.0 0.0">
++         <inertial pos="0.0 -0.00677 -0.01098" mass="0.17" fullinertia="9.3e-05 5.87e-05 0.000132 0.0 0.0 -3.6e-06" />
++         <joint name="J6" axis="0.0 0.0 1.0" range="-6.28318530718 6.28318530718" armature="0.1" damping="1.0" frictionloss="1.0" />
++         <geom type="mesh" mesh="MESH_7" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0" group="3" contype="2" conaffinity="2" />
++         <body name="ARM_part1" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
++          <inertial pos="-0.00065489 -0.0018497 0.048028" mass="0.54156" fullinertia="0.00047106 0.00033072 0.00025642 3.9292e-07 2.6537e-06 -1.0975e-05" />
++          <geom name="PALM" type="box" size="0.0375 0.051 0.056" pos="0.0 0.0 0.047" group="3" contype="2" conaffinity="2" />
++          <body name="ARM_part2" pos="0.0 0.035 0.059098" quat="1.0 0.0 0.0 0.0">
++           <inertial pos="2.9948e-14 0.021559 0.015181" mass="0.033618" fullinertia="1.9111e-05 6.6256e-06 1.3185e-05 -1.8803e-17 -1.1002e-17 -7.3008e-06" />
++           <joint name="ARM_part2_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++           <body name="ARM_part3" pos="0.0 0.035465 0.042039" quat="1.0 0.0 0.0 0.0">
++            <inertial pos="-2.4536e-14 -0.016413 0.029258" mass="0.048304" fullinertia="1.7493e-05 1.7225e-05 5.1466e-06 -4.2156e-19 6.9164e-18 4.6433e-06" />
++            <joint name="ARM_part3_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++            <geom name="PAD_1" type="box" size="0.012 0.002 0.02" pos="0.0 -0.024 0.04" condim="4" priority="1" friction="1.0 0.02 0.0001" group="3" contype="1" conaffinity="1" />
++           </body>
++          </body>
++          <body name="ARM_part4" pos="0.0 0.02 0.074098" quat="1.0 0.0 0.0 0.0">
++           <inertial pos="1.86600784688e-06 0.0220467847634 0.0261334672831" mass="0.0230125781257" fullinertia="6.09490024272e-06 6.01955084375e-06 5.0786200448e-06 6.0665132616e-11 7.19102670501e-11 -2.75316812992e-06" />
++           <joint name="ARM_part4_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++          </body>
++          <body name="ARM_part5" pos="0.0 -0.035 0.059098" quat="1.0 0.0 0.0 0.0">
++           <inertial pos="-3.1669e-14 -0.021559 0.015181" mass="0.033618" fullinertia="1.9111e-05 6.6256e-06 1.3185e-05 -1.8789e-17 1.0986e-17 7.3008e-06" />
++           <joint name="ARM_part5_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++           <body name="ARM_part6" pos="0.0 -0.035465 0.042039" quat="1.0 0.0 0.0 0.0">
++            <inertial pos="2.5618e-14 0.016413 0.029258" mass="0.048304" fullinertia="1.7493e-05 1.7225e-05 5.1466e-06 -5.0014e-19 -7.5079e-18 -4.6435e-06" />
++            <joint name="ARM_part6_joint" axis="1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++            <geom name="PAD_2" type="box" size="0.012 0.002 0.02" pos="0.0 0.024 0.04" condim="4" priority="1" friction="1.0 0.02 0.0001" group="3" contype="1" conaffinity="1" />
++           </body>
++          </body>
++          <body name="ARM_part7" pos="0.0 -0.02 0.074098" quat="1.0 0.0 0.0 0.0">
++           <inertial pos="1.866e-06 -0.022047 0.026133" mass="0.023013" fullinertia="6.0949e-06 6.0197e-06 5.0784e-06 -6.0665e-11 7.191e-11 2.7531e-06" />
++           <joint name="ARM_part7_joint" axis="-1.0 0.0 0.0" range="0.0 0.85" armature="0.002" />
++          </body>
++         </body>
++        </body>
++       </body>
++      </body>
++     </body>
++    </body>
++   </body>
++  </body>
++  <body name="PROP_1" pos="0.0 0.0 -11.0">
++   <freejoint name="PROP_1_free" />
++   <geom name="PROP_1" type="cylinder" size="0.04 0.05" mass="0.32" friction="0.6 0.005 0.0001" condim="4" contype="0" conaffinity="0" />
++  </body>
++  <body name="PROP_2" pos="0.0 0.0 -12.0">
++   <freejoint name="PROP_2_free" />
++   <geom name="PROP_2" type="cylinder" size="0.04 0.05" mass="0.32" friction="0.6 0.005 0.0001" condim="4" contype="0" conaffinity="0" />
++  </body>
++ </worldbody>
++ <contact>
++  <exclude body1="ARM_link5" body2="ARM_link6" />
++  <exclude body1="ARM_link4" body2="ARM_link5" />
++  <exclude body1="ARM_link3" body2="ARM_link4" />
++  <exclude body1="ARM_link2" body2="ARM_link3" />
++  <exclude body1="ARM_link1" body2="ARM_link2" />
++  <exclude body1="ARM_link0" body2="ARM_link1" />
++ </contact>
++ <equality>
++  <joint joint1="ARM_part3_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
++  <joint joint1="ARM_part4_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
++  <joint joint1="ARM_part5_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
++  <joint joint1="ARM_part6_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
++  <joint joint1="ARM_part7_joint" joint2="ARM_part2_joint" polycoef="0.0 1.0 0.0 0.0 0.0" solref="0.004 1.0" />
++ </equality>
++ <actuator>
++  <position name="J1_act" joint="J1" kp="6000.0" kv="150.0" forcerange="-179.4445 179.4445" ctrlrange="-6.28318530718 6.28318530718" />
++  <position name="J2_act" joint="J2" kp="6000.0" kv="150.0" forcerange="-179.4445 179.4445" ctrlrange="-2.059 2.0944" />
++  <position name="J3_act" joint="J3" kp="5000.0" kv="100.0" forcerange="-92.0 92.0" ctrlrange="-3.927 0.19198" />
++  <position name="J4_act" joint="J4" kp="2000.0" kv="40.0" forcerange="-81.558 81.558" ctrlrange="-6.28318530718 6.28318530718" />
++  <position name="J5_act" joint="J5" kp="2000.0" kv="30.0" forcerange="-30.6 30.6" ctrlrange="-1.69297 3.14159265359" />
++  <position name="J6_act" joint="J6" kp="500.0" kv="14.0" forcerange="-30.6 30.6" ctrlrange="-6.28318530718 6.28318530718" />
++  <position name="grip_act" joint="ARM_part2_joint" kp="20.0" kv="0.5" forcerange="-1.2 1.2" ctrlrange="0.0 0.85" />
++ </actuator>
++ <keyframe>
++  <key name="home" qpos="-4.93613604879e-10 -1.14779631171 -0.324460234973 -3.14159266066 0.098539780113 7.05694566235e-09 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 -11.0 1.0 0.0 0.0 0.0 0.0 0.0 -12.0 1.0 0.0 0.0 0.0" ctrl="-4.93613604879e-10 -1.14779631171 -0.324460234973 -3.14159266066 0.098539780113 7.05694566235e-09 0.0" />
++ </keyframe>
++</mujoco>
+diff --git a/tests/fixtures/native-probe-state.ts b/tests/fixtures/native-probe-state.ts
+new file mode 100644
+index 0000000..7efb97c
+--- /dev/null
++++ b/tests/fixtures/native-probe-state.ts
+@@ -0,0 +1,12 @@
++// Synthetic NumPy ZIP_STORED / float64 vectors. No engine or native claim.
++import {crc32} from 'node:zlib';
++export function stateNpz(state:Record<string,number[]>){
++ const parts:Buffer[]=[],directory:Buffer[]=[];let offset=0;
++ for(const [key,values]of Object.entries(state)){
++  const name=Buffer.from(key+'.npy'),text=`{'descr': '<f8', 'fortran_order': False, 'shape': (${values.length},), }`;
++  const header=Buffer.from(text+' '.repeat((64-(10+text.length+1)%64)%64)+'\n'),npy=Buffer.alloc(10+header.length+values.length*8);Buffer.from([147,78,85,77,80,89,1,0]).copy(npy);npy.writeUInt16LE(header.length,8);header.copy(npy,10);values.forEach((v,i)=>npy.writeDoubleLE(v,10+header.length+i*8));
++  const local=Buffer.alloc(30);local.writeUInt32LE(0x04034b50);local.writeUInt16LE(20,4);local.writeUInt32LE(crc32(npy),14);local.writeUInt32LE(npy.length,18);local.writeUInt32LE(npy.length,22);local.writeUInt16LE(name.length,26);
++  const central=Buffer.alloc(46);central.writeUInt32LE(0x02014b50);central.writeUInt16LE(20,6);central.writeUInt32LE(crc32(npy),16);central.writeUInt32LE(npy.length,20);central.writeUInt32LE(npy.length,24);central.writeUInt16LE(name.length,28);central.writeUInt32LE(offset,42);parts.push(local,name,npy);directory.push(central,name);offset+=local.length+name.length+npy.length;
++ }
++ const size=directory.reduce((n,b)=>n+b.length,0),end=Buffer.alloc(22);end.writeUInt32LE(0x06054b50);end.writeUInt16LE(directory.length/2,8);end.writeUInt16LE(directory.length/2,10);end.writeUInt32LE(size,12);end.writeUInt32LE(offset,16);return Buffer.concat([...parts,...directory,end]);
++}
+diff --git a/tests/security/mujoco-native-probe-checker.test.ts b/tests/security/mujoco-native-probe-checker.test.ts
+new file mode 100644
+index 0000000..35408f9
+--- /dev/null
++++ b/tests/security/mujoco-native-probe-checker.test.ts
+@@ -0,0 +1,47 @@
++import {beforeAll,afterAll,expect,test} from 'vitest';
++import {readFile,writeFile,rm,mkdtemp} from 'node:fs/promises';
++import {join} from 'node:path';
++import {tmpdir} from 'node:os';
++import {spawnSync} from 'node:child_process';
++import {checkerFixture} from '../fixtures/native-handoff-checker';
++let fixture:Awaited<ReturnType<typeof checkerFixture>>;
++beforeAll(async()=>{fixture=await checkerFixture();},30000);
++afterAll(async()=>{if(fixture)await rm(fixture.root,{recursive:true,force:true});});
++const run=(args:string[])=>spawnSync(process.execPath,args,{cwd:fixture.root,encoding:'utf8',timeout:30000});
++test.each(['probe','prepare','supplement'])('audits before imported helper execution through %s',async entry=>{
++ const path=join(fixture.root,'scripts/native-sim/mujoco-probe-evidence.mjs'),original=await readFile(path);
++ try{
++  await writeFile(path,Buffer.concat([Buffer.from('throw Error("DIRTY_HELPER_EXECUTED");\n'),original]));
++  const args=entry==='probe'?['scripts/native-sim/mujoco-probe.mjs','--verify','/missing']:entry==='prepare'?['scripts/native-sim/prepare-mujoco-r2a.mjs','--runtime-cache','/missing','--lab','/missing','--out','/missing']:['--input-type=module','-e','const m=await import("./scripts/native-sim/mujoco-probe.mjs");await m.readMujocoProbeSupplement("/missing")'];
++  const r=run(args);expect(r.status).not.toBe(0);expect(r.stderr).toContain('CHECKER_CHECKOUT_DIRTY');expect(r.stderr).not.toContain('DIRTY_HELPER_EXECUTED');
++ }finally{await writeFile(path,original);}
++});
++test('cached poisoned reference in caller cannot replace freshly audited supplement reference',async()=>{
++ const out=await mkdtemp(join(tmpdir(),'L01-cached-reference-'));
++ try{
++  const code=`import {readFile,writeFile} from 'node:fs/promises';
++const p='./scripts/native-sim/r2a-arm-baseline.json',b=await readFile(p),ref=JSON.parse(b);
++await writeFile(p,JSON.stringify({...ref,subject:{...ref.subject,sourceCommit:'0'.repeat(40)}}));
++let m;try{await import(p,{with:{type:'json'}});m=await import('./scripts/native-sim/mujoco-probe.mjs');}finally{await writeFile(p,b);}
++const {checkedCheckerIdentity}=await import('./scripts/native-checker-bootstrap.mjs');const checker=await checkedCheckerIdentity();
++await writeFile(${JSON.stringify(join(out,'manifest.json'))},JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',qualification:'not_run',DEP_MJ_01:'not_run',accepted:false,subject:ref.subject,checker,artifacts:[]}));
++console.log(JSON.stringify(await m.readMujocoProbeSupplement(${JSON.stringify(out)})));`;
++  const r=run(['--input-type=module','-e',code]);expect(r.stderr).toBe('');expect(r.status).toBe(0);expect(JSON.parse(r.stdout).status).toBe('not_run');
++ }finally{await rm(out,{recursive:true,force:true});}
++});
++
++test.each(['verify','read','copy','run','prepare'])('post-audit refuses a checker mutation during %s',async operation=>{
++ const prepare=operation==='prepare',path=join(fixture.root,'scripts/native-sim/'+(prepare?'prepare-mujoco-r2a':'mujoco-probe')+'-core.mjs'),original=await readFile(path),reference=join(fixture.root,'scripts/native-sim/r2a-arm-baseline.json'),before=await readFile(reference);
++ const name=({verify:'verifyMujocoProbe',read:'readMujocoProbeSupplement',copy:'copyMujocoProbeSupplement',run:'runMujocoProbe',prepare:'prepareR2aHandoff'} as const)[operation as 'verify'|'read'|'copy'|'run'|'prepare'];
++ try{
++  // Deliberately committed portable assessment double; mutate a tracked reference only in the test snapshot.
++  await writeFile(path,`import {appendFile} from 'node:fs/promises';export async function ${name}(){await appendFile(new URL('./r2a-arm-baseline.json',import.meta.url),'\\n');return {passed:true,prepared:true};}\n`);
++  fixture.git('add','.');fixture.git('-c','user.name=Protocol test','-c','user.email=protocol@example.invalid','-c','commit.gpgsign=false','-c','core.hooksPath=/dev/null','commit','--quiet','-m','Portable post-check mutation double');
++  const module=prepare?'prepare-mujoco-r2a':'mujoco-probe';
++  const expression=operation==='run'||prepare?'{}':operation==='copy'?'"/missing","/missing"':'"/missing"';
++  const r=run(['--input-type=module','-e',`const m=await import('./scripts/native-sim/${module}.mjs');console.log(await m.${name}(${expression}));`]);
++  expect(r.status).not.toBe(0);expect(r.stderr).toContain('CHECKER_CHECKOUT_DIRTY');expect(r.stdout).not.toContain('passed');
++ }finally{
++  await writeFile(path,original);await writeFile(reference,before);fixture.git('add','.');fixture.git('-c','user.name=Protocol test','-c','user.email=protocol@example.invalid','-c','commit.gpgsign=false','-c','core.hooksPath=/dev/null','commit','--quiet','-m','Restore portable assessment');
++ }
++});
+diff --git a/tests/unit/mujoco-native-probe.test.ts b/tests/unit/mujoco-native-probe.test.ts
+index 2489473..f12e579 100644
+--- a/tests/unit/mujoco-native-probe.test.ts
++++ b/tests/unit/mujoco-native-probe.test.ts
+@@ -102,53 +102,53 @@ test('passive spawn tap forwards exact values and refuses incomplete observation
+  expect(tapped('python',argv,options)).toBe(child);expect(spawnCalls[0]).toEqual(['python',argv,options]);
+  const cb=()=>{};expect(child.stdin.write('{"requestId":"x","op":"step"}\n','utf8',cb)).toBe(false);expect(received[0][2]).toBe(cb);
+  output.emit('data',Buffer.from('{"requestId":"x",'));output.emit('data',Buffer.from('"ok":true}\n'));child.emit('close',0,null);
+  expect(JSON.stringify(events)).not.toContain('must-not-be-recorded');expect(events.map((x:unknown)=>(x as {event:string}).event)).toEqual(['spawn','request','ack','exit']);
+  const {analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');expect(analyseWire(events).valid).toBe(true);
+  expect(analyseWire([...events,{event:'incomplete'}]).valid).toBe(false);
+  const untouched=tapped('python',argv,{cwd:'/tmp/someone-else'});expect(untouched).toBe(child);expect(events).toHaveLength(4);
+ });
+ 
+ test('prepared execution on an unassigned host retains a not_run manifest without touching Docker',async()=>{
+- const {runMujocoProbe,verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {runMujocoProbe,verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
+  const {mkdtemp}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const parent=await mkdtemp(join(tmpdir(),'L01-prepared-')),out=join(parent,'out');
+  const r=await runMujocoProbe({handoff:join(parent,'missing'),out,checker:{sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)}});
+  expect(r).toMatchObject({qualification:'not_run',accepted:false,DEP_MJ_01:'not_run'});
+  expect(r.cases.every((c:{status:string})=>c.status==='not_run')).toBe(true);
+  expect((await verifyMujocoProbe(out)).passed).toBe(false);
+  await expect(runMujocoProbe({handoff:join(parent,'missing'),out,checker:{sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)}})).rejects.toThrow();
+ });
+ 
+ test('reader rejects a resealed unit-log-only manifest and artifact substitution',async()=>{
+- const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
+  const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const {mujocoCases,sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  const root=await mkdtemp(join(tmpdir(),'L01-unit-only-'));await writeFile(join(root,'unit.log'),'100 tests passed');
+  const manifest={schemaVersion:1,accepted:false,qualification:'passed',DEP_MJ_01:'passed',cases:mujocoCases().map(c=>({...c,status:'passed'})),artifacts:[{path:'unit.log',bytes:16,sha256:sha256('100 tests passed')}]};
+  await writeFile(join(root,'manifest.json'),JSON.stringify(manifest));expect((await verifyMujocoProbe(root)).passed).toBe(false);
+  await writeFile(join(root,'unit.log'),'changed');expect((await verifyMujocoProbe(root)).issues).toContain('ARTIFACT_HASH:unit.log');
+ });
+ 
+ test('the actual Node preload observes imported spawn without changing a child byte stream',async()=>{
+  const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join,resolve}=await import('node:path');
+  const {runProbeCommand}=await import('../../scripts/native-sim/mujoco-probe-process.mjs'),{analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  const root=await mkdtemp(join(tmpdir(),'L01-preload-'));await mkdir(join(root,'child'));
+  const script=`import {spawn} from 'node:child_process';const c=spawn(process.execPath,['-e','process.stdin.on("data",b=>process.stdout.write(b))','--','-m','mujoco_worker','--run-id','protocol-double'],{cwd:${JSON.stringify(join(root,'child'))},stdio:['pipe','pipe','pipe']});c.stdout.on('data',b=>process.stdout.write(b));c.stdin.write('{"requestId":"a","op":"step"}\\n');c.stdin.end();`;
+  await writeFile(join(root,'launch.mjs'),script);
+  const result=await runProbeCommand(process.execPath,['--import',resolve('scripts/native-sim/mujoco-probe-observer.mjs'),join(root,'launch.mjs')],{out:root,timeoutMs:3000,env:{...process.env,L01_OBSERVER_FILE:join(root,'wire.jsonl'),L01_OWNED_ROOT:root}});
+  expect(result.status).toBe('completed');expect(await readFile(join(root,'stdout.log'),'utf8')).toBe('{"requestId":"a","op":"step"}\n');
+  const events=(await readFile(join(root,'wire.jsonl'),'utf8')).trim().split('\n').map(s=>JSON.parse(s));expect(analyseWire(events).valid).toBe(true);
+ });
+ 
+ test('recorder supplement refuses unverified passed claims',async()=>{
+- const {readMujocoProbeSupplement}=await import('../../scripts/native-sim/mujoco-probe.mjs');
++ const {readMujocoProbeSupplement}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
+  const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const root=await mkdtemp(join(tmpdir(),'L01-supplement-'));await writeFile(join(root,'manifest.json'),JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',qualification:'passed',DEP_MJ_01:'passed',accepted:false,artifacts:[]}));
+  await expect(readMujocoProbeSupplement(root)).rejects.toThrow('PROBE_SUPPLEMENT_INVALID');
+ });
+ 
+ test('reports p50/p95/max from real timing samples without rounding away the tail',async()=>{
+  const {timingSummary}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  expect(timingSummary([1,2,3,4,100])).toEqual({samples:5,p50Ms:3,p95Ms:100,maxMs:100});
+  expect(()=>timingSummary([])).toThrow();expect(()=>timingSummary([NaN])).toThrow();
+ });
+@@ -157,10 +157,71 @@ test('a truncated observer tail cannot establish a completed worker lifecycle',a
+  const {analyseWire}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  expect(analyseWire([{event:'spawn',pid:99},{event:'request',pid:99,value:{requestId:'x',op:'step'},atMs:1},{event:'ack',pid:99,value:{requestId:'x',ok:true},atMs:2}]).valid).toBe(false);
+ });
+ 
+ test('grasp assertions read raw contact continuity instead of trusting the recipe summary',async()=>{
+  const {assessCase,mujocoCases}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  const spec=mujocoCases()[0],row={q:[0,0,0,0,0,0],cmd:[0,0,0,0,0,0],cup:[0.35,0.35,0.15],cupquat:[1,0,0,0],rel:[0,0,0],held:false,L:false,R:false,tray:true,arm:false,cupv:0,cupw:0,label:'dwell:place'};
+  const trace=Array.from({length:882},()=>({...row})),raw={scope:spec.scope,engineVersion:'3.17.0',trial:{seed:1,nan:false,heldAllCarry:true,notHeldCarry:0,liftM:0.15,slipM:0,dropTicks:1,placeErrM:0,peakFollowRad:0,settle:Object.fromEntries(['pregrasp','grasp','lift','preplace','place','retreat','home'].map(k=>[k,{ticks:1}])),warnings:{}},trace,tickMs:trace.map(()=>1),maxRssKiB:100};
+  expect(assessCase(spec,raw).passed).toBe(false);
+ });
++
++test('reader binds the complete checker tuple before accepting summaries',async()=>{
++ const {verifyMujocoProbe}=await import('../../scripts/native-sim/mujoco-probe-core.mjs');
++ const {mkdtemp,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const root=await mkdtemp(join(tmpdir(),'L01-checker-pin-')),checker={sourceCommit:'1'.repeat(40),toolSha256:'2'.repeat(64)};
++ for(const recorded of [undefined,{...checker,sourceCommit:'3'.repeat(40)},{...checker,toolSha256:'4'.repeat(64)}]){
++  await writeFile(join(root,'manifest.json'),JSON.stringify({schemaVersion:1,kind:'mujoco-native-probe',accepted:false,dynamics:'not_calibrated',qualification:'passed',DEP_MJ_01:'passed',checker:recorded,artifacts:[]}));
++  expect((await verifyMujocoProbe(root,checker)).issues).toContain('CHECKER_PIN');
++ }
++});
++test('execution and reader share exact historical image and measured package admission',async()=>{
++ const {imagePrerequisites}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const digest='sha256:'+'a'.repeat(64),lib='b'.repeat(64),manifest={subject:{image:{manifestDigest:digest}},profile:{forbiddenPackages:['mujoco-core'],requiredPackages:[{name:'mujoco',version:'3.17.0',sha256:lib}]}},engine={version:'3.17.0',packages:[['mujoco','3.17.0']],artifacts:[{path:'/libmujoco.so',digest:'sha256:'+lib}]};
++ expect(imagePrerequisites(manifest,engine,digest)).toEqual([]);
++ expect(imagePrerequisites({...manifest,subject:{image:{manifestDigest:'sha256:'+'c'.repeat(64)}}},engine,digest)).toContain('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
++ expect(imagePrerequisites(manifest,{...engine,packages:[...engine.packages,['MuJoCo_Core','1']]},digest)).toContain('IMAGE_FORBIDDEN_PACKAGE');
++ expect(imagePrerequisites({...manifest,profile:{...manifest.profile,requiredPackages:[...manifest.profile.requiredPackages,{name:'other'}]}},engine,digest)).toContain('UNMEASURED_PACKAGE_LOCK');
++});
++
++// These exercise the actual reader's raw-source subvalidator, not full native admission.
++test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
++ const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const {verifyBusinessRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
++ const root=await mkdtemp(join(tmpdir(),'L01-raw-reader-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v)+'\n');};
++ const runId='portable-double',wire=[{event:'spawn',runId,pid:42,atMs:1},{event:'request',runId,pid:42,atMs:2,value:{requestId:'a',op:'step'}},{event:'exit',runId,pid:42,atMs:4,signal:'SIGKILL'}],trace={samples:[]},props={samples:[]};
++ const traceBytes=JSON.stringify(trace)+'\n',propsBytes=JSON.stringify(props)+'\n',subject={sourceCommit:'1'.repeat(40),schemaHash:'2'.repeat(64)},report={manifest:{runId,sourceCommit:subject.sourceCommit},schemaHash:subject.schemaHash,arm:{trace:{path:'trace.json',sha256:sha256(traceBytes)},props:{path:'props.json',sha256:sha256(propsBytes)}}};
++ const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x'}]};
++ await put('report.json',report);await put('run-wire.json',wire);await put('requests.json',mutation==='requests'?[]:raw.requests);await put('injection.json',mutation==='injection'?{...raw.injection,pid:43}:raw.injection);
++ const copies=[];for(const [path,value] of Object.entries({'runtime/r/run.json':mutation==='checkpoint'?{runId,coffee:{arm:{programs:[]}}}:raw.checkpoint,'runtime/r/trace.json':trace,'runtime/r/props.json':props,'runtime/r/journal.db':{fixture:true}})){await put(path,value);const b=await readFile(join(root,path));copies.push({path,bytes:b.length,sha256:sha256(b)});}
++ await put('runtime-copies.json',{afterRuntimeClose:true,copies});
++ const events=mutation==='truncated'?wire.slice(0,-1):mutation==='resend'?[...wire.slice(0,2),{...wire[1],atMs:2.5},wire[2]]:wire;
++ const stream=events.map(e=>JSON.stringify(e)+'\n').join('');await writeFile(join(root,'wire.jsonl'),stream);await put('wire.jsonl.seal',{complete:true,totalBytes:Buffer.byteLength(stream)+(mutation==='byte-count'?1:0)});if(mutation==='incomplete')await writeFile(join(root,'wire.jsonl.incomplete'),'overflow\n');
++ // Every retained file is newly hashed, so negatives reach raw semantics rather than stale artifact hashes.
++ const {probeArtifacts}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');const artifacts=await probeArtifacts(root);expect(artifacts.length).toBeGreaterThan(5);
++ const issues=await verifyBusinessRaw(root,{kind:'worker_loss'},raw,subject);
++ if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
++});
++
++test.each(['none','request','scene','compiled','before','injected','warning','snapshot','dimensions','npz-crc'])('binds bad-state reader to actual request/scene/state bytes: %s',async mutation=>{
++ const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
++ const {verifyBadStateRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{stateNpz}=await import('../fixtures/native-probe-state');
++ const baseline=JSON.parse(await readFile('scripts/native-sim/r2a-arm-baseline.json','utf8'));
++ const root=await mkdtemp(join(tmpdir(),'L01-state-reader-'));await mkdir(join(root,'engine'));
++ const put=(p:string,v:unknown)=>writeFile(join(root,'engine',p),JSON.stringify(v)+'\n');
++ const injection={kind:'qvel_nan',atTick:1,index:0,joint:'J1'},before={tick:0,state:'running'},after={tick:0,state:'failed'},warnings={BADQPOS:0,BADQVEL:1,BADQACC:0};
++ const sizes=baseline.badStateCompiled.stateSizes,state={qpos:Array(sizes.qpos).fill(0),qvel:Array(sizes.qvel).fill(0),qacc:Array(sizes.qacc).fill(0),ctrl:Array(mutation==='dimensions'?1:sizes.ctrl).fill(0)},injected={...state,qvel:[NaN,...state.qvel.slice(1)]};
++ for(const [label,value]of Object.entries({before:mutation==='before'?injected:state,injected:mutation==='injected'?state:injected,after:state})){
++  const bytes=stateNpz(value);if(mutation==='npz-crc'&&label==='after')bytes[80]^=1;await writeFile(join(root,'engine',label+'-state.npz'),bytes);
++ }
++ const payload={targetTick:1,velocities:[],actorUpdates:[],jointTargets:[{armId:'arm-1',positionsRad:baseline.world.arm.homeRad}]};
++ const requests=['create','start','step','step'].map((op,i)=>({protocol:'mekoniq-sim3d/1',requestId:'probe-'+i,runId:'native-bad-state',expectedTick:0,op,payload:i===0?{sceneRef:'arm-cell-scene.json',seed:42,arms:[{armId:'arm-1',sceneRef:'arm-cell-scene.json'}]}:i<2?{}:payload}));
++ if(mutation==='request')requests[2].expectedTick=1;
++ const responses=requests.map((r,i)=>({requestId:r.requestId,ok:i<2,...i>=2?{error:{code:'PLANT_UNSTABLE'}}:{}}));
++ const raw={injection,before,after,warningDelta:warnings,response:responses[2],postFault:responses[3]};
++ await put('requests.json',requests);await put('responses.json',responses);await put('injection.json',injection);
++ await put('snapshots.json',{before:{...before,warnings:{BADQPOS:0,BADQVEL:0,BADQACC:0}},after:{...after,tick:mutation==='snapshot'?1:0,warnings:mutation==='warning'?{BADQPOS:0,BADQVEL:0,BADQACC:0}:warnings}});
++ await put('arm-cell-scene.json',mutation==='scene'?{...baseline.world,engineSeed:99}:baseline.world);
++ for(const name of ['component.json','physics.json'])await writeFile(join(root,'engine',name),await readFile('robotics/simulation-mujoco/fixtures/xarm6-g2-v1/'+name));
++ await writeFile(join(root,'engine/compiled.xml'),mutation==='compiled'?'<mujoco/>':await readFile('scripts/native-sim/r2a-arm-compiled.xml'));
++ const issues=await verifyBadStateRaw(root,raw,baseline);if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
++});
+diff --git a/tests/unit/sim-extension-qualification.test.ts b/tests/unit/sim-extension-qualification.test.ts
+index c15d05c..b585b65 100644
+--- a/tests/unit/sim-extension-qualification.test.ts
++++ b/tests/unit/sim-extension-qualification.test.ts
+@@ -1,16 +1,17 @@
+ // R1 qualification (sim-extension-qualification/1): the case/gate table of spec §6.3 and the fail-closed record check, on synthetic records. The live directory is
+ // checked by tests/acceptance/sim-extension.acceptance.test.ts. `tested` is never `accepted`; a skipped test is not_run; a record never carries an accepted gate.
+ import {expect,test} from 'vitest';
+ import {createHash} from 'node:crypto';
+ import {spawnSync} from 'node:child_process';
+-import {existsSync,readdirSync,readFileSync} from 'node:fs';
++import {existsSync,readdirSync,readFileSync,mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
++import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ // @ts-expect-error plain ESM script without types
+ import {CASES,GATES,SUITES,CASES_R11,GATES_R11,SUITES_R11,checkIrsimRecord,checkR1Record,checkQualification,qualify,qualifyR11} from '../../scripts/sim-extension-qualification.mjs';
+ // @ts-expect-error plain ESM script without types
+ import * as Q from '../../scripts/sim-extension-qualification.mjs';
+ // @ts-expect-error plain ESM script without types
+ import * as ir from '../../scripts/irsim-qualification.mjs';
+ type M=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+ const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
+ const HEX='a'.repeat(64),HEX2='b'.repeat(64),COMMIT='c'.repeat(40),LABC='d'.repeat(40),pass={passed:3,failed:0,skipped:0,total:3};
+@@ -316,31 +317,50 @@ test('r2a --blocked: only part A gates, only when the spike note concludes failu
+  expect(q.checkBlocked({gates:[],reason:'x'},SPIKE_FAIL).join()).toMatch(/BLOCKED_NO_GATE/);
+  expect(q.checkBlocked({gates:['G-MA1','G-MA2','G-RT2','G-INT4'],reason:'M00 criterion 4 failed'},SPIKE_FAIL)).toEqual([]);
+  // a blocked gate is `blocked` with its reason, its cases not_run, and the suites that serve only blocked cases are not part of the table
+  const t=q.tableR2a(['G-MA1']);expect(t.cases.MA01.notRun).toMatch(/^blocked: /);
+  expect(t.suites.some((s:{id:string})=>s.id==='ma-rtb')).toBe(false);expect(t.suites.some((s:{id:string})=>s.id==='ma-bv01')).toBe(true);
+  const r=q.qualifyR2a({...await base2a(),suites:allSuites2a(t.suites),blocked:{gates:['G-MA1'],reason:'M00 failed'}});
+  expect(r.gates['G-MA1']).toMatchObject({status:'blocked',reason:'M00 failed',accepted:false});expect(r.cases.MA02.status).toBe('not_run');expect(r.gates['G-MA2'].status).toBe('tested');
+ });
+ 
+ test('r2a recorder refuses --blocked G-RT1 and --blocked G-MA1 (the spike concludes success) before it touches anything; --plan lists the suites without running them',()=>{
+- const run=(...a:string[])=>spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r2a','--out','/nonexistent/r2a-x','--r11-record','/nonexistent/r11','--mock-regression','/nonexistent/reg',...a],{encoding:'utf8',timeout:60000});
++ const owned=mkdtempSync(join(tmpdir(),'recorder-plan-unit-')),bin=join(owned,'bin'),log=join(owned,'docker-calls.jsonl');
++ mkdirSync(bin);
++ const docker=join(bin,'docker');
++ writeFileSync(docker,`#!${process.execPath}
++const {appendFileSync}=require('node:fs');
++const args=process.argv.slice(2);appendFileSync(${JSON.stringify(log)},JSON.stringify({fixture:'recorder-plan-unit',executable:process.argv[1],args})+'\\n');
++process.exit(args.length===1&&args[0]==='info'?23:97);
++`,{mode:0o700});
++ // Exclusive PATH: this unit test cannot fall through to a host Docker executable.
++ const options={encoding:'utf8' as const,timeout:10000,env:{...process.env,PATH:bin}};
++ try{
++ const run=(...a:string[])=>spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r2a','--out','/nonexistent/r2a-x','--r11-record','/nonexistent/r11','--mock-regression','/nonexistent/reg',...a],options);
+  const rt=run('--blocked','G-RT1','--blocked-reason','x');expect(rt.status).toBe(2);expect(rt.stderr).toMatch(/BLOCKED_NOT_PART_A:G-RT1/);
+  const ma=run('--blocked','G-MA1','--blocked-reason','x');expect(ma.status).toBe(2);expect(ma.stderr).toMatch(/BLOCKED_SPIKE_NOT_FAILED/);
+  const nr=run('--blocked','G-MA1');expect(nr.status).toBe(2);expect(nr.stderr).toMatch(/BLOCKED_REASON_MISSING|MISSING_OPTION:--blocked-reason/);
+- const r1=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r1','--out','/nonexistent/x','--irsim-record','/n','--mock-regression','/n','--blocked','G-MA1','--blocked-reason','x'],{encoding:'utf8',timeout:60000});
++ const r1=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r1','--out','/nonexistent/x','--irsim-record','/n','--mock-regression','/n','--blocked','G-MA1','--blocked-reason','x'],options);
+  expect(r1.status).toBe(2);expect(r1.stderr).toMatch(/UNKNOWN_OPTION:--blocked/);
+  const cl=run('--cl01-result','/nonexistent/cl01.json');expect(cl.status).toBe(2);expect(cl.stderr).toMatch(/UNKNOWN_OPTION:--cl01-result/);
+  const plan=run('--plan');expect(plan.status,plan.stderr).toBe(0);
+  expect(plan.stdout).toMatch(/rt-image/);expect(plan.stdout).toMatch(/removed when the recording ends/);
+  for(const id of ['docker','python-env','screen'])expect(plan.stdout,id).toMatch(new RegExp(`^preflight\\t${id}`,'m'));expect(plan.stdout).toMatch(/lab-e2e-mujoco-coffee/);expect(plan.stdout).toMatch(/test-irsim-e2e\.mjs --provider mujoco mujoco-coffee\.spec\.ts/);
+  expect(existsSync('/nonexistent/r2a-x')).toBe(false);
++ const calls=readFileSync(log,'utf8').trim().split('\n').map(line=>JSON.parse(line));
++ expect(calls).toEqual([{fixture:'recorder-plan-unit',executable:docker,args:['info']}]);
++ expect(plan.stdout).toMatch(/^preflight\tdocker\tDOCKER_UNAVAILABLE\t/m);
++ const refused=spawnSync(docker,['unexpected-unit-argument'],options);expect(refused.status).toBe(97);
++ const receipts=readFileSync(log,'utf8').trim().split('\n').map(line=>JSON.parse(line));
++ expect(receipts).toEqual([...calls,{fixture:'recorder-plan-unit',executable:docker,args:['unexpected-unit-argument']}]);
++ console.info('Owned unit stub only:',JSON.stringify({receipts,infoExit:23,unexpectedExit:refused.status}));
++ }finally{rmSync(owned,{recursive:true,force:true});}
+ });
+ 
+ test('r2a guard: a complete record has no reasons and G-CLOUD1 blocked_external does not fail it; each defect is named',async()=>{
+  const c=await candidate2a();expect(checkQualification(c.m,c.read)).toEqual([]);
+  expect(c.m.gates['G-CLOUD1'].status).toBe('blocked_external');
+  const one=async(over:(m:M,files:Map<string,string>)=>void,re:RegExp)=>{const x=await candidate2a(over);expect(checkQualification(x.m,x.read).join(' | ')).toMatch(re);};
+  await one(m=>{m.accepted=true;m.acceptedBy='someone';m.acceptedAt='t';},/RECORD_ACCEPTED/); // a record is never accepted, even with a reviewer named in it
+  await one(m=>{m.gates['G-UI1'].accepted=true;},/GATE_ACCEPTED:G-UI1/);
+  await one(m=>{m.gates['G-CLOUD1'].status='tested';},/GATE_STATUS_MISMATCH:G-CLOUD1/);
+  await one(m=>{m.gates['G-WA1']={status:'tested',accepted:false,cases:[]};},/FOREIGN_GATE:G-WA1/);

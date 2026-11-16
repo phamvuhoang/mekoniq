@@ -1,0 +1,208 @@
+diff --git a/config/source-runtime.lock.json b/config/source-runtime.lock.json
+index f2a48a436d6d3699f42ca278c59ddbb3ef74650e..ea6b6360383ea831052b60be2f3f4b1dac2d4a85 100644
+--- a/config/source-runtime.lock.json
++++ b/config/source-runtime.lock.json
+@@ -1,18 +1,18 @@
+ {
+   "dirty": false,
+   "packageVersion": "0.1.0",
+   "toolchain": {
+     "node": "v24.22.2"
+   },
+-  "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
++  "sourceCommit": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+   "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+   "protocolMajor": 2,
+   "protocolMajors": [
+     1,
+     2
+   ],
+   "nodeMajor": 24,
+-  "artifactSha256": "5678c2f0cc62713b61790cd2b1847b38219c1b1d1882f6a33463bcb36ad2d2d9",
++  "artifactSha256": "2b7ab594467fcbcb0a68fc370ee839cedacd9ea977d26859761b341cc77e613c",
+   "entrypoint": "runtime.mjs",
+   "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+ }
+diff --git a/src/project/engineering-archive.ts b/src/project/engineering-archive.ts
+index e07fe5565ac398f2eb77eddae5bb8f6c827abd64..9f8b81f8d2f9206f5127d9d198e112051016c403 100644
+--- a/src/project/engineering-archive.ts
++++ b/src/project/engineering-archive.ts
+@@ -1,13 +1,13 @@
+ import Ajv from 'ajv';
+ import type {ErrorObject} from 'ajv';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
+ import projectSchema from '../shared/engineering-schemas/engineering-project.schema.json';
+ import archiveSchema from '../shared/engineering-schemas/engineering-project-archive.schema.json';
+ import assetSchema from '../shared/engineering-schemas/asset-revision.schema.json';
+ import recipeSchema from '../shared/engineering-schemas/coffee-recipe.schema.json';
+ import addFormats from 'ajv-formats';
+ import type {ComponentRevision,EngineeringArchive,EngineeringProject} from '../shared/engineering';
+ import {validateProjectV2} from './schema';
+ import {canonicalJson,hashJson,sha256Hex} from '../twin/hash';
+ import {verifyAssetHash} from '../twin/model';
+ import type {AssetRevision} from '../shared/types';
+diff --git a/src/reports/compare.ts b/src/reports/compare.ts
+index 101cf30c760ef2187eae2c889718ed19da6a00b1..59a85f6bb1c5995c31f8626905dd3548c4f122a5 100644
+--- a/src/reports/compare.ts
++++ b/src/reports/compare.ts
+@@ -96,21 +96,21 @@ export function compareRuns(a:RunReport,b:RunReport){
+  const kpis=ka.map((x,i)=>{const y=kb[i]!,available=x.available&&y.available;
+   return {id:x.id,unit:x.unit,definition:x.definition,a:x.value,b:y.value,available,reasons:[x.reason,y.reason].filter(Boolean) as string[],
+    delta:comparable&&available?y.value!-x.value!:null,population:{runs:1,samplesA:x.samples,samplesB:y.samples},percentiles:null as null};});
+  const coverage=[...new Set([...Object.keys(a.coverage),...Object.keys(b.coverage)])].map(k=>({key:k,a:!!a.coverage[k],b:!!b.coverage[k]}));
+  const pop=(r:RunReport)=>({runs:1,businessEvents:r.businessEvents.length,telemetrySamples:r.telemetry?.samples.length??0,telemetryDropped:r.telemetry?.dropped??0});
+  return {comparable,reasons,inputs,kpis,coverage,population:{a:pop(a),b:pop(b)},note:'One run per side: no p50/p95. Repeat with seeds for a distribution.'};
+ }
+ 
+ // Cross-engine studies are immutable downstream views. Validation establishes shape, never a physics authority.
+ import Ajv from 'ajv';
+-import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json';
++import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json' with {type:'json'};
+ import {tr} from '../i18n';
+ import {esc} from '../ui/icons';
+ interface StudyRun {runId:string;engine:string;reportRef:{path:string;sha256:string;bytes:number};artifactRefs:{path:string;sha256:string;bytes:number}[];sceneDigest:string;modelDigest:string;firstTick:number;lastTick:number;replay:{runId:string;tick:number}}
+ export interface SemanticStudyView {schemaVersion:1;documentType:'semantic-study';accepted:false;status:'complete'|'failed'|'incomparable';reasonCodes:string[];equivalence:Record<string,{id:string;sha256:string}>;invariantPolicy:{id:string;revision:number};runs:StudyRun[];invariants:{runId:string;id:string;status:string;reasonCodes:string[];tick:number|null}[];differences:{runId:string;dimension:string;value:number|null;unit:string;status:string;reason:string|null}[];unsupportedDimensions:{engine:string;dimension:string;status:'unsupported';reason:string}[];percentiles:null;limitations:string[]}
+ const validateStudy=new Ajv({strict:true,allErrors:true}).compile(studySchema);
+ export function parseSemanticStudy(text:string):SemanticStudyView{
+  if(text.length>8*1024*1024)throw Error('SEMANTIC_STUDY_LIMIT');
+  let value:unknown;try{value=JSON.parse(text);}catch{throw Error('SEMANTIC_STUDY_INVALID');}
+  if(!validateStudy(value))throw Error('SEMANTIC_STUDY_INVALID');return value as unknown as SemanticStudyView;
+ }
+diff --git a/src/reports/navigation2d.ts b/src/reports/navigation2d.ts
+index 32c03f1304c801d6195710e6933d163fb3252537..3334e4d21650e8470d6374c10cc67916e838807d 100644
+--- a/src/reports/navigation2d.ts
++++ b/src/reports/navigation2d.ts
+@@ -1,20 +1,20 @@
+ import {readPayloadBundle,payloadMatches,payloadState,type PayloadBundle} from '../twin/payload';
+ import {sha256Hex} from '../twin/hash';
+ // Navigation evidence (navigation-run-evidence-v1) for the providers this Lab renders. The document is validated against the synced source
+ // schema; anything unknown is unsupported, and "complete" needs every signal to agree (server completeness, end record, gaps, listing, sensor publications).
+ // Imported folders are a trust boundary: every listed chunk that is present must match its size and SHA-256 (else refused); one that is absent makes the
+ // imported copy incomplete. The Lab never reads chunk contents to upgrade a verdict.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+ import evidenceSchema from '../shared/engineering-schemas/navigation-run-evidence-v1.schema.json' with {type:'json'};
+ import type {NavigationRunEvidenceV1,NavigationSceneV1} from '../shared/navigation2d';
+ import type {RunReport} from '../scenarios/controls';
+ import type {LabProjectV2} from '../shared/types';
+ import {validReportShape} from './report-shape';
+ import {MAX_EVIDENCE_BYTES,safeArtifactPath} from './verification';
+ import {validateProjectV2} from '../project/schema';
+ import {hashJson} from '../twin/hash';
+ import {worldHash} from '../twin/model';
+ const ajv=new Ajv({strict:false,allErrors:true});addFormats(ajv);
+diff --git a/src/reports/report-shape.ts b/src/reports/report-shape.ts
+index 34fc9fc55c330749c5ae54b0a94e159f83eb6028..a5834c9cbd8cc90256aac8d5c3a3d896b1668a51 100644
+--- a/src/reports/report-shape.ts
++++ b/src/reports/report-shape.ts
+@@ -1,13 +1,13 @@
+ import {validMobileSample} from '../twin/payload';
+-import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
++import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json' with {type:'json'};
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
+ // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
+ // Domain state remains extensible, but known display fields cannot override these types.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+ import type {RunReport} from '../scenarios/controls';
+ type S=Record<string,unknown>;
+ const str:S={type:'string',maxLength:65536},num:S={type:'number'},bool:S={type:'boolean'},integer:S={type:'integer',minimum:0,maximum:Number.MAX_SAFE_INTEGER};
+ const decimal:S={type:'string',pattern:'^[0-9]+$',maxLength:40},date:S={type:'string',format:'date-time'};
+ const arr=(items:S):S=>({type:'array',items});
+ const obj=(properties:Record<string,S>,required=Object.keys(properties)):S=>({type:'object',properties,required});
+diff --git a/src/scenarios/model-validation.ts b/src/scenarios/model-validation.ts
+index 6c9d95f55ecca8edbf80682550bd9840909d0ac3..5c32414b52ea1956a253dc239e8c49fbae0b341e 100644
+--- a/src/scenarios/model-validation.ts
++++ b/src/scenarios/model-validation.ts
+@@ -1,9 +1,9 @@
+ // ModelValidationReportV1 (LinkForge shadow validation) as the runtime returns it: validated against the synced source schema before the Lab shows it.
+ import Ajv from 'ajv';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+ import reportSchema from '../shared/engineering-schemas/model-validation-report-v1.schema.json' with {type:'json'};
+ import type {ModelValidationReportV1} from '../shared/navigation2d';
+ const ajv=new Ajv({strict:false,allErrors:true});
+ ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');
+ export const validModelValidationReport=ajv.compile<ModelValidationReportV1>(reportSchema);
+diff --git a/src/shared/engineering.ts b/src/shared/engineering.ts
+index 5308afc803e6adca340e943de59cf1b5bfe63d23..a220b06d80227a9b61b3557f482c6138c8298cd4 100644
+--- a/src/shared/engineering.ts
++++ b/src/shared/engineering.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/engineering.ts @ 2bd66e679aba431a84736eb10e04717dc4d32ce7 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/engineering.ts @ 229efa7f565876f8f9d69634f8fbc24b9196ed3f (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
+ import type {LabProjectV2,AssetRevision} from './types';
+ export type CoffeeRecipe=Record<string,unknown>;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Digest".
+  */
+ export type Digest = string;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+diff --git a/src/shared/navigation2d.ts b/src/shared/navigation2d.ts
+index 65ba10261667b0c1203485a13aa9cce679910c72..732e2ad71af67f0a8493e5701c564a43aa50ccab 100644
+--- a/src/shared/navigation2d.ts
++++ b/src/shared/navigation2d.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/navigation2d.ts @ 2bd66e679aba431a84736eb10e04717dc4d32ce7 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/navigation2d.ts @ 229efa7f565876f8f9d69634f8fbc24b9196ed3f (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
+ import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+ /**
+  * @minItems 2
+  * @maxItems 2
+  *
+  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+  * via the `definition` "Vec2".
+  */
+ export type Vec2 = number[];
+diff --git a/src/twin/payload.ts b/src/twin/payload.ts
+index cf576c2561ff289780306aee709991a13ca1b39e..8a1512ac2a4395e44cd07a84d835157c6af8354c 100644
+--- a/src/twin/payload.ts
++++ b/src/twin/payload.ts
+@@ -1,24 +1,24 @@
+ // MuJoCo mobile view: admitted geometry and committed free-load poses only. No client dynamics or custody.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
+-import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json';
+-import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json';
+-import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json';
+-import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json';
+-import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json';
+-import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json';
+-import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json';
+-import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json';
+-import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
++import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json' with {type:'json'};
++import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json' with {type:'json'};
++import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json' with {type:'json'};
++import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json' with {type:'json'};
++import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json' with {type:'json'};
++import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json' with {type:'json'};
++import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json' with {type:'json'};
++import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json' with {type:'json'};
++import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json' with {type:'json'};
+ import type {EngineeringProject} from '../shared/engineering';
+ import type {RobotPhysicalModelV1,LoadProfileV1,NavigationSceneV1} from '../shared/navigation2d';
+ import type {TwinSample} from './store';
+ import type {TwinPreset} from '../scenarios/catalog';
+ import type {TwinRuntime} from '../scenarios/controls';
+ import {buildFrameGraph,composePose,checkQuaternion} from './frames';
+ import {hashJson,sha256Hex} from './hash';
+ import {tr} from '../i18n';
+ const ajv=new Ajv({strict:false});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');ajv.addSchema(navModelSchema,'navigation-model-2d-v1.schema.json');
+ const validPhysical=ajv.getSchema<RobotPhysicalModelV1>('robot-physical-model-v1.schema.json')!,validLoad=ajv.compile<LoadProfileV1>(loadSchema),validNav=ajv.compile<NavigationSceneV1>(navSchema),validSample=ajv.compile<TwinSample>(sampleSchema);

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:22.370500+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r3-xarm6-jazzy-sim-prepared",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-r3-xarm6-jazzy-sim-prepared.tar.gz",
+  "archiveSha256": "3ff7a0f0c579610eca6a83efb27af56791086c81ce179d6362c81113c0a69efa",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-r3-xarm6-jazzy-sim-prepared.members.json",
+  "memberIndexSha256": "33e426b1507eb9628e28cedf2ad08b0754ffd45b60ae33dc13084dec0b46add5",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r3-xarm6-jazzy-sim-prepared",
+  "verifiedFiles": 244,
+  "verifiedBytes": 10940279,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

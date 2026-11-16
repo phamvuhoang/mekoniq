@@ -1,0 +1,1326 @@
+{
+  "at": "2026-11-16T01:03:22.415330+00:00",
+  "scope": "Independent read-only current R11 and genuine partial R2a artifact/result/lineage audit; no test or engine reruns and no candidate edits.",
+  "records": [
+    {
+      "directory": "r11",
+      "qualification": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/qualification.json",
+        "bytes": 18371,
+        "sha256": "4f6617faaab699a211b78c9dfc4d1a730b806bc0962ab4d11ec5c891e357e62c"
+      },
+      "identity": {
+        "before": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "dirty": false,
+          "dirtyReasons": [],
+          "toolClosures": {
+            "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+            "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+          },
+          "node": "v24.22.2",
+          "os": "darwin 25.5.0",
+          "arch": "arm64",
+          "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+          "locks": {
+            "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+            "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+            "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+            "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+            "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+          },
+          "webots": {
+            "version": "Webots version: R2025a",
+            "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+          },
+          "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+          "at": "2026-11-16T00:52:38.354Z"
+        },
+        "after": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "dirty": false,
+          "dirtyReasons": [],
+          "toolClosures": {
+            "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+            "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+          },
+          "node": "v24.22.2",
+          "os": "darwin 25.5.0",
+          "arch": "arm64",
+          "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+          "locks": {
+            "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+            "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+            "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+            "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+            "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+          },
+          "webots": {
+            "version": "Webots version: R2025a",
+            "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+          },
+          "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+          "at": "2026-11-16T00:58:20.334Z"
+        },
+        "identityStable": true
+      },
+      "lab": {
+        "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+        "dirty": false,
+        "pin": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+          "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+          "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+        }
+      },
+      "cases": {
+        "WA01": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-static",
+            "suite:arm-py"
+          ]
+        },
+        "WA02": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-worker"
+          ]
+        },
+        "WA03": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-worker",
+            "suite:arm-py"
+          ]
+        },
+        "WA04": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-programs"
+          ]
+        },
+        "WA05": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-bv01"
+          ]
+        },
+        "WA06": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-faults"
+          ]
+        },
+        "WA07": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-bv01"
+          ]
+        },
+        "WA08": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-bv01",
+            "suite:lab-arm-unit"
+          ]
+        },
+        "INT13": {
+          "status": "tested",
+          "evidence": [
+            "suite:lab-e2e-webots-coffee",
+            "suite:lab-arm-unit"
+          ]
+        },
+        "INT14": {
+          "status": "tested",
+          "evidence": [
+            "suite:arm-static",
+            "suite:arm-regress",
+            "suite:arm-faults"
+          ]
+        },
+        "REG02": {
+          "status": "tested",
+          "evidence": [
+            "record:linkforge-irsim",
+            "record:mock-regression",
+            "record:r1"
+          ]
+        }
+      },
+      "gates": {
+        "G-WA1": {
+          "status": "tested",
+          "accepted": false,
+          "cases": [
+            "WA01",
+            "WA02",
+            "WA03"
+          ]
+        },
+        "G-WA2": {
+          "status": "tested",
+          "accepted": false,
+          "cases": [
+            "WA04",
+            "WA05",
+            "WA06",
+            "WA07",
+            "WA08"
+          ]
+        },
+        "G-INT3": {
+          "status": "tested",
+          "accepted": false,
+          "cases": [
+            "INT13",
+            "INT14"
+          ]
+        },
+        "G-REG2": {
+          "status": "tested",
+          "accepted": false,
+          "cases": [
+            "REG02"
+          ]
+        }
+      },
+      "notRun": [],
+      "artifactsVerified": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/irsim-record.json",
+          "bytes": 357969,
+          "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/mock-regression.json",
+          "bytes": 55333,
+          "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/r1-record.json",
+          "bytes": 578091,
+          "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/screens/webots-coffee.png",
+          "bytes": 196525,
+          "sha256": "f39ae9158a2da502dff8f73b1a2f2fa5527a77da2fb6d42a23bad494fc70d23c"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-bv01.json",
+          "bytes": 3556,
+          "sha256": "d3ca3749317809172e3a3d284a4e28725c7848dd5120226826e1d461fa43f904"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-bv01.log",
+          "bytes": 1240,
+          "sha256": "16a85ea910f81344545e8004a5fc9d17591888585dfb47e15920207d93685de8"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-faults.json",
+          "bytes": 5139,
+          "sha256": "affb8b076c7b885d29158aa579bb39190d8cd567b57bebac316b226cc8784e2e"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-faults.log",
+          "bytes": 2169,
+          "sha256": "481d3a4b2b3b520aab6757ae56f5df26852243ec64c2802e428a27644436de81"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-programs.json",
+          "bytes": 9906,
+          "sha256": "f19e1aee4123f69def5e48fa777ea49eb3fbf650172d16c8185e846061a0d9f5"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-programs.log",
+          "bytes": 1095,
+          "sha256": "f5cdea45737af4f861b3db95e5b1399ad37abafbb1321b80dc81155426aa8e57"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-py.log",
+          "bytes": 179,
+          "sha256": "683f65fd151eee5d65ad3297ce4b39e6215373af95afe8096ed29daeeb06ec73"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-py.xml",
+          "bytes": 9524,
+          "sha256": "b22f634424a1d681172ac4429241119894556c58ca965b89da105c2c2248ce01"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-regress.json",
+          "bytes": 6475,
+          "sha256": "30f41fc34c61a009c2950755114eb9eaf6653e41f8d04da6cefc6e2211b99b96"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-regress.log",
+          "bytes": 856,
+          "sha256": "3e92096f08291246bea536f424f1c12ffc93d63aa6922bcb93c6386be3d7dabd"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-static.json",
+          "bytes": 7025,
+          "sha256": "1482359a3ae9cbc9ce1c773dbd7eda43f41a6008b018345efb859be369ef66df"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-static.log",
+          "bytes": 479,
+          "sha256": "eca327fa15b4aee9bf5ad45eec6c681be24e1da8fee7c2425371cbd142e30c2c"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-worker.json",
+          "bytes": 2440,
+          "sha256": "a3e18e20ff615cd570abcceec06e4646f91992b44b9966a580afed26bc27ef07"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/arm-worker.log",
+          "bytes": 915,
+          "sha256": "2df9d7f2e886b29b9f642b9ca103b78060c559311c4a27152acbf53c37816de8"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/lab-arm-unit.json",
+          "bytes": 10403,
+          "sha256": "4681b1864b1e26067f4518dffc5d504b610f46348d2d666bb9b5aa6926a5afa2"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/lab-arm-unit.log",
+          "bytes": 834,
+          "sha256": "f824af5f550f667878e45b5cb349fbc460a62b57b913b8612e58c2e0243a5a0d"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/lab-e2e-webots-coffee.json",
+          "bytes": 4346,
+          "sha256": "b63ad30e8f9342490c7fae455b713f883e2cb8fd491aa7301b6e1e0233bf70dd"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/lab-e2e-webots-coffee.log",
+          "bytes": 1095,
+          "sha256": "704c40fc5fb85c104b13c8b5465a93c1f1e8cf80d6f7b157377133b066b5c8f1"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/suites/licenses.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "artifactReferenceBytes": 1255594,
+      "upstreamExactCopies": [
+        {
+          "key": "r1Record",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/r1-record.json",
+            "bytes": 578091,
+            "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/qualification.json",
+            "bytes": 578091,
+            "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+          }
+        },
+        {
+          "key": "irsimRecord",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/irsim-record.json",
+            "bytes": 357969,
+            "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/qualification.json",
+            "bytes": 357969,
+            "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+          }
+        },
+        {
+          "key": "mockRegression",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/mock-regression.json",
+            "bytes": 55333,
+            "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/manifest.json",
+            "bytes": 55333,
+            "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+          }
+        }
+      ],
+      "suiteResults": [
+        {
+          "id": "arm-static",
+          "counts": {
+            "passed": 20,
+            "failed": 0,
+            "skipped": 0,
+            "total": 20
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "arm-py",
+          "counts": {
+            "passed": 78,
+            "failed": 0,
+            "skipped": 0,
+            "total": 78
+          },
+          "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+          "scope": "raw header regex plus testcase tags, not valid XML"
+        },
+        {
+          "id": "arm-worker",
+          "counts": {
+            "passed": 5,
+            "failed": 0,
+            "skipped": 0,
+            "total": 5
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "arm-programs",
+          "counts": {
+            "passed": 25,
+            "failed": 0,
+            "skipped": 0,
+            "total": 25
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "arm-bv01",
+          "counts": {
+            "passed": 7,
+            "failed": 0,
+            "skipped": 0,
+            "total": 7
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "arm-faults",
+          "counts": {
+            "passed": 11,
+            "failed": 0,
+            "skipped": 0,
+            "total": 11
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "arm-regress",
+          "counts": {
+            "passed": 16,
+            "failed": 0,
+            "skipped": 0,
+            "total": 16
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "lab-arm-unit",
+          "counts": {
+            "passed": 30,
+            "failed": 0,
+            "skipped": 0,
+            "total": 30
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        },
+        {
+          "id": "lab-e2e-webots-coffee",
+          "counts": {
+            "passed": 1,
+            "failed": 0,
+            "skipped": 0,
+            "total": 1
+          },
+          "xmlParseError": null,
+          "scope": "actual raw assertions/cases"
+        }
+      ],
+      "producer": {
+        "name": "record-r11",
+        "receipt": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r11.receipt.json",
+          "bytes": 5522,
+          "sha256": "ee32a2a80bd0ef73f1a1c6907d0204f20d66d15ffe5356c764742d8fe48f26ef"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r11.log",
+          "bytes": 537,
+          "sha256": "e3f265fe2660bdca8596f08b41381c0d2c55efed9a5d66ac34627d489ede4bb6"
+        },
+        "argv": [
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 21600; exec @ARGV",
+          "node",
+          "scripts/record-sim-extension.mjs",
+          "--release",
+          "r1.1",
+          "--out",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+          "--candidate-id",
+          "r11-final-981e234-d4c3032",
+          "--r1-record",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+          "--mock-regression",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression",
+          "--lab",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+          "--webots-home",
+          "/Applications/Webots.app",
+          "--webots-python",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-webots/bin/python"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-11-16T00:52:37.808Z",
+        "finishedAt": "2026-11-16T00:58:20.401Z"
+      },
+      "missingSuiteProblems": [],
+      "guards": [
+        {
+          "stage": "external",
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r11-external.json",
+            "bytes": 6707,
+            "sha256": "f9dede80ea8257fefeee1abc898985f082af5b6068d9c0f402bef2648d99a903"
+          },
+          "counts": {
+            "passed": 11,
+            "failed": 1,
+            "skipped": 0,
+            "total": 12
+          },
+          "failures": [
+            {
+              "name": "R1.1: the R1 record it carries is the one in the tree (byte for byte), and so are the IR-SIM record and the mock regression that R1 record was built on (REG02)",
+              "messages": [
+                "AssertionError: docs/implementation/evidence/sim-extension/r1 is not in the tree (the R1 record this record builds on): expected false to be true // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:44:123\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            }
+          ],
+          "ownReceipt": {
+            "name": "acceptance-r11-external",
+            "receipt": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r11-external.receipt.json",
+              "bytes": 5110,
+              "sha256": "07fb594e69e16dd21623974ba17c0097cae3fd0fdc7252d9b7655646dabdcabb"
+            },
+            "log": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r11-external.log",
+              "bytes": 3455,
+              "sha256": "b9b6fc6dbbd27469f15902883470d8dec28254b794db2baae1f80b9ce5880ba3"
+            },
+            "argv": [
+              "caffeinate",
+              "-dims",
+              "perl",
+              "-e",
+              "alarm 300; exec @ARGV",
+              "env",
+              "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+              "pnpm",
+              "test:acceptance",
+              "--",
+              "sim-extension",
+              "--reporter=default",
+              "--reporter=json",
+              "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r11-external.json"
+            ],
+            "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+            "exitCode": 1,
+            "signal": null,
+            "startedAt": "2026-11-16T00:58:20.732Z",
+            "finishedAt": "2026-11-16T00:58:21.711Z"
+          }
+        },
+        {
+          "stage": "staged",
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r11-staged.json",
+            "bytes": 5059,
+            "sha256": "a6d6c662936f7b65c638864d9c0ba4753d3c86fe9c8ebd7d57f585dc8133a2b8"
+          },
+          "counts": {
+            "passed": 12,
+            "failed": 0,
+            "skipped": 0,
+            "total": 12
+          },
+          "failures": [],
+          "ownReceipt": {
+            "name": "acceptance-r11-staged",
+            "receipt": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r11-staged.receipt.json",
+              "bytes": 3406165,
+              "sha256": "2a146693b8801d476bdd91e718e81c72217fd157b9025dd626dc7c43ddb9c191"
+            },
+            "log": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r11-staged.log",
+              "bytes": 931,
+              "sha256": "704715537ae487348d048a5b7dae08e12e8ca30578be75e4edf907483fb93987"
+            },
+            "argv": [
+              "caffeinate",
+              "-dims",
+              "perl",
+              "-e",
+              "alarm 300; exec @ARGV",
+              "env",
+              "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+              "pnpm",
+              "test:acceptance",
+              "--",
+              "sim-extension",
+              "--reporter=default",
+              "--reporter=json",
+              "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r11-staged.json"
+            ],
+            "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source",
+            "exitCode": 0,
+            "signal": null,
+            "startedAt": "2026-11-16T00:58:24.906Z",
+            "finishedAt": "2026-11-16T00:58:25.756Z"
+          }
+        }
+      ]
+    },
+    {
+      "directory": "r2a-partial",
+      "qualification": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/qualification.json",
+        "bytes": 13815,
+        "sha256": "c5985546e9683ee65b08ad4d50be50372987719b842c51de0bc150735da33b7b"
+      },
+      "identity": {
+        "before": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "dirty": false,
+          "dirtyReasons": [],
+          "toolClosures": {
+            "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+            "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+          },
+          "node": "v24.22.2",
+          "os": "darwin 25.5.0",
+          "arch": "arm64",
+          "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+          "locks": {
+            "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+            "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+            "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+            "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+            "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+          },
+          "webots": {
+            "version": "Webots version: R2025a",
+            "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+          },
+          "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+          "at": "2026-11-16T00:58:26.912Z"
+        },
+        "after": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "dirty": false,
+          "dirtyReasons": [],
+          "toolClosures": {
+            "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+            "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+          },
+          "node": "v24.22.2",
+          "os": "darwin 25.5.0",
+          "arch": "arm64",
+          "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+          "locks": {
+            "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+            "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+            "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+            "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+            "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+          },
+          "webots": {
+            "version": "Webots version: R2025a",
+            "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+          },
+          "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+          "at": "2026-11-16T00:58:27.565Z"
+        },
+        "identityStable": true
+      },
+      "lab": {
+        "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+        "dirty": false,
+        "pin": {
+          "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+          "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+          "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+        }
+      },
+      "cases": {
+        "MA01": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-static not_run; suite ma-rtb not_run; suite ma-py not_run"
+        },
+        "MA02": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-worker not_run; suite ma-py not_run"
+        },
+        "MA03": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-py not_run; suite ma-ports not_run; suite ma-worker not_run"
+        },
+        "MA04": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-programs not_run; suite ma-contact not_run"
+        },
+        "MA05": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-bv01 not_run"
+        },
+        "MA06": {
+          "status": "not_run",
+          "evidence": [],
+          "note": "ruled 2026-11-13: with the pads' friction lowered the cup slips during the lift, so the transfer is refused at the lift check (TRANSFER_REJECTED, run needs_attention) and CUP_DROPPED latches when the cup leaves the pads; the case is an explicit failure at the lift check and/or CUP_DROPPED, never completed, the gripper never commanded open. The weakened-joint fault runs on a temporary copy of the worker root; the occupied-stand run ends in ARM_COLLISION before the worker's occupied refusal, which is proven at worker and ports level",
+          "reason": "suite ma-faults not_run"
+        },
+        "MA07": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-bv01 not_run"
+        },
+        "MA08": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite ma-bv01 not_run; suite ma-contact not_run"
+        },
+        "RT01": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite rt-remote not_run"
+        },
+        "RT02": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "suite lab-rt-unit not_run"
+        },
+        "RT03": {
+          "status": "not_run",
+          "evidence": [],
+          "note": "ruled 2026-11-13: on the fixed-step runner, paced and unpaced evidence are identical for the same action sequence and the unpaced golden is unchanged with no wall-clock call; a paced run cannot reproduce the 500-tick golden (a paced step carries at most 50 ticks)",
+          "reason": "suite rt-paced not_run"
+        },
+        "RT04": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-e2e-remote-origin not_run"
+        },
+        "RT05": {
+          "status": "not_run",
+          "evidence": [],
+          "note": "the image is built by the recorder for this machine's architecture from the recorded commit; a container run is never evidence for G-MA1/G-MA2 (D50); linux/amd64 has only run under emulation, where MJ-BV01 stops with PLANT_UNSTABLE (cause unknown), and real amd64 hardware is untested",
+          "reason": "suite rt-container not_run"
+        },
+        "CL01": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+        },
+        "UI01": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-layout not_run"
+        },
+        "UI02": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-layout not_run; suite lab-e2e-twin-polish not_run"
+        },
+        "UI03": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-transport not_run; suite lab-e2e-twin-polish not_run"
+        },
+        "UI04": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-brand-accessibility not_run; suite lab-e2e-twin-layout not_run; suite lab-e2e-twin-workspace not_run"
+        },
+        "UI05": {
+          "status": "not_run",
+          "evidence": [],
+          "note": "ruled 2026-11-13: the launcher-level check is the MuJoCo launcher spec (mujoco-mesh-fallback); the plan's mock-launcher e2e was replaced by UI-only browser specs (arm-mesh, arm-cell). The 3D view also draws the cell's two supports (assumed geometry of the simulated cell) and an illustrative mount and legs that are not simulated",
+          "reason": "Lab not recorded; suite lab-arm-unit not_run; suite lab-e2e-arm-mesh not_run; suite lab-e2e-arm-cell not_run; suite lab-e2e-mujoco-mesh-fallback not_run"
+        },
+        "INT15": {
+          "status": "not_run",
+          "evidence": [],
+          "reason": "Lab not recorded; suite lab-e2e-mujoco-coffee not_run; suite lab-arm-unit not_run"
+        },
+        "INT16": {
+          "status": "not_run",
+          "evidence": [
+            "record:mock-regression"
+          ],
+          "note": "the mock e2e on the new UI is the R-MOCK regression of the same commit (mock-regression.json)",
+          "reason": "Lab not recorded; suite regress not_run; suite ma-faults not_run; suite lab-e2e-irsim-journey not_run; suite lab-e2e-webots-coffee not_run"
+        },
+        "REG03": {
+          "status": "tested",
+          "evidence": [
+            "record:linkforge-irsim",
+            "record:mock-regression",
+            "record:r1",
+            "record:r1.1"
+          ]
+        }
+      },
+      "gates": {
+        "G-MA1": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "MA01",
+            "MA02",
+            "MA03"
+          ]
+        },
+        "G-MA2": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "MA04",
+            "MA05",
+            "MA06",
+            "MA07",
+            "MA08"
+          ]
+        },
+        "G-RT1": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "RT01",
+            "RT02",
+            "RT03",
+            "RT04"
+          ]
+        },
+        "G-RT2": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "RT05"
+          ]
+        },
+        "G-UI1": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "UI01",
+            "UI02",
+            "UI03",
+            "UI04"
+          ]
+        },
+        "G-INT4": {
+          "status": "not_run",
+          "accepted": false,
+          "cases": [
+            "UI05",
+            "INT15",
+            "INT16"
+          ]
+        },
+        "G-REG3": {
+          "status": "tested",
+          "accepted": false,
+          "cases": [
+            "REG03"
+          ]
+        },
+        "G-CLOUD1": {
+          "status": "blocked_external",
+          "accepted": false,
+          "cases": [
+            "CL01"
+          ]
+        }
+      },
+      "notRun": [
+        {
+          "id": "MA01",
+          "reason": "suite ma-static not_run; suite ma-rtb not_run; suite ma-py not_run"
+        },
+        {
+          "id": "MA02",
+          "reason": "suite ma-worker not_run; suite ma-py not_run"
+        },
+        {
+          "id": "MA03",
+          "reason": "suite ma-py not_run; suite ma-ports not_run; suite ma-worker not_run"
+        },
+        {
+          "id": "MA04",
+          "reason": "suite ma-programs not_run; suite ma-contact not_run"
+        },
+        {
+          "id": "MA05",
+          "reason": "suite ma-bv01 not_run"
+        },
+        {
+          "id": "MA06",
+          "reason": "suite ma-faults not_run"
+        },
+        {
+          "id": "MA07",
+          "reason": "suite ma-bv01 not_run"
+        },
+        {
+          "id": "MA08",
+          "reason": "suite ma-bv01 not_run; suite ma-contact not_run"
+        },
+        {
+          "id": "RT01",
+          "reason": "suite rt-remote not_run"
+        },
+        {
+          "id": "RT02",
+          "reason": "suite lab-rt-unit not_run"
+        },
+        {
+          "id": "RT03",
+          "reason": "suite rt-paced not_run"
+        },
+        {
+          "id": "RT04",
+          "reason": "Lab not recorded; suite lab-e2e-remote-origin not_run"
+        },
+        {
+          "id": "RT05",
+          "reason": "suite rt-container not_run"
+        },
+        {
+          "id": "UI01",
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-layout not_run"
+        },
+        {
+          "id": "UI02",
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-layout not_run; suite lab-e2e-twin-polish not_run"
+        },
+        {
+          "id": "UI03",
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-twin-transport not_run; suite lab-e2e-twin-polish not_run"
+        },
+        {
+          "id": "UI04",
+          "reason": "Lab not recorded; suite lab-ui-unit not_run; suite lab-e2e-brand-accessibility not_run; suite lab-e2e-twin-layout not_run; suite lab-e2e-twin-workspace not_run"
+        },
+        {
+          "id": "UI05",
+          "reason": "Lab not recorded; suite lab-arm-unit not_run; suite lab-e2e-arm-mesh not_run; suite lab-e2e-arm-cell not_run; suite lab-e2e-mujoco-mesh-fallback not_run"
+        },
+        {
+          "id": "INT15",
+          "reason": "Lab not recorded; suite lab-e2e-mujoco-coffee not_run; suite lab-arm-unit not_run"
+        },
+        {
+          "id": "INT16",
+          "reason": "Lab not recorded; suite regress not_run; suite ma-faults not_run; suite lab-e2e-irsim-journey not_run; suite lab-e2e-webots-coffee not_run"
+        },
+        {
+          "id": "CL01",
+          "reason": "blocked_external: no Cloud Run deployment has been ordered (D60); CL01 runs on a deployed service only, and its producer and record format belong to that deployment work"
+        }
+      ],
+      "artifactsVerified": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/irsim-record.json",
+          "bytes": 357969,
+          "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/mock-regression.json",
+          "bytes": 55333,
+          "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/r1-record.json",
+          "bytes": 578091,
+          "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/r11-record.json",
+          "bytes": 18371,
+          "sha256": "4f6617faaab699a211b78c9dfc4d1a730b806bc0962ab4d11ec5c891e357e62c"
+        },
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/suites/licenses.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "artifactReferenceBytes": 1009764,
+      "upstreamExactCopies": [
+        {
+          "key": "r1Record",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/r1-record.json",
+            "bytes": 578091,
+            "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/qualification.json",
+            "bytes": 578091,
+            "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+          }
+        },
+        {
+          "key": "r11Record",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/r11-record.json",
+            "bytes": 18371,
+            "sha256": "4f6617faaab699a211b78c9dfc4d1a730b806bc0962ab4d11ec5c891e357e62c"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11/qualification.json",
+            "bytes": 18371,
+            "sha256": "4f6617faaab699a211b78c9dfc4d1a730b806bc0962ab4d11ec5c891e357e62c"
+          }
+        },
+        {
+          "key": "irsimRecord",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/irsim-record.json",
+            "bytes": 357969,
+            "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/qualification.json",
+            "bytes": 357969,
+            "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+          }
+        },
+        {
+          "key": "mockRegression",
+          "embedded": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial/mock-regression.json",
+            "bytes": 55333,
+            "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+          },
+          "currentOriginal": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/manifest.json",
+            "bytes": 55333,
+            "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+          }
+        }
+      ],
+      "suiteResults": [],
+      "producer": {
+        "name": "record-r2a-partial",
+        "receipt": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r2a-partial.receipt.json",
+          "bytes": 5379,
+          "sha256": "5c26cf67ae081ea7e20670d2ed926fbdf511b8138da46af61fa67b5fe6ad2ce1"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r2a-partial.log",
+          "bytes": 3563,
+          "sha256": "8a8541d45f1229759ff40f33452b6e2cc9ca3bc14c02a66ac38a769eec0024e0"
+        },
+        "argv": [
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 600; exec @ARGV",
+          "node",
+          "scripts/record-sim-extension.mjs",
+          "--release",
+          "r2a",
+          "--skip-suites",
+          "--out",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial",
+          "--candidate-id",
+          "r2a-partial-final-981e234-d4c3032",
+          "--r11-record",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+          "--mock-regression",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression",
+          "--lab",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "exitCode": 1,
+        "signal": null,
+        "startedAt": "2026-11-16T00:58:26.423Z",
+        "finishedAt": "2026-11-16T00:58:27.621Z"
+      },
+      "missingSuiteProblems": [
+        "SUITE_MISSING:ma-static",
+        "SUITE_MISSING:ma-rtb",
+        "SUITE_MISSING:ma-py",
+        "SUITE_MISSING:ma-worker",
+        "SUITE_MISSING:ma-ports",
+        "SUITE_MISSING:ma-programs",
+        "SUITE_MISSING:ma-contact",
+        "SUITE_MISSING:ma-bv01",
+        "SUITE_MISSING:ma-faults",
+        "SUITE_MISSING:rt-remote",
+        "SUITE_MISSING:rt-paced",
+        "SUITE_MISSING:rt-container",
+        "SUITE_MISSING:regress",
+        "SUITE_MISSING:lab-rt-unit",
+        "SUITE_MISSING:lab-ui-unit",
+        "SUITE_MISSING:lab-arm-unit",
+        "SUITE_MISSING:lab-e2e-remote-origin",
+        "SUITE_MISSING:lab-e2e-twin-layout",
+        "SUITE_MISSING:lab-e2e-twin-polish",
+        "SUITE_MISSING:lab-e2e-twin-transport",
+        "SUITE_MISSING:lab-e2e-twin-workspace",
+        "SUITE_MISSING:lab-e2e-brand-accessibility",
+        "SUITE_MISSING:lab-e2e-arm-mesh",
+        "SUITE_MISSING:lab-e2e-arm-cell",
+        "SUITE_MISSING:lab-e2e-mujoco-coffee",
+        "SUITE_MISSING:lab-e2e-mujoco-mesh-fallback",
+        "SUITE_MISSING:lab-e2e-irsim-journey",
+        "SUITE_MISSING:lab-e2e-webots-coffee"
+      ],
+      "guards": [
+        {
+          "stage": "external",
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r2a-partial-external.json",
+            "bytes": 11581,
+            "sha256": "dd1360ebd7c23fa8cb1d36989da3791a751fb96e4692c35b72d1771c05cbbd20"
+          },
+          "counts": {
+            "passed": 8,
+            "failed": 4,
+            "skipped": 0,
+            "total": 12
+          },
+          "failures": [
+            {
+              "name": "the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)",
+              "messages": [
+                "AssertionError: expected [ 'SUITE_MISSING:ma-static', …(27) ] to deeply equal []\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:28:158\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            },
+            {
+              "name": "R2a: the R1.1 record it carries is the one in the tree (byte for byte), and so are the R1, IR-SIM and mock records that R1.1 record carries (REG03)",
+              "messages": [
+                "AssertionError: docs/implementation/evidence/sim-extension/r11 is not in the tree (the R1.1 record this record builds on): expected false to be true // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:54:127\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            },
+            {
+              "name": "no gate is accepted by this record, only its own release's gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)",
+              "messages": [
+                "AssertionError: G-MA1: expected 'not_run' to be 'tested' // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:81:50\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            },
+            {
+              "name": "INT15 screenshot of the Lab running MJ-BV01 on the real MuJoCo worker is in the R2a candidate",
+              "messages": [
+                "AssertionError: expected 'not_run' to be 'tested' // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:91:31\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            }
+          ],
+          "ownReceipt": {
+            "name": "acceptance-r2a-partial-external",
+            "receipt": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2a-partial-external.receipt.json",
+              "bytes": 5126,
+              "sha256": "81d7526de0f31c571df38e98d6c03003c42ecb637b8a20421a37bfa6ed995fab"
+            },
+            "log": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2a-partial-external.log",
+              "bytes": 6411,
+              "sha256": "c13bf42d43cad5577be0cd10fbbebdd16dc0958d771e723f1d0d33d62e4dcd0d"
+            },
+            "argv": [
+              "caffeinate",
+              "-dims",
+              "perl",
+              "-e",
+              "alarm 600; exec @ARGV",
+              "env",
+              "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial",
+              "pnpm",
+              "test:acceptance",
+              "--",
+              "sim-extension",
+              "--reporter=default",
+              "--reporter=json",
+              "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r2a-partial-external.json"
+            ],
+            "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+            "exitCode": 1,
+            "signal": null,
+            "startedAt": "2026-11-16T00:59:50.853Z",
+            "finishedAt": "2026-11-16T00:59:51.914Z"
+          }
+        },
+        {
+          "stage": "staged",
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r2a-partial-staged.json",
+            "bytes": 10146,
+            "sha256": "230f6944ea8f2a99960a9aa0beb56218d8cf602ed69f7c31fca5e879f04beafe"
+          },
+          "counts": {
+            "passed": 9,
+            "failed": 3,
+            "skipped": 0,
+            "total": 12
+          },
+          "failures": [
+            {
+              "name": "the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)",
+              "messages": [
+                "AssertionError: expected [ 'SUITE_MISSING:ma-static', …(27) ] to deeply equal []\n    at /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/tests/acceptance/sim-extension.acceptance.test.ts:28:158\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            },
+            {
+              "name": "no gate is accepted by this record, only its own release's gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)",
+              "messages": [
+                "AssertionError: G-MA1: expected 'not_run' to be 'tested' // Object.is equality\n    at /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/tests/acceptance/sim-extension.acceptance.test.ts:81:50\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            },
+            {
+              "name": "INT15 screenshot of the Lab running MJ-BV01 on the real MuJoCo worker is in the R2a candidate",
+              "messages": [
+                "AssertionError: expected 'not_run' to be 'tested' // Object.is equality\n    at /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/tests/acceptance/sim-extension.acceptance.test.ts:91:31\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+              ]
+            }
+          ],
+          "ownReceipt": {
+            "name": "acceptance-r2a-partial-staged",
+            "receipt": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2a-partial-staged.receipt.json",
+              "bytes": 3406181,
+              "sha256": "eaaef7d170cfd25df402a5507eb3763a365ece6f7972db348ab0f0349ff5ce27"
+            },
+            "log": {
+              "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2a-partial-staged.log",
+              "bytes": 5986,
+              "sha256": "d57cc53290de0639699bb7e62362b510e4223c0ec860f8cf29fe4a0d4eff6b48"
+            },
+            "argv": [
+              "caffeinate",
+              "-dims",
+              "perl",
+              "-e",
+              "alarm 600; exec @ARGV",
+              "env",
+              "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial",
+              "pnpm",
+              "test:acceptance",
+              "--",
+              "sim-extension",
+              "--reporter=default",
+              "--reporter=json",
+              "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r2a-partial-staged.json"
+            ],
+            "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source",
+            "exitCode": 1,
+            "signal": null,
+            "startedAt": "2026-11-16T00:59:55.015Z",
+            "finishedAt": "2026-11-16T00:59:55.858Z"
+          }
+        }
+      ]
+    }
+  ],
+  "explicitDataStaging": {
+    "descriptor": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/current-legacy-stage-r11.json",
+      "bytes": 1631172,
+      "sha256": "b2c0dd6935d8a059b6bad79d6174b2768ae59fd0eb11dc51a74aa1d695d32763"
+    },
+    "copyPairs": [
+      {
+        "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim",
+        "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/docs/implementation/evidence/linkforge-irsim/irsim",
+        "verifiedPairs": 1603,
+        "bytesPerCopy": 70037027
+      },
+      {
+        "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+        "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/docs/implementation/evidence/sim-extension/r1",
+        "verifiedPairs": 2588,
+        "bytesPerCopy": 139842909
+      },
+      {
+        "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+        "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/docs/implementation/evidence/sim-extension/r11",
+        "verifiedPairs": 24,
+        "bytesPerCopy": 1273965
+      }
+    ],
+    "currentTrackedCodeUnchanged": true,
+    "scope": "Exact code with explicit data-only untracked upstream copies, not a clean producer or portability repair."
+  },
+  "preservedDefaultOutput": {
+    "map": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/r11-default-output-map.json",
+      "bytes": 795,
+      "sha256": "184c90407458fb2250c94b84e09d7f80791c7264b44e982a54296b3855b4f9f5"
+    },
+    "verifiedFilesAtBothLocations": 1
+  },
+  "originalGuiChain": {
+    "name": "gui-lineage-chain",
+    "receipt": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/gui-lineage-chain.receipt.json",
+      "bytes": 4709,
+      "sha256": "53d127b527b6661f79f3856defe36b037c2fee4834ff1f6b1f49b86cce5ab8a8"
+    },
+    "log": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/gui-lineage-chain.log",
+      "bytes": 14949,
+      "sha256": "5bc28749e1c6bfe3b432602c68e6f3d187af78762fa3e4958726ae289283d2c6"
+    },
+    "argv": [
+      "caffeinate",
+      "-dims",
+      "perl",
+      "-e",
+      "alarm 30000; exec @ARGV",
+      "python3",
+      ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/gui-lineage-chain.py"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "exitCode": 1,
+    "signal": null,
+    "startedAt": "2026-11-16T00:35:34.172Z",
+    "finishedAt": "2026-11-16T00:58:27.775Z"
+  },
+  "limits": [
+    "R11 software gates are tested and accepted:false; no native or physical qualification.",
+    "R2a is a real skip-suites partial record, producer own1 with28missing suites; both public guards fail. Static Lab identity is not execution of skipped UI suites.",
+    "Data staging closes only missing historical fixed-path lineage, never skipped-suite, gate or INT15 evidence requirements.",
+    "Original orchestration incorrectly expected partial producer0 and exited1; no candidate rerun/edit follows from correcting that metadata expectation.",
+    "Malformed inherited pytest XML is preserved and not claimed as standard XML validity. Point-in-time identity and reused dependencies do not prove fresh installation or host trust."
+  ]
+}

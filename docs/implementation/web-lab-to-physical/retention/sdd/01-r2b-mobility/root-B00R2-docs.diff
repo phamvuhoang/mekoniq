@@ -1,0 +1,347 @@
+# source original task BASE 3c917ceee6a92c6b087f0bd37baaa4e0740d44a8 HEAD d0f30749c0ddb474f0844c68be63a6f0fa4b1933
+# Explicit paths; generated image/HTML bytes bound in full inventory.
+
+diff --git a/docs/implementation/README.md b/docs/implementation/README.md
+index b0db73200038d61ab089465b2a9877377b135571..e20309c6d7a69ea92121723eee677bcc362c43f1 100644
+--- a/docs/implementation/README.md
++++ b/docs/implementation/README.md
+@@ -57,17 +57,39 @@ Android: xem `docs/operations/tablet-provisioning.md`; build qua Gradle wrapper,
+ Chỉ chạy local, không chạm robot thật; mọi gate ở mức `tested`, `accepted: false` (chỉ reviewer mới ghi accepted).
+ 
+ ```sh
+ node scripts/lab-irsim.mjs doctor --provider webots                 # cần Webots R2025a ở /Applications/Webots.app và .venv-webots
+ node scripts/lab-irsim.mjs run --provider webots --campaign r1-qualification --out <dir> --concurrency 1
+ node scripts/record-sim-extension.mjs --release r1 --out docs/implementation/evidence/sim-extension/<candidate> \
+   --candidate-id <candidate> --irsim-record <linkforge-irsim candidate> --mock-regression <lab regression dir>
+ LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/<candidate> pnpm test:acceptance -- sim-extension
+ ```
+ 
+-Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có `__pycache__` dưới `robotics/`, và phải chạy dưới `caffeinate -dims` (máy ghi tự ngủ khi không có người dùng; một run Webots đang chạy lúc đó thành `RUN_TIMEOUT`). Bản ghi mới nhất (source `bb16724`, Lab `832c84f`): `evidence/sim-extension/r1-candidate-06/` (R1), `evidence/sim-extension/r11-candidate-03/` (R1.1, tay máy Webots) và `evidence/sim-extension/r2a-candidate-01/` (R2a, tay máy MuJoCo xArm 6, mô phỏng từ web, UI gọn), mỗi bản kèm `README.md` (gate, giới hạn), trên nền `evidence/linkforge-irsim/candidate-08/` và regression R-MOCK `lab/docs/implementation/evidence/sim-extension-r2a/regression`. ALG04 là `not_run` (thuộc R3); `G-CLOUD1` của R2a là `blocked_external` (CL01 `not_run`, chưa có lệnh deploy Cloud Run). Chưa có sidecar `acceptance.json` nào cho bốn bản ghi này: lần chấp nhận ngày 2026-11-11 thuộc `candidate-07`, `r1-candidate-05`, `r11-candidate-02`, nay đã bị thay thế (còn trong lịch sử git). Ghi R2a: `--release r2a --r11-record <dir> --mock-regression <dir>`, cần Docker (RT05), màn hình mở khóa và `PYTEST_ADDOPTS="-p no:cacheprovider"` (xem README của `r2a-candidate-01`).
++Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có cache dưới portable tool root, và phải chạy dưới `caffeinate -dims` với màn hình mở khóa khi có Webots. Recorder R2a đã tự tắt pytest cache provider; không cần biến môi trường khắc phục tạm.
++
++Các bản ghi lịch sử R2a sau code review (source `4f893ac`, Lab `a6ec316`), cùng định danh trong toàn bộ chuỗi:
++
++- [LinkForge + IR-SIM candidate-09](evidence/linkforge-irsim/candidate-09/README.md).
++- [R1 candidate-07](evidence/sim-extension/r1-candidate-07/README.md), Webots và thuật toán.
++- [R1.1 candidate-04](evidence/sim-extension/r11-candidate-04/README.md), tay máy Webots.
++- [R2a candidate-02](evidence/sim-extension/r2a-candidate-02/README.md), MuJoCo xArm 6, runtime web và UI; regression R-MOCK tại `lab/docs/implementation/evidence/sim-extension-r2a/regression-02`.
++- [Cloud Run mekoniq / CL01](evidence/cloud-run/mekoniq-2026-11-14/README.md): đã deploy theo lệnh người dùng, image amd64 cùng pin; health, ghép nối, mock, nối lại stream và MJ-BV01 đều đạt trên x86-64 thật. Guard `cloud-run` xác nhận **G-CLOUD1 `tested` qua bản bổ sung**, ràng buộc SHA-256 của đúng qualification R2a và source/Lab pin. Qualification gốc giữ trạng thái legacy `blocked_external`/`not_run`; không sửa dữ liệu đã ghi.
++- [Cập nhật production R2a](evidence/production/r2a-2026-11-14/README.md): source và Lab đã push, Vercel READY, health đạt; Chrome tự động từ Lab production tới Cloud Run chạy `MJ-BV01` hoàn tất, phục vụ 2 và archive run thử. Bằng chứng này có phạm vi riêng với kiểm tay HTTPS tới loopback.
++
++Mọi gate của IR-SIM, R1, R1.1 và bảy gate cục bộ R2a đều `tested`; G-CLOUD1 được kiểm riêng bằng bản bổ sung Cloud Run. ALG04 còn `not_run` (thuộc R3); kiểm tay Chrome, Firefox, Safari trên bản Lab HTTPS mới còn `not_run`. Chưa có sidecar `acceptance.json` cho các bản ghi này; các lần chấp nhận candidate cũ không chuyển sang bản mới. Bản ghi bị thay thế được xóa khỏi cây và giữ trong lịch sử Git.
++
++Ghi R2a: `--release r2a --r11-record <dir> --mock-regression <dir>`, cần Docker cho RT05. Các README ghi rõ định danh, giới hạn, tham số `assumed` và số đo. Mọi thay đổi runtime/schema/tool phải được commit và ghim lại trước khi ghi; sau đó chỉ thêm bằng chứng và cập nhật tài liệu ngoài tool root.
++
++
++## Nhánh phát triển R2b hiện tại
++
++Nhánh `codex/web-lab-to-physical` giữ các thay đổi B00–B09 và nhập nguyên bản chứng cứ R2a từ source `11d25b47a18adafb88ac21adc249499109996bc5` / Lab `a7449541e118d01f65af0ad1466e0c963a173f3c`. Các bản ghi, hướng dẫn demo và metadata cloud/production phía trên là snapshot lịch sử; runtime của chúng vẫn là source `4f893ac6fb75dff414a3ee42a726defb7935c734`. HTTP CL01 hoàn thành tick 4800 / phục vụ 2; Chrome production hoàn thành tick 4810 / phục vụ 2. Tất cả giữ `accepted:false` và mô hình `not_calibrated`; qualification gốc giữ G-CLOUD1 `blocked_external`, guard bổ sung kiểm bản ghi riêng.
++
++Runtime R2b hiện tại được xác định bằng `lab/config/source-runtime.lock.json`, không lấy từ metadata triển khai R2a. Image trong `deploy/lab-runtime/mekoniq.env.example` thuộc snapshot R2a. Image R2b vẫn `null` (chưa build); WEB05 giữ `not_run` theo R76 vì Docker không phản hồi. Lần nhập B00R2 chỉ kiểm dữ liệu đã lưu, không chạy lại cloud, browser, engine/native hay Docker; không đóng gate hoặc xác nhận R2b hoàn tất. Source giữ authority mission/journal/custody; Lab chỉ mô phỏng và replay. Qualification cuối và nghiệm thu con người còn riêng.
+ 
+ ## Phạm vi và giới hạn
+ 
+ Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, allocation/giao tay hoặc simulator, ca tiền mặt, bill snapshot; isolated capture/đối soát, signed settlement grants, maintenance/import và controlled handoff. Customer claim không settlement; historical import không tạo live effect. W05–W11 thêm POS đầy đủ, robot Valetudo/ROS 2/VDA 5050, kho, nhân sự, khuyến mãi, CRM, đặt bàn, chuỗi, kênh online sandbox, SDK/Node-RED và khung provider; provider, robot và hạ tầng hosted thật vẫn chưa có (xem evidence từng task).
+ 
+ Các lệnh phần cứng/provider chưa có prerequisite phải thất bại rõ ràng. Không có deploy hosted, robot thật, SMTP production, commissioning hoặc RPO/RTO production trong kết quả local. Xem [kết quả kiểm tra](verification.md), `evidence/`, `gates/A-continuity.md` và `tablet-support-matrix.json` cho phạm vi từng phép đo.
++
++Guard Cloud bổ sung: `LAB_CLOUD_EVIDENCE_DIR=docs/implementation/evidence/cloud-run/mekoniq-2026-11-14 LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-02 pnpm test:acceptance -- cloud-run`. Guard R-MOCK đã chạy 41/41 trên commit được ghi, với log tại `lab/docs/implementation/evidence/sim-extension-r2a/mock-acceptance-02/`; bản mặc định lịch sử có thể vẫn báo `SOURCE_REVISION_STALE` khi so với HEAD khác.
+diff --git a/docs/operations/lab-runtime-cloud-run.md b/docs/operations/lab-runtime-cloud-run.md
+index 8be892d7993a950b845d8a123500daf4c0bd8487..500d772c9d46aba28ef336c6f568b807316b29b7 100644
+--- a/docs/operations/lab-runtime-cloud-run.md
++++ b/docs/operations/lab-runtime-cloud-run.md
+@@ -1,76 +1,80 @@
+ # Lab runtime trên Google Cloud Run
+ 
+-**Trạng thái: đã chuẩn bị, chưa từng chạy.** Không có project, image, secret hay dịch vụ nào được tạo; `deploy/lab-runtime/cloud-run.sh` mặc định chỉ in lệnh. Chỉ deploy khi người dùng ra lệnh và cho project (D60). Trước đó `G-CLOUD1` là `blocked_external` và không được đổi.
++**Trạng thái ngày 2026-11-14: đã deploy vào `mekoniq / asia-southeast1`; CL01 qua HTTP đạt.** Người dùng đã cho phép triển khai theo D60. Dịch vụ `mekoniq-lab-runtime-00002-9lx` chạy image amd64 của source `4f893ac`, cùng pin Lab. URL chuẩn: `https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app`. [Bản ghi CL01](../implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md) giữ lệnh, digest, health và kết quả gốc; chưa được người duyệt chấp nhận. Qualification R2a gốc giữ `G-CLOUD1=blocked_external`; guard `cloud-run` mới xác nhận G-CLOUD1 `tested` bằng bản bổ sung gắn với đúng SHA-256 của qualification, không sửa dữ liệu gốc.
+ 
+-Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Ví dụ dưới đây dùng `my-project`, `lab.example.com`, `lab-access-key`: thay bằng giá trị thật, và không dán khóa truy cập vào bất cứ đâu ngoài Secret Manager và trình quản lý mật khẩu.
++Runtime là tiến trình mà Lab (giao diện web) điều khiển qua HTTP. Image (`deploy/lab-runtime/`, D59) có các backend mock và cánh tay MuJoCo; không có Webots, IR-SIM, LinkForge hay công cụ thuật toán. Các lệnh bên dưới dùng project `mekoniq`, origin `https://mekoniq-lab.vercel.app` và tên secret `lab-access-key`. Cấu hình không chứa bí mật nằm trong `deploy/lab-runtime/mekoniq.env.example`; giá trị khóa chỉ lưu trong Secret Manager và trình quản lý mật khẩu.
+ 
+-## Chưa chứng minh: MuJoCo trên linux/amd64 thật
++## MuJoCo trên x86-64 thật và dưới giả lập
+ 
+-Cloud Run chạy linux/amd64. Cánh tay MuJoCo **chưa từng chạy trên phần cứng amd64 thật**. Trong image amd64 chạy giả lập trên máy phát triển (Mac arm64), kịch bản `MJ-BV01` dừng ở lần gắp cốc đầu tiên: engine báo trạng thái không ổn định (`PLANT_UNSTABLE`, gia tốc khớp sai, `BADQACC`), run kết thúc `needs_attention`, phục vụ 0. Nguyên nhân chưa biết: có thể do giả lập, có thể do engine trên x86-64. Các bài test Python của chính công cụ (39 test) vẫn qua trong image đó. Trên arm64 gốc, `MJ-BV01` hoàn tất (phục vụ 2).
++Trên Cloud Run Linux x86-64, `MJ-BV01` đã hoàn tất ở tick 4800, phục vụ 2 và giữ `not_calibrated`. Vòng gửi bước HTTP mất 71 313 ms (khoảng 71,3 giây); số này gồm mạng và xử lý, không phải thời gian CPU riêng mỗi tick hay phép đo nhịp 1×. Health, khóa sai/đúng, mock FD01 và SSE nối lại đều đạt trong cùng lần kiểm.
+ 
+-Vì vậy: **việc đầu tiên sau khi deploy là chạy smoke `MJ-BV01` (ca CL01, mục "Kiểm tra sau deploy"). Cho đến khi nó qua trên chính dịch vụ đã deploy, runtime trên cloud chỉ được chứng minh cho các backend mock.** Các backend mock không dùng engine nên không bị ảnh hưởng. Nếu CL01 thất bại với `PLANT_UNSTABLE`, ghi lại nguyên văn kết quả, không sửa tham số để cho qua, và `G-CLOUD1` vẫn `blocked_external`.
++Cùng image amd64 dưới giả lập trên Mac arm64 vẫn gặp `PLANT_UNSTABLE`/`BADQACC` ở tick 1585, kết thúc `needs_attention`, phục vụ 0. Kết quả này được giữ nguyên bên cạnh kết quả Cloud Run; chưa xác định nguyên nhân khác biệt. Các test Python trong image không thay cho smoke đầy đủ của scenario.
+ 
+-## Chưa kiểm chứng: hành vi của Cloud Run
++Hai nhánh main đã được push theo lệnh người dùng ngày 2026-11-14; Vercel production đã READY cho source `d1a2522` và Lab `a744954`. Lab production ghim runtime `4f893ac`, khớp dịch vụ Cloud Run. [Kiểm tự động trên Lab production](../implementation/evidence/production/r2a-2026-11-14/README.md) bằng Chrome đã đạt: ghép nối, mô hình xArm, `MJ-BV01` hoàn tất và phục vụ 2; run thử được archive sau kiểm. UI ghi 4810 tick (bước đầu 250, sau đó nhóm 20), khớp baseline UI trước deploy; CL01 HTTP ghi 4800 với nhóm 50. Kiểm tay Chrome, Firefox, Safari cho luồng HTTPS tới runtime cục bộ vẫn `not_run`.
+ 
+-Các điều sau về Cloud Run **chưa được kiểm chứng ở đây** (chưa deploy lần nào); mỗi điều chỉ là điều tài liệu của Cloud Run được cho là nói, phải đối chiếu với trang tài liệu hiện hành khi deploy. **Các URL tài liệu trong mục này không được mở khi viết runbook** (riêng trang giá được tải một lần và chỉ trả về tiêu đề, xem mục 8): cả nội dung lẫn địa chỉ đều chưa được đối chiếu.
++## Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ
+ 
+-- Khi không đặt thăm dò khởi động, Cloud Run dùng thăm dò TCP mặc định trên cổng container (https://cloud.google.com/run/docs/configuring/healthchecks).
+-- Một secret tham chiếu bằng `:latest` được phân giải khi instance khởi động, không theo thời gian thực (https://cloud.google.com/run/docs/configuring/services/secrets).
+-- Cloud Run cắt yêu cầu sau `--timeout`, tối đa 60 phút (https://cloud.google.com/run/docs/configuring/request-timeout); khi tắt instance nó gửi `SIGTERM` rồi chờ một thời gian có hạn (https://cloud.google.com/run/docs/container-contract).
+-- Cách tính tiền: theo thời gian xử lý yêu cầu khi `min-instances=0` và CPU chỉ cấp lúc có yêu cầu; độ chia nhỏ khi làm tròn; thời gian khởi động và tắt instance có thể cũng bị tính; một stream dài tính như yêu cầu đang hoạt động (https://cloud.google.com/run/pricing).
+-- Một dịch vụ có thể có nhiều hơn một dạng URL (https://cloud.google.com/run/docs/triggering/https-request). `LAB_PUBLIC_HOST` chỉ chứa một host, nên Lab phải dùng đúng URL mà script in ra (giá trị `status.url`); dạng URL khác nhận `HOST_FORBIDDEN`.
+-- Chính sách tổ chức có thể cấm `--allow-unauthenticated`, khi đó lệnh deploy bị từ chối (https://cloud.google.com/run/docs/authenticating/public). Script không đổi chính sách.
++Đã đọc tài liệu Google ngày 2026-11-14. CL01 đã kiểm health, xác thực, mock, MuJoCo và stream nối lại; các hành vi lifecycle, xoay khóa và timeout dài bên dưới chưa được thử riêng:
++
++- Cloud Run hỗ trợ Linux x86_64; image nhiều kiến trúc phải có `linux/amd64`. Trước khi dừng instance, nền tảng gửi SIGTERM rồi cho 10 giây trước SIGKILL. Dữ liệu filesystem không tồn tại sau khi instance dừng. [Container contract](https://docs.cloud.google.com/run/docs/container-contract).
++- Dịch vụ mới chưa cấu hình startup probe dùng TCP probe mặc định. [Health checks](https://docs.cloud.google.com/run/docs/configuring/healthchecks).
++- Secret qua biến môi trường được đọc lúc instance khởi động. Google khuyên ghim phiên bản; script hiện dùng `latest` theo D60, nên phải kiểm khóa mới sau khi xoay. [Secrets](https://docs.cloud.google.com/run/docs/configuring/services/secrets).
++- Timeout tối đa 3600 giây; timeout đóng kết nối nhưng không tự dừng xử lý trong container. Client cần nối lại và không được giả định vẫn gặp instance cũ. [Request timeout](https://docs.cloud.google.com/run/docs/configuring/request-timeout).
++- Script dùng `--allow-unauthenticated`; chính sách tổ chức có thể hạn chế việc cấp quyền cho `allUsers`. Google cũng có cơ chế tắt kiểm IAM invoker; script này chưa dùng cơ chế đó và không tự đổi chính sách tổ chức. [Public access](https://docs.cloud.google.com/run/docs/authenticating/public).
++- Dùng đúng URL từ `status.url`, vì `LAB_PUBLIC_HOST` chỉ chấp nhận host đã cấu hình. Các URL khác bị runtime từ chối bằng `HOST_FORBIDDEN`.
+ 
+ ## 1. Điều kiện trước
+ 
++Project `mekoniq` hiện đã có API, kho `lab`, secret `lab-access-key` và dịch vụ; các lệnh tạo bên dưới phục vụ lần thiết lập mới, không cần chạy lại trên tài nguyên đã có.
++
+ - Một Google Cloud project có bật thanh toán (billing). Chấp nhận chi phí (mục 8) và vùng `GCP_REGION` (mặc định `asia-southeast1`).
+ - Đã đăng nhập `gcloud` với quyền tạo dịch vụ Cloud Run, secret, kho Artifact Registry và chạy Cloud Build.
+ - Bật API (một lần):
+ 
+ ```sh
+-gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com --project=my-project
+-gcloud artifacts repositories create lab --repository-format=docker --location=asia-southeast1 --project=my-project
++gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com --project=mekoniq
++gcloud artifacts repositories create lab --repository-format=docker --location=asia-southeast1 --project=mekoniq
+ ```
+ 
+-- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://lab.example.com`. Script thoát mã 2 và nêu tên biến nếu sai.
++- Origin của Lab: `LAB_ORIGIN`, chính xác dạng `scheme://host[:port]`, chữ thường, không đường dẫn, không dấu `*`, không dấu `/` cuối. `https` (hoặc `http` chỉ cho host loopback). Ví dụ `https://mekoniq-lab.vercel.app`. Script thoát mã 2 và nêu tên biến nếu sai.
+ - Khóa truy cập là secret trong Secret Manager, tạo bằng tay (mục 2). Script chỉ nhận **tên** secret.
+ 
+ ## 2. Secret khóa truy cập (tạo tay)
+ 
+ Khóa ≥ 32 ký tự (runtime từ chối khởi động với `ACCESS_KEY_REQUIRED` / `ACCESS_KEY_TOO_SHORT`). Giá trị đi vào `gcloud` qua đầu vào chuẩn hoặc tệp, không bao giờ qua tham số dòng lệnh (tham số lộ trong `ps` và lịch sử shell):
+ 
+ ```sh
+ umask 077
+ openssl rand -base64 48 | tr -d '\n' > lab-access-key.txt           # 64 ký tự
+-gcloud secrets create lab-access-key --replication-policy=automatic --data-file=lab-access-key.txt --project=my-project
++gcloud secrets create lab-access-key --replication-policy=automatic --data-file=lab-access-key.txt --project=mekoniq
+ # cất khóa vào trình quản lý mật khẩu, rồi xóa tệp:
+ rm -P lab-access-key.txt 2>/dev/null || shred -u lab-access-key.txt
+ # tài khoản dịch vụ chạy Cloud Run (mặc định PROJECT_NUMBER-compute@developer.gserviceaccount.com) phải đọc được secret:
+-gcloud secrets add-iam-policy-binding lab-access-key --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=my-project
++gcloud secrets add-iam-policy-binding lab-access-key --member=serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com --role=roles/secretmanager.secretAccessor --project=mekoniq
+ ```
+ 
+-Có thể thay tệp bằng đường ống để không tạo tệp: `openssl rand -base64 48 | tr -d '\n' | gcloud secrets create lab-access-key --replication-policy=automatic --data-file=- --project=my-project`. **Không để ký tự xuống dòng ở cuối** (giữ `tr -d '\n'`; dùng `printf '%s'`, không dùng `echo`): một dòng mới lưu vào secret trở thành một phần của khóa và Lab sẽ ghép nối sai. Khi đó khóa chỉ còn trong secret; lấy ra bằng `gcloud secrets versions access latest --secret=lab-access-key --project=my-project` và cất vào trình quản lý mật khẩu.
++Có thể thay tệp bằng đường ống để không tạo tệp: `openssl rand -base64 48 | tr -d '\n' | gcloud secrets create lab-access-key --replication-policy=automatic --data-file=- --project=mekoniq`. **Không để ký tự xuống dòng ở cuối** (giữ `tr -d '\n'`; dùng `printf '%s'`, không dùng `echo`): một dòng mới lưu vào secret trở thành một phần của khóa và Lab sẽ ghép nối sai. Khi đó khóa chỉ còn trong secret; lấy ra bằng `gcloud secrets versions access latest --secret=lab-access-key --project=mekoniq` và cất vào trình quản lý mật khẩu.
+ 
+-**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=my-project`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Cloud Run, cần kiểm tra khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Giả định chưa kiểm, phải kiểm khi deploy:** chạy lại `gcloud run deploy` với cấu hình không đổi tạo ra một revision mới, và revision đó đọc phiên bản secret mới. Nếu không có revision mới, khóa cũ vẫn là khóa đang dùng; vì vậy đừng vô hiệu hóa phiên bản cũ trước khi khóa mới ghép nối được. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=my-project`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
++**Xoay khóa:** thêm phiên bản mới (`gcloud secrets versions add lab-access-key --data-file=lab-access-key-moi.txt --project=mekoniq`), rồi chạy lại script với `--execute`. Chạy lại là an toàn: dịch vụ đã tồn tại nên script giữ nguyên host đang dùng và chỉ deploy một lần (mục 4). Cần revision mới vì (theo tài liệu Google đã đối chiếu; vẫn kiểm revision thực tế khi deploy) `:latest` chỉ được phân giải khi instance khởi động. **Giả định chưa kiểm, phải kiểm khi deploy:** chạy lại `gcloud run deploy` với cấu hình không đổi tạo ra một revision mới, và revision đó đọc phiên bản secret mới. Nếu không có revision mới, khóa cũ vẫn là khóa đang dùng; vì vậy đừng vô hiệu hóa phiên bản cũ trước khi khóa mới ghép nối được. **Một instance đang chạy giữ khóa cũ cho đến khi nó bị thay, nên khóa cũ vẫn dùng được cho đến khi revision mới thực sự phục vụ.** Sau đó kiểm tra khóa mới ghép nối được, rồi vô hiệu hóa phiên bản cũ (`gcloud secrets versions disable N --secret=lab-access-key --project=mekoniq`). Instance bị thay nên run mất và các phiên có thể phải ghép nối lại bằng khóa mới.
+ 
+ ## 3. Dựng và đẩy image
+ 
+-**Điều kiện trước.** Commit mà Lab ghim (trường `sourceCommit` trong `lab/config/source-runtime.lock.json`) phải chứa thư mục `deploy/lab-runtime/` và phần hỗ trợ khóa truy cập của gateway. Nếu commit đang ghim cũ hơn, phải ghim lại Lab vào một commit đủ mới **trước**, rồi mới dựng image. Image phải được dựng từ **một bản clone mới, đúng commit mà Lab đã ghim**, không phải commit khác: Lab từ chối runtime có commit khác với ghim bằng `RUNTIME_PIN_MISMATCH`. Mỗi commit source mới cần Lab ghim lại và image dựng lại.
++**Điều kiện trước.** Commit mà Lab ghim (trường `sourceCommit` trong `lab/config/source-runtime.lock.json`) phải chứa thư mục `deploy/lab-runtime/` và phần hỗ trợ khóa truy cập của gateway. Nếu commit đang ghim cũ hơn, phải ghim lại Lab vào một commit đủ mới **trước**, rồi mới dựng image. Image phải được dựng từ **một bản clone mới, đúng commit mà Lab đã ghim**, không phải commit khác: Lab từ chối runtime có commit khác với ghim bằng `RUNTIME_PIN_MISMATCH`. Khi source thay đổi runtime, schema hoặc portable tool, phải ghim lại Lab và dựng lại image; commit chỉ cập nhật tài liệu, bằng chứng hoặc artifact trình bày không đổi runtime đang ghim.
+ 
+ ```sh
+ export PATH="$HOME/.nvm/versions/node/v24.22.2/bin:$PATH"      # Node 24.22.2, pnpm 10.32.1
+ COMMIT=<giá trị sourceCommit trong lab/config/source-runtime.lock.json>
+ git clone <địa chỉ repo source> lab-runtime-src && cd lab-runtime-src
+ git checkout "$COMMIT" && test "$(git rev-parse HEAD)" = "$COMMIT"
+ pnpm install --frozen-lockfile
+-IMAGE=asia-southeast1-docker.pkg.dev/my-project/lab/mekoniq-lab-runtime:${COMMIT:0:7}
++IMAGE=asia-southeast1-docker.pkg.dev/mekoniq/lab/mekoniq-lab-runtime:${COMMIT:0:7}
+ ```
+ 
+ **Cách A: dựng tại máy rồi đẩy.** `build.sh` chạy trong bản clone mới này (cây sạch, vừa cài đóng băng) nên là bản dựng từ đầu. Nó đóng gói `runtime.mjs` bằng bộ xuất `scripts/export-lab-runtime.mjs` và thư mục công cụ MuJoCo từ `git archive HEAD`:
+ 
+ ```sh
+ deploy/lab-runtime/build.sh "$IMAGE" --platform linux/amd64
+ gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+ docker push "$IMAGE"
+ ```
+ 
+@@ -82,115 +86,110 @@ node scripts/export-lab-runtime.mjs "$CTX/export" >/dev/null
+ mkdir "$CTX/robotics"; cp "$CTX/export/runtime.mjs" "$CTX/runtime.mjs"; cp -R "$CTX/export/schemas" "$CTX/schemas"; rm -rf "$CTX/export"
+ git archive HEAD robotics/simulation-mujoco | tar -x -C "$CTX" --exclude 'robotics/simulation-mujoco/tests'
+ cp deploy/lab-runtime/Dockerfile "$CTX/Dockerfile"
+ printf '%s\n' '**/__pycache__' '**/*.pyc' '**/tests' '**/.git' '**/.env*' > "$CTX/.dockerignore"
+ cat > "$CTX/cloudbuild.yaml" <<'YAML'
+ steps:
+ - name: gcr.io/cloud-builders/docker
+   args: ['build', '--build-arg', 'SOURCE_COMMIT=${_COMMIT}', '-t', '${_IMAGE}', '.']
+ images: ['${_IMAGE}']
+ YAML
+-gcloud builds submit "$CTX" --config="$CTX/cloudbuild.yaml" --substitutions=_COMMIT="$COMMIT",_IMAGE="$IMAGE" --project=my-project
++gcloud builds submit "$CTX" --config="$CTX/cloudbuild.yaml" --substitutions=_COMMIT="$COMMIT",_IMAGE="$IMAGE" --project=mekoniq
+ ```
+ 
+ **Kiểm tra image đã dựng** (cả hai cách): nhãn `org.opencontainers.image.revision` phải bằng `$COMMIT`. Cách A: `docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE"`. Cách B: kéo image về (`docker pull "$IMAGE"`) và chạy lệnh trên. Sau khi deploy, `sourceCommit` của route health (mục 5) phải bằng `$COMMIT`; khác nhau thì Lab sẽ từ chối bằng `RUNTIME_PIN_MISMATCH`, và image phải dựng lại. Script `cloud-run.sh` không dựng và không đẩy gì.
+ 
+ ## 4. Deploy
+ 
++Lần triển khai đã ghi dùng digest cố định và tài khoản riêng `mekoniq-lab-runtime@mekoniq.iam.gserviceaccount.com`, chỉ được đọc secret `lab-access-key`. Project mới chưa có tài khoản Compute mặc định nên dùng trực tiếp lệnh `gcloud run deploy` với các cờ của script và thêm `--service-account=…`; xem `deploy-command.json` trong bản ghi CL01. Script chưa có tham số chọn service account. Khi triển khai lại, giữ nguyên và kiểm tra `serviceAccountName` này; khi tạo một dịch vụ mới cần chỉ rõ tài khoản phù hợp.
++
+ ```sh
+-export GCP_PROJECT=my-project GCP_REGION=asia-southeast1 LAB_ORIGIN=https://lab.example.com ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
++export GCP_PROJECT=mekoniq GCP_REGION=asia-southeast1 LAB_ORIGIN=https://mekoniq-lab.vercel.app ACCESS_KEY_SECRET=lab-access-key IMAGE   # IMAGE như mục 3; SERVICE tùy chọn, mặc định mekoniq-lab-runtime
+ deploy/lab-runtime/cloud-run.sh              # chạy thử: chỉ in lệnh, không gọi gcloud
+ deploy/lab-runtime/cloud-run.sh --execute    # chạy thật, theo lệnh của người dùng
+ ```
+ 
+ Không có `--execute` script chỉ in, thoát 0, không gọi `gcloud` (kể cả để đọc project cấu hình) và chạy được cả trên máy không cài `gcloud`; nó in các lệnh của cả hai trường hợp bên dưới, có nhãn A và B. Với `--execute` nó in từng lệnh rồi chạy. Trước hết nó đọc URL dịch vụ (`gcloud run services describe ... --format=value(status.url)`); lần đọc thất bại được hiểu là dịch vụ chưa tồn tại, kể cả khi lỗi thật là xác thực, quyền hay mạng. Khi đó script đi theo trường hợp B; lần deploy sau đó có thể lỗi, nhưng cũng có thể qua (ví dụ lỗi mạng chỉ thoáng qua). Nếu dịch vụ thật ra đã tồn tại và lần deploy đó qua, dịch vụ chạy với host giữ chỗ (đóng-khi-lỗi, từ chối mọi yêu cầu) cho đến khi host được đặt lại (bước 3, hoặc lệnh mà script in ra khi bước 3 lỗi). Đọc thông báo `gcloud` trên màn hình trước khi tiếp tục. `gcloud run deploy` luôn được gọi đúng một lần.
+ 
+ **Trường hợp A, dịch vụ đã tồn tại (chạy lại, xoay khóa, đổi image):** một lệnh `gcloud run deploy` mang theo host hiện tại làm `LAB_PUBLIC_HOST`, không có bước cập nhật. Dịch vụ đang chạy không bị đặt lại về host giữ chỗ.
+ 
+ **Trường hợp B, dịch vụ mới:**
+ 
+ 1. `gcloud run deploy` với đúng các cờ `--execution-environment=gen2 --max-instances=1 --min-instances=0 --concurrency=20 --timeout=3600 --cpu=1 --memory=2Gi --allow-unauthenticated --set-secrets=MEKONIQ_LAB_ACCESS_KEY=<secret>:latest --set-env-vars=LAB_ALLOW_ORIGIN=<origin>,LAB_PUBLIC_HOST=<host>` (kèm `--project`, `--region`, `--image`); `<host>` là `pending.invalid`.
+ 2. Đọc lại URL dịch vụ.
+ 3. `gcloud run services update --update-env-vars=LAB_PUBLIC_HOST=<host của URL>`.
+ 
+-Host dịch vụ chỉ biết sau lần deploy đầu, nên dịch vụ mới chạy với host giữ chỗ `pending.invalid` và từ chối mọi yêu cầu bằng `HOST_FORBIDDEN` cho đến bước 3: đó là một khoảng thời gian đóng-khi-lỗi (không phục vụ ai, không mở nhầm). Vì vậy script không đặt thăm dò khởi động HTTP trên `/lab/v2/health` (nó sẽ không qua trong khoảng đó); xem mục "Chưa kiểm chứng" về thăm dò mặc định. Bước 3 tạo revision mới. Dùng `--update-env-vars` chứ không `--set-env-vars` để không xóa `LAB_ALLOW_ORIGIN`.
++Host dịch vụ chỉ biết sau lần deploy đầu, nên dịch vụ mới chạy với host giữ chỗ `pending.invalid` và từ chối mọi yêu cầu bằng `HOST_FORBIDDEN` cho đến bước 3: đó là một khoảng thời gian đóng-khi-lỗi (không phục vụ ai, không mở nhầm). Vì vậy script không đặt thăm dò khởi động HTTP trên `/lab/v2/health` (nó sẽ không qua trong khoảng đó); xem mục "Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ" về thăm dò mặc định. Bước 3 tạo revision mới. Dùng `--update-env-vars` chứ không `--set-env-vars` để không xóa `LAB_ALLOW_ORIGIN`.
+ 
+-**Nếu bước 3 thất bại** (hoặc bước 2 không trả URL https hợp lệ, kể cả khi lệnh đọc URL lỗi): script thoát khác 0 (mã 4 khi lệnh cập nhật lỗi, mã 1 khi URL không hợp lệ) và in ra đúng lệnh cần chạy tay, đã điền sẵn project, vùng, tên dịch vụ và host. Dịch vụ vẫn ở host giữ chỗ (đóng-khi-lỗi) cho đến khi lệnh đó chạy xong. Cũng có thể chạy lại script với `--execute`: lúc này dịch vụ đã tồn tại nên script đi theo trường hợp A và giữ host đang có; nếu host đó vẫn là giữ chỗ, chạy lệnh cập nhật bằng tay.
++**Nếu bước 3 thất bại** (hoặc bước 2 không trả URL https hợp lệ, kể cả khi lệnh đọc URL lỗi): script thoát khác 0 (mã 4 khi lệnh cập nhật lỗi, mã 1 khi URL không hợp lệ) và in ra đúng lệnh cần chạy tay, đã điền sẵn project, vùng, tên dịch vụ và host. Dịch vụ vẫn ở host giữ chỗ (đóng-khi-lỗi) cho đến khi lệnh đó chạy xong. Cũng có thể chạy lại script với `--execute`: dịch vụ đã tồn tại nên script đi theo trường hợp A, lấy host thật từ `status.url` và đưa vào lệnh deploy. Một lần chạy lại thành công sẽ sửa host giữ chỗ; lệnh cập nhật bằng tay là lựa chọn khác.
+ 
+ Script không chứa, không in, không truyền khóa: nó chỉ tham chiếu secret theo tên bằng `--set-secrets`, và bỏ `MEKONIQ_LAB_ACCESS_KEY` khỏi môi trường trước khi gọi `gcloud`. Đừng đặt giá trị khóa vào `ACCESS_KEY_SECRET` (đó là tên, và tên được in ra).
+ 
+ ## 5. Kiểm tra sau deploy (CL01)
+ 
+ 1. **Health**, không cần phiên:
+ 
+ ```sh
+ curl -s https://SERVICE_HOST/lab/v2/health
+ ```
+ 
+ Phải thấy `sourceCommit` bằng commit Lab đã ghim, `schemaHash`, `features.bearer: true`, `deployment.bind: "public"`, và backend `mujoco_arm` đã cài. Trả `403 HOST_FORBIDDEN` nghĩa là bước 3 của mục 4 chưa xong, hoặc `LAB_PUBLIC_HOST` sai, hoặc đang dùng một URL khác với URL script in ra.
+ 
+ 2. **Ghép nối bằng khóa**, khóa không đi qua tham số dòng lệnh:
+ 
+ ```sh
+-read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://lab.example.com' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
++read -rs KEY; printf '{"token":"%s"}' "$KEY" | curl -s -X POST -H 'Origin: https://mekoniq-lab.vercel.app' -H 'Content-Type: application/json' --data-binary @- https://SERVICE_HOST/lab/v2/sessions -o /dev/null -w '%{http_code}\n'; unset KEY
+ ```
+ 
+ Mong đợi `201` (thân trả `sessionToken`; lệnh trên chỉ in mã trạng thái, đừng dán token vào nhật ký). Khóa sai: `401 PAIRING_INVALID`; quá 5 lần sai trong một phút: `429 PAIRING_RATE_LIMITED`. Sau đó mở Lab (origin `LAB_ORIGIN`), nối tới URL dịch vụ bằng khóa truy cập.
+ 
+ 3. **Smoke `MJ-BV01`** từ Lab với backend `mujoco_arm`. Đạt khi run hoàn tất (hoàn tất ở tick 4800 trong image arm64) và phục vụ 2, các tham số nhà máy vẫn `not_calibrated`. Một run trong container không bao giờ là bằng chứng cho `G-MA1`/`G-MA2` (D50). Kiểm tra cả backend mock chạy được.
+ 4. **Stream nối lại:** ngắt mạng của tab một lúc trong khi run đang chạy; Lab phải nối lại stream từ con trỏ (`Last-Event-ID`, `?after=N`) mà không mất sự kiện.
+-5. Ghi kết quả (đạt, hoặc nguyên văn lỗi) vào README của bản ghi; `G-CLOUD1` chỉ đổi khi người duyệt làm. Nếu bước 3 không qua, nói rõ rằng cloud chỉ được chứng minh cho backend mock.
++5. Lưu một bản ghi CL01 riêng gồm định danh dịch vụ, image, health và kết quả từng bước (đạt, hoặc nguyên văn lỗi). Recorder/guard R2a hiện cố định `G-CLOUD1=blocked_external`; không sửa tay `qualification.json` để đổi gate. Dùng guard `cloud-run` với `LAB_CLOUD_EVIDENCE_DIR` trỏ tới bản bổ sung và `LAB_SIMEXT_EVIDENCE_DIR` trỏ tới R2a gốc; guard kiểm các artifact, pin, revision, kết quả và con trỏ stream kết thúc. Trạng thái `tested` và sự chấp nhận của người duyệt là hai việc riêng. Nếu bước 3 không qua, chỉ backend mock có bằng chứng chạy trên dịch vụ.
+ 
+ ## 6. Giới hạn bảo mật
+ 
+ - Dịch vụ **công khai** (`--allow-unauthenticated`) và chỉ được bảo vệ bằng **một khóa truy cập chung** (một người thuê, D55). Ai có khóa là có toàn quyền.
+ - Route health không cần phiên và cho thấy commit source, schema hash và danh mục backend. Nó không lộ origin hay host, và không có trường nào nói thẳng khóa có được đặt; tuy vậy `deployment.bind: "public"` ngụ ý có khóa, vì runtime chỉ bind công khai khi có khóa. `reason` của backend `mujoco_arm` chỉ mang mã và câu cố định, không bao giờ mang nội dung ngoại lệ hay đường dẫn (chi tiết đầy đủ đi vào stderr của runtime, tức nhật ký Cloud Run); `reason` của Webots và IR-SIM giữ như trước.
+ - Số lần ghép nối sai được đếm **cho cả runtime**, không theo địa chỉ: bất kỳ ai tới được URL đều có thể giữ cho việc ghép nối bị khóa (5 lần sai mỗi phút) dù họ không vào được; các phiên đang có vẫn hoạt động.
+ - Trình duyệt giữ token phiên trong session storage của tab.
+ - Với dùng nhiều người hoặc nhiều hơn một lần thử một người: đặt dịch vụ sau một proxy nhận biết danh tính (Identity-Aware Proxy) hoặc giới hạn ingress. **Script không thiết lập điều đó.**
+ - Khóa chỉ nằm trong Secret Manager; runtime xóa nó khỏi môi trường tiến trình ngay khi khởi động nên tiến trình worker con không thừa hưởng. Lỗi và nhật ký chỉ mang mã, không mang khóa.
+ 
+ ## 7. Giới hạn vận hành
+ 
+ - **Một instance** (`max-instances=1`). Run nằm trong bộ nhớ và `/tmp` (D60): mất khi instance dừng hoặc bị thay (deploy mới, xoay khóa, cập nhật biến, thu về 0 khi không có yêu cầu).
+-- Với `--timeout=3600` (theo tài liệu Cloud Run, cần kiểm tra khi deploy: mục "Chưa kiểm chứng"), một yêu cầu bị cắt sau thời hạn đó, nên stream sự kiện kết thúc **tối đa mỗi 60 phút**; Lab nối lại từ con trỏ.
++- Với `--timeout=3600` (theo tài liệu Cloud Run, cần kiểm tra khi deploy: mục "Hành vi nền tảng đã đối chiếu tài liệu, chưa kiểm trên dịch vụ"), một yêu cầu bị cắt sau thời hạn đó, nên stream sự kiện kết thúc **tối đa mỗi 60 phút**; Lab nối lại từ con trỏ.
++- Một run tay máy hoàn tất vẫn có thể giữ slot MuJoCo cho tới khi được archive/đóng. Producer CL01 tự archive run do nó tạo trong `finally`; trong UI, “Chạy lại cùng đầu vào” tự lưu báo cáo và archive run cũ trước khi tạo run mới. Ngắt kết nối chỉ quên thông tin đăng nhập ở tab, không archive run. `MUJOCO_CAPACITY` là hết slot, không phải lỗi vật lý.
+ - Run chỉ tiến khi Lab gửi bước: đóng tab thì run đứng yên, và instance có thể co về 0 rồi mất run.
+-- Khi tắt, nền tảng được cho là gửi `SIGTERM` (cần kiểm tra khi deploy); Node là PID 1 và đóng gateway rồi thoát mã 0. Một bước có nhịp đang chạy hoàn tất các tick của nó trước (tối đa khoảng một giây). Run đang có vẫn mất.
+-- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc. Khi có khóa, một lần ghép nối đúng khóa lúc đã đủ 10 phiên sẽ kết thúc phiên cũ nhất (run của phiên đó được xử lý như run của phiên hết hạn: lần tạo run kế tiếp đóng nó, và có thể lấy lại bằng bằng chứng reclaim); ghép nối sai không kết thúc phiên nào.
++- Khi tắt, nền tảng được cho là gửi `SIGTERM` (chưa kiểm trên dịch vụ thực tế); Node là PID 1 và đóng gateway rồi thoát mã 0. Một bước có nhịp đang chạy hoàn tất các tick của nó trước (tối đa khoảng một giây). Run đang có vẫn mất.
++- Phiên sống 1 giờ; tối đa 10 phiên cùng lúc. Khi có khóa, một lần ghép nối đúng khóa lúc đã đủ 10 phiên sẽ kết thúc phiên cũ nhất (run của phiên đó được xử lý như run của phiên hết hạn: lần kiểm readiness hoặc tạo run kế tiếp đóng nó và chờ worker dừng, và có thể lấy lại bằng bằng chứng reclaim); ghép nối sai không kết thúc phiên nào.
+ 
+ ## 8. Chi phí
+ 
+-**Không có giá nào ở đây:** ngày 2026-11-13 trang giá của Google không đọc được (tải `https://cloud.google.com/run/pricing` chỉ trả tiêu đề, bảng giá được dựng bằng JavaScript), nên không trích số. Người vận hành điền giá hiện hành từ trang đó, đúng nhóm vùng của `asia-southeast1`; giá Secret Manager, Artifact Registry và Cloud Build nằm ở các trang giá riêng của chúng.
+-
+-Theo tài liệu giá của Cloud Run (cần kiểm tra khi deploy, xem mục "Chưa kiểm chứng"), với `min-instances=0` và CPU chỉ cấp khi có yêu cầu, tiền tính theo thời gian xử lý yêu cầu chứ không theo thời gian chờ; độ chia nhỏ khi làm tròn và việc thời gian khởi động hoặc tắt instance có bị tính hay không phải đọc ở trang giá. **Một stream sự kiện dài được coi là một yêu cầu đang hoạt động**, nên mở Lab với một run đang theo dõi có thể tính tiền suốt thời gian đó, tới 60 phút mỗi stream. Với script (1 vCPU, 2 GiB):
+-
+-```
+-chi phí một giờ hoạt động của một instance
+-  = 3600 x (1 x giá_vCPU_giây + 2 x giá_GiB_giây)  +  số_yêu_cầu / 1.000.000 x giá_mỗi_triệu_yêu_cầu
+-(trừ phần miễn phí hằng tháng của Google; chưa gồm Secret Manager, Artifact Registry, Cloud Build, băng thông ra)
+-```
++Giá tham khảo ngày 2026-11-14: Singapore `asia-southeast1` thuộc [Tier 2](https://docs.cloud.google.com/run/docs/locations). Theo [bảng giá Cloud Run](https://cloud.google.com/run/pricing), tính theo request: 0,0000336 USD/vCPU-giây, 0,0000035 USD/GiB-giây và 0,40 USD/triệu request. Với 1 vCPU và 2 GiB, một giờ instance hoạt động tốn `3600 × (0,0000336 + 2 × 0,0000035) = 0,14616 USD`, trước miễn phí và chiết khấu.
+ 
+-Lượng dùng cho một giờ: 3600 vCPU-giây, 7200 GiB-giây, cùng số yêu cầu (mỗi lần Lab gửi bước là một yêu cầu). Nhân với giá hiện hành để có con số. Đặt cảnh báo ngân sách (budget alert) trong project và xóa dịch vụ khi không dùng (mục 9).
++Cloud Run tính cả khởi động, tắt có xử lý SIGTERM và thời gian có ít nhất một request đang xử lý; làm tròn 100 ms. Vì stream SSE là một request đang mở, giữ tab theo dõi có thể tiếp tục phát sinh chi phí dù không gửi bước. `min-instances=0` không làm thời gian đó miễn phí. Chưa gồm Artifact Registry, Secret Manager, Cloud Build nếu dùng và lưu lượng ra; đây không phải hóa đơn dự báo tổng. Free tier được cộng theo billing account. Xem lại giá và đặt ngân sách phù hợp trước khi vận hành lâu dài.
+ 
+ ## 9. Tắt dịch vụ
+ 
+ ```sh
+ SERVICE=${SERVICE:-mekoniq-lab-runtime}                                    # cùng tên đã dùng với script
+-gcloud run services delete "$SERVICE" --region=asia-southeast1 --project=my-project
+-gcloud secrets delete lab-access-key --project=my-project
+-gcloud artifacts docker images delete "$IMAGE" --delete-tags --project=my-project   # hoặc xóa cả kho: gcloud artifacts repositories delete lab --location=asia-southeast1 --project=my-project
++gcloud run services delete "$SERVICE" --region=asia-southeast1 --project=mekoniq
++gcloud secrets delete lab-access-key --project=mekoniq
++gcloud artifacts docker images delete "$IMAGE" --delete-tags --project=mekoniq   # hoặc xóa cả kho: gcloud artifacts repositories delete lab --location=asia-southeast1 --project=mekoniq
+ ```
+ 
+ Cũng xem lại: nguồn do Cloud Build tải lên (bucket của Cloud Build trong project), khóa nằm trong trình quản lý mật khẩu, tệp khóa tạm còn sót, và ràng buộc IAM đã thêm cho secret (mất theo secret). Xóa dịch vụ làm mất mọi run đang có.
+ 
+ ## 10. Không được suy ra
+ 
+-- Từ việc image chạy `MJ-BV01` trên arm64 hay test Python trong image amd64 qua, **không** suy ra cánh tay MuJoCo hoàn tất trên Cloud Run. Chỉ smoke CL01 trên dịch vụ đã deploy mới nói được điều đó; trước đó cloud chỉ được chứng minh cho backend mock.
++- Từ một lần CL01 đạt không suy ra độ ổn định dài hạn, lifecycle, nhiều người dùng hay mọi cấu hình x86-64 đều đạt. Kết quả áp dụng cho image và revision đã ghi; image amd64 dưới giả lập vẫn thất bại như mô tả ở trên.
+ - Một run trong container hay trên cloud không phải bằng chứng cho `G-MA1`/`G-MA2` (D50); mọi tham số plant vẫn `not_calibrated`.
+-- Script chạy thử đúng (test dùng `gcloud` giả) không có nghĩa là deploy thật đã thử: chưa lệnh `gcloud` thật nào được chạy, chưa cờ nào được Cloud Run xác nhận. Cách B của mục 3 (Cloud Build) cũng chưa từng chạy; cách A chỉ đã được chạy nguyên văn với `build.sh` trên cây làm việc, chưa trên bản clone mới theo mục 3.
++- Cách A đã chạy từ clone sạch tại `4f893ac`, frozen lockfile; runtime trong image khớp byte-for-byte với artifact Lab ghim. Các cờ triển khai đã được Cloud Run chấp nhận trong lệnh trực tiếp có thêm service account. Cách B (Cloud Build), gọi toàn bộ script `--execute`, xoay secret và nhánh triển khai lại vẫn chưa được thử thực tế.
+ - "Công khai + một khóa chung" không phải là kiểm soát truy cập cho nhiều người; nó cũng không ngăn người ngoài làm khóa ghép nối trong một phút.
+-- Đừng suy ra giá từ tài liệu này (mục 8), cũng không suy ra độ trễ hay thông lượng: chưa đo gì trên Cloud Run.
+-- `G-CLOUD1` giữ `blocked_external` cho tới khi người dùng ra lệnh deploy, CL01 được chạy và ghi lại, và người duyệt chấp nhận. Không ghi `accepted:true` ở đâu cả.
++- Mục 8 là ước tính tài nguyên theo giá đã đọc, không phải tổng hóa đơn; chưa đo độ trễ hay thông lượng trên Cloud Run.
++- Qualification R2a hiện giữ `G-CLOUD1=blocked_external` theo ruling ngày 2026-11-13; guard qualification gốc chưa nhận CL01. Guard `cloud-run` riêng kiểm bản bổ sung và xác nhận G-CLOUD1 `tested` khi toàn bộ điều kiện đạt; không sửa bản ghi R2a đã tạo. Chỉ người duyệt có quyền chấp nhận bằng sidecar; không ghi `accepted:true` trong qualification.
+ 
+ ## 11. Tham chiếu
+ 
+ `deploy/lab-runtime/README.md` (image, build, đo đạc), `deploy/lab-runtime/cloud-run.sh`, `tests/unit/cloud-run-script.test.ts`, spec `docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md` (D50, D55, D59, D60, SX-49, CL01), `docs/operations/secrets.md`.
+diff --git a/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md b/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
+index 0e37eac2ae1c8140e73093a1dc7de95e842bfaf6..5adbbace8314304d8063561c79214390e81b086f 100644
+--- a/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
++++ b/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/04-qualification.md
+@@ -15,42 +15,44 @@
+ - Produces:
+   ```js
+   export const GATES_R2A={'G-MA1':['MA01','MA02','MA03'],'G-MA2':['MA04','MA05','MA06','MA07','MA08'],'G-RT1':['RT01','RT02','RT03','RT04'],'G-RT2':['RT05'],
+    'G-UI1':['UI01','UI02','UI03','UI04'],'G-INT4':['UI05','INT15','INT16'],'G-REG3':['REG03'],'G-CLOUD1':['CL01']};
+   export const TABLE_R2A   // SUITES/CASES theo spec §6.4: mỗi case trỏ tới file test của nó ở gói 01–03
+   // checkQualification: m.release==='r2a' → check(m,read,TABLE_R2A)
+   // recorder: --release r2a --r11-record DIR --mock-regression DIR [--blocked G-MA1,G-MA2,G-RT2,G-INT4 --blocked-reason TEXT]
+   ```
+   REG03 là `tested` chỉ khi bản ghi R1.1 đưa vào là của **cùng commit**, mọi gate của nó `tested`, và nó mang bản ghi R1, IR-SIM, R-MOCK cùng commit (kiểm sha như REG02). `G-CLOUD1` luôn được ghi `blocked_external` trừ khi có file kết quả CL01. `--blocked` chỉ nhận các gate của phần A và chỉ khi `docs/research/2026-11-mujoco-arm-spike.md` kết luận TRƯỢT; gate bị chặn ghi `blocked` kèm lý do, case của nó `not_run`. Bản ghi mang `r11-record.json` (bản sao, kiểm sha).
+ 
+-- [ ] **Step 1: Unit fail trước:** bảng `r2a` ánh xạ đúng từng case của spec §6.4 vào gate ở Interfaces; REG03 `not_run` khi bản ghi R1.1 khác commit, `failed` khi bản ghi R1.1 có gate không `tested`; `G-CLOUD1` là `blocked_external` khi thiếu kết quả CL01 và không làm bản ghi thất bại; `--blocked G-RT1` bị từ chối; `--blocked G-MA1` khi ghi chép spike kết luận ĐẠT bị từ chối; guard từ chối `accepted:true`; suite thiếu file kết quả → `SUITE_RESULT_MISSING`; bản ghi `r1` và `r1.1` hiện có vẫn qua `checkQualification`.
+-- [ ] **Step 2:** Viết bảng, recorder, guard; `export-lab-runtime.mjs` đưa tool `mujoco_worker` và license của nó vào `portableSimulationTools`. `pnpm test:unit -- tests/unit/sim-extension-qualification.test.ts` xanh. Commit `feat: r2a qualification table, recorder and guard`, Lab re-pin, cả hai cây sạch.
++- [x] **Step 1: Unit fail trước:** bảng `r2a` ánh xạ đúng từng case của spec §6.4 vào gate ở Interfaces; REG03 `not_run` khi bản ghi R1.1 khác commit, `failed` khi bản ghi R1.1 có gate không `tested`; `G-CLOUD1` là `blocked_external` khi thiếu kết quả CL01 và không làm bản ghi thất bại; `--blocked G-RT1` bị từ chối; `--blocked G-MA1` khi ghi chép spike kết luận ĐẠT bị từ chối; guard từ chối `accepted:true`; suite thiếu file kết quả → `SUITE_RESULT_MISSING`; bản ghi `r1` và `r1.1` hiện có vẫn qua `checkQualification`.
++- [x] **Step 2:** Viết bảng, recorder, guard; `export-lab-runtime.mjs` đưa tool `mujoco_worker` và license của nó vào `portableSimulationTools`. `pnpm test:unit -- tests/unit/sim-extension-qualification.test.ts` xanh. Commit `feat: r2a qualification table, recorder and guard`, Lab re-pin, cả hai cây sạch.
+ 
+ 
+ **Đã chốt khi thực thi (lệch so với plan, ghi ngày 2026-11-13):** trong bản phát hành `r2a`, `G-CLOUD1` luôn là `blocked_external` (CL01 `not_run`, lý do: chưa có lệnh deploy); recorder và guard không có đường nào biến nó thành `tested`, và guard từ chối một bản ghi `r2a` có `G-CLOUD1` khác. Thứ tạo kết quả CL01 và định dạng bản ghi của nó thuộc phần việc deploy mà người dùng chưa ra lệnh. Mọi bản ghi nền của `r2a` (R1.1, và R1, IR-SIM, R-MOCK mà nó mang) phải cùng commit source **và** cùng commit Lab với bản ghi đang ghi. Recorder (mọi bản phát hành) kiểm môi trường trước khi chạy suite nào: Docker khi có suite container (`DOCKER_UNAVAILABLE`), venv Python cần dùng (`PYTHON_ENV_MISSING:<venv>`), và trên macOS màn hình bị khóa khi có bước mở ứng dụng Webots (`SCREEN_LOCKED`); image do recorder dựng bị xóa khi lần ghi kết thúc.
+ 
+ ---
+ 
+ ### Task Q02: Ghi lại các bản ghi nền và ghi `r2a-candidate-01`
+ 
+ **Files:**
+ - Evidence: `docs/implementation/evidence/linkforge-irsim/candidate-<n+1>/`, `docs/implementation/evidence/sim-extension/r1-candidate-<n+1>/`, `docs/implementation/evidence/sim-extension/r11-candidate-<n+1>/`, `docs/implementation/evidence/sim-extension/r2a-candidate-01/`; Lab: regression mới dưới `lab/docs/implementation/evidence/`
+-- Modify: `robotics/simulation-mujoco/README.md`, `CLAUDE.md` của workspace (đường dẫn bản ghi mới nhất, lệnh `lab:mujoco`, venv `.venv-mujoco`)
++- Modify: `docs/implementation/README.md`, `CLAUDE.md` của workspace (đường dẫn bản ghi mới nhất, lệnh `lab:mujoco`, venv `.venv-mujoco`)
+ 
+ **Interfaces:**
+ - Consumes: recorder của Q01; chuỗi ghi của R1.1.
+ - Produces: bốn bản ghi cùng commit; `r2a-candidate-01/README.md`.
+ 
+-- [ ] **Step 1:** Cả hai cây sạch, Lab ghim đúng HEAD của source, không có `__pycache__` dưới tool root. Ghi ngoài cây, theo thứ tự, dưới `caffeinate -dims`; mỗi lệnh phải exit 0 mới chạy lệnh sau (`S` là thư mục ngoài cả hai repo, `N` là số candidate kế tiếp của từng dòng):
++- [x] **Step 1:** Cả hai cây sạch, Lab ghim đúng HEAD của source, không có `__pycache__` dưới tool root. Ghi ngoài cây, theo thứ tự, dưới `caffeinate -dims`; mỗi lệnh phải exit 0 mới chạy lệnh sau (`S` là thư mục ngoài cả hai repo, `N` là số candidate kế tiếp của từng dòng):
+   ```sh
+   (cd ../lab && node scripts/record-regression.mjs --suite physical-robot-lab --out $S/regression)
+   node scripts/record-irsim.mjs --out $S/candidate-N --candidate-id candidate-N
+   node scripts/record-sim-extension.mjs --release r1 --out $S/r1-candidate-N --candidate-id r1-candidate-N --irsim-record $S/candidate-N --mock-regression $S/regression
+   node scripts/record-sim-extension.mjs --release r1.1 --out $S/r11-candidate-N --candidate-id r11-candidate-N --r1-record $S/r1-candidate-N --mock-regression $S/regression
+   node scripts/record-sim-extension.mjs --release r2a --out $S/r2a-candidate-01 --candidate-id r2a-candidate-01 --r11-record $S/r11-candidate-N --mock-regression $S/regression
+   ```
+   Khoảng 2,5 giờ máy; Webots chiếm màn hình trong hai bước giữa. Bản ghi exit 1/2 không sửa tay: sửa nguyên nhân, ghi candidate kế tiếp.
+ - [ ] **Step 2:** Kiểm tay và ghi vào `$S/r2a-candidate-01/manual/`: Lab đã deploy (hoặc bản build phục vụ qua HTTPS) nối `http://127.0.0.1:4176` trên Chrome và Firefox, có ảnh hộp hỏi quyền và ảnh run `completed`; ảnh thông báo trên Safari. Chưa làm được thì ghi rõ `not_run` và lý do.
+-- [ ] **Step 3:** Chép năm bản ghi vào cây, xóa các candidate bị thay thế trong cùng commit, viết README cho bản ghi R2a: định danh (commit, pin Lab, bản MuJoCo, commit các repo hãng), bảng gate/case, mọi tham số `assumed`, số đo thời gian tick và tỉ lệ nhịp, mục "Không được suy ra" của spec §6.4, trạng thái `G-CLOUD1`. Chạy guard: `LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-01 pnpm test:acceptance -- sim-extension` và `LAB_IRSIM_EVIDENCE_DIR=… pnpm test:acceptance -- linkforge-irsim`. Commit `docs: record sim-extension r2a-candidate-01 …` (source) và `docs: record … R-MOCK regression` (Lab).
+-- [ ] **Step 4:** Cập nhật `CLAUDE.md` của workspace và chỉ mục `docs/implementation/README.md`. Báo cáo: gate nào `tested`, gate nào `blocked`/`blocked_external`, mọi `not_run`. Không push, không deploy.
++- [x] **Step 3:** Chép năm bản ghi vào cây, xóa các candidate bị thay thế trong cùng commit, viết README cho bản ghi R2a: định danh (commit, pin Lab, bản MuJoCo, commit các repo hãng), bảng gate/case, mọi tham số `assumed`, số đo thời gian tick và tỉ lệ nhịp, mục "Không được suy ra" của spec §6.4, trạng thái `G-CLOUD1`. Chạy guard: `LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-01 pnpm test:acceptance -- sim-extension` và `LAB_IRSIM_EVIDENCE_DIR=… pnpm test:acceptance -- linkforge-irsim`. Commit `docs: record sim-extension r2a-candidate-01 …` (source) và `docs: record … R-MOCK regression` (Lab).
++- [x] **Step 4:** Cập nhật `CLAUDE.md` của workspace và chỉ mục `docs/implementation/README.md`. Báo cáo: gate nào `tested`, gate nào `blocked`/`blocked_external`, mọi `not_run`. Không push, không deploy.
+ 
+ **Ghi lại sau code review (2026-11-14):** tăng số candidate của cả bốn dòng và dùng thư mục regression Lab mới. Mọi thay đổi dưới tool root, kể cả `robotics/simulation-mujoco/README.md`, phải được commit và ghim lại Lab **trước Step 1**. README của worker trỏ tới chỉ mục bằng chứng ổn định; cập nhật chỉ mục và các README của bản ghi sau khi ghi, tránh đổi closure portable khiến launcher từ chối pin. Recorder R2a từ commit `0a0d21f` đã tự tắt pytest cache provider; không cần đặt `PYTEST_ADDOPTS` để tránh lỗi cache của lần ghi trước.
++
++**Cloud Run sau lệnh người dùng (2026-11-14):** project `mekoniq`, vùng `asia-southeast1`, image amd64 cùng source/pin `4f893ac`; CL01 qua HTTP đã đạt, kể cả MJ-BV01 hoàn tất 4800 tick và phục vụ 2. Bản bổ sung ở `docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/`. Qualification gốc giữ nguyên định dạng và trạng thái legacy; guard `cloud-run` bổ sung kiểm SHA-256 của chính qualification, source/Lab pin, revision/image, toàn bộ artifact bắt buộc, báo cáo MuJoCo không mâu thuẫn, replay tới con trỏ kết thúc và dọn run. G-CLOUD1 là `tested` qua bản bổ sung khi guard đạt; không sửa tay qualification gốc. Kiểm tay UI và sự chấp nhận của người duyệt chưa thực hiện.

@@ -1,0 +1,41 @@
+{
+  "prepared": true,
+  "nativeReady": false,
+  "issues": [
+    {
+      "code": "PACKAGE_LOCK_UNRESOLVED",
+      "path": "/profile/requiredPackages/0",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "SUBJECT_IMAGE_UNRESOLVED",
+      "path": "/subject/image",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "HOST_INVENTORY_MISSING",
+      "path": "/inventory",
+      "severity": "prerequisite"
+    }
+  ],
+  "subject": {
+    "sourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+    "schemaHash": "9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4",
+    "portableClosureHash": "3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d",
+    "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
+    "id": "r2a-4f893ac-linux-amd64",
+    "executionKind": "mujoco_image",
+    "profileSha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+    "nativeClosureHash": null,
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "874d05aedfbf573496994fd73016f19ef19e6932",
+    "toolSha256": "1ffa5a770189a26128cf8a1e6bbb546b946dd73fe9d20750af58bc256eff5ff3"
+  },
+  "inventoryAssessment": "supplied_records_only",
+  "qualification": "not_run",
+  "accepted": false,
+  "dynamics": "not_calibrated"
+}

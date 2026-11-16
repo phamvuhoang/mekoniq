@@ -1,0 +1,8 @@
+{
+  "verifiedFiles": 35,
+  "symlinks": 1,
+  "handoffRows": 4,
+  "diagnosticOwnExit": 1,
+  "appCopyMatchesGit": "7d38565f91acbb3060dbee7d4d3560f61fa4b64c:src/app.ts",
+  "read": "Root read full script/config/receipt/cleanup, response/before-after snapshots and complete incremental focus/node timelines. Hash verification is not native execution or physical qualification."
+}

@@ -1,5 +1,8 @@
 # 03 — GTM, gói thương mại và lộ trình kiểm chứng
 
+**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+
+
 Đây là đề xuất triển khai sau D0, chưa có cam kết từ khách/đối tác. Tất cả mức giá, nhân lực, chuyển đổi và tỷ suất dưới đây là **giả thuyết lập kế hoạch**, cần founder duyệt trước đưa vào chào hàng. Không kế thừa BOM hay mức thuê trong slide cũ.
 
 ## 1. Chọn phân khúc và người mua

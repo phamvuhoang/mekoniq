@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-15",
+  "commit": "d837f2e17f7f36043103b367fca3af8172626245",
+  "sources": [
+    "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.link.xacro",
+    "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.urdf.xacro"
+  ],
+  "syntheticSimModelSelector": "XI13050520BB00",
+  "decoded": {
+    "length": 14,
+    "modelType": 6,
+    "modelNumber": 1305,
+    "dateCode": 2005,
+    "hdType": "B",
+    "massType": 11,
+    "inertia": "xarm6_type6_HT_BR2"
+  },
+  "method": "Root read exact official source and independently evaluated string fields; no xacro execution, package qualification or native run. Agent owns vendored source byte/lock verification."
+}

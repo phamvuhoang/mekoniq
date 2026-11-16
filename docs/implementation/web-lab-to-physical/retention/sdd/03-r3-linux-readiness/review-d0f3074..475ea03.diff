@@ -1,0 +1,1325 @@
+# Review package: d0f30749c0ddb474f0844c68be63a6f0fa4b1933..475ea03d9a2629ceaae890fc6a9f5b92ef503b7e
+
+## Commits
+475ea03 feat: prepare verifiable native simulation handoffs
+
+## Files changed
+ docs/operations/native-simulation-handoff.md       |  79 +++
+ packages/contracts/generated/native-handoff.ts     | 176 ++++++
+ .../schemas/native-handoff-v1.schema.json          | 608 +++++++++++++++++++++
+ packages/lab-runtime/src/v2/sil/native-handoff.ts  | 119 ++++
+ scripts/generate-contracts.mjs                     |   7 +-
+ scripts/native-handoff.mjs                         |  24 +
+ scripts/native-sim/host-preflight.d.mts            |   1 +
+ scripts/native-sim/host-preflight.mjs              |   1 +
+ scripts/native-sim/native-inventory.d.mts          |   3 +
+ scripts/native-sim/native-inventory.mjs            |  51 ++
+ scripts/native-sim/profile-report.d.mts            |   2 +-
+ scripts/native-sim/profile-report.mjs              |   5 +-
+ tests/fixtures/native-handoff.ts                   |  35 ++
+ tests/security/native-handoff.test.ts              |  26 +
+ tests/unit/native-handoff.test.ts                  |  28 +
+ 15 files changed, 1161 insertions(+), 4 deletions(-)
+
+## Diff
+diff --git a/docs/operations/native-simulation-handoff.md b/docs/operations/native-simulation-handoff.md
+new file mode 100644
+index 0000000..2ec2871
+--- /dev/null
++++ b/docs/operations/native-simulation-handoff.md
+@@ -0,0 +1,79 @@
++# Native simulation handoff v1
++
++L00 prepares a bounded, verifiable directory for transfer. `prepared:true` means the declared files, Source/Lab receipts, schema set, portable closure and profile agree. `nativeReady:true` means supplied inventory/provenance records satisfy the exact profile prerequisites. Neither result authenticates a host, runs a case, accepts qualification, calibrates dynamics or authorizes motion. Candidate records remain `accepted:false`, dynamics `not_calibrated`.
++
++No Linux host is assigned to this preparation. Native doctor/smoke/cases are `not_run` / `blocked_external`. Synthetic inventories in `tests/fixtures/native-handoff.ts` exercise protocol checks only. They are never execution evidence. A Linux container on a Mac, an emulated ISA or unknown origin cannot establish native readiness.
++
++## Package and identity
++
++Use one new directory and one subject per handoff. `manifest.json` follows `packages/contracts/schemas/native-handoff-v1.schema.json`; generated types are in `packages/contracts/generated/native-handoff.ts`.
++
++- `subject` identifies the software under test: exact Source commit, recorded Lab commit, schema aggregate, portable closure digest, runtime artifact hash, `profileSha256`, execution kind and resolved platform image identity (or `null` while unbuilt).
++- `checker` records the preparation checker build separately. CLI output records the currently executing checker's Git commit and a digest over its CLI, validator, inventory helper, schema and dependency lock. Changing the checker never substitutes for subject identity. Git commit alone is not the checker byte identity, especially in a dirty checkout.
++- `refs` has only these roles: `runtimeManifest`, `labLock`, `runtime`, `project`, `world`, `model`, `profile`, `schema`, `engine`, `tool`, optional `archive`. Every ref declares its relative package path, SHA-256, exact byte length, original `sourcePath`, and producing `sourceCommit`. For `labLock` the producer is the **Lab commit**; other refs use the subject Source commit. The manifest records source provenance claims; it is not a signed attestation of Git history.
++- Exported runtime manifest and Lab lock must both match the subject tuple and be clean. The runtime file must match `runtimeArtifactSha256`. The canonical model must match `profile.modelSha256`. Profile bytes must decode to the declared `profile` exactly.
++- `schema` refs use original schema basenames as `sourcePath`. Their sorted name + newline + raw-byte aggregate must match `schemaHash`. All entries of the runtime manifest's portable closure must be supplied with their exact hashes and sizes. Schema entries map to `packages/contracts/schemas/<basename>`; other refs use their original source path. Engine and tool refs must belong to that subject closure. Do not combine an old image with newer worker/profile files.
++- The subject `executionKind` is `mujoco_image`, `ros2_native` or `linuxcnc_native`. `mujoco_image` requires `profile.installation:{kind:"oci"}`. The two native execution kinds require `installation:{kind:"native_apt",sources,packageSources}` and `subject.image:null`; they are not a fallback for an unresolved image. Each native source locks `id`, `kind` (`apt_repository` or `source_archive`), `uri` and SHA-256 of its retained Release/repository record or source archive. Each required package maps by name to exactly one source ID. Source hashes may be `null` only during preparation.
++- Profile locks list required packages with exact version and artifact hash, forbidden package names, OS version, ISA, model and clock domains. `null` package versions/hashes are valid preparation inputs; unresolved locks never satisfy native readiness. Runtime/compiler semantic compatibility still requires doctor and cases.
++- Frames name the world, robot base and tool frame, with right-handed coordinates. Units are metres, radians, kilograms and seconds. Seeds and required case IDs are explicit. Case policy preserves Source authority and lost ACK → unknown/no resend.
++
++Ref paths must be relative portable paths, without traversal, symlinks or case-folded collisions. Each file is at most 64 MiB, metadata/manifest/inventory/provenance JSON at most 1 MiB, at most 768 refs and 256 MiB total declared artifact bytes. Reads use bounded file descriptors and reject changed files. Archives are opaque bytes: they are never extracted or executed, and their interior is not semantically validated. Export copies only declared refs and writes the manifest last. It refuses existing output directories and leaves an interrupted output for inspection; use a different new path for retry. No recursive source-directory copy occurs.
++
++Secret filenames and PEM/OpenSSH private-key content are rejected. This is defense in depth, not a general secret detector: select only reviewed non-secret artifacts, never encrypted/compressed credential backups, tunnel private keys, service credentials or runtime databases. A required SQLite record must first be a separately verified copy, never the original. No manifest launch string or path is treated as a command, module or shell.
++
++## Recipient procedure
++
++1. **Verify the transfer.** Use Node 24.22.2 / pnpm 10.32.1 and this checker checkout with its pinned dependencies. Retain the received manifest hash and checker output in a separate evidence directory.
++
++   ```sh
++   perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$handoff_dir"
++   ```
++
++   Without a host, expect `prepared:true`, `nativeReady:false`, `HOST_INVENTORY_MISSING`, `qualification:not_run`. Unbuilt images and unresolved locks add prerequisites. CLI exit 0 means preparation integrity passed; it does **not** mean native readiness. Exit 1 means invalid input, integrity failure or export failure. Automated consumers must read `nativeReady` separately.
++
++2. **Resolve the assigned host profile.** Only after a host/profile is assigned, collect actual OS/kernel, ISA, CPU, image, origin/virtualization/emulation, software artifacts and clock domains. The read-only `collectNativeInventory()` helper in `scripts/native-sim/host-preflight.mjs` records local facts but deliberately leaves origin, image, model, subject and exact software locks unknown. It never installs packages or infers origin from `process.platform`.
++
++   Preserve the first unresolved profile. Resolve exact package artifact hashes/versions from the assigned host's package/source provenance into a **new handoff**; do not edit the received artifact or overwrite an unsuccessful attempt. Do not install/upgrade an engine merely to clear a gate. Portable workers retain Python 3.11; ROS uses the target distro Python. Run pytest with `PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider'`.
++
++   Inventory v1 fields are `schemaVersion`, `profileId`, `modelId`, `modelSha256`, `subject`, `os:{platform,id,version,kernel}`, `architecture` (`amd64` or `arm64`), `cpu:{model,cores}`, `image`, `installation` (matching the locked profile), `software:[{name,version,sha256}]`, `clockDomains`, and `provenance:{origin,hostOs,hostArchitecture,virtualization,emulation,evidencePath,evidenceSha256}`. Native origin is `linux_native`, host OS `linux`, same ISA, known virtualization (`bare_metal`, `vm` or `container`) and `emulation:none`. This is a supplied record, not independent proof of host authenticity. The responsible operator must retain trusted collection context.
++
++   `evidencePath` is relative to the handoff root; its bytes must match `evidenceSha256`. Provenance JSON v1 records `kind` (`oci` or `native_apt`) and `inventorySha256`. OCI records also supply `platformManifestPath` and `imageConfigPath`; native_apt records supply `sources:[{id,path}]`, exactly one retained artifact for every locked source ID. Compute `inventorySha256` as SHA-256 of canonical JSON (`json-canonicalize`) of the complete inventory with only `provenance.evidencePath` and `provenance.evidenceSha256` removed. This avoids a circular digest while binding all inventory facts. The two image paths also resolve beneath the root, with the same symlink/size rules. Keep these recipient-side evidence files separately from the immutable subject refs; export does not copy undeclared recipient evidence.
++
++   For native_apt, every source artifact must hash to the exact locked source digest, all package-to-source mappings must be complete and all actual package hashes/versions must match. Source records bind consistency; signature/trust verification and collection provenance remain the assigned host operator’s responsibility. Distro/version, ISA, model, profile ID and subject tuple must also match. Merely changing an image handoff’s installation label fails its locked execution-kind/profile checks.
++
++   For OCI, platform manifest bytes must hash to the subject's `manifestDigest`; config bytes must hash to `configDigest`. Accept only OCI image manifest v1 / Docker distribution manifest v2 (schemaVersion 2), with the same config digest and Linux/same-ISA config. A multiarch base index is not a target platform manifest. The subject image and inventory image must match exactly.
++
++   ```sh
++   perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$handoff_dir" --inventory "$inventory_file"
++   ```
++
++3. **Doctor.** Select the exact locked native profile from the subject checkout, independently verify its executable/library/package provenance, and run its read-only doctor. For existing ROS preparation:
++
++   ```sh
++   perl -e 'alarm 120; exec @ARGV' node scripts/lab-sil.mjs doctor --backend gazebo_nav2 --environment-profile engineering-amd64 --json
++   ```
++
++   This can still report `ENGINEERING_LIFECYCLE_UNAVAILABLE` or unresolved inventory before L02. Do not treat L00 as implementation of L01–L04. Preserve the legacy `hostPreflight(vmRoot)` macOS UTM feasibility report (`ready_to_provision` is not `nativeReady`) and the strict two-argument native_apt Ubuntu 24.04/Jazzy arm64 profile validator. The optional third argument `{profile,subject}` checks the explicit new inventory expectations in memory; disk provenance checking belongs to `validateNativeHandoff`.
++
++4. **Smoke, then cases.** On the assigned host, use the subject's fixed runner/profile commands. Never execute a manifest-supplied launch command. Preserve smoke stdout/stderr and failed attempts. Run the profile-specific nominal seeds and fault cases; lost ACK remains unknown with no resend or continuation by respawning. Source owns mission/journal/custody. One active world/runtime and one ACK in flight remain unchanged. Lab never routes to physical hardware. A doctor-only pass is not a campaign pass; an xArm run cannot close PUMA, nor arm64 close amd64. Motion, contact and hardware gates remain separate.
++
++5. **Archive and verify.** Save raw controller/engine observations, timing/clock mapping, inputs, hashes, assertions and inventory in a new evidence directory. Verify with the matching subject reader. Copy/verify any retained SQLite; preserve every failed/incomplete attempt. Stop only processes owned by that run. No general Docker reset, host provisioning, cloud operation, commissioning signature or device motion is part of this handoff.
++
++6. **Reviewer.** Submit immutable evidence and its exact subject/checker/profile/scope identities. Automatic records stay `accepted:false`. A human reviewer signs a separate hash/profile/scope-bound sidecar. No software-only record closes native or hardware/calibration gates.
++
++## Producing a transfer
++
++Assemble reviewed refs from one clean Source export and its matching committed Lab pin into `INPUT_DIR`, then:
++
++```sh
++perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs export --input "$input_dir" --out "$new_handoff_dir"
++perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$new_handoff_dir"
++```
++
++This is a selected-file transfer, not a provisioning or archive extraction tool. Provision the subject checkout and engine from the locked sources under a separately assigned task. When runtime/schema/tool inputs change, first commit Source, export cleanly, import/sync/check/typecheck Lab and commit its pin; then assemble a new handoff with the new tuple. Keep the checker and subject commits independent.
++
++## Historical R2a and current R2b
++
++The historical R2a record has Source `4f893ac6fb75dff414a3ee42a726defb7935c734`, recorded Lab `a6ec316fb3ac2f71afff25e6fa77e931f4439e00`, schema `9e6ebfffc4aef0f3df686316881b672d96ac892d7df023701b38c398d979bff4`, portable closure `3d9c0b5f3e60e89327362c0c59bba8ceca4af55b0f08c44da0fbd23f3070bb1d`, and runtime `55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270`. Its deployed linux/amd64 registry digest is `sha256:fbdf4bb5c1af4ffd15c01550b4508b6df0ad3b4d69e444e5469cfe2b52e4b009`; local config ID `sha256:f650a2576cf7d44e8f9bf40934d862d8120170dd701e7da502a6ee032d12bd05` is a different identity, not a replacement for platform resolution evidence. Local records are under `docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/` and `production/r2a-2026-11-14/`. HTTP MJ-BV01 completed tick 4800 / served 2; Chrome production completed tick 4810 / served 2. These remain historical `accepted:false`, not L01's 10-grasp/three-seed/fault/inventory/performance campaign.
++
++Current R2b must use its own committed/exported/pinned tuple. Under controller ruling R76 its image remains `null`/unbuilt, actual WEB05 `not_run` / `blocked_environment`. A clean runtime artifact does not establish an image digest. L00 does not call Docker again or infer native/TLS/cloud/hardware qualification. A later image build/campaign produces a new handoff and evidence; it never relabels the old R2a image as current R2b.
+diff --git a/packages/contracts/generated/native-handoff.ts b/packages/contracts/generated/native-handoff.ts
+new file mode 100644
+index 0000000..b0c28bf
+--- /dev/null
++++ b/packages/contracts/generated/native-handoff.ts
+@@ -0,0 +1,176 @@
++/* Generated from native-handoff-v1.schema.json. Run pnpm contracts:generate; do not edit. */
++
++export type HandoffInstallation =
++  | {
++      kind: 'oci';
++    }
++  | {
++      kind: 'native_apt';
++      /**
++       * @minItems 1
++       * @maxItems 256
++       */
++      sources: {
++        id: string;
++        kind: 'apt_repository' | 'source_archive';
++        uri: string;
++        sha256: string | null;
++      }[];
++      /**
++       * @minItems 1
++       * @maxItems 256
++       */
++      packageSources: {
++        name: string;
++        sourceId: string;
++      }[];
++    };
++
++export interface NativeHandoffV1 {
++  schemaVersion: 1;
++  subject: HandoffSubject;
++  checker: {
++    sourceCommit: string;
++    toolSha256: string;
++  };
++  refs: {
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    runtimeManifest: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    labLock: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    runtime: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    project: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    world: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    model: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    profile: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 512
++     */
++    schema: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 512
++     */
++    engine: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 512
++     */
++    tool: HandoffRef[];
++    /**
++     * @minItems 1
++     * @maxItems 1
++     */
++    archive?: HandoffRef[];
++  };
++  profile: HandoffProfile;
++  frames: {
++    world: string;
++    robotBase: string;
++    tool: string;
++    handedness: 'right';
++  };
++  units: {
++    length: 'm';
++    angle: 'rad';
++    mass: 'kg';
++    time: 's';
++  };
++  /**
++   * @minItems 1
++   * @maxItems 256
++   */
++  seeds: number[];
++  casePolicy: {
++    /**
++     * @minItems 1
++     * @maxItems 256
++     */
++    required: string[];
++    lostAck: 'unknown_no_resend';
++    authority: 'source';
++  };
++  accepted: false;
++  dynamics: 'not_calibrated';
++}
++export interface HandoffSubject {
++  id: string;
++  sourceCommit: string;
++  labCommit: string;
++  schemaHash: string;
++  portableClosureHash: string;
++  runtimeArtifactSha256: string;
++  image: HandoffImage | null;
++  executionKind: 'mujoco_image' | 'ros2_native' | 'linuxcnc_native';
++  profileSha256: string;
++}
++export interface HandoffImage {
++  platform: 'linux/amd64' | 'linux/arm64';
++  manifestDigest: string;
++  configDigest: string;
++}
++export interface HandoffRef {
++  path: string;
++  sha256: string;
++  bytes: number;
++  sourcePath: string;
++  sourceCommit: string;
++}
++export interface HandoffProfile {
++  id: string;
++  modelId: string;
++  modelSha256: string;
++  architecture: 'amd64' | 'arm64';
++  os: {
++    id: string;
++    version: string;
++  };
++  /**
++   * @minItems 1
++   * @maxItems 256
++   */
++  requiredPackages: HandoffPackage[];
++  /**
++   * @minItems 0
++   * @maxItems 256
++   */
++  forbiddenPackages: string[];
++  /**
++   * @minItems 1
++   * @maxItems 16
++   */
++  clockDomains: string[];
++  installation: HandoffInstallation;
++}
++export interface HandoffPackage {
++  name: string;
++  version: string | null;
++  sha256: string | null;
++}
+diff --git a/packages/contracts/schemas/native-handoff-v1.schema.json b/packages/contracts/schemas/native-handoff-v1.schema.json
+new file mode 100644
+index 0000000..b68f545
+--- /dev/null
++++ b/packages/contracts/schemas/native-handoff-v1.schema.json
+@@ -0,0 +1,608 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "native-handoff-v1.schema.json",
++  "title": "NativeHandoffV1",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schemaVersion",
++    "subject",
++    "checker",
++    "refs",
++    "profile",
++    "frames",
++    "units",
++    "seeds",
++    "casePolicy",
++    "accepted",
++    "dynamics"
++  ],
++  "properties": {
++    "schemaVersion": {
++      "const": 1
++    },
++    "subject": {
++      "$ref": "#/definitions/HandoffSubject"
++    },
++    "checker": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "sourceCommit",
++        "toolSha256"
++      ],
++      "properties": {
++        "sourceCommit": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{40}$"
++        },
++        "toolSha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        }
++      }
++    },
++    "refs": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "runtimeManifest",
++        "labLock",
++        "runtime",
++        "project",
++        "world",
++        "model",
++        "profile",
++        "schema",
++        "engine",
++        "tool"
++      ],
++      "properties": {
++        "runtimeManifest": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "labLock": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "runtime": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "project": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "world": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "model": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "profile": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "schema": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 512,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "engine": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 512,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "tool": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 512,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        },
++        "archive": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 1,
++          "items": {
++            "$ref": "#/definitions/HandoffRef"
++          }
++        }
++      }
++    },
++    "profile": {
++      "$ref": "#/definitions/HandoffProfile"
++    },
++    "frames": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "world",
++        "robotBase",
++        "tool",
++        "handedness"
++      ],
++      "properties": {
++        "world": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 80
++        },
++        "robotBase": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 80
++        },
++        "tool": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 80
++        },
++        "handedness": {
++          "const": "right"
++        }
++      }
++    },
++    "units": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "length",
++        "angle",
++        "mass",
++        "time"
++      ],
++      "properties": {
++        "length": {
++          "const": "m"
++        },
++        "angle": {
++          "const": "rad"
++        },
++        "mass": {
++          "const": "kg"
++        },
++        "time": {
++          "const": "s"
++        }
++      }
++    },
++    "seeds": {
++      "type": "array",
++      "minItems": 1,
++      "maxItems": 256,
++      "items": {
++        "type": "integer",
++        "minimum": 0,
++        "maximum": 4294967295
++      },
++      "uniqueItems": true
++    },
++    "casePolicy": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "required",
++        "lostAck",
++        "authority"
++      ],
++      "properties": {
++        "required": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 256,
++          "items": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 120
++          },
++          "uniqueItems": true
++        },
++        "lostAck": {
++          "const": "unknown_no_resend"
++        },
++        "authority": {
++          "const": "source"
++        }
++      }
++    },
++    "accepted": {
++      "const": false
++    },
++    "dynamics": {
++      "const": "not_calibrated"
++    }
++  },
++  "definitions": {
++    "HandoffImage": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "platform",
++        "manifestDigest",
++        "configDigest"
++      ],
++      "properties": {
++        "platform": {
++          "enum": [
++            "linux/amd64",
++            "linux/arm64"
++          ]
++        },
++        "manifestDigest": {
++          "type": "string",
++          "pattern": "^sha256:[a-f0-9]{64}$"
++        },
++        "configDigest": {
++          "type": "string",
++          "pattern": "^sha256:[a-f0-9]{64}$"
++        }
++      }
++    },
++    "HandoffSubject": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "id",
++        "sourceCommit",
++        "labCommit",
++        "schemaHash",
++        "portableClosureHash",
++        "runtimeArtifactSha256",
++        "image",
++        "executionKind",
++        "profileSha256"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 80
++        },
++        "sourceCommit": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{40}$"
++        },
++        "labCommit": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{40}$"
++        },
++        "schemaHash": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "portableClosureHash": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "runtimeArtifactSha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "image": {
++          "anyOf": [
++            {
++              "$ref": "#/definitions/HandoffImage"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "executionKind": {
++          "enum": [
++            "mujoco_image",
++            "ros2_native",
++            "linuxcnc_native"
++          ]
++        },
++        "profileSha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        }
++      }
++    },
++    "HandoffPackage": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name",
++        "version",
++        "sha256"
++      ],
++      "properties": {
++        "name": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 120
++        },
++        "version": {
++          "anyOf": [
++            {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 120
++            },
++            {
++              "type": "null"
++            }
++          ]
++        },
++        "sha256": {
++          "anyOf": [
++            {
++              "type": "string",
++              "pattern": "^[a-f0-9]{64}$"
++            },
++            {
++              "type": "null"
++            }
++          ]
++        }
++      }
++    },
++    "HandoffProfile": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "id",
++        "modelId",
++        "modelSha256",
++        "architecture",
++        "os",
++        "requiredPackages",
++        "forbiddenPackages",
++        "clockDomains",
++        "installation"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 120
++        },
++        "modelId": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 120
++        },
++        "modelSha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "architecture": {
++          "enum": [
++            "amd64",
++            "arm64"
++          ]
++        },
++        "os": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "id",
++            "version"
++          ],
++          "properties": {
++            "id": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 80
++            },
++            "version": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 80
++            }
++          }
++        },
++        "requiredPackages": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 256,
++          "items": {
++            "$ref": "#/definitions/HandoffPackage"
++          }
++        },
++        "forbiddenPackages": {
++          "type": "array",
++          "minItems": 0,
++          "maxItems": 256,
++          "items": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 120
++          },
++          "uniqueItems": true
++        },
++        "clockDomains": {
++          "type": "array",
++          "minItems": 1,
++          "maxItems": 16,
++          "items": {
++            "type": "string",
++            "minLength": 1,
++            "maxLength": 80
++          },
++          "uniqueItems": true
++        },
++        "installation": {
++          "$ref": "#/definitions/HandoffInstallation"
++        }
++      }
++    },
++    "HandoffRef": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "path",
++        "sha256",
++        "bytes",
++        "sourcePath",
++        "sourceCommit"
++      ],
++      "properties": {
++        "path": {
++          "type": "string",
++          "maxLength": 240,
++          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
++        },
++        "sha256": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{64}$"
++        },
++        "bytes": {
++          "type": "integer",
++          "minimum": 0,
++          "maximum": 67108864
++        },
++        "sourcePath": {
++          "type": "string",
++          "maxLength": 240,
++          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
++        },
++        "sourceCommit": {
++          "type": "string",
++          "pattern": "^[a-f0-9]{40}$"
++        }
++      }
++    },
++    "HandoffInstallation": {
++      "oneOf": [
++        {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind"
++          ],
++          "properties": {
++            "kind": {
++              "const": "oci"
++            }
++          }
++        },
++        {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "kind",
++            "sources",
++            "packageSources"
++          ],
++          "properties": {
++            "kind": {
++              "const": "native_apt"
++            },
++            "sources": {
++              "type": "array",
++              "minItems": 1,
++              "maxItems": 256,
++              "items": {
++                "type": "object",
++                "additionalProperties": false,
++                "required": [
++                  "id",
++                  "kind",
++                  "uri",
++                  "sha256"
++                ],
++                "properties": {
++                  "id": {
++                    "type": "string",
++                    "minLength": 1,
++                    "maxLength": 120
++                  },
++                  "kind": {
++                    "enum": [
++                      "apt_repository",
++                      "source_archive"
++                    ]
++                  },
++                  "uri": {
++                    "type": "string",
++                    "minLength": 1,
++                    "maxLength": 512
++                  },
++                  "sha256": {
++                    "anyOf": [
++                      {
++                        "type": "string",
++                        "pattern": "^[a-f0-9]{64}$"
++                      },
++                      {
++                        "type": "null"
++                      }
++                    ]
++                  }
++                }
++              }
++            },
++            "packageSources": {
++              "type": "array",
++              "minItems": 1,
++              "maxItems": 256,
++              "items": {
++                "type": "object",
++                "additionalProperties": false,
++                "required": [
++                  "name",
++                  "sourceId"
++                ],
++                "properties": {
++                  "name": {
++                    "type": "string",
++                    "minLength": 1,
++                    "maxLength": 120
++                  },
++                  "sourceId": {
++                    "type": "string",
++                    "minLength": 1,
++                    "maxLength": 120
++                  }
++                }
++              }
++            }
++          }
++        }
++      ]
++    }
++  }
++}
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff.ts b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+new file mode 100644
+index 0000000..b25cca2
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+@@ -0,0 +1,119 @@
++// Portable preparation boundary. This checks supplied records, never authenticates a host or executes a subject.
++import Ajv from 'ajv';
++import {canonicalize} from 'json-canonicalize';
++import {constants} from 'node:fs';
++import {lstat,realpath,open,mkdir,writeFile} from 'node:fs/promises';
++import {resolve,join,dirname,basename} from 'node:path';
++import {createHash} from 'node:crypto';
++import {isDeepStrictEqual} from 'node:util';
++import schema from '../../../../contracts/schemas/native-handoff-v1.schema.json';
++import type {NativeHandoffV1,HandoffRef} from '../../../../contracts/generated/native-handoff';
++import {nativeInventoryIssues} from '../../../../../scripts/native-sim/native-inventory.mjs';
++export type Issue={code:string;path:string;severity:'error'|'prerequisite'};
++export type HandoffAssessment={prepared:boolean;nativeReady:boolean;issues:Issue[]};
++const shape=new Ajv({strict:true,allErrors:true}).compile<NativeHandoffV1>(schema);
++const FILE_LIMIT=64*1024*1024,JSON_LIMIT=1024*1024,TOTAL_LIMIT=256*1024*1024,REF_LIMIT=768;
++const hash=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');
++const safePath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_.-]*(\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
++const secretPath=(p:string)=>p.split('/').some(x=>/^(\.env(?:\..*)?|id_(rsa|ed25519|ecdsa)|credentials(?:\..*)?)$|(?:private|secret|tunnel).*key|\.(?:key|pem|p12|pfx)$/i.test(x));
++const secretContent=(b:Buffer)=>/-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/.test(b.toString('utf8'));
++async function checkedRoot(root:string){const s=await lstat(root);if(!s.isDirectory()||s.isSymbolicLink())throw new Error('ROOT_NOT_DIRECTORY');return realpath(root);}
++export async function readHandoffFile(root:string,path:string,limit=JSON_LIMIT):Promise<Buffer>{
++ if(!safePath(path)||secretPath(path))throw new Error('REF_PATH_FORBIDDEN');
++ const base=await checkedRoot(root);let full=base;
++ for(const part of path.split('/')){full=join(full,part);const s=await lstat(full);if(s.isSymbolicLink())throw new Error('REF_SYMLINK');}
++ const file=await open(full,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_NONBLOCK);
++ try{
++  const before=await file.stat();if(!before.isFile())throw new Error('REF_NOT_REGULAR');if(before.size>limit)throw new Error('REF_TOO_LARGE');
++  // Bounded read on the opened descriptor, including a byte to detect a concurrently growing file.
++  const bytes=Buffer.alloc(before.size+1);let length=0;
++  while(length<bytes.length){const r=await file.read(bytes,length,bytes.length-length,length);if(!r.bytesRead)break;length+=r.bytesRead;}
++  const after=await file.stat(),pathStat=await lstat(full);
++  if(length!==before.size||after.size!==before.size||after.mtimeMs!==before.mtimeMs||after.ctimeMs!==before.ctimeMs||pathStat.ino!==after.ino||pathStat.dev!==after.dev||await realpath(full)!==full)throw new Error('REF_CHANGED_DURING_READ');
++  return bytes.subarray(0,length);
++ }finally{await file.close();}
++}
++function json(bytes:Buffer){if(bytes.length>JSON_LIMIT)throw new Error('JSON_TOO_LARGE');return JSON.parse(bytes.toString('utf8'));}
++export async function readNativeHandoff(root:string):Promise<unknown>{return json(await readHandoffFile(root,'manifest.json'));}
++export async function validateNativeHandoff(root:string,value:unknown,inventory?:unknown):Promise<HandoffAssessment>{
++ const issues:Issue[]=[],add=(code:string,path:string,severity:Issue['severity']='error')=>issues.push({code,path,severity});
++ if(!shape(value))return {prepared:false,nativeReady:false,issues:(shape.errors??[]).map(e=>({code:'HANDOFF_SCHEMA_INVALID',path:e.instancePath,severity:'error'}))};
++ const m=value,refs=Object.entries(m.refs).flatMap(([role,rs])=>rs.map(ref=>({role,ref}))),contents=new Map<string,Buffer>();
++ if(refs.length>REF_LIMIT||refs.reduce((n,{ref})=>n+ref.bytes,0)>TOTAL_LIMIT)return {prepared:false,nativeReady:false,issues:[{code:'HANDOFF_TOO_LARGE',path:'/refs',severity:'error'}]};
++ const paths=new Set<string>();
++ for(const {role,ref}of refs){
++  const path=`/refs/${role}/${ref.path}`;
++  if(paths.has(ref.path.toLowerCase())||ref.path.toLowerCase()==='manifest.json'){add('REF_PATH_COLLISION',path);continue;}paths.add(ref.path.toLowerCase());
++  if(ref.sourceCommit!==(role==='labLock'?m.subject.labCommit:m.subject.sourceCommit))add('REF_SUBJECT_MISMATCH',path);
++  try{const bytes=await readHandoffFile(root,ref.path,ref.bytes);if(bytes.length!==ref.bytes)add('REF_SIZE_MISMATCH',path);if(hash(bytes)!==ref.sha256)add('REF_HASH_MISMATCH',path);if(secretContent(bytes))add('SECRET_CONTENT_FORBIDDEN',path);contents.set(ref.path,bytes);}
++  catch(e){add(e instanceof Error?e.message:'REF_UNREADABLE',path);}
++ }
++ const parse=(role:keyof NativeHandoffV1['refs'])=>json(contents.get(m.refs[role]![0].path)!);
++ if(!issues.some(i=>i.severity==='error'))try{
++  const runtime=parse('runtimeManifest'),lab=parse('labLock'),profile=parse('profile'),subject=m.subject,closure=runtime.portableSimulationTools?.closure;
++  for(const [label,receipt]of [['runtimeManifest',runtime],['labLock',lab]] as const){
++   if(receipt.sourceCommit!==subject.sourceCommit||receipt.schemaHash!==subject.schemaHash||receipt.artifactSha256!==subject.runtimeArtifactSha256||receipt.dirty!==false)add('SUBJECT_RECEIPT_MISMATCH',`/refs/${label}`);
++  }
++  if(lab.portableToolsDigest!==subject.portableClosureHash||closure?.digest!==subject.portableClosureHash||closure?.version!==1||!Array.isArray(closure?.files)||hash(JSON.stringify(closure.files))!==subject.portableClosureHash)add('CLOSURE_IDENTITY_MISMATCH','/subject/portableClosureHash');
++  if(Array.isArray(closure?.files)){
++   const names=new Set<string>();
++   for(const file of closure.files){
++    if(!file||typeof file.path!=='string'||!safePath(file.path)||names.has(file.path)||!Number.isSafeInteger(file.bytes)||file.bytes<0||typeof file.sha256!=='string'||!/^[a-f0-9]{64}$/.test(file.sha256)){add('CLOSURE_ENTRY_INVALID','/refs/runtimeManifest');continue;}
++    names.add(file.path);
++    if(!refs.some(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===file.path&&ref.sha256===file.sha256&&ref.bytes===file.bytes))add('CLOSURE_FILE_MISSING',`/refs/${file.path}`);
++   }
++  }
++  if(m.refs.runtime[0].sha256!==subject.runtimeArtifactSha256)add('RUNTIME_IDENTITY_MISMATCH','/refs/runtime');
++  if(m.refs.model[0].sha256!==m.profile.modelSha256)add('MODEL_IDENTITY_MISMATCH','/refs/model');
++  if(m.refs.profile[0].sha256!==subject.profileSha256)add('PROFILE_IDENTITY_MISMATCH','/subject/profileSha256');
++  if((subject.executionKind==='mujoco_image')!==(m.profile.installation.kind==='oci')||m.profile.installation.kind==='native_apt'&&subject.image!==null)add('INSTALLATION_PROFILE_MISMATCH','/profile/installation');
++  if(!isDeepStrictEqual(profile,m.profile))add('PROFILE_IDENTITY_MISMATCH','/refs/profile');
++  const required=m.profile.requiredPackages.map(x=>x.name);if(new Set(required).size!==required.length||required.some(x=>m.profile.forbiddenPackages.includes(x)))add('PROFILE_PACKAGE_CONFLICT','/profile');
++  const schemaHash=createHash('sha256'),schemaPaths=new Set<string>();
++  for(const ref of [...m.refs.schema].sort((a,b)=>a.sourcePath<b.sourcePath?-1:1)){
++   if(basename(ref.sourcePath)!==ref.sourcePath||schemaPaths.has(ref.sourcePath))add('SCHEMA_PATH_INVALID','/refs/schema');schemaPaths.add(ref.sourcePath);
++   schemaHash.update(ref.sourcePath+'\n').update(contents.get(ref.path)!);
++   const s=json(contents.get(ref.path)!);if(s===null||typeof s!=='object'||Array.isArray(s))add('SCHEMA_CONTENT_INVALID','/refs/schema');
++  }
++  if(schemaHash.digest('hex')!==subject.schemaHash)add('SCHEMA_IDENTITY_MISMATCH','/subject/schemaHash');
++  for(const ref of [...m.refs.engine,...m.refs.tool])if(!closure?.files?.some((f:HandoffRef)=>f.path===ref.sourcePath&&f.sha256===ref.sha256&&f.bytes===ref.bytes))add('TOOL_IDENTITY_MISMATCH',`/refs/${ref.path}`);
++ }catch{add('REF_METADATA_INVALID','/refs');}
++ issues.push(...nativeInventoryIssues(inventory,{profile:m.profile,subject:m.subject}));
++ if(inventory&&typeof inventory==='object'){
++  const provenance=(inventory as {provenance?:{evidencePath?:unknown;evidenceSha256?:unknown}}).provenance;
++  try{
++   if(typeof provenance?.evidencePath!=='string')throw new Error('missing');
++   const bytes=await readHandoffFile(root,provenance.evidencePath),record=json(bytes),origin={...provenance};delete origin.evidencePath;delete origin.evidenceSha256;
++   if(hash(bytes)!==provenance.evidenceSha256||record.schemaVersion!==1||record.inventorySha256!==hash(canonicalize({...inventory,provenance:origin})))throw new Error('mismatch');
++   if(record.kind!==m.profile.installation.kind)throw new Error('provenance mode mismatch');
++   if(m.profile.installation.kind==='oci'){
++    const image=m.subject.image;if(!image)throw new Error('unbuilt');
++    const imageBytes=await readHandoffFile(root,record.platformManifestPath),configBytes=await readHandoffFile(root,record.imageConfigPath),platformManifest=json(imageBytes),config=json(configBytes);
++    if('sha256:'+hash(imageBytes)!==image.manifestDigest||'sha256:'+hash(configBytes)!==image.configDigest||platformManifest.schemaVersion!==2||!['application/vnd.oci.image.manifest.v1+json','application/vnd.docker.distribution.manifest.v2+json'].includes(platformManifest.mediaType)||platformManifest.config?.digest!==image.configDigest||config.os!=='linux'||config.architecture!==m.profile.architecture)throw new Error('platform identity mismatch');
++   }else{
++    if(!Array.isArray(record.sources)||record.sources.length!==m.profile.installation.sources.length)throw new Error('source evidence missing');
++    let provenanceBytes=0;
++    for(const source of m.profile.installation.sources){
++     const matches=record.sources.filter((x:{id:string})=>x?.id===source.id);if(matches.length!==1)throw new Error('source provenance mismatch');
++     const bytes=await readHandoffFile(root,matches[0].path,Math.min(FILE_LIMIT,TOTAL_LIMIT-provenanceBytes));provenanceBytes+=bytes.length;if(hash(bytes)!==source.sha256)throw new Error('source provenance mismatch');
++    }
++   }
++  }
++  catch{add('HOST_PROVENANCE_ARTIFACT_INVALID','/inventory/provenance','prerequisite');}
++ }
++ const prepared=!issues.some(i=>i.severity==='error');return {prepared,nativeReady:prepared&&issues.length===0,issues};
++}
++export async function exportNativeHandoff(input:string,out:string):Promise<HandoffAssessment>{
++ const manifest=await readNativeHandoff(input),assessment=await validateNativeHandoff(input,manifest);
++ if(!assessment.prepared)throw new Error('HANDOFF_NOT_PREPARED:'+JSON.stringify(assessment.issues));
++ const m=manifest as NativeHandoffV1,target=resolve(out);
++ // Exclusive directory creation: never merge into or replace an existing artifact. Failed exports remain for inspection.
++ await checkedRoot(dirname(target));await mkdir(target,{mode:0o700});
++ for(const refs of Object.values(m.refs))for(const ref of refs){
++  const bytes=await readHandoffFile(input,ref.path,ref.bytes);
++  if(bytes.length!==ref.bytes||hash(bytes)!==ref.sha256||secretContent(bytes))throw new Error('EXPORT_INPUT_CHANGED');
++  await mkdir(dirname(join(target,ref.path)),{recursive:true,mode:0o700});await writeFile(join(target,ref.path),bytes,{flag:'wx',mode:0o600});
++ }
++ await writeFile(join(target,'manifest.json'),JSON.stringify(m,null,2)+'\n',{flag:'wx',mode:0o600});
++ const result=await validateNativeHandoff(target,m);if(!result.prepared)throw new Error('EXPORT_VERIFICATION_FAILED');return result;
++}
+diff --git a/scripts/generate-contracts.mjs b/scripts/generate-contracts.mjs
+index db31ead..857efe8 100644
+--- a/scripts/generate-contracts.mjs
++++ b/scripts/generate-contracts.mjs
+@@ -50,24 +50,29 @@ const foldNav = (v) => Array.isArray(v) ? v.map(foldNav) : v && typeof v === 'ob
+ const navDefinitions = {};
+ for (const [name, type] of Object.entries(navFiles)) {
+   const root = JSON.parse(await readFile(new URL(`${name}.schema.json`, v2Dir), 'utf8'));
+   const definitions = root.definitions ?? {};
+   for (const k of ['$schema', '$id', 'definitions']) delete root[k];
+   Object.assign(navDefinitions, foldNav(definitions));
+   navDefinitions[type] = foldNav(root);
+ }
+ const navOutput = "/* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */\nimport type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';\n" + await compile({ title: 'Navigation2DContracts', type: 'object', additionalProperties: false, properties: {}, definitions: navDefinitions }, 'Navigation2DContracts', { bannerComment: '', ignoreMinAndMaxItems: true, style: { singleQuote: true, semi: true, tabWidth: 2 }, unknownAny: false, unreachableDefinitions: true });
+ const navFile = new URL('../packages/contracts/generated/navigation2d.ts', import.meta.url);
++const handoffSchema=JSON.parse(await readFile(new URL('native-handoff-v1.schema.json',v2Dir),'utf8'));
++const handoffOutput=await compile(handoffSchema,'NativeHandoffV1',{bannerComment:'/* Generated from native-handoff-v1.schema.json. Run pnpm contracts:generate; do not edit. */',style:{singleQuote:true,semi:true,tabWidth:2},unknownAny:false,ignoreMinAndMaxItems:true});
++const handoffFile=new URL('../packages/contracts/generated/native-handoff.ts',import.meta.url);
+ if (process.argv.includes('--check')) {
++  if ((await readFile(handoffFile,'utf8').catch(()=>''))!==handoffOutput) throw new Error('GENERATED_CONTRACT_DRIFT: native-handoff');
+   const actual = await readFile(outputFile, 'utf8').catch(() => '');
+   if (actual !== output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate');
+   if ((await readFile(v2File, 'utf8').catch(() => '')) !== v2Output) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (lab-v2)');
+   if ((await readFile(engFile, 'utf8').catch(() => '')) !== engOutput) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (engineering)');
+   if ((await readFile(navFile, 'utf8').catch(() => '')) !== navOutput) throw new Error('GENERATED_CONTRACT_DRIFT: run pnpm contracts:generate (navigation2d)');
+   console.log('Contract generation matches schema.');
+ } else {
++  await writeFile(handoffFile,handoffOutput);
+   await writeFile(outputFile, output);
+   await writeFile(v2File, v2Output);
+   await writeFile(engFile, engOutput);
+   await writeFile(navFile, navOutput);
+-  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts, engineering.ts and navigation2d.ts');
++  console.log('Generated packages/contracts/generated/wire.ts, lab-v2.ts, engineering.ts, navigation2d.ts and native-handoff.ts');
+ }
+diff --git a/scripts/native-handoff.mjs b/scripts/native-handoff.mjs
+new file mode 100644
+index 0000000..564c62e
+--- /dev/null
++++ b/scripts/native-handoff.mjs
+@@ -0,0 +1,24 @@
++#!/usr/bin/env node
++// Only fixed verifier code is imported. Manifest content is data, never argv/shell/module input.
++import {tsImport} from 'tsx/esm/api';
++import {readFile} from 'node:fs/promises';
++import {createHash} from 'node:crypto';
++import {execFileSync} from 'node:child_process';
++import {dirname,resolve,basename} from 'node:path';
++import {fileURLToPath} from 'node:url';
++const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++try{
++ const [command,...args]=process.argv.slice(2),allowed=command==='export'?['--input','--out']:command==='verify'?['--input','--inventory']:[];
++ if(!allowed.length)throw new Error('USAGE: native-handoff.mjs export --input DIR --out NEW_DIR | verify --input DIR [--inventory FILE]');
++ const options={};for(let i=0;i<args.length;i+=2){const key=args[i],value=args[i+1];if(!allowed.includes(key)||key in options||!value||value.startsWith('--'))throw new Error('INVALID_ARGUMENT');options[key]=value;}
++ if(!options['--input']||command==='export'&&!options['--out'])throw new Error('MISSING_ARGUMENT');
++ const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
++ const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
++ const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
++ const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
++ for(const file of files)hash.update(file+'\n').update(await readFile(resolve(root,file)));
++ let sourceCommit=null;try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8',timeout:5000}).trim();}catch{/* copied checker has only its byte identity */}
++ console.log(JSON.stringify({...result,subject:manifest.subject,checker:{sourceCommit,toolSha256:hash.digest('hex')},inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false,dynamics:'not_calibrated'},null,2));
++ process.exitCode=result.prepared?0:1;
++}catch(error){console.error(JSON.stringify({code:'NATIVE_HANDOFF_FAILED',message:error.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
+diff --git a/scripts/native-sim/host-preflight.d.mts b/scripts/native-sim/host-preflight.d.mts
+index e421fe2..690d96c 100644
+--- a/scripts/native-sim/host-preflight.d.mts
++++ b/scripts/native-sim/host-preflight.d.mts
+@@ -1,2 +1,3 @@
+ export function resourceDecision(input:{systemFreeBytes:number;vmFreeBytes:number;sameVolume:boolean;memoryBytes:number}):{canProvision:boolean;blockers:string[];runConcurrently:boolean;vmBudgetGiB:number;systemReserveGiB:number};
+ export function hostPreflight(vmRoot?:string):Promise<Record<string,unknown>>;
++export {collectNativeInventory} from './native-inventory.mjs';
+diff --git a/scripts/native-sim/host-preflight.mjs b/scripts/native-sim/host-preflight.mjs
+index 5294d71..a53c6ed 100644
+--- a/scripts/native-sim/host-preflight.mjs
++++ b/scripts/native-sim/host-preflight.mjs
+@@ -1,18 +1,19 @@
+ #!/usr/bin/env node
+ // Read-only UTM host preflight. This never installs apps, downloads images or removes files.
+ import {constants} from 'node:fs';
+ import {statfs,stat,access} from 'node:fs/promises';
+ import {execFileSync} from 'node:child_process';
+ import {cpus,totalmem,platform,arch} from 'node:os';
+ import {resolve} from 'node:path';
+ import {pathToFileURL} from 'node:url';
++export {collectNativeInventory} from './native-inventory.mjs';
+ export function resourceDecision({systemFreeBytes,vmFreeBytes,sameVolume,memoryBytes}){
+  const gib=1024**3,blockers=[];
+  if(systemFreeBytes<20*gib)blockers.push('SYSTEM_RESERVE_INSUFFICIENT');
+  if(vmFreeBytes<(sameVolume?140:120)*gib)blockers.push('VM_STORAGE_INSUFFICIENT');
+  if(memoryBytes<12*gib)blockers.push('HOST_MEMORY_INSUFFICIENT');
+  return {canProvision:blockers.length===0,blockers,runConcurrently:memoryBytes>=32*gib,vmBudgetGiB:120,systemReserveGiB:20};
+ }
+ export async function hostPreflight(vmRoot=process.cwd()){
+  const path=resolve(vmRoot),[vm,system,vs,ss]=await Promise.all([statfs(path),statfs('/'),stat(path),stat('/')]);
+  const memoryBytes=totalmem(),storage={systemFreeBytes:system.bavail*system.bsize,vmFreeBytes:vm.bavail*vm.bsize,sameVolume:vs.dev===ss.dev},decision=resourceDecision({...storage,memoryBytes});
+diff --git a/scripts/native-sim/native-inventory.d.mts b/scripts/native-sim/native-inventory.d.mts
+new file mode 100644
+index 0000000..214e31b
+--- /dev/null
++++ b/scripts/native-sim/native-inventory.d.mts
+@@ -0,0 +1,3 @@
++export function isSha256(value:unknown):boolean;
++export function nativeInventoryIssues(value:unknown,expected:{profile:unknown;subject:unknown}):{code:string;path:string;severity:'prerequisite'}[];
++export function collectNativeInventory():Promise<{schemaVersion:number;provenance:{origin:string;hostOs:string;hostArchitecture:string;virtualization:string;emulation:string;evidencePath:null;evidenceSha256:null};[key:string]:unknown}>;
+diff --git a/scripts/native-sim/native-inventory.mjs b/scripts/native-sim/native-inventory.mjs
+new file mode 100644
+index 0000000..59bc07d
+--- /dev/null
++++ b/scripts/native-sim/native-inventory.mjs
+@@ -0,0 +1,51 @@
++// Record validation only. Neither declared provenance nor matching hashes authenticate a host.
++import Ajv from 'ajv';
++import schema from '../../packages/contracts/schemas/native-handoff-v1.schema.json' with {type:'json'};
++import {cpus,platform,arch,release} from 'node:os';
++import {readFile} from 'node:fs/promises';
++import {isDeepStrictEqual} from 'node:util';
++const ajv=new Ajv({strict:true});ajv.addSchema(schema);
++const validProfile=ajv.compile({$ref:'native-handoff-v1.schema.json#/definitions/HandoffProfile'}),validSubject=ajv.compile({$ref:'native-handoff-v1.schema.json#/definitions/HandoffSubject'});
++export const isSha256=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
++const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
++const nonempty=v=>typeof v==='string'&&v.length>0;
++export function nativeInventoryIssues(value,expected){
++ const issues=[],add=(code,path)=>issues.push({code,path,severity:'prerequisite'}),p=expected?.profile,s=expected?.subject;
++ if(!validProfile(p)||!validSubject(s)){add('LOCKED_PROFILE_REQUIRED','/profile');return issues;}
++ const names=p.requiredPackages.map(x=>x.name);if(new Set(names).size!==names.length||names.some(x=>p.forbiddenPackages.includes(x)))add('PROFILE_PACKAGE_CONFLICT','/profile');
++ for(const [i,lock]of p.requiredPackages.entries())if(!nonempty(lock?.name)||!nonempty(lock.version)||!isSha256(lock.sha256)||/[<>*~^]|latest|unresolved/i.test(lock.version))add('PACKAGE_LOCK_UNRESOLVED',`/profile/requiredPackages/${i}`);
++ const installation=p.installation;
++ if((s.executionKind==='mujoco_image')!==(installation.kind==='oci'))add('INSTALLATION_PROFILE_MISMATCH','/profile/installation');
++ if(installation.kind==='native_apt'){
++  const ids=installation.sources.map(x=>x.id),mapped=installation.packageSources.map(x=>x.name);
++  if(new Set(ids).size!==ids.length||new Set(mapped).size!==mapped.length||mapped.length!==names.length||installation.packageSources.some(x=>!names.includes(x.name)||!ids.includes(x.sourceId)))add('SOURCE_PACKAGE_MAPPING_INVALID','/profile/installation');
++  for(const source of installation.sources)if(!isSha256(source.sha256))add('SOURCE_LOCK_UNRESOLVED','/profile/installation/sources');
++  if(s.image!==null)add('INSTALLATION_PROFILE_MISMATCH','/subject/image');
++ }
++ if(installation.kind==='oci'&&(!s.image||s.image.platform!==`linux/${p.architecture}`||!/^sha256:[a-f0-9]{64}$/.test(s.image.manifestDigest)||!/^sha256:[a-f0-9]{64}$/.test(s.image.configDigest)))add('SUBJECT_IMAGE_UNRESOLVED','/subject/image');
++ if(value===undefined){add('HOST_INVENTORY_MISSING','/inventory');return issues;}
++ if(!object(value)){add('HOST_INVENTORY_INVALID','/inventory');return issues;}
++ const v=value;
++ if(v.schemaVersion!==1||!object(v.cpu)||!nonempty(v.cpu.model)||!Number.isInteger(v.cpu.cores)||v.cpu.cores<1||!nonempty(v.os?.kernel))add('HOST_INVENTORY_INVALID','/inventory');
++ if(v.architecture!==p.architecture)add('HOST_ARCH_MISMATCH','/inventory/architecture');
++ if(v.os?.platform!=='linux'||v.os?.id!==p.os?.id||v.os?.version!==p.os?.version)add('HOST_OS_MISMATCH','/inventory/os');
++ if(v.profileId!==p.id||v.modelId!==p.modelId||v.modelSha256!==p.modelSha256)add('HOST_PROFILE_MISMATCH','/inventory/profileId');
++ if(!isDeepStrictEqual(v.subject,s))add('HOST_SUBJECT_MISMATCH','/inventory/subject');
++ if(!isDeepStrictEqual(v.installation,installation))add('HOST_INSTALLATION_MISMATCH','/inventory/installation');
++ if(!isDeepStrictEqual(v.image,s.image))add('HOST_IMAGE_MISMATCH','/inventory/image');
++ const o=v.provenance;
++ if(!object(o)||o.origin!=='linux_native'||o.hostOs!=='linux'||o.hostArchitecture!==p.architecture||!['bare_metal','vm','container'].includes(o.virtualization)||o.emulation!=='none'||!nonempty(o.evidencePath)||!isSha256(o.evidenceSha256))add('HOST_PROVENANCE_UNRESOLVED','/inventory/provenance');
++ if(!Array.isArray(v.software)||v.software.some(x=>!object(x)||!nonempty(x.name)||!nonempty(x.version)||!isSha256(x.sha256))||new Set(v.software.map(x=>x.name)).size!==v.software.length)add('HOST_SOFTWARE_INVALID','/inventory/software');
++ else{
++  for(const lock of p.requiredPackages)if(!v.software.some(x=>x.name===lock.name&&x.version===lock.version&&x.sha256===lock.sha256))add('HOST_PACKAGE_MISMATCH',`/inventory/software/${lock.name}`);
++  for(const name of p.forbiddenPackages)if(v.software.some(x=>x.name===name))add('HOST_FORBIDDEN_PACKAGE',`/inventory/software/${name}`);
++ }
++ if(!Array.isArray(v.clockDomains)||p.clockDomains.some(x=>!v.clockDomains.includes(x)))add('HOST_CLOCK_DOMAIN_MISSING','/inventory/clockDomains');
++ return issues;
++}
++export async function collectNativeInventory(){
++ // Only locally observable facts. OS/container detection alone cannot establish origin, image or emulation.
++ let os={id:'unknown',version:'unknown'};
++ if(platform()==='linux')try{const data=await readFile('/etc/os-release','utf8'),field=k=>data.match(new RegExp(`^${k}=["']?([^"'\\n]+)`, 'm'))?.[1]??'unknown';os={id:field('ID'),version:field('VERSION_ID')};}catch{/* unresolved */}
++ return {schemaVersion:1,installation:null,profileId:null,modelId:null,modelSha256:null,subject:null,os:{platform:platform(),...os,kernel:release()},architecture:arch()==='x64'?'amd64':arch(),cpu:{model:cpus()[0]?.model??'unknown',cores:cpus().length},image:null,provenance:{origin:'unknown',hostOs:'unknown',hostArchitecture:'unknown',virtualization:'unknown',emulation:'unknown',evidencePath:null,evidenceSha256:null},software:[],clockDomains:[]};
++}
+diff --git a/scripts/native-sim/profile-report.d.mts b/scripts/native-sim/profile-report.d.mts
+index dde77a9..4c760d6 100644
+--- a/scripts/native-sim/profile-report.d.mts
++++ b/scripts/native-sim/profile-report.d.mts
+@@ -1 +1 @@
+-export function validNativeProfileReport(value: unknown, id: string): boolean;
++export function validNativeProfileReport(value: unknown, id: string, expected?:{profile:unknown;subject:unknown}): boolean;
+diff --git a/scripts/native-sim/profile-report.mjs b/scripts/native-sim/profile-report.mjs
+index 5074b6e..f4eb049 100644
+--- a/scripts/native-sim/profile-report.mjs
++++ b/scripts/native-sim/profile-report.mjs
+@@ -1,10 +1,11 @@
+-const sha=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
++import {isSha256 as sha,nativeInventoryIssues} from './native-inventory.mjs';
+ const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+ const strings=v=>Array.isArray(v)&&v.every(x=>typeof x==='string');
+-export function validNativeProfileReport(v,id){
++export function validNativeProfileReport(v,id,expected){
++ if(expected!==undefined)return v?.profileId===id&&expected?.profile?.id===id&&nativeInventoryIssues(v,expected).length===0;
+  if(!object(v)||v.id!==id||typeof v.available!=='boolean'||!strings(v.reasonCodes))return false;
+  if(!v.available)return v.reasonCodes.length>0;
+  if(v.reasonCodes.length||!sha(v.profileSha256)||!sha(v.inventorySha256)||v.installation!=='native_apt'||v.image!==null||v.headless!==true)return false;
+  const a=v.actual,r=a?.runtime;
+  return object(a)&&a.platform==='linux'&&a.architecture==='arm64'&&a.os?.id==='ubuntu'&&a.os.version==='24.04'&&object(a.packages)&&Object.keys(a.packages).length>0&&Object.values(a.packages).every(x=>typeof x==='string'&&x.length>0)&&object(r)&&r.rosDistro==='jazzy'&&strings(r.amentPrefixes)&&object(r.overlayManifests)&&Object.values(r.overlayManifests).every(sha)&&['pythonPath','libraryPath','gazeboPluginPath'].every(k=>typeof r[k]==='string')&&['ros2','gz'].every(k=>object(r.executables?.[k])&&typeof r.executables[k].path==='string'&&r.executables[k].path.startsWith('/')&&sha(r.executables[k].sha256));
+ }
+diff --git a/tests/fixtures/native-handoff.ts b/tests/fixtures/native-handoff.ts
+new file mode 100644
+index 0000000..d17f71d
+--- /dev/null
++++ b/tests/fixtures/native-handoff.ts
+@@ -0,0 +1,35 @@
++// Synthetic protocol fixtures only; never native execution evidence.
++import {mkdtemp,writeFile,mkdir} from 'node:fs/promises';
++import {join,dirname} from 'node:path';
++import {tmpdir} from 'node:os';
++import {canonicalize} from 'json-canonicalize';
++import {createHash} from 'node:crypto';
++export const digest=(data:string|Buffer)=>createHash('sha256').update(data).digest('hex');
++export async function nativeHandoffFixture(mode:'oci'|'native_apt'='oci'){
++ const root=await mkdtemp(join(tmpdir(),'native-handoff-test-')),sha='a'.repeat(64),commit='1'.repeat(40);
++ const configBytes=JSON.stringify({os:'linux',architecture:'amd64'}),manifestBytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.manifest.v1+json',config:{digest:'sha256:'+digest(configBytes)}});
++ const image={platform:'linux/amd64',manifestDigest:'sha256:'+digest(manifestBytes),configDigest:'sha256:'+digest(configBytes)};
++ await writeFile(join(root,'image-config.json'),configBytes);await writeFile(join(root,'image-manifest.json'),manifestBytes);
++ const schemaBytes=JSON.stringify({$schema:'http://json-schema.org/draft-07/schema#',type:'object'});
++ const subject={executionKind:mode==='oci'?'mujoco_image':'linuxcnc_native',profileSha256:'a'.repeat(64),id:'synthetic-r2b',sourceCommit:commit,labCommit:'2'.repeat(40),schemaHash:digest('test.schema.json\n'+schemaBytes),portableClosureHash:sha,runtimeArtifactSha256:digest('runtime'),image:mode==='oci'?image:null};
++ const sourceBytes='synthetic signed apt Release';await writeFile(join(root,'apt-release.txt'),sourceBytes);
++ const installation=mode==='oci'?{kind:'oci'}:{kind:'native_apt',sources:[{id:'debian',kind:'apt_repository',uri:'https://deb.debian.org/debian',sha256:digest(sourceBytes)}],packageSources:[{name:'linuxcnc',sourceId:'debian'}]};
++ const profile={installation,id:'puma-linux-amd64',modelId:'puma',modelSha256:digest('model'),architecture:'amd64',os:{id:'debian',version:'12'},requiredPackages:[{name:'linuxcnc',version:'2.9.3',sha256:sha}],forbiddenPackages:['ros-noetic'],clockDomains:['controller','source_monotonic']};
++ const refs:Record<string,{path:string;sha256:string;bytes:number;sourcePath:string;sourceCommit:string}[]>={};
++ const put=async(role:string,path:string,bytes:string,sourcePath=path)=>{await mkdir(dirname(join(root,path)),{recursive:true});await writeFile(join(root,path),bytes);const ref={path,sha256:digest(bytes),bytes:Buffer.byteLength(bytes),sourcePath,sourceCommit:commit};(refs[role]??=[]).push(ref);return ref;};
++ await put('schema','schemas/test.schema.json',schemaBytes,'test.schema.json');
++ await put('runtime','runtime.mjs','runtime');await put('project','inputs/project.json','project');await put('world','inputs/world.json','world');await put('model','inputs/model.json','model');
++ await put('profile','profile.json',JSON.stringify(profile));subject.profileSha256=digest(JSON.stringify(profile));
++ const engine=await put('engine','tools/engine.lock','engine==1','robotics/engine.lock'),tool=await put('tool','tools/worker.py','print("protocol fixture")','robotics/worker.py');
++ const files=[engine,tool].map(x=>({path:x.sourcePath,sha256:x.sha256,bytes:x.bytes})).sort((a,b)=>a.path<b.path?-1:1);subject.portableClosureHash=digest(JSON.stringify(files));
++ const runtimeManifest={sourceCommit:commit,schemaHash:subject.schemaHash,artifactSha256:subject.runtimeArtifactSha256,dirty:false,portableSimulationTools:{closure:{version:1,digest:subject.portableClosureHash,files}}};
++ await put('runtimeManifest','runtime-manifest.json',JSON.stringify(runtimeManifest));
++ const labRef=await put('labLock','lab-lock.json',JSON.stringify({sourceCommit:commit,schemaHash:subject.schemaHash,artifactSha256:subject.runtimeArtifactSha256,portableToolsDigest:subject.portableClosureHash,dirty:false}));labRef.sourceCommit=subject.labCommit;
++ const manifest={schemaVersion:1,subject,checker:{sourceCommit:'3'.repeat(40),toolSha256:'c'.repeat(64)},refs,profile,frames:{world:'map',robotBase:'base_link',tool:'tcp',handedness:'right'},units:{length:'m',angle:'rad',mass:'kg',time:'s'},seeds:[17,29,43],casePolicy:{required:['nominal','worker_loss'],lostAck:'unknown_no_resend',authority:'source'},accepted:false,dynamics:'not_calibrated'};
++
++ const inventory={installation,schemaVersion:1,profileId:profile.id,modelId:profile.modelId,modelSha256:profile.modelSha256,subject,os:{platform:'linux',id:'debian',version:'12',kernel:'6.1.0'},architecture:'amd64',cpu:{model:'synthetic-test-cpu',cores:4},image:mode==='oci'?image:null,provenance:{origin:'linux_native',hostOs:'linux',hostArchitecture:'amd64',virtualization:'bare_metal',emulation:'none',evidencePath:'inventory-provenance.txt',evidenceSha256:'a'.repeat(64)},software:[...profile.requiredPackages],clockDomains:[...profile.clockDomains]};
++ const origin:Record<string,unknown>={...inventory.provenance};delete origin.evidencePath;delete origin.evidenceSha256;
++ const evidence=JSON.stringify({schemaVersion:1,inventorySha256:digest(canonicalize({...inventory,provenance:origin})),kind:mode,...mode==='oci'?{platformManifestPath:'image-manifest.json',imageConfigPath:'image-config.json'}:{sources:[{id:'debian',path:'apt-release.txt'}]}});inventory.provenance.evidenceSha256=digest(evidence);await writeFile(join(root,'inventory-provenance.txt'),evidence);
++ await writeFile(join(root,'manifest.json'),JSON.stringify(manifest));
++ return {root,manifest,inventory,put};
++}
+diff --git a/tests/security/native-handoff.test.ts b/tests/security/native-handoff.test.ts
+new file mode 100644
+index 0000000..0732d08
+--- /dev/null
++++ b/tests/security/native-handoff.test.ts
+@@ -0,0 +1,26 @@
++import {afterEach,expect,test} from 'vitest';
++import {rm,writeFile,symlink,truncate,mkdir,readFile} from 'node:fs/promises';
++import {join} from 'node:path';
++import {nativeHandoffFixture,digest} from '../fixtures/native-handoff';
++import {validateNativeHandoff,exportNativeHandoff} from '../../packages/lab-runtime/src/v2/sil/native-handoff';
++const dirs:string[]=[];afterEach(async()=>{await Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));});
++async function fixture(){const f=await nativeHandoffFixture();dirs.push(f.root);return f;}
++test.each(['../outside','/tmp/outside','inputs/../model','inputs\\model','inputs//model'])('rejects unsafe ref %s before reading/copying',async path=>{const f=await fixture();f.manifest.refs.model[0].path=path;expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test('rejects symlinks at a file, parent directory and input root',async()=>{const f=await fixture();await symlink('model.json',join(f.root,'inputs/link'));f.manifest.refs.model[0].path='inputs/link';expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);await symlink('inputs',join(f.root,'linked'));f.manifest.refs.model[0].path='linked/model.json';expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);const alias=f.root+'-link';dirs.push(alias);await symlink(f.root,alias);expect((await validateNativeHandoff(alias,f.manifest)).prepared).toBe(false);});
++test('rejects oversized sparse archive without loading it',async()=>{const f=await fixture();const a=await f.put('archive','archive.bin','');await truncate(join(f.root,a.path),65*1024*1024);a.bytes=65*1024*1024;expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test('changed bytes fail even when ref length is unchanged',async()=>{const f=await fixture();await writeFile(join(f.root,'inputs/model.json'),'wrong');expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('REF_HASH_MISMATCH');});
++test('tool bytes from a different closure cannot borrow the old subject',async()=>{const f=await fixture();await writeFile(join(f.root,'tools/worker.py'),'new worker');Object.assign(f.manifest.refs.tool[0],{sha256:digest('new worker'),bytes:10});expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('TOOL_IDENTITY_MISMATCH');});
++test('manifest launch and unknown ref roles are rejected and never executed',async()=>{const f=await fixture();Object.assign(f.manifest,{launch:'touch '+join(f.root,'executed')});await writeFile(join(f.root,'manifest.json'),JSON.stringify(f.manifest));await expect(exportNativeHandoff(f.root,f.root+'-out')).rejects.toThrow();await expect(readFile(join(f.root,'executed'))).rejects.toThrow();});
++test('export refuses existing destinations without changing their contents',async()=>{const f=await fixture(),out=join(f.root,'existing');await mkdir(out);await writeFile(join(out,'keep'),'original');await expect(exportNativeHandoff(f.root,out)).rejects.toThrow();expect(await readFile(join(out,'keep'),'utf8')).toBe('original');});
++test.each(['id_ed25519','tunnel.key','.env'])('secret filename %s is forbidden even when referenced',async name=>{const f=await fixture();await f.put('tool',name,'secret');expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test('private key content under an innocent name is refused',async()=>{const f=await fixture();await f.put('archive','backup.bin','-----BEGIN OPENSSH PRIVATE KEY-----');expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('SECRET_CONTENT_FORBIDDEN');});
++test('missing provenance artifact, wrong image and forbidden installed package block native readiness',async()=>{const f=await fixture();await rm(join(f.root,'inventory-provenance.txt'));expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);f.inventory.image={...f.inventory.image!,manifestDigest:'sha256:'+'d'.repeat(64)};f.inventory.software.push({name:'ros-noetic',version:'1',sha256:'a'.repeat(64)});const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.issues.map(x=>x.code)).toEqual(expect.arrayContaining(['HOST_IMAGE_MISMATCH','HOST_FORBIDDEN_PACKAGE']));});
++test('total declared artifact budget is checked before file I/O',async()=>{const f=await fixture();for(const role of ['runtime','project','world','model','profile'])f.manifest.refs[role][0].bytes=64*1024*1024;expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('HANDOFF_TOO_LARGE');});
++test('manifest cannot omit a hash or add an unrecognized ref role',async()=>{const f=await fixture();delete (f.manifest.refs.model[0] as Partial<typeof f.manifest.refs.model[0]>).sha256;expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('HANDOFF_SCHEMA_INVALID');const g=await fixture();g.manifest.refs.secret=g.manifest.refs.model;expect((await validateNativeHandoff(g.root,g.manifest)).issues.map(x=>x.code)).toContain('HANDOFF_SCHEMA_INVALID');});
++test('oversized manifest and symlink manifest cannot be exported',async()=>{const f=await fixture();await truncate(join(f.root,'manifest.json'),1024*1024+1);await expect(exportNativeHandoff(f.root,f.root+'-out')).rejects.toThrow('REF_TOO_LARGE');await rm(join(f.root,'manifest.json'));await symlink('profile.json',join(f.root,'manifest.json'));await expect(exportNativeHandoff(f.root,f.root+'-out')).rejects.toThrow('REF_SYMLINK');});
++test('profile edits require matching hashed profile and model binding',async()=>{const f=await fixture();f.manifest.profile.modelId='xarm6';expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('PROFILE_IDENTITY_MISMATCH');const g=await fixture();g.manifest.profile.modelSha256='f'.repeat(64);expect((await validateNativeHandoff(g.root,g.manifest)).issues.map(x=>x.code)).toContain('MODEL_IDENTITY_MISMATCH');});
++test('schema collection and recorded Lab producer remain bound to subject tuple',async()=>{const f=await fixture();f.manifest.refs.schema[0].sourcePath='other.schema.json';expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('SCHEMA_IDENTITY_MISMATCH');const g=await fixture();g.manifest.refs.labLock[0].sourceCommit=g.manifest.subject.sourceCommit;expect((await validateNativeHandoff(g.root,g.manifest)).issues.map(x=>x.code)).toContain('REF_SUBJECT_MISMATCH');});
++test('a handoff cannot omit a file from its declared portable closure',async()=>{const f=await fixture();const runtime=JSON.parse(await readFile(join(f.root,'runtime-manifest.json'),'utf8'));runtime.portableSimulationTools.closure.files.push({path:'robotics/dependency.py',sha256:'f'.repeat(64),bytes:42});runtime.portableSimulationTools.closure.digest=digest(JSON.stringify(runtime.portableSimulationTools.closure.files));f.manifest.subject.portableClosureHash=runtime.portableSimulationTools.closure.digest;const lab=JSON.parse(await readFile(join(f.root,'lab-lock.json'),'utf8'));lab.portableToolsDigest=f.manifest.subject.portableClosureHash;for(const [role,data]of [['runtimeManifest',runtime],['labLock',lab]] as const){const bytes=JSON.stringify(data),ref=f.manifest.refs[role][0];await writeFile(join(f.root,ref.path),bytes);ref.sha256=digest(bytes);ref.bytes=Buffer.byteLength(bytes);}expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('CLOSURE_FILE_MISSING');});
++test('an unrelated but correctly hashed provenance file cannot establish matching inventory',async()=>{const f=await fixture();const bytes=JSON.stringify({schemaVersion:1,inventorySha256:'f'.repeat(64),platformManifestPath:'image-manifest.json',imageConfigPath:'image-config.json'});await writeFile(join(f.root,'inventory-provenance.txt'),bytes);f.inventory.provenance.evidenceSha256=digest(bytes);const result=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(result.nativeReady).toBe(false);expect(result.issues.map(x=>x.code)).toContain('HOST_PROVENANCE_ARTIFACT_INVALID');});
++test('platform provenance rejects a multiarch index even when its digest matches',async()=>{const f=await fixture();const bytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.index.v1+json',manifests:[]});await writeFile(join(f.root,'image-manifest.json'),bytes);f.manifest.subject.image!.manifestDigest='sha256:'+digest(bytes);const {canonicalize}=await import('json-canonicalize');const origin:Record<string,unknown>={...f.inventory.provenance};delete origin.evidencePath;delete origin.evidenceSha256;const evidence=JSON.stringify({schemaVersion:1,kind:'oci',inventorySha256:digest(canonicalize({...f.inventory,provenance:origin})),platformManifestPath:'image-manifest.json',imageConfigPath:'image-config.json'});await writeFile(join(f.root,'inventory-provenance.txt'),evidence);f.inventory.provenance.evidenceSha256=digest(evidence);expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);});
++test('understated sizes cannot bypass the aggregate memory budget',async()=>{const f=await fixture();const ref=await f.put('archive','large.bin','');await truncate(join(f.root,'large.bin'),32*1024*1024);expect(ref.bytes).toBe(0);expect((await validateNativeHandoff(f.root,f.manifest)).issues.map(x=>x.code)).toContain('REF_TOO_LARGE');});
+diff --git a/tests/unit/native-handoff.test.ts b/tests/unit/native-handoff.test.ts
+new file mode 100644
+index 0000000..bcede8e
+--- /dev/null
++++ b/tests/unit/native-handoff.test.ts
+@@ -0,0 +1,28 @@
++import {afterEach,expect,test} from 'vitest';
++import {rm,writeFile,readFile} from 'node:fs/promises';
++import {join} from 'node:path';
++import {execFileSync} from 'node:child_process';
++import {nativeHandoffFixture} from '../fixtures/native-handoff';
++import {validateNativeHandoff,exportNativeHandoff} from '../../packages/lab-runtime/src/v2/sil/native-handoff';
++import {collectNativeInventory} from '../../scripts/native-sim/host-preflight.mjs';
++import {validNativeProfileReport} from '../../scripts/native-sim/profile-report.mjs';
++const dirs:string[]=[];afterEach(async()=>{await Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));});
++async function fixture(mode:'oci'|'native_apt'='oci'){const f=await nativeHandoffFixture(mode);dirs.push(f.root);return f;}
++test('valid package is prepared without claiming native execution or host readiness',async()=>{const f=await fixture(),r=await validateNativeHandoff(f.root,f.manifest);expect(r).toMatchObject({prepared:true,nativeReady:false});expect(r.issues).toContainEqual(expect.objectContaining({code:'HOST_INVENTORY_MISSING',path:'/inventory',severity:'prerequisite'}));});
++test.each(['schemaVersion','frames','units'])('missing %s cannot be prepared',async key=>{const f=await fixture();delete (f.manifest as Record<string,unknown>)[key];expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test.each(['model','schema','engine','tool'])('missing %s ref cannot be prepared',async key=>{const f=await fixture();delete f.manifest.refs[key];expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test('complete matching synthetic inventory validates prerequisites only',async()=>{const f=await fixture();expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:true,issues:[]});});
++test.each(['architecture','profileId','modelId','modelSha256'])('inventory %s cannot be borrowed from another profile',async key=>{const f=await fixture();(f.inventory as Record<string,unknown>)[key]='other';expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
++test.each(['origin','hostOs','hostArchitecture','virtualization','emulation'])('unknown/wrong provenance %s never becomes native',async key=>{const f=await fixture();(f.inventory.provenance as Record<string,unknown>)[key]='unknown';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);});
++test('unresolved exact locks remain prepared but cannot be native ready',async()=>{const f=await fixture();Object.assign(f.manifest.profile.requiredPackages[0],{version:null,sha256:null});await writeFile(join(f.root,'profile.json'),JSON.stringify(f.manifest.profile));const {digest}=await import('../fixtures/native-handoff');f.manifest.refs.profile[0].sha256=digest(JSON.stringify(f.manifest.profile));f.manifest.refs.profile[0].bytes=Buffer.byteLength(JSON.stringify(f.manifest.profile));f.manifest.subject.profileSha256=f.manifest.refs.profile[0].sha256;expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
++test('unbuilt current image remains distinct from runtime export',async()=>{const f=await fixture();Object.assign(f.manifest.subject,{image:null});Object.assign(f.inventory.subject,{image:null});expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
++test('checker commit may differ while subject receipt cannot',async()=>{const f=await fixture();f.manifest.checker.sourceCommit='9'.repeat(40);expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(true);f.manifest.subject.sourceCommit='8'.repeat(40);expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
++test('export copies allowed refs only and CLI verifies the result without a host',async()=>{const f=await fixture(),out=f.root+'-out';dirs.push(out);await writeFile(join(f.root,'private-key'),'must not copy');expect(await exportNativeHandoff(f.root,out)).toMatchObject({prepared:true,nativeReady:false});expect(await readFile(join(out,'inputs/model.json'),'utf8')).toBe('model');await expect(readFile(join(out,'private-key'))).rejects.toThrow();const result=JSON.parse(execFileSync(process.execPath,['scripts/native-handoff.mjs','verify','--input',out],{encoding:'utf8',timeout:15000}));expect(result).toMatchObject({prepared:true,nativeReady:false,inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false});expect(result.checker.toolSha256).toMatch(/^[a-f0-9]{64}$/);});
++test('local inventory collection never infers origin from process.platform',async()=>{const inventory=await collectNativeInventory();expect(inventory.provenance).toMatchObject({origin:'unknown',emulation:'unknown',hostOs:'unknown'});expect(inventory).toMatchObject({schemaVersion:1});});
++test('legacy profile validation stays strict while an explicit locked handoff profile is checked',async()=>{const f=await fixture();expect(validNativeProfileReport(f.inventory,f.manifest.profile.id)).toBe(false);expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile:f.manifest.profile,subject:f.manifest.subject})).toBe(true);f.inventory.modelId='xarm6';expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile:f.manifest.profile,subject:f.manifest.subject})).toBe(false);});
++test.each([null,{}, {requiredPackages:[null]}, {forbiddenPackages:[null]}, {clockDomains:[null]}])('malformed explicit profile expectations are refused without throwing (%j)',async patch=>{const f=await fixture();const profile=patch===null?null:{...f.manifest.profile,...patch};expect(()=>validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).not.toThrow();if(patch!==null&&Object.keys(patch).length===0)expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).toBe(true);else expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).toBe(false);});
++test('Mac-hosted Linux and emulated amd64 cannot substitute for native amd64',async()=>{const f=await fixture();f.inventory.provenance.hostOs='darwin';f.inventory.provenance.virtualization='container';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);f.inventory.provenance.hostOs='linux';f.inventory.provenance.hostArchitecture='arm64';f.inventory.provenance.emulation='qemu';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);});
++test('native_apt uses matching exact package/source locks without inventing an OCI image',async()=>{const f=await fixture('native_apt');expect(f.manifest.subject.image).toBeNull();expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:true,issues:[]});});
++test('native_apt unresolved repository digest is prepared but unready',async()=>{const f=await fixture('native_apt');Object.assign(f.manifest.profile.installation.sources![0],{sha256:null});const bytes=JSON.stringify(f.manifest.profile);const {digest}=await import('../fixtures/native-handoff');Object.assign(f.manifest.refs.profile[0],{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});f.manifest.subject.profileSha256=digest(bytes);await writeFile(join(f.root,'profile.json'),bytes);expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
++test('native_apt actual repository bytes must match its locked provenance',async()=>{const f=await fixture('native_apt');await writeFile(join(f.root,'apt-release.txt'),'different repository');const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.prepared).toBe(true);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('HOST_PROVENANCE_ARTIFACT_INVALID');});
++test('image-bound subject cannot borrow native_apt profile or relabel away its missing image',async()=>{const f=await fixture(),native=await fixture('native_apt');Object.assign(f.manifest.subject,{image:null});Object.assign(f.manifest.profile,{installation:native.manifest.profile.installation});const bytes=JSON.stringify(f.manifest.profile),{digest}=await import('../fixtures/native-handoff');Object.assign(f.manifest.refs.profile[0],{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});f.manifest.subject.profileSha256=digest(bytes);await writeFile(join(f.root,'profile.json'),bytes);const r=await validateNativeHandoff(f.root,f.manifest,native.inventory);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('INSTALLATION_PROFILE_MISMATCH');});

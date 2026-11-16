@@ -1,0 +1,8 @@
+{
+  "exitCode": 1,
+  "phase": "Python compile before any audit execution",
+  "reason": "SyntaxError in final metadata ledger string concatenation; missing plus",
+  "toolChunk": "113077",
+  "productOrInputChange": false,
+  "correction": "Use f-string for ledger append; audit checks unchanged"
+}

@@ -1,0 +1,13 @@
+{
+  "valid": false,
+  "accepted": false,
+  "issues": [
+    "R3_SUBJECT_BINDING",
+    "R3_DERIVED_MISMATCH:cases",
+    "R3_DERIVED_MISMATCH:gates",
+    "R3_DERIVED_MISMATCH:levels",
+    "R3_DERIVED_MISMATCH:issues",
+    "R3_SCOPE_INCOMPLETE"
+  ],
+  "note": "Supplied artifact consistency only; sidecar authorship/signature and host provenance require independent review."
+}

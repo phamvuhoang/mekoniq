@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-11-15T23:52:58.769608+00:00",
+  "pid": 64932,
+  "execSession": 67912,
+  "firstPostExpiryPoll": {
+    "observedAt": "2026-11-15T23:51:41Z",
+    "result": "still running; no output; session retained"
+  },
+  "lastObservedLive": {
+    "at": "2026-11-15T23:52:04.722410+00:00",
+    "ps": "64932 62911 Mon Nov 16 06:21:26 2026     30:38 caffeinate -dims -t 1800"
+  },
+  "guardedTerminationAttempt": {
+    "result": "first ownership/liveness assertion failed before the os.kill call; exact ps output for that attempt was not emitted",
+    "commandExitCode": 1,
+    "signalsSent": 0
+  },
+  "sessionCompletion": {
+    "exitCode": 0,
+    "outputBytes": 0,
+    "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scope": "Actual root write_stdin session completion after the failed guard; exact process exit time/cause unobserved"
+  },
+  "afterPs": {
+    "exitCode": 1,
+    "stdout": ""
+  },
+  "otherProcessesTouched": false,
+  "settingsChanged": false,
+  "scope": "Root passive keep-awake assertion only; no agent-owned producer or service stopped."
+}

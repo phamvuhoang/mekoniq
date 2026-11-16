@@ -1,0 +1,1057 @@
+# Review package: d271a6c2f776d56e47ca98d1554ff1f13b594579..b631928b6707ce9c6fd39db7bd5ced2100e353c7
+
+## Commits
+b631928 feat: record and verify payload physics traces
+
+## Files changed
+ docs/research/2026-11-physics-evidence-v1.md       |  58 ++++++++++++
+ .../lab-runtime/src/v2/navigation2d/contracts.ts   |   4 +
+ .../lab-runtime/src/v2/navigation2d/evidence.ts    |   2 +-
+ packages/lab-runtime/src/v2/navigation2d/runner.ts |  59 +++++++++---
+ packages/lab-runtime/src/v2/report.ts              |   2 +
+ .../src/v2/simulation3d/mujoco-mobile.ts           |   2 +-
+ .../src/v2/simulation3d/physics-evidence.ts        | 102 +++++++++++++++++++++
+ .../src/v2/simulation3d/physics-metrics.ts         |  48 ++++++++++
+ .../mujoco_worker/mobile_engine.py                 |  44 ++++++---
+ .../tests/test_contact_metrics.py                  |  83 +++++++++++++++++
+ tests/integration/mujoco-mobile-lifecycle.test.ts  |  37 +++++++-
+ tests/integration/mujoco-mobile-worker.test.ts     |   2 +-
+ tests/integration/physics-evidence.test.ts         |  50 ++++++++++
+ tests/support/physics.ts                           |   7 ++
+ tests/unit/physics-metrics.test.ts                 |  44 +++++++++
+ 15 files changed, 512 insertions(+), 32 deletions(-)
+
+## Diff
+diff --git a/docs/research/2026-11-physics-evidence-v1.md b/docs/research/2026-11-physics-evidence-v1.md
+new file mode 100644
+index 0000000..4622d88
+--- /dev/null
++++ b/docs/research/2026-11-physics-evidence-v1.md
+@@ -0,0 +1,58 @@
++# Physics evidence v1: B03 recording and metric convention
++
++The optional `RunReport.physicsEvidence` block carries the v1 manifest, SHA-256 of
++its serialized inline manifest, independently verified completeness/issues, and
++metrics recomputed from the published chunks. Chunk paths are relative to the
++run's `physics/` directory. It is outside `canonicalOutcome`; old reports have no
++new default metrics. Lab admits the optional shape; mobile UI/archive activation
++remains B04.
++
++`identity.loadProfileDigest` and `identity.physicsProfileDigest` are the exact
++file-byte SHA-256 values in the admitted scene engine profile refs. The canonical
++profile document digest and numericalInputsDigest remain separate validations.
++`metricsPolicyDigest` is the byte SHA-256 of the separately admitted mobile
++observation/stop policy. The scene digest additionally binds the navigation stop
++velocity thresholds/hold count and the actual model drive-frame transform.
++
++Each acknowledged mobile observation is structurally checked against admitted
++robot, prop, support and geometry IDs, 20 ms clock / ten 2 ms substeps, unit
++quaternions and consistent orientation fields. It is appended to a fsynced WAL
++before the logical tick commits. Immutable gzip chunks are sealed at bounded
++intervals, then the manifest is atomically published. A WAL tail/write intent is
++not published evidence. An unacknowledged, malformed or unpersistable advanced
++tick is an explicit gap and terminal unknown, never retried or respawned. The
++stateful experimental stop monitor runs once after validation and durable append,
++before source outcome observations. Startup uncertainty remains latched.
++
++The physics and navigation quotas are each at most 100 MiB, including writer
++metadata and orphan accounting, so configuring either above its cap is refused
++on this provider. Physics caps include 30,000 ticks, 2,000 chunks, 256 KiB lines,
++16 MiB compressed / 64 MiB inflated chunks and 400 MiB total inflation. The reader
++checks sizes before reading, confines regular files, verifies hashes before
++bounded inflation, and checks every record and contiguous coverage. A report's
++`complete:true` is a claim until that verification succeeds.
++
++MuJoCo primes one real 20 ms interval before logical tick zero. Its raw tick-zero
++contacts are retained unchanged. Aggregate contact peak/impulse use the logical
++interval **(0, lastTick]**, excluding that priming interval. A tick-zero-only
++report has unavailable interval metrics. Maximum tilt and load displacement
++include the initial pose/reference; threshold duration counts only positive-tick
++20 ms intervals. Tilt comes from the actual chassis quaternion. Wheel residuals
++compare integrated wheel odometry to actual base pose transformed through the
++admitted `driveFrameInBase`, with wrapped yaw difference.
++
++Load displacement is maximum XY displacement from the first sample in its fixed
++support coordinates. The support ID remains a coordinate reference after loss
++of contact, never a custody/receipt claim. Missing/changed prop or support and
++missing relative poses are unavailable. Future cell receipt-gated windows are
++additive work, not implemented here. Stop distance is maximum actual drive-frame
++path length over completed zero-target windows beginning while moving, ending
++at the registered velocity threshold hold. Missing verified navigation coverage,
++withdrawn stop targets or unfinished stops are unavailable, never zero. No
++metric may report nonfinite overflow as available.
++
++Native tests check a resting box's contact-force sign/map frame, all ten actual
++mobile substeps' integrated impulses, and a transient contact gone by the final
++substep. These establish implementation behavior, not calibrated robot safety.
++A malicious producer can delete a contact and rewrite the whole hash chain;
++without an external anchor, artifact hashes cannot detect that forgery.
+diff --git a/packages/lab-runtime/src/v2/navigation2d/contracts.ts b/packages/lab-runtime/src/v2/navigation2d/contracts.ts
+index a95e654..ccf0f9c 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/contracts.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/contracts.ts
+@@ -163,10 +163,14 @@ export function validateNavigationDocument(input:unknown):NavigationCheck{
+  return issues.length?{ok:false,issues}:{ok:true,value:doc};
+ }
+ 
+ /** Server-owned navigation policy fixture `irsim-2d-default-v1` (values from the contracts spec); not a measured hardware limit. */
+ export function defaultNavigationPolicy():NavigationPolicyV1{
+  const parameters:NavigationPolicyV1['parameters']={safetyMarginM:0.02,controller:'grid-diff-v1',gridResolutionM:0.05,headingCount:8,distanceCostPerM:1,rotationCostPerRad:0.2,maxPlannerStates:2000000,maxLinearMps:0.5,maxAngularRadps:1,maxAccelerationMps2:0.5,maxAngularAccelerationRadps2:1.5,
+   goalPositionToleranceM:0.05,goalYawToleranceRad:0.05,stoppedLinearMps:0.01,stoppedAngularRadps:0.02,arrivalHoldTicks:5,replanEveryTicks:50,scanFreshnessTicks:5,noProgressTicks:250,goalDeadlineTicks:6000};
+  const draft={schemaVersion:1 as const,id:'irsim-2d-default-v1',revision:1,source:{kind:'assumed' as const,documentId:'irsim-2d-default-v1',revision:'1',locator:'specs/2026-11-08-linkforge-irsim/contracts.md#navigation-policy',contentSha256:hashJson(parameters)},parameters};
+  return {...draft,hash:documentDigest(draft,'hash')};
+ }
++
++/** Schema shape only; admitted engine semantics are enforced by the physics recorder/reader. */
++export const validatePhysicsTickShape=ajv.getSchema('physics-evidence-v1.schema.json#/definitions/PhysicsTickRecord')!;
++export const validatePhysicsEvidenceShape=ajv.getSchema('physics-evidence-v1.schema.json')!;
+diff --git a/packages/lab-runtime/src/v2/navigation2d/evidence.ts b/packages/lab-runtime/src/v2/navigation2d/evidence.ts
+index b68aa83..67aa18a 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/evidence.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/evidence.ts
+@@ -62,21 +62,21 @@ function listingProblem(l:{chunks?:unknown;gaps?:unknown;terminal?:unknown;lastT
+  for(const s of STREAMS){const list=(c as Record<string,unknown>)[s];if(list===undefined)continue;if(!Array.isArray(list)||list.length>READ_LIMITS.chunksPerStream||!list.every(isRef))return `${s}: at most ${READ_LIMITS.chunksPerStream} well-formed chunk refs`;}
+  if(l.gaps!==undefined&&(!Array.isArray(l.gaps)||l.gaps.length>READ_LIMITS.gaps||!l.gaps.every(isGap)))return 'gaps must be well-formed tick ranges';
+  if(l.terminal!==undefined&&l.terminal!==null&&!text(l.terminal,500))return 'terminal must be a reason or null';
+  if(l.lastTick!==undefined&&l.lastTick!==null&&!nat(l.lastTick))return 'lastTick must be a tick or null';
+  if(l.runTick!==undefined&&l.runTick!==null&&!nat(l.runTick))return 'runTick must be a tick or null';
+  return null;
+ }
+ const empty=():Chunks=>({trajectory:[],sensors:[],control:[],collisions:[]});
+ async function syncDir(dir:string){const h=await open(dir,'r');try{await h.sync();}finally{await h.close();}}
+ /** tmp file, fsync, rename, fsync the directory: after this returns the bytes survive a crash under `name`. */
+-async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
++export async function writeDurable(dir:string,name:string,bytes:Uint8Array|string){
+  const tmp=join(dir,`.${name}.tmp`),h=await open(tmp,'w',0o600);
+  try{await h.writeFile(bytes);await h.sync();}finally{await h.close();}
+  await rename(tmp,join(dir,name));await syncDir(dir);
+ }
+ 
+ export interface RecorderOptions{directory:string;scene:NavigationSceneV1;runId:string;maxBytes?:number;maxTicks?:number;/** ticks per chunk before an automatic flush */chunkTicks?:number;
+  /** Called with every terminal reason, and awaited, BEFORE its manifest write is attempted: the owner makes it durable elsewhere (the run checkpoint), so a manifest
+   * write that fails or never lands cannot leave a crash image that reopens as a recording that was not ended. Its failure does not stop the manifest attempt. */
+  onTerminal?:(reason:string)=>Promise<void>;
+  /** The terminal the owner already holds durably (the run checkpoint), preferred over the generic unknown end when an interrupted write is found on reopen. */
+diff --git a/packages/lab-runtime/src/v2/navigation2d/runner.ts b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+index 224d255..88e73f4 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/runner.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+@@ -1,10 +1,12 @@
++import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
++import {physicsMetrics} from '../simulation3d/physics-metrics';
+ // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
+ // scripted inputs -> source decisions/dispatch -> controller velocities -> one worker step -> verified ACK -> commit the logical clock -> observations -> journal.
+ // Business truth lives only in the run's source journal (production registry via SourceSession); the Python worker owns plant state only.
+ // A lost or unverifiable step leaves its legs unknown: nothing is resent, and no second process ever continues this run.
+ import {mkdir,chmod,readdir,readFile,writeFile} from 'node:fs/promises';
+ import {dirname,join} from 'node:path';
+ import {createHash,randomUUID} from 'node:crypto';
+ import {hashPayload,type CommandResult,type DomainEvent,type JsonObject,type RobotCommand} from '../../../../contracts/src/index';
+ import {dispatchRobotEffects,robotEventCommand} from '../../../../robot-adapters/src/dispatch';
+ import type {RobotEvent} from '../../../../robot-adapters/src/contract';
+@@ -121,20 +123,22 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
+  await mkdir(dir,{recursive:true,mode:0o700});await chmod(dir,0o700);
+  let cp=await readCheckpoint<Checkpoint>(dir);
+  const fresh=!cp;
+  if(fresh&&(await readdir(dir)).length)throw new Error('RECOVERY_CHECKPOINT_MISSING');
+  if(cp&&cp.provider!==amr.id)throw new Error('RUN_IDENTITY_MISMATCH');
+  if(cp?.evidenceTerminal!=null&&(typeof cp.evidenceTerminal!=='string'||!cp.evidenceTerminal||cp.evidenceTerminal.length>500))throw new Error('RECOVERY_CHECKPOINT_INVALID');
+  // a new run copies its locked scene out of the bundle; a reopened one reads (and re-verifies) only its own copy
+  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
+  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
+  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
++ const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
++ if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
+  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
+  const fixture=resolveScenarioFixture(scenario.id,scene,input.seed),fixtureBytes=fixture.actors.length?Buffer.from(JSON.stringify(fixtureFile(fixture))):null;
+  const mapId=scene.world.id,mapRevision=scene.sceneDigest,lock=providers.runtime.lockDigest;
+  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
+  const configuration={revision:1,hash:hashJson({roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
+  const backends=[{...amr}];
+  const manifest:Omit<RunReport['manifest'],'runId'>={engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
+   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
+   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
+@@ -156,21 +160,21 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
+  const bindings=Object.fromEntries(scene.robots[0]!.targetBindings.map(t=>[t.pointId,{waypointId:t.pointId,mapId,mapRevision,frame:'map' as const,x:t.x,y:t.y,yaw:t.yaw}]));
+  const sceneBytes=files[0]![1],lockFile=join(providers.runtime.workerRoot,'requirements.lock'),lockText=await readFile(lockFile,'utf8').catch(()=>'');
+  // the NumPy pin is read from the lock only when that file is the lock the worker was admitted with
+  const numpy=sha256(lockText)===lock?/^numpy==(\S+)/m.exec(lockText)?.[1]??'unpinned':'unverified';
+  const identity:Omit<EvidenceIdentity,'engine'>={runId:cp.runId,sourceCommit:input.sourceCommit,sceneRef:{path:`bundle/${SCENE}`,sha256:sha256(sceneBytes),bytes:sceneBytes.length},lockDigest:lock,numpyVersion:numpy,runSeed:input.seed,
+   actorRng:{algorithm:`${PRNG.algorithm} ${PRNG.seeding} v${PRNG.version}`,seed:input.seed},controller:{...(plant.identity.controller?.identity??NAVIGATION_CONTROLLER)},businessEpochMs:EPOCH};
+  // the recording limit is the run's tick budget too: the scenario's maxTicks, never above the 30,000-tick quota
+  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
+  const owner:{run?:FixedStepRun}={},opened=cp;
+  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
+- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor);owner.run=run;
++ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics);owner.run=run;
+  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
+  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
+  try{
+   if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
+   // ticks the previous process committed but never made durable are a recorded hole, never filled in
+   const durable=recorder.lastTick??-1;
+   if(!fresh&&cp.started&&cp.tick>durable&&!recorder.committed().gaps.some(g=>g.fromTick===durable+1&&g.toTick===cp.tick))await recorder.gap({fromTick:durable+1,toTick:cp.tick,reason:'RUNTIME_RESTART'});
+   // an action was in flight on a live plant: a step may have been applied and never acknowledged; that tick is unknown, never assumed clean
+   const unknown=Math.max(cp.tick,durable)+1;
+   if(!fresh&&cp.inFlight&&cp.plant.status==='live'&&!recorder.committed().gaps.some(g=>g.fromTick===unknown))await recorder.gap({fromTick:unknown,toTick:unknown,reason:'STEP_ACK_LOST'});
+@@ -199,23 +203,24 @@ class FixedStepRun implements ScenarioRun {
+  private adapters=new Map<string,IRSimNavigationAdapter>();
+  private observations:RobotEvent[]=[];
+  private holds:Record<string,string|null>={};
+  private worker?:PlantWorker;
+  private queue:Promise<unknown>=Promise.resolve();
+  private closed=false;
+  /** step actions queued or running: a pause/cancel arriving meanwhile is taken at that batch's next tick boundary (or after its refusal), never behind it */
+  private steps=0;
+  private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
+  private engineSeed:number;
++ private physicsRec?:PhysicsRecorder;
+  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
+  private anchor:PaceAnchor|null=null;
+- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor){
++ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>){
+   this.clock=createClock(EPOCH,cp.tick,cp.paused);
+   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
+   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
+   this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,plant.identity.controller?.options);
+   const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
+   for(const r of cp.roles.robots){
+    const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!,...plant.identity.adapterIdentity?{identity:plant.identity.adapterIdentity}:{}});
+    a.observe(e=>this.observations.push(e));this.adapters.set(r.id,a);
+   }
+  }
+@@ -228,21 +233,21 @@ class FixedStepRun implements ScenarioRun {
+  private moving(id:string){const r=this.robotObs(id),p=this.scene.policy.parameters;return !!r&&(Math.abs(r.bodyVelocity[0]!)>p.stoppedLinearMps||Math.abs(r.bodyVelocity[1]!)>p.stoppedAngularRadps);}
+  /** The last snapshot is the plant's verified state: live, or deliberately stopped with the finished run. */
+  private verified(){return this.cp.plant.status==='live'||this.cp.plant.status==='stopped';}
+  /** The Digital Twin shows the robot base origin: T_map_base = T_map_drive x inverse(T_base_drive). The controller and evidence stay in the drive frame. */
+  private basePose(id:string,d:readonly number[]):[number,number,number]{
+   const b=baseInMap({position:[d[0]!,d[1]!,0],quaternionXyzw:quaternionFromYaw(d[2]!)},framePose(this.scene.robots.find(x=>x.robotId===id)!.model.driveFrameInBase));
+   return [b.position[0]!,b.position[1]!,yawOf(b.quaternionXyzw)];
+  }
+  private releaseSlot(){slotsOf(this.plant.identity.amr.id).delete(this.cp.runId);}
+  /** A finished run needs no plant: the worker stops and its slot is free; the persisted last snapshot stays the run's state. */
+- private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
++ private async stopPlant(){const c=this.cp,w=this.worker;this.worker=undefined;c.plant.status='stopped';c.plant.reason='RUN_FINISHED';await w?.close('RUN_FINISHED').catch(()=>{});this.releaseSlot();await this.rec.flush();await this.flushPhysics();}
+  record(){
+   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
+   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
+   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
+    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
+    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:this.plant.identity.telemetryOrigin??'controller_sim',
+     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
+  }
+  // ---- plant (one worker process per run, never a second one) ----
+  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
+@@ -254,49 +259,60 @@ class FixedStepRun implements ScenarioRun {
+   const c=this.cp,o=this.irsim;let created=false;
+   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
+   try{
+    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
+    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
+    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
+    // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
+    if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
+    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
+    created=true;
++   if(this.physics){
++    this.physicsRec=await openPhysicsRecorder({directory:join(this.dir,'physics'),identity:{runId:c.runId,bootId:snap.bootId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest},admission:this.physics.admission,assumptions:this.physics.assumptions,metricsPolicyDigest:this.physics.metricsPolicyDigest,...o.evidence,maxTicks:Math.min(o.evidence?.maxTicks??EVIDENCE_LIMITS.maxTicks,this.scenario.maxTicks)});
++    try{this.validatePhysics(snap,0);await this.physicsRec.append((snap as import('./contracts').Sim3DSnapshotV1).physics!);}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
++   }
+    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
+    await this.ask('start',{});
+-   await this.rec.append(snap,null);
++   await this.rec.append(snap,null);if(this.physics&&this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');
+    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
+    for(const a of this.adapters.values())a.sink.observe(snap);
+   }catch(e){
+    if(this.plant.startupPolicy&&c.plant.startupAttempt){
+     // A known refusal/not-sent create is before mutation. Once create succeeds, even a not-sent start cannot recreate this run's world.
+     if(!created&&e instanceof WorkerLostError&&e.outcome==='not_sent')delete c.plant.startupAttempt;
+     else this.startupLost();
+    }
+-   await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
++   await this.physicsRec?.finish('STARTUP_UNKNOWN').catch(()=>{});await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
+   }
+  }
++ private validatePhysics(snap:IRSimSnapshotV1,tick:number){
++  if(!this.physics)return;const s=snap as import('./contracts').Sim3DSnapshotV1;
++  if(s.tick!==tick||s.runId!==this.cp.runId||s.sceneDigest!==this.scene.sceneDigest||s.simTimeNs!==String(tick*20_000_000)||(tick>0&&s.bootId!==this.cp.plant.snapshot?.bootId))throw new Error('PHYSICS_OBSERVATION_INVALID');
++  validatePhysicsRecord(s.physics,this.physics.admission,tick);
++  const base=s.physics!.base[0]!,pose=s.robots[0]?.pose3d;
++  if(!pose||Math.abs(pose.z-base.poseMap.positionM[2]!)>1e-6||Math.abs(pose.roll-base.rollRad)>1e-6||Math.abs(pose.pitch-base.pitchRad)>1e-6)throw new Error('PHYSICS_OBSERVATION_INVALID');
++ }
+  private startupLost(){const c=this.cp;c.plant.status='lost';c.plant.reason='STARTUP_UNKNOWN';c.attention.push({reason:'STARTUP_UNKNOWN',tick:c.tick});this.suspend();}
+  private async plantLost(code:string,reason='WORKER_LOST'){
+   const c=this.cp;if(c.plant.status==='lost')return;
+   c.plant.status='lost';c.plant.reason=code;
+   const w=this.worker;this.worker=undefined;await w?.close(code).catch(()=>{});this.releaseSlot();
+   for(const a of this.adapters.values())a.sink.lost(reason);
+   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
+   // a zone held when the plant was lost stays held (the domain keeps it; nothing here frees it) and is named, never left implicit
+   for(const [zoneId,robotId] of Object.entries(this.traffic?.owners()??{}))if(robotId)c.attention.push({reason:'ZONE_HELD_UNKNOWN',robotId,subjectId:zoneId,tick:c.tick});
+-  await this.rec.flush();await this.drain();
++  await this.physicsRec?.finish(code).catch(()=>{});await this.rec.flush();await this.drain();
+  }
+  /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
+  private async stepLost(code:string){const t=this.cp.tick+1;await this.recordGap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'});await this.plantLost(code);}
+  /** A gap the run knows of goes into the checkpoint as well: if the recorder cannot write it now (it retries on every flush), a reopen records it from there. */
+- private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});}
++ private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});await this.physicsRec?.gap(g.fromTick,g.toTick,g.reason).catch(()=>{});}
+  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
+  private evidenceEnded(){this.cp.evidenceTerminal=this.rec.terminal?.slice(0,500)??null;return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
+  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
+  async recover(){
+   const c=this.cp;
+   if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)this.startupLost();
+   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
+   c.pendingOps=[];
+   if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RUNTIME_RESTART';}
+   for(const a of this.adapters.values())a.state.plantLost=c.plant.status==='lost';
+@@ -421,24 +437,28 @@ class FixedStepRun implements ScenarioRun {
+   try{
+    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
+    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:actorUpdatesAt(this.fixture,c.tick+1)};
+    const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
+    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
+    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
+    next=r.result as IRSimSnapshotV1;
+    if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
+   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
+   const prev=c.plant.snapshot!;
++  if(this.physics){
++   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append((next as import('./contracts').Sim3DSnapshotV1).physics!);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
++   catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
++  }
+   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
+   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
+   // a refused append is never skipped silently: it ends the recording (and so the plant) with the reason
+-  await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
++  if(!this.physics)await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
+   // Mobile faults retain the acknowledged tick as evidence but cannot confirm a source outcome or publish valid telemetry.
+   const observationFault=this.stopMonitor?.(next);
+   if(observationFault){c.attention.push({reason:observationFault.code,robotId:observationFault.robotId,tick:c.tick});await this.plantLost(observationFault.code,observationFault.code);return false;}
+   // live view distance at the robot base origin (the report's metric is recomputed from the durable evidence)
+   for(const r of next.robots){const p=prev.robots.find(x=>x.robotId===r.robotId);if(!p||c.distanceM[r.robotId]===undefined)continue;const a=this.basePose(r.robotId,r.poseDriveMap),b=this.basePose(r.robotId,p.poseDriveMap);c.distanceM[r.robotId]+=Math.hypot(a[0]-b[0],a[1]-b[1]);}
+   c.maxConcurrentMovers=Math.max(c.maxConcurrentMovers,c.roles.robots.filter(r=>this.moving(r.id)).length);
+   for(const a of this.adapters.values())a.sink.observe(next);
+   await this.drain();
+   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
+   if(this.rec.terminal){await this.evidenceEnded();return false;}
+@@ -459,21 +479,21 @@ class FixedStepRun implements ScenarioRun {
+   return null;
+  }
+  private suspend(){const c=this.cp;c.suspended=true;for(const x of Object.values(c.confirmations))if(x.type!=='standby')x.due=null;}
+  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
+  holdForReclaim(){
+   const p=this.queue.then(async()=>{
+    if(this.closed)throw new Error('RUN_CLOSED');const c=this.cp;
+    if(!c.reclaimed){
+     this.suspend();c.paused=true;this.clock.pause();
+     for(const a of this.adapters.values())await a.requestStop('LOCAL_RECLAIM');await this.drain();
+-    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});this.releaseSlot();await this.rec.flush();}
++    if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RECLAIMED';const w=this.worker;this.worker=undefined;await w?.close('RECLAIMED').catch(()=>{});this.releaseSlot();await this.rec.flush();await this.flushPhysics();}
+     if(c.started&&!await this.missionsDone()){
+      let targets=0;
+      for(const {id:robotId} of c.roles.robots){
+       const missionId=(await this.source.read('robot',robotId)).state.missionId;if(typeof missionId!=='string')continue;
+       const mission=await this.source.read('mission',missionId);if(FINAL.includes(String(mission.state.status)))continue;
+       c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',robotId,subjectId:missionId,tick:c.tick,...typeof mission.state.commandId==='string'?{commandId:mission.state.commandId}:{}});targets++;
+      }
+      if(!targets)c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',tick:c.tick});
+     }
+     c.reclaimed=true;c.revision++;this.record();await this.persist();
+@@ -597,31 +617,48 @@ class FixedStepRun implements ScenarioRun {
+   const c=this.cp;
+   return c.roles.robots.map(({id})=>{
+    const r=this.robotObs(id),start=this.scene.robots.find(x=>x.robotId===id)!.initialPoseMap,[x,y,yawRad]=this.basePose(id,r?.poseDriveMap??start),g=this.adapters.get(id)!.goal();
+    return {id,kind:'amr' as const,pose:{x,y,yawRad},quality:this.verified()?'valid' as const:'stale' as const,moving:c.plant.status==='live'&&this.moving(id),hold:this.holds[id]??null,goal:g?{commandId:g.commandId,state:g.state}:null,path:[],distanceM:c.distanceM[id]??0};
+   });
+  }
+  /** One critical section: no action interleaves while the report reads the checkpoint, the journal, the evidence listing and the clock (one moment, never two). */
+  report():Promise<RunReport>{const p=this.queue.then(()=>this.buildReport());this.queue=p.catch(()=>{});return p;}
+  private async buildReport():Promise<RunReport>{
+   if(this.closed)throw new Error('RUN_CLOSED');
++  await this.flushPhysics();
+   const c=this.cp,v=await this.view();
+   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
+   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
++  const physicsEvidence=await this.physicsReport(read);
+   const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
+   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
+   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
+   return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
+    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
+    metrics:{maxConcurrentMovers:c.maxConcurrentMovers,distanceM:m.distanceM??{},collision:available?{available:true,contacts:m.collisionEpisodes,minSeparationM:m.minSeparationM}:{available:false,reason:why,contacts:null,minSeparationM:null},
+     navigation:{horizon:m.horizon,coverage:m.coverage,reasons:m.coverageReasons,distanceM:m.distanceM,driveDistanceM:m.driveDistanceM,collisionEpisodes:m.collisionEpisodes,safetyEnvelopeEpisodes:m.safetyEnvelopeEpisodes,episodes:m.episodes,minClearanceM:m.minClearanceM,minSeparationM:m.minSeparationM,sensorPublications:m.sensorPublications}},
+    rejectedObservations:structuredClone(c.rejectedObservations),reconciliations:structuredClone(c.reconciliations),recoveredOps:structuredClone(c.recoveredOps),confirmations:structuredClone(c.confirmationLog),faults:structuredClone(c.faults),
+    coverage:{businessSimulation:true,kinematicModel:true,dynamics:this.plant.identity.coverage.dynamics,nativeExecution:false,physicalStop:false,sensorEvidence:m.sensorPublications.complete,eventStream:true},
+    limitations:[...this.scenario.rig?[`CONTENTION RIG (${this.scenario.id}): ${this.scenario.rig.note}`]:[],...this.plant.identity.limitations,
+     'perception: known_map_plus_simulated_lidar; the controller plans on the compiled static map and uses simulated LiDAR for dynamic obstacles.',
+     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
+     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
+     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
+-   telemetry:this.telemetry.report(),navigation2d};
++   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{}};
++ }
++ private async flushPhysics(){
++  if(!this.physicsRec)return;
++  try{await this.physicsRec.flush();}catch{const first=this.physicsRec.manifest().coverage.lastTick+1;await this.recordGap({fromTick:Math.min(first,this.cp.tick),toTick:this.cp.tick,reason:'PHYSICS_EVIDENCE_FAILED'});await this.plantLost('PHYSICS_EVIDENCE_FAILED','PHYSICS_EVIDENCE_FAILED');await this.persist();}
++ }
++ private async physicsReport(navigation:import('./evidence').EvidenceRead):Promise<RunReport['physicsEvidence']>{
++  if(!this.physics)return undefined;
++  const manifest=this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>this.cp.started||this.cp.plant.startupAttempt?{schemaVersion:1 as const,documentType:'physics-evidence' as const,identity:{runId:this.cp.runId,bootId:this.cp.plant.snapshot?.bootId??'unobserved',sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics!.loadProfileDigest,physicsProfileDigest:this.physics!.physicsProfileDigest},streams:[],coverage:{firstTick:0,lastTick:this.cp.tick,complete:false},gaps:[{firstTick:0,lastTick:this.cp.tick,reason:'PHYSICS_MANIFEST_INVALID'}],terminalReason:'PHYSICS_MANIFEST_INVALID',metricsPolicyDigest:this.physics!.metricsPolicyDigest,assumptions:this.physics!.assumptions}:null);
++  if(!manifest)return undefined;
++  // Checkpoint gaps are authoritative even when a failed disk could not publish the sidecar.
++  for(const g of [...this.cp.evidenceGaps??[],...this.rec.committed().gaps])if(!manifest.gaps.some(x=>x.firstTick===g.fromTick&&x.lastTick===g.toTick))manifest.gaps.push({firstTick:g.fromTick,lastTick:g.toTick,reason:g.reason.slice(0,200)});
++  if(this.cp.plant.status==='lost')manifest.terminalReason??=this.cp.plant.reason??'PLANT_LOST';
++  if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
++  const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
++  return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
+  }
+- async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
++ async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
+ }
+diff --git a/packages/lab-runtime/src/v2/report.ts b/packages/lab-runtime/src/v2/report.ts
+index 05a7ad6..3764b48 100644
+--- a/packages/lab-runtime/src/v2/report.ts
++++ b/packages/lab-runtime/src/v2/report.ts
+@@ -16,20 +16,22 @@ export interface WorkloadItem {actor:string;tableId:string;quantity:number;atTic
+ export interface EntityView {id:string;kind:'amr';pose:{x:number;y:number;yawRad:number};quality:'valid'|'stale';moving:boolean;hold:string|null;goal:{commandId:string;state:string}|null;path:[number,number][];distanceM:number}
+ export interface CoffeeView {jobs:{jobId:string;status:string;recipeId:string;cupId:string;attentionReason:string|null;waitingReason?:string|null;canRestoreCup?:boolean}[];cups:{cupId:string;ownerKind:string;ownerId:string}[]}
+ export interface CupMovementView {transferId:string;from:{kind:string;id:string};to:{kind:string;id:string;slot?:number};provenance:string;observedBy:string;at:string;reason?:string;evidence?:JsonObject}
+ export interface CoffeeReport {
+  jobs:JsonObject[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:CupMovementView[];[k:string]:unknown}[];
+  cellEffects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
+  armTrace:{tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[];collision:ArmPlantState['collision']|null;stop:ArmPlantState['stop']|null};plantLog:JsonObject[];
+ }
+ export interface RunReport {
+  schemaVersion:2;
++ /** Optional independent read-back physics evidence; deliberately excluded from canonicalOutcome. */
++ physicsEvidence?:{manifest:import('../../../contracts/generated/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:import('./simulation3d/physics-metrics').PhysicsMetrics};
+  faultScheduleFires?:FaultFireRecord[];
+  manifest:{faultSchedule?:{entries:FaultScheduleEntry[];hash:string};engineering?:{bundleDigest:string;projectDigest:string};runId:string;sourceCommit:string;mode:'mock'|'simulation';access:'simulated';backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];prng:{algorithm:string;seeding:string;version:number};clock:{tickMs:number;businessEpochMs?:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+   scenario:{id:string;revision:number;hash:string;basedOn?:{id:string;revision:number}};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[];
+   hashAlgorithm:'sha256-canonical-json-v1';designHash:string;adapterHash:string;configuration:{revision:number;hash:string};recipes:{id:string;revision:number;hash:string}[];
+   models:{id:string;revision:string;hash:string;provenance:string}[];profiles:{id:string;revision:number;hash:string;provenance:string}[];calibration:{status:'not_calibrated';revision:null;hash:null;reason:string};armCollisionScene?:ArmSceneDeclaration;/** Only a run whose arm provider supplies its program (MuJoCo arm). */armProgram?:ArmProgramRecord};
+  outcome:{status:string;served:string;tick:number;simTimeNs:string};
+  attention:Attention[];workload:WorkloadItem[];entities:EntityView[];businessEvents:BusinessEvent[];effects:{id:string;type:string;status:string;attempts:number;payload:JsonObject}[];
+  metrics:{maxConcurrentMovers:number;
+   /** Plant hold transitions (cause of each wait and its end, null = moving again), from the mock model. */
+   holds?:{at:string;robotId:string;hold:string|null}[];distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+index 833da34..c814442 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+@@ -6,21 +6,21 @@ import type {PlantPort,PlantStopMonitor} from '../navigation2d/plant';
+ import type {MujocoRuntimeOptions} from './mujoco';
+ import {spawnMujocoWorker} from './worker-client';
+ export const MUJOCO_MOBILE={id:'mujoco_3d',version:'3.17.0',model:'mujoco_serve_diff_drive',dynamics:true} as const;
+ export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions):PlantPort=>({
+  startupPolicy:{preMutationCreateRefusals:['SCENE_PATH_REJECTED','SCENE_SCHEMA_INVALID','SCENE_UNSUPPORTED','SCENE_DIGEST_MISMATCH','SCENE_FILE_MISMATCH','PROFILE_ID_MISMATCH','DIGEST_MISMATCH','MODEL_DIGEST_MISMATCH','WORLD_CAPACITY_EXCEEDED','PHYSICS_PROFILE_INVALID']},
+  prepareStopMonitor:prepareMobileStopMonitor,
+  identity:{amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
+   limitations:['MuJoCo 3.17.0 rigid-body differential drive with fixed sliding sphere casters: not_calibrated.',
+    'One zero-target priming tick precedes tick 0: engine time is (tick+1)*20 ms; source time is tick*20 ms.',
+    'The seed is identity only: no stochastic engine, noisy sensors or actors. Fixed-caster drag and wheel-odometry slip are modeled limitations.',
+-   'Instantaneous payload support is not proof of custody or delivery; durable physics coverage is not yet recorded.'],
++   'Declared support coordinates and instantaneous payload contact are not proof of custody or delivery; physics metrics require verified durable coverage.'],
+   evidence:{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'mujoco_3d rigid-body dynamics, not_calibrated; seed is identity only (no stochastic engine or sensor noise)',
+    engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
+  protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker(o),
+ });
+ 
+ /** Experiment cutoffs only, not physical safety limits. Separate from the B02a numerical measurement lock. */
+ export const MOBILE_CONTROLLER_POLICY=Object.freeze({schemaVersion:1,id:'serve-mobile-controller-v1',revision:1,calibration:'not_calibrated',controller:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},ramp:'previous-sent-command-v1',
+  commandState:'Per robot, initialized to zero on a new run, updated from every sent output including explicit zeros; preserved across pause/resume, cancel and goal changes; lost or refused steps terminate, never resume.',
+  observations:'Measured velocity remains authoritative for arrival/stopped checks, obstacle stopping distance and progress. No hardware controller equivalence is claimed.'});
+ export const MOBILE_STOP_POLICY=Object.freeze({schemaVersion:1,id:'serve-mobile-stop-v1',revision:1,calibration:'not_calibrated',maxAbsRollPitchRad:0.7853981633974483,belowRestWheelRadii:0.6,aboveRestWheelRadii:4,loadDropM:0.10,loadDropHoldTicks:5,
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+new file mode 100644
+index 0000000..67cefe1
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+@@ -0,0 +1,102 @@
++/** Independent physics stream. ACK append fsyncs a bounded WAL before the runner may commit.
++ * Only immutable, hashed published chunks are readable evidence; a WAL/crash intent is a coverage failure.
++ * Profile identities are SHA-256 of admitted file bytes, independently of each document's canonical digest. */
++import {createHash,randomBytes} from 'node:crypto';
++import {lstat,mkdir,open,readFile,readdir,realpath,unlink} from 'node:fs/promises';
++import {join,sep} from 'node:path';
++import {gzipSync,gunzipSync} from 'node:zlib';
++import {READ_LIMITS,EVIDENCE_LIMITS,writeDurable} from '../navigation2d/evidence';
++import {validatePhysicsTickShape,validatePhysicsEvidenceShape,type PhysicsEvidenceV1,type PhysicsTickRecord,type NavigationSceneV1,type LoadProfileV1,type RobotPhysicalModelV1} from '../navigation2d/contracts';
++import {validateLoadProfile} from './load-profile';
++import {rollPitch} from './physics-metrics';
++import {hashJson} from '../hash';
++const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
++const MANIFEST='manifest.json',WAL='pending.ndjson',INTENT='write.intent',NAME=/^physics-\d{6}-[a-f0-9]{8}\.ndjson\.gz$/;
++export interface PhysicsAdmission {maxAbsRollPitchRad?:number;robotId:string;props:{propId:string;supportId:string|null}[];contactIds:string[];tickMs:number;substeps:number;driveFrameInBase:{xyzM:number[];quaternionXyzw:number[]}}
++export interface PhysicsRead {complete:boolean;records:PhysicsTickRecord[];gaps:PhysicsEvidenceV1['gaps'];issues:string[]}
++export interface PhysicsRecorderOptions {directory:string;identity:PhysicsEvidenceV1['identity'];admission:PhysicsAdmission;metricsPolicyDigest:string;assumptions:PhysicsEvidenceV1['assumptions'];maxBytes?:number;maxTicks?:number;chunkTicks?:number}
++export interface PhysicsRecorder {directory:string;append(record:PhysicsTickRecord):Promise<void>;flush():Promise<void>;finish(reason:string|null):Promise<void>;gap(firstTick:number,lastTick:number,reason:string):Promise<void>;manifest():PhysicsEvidenceV1}
++/** Byte verified closure already admitted by lockScene; verify again here rather than trusting observation IDs. */
++export async function preparePhysicsAdmission(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>){
++ if(scene.engine.id!=='mujoco_3d'||scene.robots.length!==1||scene.clock.tickMs!==20||scene.engine.substeps!==10||scene.engine.timestepMs!==2||!scene.engine.stopPolicyRef)throw new Error('PHYSICS_PROFILE_UNSUPPORTED');
++ const doc=async(ref:{path:string;sha256:string})=>{const f=scene.files.find(f=>f.path===ref.path),b=await read(ref.path);if(!f||f.sha256!==ref.sha256||f.bytes!==b.length||sha(b)!==ref.sha256)throw new Error('PHYSICS_PROFILE_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString());};
++ const load=await doc(scene.engine.loadProfileRef) as LoadProfileV1;if(!validateLoadProfile(load).ok)throw new Error('PHYSICS_LOAD_INVALID');
++ const physical=await doc(load.modelRef) as RobotPhysicalModelV1,robot=scene.robots[0]!;
++ const policy=await doc(scene.engine.stopPolicyRef);
++ const admission:PhysicsAdmission={maxAbsRollPitchRad:policy.maxAbsRollPitchRad,robotId:robot.robotId,props:load.props.map(p=>({propId:p.propId,supportId:p.attachment.kind==='free'?p.attachment.supportId:null})),contactIds:['floor',...physical.links.flatMap(l=>l.collision.map((_,i)=>`${robot.robotId}/${l.id}/c${i}`)),...load.props.map(p=>`prop/${p.propId}`),...[...scene.world.obstacles,...scene.world.boundaries].map(o=>`static/${o.id}`)],tickMs:20,substeps:10,driveFrameInBase:robot.model.driveFrameInBase};
++ return {admission,assumptions:load.assumptions,metricsPolicyDigest:scene.engine.stopPolicyRef.sha256,loadProfileDigest:scene.engine.loadProfileRef.sha256,physicsProfileDigest:scene.engine.physicsProfileRef.sha256};
++}
++export function validatePhysicsRecord(input:unknown,a:PhysicsAdmission,expectedTick?:number):asserts input is PhysicsTickRecord{
++ if(!validatePhysicsTickShape(input))throw new Error('PHYSICS_OBSERVATION_INVALID');
++ const r=input as PhysicsTickRecord,fail=()=>{throw new Error('PHYSICS_OBSERVATION_INVALID');};
++ if(a.tickMs!==20||a.substeps!==10||r.tick>EVIDENCE_LIMITS.maxTicks||(expectedTick!==undefined&&r.tick!==expectedTick)||r.simTimeNs!==String(BigInt(r.tick)*BigInt(a.tickMs)*1_000_000n))fail();
++ const finite=(x:unknown):boolean=>typeof x==='number'?Number.isFinite(x):Array.isArray(x)?x.every(finite):x!==null&&typeof x==='object'?Object.values(x).every(finite):true;
++ const pose=(p:{positionM:number[];quaternionXyzw:number[]})=>Number.isFinite(Math.hypot(...p.quaternionXyzw))&&Math.abs(Math.hypot(...p.quaternionXyzw)-1)<1e-6;
++ if(!finite(r)||[r.base,r.wheels,r.odometry].some(xs=>xs.length!==1||xs[0]!.robotId!==a.robotId)||r.loads.length!==a.props.length||new Set(r.loads.map(p=>p.propId)).size!==a.props.length)fail();
++ if(r.wheels[0]!.saturatedSubsteps>a.substeps)fail();
++ for(const b of r.base){if(!pose(b.poseMap))fail();const [roll,pitch]=rollPitch(b.poseMap.quaternionXyzw);if(Math.abs(Math.atan2(Math.sin(roll-b.rollRad),Math.cos(roll-b.rollRad)))>1e-6||Math.abs(pitch-b.pitchRad)>1e-6)fail();}
++ for(const l of r.loads){const p=a.props.find(p=>p.propId===l.propId);if(!p||p.supportId!==l.supportId||!pose(l.poseMap)||(p.supportId!==null&&!l.poseInSupport)||(l.poseInSupport&&!pose(l.poseInSupport)))fail();}
++ const pairs=new Set<string>();for(const c of r.contacts){const key=JSON.stringify([c.a,c.b]);if(c.a>=c.b||!a.contactIds.includes(c.a)||!a.contactIds.includes(c.b)||pairs.has(key)||c.samples>a.substeps||c.normalImpulseNs>c.peakNormalN*c.samples*.002+1e-9)fail();pairs.add(key);}
++}
++async function sizeOf(dir:string){let bytes=0;for(const name of await readdir(dir)){const st=await lstat(join(dir,name));if(!st.isFile())throw new Error('PHYSICS_PATH_REJECTED');bytes+=st.size;}return bytes;}
++async function boundedFile(root:string,name:string,max:number){
++ const file=join(root,name),st=await lstat(file);if(!st.isFile()||st.size>max)throw new Error('PHYSICS_READ_LIMIT_OR_PATH');
++ const realRoot=await realpath(root),real=await realpath(file);if(!real.startsWith(realRoot+sep))throw new Error('PHYSICS_PATH_REJECTED');
++ const b=await readFile(file);if(b.length!==st.size||b.length>max)throw new Error('PHYSICS_READ_LIMIT');return b;
++}
++export async function readPhysicsManifest(root:string):Promise<PhysicsEvidenceV1>{
++ const m:unknown=JSON.parse((await boundedFile(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validatePhysicsEvidenceShape(m))throw new Error('PHYSICS_MANIFEST_INVALID');return m as PhysicsEvidenceV1;
++}
++export async function openPhysicsRecorder(o:PhysicsRecorderOptions):Promise<PhysicsRecorder>{
++ const maxBytes=o.maxBytes??EVIDENCE_LIMITS.maxBytes,maxTicks=o.maxTicks??EVIDENCE_LIMITS.maxTicks,chunkTicks=o.chunkTicks??250;
++ if(!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>EVIDENCE_LIMITS.maxBytes||!Number.isSafeInteger(maxTicks)||maxTicks<0||maxTicks>EVIDENCE_LIMITS.maxTicks||!Number.isSafeInteger(chunkTicks)||chunkTicks<1||chunkTicks>30000)throw new Error('PHYSICS_LIMIT_INVALID');
++ await mkdir(o.directory,{recursive:true,mode:0o700});
++ let m:PhysicsEvidenceV1={schemaVersion:1,documentType:'physics-evidence',identity:structuredClone(o.identity),streams:[{stream:'physics',chunks:[]}],coverage:{firstTick:0,lastTick:0,complete:false},gaps:[],terminalReason:null,metricsPolicyDigest:o.metricsPolicyDigest,assumptions:o.assumptions};
++ let queue:Promise<void>=Promise.resolve();
++ const serial=(fn:()=>Promise<void>)=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
++ let last=-1,lines:string[]=[],inflated=0,totalInflated=0,closed=false;
++ const save=()=>writeDurable(o.directory,MANIFEST,JSON.stringify(m));
++ if((await readdir(o.directory)).length){const old=await readPhysicsManifest(o.directory);if(!validatePhysicsEvidenceShape(old)||hashJson(old.identity)!==hashJson(o.identity))throw new Error('PHYSICS_IDENTITY_MISMATCH');m=old as PhysicsEvidenceV1;m.coverage.complete=false;m.terminalReason??='PHYSICS_RESTART';closed=true;await save();}
++ else await save();
++ const end=async(reason:string)=>{m.terminalReason??=reason.slice(0,200);m.coverage.complete=false;closed=true;await save().catch(()=>{});};
++ const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
++ const flush=async()=>{
++  if(!lines.length)return;
++  const bytes=gzipSync(lines.join('')),chunks=m.streams[0]!.chunks;
++  if(chunks.length>=READ_LIMITS.chunksPerStream||bytes.length>READ_LIMITS.chunkBytes||totalInflated+inflated>READ_LIMITS.totalInflated)throw new Error('PHYSICS_READ_LIMIT');
++  await quota(bytes.length+JSON.stringify(m).length+512);
++  await writeDurable(o.directory,INTENT,JSON.stringify({lastTick:last}));
++  const path=`physics-${String(chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
++  await writeDurable(o.directory,path,bytes);chunks.push({path,sha256:sha(bytes),bytes:bytes.length});m.coverage.lastTick=last;m.coverage.complete=!m.terminalReason&&!m.gaps.length;
++  await save();await writeDurable(o.directory,WAL,'');await unlink(join(o.directory,INTENT));totalInflated+=inflated;inflated=0;lines=[];
++ };
++ return {directory:o.directory,manifest:()=>structuredClone(m),append(record){return serial(async()=>{
++  if(closed||m.terminalReason)throw new Error('PHYSICS_RECORDER_TERMINAL');
++  const attempted=last+1;
++  try{validatePhysicsRecord(record,o.admission,last+1);if(record.tick>maxTicks)throw new Error('PHYSICS_TICK_LIMIT');const line=JSON.stringify(record)+'\n',n=Buffer.byteLength(line);if(n>READ_LIMITS.lineBytes)throw new Error('PHYSICS_READ_LIMIT');if(inflated+n>12*1024*1024)await flush();await quota(n+512);
++   const h=await open(join(o.directory,WAL),'a',0o600);try{await h.writeFile(line);await h.sync();}finally{await h.close();}const d=await open(o.directory,'r');try{await d.sync();}finally{await d.close();}
++   lines.push(line);inflated+=n;last=record.tick;if(lines.length>=chunkTicks)await flush();
++  }catch(e){const reason=(e as Error).message;m.gaps.push({firstTick:attempted,lastTick:Math.max(attempted,Number.isSafeInteger(record?.tick)?record.tick:attempted),reason:reason.slice(0,200)});await end(reason);throw e;}
++ });},flush(){return serial(async()=>{try{await flush();}catch(e){await end((e as Error).message);throw e;}});},finish(reason){return serial(async()=>{if(reason)await end(reason);try{await flush();if(!reason)closed=true;}catch(e){await end((e as Error).message);throw e;}await save();});},gap(firstTick,lastTick,reason){return serial(async()=>{m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);});}};
++}
++export async function readPhysicsEvidence(root:string,manifest:unknown,options?:{admission:PhysicsAdmission;identity?:PhysicsEvidenceV1['identity'];metricsPolicyDigest?:string;runTick?:number}):Promise<PhysicsRead>{
++ const records:PhysicsTickRecord[]=[],issues:string[]=[],result=():PhysicsRead=>({complete:!issues.length,records,gaps:validatePhysicsEvidenceShape(manifest)?(manifest as PhysicsEvidenceV1).gaps:[],issues});
++ if(!validatePhysicsEvidenceShape(manifest)||Buffer.byteLength(JSON.stringify(manifest))>READ_LIMITS.manifestBytes){issues.push('PHYSICS_MANIFEST_INVALID');return result();}
++ const m=manifest as PhysicsEvidenceV1,refs=m.streams[0]?.chunks??[];
++ if(!options?.admission){issues.push('PHYSICS_ADMISSION_REQUIRED');return result();}
++ if(options.metricsPolicyDigest&&options.metricsPolicyDigest!==m.metricsPolicyDigest)issues.push('PHYSICS_POLICY_MISMATCH');
++ if(options.identity&&hashJson(options.identity)!==hashJson(m.identity))issues.push('PHYSICS_IDENTITY_MISMATCH');
++ if(!m.coverage.complete||m.gaps.length||m.terminalReason)issues.push('PHYSICS_COVERAGE_INCOMPLETE');
++ if(refs.length>READ_LIMITS.chunksPerStream||m.coverage.firstTick!==0||m.coverage.lastTick>EVIDENCE_LIMITS.maxTicks){issues.push('PHYSICS_READ_LIMIT');return result();}
++ try{if(await sizeOf(root)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');if((await lstat(join(root,WAL)).catch(()=>null))?.size||await lstat(join(root,INTENT)).catch(()=>null))issues.push('PHYSICS_UNPUBLISHED_TAIL');}catch(e){issues.push((e as Error).message);return result();}
++ let inflated=0;const names=new Set<string>();
++ for(const ref of refs){try{
++  if(!NAME.test(ref.path)||names.has(ref.path))throw new Error('PHYSICS_PATH_REJECTED');names.add(ref.path);
++  if(ref.bytes>READ_LIMITS.chunkBytes)throw new Error('PHYSICS_READ_LIMIT');const b=await boundedFile(root,ref.path,READ_LIMITS.chunkBytes);if(b.length!==ref.bytes||sha(b)!==ref.sha256)throw new Error('PHYSICS_HASH_MISMATCH');
++  const body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)});inflated+=body.length;
++  const text=body.toString('utf8');if(!text.endsWith('\n'))throw new Error('PHYSICS_TRUNCATED');const lines=text.slice(0,-1).split('\n');if(lines.length>READ_LIMITS.linesPerChunk)throw new Error('PHYSICS_READ_LIMIT');
++  for(const line of lines){if(Buffer.byteLength(line)>READ_LIMITS.lineBytes||records.length> EVIDENCE_LIMITS.maxTicks)throw new Error('PHYSICS_READ_LIMIT');const r:unknown=JSON.parse(line);validatePhysicsRecord(r,options.admission,records.length);records.push(r);}
++ }catch(e){issues.push((e as Error).message);break;}}
++ if(!records.length||records.at(-1)!.tick!==m.coverage.lastTick||(options.runTick!==undefined&&records.at(-1)?.tick!==options.runTick))issues.push('PHYSICS_COVERAGE_MISMATCH');
++ return result();
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-metrics.ts b/packages/lab-runtime/src/v2/simulation3d/physics-metrics.ts
+new file mode 100644
+index 0000000..48d646d
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-metrics.ts
+@@ -0,0 +1,48 @@
++import type {LoadObservation} from '../navigation2d/contracts';
++import {composePose} from '../frames';
++import {yawOf} from '../../engineering/navigation-model';
++import type {PhysicsAdmission,PhysicsRead} from './physics-evidence';
++export type PhysicsMetric={available:true;value:number;unit:string;samples:number}|{available:false;value:null;unit:string;reason:string};
++const no=(unit:string,reason:string):PhysicsMetric=>({available:false,value:null,unit,reason});
++const yes=(value:number,unit:string,samples:number):PhysicsMetric=>Number.isFinite(value)?{available:true,value,unit,samples}:no(unit,'METRIC_OVERFLOW');
++export function integrateNormalImpulse(forcesN:readonly number[],dtS:number):number{
++ if(!Number.isFinite(dtS)||dtS<=0)throw new Error('CONTACT_TIMESTEP_INVALID');
++ let sum=0;for(const f of forcesN){if(!Number.isFinite(f)||f<0)throw new Error('CONTACT_FORCE_INVALID');sum+=f*dtS;if(!Number.isFinite(sum))throw new Error('CONTACT_IMPULSE_OVERFLOW');}return sum;
++}
++/** Declared support is a coordinate reference, never a receipt or proof of contact. */
++export function loadDisplacementM(samples:readonly LoadObservation[]):PhysicsMetric{
++ const a=samples[0];if(!a)return no('m','LOAD_SERIES_MISSING');
++ if(!a.supportId||samples.some(x=>x.propId!==a.propId||x.supportId!==a.supportId||!x.poseInSupport||!x.poseInSupport.positionM.every(Number.isFinite)))return no('m','LOAD_REFERENCE_INVALID');
++ const p=a.poseInSupport!.positionM;return yes(Math.max(...samples.map(s=>Math.hypot(s.poseInSupport!.positionM[0]!-p[0]!,s.poseInSupport!.positionM[1]!-p[1]!))),'m',samples.length);
++}
++export const rollPitch=(q:readonly number[])=>{const [x,y,z,w]=q as [number,number,number,number];return [Math.atan2(2*(w*x+y*z),1-2*(x*x+y*y)),Math.asin(Math.max(-1,Math.min(1,2*(w*y-z*x))))] as const;};
++export interface PhysicsMetrics {loadDisplacementM:PhysicsMetric;maxTiltRad:PhysicsMetric;tiltExceededDurationS:PhysicsMetric;wheelPositionResidualM:PhysicsMetric;wheelYawResidualRad:PhysicsMetric;contactPeakN:PhysicsMetric;contactImpulseNs:PhysicsMetric;stopDistanceM:PhysicsMetric}
++export interface PhysicsNavigationWindow {complete:boolean;trajectory:import('../navigation2d/evidence').TrajectoryRecord[];control:import('../navigation2d/evidence').ControlRecord[];policy:{stoppedLinearMps:number;stoppedAngularRadps:number;arrivalHoldTicks:number}}
++function stopDistance(read:PhysicsRead,a:PhysicsAdmission,nav?:PhysicsNavigationWindow):PhysicsMetric{
++ if(!nav?.complete)return no('m','VERIFIED_STOP_WINDOW_MISSING');
++ const p=nav.policy;if(![p.stoppedLinearMps,p.stoppedAngularRadps].every(x=>Number.isFinite(x)&&x>=0)||!Number.isSafeInteger(p.arrivalHoldTicks)||p.arrivalHoldTicks<1)return no('m','STOP_POLICY_INVALID');
++ if(nav.trajectory.length!==read.records.length||nav.trajectory.some((t,i)=>t.tick!==read.records[i]!.tick||t.simTimeNs!==read.records[i]!.simTimeNs))return no('m','STOP_SERIES_JOIN_INVALID');
++ const at=new Map(nav.trajectory.map(t=>[t.tick,t.robots.find(r=>r.robotId===a.robotId)]));
++ const stopped=(r:NonNullable<ReturnType<typeof at.get>>)=>Math.abs(r.bodyVelocity[0])<=p.stoppedLinearMps&&Math.abs(r.bodyVelocity[1])<=p.stoppedAngularRadps;
++ let active=false,distance=0,hold=0,max=0,windows=0,samples=0;
++ for(const c of nav.control){const command=c.velocities.find(v=>v.robotId===a.robotId),prev=at.get(c.tick),next=at.get(c.targetTick);if(!command||!prev||!next||c.targetTick!==c.tick+1)return no('m','STOP_SERIES_JOIN_INVALID');
++  const zero=command.vMps===0&&command.omegaRadps===0;
++  if(!active&&zero&&!stopped(prev)){active=true;distance=0;hold=0;}
++  if(!active)continue;if(!zero)return no('m','STOP_TARGET_WITHDRAWN');
++  distance+=Math.hypot(next.poseDriveMap[0]-prev.poseDriveMap[0],next.poseDriveMap[1]-prev.poseDriveMap[1]);samples++;
++  hold=stopped(next)?hold+1:0;if(hold>=p.arrivalHoldTicks){max=Math.max(max,distance);windows++;active=false;}
++ }
++ return active?no('m','STOP_NOT_OBSERVED'):windows?yes(max,'m',samples):no('m','STOP_WINDOW_MISSING');
++}
++export function physicsMetrics(read:PhysicsRead,admission:PhysicsAdmission,navigation?:PhysicsNavigationWindow):PhysicsMetrics{
++ const reason=!read.complete?'PHYSICS_COVERAGE_INCOMPLETE':'PHYSICS_SERIES_MISSING',empty={loadDisplacementM:no('m',reason),maxTiltRad:no('rad',reason),tiltExceededDurationS:no('s',reason),wheelPositionResidualM:no('m',reason),wheelYawResidualRad:no('rad',reason),contactPeakN:no('N',reason),contactImpulseNs:no('N s',reason),stopDistanceM:no('m','VERIFIED_STOP_WINDOW_MISSING')};
++ if(!read.complete||!read.records.length)return {...empty,stopDistanceM:no('m',reason)};
++ const rs=read.records,n=rs.length;let tilt=0,tiltTicks=0,position=0,yaw=0,peak=0,impulse=0,contacts=0;
++ for(const r of rs){const b=r.base[0]!,o=r.odometry[0]!,actual=composePose({position:b.poseMap.positionM,quaternionXyzw:b.poseMap.quaternionXyzw},{position:admission.driveFrameInBase.xyzM,quaternionXyzw:admission.driveFrameInBase.quaternionXyzw});
++  const currentTilt=Math.max(...rollPitch(b.poseMap.quaternionXyzw).map(Math.abs));tilt=Math.max(tilt,currentTilt);if(r.tick>0&&admission.maxAbsRollPitchRad!==undefined&&currentTilt>admission.maxAbsRollPitchRad)tiltTicks++;position=Math.max(position,Math.hypot(actual.position[0]!-o.poseDriveMap[0]!,actual.position[1]!-o.poseDriveMap[1]!));const dy=yawOf(actual.quaternionXyzw)-o.poseDriveMap[2]!;yaw=Math.max(yaw,Math.abs(Math.atan2(Math.sin(dy),Math.cos(dy))));
++  // Tick zero contains the producer's real priming interval, outside logical (0,T].
++  for(const c of r.tick>0?r.contacts:[]){contacts++;peak=Math.max(peak,c.peakNormalN);impulse+=c.normalImpulseNs;}
++ }
++ // B03 mobile has one transported load; multiple loads require explicit windows in the later world workflow.
++ return {...empty,stopDistanceM:stopDistance(read,admission,navigation),loadDisplacementM:admission.props.length===1?loadDisplacementM(rs.map(r=>r.loads[0]!)):no('m','LOAD_WINDOW_REQUIRED'),maxTiltRad:yes(tilt,'rad',n),tiltExceededDurationS:n<2?no('s','LOGICAL_INTERVAL_MISSING'):Number.isFinite(admission.maxAbsRollPitchRad)?yes(tiltTicks*admission.tickMs/1000,'s',n-1):no('s','TILT_POLICY_MISSING'),wheelPositionResidualM:yes(position,'m',n),wheelYawResidualRad:yes(yaw,'rad',n),contactPeakN:n>1?yes(peak,'N',contacts):no('N','LOGICAL_INTERVAL_MISSING'),contactImpulseNs:n>1?yes(impulse,'N s',contacts):no('N s','LOGICAL_INTERVAL_MISSING')};
++}
+diff --git a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+index e44875b..06a8c17 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
++++ b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+@@ -19,20 +19,47 @@ from .protocol import WorkerError
+ def _transform(data, bid):
+     t = np.eye(4)
+     t[:3, :3], t[:3, 3] = data.xmat[bid].reshape(3, 3), data.xpos[bid]
+     return t
+ 
+ 
+ def _euler(r):
+     return math.atan2(r[2, 1], r[2, 2]), -math.asin(float(np.clip(r[2, 0], -1, 1))), math.atan2(r[1, 0], r[0, 0])
+ 
+ 
++class ContactAccumulator:
++    """One tick of all native substep samples, including contacts gone by its end."""
++    def __init__(self, dt, expected):
++        self.dt, self.expected, self.pairs = dt, expected, {}
++
++    def add(self, samples):
++        for pair, (normal, fmap, point, _) in samples.items():
++            if not math.isfinite(normal) or normal < 0 or not np.isfinite(fmap).all():
++                raise WorkerError("PLANT_UNSTABLE", "nonfinite contact force", fatal=True)
++            if pair not in self.pairs:
++                if len(self.pairs) >= 256:
++                    raise WorkerError("CONTACT_CAPACITY_EXCEEDED", "more than 256 contact pairs in a tick", fatal=True)
++                self.pairs[pair] = {"a": pair[0], "b": pair[1], "samples": 0, "peakNormalN": 0.0, "normalImpulseNs": 0.0,
++                                    "netImpulseMapNs": np.zeros(3), "pointAtPeakMapM": point.tolist(), "expected": pair in self.expected}
++            a = self.pairs[pair]
++            a["samples"] += 1
++            a["normalImpulseNs"] += normal * self.dt
++            a["netImpulseMapNs"] += fmap * self.dt
++            if not math.isfinite(a["normalImpulseNs"]) or not np.isfinite(a["netImpulseMapNs"]).all():
++                raise WorkerError("PLANT_UNSTABLE", "contact impulse overflow", fatal=True)
++            if normal > a["peakNormalN"]:
++                a["peakNormalN"], a["pointAtPeakMapM"] = normal, point.tolist()
++
++    def finish(self):
++        return [{**self.pairs[p], "netImpulseMapNs": self.pairs[p]["netImpulseMapNs"].tolist()} for p in sorted(self.pairs)]
++
++
+ class MobileEngine:
+     def __init__(self, scene, physical_models, load_profile, physics):
+         if mujoco.__version__ != "3.17.0":
+             raise CompileError("ENGINE_VERSION_MISMATCH")
+         xml, self.names = compile_mobile(scene, physical_models, load_profile, physics)
+         self.scene, self.profile, self.physics = scene, load_profile, physics
+         self.entry = scene["robots"][0]
+         self.rid = self.entry["robotId"]
+         self.physical = physical_models[self.rid]
+         self.sensor, self.sensor_physical = resolve_lidar(self.entry["model"], self.physical)
+@@ -94,21 +121,21 @@ class MobileEngine:
+                 sample[2], sample[3] = c.pos.copy(), float(force[0])
+         return out
+ 
+     def step(self, v_mps, omega_radps):
+         d, m = self.data, self.model
+         targets = wheel_targets(v_mps, omega_radps, self.radius, self.separation)
+         if any(not lo <= t <= hi for t, (lo,hi) in zip(targets, m.actuator_ctrlrange[self.acts])):
+             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel target exceeds canonical speed limit")
+         self.targets[:] = targets
+         d.ctrl[self.acts] = self.targets
+-        aggregate, unstable, self.saturated = {}, set(), 0
++        aggregate, unstable, self.saturated = ContactAccumulator(self.dt, self.names["expected"]), set(), 0
+         for _ in range(self.substeps):
+             old = d.qpos[self.wq].copy()
+             saturated = False
+             for act, velocity, target in zip(self.acts, d.qvel[self.wv], self.targets):
+                 lo, hi = torque_limits(float(velocity), float(target), self.physics)
+                 m.actuator_forcerange[act] = lo, hi
+                 demand = self.physics["velocityGainNmsPerRad"] * (target - velocity)
+                 saturated |= demand < lo - 1e-12 or demand > hi + 1e-12
+             self.saturated += int(saturated)
+             before = {k: d.warning[w].number for k, w in BAD_STATE.items()}
+@@ -118,33 +145,22 @@ class MobileEngine:
+                 unstable.add("NONFINITE")
+             # Stop immediately on an engine reset; never integrate a reset state.
+             if unstable:
+                 self.unstable = ",".join(sorted(unstable))
+                 raise WorkerError("PLANT_UNSTABLE", self.unstable, fatal=True)
+             delta = (d.qpos[self.wq] - old) * self.radius
+             ds, da = float(sum(delta) / 2), float((delta[1] - delta[0]) / self.separation)
+             distance = ds * float(np.sinc(da / (2 * math.pi)))
+             self.odom[:2] += distance * np.array([math.cos(self.odom[2] + da/2), math.sin(self.odom[2] + da/2)])
+             self.odom[2] += da  # deliberately unwrapped; residual caller wraps differences
+-            for pair, (normal, fmap, point, _) in self._sample_contacts().items():
+-                if pair not in aggregate:
+-                    if len(aggregate) >= 256:
+-                        raise WorkerError("CONTACT_CAPACITY_EXCEEDED", "more than 256 contact pairs in a tick", fatal=True)
+-                    aggregate[pair] = {"a": pair[0], "b": pair[1], "samples": 0, "peakNormalN": 0.0, "normalImpulseNs": 0.0,
+-                                       "netImpulseMapNs": np.zeros(3), "pointAtPeakMapM": point.tolist(), "expected": pair in self.names["expected"]}
+-                a = aggregate[pair]
+-                a["samples"] += 1
+-                a["normalImpulseNs"] += normal * self.dt
+-                a["netImpulseMapNs"] += fmap * self.dt
+-                if normal > a["peakNormalN"]:
+-                    a["peakNormalN"], a["pointAtPeakMapM"] = normal, point.tolist()
+-        self.contacts = [{**aggregate[p], "netImpulseMapNs": aggregate[p]["netImpulseMapNs"].tolist()} for p in sorted(aggregate)]
++            aggregate.add(self._sample_contacts())
++        self.contacts = aggregate.finish()
+         self.tick += 1
+         mujoco.mj_forward(m, d)  # read transforms/velocities at the final integrated pose
+         if self.tick % self.entry["model"]["sensors"][0]["publishEveryTicks"] == 0:
+             self.scans = [self.scan(self.tick)]
+         return self.read()
+ 
+     def scan(self, tick):
+         sensor, physical = self.sensor, self.sensor_physical
+         at = physical["poseInBase"]
+         transform = _transform(self.data, self.base) @ pose(at["xyzM"], at["quaternionXyzw"])
+diff --git a/robotics/simulation-mujoco/tests/test_contact_metrics.py b/robotics/simulation-mujoco/tests/test_contact_metrics.py
+new file mode 100644
+index 0000000..46a927e
+--- /dev/null
++++ b/robotics/simulation-mujoco/tests/test_contact_metrics.py
+@@ -0,0 +1,83 @@
++"""Native contact-force sign, aggregation and transient coverage: no protocol double."""
++import numpy as np
++import mujoco
++import pytest
++from mujoco_worker.mobile_engine import MobileEngine, ContactAccumulator
++from test_mobile import inputs
++
++
++def test_floor_box_force_is_on_canonical_b_in_map_frame():
++    engine = MobileEngine.__new__(MobileEngine)
++    engine.model = mujoco.MjModel.from_xml_string('''<mujoco><option timestep="0.002"/><worldbody>
++      <geom name="floor" type="plane" size="2 2 .1"/>
++      <body pos="0 0 .1"><freejoint/><geom name="box" type="box" size=".1 .1 .1" mass="1"/></body>
++      </worldbody></mujoco>''')
++    engine.data = mujoco.MjData(engine.model)
++    engine.tags = {0: "a-floor", 1: "z-box"}
++    for _ in range(1000):
++        mujoco.mj_step(engine.model, engine.data)
++    sample = engine._sample_contacts()[("a-floor", "z-box")]
++    assert sample[0] == pytest.approx(9.81, abs=1e-6)
++    assert sample[1] == pytest.approx([0, 0, 9.81], abs=1e-6)
++    engine.tags = {0: "z-floor", 1: "a-box"}
++    assert engine._sample_contacts()[("a-box", "z-floor")][1] == pytest.approx([0, 0, -9.81], abs=1e-6)
++
++
++def test_actual_mobile_impulse_integrates_every_native_substep():
++    engine = MobileEngine(*inputs())
++    original = engine._sample_contacts
++    samples = []
++    def capture():
++        value = original()
++        samples.append(value)
++        return value
++    engine._sample_contacts = capture
++    try:
++        result = engine.step(0, 0)
++        assert len(samples) == 10
++        for contact in result["contacts"]:
++            pair = (contact["a"], contact["b"])
++            forces = [s[pair][0] for s in samples if pair in s]
++            assert contact["samples"] == len(forces)
++            assert contact["normalImpulseNs"] == pytest.approx(sum(forces) * .002, abs=1e-12)
++            assert contact["netImpulseMapNs"] == pytest.approx(sum((s[pair][1] for s in samples if pair in s), np.zeros(3)) * .002, abs=1e-12)
++            assert contact["peakNormalN"] == max(forces)
++    finally:
++        engine.close()
++
++
++def test_transient_native_contact_remains_when_final_substep_is_airborne():
++    engine = MobileEngine.__new__(MobileEngine)
++    engine.model = mujoco.MjModel.from_xml_string('''<mujoco><option timestep="0.002" gravity="0 0 0"/>
++      <worldbody><geom type="plane" size="2 2 .1" solref=".002 .01"/>
++      <body pos="0 0 .1001"><freejoint/><geom type="sphere" size=".1" mass="1" solref=".002 .01"/></body></worldbody></mujoco>''')
++    engine.data = mujoco.MjData(engine.model)
++    engine.tags = {0: "floor", 1: "prop/ball"}
++    engine.data.qvel[2] = -1
++    acc = ContactAccumulator(.002, set())
++    samples = []
++    for _ in range(10):
++        mujoco.mj_step(engine.model, engine.data)
++        sample = engine._sample_contacts()
++        samples.append(sample)
++        acc.add(sample)
++    assert not samples[-1]
++    assert any(samples[1:-1])
++    contact = acc.finish()[0]
++    assert 0 < contact["samples"] < 10
++    assert contact["normalImpulseNs"] > 0
++
++@pytest.mark.parametrize("normal, vector", [(float("nan"), [0, 0, 0]), (-1, [0, 0, 0]), (1, [0, 0, float("inf")])])
++def test_invalid_contact_force_is_terminal(normal, vector):
++    from mujoco_worker.protocol import WorkerError
++    with pytest.raises(WorkerError, match="nonfinite contact force"):
++        ContactAccumulator(.002, set()).add({("a", "b"): (normal, np.array(vector), np.zeros(3), 0)})
++
++
++def test_impulse_overflow_is_terminal_not_available_infinity():
++    from mujoco_worker.protocol import WorkerError
++    acc = ContactAccumulator(1, set())
++    sample = {("a", "b"): (1e308, np.array([0., 0., 1e308]), np.zeros(3), 0)}
++    acc.add(sample)
++    with np.errstate(over="ignore"), pytest.raises(WorkerError, match="contact impulse overflow"):
++        acc.add(sample)
+diff --git a/tests/integration/mujoco-mobile-lifecycle.test.ts b/tests/integration/mujoco-mobile-lifecycle.test.ts
+index a6e5d74..ae2b512 100644
+--- a/tests/integration/mujoco-mobile-lifecycle.test.ts
++++ b/tests/integration/mujoco-mobile-lifecycle.test.ts
+@@ -23,31 +23,31 @@ async function setup(wrap:(plant:PlantPort)=>void){
+  const receipt=await service.compileEngineeringProject(f.project,'owner'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
+  const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
+  const plant=mujocoMobilePlant(runtime);wrap(plant);
+  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)},directory=await temp();
+  const open=async()=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
+  return {open,directory};
+ }
+ let ordinal=0;
+ async function act(run:ScenarioRun,kind:string,payload={}){const v=await run.snapshot();return run.action({actionId:`act-${++ordinal}`,expectedRevision:v.run.runRevision,kind,payload});}
+ 
+-test.each(['missing','clock'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
++test.each(['missing','clock','contacts','pose'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
+  let fault=false;
+- const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(fault&&req.op==='step'&&r.ok){const s=r.result as unknown as {robots:{bodyVelocity:number[]}[];physics?:{tick:number}};s.robots[0]!.bodyVelocity=[0,0];if(mode==='missing')delete s.physics;else s.physics!.tick++;}return r;}};};});
++ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(fault&&req.op==='step'&&r.ok){const s=r.result as unknown as {robots:{bodyVelocity:number[];pose3d:{roll:number}}[];physics?:{tick:number;contacts?:unknown}};s.robots[0]!.bodyVelocity=[0,0];if(mode==='missing')delete s.physics;else if(mode==='clock')s.physics!.tick++;else if(mode==='contacts')delete s.physics!.contacts;else s.robots[0]!.pose3d.roll+=.1;}return r;}};};});
+  const run=await open();await run.start();let moving=await run.snapshot();while(!moving.entities[0]!.goal&&moving.tick<1000)moving=await act(run,'step',{ticks:20});const commandId=moving.entities[0]!.goal!.commandId;
+  await act(run,'cancel');fault=true;const stopped=await act(run,'step',{ticks:1}),report=await run.report();
+- expect(stopped.tick).toBe(moving.tick+1);expect(report.navigation2d?.clock.tickHorizon).toBe(stopped.tick);
++ expect(stopped.tick).toBe(moving.tick);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:moving.tick+1,lastTick:moving.tick+1}));expect(report.navigation2d?.clock.tickHorizon).toBe(stopped.tick);
+  expect(stopped.attention.map(x=>x.reason)).toContain('PHYSICS_OBSERVATION_INVALID');
+  expect(report.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.id===commandId).map(e=>e.state.status)).not.toContain('cancelled');
+  expect(stopped.entities[0]!.goal?.state).toBe('unknown');
+  expect(report.rejectedObservations).toEqual(expect.arrayContaining([expect.objectContaining({commandId,type:'unknown',code:'CANCELLATION_RECONCILIATION_REQUIRED'})]));
+- expect(report.telemetry.samples.filter(s=>s.simTimeNs===String(stopped.tick*20_000_000)).every(s=>s.quality!=='valid')).toBe(true);
++ expect(report.telemetry.samples.filter(s=>s.simTimeNs===String((stopped.tick+1)*20_000_000)).every(s=>s.quality!=='valid')).toBe(true);
+ },30_000);
+ 
+ 
+ test.each(['create','start'])('lost %s ACK is terminal before a second start and after reopen',async op=>{
+  let spawns=0;
+  const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op===op)throw new WorkerLostError('WORKER_TIMEOUT','unknown','applied but ACK lost');return r;}};};});
+  const run=await open();await expect(run.start()).rejects.toThrow('PLANT_START_FAILED:WORKER_TIMEOUT');
+  expect((await run.snapshot()).run.status).toBe('needs_attention');
+  await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
+  await run.close();const reopened=await open();expect((await reopened.snapshot()).run.status).toBe('needs_attention');
+@@ -79,10 +79,39 @@ test('a real pre-mutation create schema refusal clears the latch and permits sta
+ },30_000);
+ 
+ test('an uncertain startup keeps engine capacity until the lost worker closes',async()=>{
+  const {activeRunCount}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');
+  let entered!:()=>void,release!:()=>void;const reached=new Promise<void>(r=>entered=r),wait=new Promise<void>(r=>release=r);
+  const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create')throw new WorkerLostError('WORKER_TIMEOUT','unknown','ACK lost');return r;},async close(reason){entered();await wait;await w.close(reason);}};};});
+  const run=await open(),starting=run.start().catch(e=>e);await reached;
+  try{expect(activeRunCount('mujoco_arm')).toBe(1);}finally{release();await starting;}
+  expect(activeRunCount('mujoco_arm')).toBe(0);await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');
+ },30_000);
++
++test('durable append failure after advancement retains logical tick and terminal unknown across reopen',async()=>{
++ let steps=0,spawns=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='step')steps++;return w.request(req);}};};});
++ const run=await open();await run.start();await act(run,'step',{ticks:20});const before=await run.snapshot();
++ const {mkdir}=await import('node:fs/promises');await rm(join(directory,'physics','pending.ndjson'));await mkdir(join(directory,'physics','pending.ndjson'));
++ const after=await act(run,'step',{ticks:10}),report=await run.report();expect(after.tick).toBe(before.tick);expect(steps).toBe(21);expect(after.run.status).toBe('needs_attention');expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:21,lastTick:21}));
++ await expect(act(run,'step',{ticks:1})).rejects.toThrow('PLANT_LOST');await run.close();const restored=await open();await expect(act(restored,'start')).rejects.toThrow('INVALID_STATE');expect(spawns).toBe(1);
++},30_000);
++
++test('initial physics append failure preserves startup latch and refuses respawn',async()=>{
++ let spawns=0;const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create'&&r.ok)delete (r.result as {physics?:unknown}).physics;return r;}};};});
++ const run=await open();await expect(run.start()).rejects.toThrow('PHYSICS_OBSERVATION_INVALID');await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');await run.close();const reopened=await open();await expect(act(reopened,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
++},30_000);
++
++test('a report flush failure terminates the plant before another engine step',async()=>{
++ let steps=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){if(req.op==='step')steps++;return w.request(req);}};};});
++ const run=await open();await run.start();await act(run,'step',{ticks:2});
++ const {mkdir}=await import('node:fs/promises');await mkdir(join(directory,'physics','.write.intent.tmp'));
++ const report=await run.report();expect(report.outcome.status).toBe('needs_attention');expect(report.physicsEvidence?.complete).toBe(false);await expect(act(run,'step',{ticks:1})).rejects.toThrow('PLANT_LOST');expect(steps).toBe(2);
++},30_000);
++
++test('restart after an in-flight step joins the explicit unknown horizon into physics coverage',async()=>{
++ const {open,directory}=await setup(()=>{}),run=await open();await run.start();await act(run,'step',{ticks:100});await run.report();
++ const checkpoint=JSON.parse(await readFile(join(directory,'run.json'),'utf8'));checkpoint.inFlight=true;
++ const physics=await readFile(join(directory,'physics','manifest.json')),navigation=await readFile(join(directory,'evidence','manifest.json'));
++ await act(run,'step',{ticks:1});await run.close();
++ await writeFile(join(directory,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'physics','manifest.json'),physics);await writeFile(join(directory,'evidence','manifest.json'),navigation);
++ const restored=await open(),report=await restored.report();expect(report.outcome.tick).toBe(100);expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:101,lastTick:101,reason:'STEP_ACK_LOST'}));
++},30_000);
+diff --git a/tests/integration/mujoco-mobile-worker.test.ts b/tests/integration/mujoco-mobile-worker.test.ts
+index 3810643..6683d02 100644
+--- a/tests/integration/mujoco-mobile-worker.test.ts
++++ b/tests/integration/mujoco-mobile-worker.test.ts
+@@ -72,21 +72,21 @@ test('runtime option registers MuJoCo compiler and the real dispatcher reports m
+  const input={project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'test-commit',engineering:locked} as const;
+  const runDir=await temp();const run=await sim.simulationFactory(input,{directory:runDir,catalog:sim.catalog,enabledBackends:sim.enabledBackends,bundleFile});
+  try{
+   await run.start();const view=await run.snapshot();await run.action({actionId:'steps',expectedRevision:view.run.runRevision,kind:'step',payload:{ticks:1000}});
+   const report=await run.report();expect(report.outcome.tick,JSON.stringify((await run.snapshot()).attention)).toBe(1000);expect(report.outcome.status).not.toBe('needs_attention');expect(report.telemetry.samples.length).toBeGreaterThan(0);expect(report.telemetry.samples.every(s=>s.origin==='physics_sim')).toBe(true);
+   expect(report.navigation2d?.engine).toMatchObject({id:'mujoco_3d',engineVersion:'3.17.0',timestepMs:2,substeps:10,stopPolicyRef:{id:'serve-mobile-stop-v1'}});
+   expect(report.navigation2d?.seed.engineSeedAlgorithm).toBe('mujoco-identity-seed-v1');expect(report.navigation2d?.seed.engineRng).toBeUndefined();
+   expect(validateNavigationEvidence(report.navigation2d),JSON.stringify(validateNavigationEvidence(report.navigation2d))).toMatchObject({ok:true});
+   const {DatabaseSync}=await import('node:sqlite');const db=new DatabaseSync(join(runDir,'journal.db'),{readOnly:true});try{const raw=JSON.stringify(db.prepare('SELECT entry_json FROM journal').all());expect(raw).toContain('mujoco_serve_diff_drive');expect(raw).not.toContain('irsim_2d_diff_drive');}finally{db.close();}
+   let v=await run.snapshot();v=await run.action({actionId:'pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}});expect(v.tick).toBe(1000);v=await run.action({actionId:'resume',expectedRevision:v.run.runRevision,kind:'resume',payload:{}});expect(v.tick).toBe(1000);let n=0;while(['running','awaiting_confirmation'].includes(v.run.status)&&v.tick<30000){v=await run.action({actionId:`finish-${++n}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});}
+-  expect(v.run.status,JSON.stringify(v.attention)).toBe('completed');const done=await run.report();expect(done.outcome.served).toBe('1');console.log('MJ-FD01',JSON.stringify({tick:done.outcome.tick,scene:done.navigation2d?.sceneDigest,engine:done.navigation2d?.engine,controller:done.navigation2d?.controller,digests:done.navigation2d?.digests}));
++  expect(v.run.status,JSON.stringify(v.attention)).toBe('completed');const done=await run.report();expect(done.outcome.served).toBe('1');expect(done.physicsEvidence?.complete,JSON.stringify(done.physicsEvidence?.issues)).toBe(true);expect(done.physicsEvidence?.manifest.identity.loadProfileDigest).toBe(done.navigation2d?.engine.id==='mujoco_3d'?done.navigation2d.engine.loadProfileRef.sha256:null);expect(done.physicsEvidence?.metrics.contactImpulseNs.available).toBe(true);console.log('MJ-FD01',JSON.stringify({tick:done.outcome.tick,scene:done.navigation2d?.sceneDigest,engine:done.navigation2d?.engine,controller:done.navigation2d?.controller,digests:done.navigation2d?.digests}));
+  }finally{await run.close();}
+ },180_000);
+ 
+ test('mobile recorder accepts only the exact last publication and stores true publication ticks',async()=>{
+  const {openNavigationRecorder,readNavigationEvidence}=await import('../../packages/lab-runtime/src/v2/navigation2d/evidence');
+  const scene=JSON.parse(await readFile(join(root,'fixtures/serve-payload-v1/navigation-scene.json'),'utf8'));
+  const model=scene.robots[0].model.sensors[0],k=model.publishEveryTicks;
+  const sample=(tick:number,scanTick=tick-tick%k)=>({schemaVersion:1,runId:'r',bootId:'b',seq:String(tick),sceneDigest:scene.sceneDigest,tick,simTimeNs:String(tick*20_000_000),robots:[{robotId:'amr-1',poseDriveMap:[2,1.5,0],bodyVelocity:[0,0],collisionIds:[],scans:[{sensorId:model.id,frameId:model.parentLinkId,tick:scanTick,simTimeNs:String(scanTick*20_000_000),angleMinRad:-Math.PI,angleIncrementRad:2*Math.PI/360,rangeMinM:0.05,rangeMaxM:10,rangesM:Array(360).fill(null),states:Array(360).fill('no_return')}]}]}) as never;
+  const control=(tick:number)=>({targetTick:tick,velocities:[{robotId:'amr-1',vMps:0,omegaRadps:0}],actorUpdates:[]});
+  const directory=await temp(),r=await openNavigationRecorder({directory,scene,runId:'r'});
+diff --git a/tests/integration/physics-evidence.test.ts b/tests/integration/physics-evidence.test.ts
+new file mode 100644
+index 0000000..b04d0de
+--- /dev/null
++++ b/tests/integration/physics-evidence.test.ts
+@@ -0,0 +1,50 @@
++import {afterEach,expect,test} from 'vitest';
++import {mkdtemp,readFile,writeFile,rm,symlink} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join} from 'node:path';
++import {createHash} from 'node:crypto';
++import {gzipSync} from 'node:zlib';
++import {openPhysicsRecorder,readPhysicsEvidence} from '../../packages/lab-runtime/src/v2/simulation3d/physics-evidence';
++import {admission,identity,assumptions,tick} from '../support/physics';
++const dirs:string[]=[];afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
++async function setup(extra={}){const directory=await mkdtemp(join(tmpdir(),'physics-evidence-'));dirs.push(directory);return {directory,rec:await openPhysicsRecorder({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),...extra})};}
++test('ACK observations are durable before append returns; unpublished WAL is incomplete until flush',async()=>{
++ const {directory,rec}=await setup();await rec.append(tick());expect(await readFile(join(directory,'pending.ndjson'),'utf8')).toContain('"tick":0');
++ expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).complete).toBe(false);
++ await rec.flush();const read=await readPhysicsEvidence(directory,rec.manifest(),{admission});expect(read.complete).toBe(true);expect(read.records).toHaveLength(1);
++ await rec.append(tick(1));await rec.finish(null);expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).records).toHaveLength(2);
++});
++test.each(['duplicate','gap','clock','samples','identity','quaternion','roll','missing'])('rejects %s observations and leaves explicit advanced gaps',async mode=>{
++ const {directory,rec}=await setup();await rec.append(tick());const t=tick(1);
++ if(mode==='duplicate')t.tick=0;if(mode==='gap')t.tick=2;if(mode==='clock')t.simTimeNs='0';if(mode==='samples')t.contacts[0]!.samples=11;if(mode==='identity')t.loads[0]!.propId='other';if(mode==='quaternion')t.base[0]!.poseMap.quaternionXyzw=[0,0,0,2];if(mode==='roll')t.base[0]!.rollRad=1;if(mode==='missing')delete (t as Partial<typeof t>).contacts;
++ await expect(rec.append(t)).rejects.toThrow();await rec.finish('PHYSICS_OBSERVATION_INVALID');expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).complete).toBe(false);
++});
++test.each(['missing','hash','path','symlink','bomb','shape','order'])('reader fails closed on %s without trusting complete claim',async mode=>{
++ const {directory,rec}=await setup();await rec.append(tick());await rec.finish(null);const m=rec.manifest(),r=m.streams[0]!.chunks[0]!,file=join(directory,r.path);
++ if(mode==='missing')await rm(file);if(mode==='hash')await writeFile(file,Buffer.alloc(r.bytes));if(mode==='path')r.path='../escape.gz';if(mode==='symlink'){await rm(file);await symlink('/etc/hosts',file);}
++ if(['bomb','shape','order'].includes(mode)){const t=tick();if(mode==='shape')delete (t as Partial<typeof t>).contacts;const b=gzipSync(mode==='bomb'?' '.repeat(64*1024*1024+1):JSON.stringify(t)+'\n'+(mode==='order'?JSON.stringify(t)+'\n':''));await writeFile(file,b);r.bytes=b.length;r.sha256=createHash('sha256').update(b).digest('hex');}
++ expect((await readPhysicsEvidence(directory,m,{admission})).complete).toBe(false);
++});
++test('quotas count orphan bytes, refuse increased per-stream caps, and do not recover a crash tail as complete',async()=>{
++ await expect(setup({maxBytes:101*1024*1024})).rejects.toThrow();const {directory,rec}=await setup({maxBytes:5000});await writeFile(join(directory,'orphan'),Buffer.alloc(4500));await expect(rec.append(tick())).rejects.toThrow('QUOTA');
++ const other=await setup();await other.rec.append(tick());const reopened=await openPhysicsRecorder({directory:other.directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64)});expect(reopened.manifest().terminalReason).toBeTruthy();await expect(reopened.append(tick(1))).rejects.toThrow();
++});
++test('a killed writer between chunk publication and manifest rename cannot publish complete evidence',async()=>{
++ const {spawn}=await import('node:child_process');const directory=await mkdtemp(join(tmpdir(),'physics-crash-'));dirs.push(directory);
++ const code=`import fs from 'node:fs/promises';import {syncBuiltinESMExports} from 'node:module';const rename=fs.rename;let manifests=0;fs.rename=async(a,b)=>{if(String(b).endsWith('/manifest.json')&&++manifests===2){process.stdout.write('BLOCKED\\n');await new Promise(()=>{});}return rename(a,b);};syncBuiltinESMExports();const {openPhysicsRecorder}=await import('./packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts');const r=await openPhysicsRecorder(${JSON.stringify({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),chunkTicks:1})});await r.append(${JSON.stringify(tick())});`;
++ const child=spawn(process.execPath,['--import','tsx','--input-type=module','-e',code],{cwd:process.cwd(),stdio:['ignore','pipe','pipe']});
++ let err='';child.stderr.on('data',b=>{err+=String(b);});
++ const exit=new Promise<void>(resolve=>child.once('exit',()=>resolve()));
++ try{await new Promise<void>((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('child timeout '+err)),10000);child.stdout.on('data',b=>{if(String(b).includes('BLOCKED')){clearTimeout(timer);resolve();}});child.once('exit',()=>{clearTimeout(timer);reject(new Error('child exited '+err));});});child.kill('SIGKILL');await exit;
++  const manifest=JSON.parse(await readFile(join(directory,'manifest.json'),'utf8'));expect((await readPhysicsEvidence(directory,manifest,{admission})).complete).toBe(false);expect(await readFile(join(directory,'write.intent'),'utf8')).toContain('lastTick');
++ }finally{child.kill('SIGKILL');await exit;}
++},15000);
++test('reader binds supplied identity and admitted metrics policy rather than trusting a complete claim',async()=>{
++ const {directory,rec}=await setup();await rec.append(tick());await rec.finish(null);
++ expect((await readPhysicsEvidence(directory,rec.manifest(),{admission,identity:{...identity,bootId:'other'}})).complete).toBe(false);
++ expect((await readPhysicsEvidence(directory,rec.manifest(),{admission,metricsPolicyDigest:'0'.repeat(64)})).complete).toBe(false);
++ const m=rec.manifest();m.streams[0]!.chunks=Array(2001).fill(m.streams[0]!.chunks[0]);expect((await readPhysicsEvidence(directory,m,{admission})).complete).toBe(false);
++});
++test('queued appends preserve one durable tick order for concurrent callers',async()=>{
++ const {directory,rec}=await setup();await Promise.all([rec.append(tick()),rec.append(tick(1))]);await rec.flush();expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).records.map(r=>r.tick)).toEqual([0,1]);
++});
+diff --git a/tests/support/physics.ts b/tests/support/physics.ts
+new file mode 100644
+index 0000000..c9dd094
+--- /dev/null
++++ b/tests/support/physics.ts
+@@ -0,0 +1,7 @@
++import type {PhysicsTickRecord,LoadObservation} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++export const pose=(x=0,y=0)=>({positionM:[x,y,0],quaternionXyzw:[0,0,0,1]});
++export const load=(x=0):LoadObservation=>({propId:'cup',poseMap:pose(x),linearVelocityMapMps:[0,0,0],angularVelocityMapRadps:[0,0,0],supportId:'tray',poseInSupport:pose(x)});
++export const tick=(n=0):PhysicsTickRecord=>({schemaVersion:1,tick:n,simTimeNs:String(n*20_000_000),contacts:[{a:'floor',b:'robot/base',samples:10,peakNormalN:10,normalImpulseNs:.2,netImpulseMapNs:[0,0,.2],pointAtPeakMapM:[0,0,0],expected:true}],loads:[load()],wheels:[{robotId:'robot',angleRad:[0,0],velocityRadS:[0,0],torqueNm:[0,0],targetRadS:[0,0],saturatedSubsteps:0}],odometry:[{robotId:'robot',poseDriveMap:[1,0,0]}],base:[{robotId:'robot',poseMap:pose(),rollRad:0,pitchRad:0}]});
++export const admission={robotId:'robot',props:[{propId:'cup',supportId:'tray'}],contactIds:['floor','robot/base','prop/cup'],tickMs:20,substeps:10,driveFrameInBase:{xyzM:[1,0,0],quaternionXyzw:[0,0,0,1]}};
++export const identity={runId:'run',bootId:'boot',sceneDigest:'a'.repeat(64),loadProfileDigest:'b'.repeat(64),physicsProfileDigest:'c'.repeat(64)};
++export const assumptions=[{kind:'assumed' as const,documentId:'test',revision:'1',locator:'fixture',contentSha256:'d'.repeat(64)}];
+diff --git a/tests/unit/physics-metrics.test.ts b/tests/unit/physics-metrics.test.ts
+new file mode 100644
+index 0000000..a8f6f77
+--- /dev/null
++++ b/tests/unit/physics-metrics.test.ts
+@@ -0,0 +1,44 @@
++import {expect,test} from 'vitest';
++import {integrateNormalImpulse,loadDisplacementM,physicsMetrics} from '../../packages/lab-runtime/src/v2/simulation3d/physics-metrics';
++import {admission,load,tick} from '../support/physics';
++test('integrates all substeps and refuses invalid or overflowing force',()=>{
++ expect(integrateNormalImpulse([0,10,20,0],.002)).toBeCloseTo(.06,12);
++ for(const force of [NaN,-1,Infinity])expect(()=>integrateNormalImpulse([force],.002)).toThrow('CONTACT_FORCE_INVALID');
++ expect(()=>integrateNormalImpulse([1],0)).toThrow();expect(()=>integrateNormalImpulse([1e308,1e308],1)).toThrow();
++});
++test('slip uses fixed support coordinates despite rotating world poses',()=>{
++ const a=load(),b=load();b.poseMap={positionM:[4,5,0],quaternionXyzw:[0,0,1,0]};
++ expect(loadDisplacementM([a,b])).toMatchObject({available:true,value:0});b.poseInSupport!.positionM=[.03,.04,0];
++ expect(loadDisplacementM([a,b])).toMatchObject({available:true,value:.05});
++});
++test('missing samples, prop identity or support changes cannot become zero displacement',()=>{
++ for(const samples of [[],[load(),{...load(),supportId:'other'}],[load(),{...load(),propId:'other'}],[{...load(),poseInSupport:null}]])expect(loadDisplacementM(samples).available).toBe(false);
++});
++test('metrics transform base into actual drive frame and wrap yaw',()=>{
++ const a=tick();a.odometry[0]!.poseDriveMap[2]=2*Math.PI;
++ const m=physicsMetrics({complete:true,records:[a],gaps:[],issues:[]},admission);
++ expect(m.wheelPositionResidualM).toMatchObject({available:true,value:0});expect(m.wheelYawResidualRad.value).toBeCloseTo(0,12);
++ expect(m.stopDistanceM).toMatchObject({available:false,value:null});
++});
++test('incomplete coverage never produces available physics metrics',()=>{
++ const m=physicsMetrics({complete:false,records:[tick()],gaps:[],issues:['missing contact samples']},admission);
++ expect(Object.values(m).every(x=>!x.available)).toBe(true);
++});
++test('stop distance uses verified stop target, actual velocity hold, and the full actual path',()=>{
++ const records=Array.from({length:5},(_,n)=>{const t=tick(n);t.base[0]!.poseMap.positionM[0]=n*.1;return t;}),read={complete:true,records,gaps:[],issues:[]};
++ const navigation={complete:true,trajectory:records.map((r,n)=>({tick:n,simTimeNs:r.simTimeNs,robots:[{robotId:'robot',poseDriveMap:[n*.1,0,0] as [number,number,number],bodyVelocity:[n<3?.2:0,0] as [number,number],collisionIds:[]}]})),control:Array.from({length:4},(_,n)=>({tick:n,targetTick:n+1,singleStep:false,velocities:[{robotId:'robot',vMps:0,omegaRadps:0}],actorUpdates:[]})),policy:{stoppedLinearMps:.01,stoppedAngularRadps:.02,arrivalHoldTicks:2}};
++ expect(physicsMetrics(read,admission,navigation).stopDistanceM).toMatchObject({available:true,value:.4});
++ navigation.trajectory[4]!.robots[0]!.bodyVelocity=[.1,0];expect(physicsMetrics(read,admission,navigation).stopDistanceM).toMatchObject({available:false,reason:'STOP_NOT_OBSERVED'});
++ navigation.complete=false;expect(physicsMetrics(read,admission,navigation).stopDistanceM.available).toBe(false);
++});
++test('logical interval impulse excludes tick-zero priming while preserving its raw contacts',()=>{
++ const a=tick(),b=tick(1);a.contacts[0]!.normalImpulseNs=10;
++ const metrics=physicsMetrics({complete:true,records:[a,b],gaps:[],issues:[]},admission);
++ expect(metrics.contactImpulseNs).toMatchObject({available:true,value:.2});expect(a.contacts[0]!.normalImpulseNs).toBe(10);
++ expect(physicsMetrics({complete:true,records:[a],gaps:[],issues:[]},admission).contactImpulseNs).toMatchObject({available:false,reason:'LOGICAL_INTERVAL_MISSING'});
++});
++test('tilt duration counts positive-tick intervals from actual chassis orientation',()=>{
++ const records=[tick(),tick(1)];for(const r of records){r.base[0]!.poseMap.quaternionXyzw=[Math.SQRT1_2,0,0,Math.SQRT1_2];r.base[0]!.rollRad=Math.PI/2;}
++ const m=physicsMetrics({complete:true,records,gaps:[],issues:[]},{...admission,maxAbsRollPitchRad:Math.PI/4});
++ expect(m.maxTiltRad.value).toBeCloseTo(Math.PI/2,12);expect(m.tiltExceededDurationS).toMatchObject({available:true,value:.02});
++});

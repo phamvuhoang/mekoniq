@@ -1,0 +1,241 @@
+# Review package: b05d8a713e94084a2a6eb4cffa820f3927cdb650..d271a6c2f776d56e47ca98d1554ff1f13b594579
+
+## Commits
+d271a6c fix: fail closed on incomplete native process observations
+
+## Files changed
+ tests/support/owned-processes.ts   | 67 +++++++++++++++++++++++++++++++++-----
+ tests/unit/owned-processes.test.ts | 60 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 118 insertions(+), 9 deletions(-)
+
+## Diff
+diff --git a/tests/support/owned-processes.ts b/tests/support/owned-processes.ts
+index 5f1443e..645f6dd 100644
+--- a/tests/support/owned-processes.ts
++++ b/tests/support/owned-processes.ts
+@@ -1,70 +1,121 @@
+ // Test-only ownership: absolute bundle directories AND ancestry from this test process,
+ // never a host-wide executable/module selector. Keep detached worker groups and the
+ // identities of all descendants so reparented Webots/controllers still count as leaks.
+-import { execFileSync } from 'node:child_process';
++import { execFileSync, type ChildProcess } from 'node:child_process';
++import { channel } from 'node:diagnostics_channel';
+ import { resolve, sep } from 'node:path';
+ import type { ScenarioRun } from '../../packages/lab-runtime/src/v2/scenario-runner';
+ 
+ export interface ProcessRow { pid: number; ppid: number; pgid: number; started: string; command: string }
+ export function processTable(): ProcessRow[] {
+   return execFileSync('ps', ['-wwaxo', 'pid=,ppid=,pgid=,stat=,lstart=,command='], { encoding: 'utf8' }).split('\n').flatMap(line => {
+     const m = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(\S+\s+\S+\s+\d+\s+\d+:\d+:\d+\s+\d+)\s+(.*)$/.exec(line);
+     return m && !m[4]!.startsWith('Z') ? [{ pid: Number(m[1]), ppid: Number(m[2]), pgid: Number(m[3]), started: m[5]!, command: m[6]! }] : [];
+   });
+ }
+ const under = (path: string, directory: string) => path === directory || path.startsWith(directory + sep);
+ const identity = (p: ProcessRow) => `${p.pid}:${p.started}`;
++// One test-only listener sees every local asynchronous spawn, including workers
++// whose entire lifetime falls between process-table samples. Exact argv limits
++// notification to registered bundle directories; this grants no signal authority.
++interface SpawnObserver { onSpawn(child: ChildProcess): void; onError(): void }
++const spawnObservers = new Set<WeakRef<SpawnObserver>>();
++const observers = () => [...spawnObservers].flatMap(ref => { const observer = ref.deref(); if (observer) return [observer]; spawnObservers.delete(ref); return []; });
++channel('child_process').subscribe(message => {
++  if (!observers().length) return;
++  try {
++    const child = (message as { process: ChildProcess }).process;
++    child.once('spawn', () => {
++      for (const observer of observers()) { try { observer.onSpawn(child); } catch { observer.onError(); } }
++    });
++  } catch { for (const observer of observers()) observer.onError(); }
++});
+ export class OwnedProcesses {
+   private directories = new Set<string>();
+   private known = new Map<string, { row: ProcessRow; bundle: string }>();
+   private groups = new Map<number, { leader: string; bundle: string }>();
+-  constructor(private readonly snapshot = processTable) {}
++  private uncertainty: string | undefined;
++  private births = new Map<ChildProcess, { bundle: string; captured: boolean }>();
++  // The diagnostics event is experimental: this helper intentionally supports the
++  // repository's exact Node pin, and the generic lifetime tests prove delivery.
++  private readonly spawnObserver: SpawnObserver = { onSpawn: child => this.observeSpawn(child), onError: () => { this.uncertainty ??= 'spawn lifecycle callback failed'; } };
++  constructor(private readonly snapshot = processTable) {
++    if (process.versions.node !== '24.22.2') throw new Error('OWNED_PROCESS_OBSERVATION_UNSUPPORTED_NODE');
++    spawnObservers.add(new WeakRef(this.spawnObserver));
++  }
++  private observeSpawn(child: ChildProcess) {
++    const index = child.spawnargs.indexOf('--bundle-root'), bundle = child.spawnargs[index + 1];
++    if (index < 0 || !bundle || ![...this.directories].some(d => under(bundle, d))) return;
++    const birth = { bundle, captured: false }; this.births.set(child, birth);
++    const sample = () => { try { this.capture(); } catch { this.uncertainty ??= `spawn observation failed: ${child.pid}`; } };
++    sample();
++    child.once('exit', () => {
++      sample();
++      if (!birth.captured) this.uncertainty ??= `root exited without a PID/start sample: ${child.pid}`;
++      this.births.delete(child);
++    });
++  }
++  private assertCertain() {
++    const pending = [...this.births.keys()].find(child => !this.births.get(child)!.captured);
++    const reason = this.uncertainty ?? (pending ? `root has no PID/start sample: ${pending.pid}` : undefined);
++    if (reason) throw new Error(`OWNED_PROCESS_OBSERVATION_UNCERTAIN: ${reason}`);
++  }
+   addDirectory(directory: string) { this.directories.add(resolve(directory)); }
+   capture(): ProcessRow[] {
+     const rows = this.snapshot(), byPid = new Map(rows.map(p => [p.pid, p]));
+     const owned = new Map<number, { row: ProcessRow; bundle: string }>();
+     const descendant = (p: ProcessRow) => {
+       const seen = new Set<number>();
+       while (!seen.has(p.pid)) { seen.add(p.pid); if (p.ppid === process.pid) return true; const parent = byPid.get(p.ppid); if (!parent) break; p = parent; }
+       return false;
+     };
+     for (const p of rows) {
+       const old = this.known.get(identity(p)); if (old) owned.set(p.pid, { row: p, bundle: old.bundle });
+       const bundle = /(?:^| )--bundle-root (.+?)(?= --[a-z-]+(?: |$)|$)/.exec(p.command)?.[1];
+       if (bundle && [...this.directories].some(d => under(bundle, d)) && descendant(p)) {
++        // Lifecycle events cover roots created in this Node process only. An
++        // external creator cannot be certified by some other sampled root.
++        if (p.ppid !== process.pid) this.uncertainty ??= `root created outside observed Node process: ${p.pid}`;
+         owned.set(p.pid, { row: p, bundle });
+         if (p.pgid === p.pid) this.groups.set(p.pgid, { leader: identity(p), bundle });
+       }
+     }
+     for (const [pgid, group] of this.groups) {
+       const leader = byPid.get(pgid);
+-      // A reused PID/group is not ours. A surviving previously captured member is
+-      // required before extending an orphan group; a stale numeric PGID is insufficient.
+-      if ((leader && identity(leader) !== group.leader) || ![...owned.values()].some(p => p.row.pgid === pgid)) { this.groups.delete(pgid); continue; }
++      // Reuse proves this is a different group. Otherwise a newly seen orphan
++      // without a known survivor is uncertain cleanup, never signal authority.
++      if (leader && identity(leader) !== group.leader) { this.groups.delete(pgid); continue; }
++      if (![...owned.values()].some(p => p.row.pgid === pgid)) {
++        if (rows.some(p => p.pgid === pgid)) this.uncertainty ??= `unobserved orphan in remembered group: ${pgid}`;
++        else this.groups.delete(pgid);
++        continue;
++      }
+       for (const p of rows) if (p.pgid === pgid) owned.set(p.pid, { row: p, bundle: group.bundle });
+     }
+     let changed = true;
+     while (changed) { changed = false; for (const p of rows) { const parent = owned.get(p.ppid); if (parent && !owned.has(p.pid)) { owned.set(p.pid, { row: p, bundle: parent.bundle }); changed = true; } } }
+     this.known = new Map([...owned.values()].map(p => [identity(p.row), p]));
++    for (const [child, birth] of this.births) if ([...owned.values()].some(p => p.row.pid === child.pid && p.bundle === birth.bundle)) birth.captured = true;
+     return [...owned.values()].map(p => p.row).sort((a, b) => a.pid - b.pid);
+   }
+-  processes() { return this.capture(); }
+-  /** Observe long operations (startup/campaign) while roots are still alive, so
+-   * a worker that exits before the caller resumes cannot hide orphan children. */
++  processes() { const rows = this.capture(); this.assertCertain(); return rows; }
++  /** Sampling supplements spawn lifecycle observation; missing root identities
++   * or uncertain orphan ownership fail verification instead of certifying cleanup. */
+   async observe<T>(operation: () => Promise<T>): Promise<T> {
+     this.capture(); let samplingError: unknown;
+     const timer = setInterval(() => { try { this.capture(); } catch (e) { samplingError ??= e; } }, 50); timer.unref();
+     let result: T;
+     try { result = await operation(); }
+     finally { clearInterval(timer); this.capture(); }
+     if (samplingError) throw samplingError;
++    this.assertCertain();
+     return result;
+   }
+   kill(directory: string, command: RegExp, signal: NodeJS.Signals = 'SIGKILL'): ProcessRow[] {
+     this.capture(); const target = resolve(directory);
+     const candidates = [...this.known.values()].filter(p => under(p.bundle, target) && command.test(p.row.command));
+     const killed: ProcessRow[] = [];
+     for (const { row } of candidates) {
+       // Revalidate the captured PID identity immediately before signalling; never
+       // turn a stale observation into a kill of a newly allocated process.
+       const current = this.snapshot().find(p => p.pid === row.pid);
+diff --git a/tests/unit/owned-processes.test.ts b/tests/unit/owned-processes.test.ts
+index fbb5a0a..3479edc 100644
+--- a/tests/unit/owned-processes.test.ts
++++ b/tests/unit/owned-processes.test.ts
+@@ -1,21 +1,22 @@
+-import { afterEach, expect, test } from 'vitest';
++import { afterEach, expect, test, vi } from 'vitest';
+ import { spawn, type ChildProcess } from 'node:child_process';
+ import { once } from 'node:events';
+ import { mkdtemp, rm } from 'node:fs/promises';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ import * as ownership from '../support/owned-processes';
+ 
+ const children: ChildProcess[] = [], dirs: string[] = [];
+ const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catch { return false; } };
+ afterEach(async () => {
++  vi.restoreAllMocks();
+   for (const c of children.splice(0)) { if (c.pid) { try { process.kill(-c.pid, 'SIGKILL'); } catch { /* already exited */ } c.kill('SIGKILL'); } }
+   for (const d of dirs.splice(0)) await rm(d, { recursive: true, force: true });
+ });
+ async function temp() { const d = await mkdtemp(join(tmpdir(), 'owned-process-')); dirs.push(d); return d; }
+ async function sentinel(directory: string, descendants = false) {
+   const code = descendants ? "const {spawn}=require('node:child_process');const c=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore'});console.log(c.pid);setInterval(()=>{},1000)" : "console.log(process.pid);\nsetInterval(()=>{},1000)";
+   const c = spawn(process.execPath, ['-e', code, '--', '--bundle-root', join(directory, 'bundle'), '--run-id', 'same-id'], { detached: true, stdio: ['ignore', 'pipe', 'inherit'] }); children.push(c);
+   const [line] = await once(c.stdout!, 'data');
+   return { child: c, descendant: Number(String(line).trim()) };
+ }
+@@ -81,10 +82,67 @@ test('observing a whole operation retains children when the worker exits before
+   const directory = await temp(), scope = new ownership.OwnedProcesses(); scope.addDirectory(directory);
+   let descendant = 0;
+   await scope.observe(async () => {
+     const own = await sentinel(directory, true); descendant = own.descendant;
+     await new Promise(r => setTimeout(r, 180));
+     own.child.kill('SIGKILL'); await once(own.child, 'exit');
+   });
+   expect(scope.processes().map(p => p.pid)).toContain(descendant);
+   process.kill(descendant, 'SIGKILL');
+ });
++
++
++test('a newly seen orphan in a remembered group fails cleanup without granting signal authority', () => {
++  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-gap/bundle' };
++  let rows: ownership.ProcessRow[] = [root];
++  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-gap');
++  expect(scope.processes().map(p => p.pid)).toEqual([1001]);
++  rows = [{ pid: 1002, ppid: 1, pgid: 1001, started: 'later', command: 'controller' }];
++  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
++  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
++  expect(scope.kill('/tmp/owned-gap', /controller/)).toEqual([]);
++  expect(signal).not.toHaveBeenCalled();
++});
++
++for (const priorRoot of [false, true]) test(`an operation with a whole unobserved worker lifetime fails cleanup (prior sampled root: ${priorRoot})`, async () => {
++  const directory = await temp();
++  const rows = priorRoot ? [{ pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: `python --bundle-root ${directory}/old-bundle` }] : [];
++  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory(directory);
++  await expect(scope.observe(async () => {
++    const c = spawn(process.execPath, ['-e', '', '--', '--bundle-root', join(directory, 'short-bundle'), '--run-id', 'short'], { detached: true, stdio: 'ignore' }); children.push(c);
++    await once(c, 'exit');
++  })).rejects.toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
++  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
++  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
++  expect(scope.kill(directory, /short-bundle/)).toEqual([]);
++  expect(signal).not.toHaveBeenCalled();
++});
++
++test('a reused group and previously unseen members never gain signal authority', () => {
++  const root = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-new-group/bundle' };
++  let rows: ownership.ProcessRow[] = [root];
++  const scope = new ownership.OwnedProcesses(() => rows); scope.addDirectory('/tmp/owned-new-group');
++  expect(scope.processes()).toHaveLength(1);
++  rows = [{ ...root, ppid: 1, started: 'new', command: 'unrelated' }, { pid: 1002, ppid: 1, pgid: 1001, started: 'new', command: 'controller' }];
++  const signal = vi.spyOn(process, 'kill').mockImplementation(() => true);
++  expect(scope.processes()).toEqual([]);
++  expect(scope.kill('/tmp/owned-new-group', /unrelated|controller/)).toEqual([]);
++  expect(signal).not.toHaveBeenCalled();
++});
++
++
++test('a sampled direct root cannot certify a worker created in another process', () => {
++  const direct = { pid: 1001, ppid: process.pid, pgid: 1001, started: 'old', command: 'python --bundle-root /tmp/owned-external/direct' };
++  const scope = new ownership.OwnedProcesses(() => [direct,
++    { pid: 1002, ppid: process.pid, pgid: 1002, started: 'old', command: 'external worker creator' },
++    { pid: 1003, ppid: 1002, pgid: 1003, started: 'old', command: 'python --bundle-root /tmp/owned-external/indirect' },
++  ]); scope.addDirectory('/tmp/owned-external');
++  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
++});
++
++test('a lifecycle callback observation error is latched without escaping the spawn callback', async () => {
++  const directory = await temp(); let broken = true;
++  const scope = new ownership.OwnedProcesses(() => { if (broken) throw new Error('table unavailable'); return []; }); scope.addDirectory(directory);
++  await sentinel(directory);
++  broken = false;
++  expect(() => scope.processes()).toThrow('OWNED_PROCESS_OBSERVATION_UNCERTAIN');
++});

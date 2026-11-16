@@ -1,0 +1,1091 @@
+{
+  "at": "2026-11-16T00:56:16.704910+00:00",
+  "scope": "Independent read-only fresh R1 raw results, complete artifact bytes, actual own exit receipts, explicit original-layout failure and data-only staged readback audit. No campaign, browser, engine, database or suite rerun.",
+  "qualification": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/qualification.json",
+    "bytes": 578091,
+    "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+  },
+  "identity": {
+    "before": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "locks": {
+        "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+        "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+        "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+        "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+        "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+      },
+      "webots": {
+        "version": "Webots version: R2025a",
+        "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+      },
+      "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+      "at": "2026-11-16T00:24:35.537Z"
+    },
+    "after": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "locks": {
+        "algorithm": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+        "simulation3d": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+        "irsim": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+        "linkforge": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+        "mujoco": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84"
+      },
+      "webots": {
+        "version": "Webots version: R2025a",
+        "executableSha256": "0ba7fdf2603a0b5cc2cac628e590c6f8afddbc85a8f1b1f5329056183c57a642"
+      },
+      "oracleProfileDigest": "5a79d629e9768464c215200804acc8bcdd93e839b41234cab2b715483d629b61",
+      "at": "2026-11-16T00:52:23.399Z"
+    },
+    "identityStable": true
+  },
+  "lab": {
+    "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+    "dirty": false,
+    "pin": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+    }
+  },
+  "gates": {
+    "G-ALG1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "ALG01",
+        "ALG02",
+        "ALG03",
+        "ALG05"
+      ]
+    },
+    "G-ALG2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "PID01",
+        "PID02",
+        "PID03"
+      ]
+    },
+    "G-WB1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "WB01",
+        "WB02",
+        "WB08"
+      ]
+    },
+    "G-WB2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "WB03",
+        "WB04",
+        "WB05",
+        "WB06",
+        "WB07"
+      ]
+    },
+    "G-INT2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "INT11",
+        "INT12"
+      ]
+    },
+    "G-REG1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "REG01"
+      ]
+    }
+  },
+  "notRun": [
+    {
+      "id": "ALG04",
+      "reason": "R3: the joint trace needs a running LinuxCNC bridge"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/qualification.json",
+      "bytes": 578091,
+      "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/alg-ts.log",
+      "bytes": 1039,
+      "sha256": "beb24bb450101a8b6e4010faf55b584762b82013fd9c85df65b4006987bcb0a3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/alg-ts.json",
+      "bytes": 8885,
+      "sha256": "aca1bfcecf6fc6e1be43a14bb20361c961e22294d97a59b17a96292562b6dc1b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/alg-py.log",
+      "bytes": 99,
+      "sha256": "ecebfc1e81aa140e9ef62d899f60843059e89f546149401d116a75609eef822b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/alg-py.xml",
+      "bytes": 1814,
+      "sha256": "0c8793856f9ed31d5042479dbbd7eaa91a19447f124f27f58a69c7b02033e8b8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-static.log",
+      "bytes": 476,
+      "sha256": "bc553fa1a6a981d38dc3b1849db294b466fcc6d69d6d2265e69b5585c0fe019d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-static.json",
+      "bytes": 8294,
+      "sha256": "5edea132304322864e600d8eb874e34af8215e087bb119e0ad43ac3733397371"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-py.log",
+      "bytes": 179,
+      "sha256": "ab0c98f35a027616d3b7a36b5f9cca4c9d4c3200b055376744f944a7164080ec"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-py.xml",
+      "bytes": 9524,
+      "sha256": "ce7b43a2c71cc700ff41991225a30684b5d52df32fa3d0b8cb1125e1e15c8bda"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-worker.log",
+      "bytes": 1438,
+      "sha256": "8ee76cf892692ad3992fb685e7e905c7b408a434b8b045131e5c7aa2f7d0d20d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-worker.json",
+      "bytes": 5243,
+      "sha256": "07daf2c8487416218edd8d9657b3b4377d65738dd3e543d5896b92fd8165a777"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-mission.log",
+      "bytes": 497,
+      "sha256": "5bf01af1a2cc41594bb7f6bb3cae3ae9b06ea67d44593ddf78483f2550c7d2aa"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-mission.json",
+      "bytes": 1033,
+      "sha256": "07c13b953be00ce1df520e62a8e9c3fa97536a20bc46471c501b17107d358231"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-fleet.log",
+      "bytes": 519,
+      "sha256": "0257b92ed3a3258132e6bba6367aa6bae36938889cfa4cbce3bed37e7ee46e43"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-fleet.json",
+      "bytes": 1083,
+      "sha256": "c0313d99fce3b43882c66d0e9cb411a74e25944937a0c7fa5d3a779fe4eb4881"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-faults.log",
+      "bytes": 2345,
+      "sha256": "f1e4c14d58d0d1a97b238ef1c17faf73d64197566b6f6521467cbb949e7cb9a4"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-faults.json",
+      "bytes": 4538,
+      "sha256": "9b685d2f96d1fbaecd798d28bc22222edb780b53a35ac03196927f8342ff02b5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-evidence.log",
+      "bytes": 859,
+      "sha256": "bd9697552124c591cbeb4682d3967fc01280b99fccd67e590cba20f2132846c3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-evidence.json",
+      "bytes": 1396,
+      "sha256": "957cdd71e17d496098d4cb96cfa8f02c78b66e308a1c8ab6deda9c7d780e5f19"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-batch.log",
+      "bytes": 549,
+      "sha256": "c1fc6020eb51777e6ff7075af708354611a0276ebaa5a42949ad1088bc70f62b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/wb-batch.json",
+      "bytes": 2081,
+      "sha256": "afc8f8cf9537d634fba7a99c5b40398e66728118c9404e561714474fb97d064c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/int-regress.log",
+      "bytes": 4919,
+      "sha256": "b9be414ba1079de96034fcf7d9e81e12c6e30abe1ff56f2ca200a80eb82a1520"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/int-regress.json",
+      "bytes": 29393,
+      "sha256": "601e89791872958e971d709937db0415f5f120ddc1bddfe704f44ce6cd8b2ecf"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-unit.log",
+      "bytes": 888,
+      "sha256": "c47361170d4288f79557e90995af7b0341fab95bfc69a0df353623d07bff89a5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-unit.json",
+      "bytes": 15062,
+      "sha256": "2693c5e54f751b24dae46520540a3e67830d7c39a9182a74246c8ceb03a5314c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-e2e-webots-journey.log",
+      "bytes": 1071,
+      "sha256": "3d1c4a399f8a01371aaf36beea6070a8f8c960861defc92fca90199c4e1d5b31"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-e2e-webots-journey.json",
+      "bytes": 4324,
+      "sha256": "bff3353a8f4d9c035b6734d6fc690cabdbd69cd982a241330a7640da59735f4e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-e2e-webots-fleet.log",
+      "bytes": 1080,
+      "sha256": "a9ab52bc71a6dc5b08908c6a9e80ec233f4f07eacf66a888bb2b0b7658fa599b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/lab-e2e-webots-fleet.json",
+      "bytes": 4329,
+      "sha256": "049daa1a5eb2d1accb5affe040dea633bc8553e96353fb03e158af34dc4ca906"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/algorithm.log",
+      "bytes": 109,
+      "sha256": "468be5a8cc6eecb4f673baf4fcac350c4b67b0ebe00862192e0b652f449cc0c7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/suites/performance.log",
+      "bytes": 270,
+      "sha256": "36e7df04d3408c78412c78a9abcdcf23a164e0cc7d36a70ff594c09009c19003"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/campaign/summary.json",
+      "bytes": 32780,
+      "sha256": "4a9a783170a6d2f5e5948f081ed1722b0f70601e48a6fa1a993565b29151b268"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/algorithm-results.json",
+      "bytes": 6147,
+      "sha256": "dfd60463701bff084e4880f6ed5cae71fe318871a1418188377b4ec4c963f30d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1/performance.json",
+      "bytes": 1065,
+      "sha256": "c84bcf21f2bb914fe98fc3e852a806e5060efcd908d1dfa625de8cd02662de9f"
+    }
+  ],
+  "artifactReferencesVerified": 2587,
+  "artifactReferenceBytesVerified": 139264818,
+  "verifiedReferenceRowsSha256": "0a385c72ae361275cde387194c4317292886ea125be8190f7d2b99ba0598f506",
+  "referenceList": "Exact qualification.artifacts, all original paths/bytes/hashes verified; the qualification hash binds the full list.",
+  "suiteResults": [
+    {
+      "id": "alg-ts",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0,
+        "total": 26
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "alg-py",
+      "kind": "pytest",
+      "derivedCounts": {
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0,
+        "total": 16
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "counterScope": "raw header regex and testcase tags; invalid XML remains invalid"
+    },
+    {
+      "id": "wb-static",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0,
+        "total": 25
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-py",
+      "kind": "pytest",
+      "derivedCounts": {
+        "passed": 78,
+        "failed": 0,
+        "skipped": 0,
+        "total": 78
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "counterScope": "raw header regex and testcase tags; invalid XML remains invalid"
+    },
+    {
+      "id": "wb-worker",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "total": 14
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-mission",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-fleet",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-faults",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "total": 10
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-evidence",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "wb-batch",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0,
+        "total": 4
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "int-regress",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 76,
+        "failed": 0,
+        "skipped": 0,
+        "total": 76
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-unit",
+      "kind": "vitest",
+      "derivedCounts": {
+        "passed": 42,
+        "failed": 0,
+        "skipped": 0,
+        "total": 42
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-e2e-webots-journey",
+      "kind": "playwright",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    },
+    {
+      "id": "lab-e2e-webots-fleet",
+      "kind": "playwright",
+      "derivedCounts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "counterScope": "actual raw assertions/cases"
+    }
+  ],
+  "actualRecordedCommandsExit0": 18,
+  "algorithmCases": [
+    {
+      "caseId": "ALG01",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "ALG02",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "ALG03",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "ALG05",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "PID01",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "PID02",
+      "verdict": "pass"
+    },
+    {
+      "caseId": "PID03",
+      "verdict": "pass"
+    }
+  ],
+  "campaignCases": [
+    {
+      "id": "001-WB-FD01-serve-3d-v1-s5-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 5,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5152,
+        "simTimeNs": "103040000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "002-WB-FD01-serve-3d-v1-s5-r2",
+      "scenarioId": "WB-FD01",
+      "seed": 5,
+      "repeat": 2,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5152,
+        "simTimeNs": "103040000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "003-WB-FD01-serve-3d-v1-s5-r3",
+      "scenarioId": "WB-FD01",
+      "seed": 5,
+      "repeat": 3,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5152,
+        "simTimeNs": "103040000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "004-WB-FD07-serve-3d-fleet-v1-s7-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 7,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "005-WB-FD07-serve-3d-fleet-v1-s7-r2",
+      "scenarioId": "WB-FD07",
+      "seed": 7,
+      "repeat": 2,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "006-WB-FD07-serve-3d-fleet-v1-s7-r3",
+      "scenarioId": "WB-FD07",
+      "seed": 7,
+      "repeat": 3,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "007-WB-FD01-serve-3d-v1-s100-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 100,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 4787,
+        "simTimeNs": "95740000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "008-WB-FD01-serve-3d-v1-s101-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 101,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5070,
+        "simTimeNs": "101400000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "009-WB-FD01-serve-3d-v1-s102-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 102,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5123,
+        "simTimeNs": "102460000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "010-WB-FD01-serve-3d-v1-s103-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 103,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 5209,
+        "simTimeNs": "104180000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "011-WB-FD01-serve-3d-v1-s104-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 104,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 4759,
+        "simTimeNs": "95180000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "012-WB-FD01-serve-3d-v1-s105-r1",
+      "scenarioId": "WB-FD01",
+      "seed": 105,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 4798,
+        "simTimeNs": "95960000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "013-WB-FD07-serve-3d-fleet-v1-s200-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 200,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "014-WB-FD07-serve-3d-fleet-v1-s201-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 201,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "015-WB-FD07-serve-3d-fleet-v1-s202-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 202,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "016-WB-FD07-serve-3d-fleet-v1-s203-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 203,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "017-WB-FD07-serve-3d-fleet-v1-s204-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 204,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "018-WB-FD07-serve-3d-fleet-v1-s205-r1",
+      "scenarioId": "WB-FD07",
+      "seed": 205,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 9747,
+        "simTimeNs": "194940000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "019-WB-FD01-cancel-serve-3d-v1-s5-r1",
+      "scenarioId": "WB-FD01-cancel",
+      "seed": 5,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "cancelled",
+        "served": "0",
+        "tick": 877,
+        "simTimeNs": "17540000000"
+      },
+      "evidenceComplete": true,
+      "evidenceAsExpected": true
+    },
+    {
+      "id": "020-WB-FD01-enginekill-serve-3d-v1-s5-r1",
+      "scenarioId": "WB-FD01-enginekill",
+      "seed": 5,
+      "repeat": 1,
+      "result": "pass",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 1600,
+        "simTimeNs": "32000000000"
+      },
+      "evidenceComplete": false,
+      "evidenceAsExpected": true
+    }
+  ],
+  "campaignEvidenceComplete": false,
+  "performance": {
+    "schemaVersion": 1,
+    "documentType": "webots-performance-measurement",
+    "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches; the first batch includes the first-world load",
+    "host": {
+      "platform": "darwin",
+      "release": "25.5.0",
+      "arch": "arm64",
+      "cpu": "Apple M2 Pro",
+      "cpus": 10,
+      "memGiB": 16,
+      "node": "v24.22.2",
+      "webots": "0ba7fdf2603a0b5c",
+      "basicTimeStepMs": 20
+    },
+    "workload": {
+      "scenarioId": "WB-FD07",
+      "fixtureId": "serve-3d-fleet-v1",
+      "ticks": 1500,
+      "simSeconds": 30,
+      "finalStatus": "running",
+      "outcome": {
+        "status": "running",
+        "served": "0",
+        "tick": 1500,
+        "simTimeNs": "30000000000"
+      },
+      "outputBytes": 3198491
+    },
+    "steadyState": {
+      "batches": 30,
+      "perTickMs": {
+        "p50": 5.583395,
+        "p95": 11.345517500000001,
+        "max": 12.35116832
+      },
+      "realtimeFactor": 2.597613658347723,
+      "wallSeconds": 11.549061540999999,
+      "webotsRssMiB": {
+        "max": 274.9375,
+        "samples": 30
+      },
+      "controllersRssMiB": {
+        "max": 53.921875
+      }
+    }
+  },
+  "receipts": [
+    {
+      "name": "record-r1",
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r1.receipt.json",
+        "bytes": 5387,
+        "sha256": "75704d5578fb940460ed611c1196146ea83c76ec1876a41723034e581009ef9a"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-r1.log",
+        "bytes": 928,
+        "sha256": "836cdde4d2d694e8f711fb1bc53cb0fa549f261c1824e0b92e6d3e9309253c3d"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 21600; exec @ARGV",
+        "node",
+        "scripts/record-sim-extension.mjs",
+        "--release",
+        "r1",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+        "--candidate-id",
+        "r1-final-981e234-d4c3032",
+        "--irsim-record",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim",
+        "--mock-regression",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression",
+        "--lab",
+        "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+        "--webots-home",
+        "/Applications/Webots.app",
+        "--webots-python",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-webots/bin/python"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-16T00:24:34.652Z",
+      "finishedAt": "2026-11-16T00:52:24.294Z"
+    },
+    {
+      "name": "acceptance-r1-external",
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r1-external.receipt.json",
+        "bytes": 5108,
+        "sha256": "20ea982e866a90e7e9ec87b6253d8608f885f426a08d989a06f7c389fbd4bf84"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r1-external.log",
+        "bytes": 3440,
+        "sha256": "9ddb1d2bff084969ad0a76cce67093b8e00f5832c3e96e3fb3b5c758dbf253a8"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "env",
+        "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+        "pnpm",
+        "test:acceptance",
+        "--",
+        "sim-extension",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r1-external.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-11-16T00:52:25.643Z",
+      "finishedAt": "2026-11-16T00:52:26.937Z"
+    },
+    {
+      "name": "stage-current-legacy-r1",
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/stage-current-legacy-r1.receipt.json",
+        "bytes": 4929,
+        "sha256": "36ffd7ac14a9a799eddcd9fc4fd0b2d9e0526380ea96d268a3d8f56a825c2682"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/stage-current-legacy-r1.log",
+        "bytes": 312,
+        "sha256": "cc31d540e5da1508d4fe6acf9320d1c57f3717ff764e18b5f37aa9dee976b90c"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 600; exec @ARGV",
+        "python3",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/stage-current-legacy.py",
+        "r1"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-16T00:52:27.271Z",
+      "finishedAt": "2026-11-16T00:52:35.213Z"
+    },
+    {
+      "name": "acceptance-r1-staged",
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r1-staged.receipt.json",
+        "bytes": 3393479,
+        "sha256": "32a95095ee520f065863d608e992dd870e82e47dfaf649cc7b2bf90bd31c9701"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r1-staged.log",
+        "bytes": 931,
+        "sha256": "459d7fca76c613ab28f3b38f5a30716b66741dad8adbbec3f5dfc86db63ca7d6"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "env",
+        "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+        "pnpm",
+        "test:acceptance",
+        "--",
+        "sim-extension",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r1-staged.json"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-16T00:52:35.925Z",
+      "finishedAt": "2026-11-16T00:52:37.161Z"
+    }
+  ],
+  "publicGuardResults": {
+    "external": {
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r1-external.json",
+        "bytes": 6706,
+        "sha256": "dc568033cf13f599206feeab67f0944ad2a4930bee2bfd6ad0b79f5b9050332d"
+      },
+      "counts": {
+        "passed": 11,
+        "failed": 1,
+        "skipped": 0,
+        "total": 12
+      },
+      "failures": [
+        {
+          "ancestorTitles": [],
+          "fullName": "the IR-SIM record it builds on is the one in the tree (byte for byte) and is of the same commit",
+          "status": "failed",
+          "title": "the IR-SIM record it builds on is the one in the tree (byte for byte) and is of the same commit",
+          "duration": 3.5019999999999527,
+          "failureMessages": [
+            "AssertionError: docs/implementation/evidence/linkforge-irsim/irsim/qualification.json is not in the tree (the candidate this record builds on): expected false to be true // Object.is equality\n    at /Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/acceptance/sim-extension.acceptance.test.ts:64:98\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/.pnpm/@vitest+runner@4.1.12/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ]
+    },
+    "staged": {
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r1-staged.json",
+        "bytes": 5039,
+        "sha256": "3b8f1ec58140d07980ecfa22a295f8d7c6b8b5ffe34732d5f558da1a5bc4c605"
+      },
+      "counts": {
+        "passed": 12,
+        "failed": 0,
+        "skipped": 0,
+        "total": 12
+      },
+      "failures": []
+    }
+  },
+  "stagingDescriptor": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/current-legacy-stage-r1.json",
+    "bytes": 1628908,
+    "sha256": "989d0886bfbd323333f6dc4e7f64c5f88183ae47425dd0fe584dff4b883bfd1f"
+  },
+  "stagedCodeAttribution": {
+    "sourceHead": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "labHead": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+    "trackedDiffEmpty": true,
+    "dataOnlyStaging": true
+  },
+  "copiesVerified": [
+    {
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/docs/implementation/evidence/linkforge-irsim/irsim",
+      "verifiedPairs": 1603,
+      "verifiedBytesPerCopy": 70037027
+    },
+    {
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/current-legacy-readback/source/docs/implementation/evidence/sim-extension/r1",
+      "verifiedPairs": 2588,
+      "verifiedBytesPerCopy": 139842909
+    }
+  ],
+  "defaultOutputMap": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/r1-default-output-map.json",
+    "bytes": 793,
+    "sha256": "d6339664db3aa10bab8e83e368ed5ac84cecfbdf08685c8e56854eb078b570fa"
+  },
+  "defaultOutputFilesVerifiedAtBothRetainedLocations": 1,
+  "limits": [
+    "All six software gates tested remains accepted:false; ALG04 requires an actual LinuxCNC bridge and is not_run.",
+    "Original external-layout acceptance is 11pass/1fail. Staged complete unchanged acceptance is12pass/0fail from explicit data-only staged exact code, not a clean producer or arbitrary-layout portability fix.",
+    "The inherited pytest hostname redaction leaves XML malformed; actual own exits, raw regex/testcase counts and public consistency are not standard XML validity.",
+    "Webots performance is30sim seconds/1500ticks in50tick batches, final running/served0. It is not full-cell web performance, completed mission performance, native Linux, calibration or hardware qualification.",
+    "Later stages may legitimately reuse the isolated default-output path; only its two preserved current R1 locations are verified here. Historical active-Lab default deviation remains separately disclosed.",
+    "Dependency reuse and point-in-time identities do not establish fresh installation, continuous filesystem observation, host trust or human acceptance."
+  ]
+}

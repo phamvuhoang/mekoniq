@@ -1,0 +1,780 @@
+# source original task BASE 3c917ceee6a92c6b087f0bd37baaa4e0740d44a8 HEAD d0f30749c0ddb474f0844c68be63a6f0fa4b1933
+# Explicit paths; generated image/HTML bytes bound in full inventory.
+
+diff --git a/artifacts/README.md b/artifacts/README.md
+index 23a30f677206c3c41104e3a107a52ee18945f205..9ab1ade28feee9c3fcfc3512d2d8ad1c1144d911 100644
+--- a/artifacts/README.md
++++ b/artifacts/README.md
+@@ -1,20 +1,27 @@
+ # MEKONIQ — interactive presentations
+ 
+-Ba bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
++Các bản HTML tự chứa, chuyển trực tiếp **Tiếng Việt / 日本語 / English**. Mở bằng trình duyệt hoặc gửi riêng từng file; không cần cài ứng dụng, chạy server hay tải thư viện/font từ Internet.
+ 
+ | Tài liệu | HTML độc lập | Bản xem riêng tư trên Pages |
+ | --- | --- | --- |
+ | Engineering Atlas · 8 chương | [engineering.html](engineering.html) | [Mở bản kỹ thuật](https://chatgpt.com/space/page_0c0b52bccf7481918e5a45ac0ad84ea6) |
+ | Business Plan · 11 slide | [business-plan.html](business-plan.html) | [Mở Business Plan](https://chatgpt.com/space/page_86729025d6548191a54021ac49b24dd6) |
+ | Robot Lab · 9 trang | [robot-lab.html](robot-lab.html) | File HTML local, chưa xuất bản |
+ | Digital Twin · trạng thái & triển khai · 06/11/2026 | [digital-twin-status-2026-11-06.html](digital-twin-status-2026-11-06.html) | Báo cáo tiếng Việt, offline; chưa xuất bản |
++| R2a · demo Web & Local · 14/11/2026 | [mekoniq-r2a-demo-guide.html](mekoniq-r2a-demo-guide.html) | VI/JA/EN, offline; chưa xuất bản |
++
++## Hướng dẫn demo R2a
++
++[HTML R2a](mekoniq-r2a-demo-guide.html) trình bày chức năng và các bước demo xArm 6 trên MuJoCo: ghép nối Web/Local, điều khiển 1× và tăng tốc, xem khớp, camera/watch mode, báo cáo và replay. Có lệnh/URL sao chép, ma trận backend và xử lý lỗi. Bốn ảnh gốc từ bản ghi kiểm UI cục bộ R2a; không phải ảnh production. Snapshot ghi rõ Cloud Run HTTP đã đạt, source và Lab production đã READY, demo Chrome production đã đạt và chưa nghiệm thu bởi con người.
++
++Nguồn và builder riêng: [src/r2a-demo-guide/README.md](src/r2a-demo-guide/README.md). Build bằng `python3 -B artifacts/src/r2a-demo-guide/build.py`; kiểm bằng `node artifacts/src/r2a-demo-guide/verify.cjs` từ source. HTML không chạy engine hay đọc khóa truy cập. Xem [kết quả kiểm](src/r2a-demo-guide/verification.json), [desktop](src/r2a-demo-guide/desktop-preview.png) và [mobile](src/r2a-demo-guide/mobile-preview.png).
+ 
+ ## Báo cáo Digital Twin ngày 06/11/2026
+ 
+ [Báo cáo HTML](digital-twin-status-2026-11-06.html) tổng hợp Plans 01–03 sau remediation R01–R12: 16 nhóm hoàn thành phần mềm, 10 nhóm còn tích hợp/nghiệm thu, 8 nhóm chưa thực hiện. Có tìm kiếm/lọc trạng thái, nguồn evidence, ba hướng dẫn deploy (mock / Gazebo-Nav2 / LinuxCNC SIM), sao chép lệnh, rollback, next steps và in/PDF toàn bộ nội dung. Không kết nối runtime hay chạy lệnh từ HTML. Đây là snapshot source `a89a077`, Lab `3a92e65`; không tự theo HEAD và không đóng acceptance gate.
+ 
+ Nội dung/builder riêng ở `src/digital-twin-status.py`, styles và tương tác ở `src/digital-twin-status.css` / `.js`. Không sửa trực tiếp HTML đã sinh. Build từ `source/` (cần sibling `lab/` chứa evidence snapshot):
+ 
+ ```sh
+ python3 artifacts/src/digital-twin-status.py
+ node --check artifacts/src/digital-twin-status.js
+diff --git a/artifacts/src/r2a-demo-guide/README.md b/artifacts/src/r2a-demo-guide/README.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..9ecc79ae117874eebfe1d95dc191a2d71dd9ef6d
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/README.md
+@@ -0,0 +1,39 @@
++# R2a · hướng dẫn demo Web & Local
++
++[Mở HTML độc lập](../../mekoniq-r2a-demo-guide.html). Mặc định tiếng Việt, chuyển được 日本語 / English. Nội dung, ảnh, CSS và JavaScript đều nhúng trong một file; không cần server hoặc Internet để đọc. HTML không gọi runtime, triển khai hay chạy lệnh. Các nút URL chỉ mở trang khi người đọc bấm.
++
++Hướng dẫn gồm chọn đường Web/Local, trình tự demo MuJoCo xArm 6, dữ liệu khớp, nhịp chạy, camera/watch mode, báo cáo/replay, bảng backend và xử lý lỗi. Lệnh được sao chép để người vận hành tự chạy. Checklist chỉ giúp chuẩn bị buổi trình bày, không tạo kết quả kiểm thử.
++
++## Trạng thái nội dung
++
++Snapshot ngày 2026-11-14, runtime source `4f893ac6fb75dff414a3ee42a726defb7935c734`, Lab dùng khi ghi evidence `a6ec316fb3ac2f71afff25e6fa77e931f4439e00`.
++
++- Cloud Run project `mekoniq`, `asia-southeast1`, URL chuẩn `https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app`. Image có mock và MuJoCo; CL01 HTTP đã chạy trên Linux x86-64. Lượt kiểm cuối đo 71,3 giây qua HTTP, gồm mạng và xử lý. G-CLOUD1 là `tested` qua guard bổ sung `cloud-run` gắn đúng SHA-256 của bản ghi R2a; JSON gốc giữ `blocked_external`, không phải trạng thái triển khai hiện tại. Origin web được phép là `https://mekoniq-lab.vercel.app`.
++- Hai main đã push; source `d1a2522a89f17d0f9d8d2c444975778844f74425` và Lab `a7449541e118d01f65af0ad1466e0c963a173f3c` đều READY trên Vercel. HTTP kiểm lúc 2026-11-14T01:29:09Z: source `/health/live` và `/health/ready` trả 200 với true; hai trang root trả 200. Demo headless Chrome 157 từ origin production đã đạt: ghép nối, đúng pin/mesh/supports, MJ-BV01 hoàn thành tick 4810, phục vụ 2, không page error, run đã archive. Lượt UI chọn 16× mất 78,4 giây gồm mạng, UI và báo cáo; không phải benchmark CPU hay nhịp 1×. Xem `docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json`; kiểm tự động này không thay cho kiểm tay HTTPS → loopback hoặc nghiệm thu. Commit Lab `a6ec316` vẫn là định danh lịch sử của bản ghi và ảnh local, không phải deployment production hiện tại.
++- Bản ghi phần mềm mới đã đạt kiểm tự động; nghiệm thu con người và kiểm tay Chrome/Firefox/Safari HTTPS → loopback còn chưa chạy.
++- Tick cuối phụ thuộc cách chia bước: bài UI của R2a ghi 4810 (250 tick đầu, rồi từng 20 tick), còn CL01 HTTP ghi 4800 (từng 50 tick). Demo kiểm trạng thái hoàn thành, phục vụ 2 và tick được báo cáo; không ép hai đường chạy có cùng tick cuối.
++- Cloud có một worker slot MuJoCo. “Chạy lại cùng đầu vào” trong cùng tab lưu bằng chứng và archive run cũ trước khi tạo run mới. “Ngắt kết nối” không archive.
++- Mô hình chưa hiệu chuẩn; máy pha và AMR vẫn là mock. HTML không chứa khóa truy cập hay mã ghép nối.
++
++`facts.json` giữ các định danh và nguồn ảnh; đọc lại các nguồn trước khi cập nhật trạng thái. Nội dung được viết trong `build.py` bằng `tr(vi, ja, en)`; `style.css` và `app.js` giữ trình bày và tương tác. Không sửa HTML đầu ra trực tiếp. Builder riêng này không thay đổi builder dùng chung của các deck cũ.
++
++## Build và kiểm
++
++Từ `source/`:
++
++```sh
++python3 -B artifacts/src/r2a-demo-guide/build.py
++export PATH="$HOME/.nvm/versions/node/v24.22.2/bin:$PATH"
++node --check artifacts/src/r2a-demo-guide/app.js
++perl -e 'alarm 120; exec @ARGV' node artifacts/src/r2a-demo-guide/verify.cjs
++```
++
++Browser check dùng `@playwright/test` hiện có của source và Chrome đã cài trên macOS. Có thể chỉ định `PLAYWRIGHT_CHROMIUM` đến binary Chromium khác. `--static` chỉ kiểm hash, bản dịch, lệnh bằng `bash -n`, anchor, liên kết nguồn và ảnh; không được xem như browser check.
++
++`build-manifest.json` chứa hash đầu vào, đầu ra và ảnh. `verification.json` ghi kiểm trình duyệt. Ảnh xem trước: [desktop](desktop-preview.png), [mobile](mobile-preview.png). Mỗi ảnh được chụp từ một trang Chromium mới, không tái dùng trang đã chạy kiểm print/media; có kiểm DOM chỉ chứa một toolbar ở đầu trang. Cách này loại ảnh raster lặp từng xuất hiện khi chụp sau chuỗi print/resize trên Chrome 157. Kiểm trình duyệt chỉ mở file HTML; không khởi động engine hay dịch vụ ở cổng vận hành.
++
++## Ảnh gốc và căn cứ thao tác
++
++Bốn PNG được sao chép nguyên byte từ `docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/` của source. SHA-256, đường dẫn gốc và kích thước có trong `facts.json`; verifier đối chiếu với ảnh trong bản ghi. Ba ảnh thuộc bài MuJoCo, ảnh watch mode thuộc kịch bản mock. Chúng là ảnh kiểm tự động cục bộ, không phải ảnh production đã deploy. Không chỉnh sửa, dựng lại hoặc thêm lớp hình ảnh lên ảnh bằng chứng.
++
++Hành vi UI được đối chiếu với Lab `src/ui/{run-bar,operations-panel,transport,workspace,report-panel}.ts`, `tests/e2e/mujoco-coffee.spec.ts` và launcher trong `package.json` / `scripts/`. Phạm vi R2a theo `docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md`. Liên kết nguồn trong HTML cần cấu trúc repository; gửi riêng HTML vẫn đọc đủ nội dung và ảnh.
+diff --git a/artifacts/src/r2a-demo-guide/app.js b/artifacts/src/r2a-demo-guide/app.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..ea300af6e32a5c34e789ef2eeeb2882b4a53fc4a
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/app.js
+@@ -0,0 +1,79 @@
++(() => {
++  'use strict';
++  const root = document.documentElement;
++  root.classList.add('js');
++  const languages = ['vi', 'ja', 'en'];
++  const messages = {
++    copied: {vi: 'Đã sao chép.', ja: 'コピーしました。', en: 'Copied.'},
++    select: {vi: 'Đã chọn nội dung. Dùng Ctrl+C hoặc ⌘C để sao chép.', ja: '内容を選択しました。Ctrl+C / ⌘Cでコピーしてください。', en: 'Text selected. Use Ctrl+C or ⌘C to copy.'},
++  };
++  let language = 'vi', toastTimer, previousFocus;
++  const chooseLanguage = lang => {
++    language = languages.includes(lang) ? lang : 'vi';
++    root.dataset.lang = language;
++    root.lang = language;
++    document.querySelectorAll('[data-lang-switch]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.langSwitch === language)));
++    document.querySelectorAll('[data-alt-vi]').forEach(e => {
++      const text = e.getAttribute(`data-alt-${language}`);
++      if (e.tagName === 'IMG') e.alt = text;
++      else e.setAttribute('aria-label', text);
++    });
++    try { localStorage.setItem('mekoniq-r2a-guide-language', language); } catch { /* file views may disallow storage */ }
++  };
++  let initial = new URLSearchParams(location.search).get('lang');
++  if (!initial) try { initial = localStorage.getItem('mekoniq-r2a-guide-language'); } catch { /* use Vietnamese */ }
++  chooseLanguage(initial);
++  const chooseRoute = (name, focus = false) => {
++    const route = name === 'web' ? 'web' : 'local';
++    document.querySelectorAll('[data-route]').forEach(b => {
++      const on = b.dataset.route === route;
++      b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1;
++      if (on && focus) b.focus();
++    });
++    document.querySelectorAll('[data-route-panel]').forEach(p => { p.hidden = p.dataset.routePanel !== route; });
++  };
++  chooseRoute('local');
++  document.querySelectorAll('[data-route]').forEach(b => {
++    b.addEventListener('click', () => chooseRoute(b.dataset.route));
++    b.addEventListener('keydown', e => {
++      if (!['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
++      e.preventDefault();
++      chooseRoute(e.key === 'Home' ? 'local' : e.key === 'End' ? 'web' : b.dataset.route === 'web' ? 'local' : 'web', true);
++    });
++  });
++  document.querySelectorAll('[data-route-link]').forEach(a => a.addEventListener('click', () => chooseRoute(a.dataset.routeLink)));
++  document.querySelectorAll('[data-lang-switch]').forEach(b => b.addEventListener('click', () => chooseLanguage(b.dataset.langSwitch)));
++  const toast = id => {
++    const el = document.getElementById('toast'); el.textContent = messages[id][language];
++    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.textContent = ''; }, 5000);
++  };
++  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
++    const target = document.getElementById(b.dataset.copy);
++    try {
++      if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
++      await navigator.clipboard.writeText(target.textContent); toast('copied');
++    } catch {
++      const range = document.createRange(); range.selectNodeContents(target);
++      const selection = getSelection(); selection.removeAllRanges(); selection.addRange(range); toast('select');
++    }
++  }));
++  const checks = [...document.querySelectorAll('.prep-check')];
++  const updateChecks = () => { document.getElementById('prep-count').textContent = `${checks.filter(c => c.checked).length} / ${checks.length}`; };
++  checks.forEach(c => c.addEventListener('change', updateChecks));
++  document.querySelector('[data-reset-checks]').addEventListener('click', () => { checks.forEach(c => { c.checked = false; }); updateChecks(); });
++  const dialog = document.getElementById('lightbox');
++  document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
++    previousFocus = b;
++    const source = b.querySelector('img'), target = document.getElementById('lightbox-image');
++    target.src = source.src; target.alt = source.alt;
++    document.getElementById('lightbox-caption').innerHTML = b.closest('figure').querySelector('figcaption').innerHTML;
++    dialog.showModal(); document.getElementById('close-lightbox').focus();
++  }));
++  document.getElementById('close-lightbox').addEventListener('click', () => dialog.close());
++  dialog.addEventListener('close', () => previousFocus?.focus());
++  dialog.addEventListener('click', e => { if (e.target === dialog) { const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); } });
++  let printOpen = [];
++  addEventListener('beforeprint', () => { printOpen = [...document.querySelectorAll('details')].filter(d => !d.open); printOpen.forEach(d => { d.open = true; }); });
++  addEventListener('afterprint', () => { printOpen.forEach(d => { d.open = false; }); });
++  document.querySelector('[data-print]').addEventListener('click', () => window.print());
++})();
+diff --git a/artifacts/src/r2a-demo-guide/build-manifest.json b/artifacts/src/r2a-demo-guide/build-manifest.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..ba9ad37ec49077f819085b2c038592e3f0bc4617
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/build-manifest.json
+@@ -0,0 +1,59 @@
++{
++  "schemaVersion": 1,
++  "artifact": "mekoniq-r2a-demo-guide.html",
++  "sha256": "a22dabf893a7bea5f5aaaa72dfac8e1c060602c497b7d5b24708f959e097e540",
++  "bytes": 1131427,
++  "inputs": {
++    "build.py": "73447f2511c72d6110c80d56461c9783a764740cc50eb7d849e1fa7fea12e42f",
++    "style.css": "06a984f25a1a8c8c0e932c9bd80e020e9a57a3adef5a9f376b907b1a786ae8d3",
++    "app.js": "8999434c1f7782113fed12f607c664e52fef5230df0d57e2762672a1defb7b30",
++    "facts.json": "46555e67d12bb63001efa6eccfe4c60fcc5d6976a1920151fb09992ac32fc785"
++  },
++  "translationTriples": 177,
++  "shellCommands": [
++    "export PATH=\"$HOME/.nvm/versions/node/v24.22.2/bin:$PATH\"\ncd lab\npnpm check:source\npnpm lab:mujoco",
++    "pnpm dev",
++    "pnpm lab:mock",
++    "cd source\nnode scripts/bootstrap-portable-simulation.mjs mujoco"
++  ],
++  "images": [
++    {
++      "id": "arm",
++      "file": "images/arm.png",
++      "sha256": "079de9679ba1dafc5278e3f7988f9f12bb981a395d8b35ef0fb24671a6488750",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "joints",
++      "file": "images/joints.png",
++      "sha256": "e921c33089182f6cdb3d429258a189c4531ffc2d9a71a043d454216dc9d7a1e7",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "replay",
++      "file": "images/replay.png",
++      "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "watch",
++      "file": "images/watch.png",
++      "sha256": "cd9368dad6c2a863b30a94d09ff04e5289f210f003bff5378447ca5d2f3886ff",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
++      "scope": "automated local UI test; not deployed production UI"
++    }
++  ],
++  "runtimeSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
++  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00"
++}
+diff --git a/artifacts/src/r2a-demo-guide/build.py b/artifacts/src/r2a-demo-guide/build.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..194d7a79b216d34e2e41526127a4d87f0909910f
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/build.py
+@@ -0,0 +1,125 @@
++#!/usr/bin/env python3
++"""Build an offline, trilingual R2a demo guide from explicit facts and original screenshots."""
++import base64
++import hashlib
++import html
++import json
++import re
++import subprocess
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++OUT = HERE.parent.parent / 'mekoniq-r2a-demo-guide.html'
++FACTS = json.loads((HERE / 'facts.json').read_text())
++E = html.escape
++COMMANDS = []
++TRANSLATIONS = []
++
++def tr(vi, ja, en):
++    assert all(isinstance(s, str) and s.strip() for s in (vi, ja, en))
++    TRANSLATIONS.append([vi, ja, en])
++    return ''.join(f'<span class="i18n" lang="{lang}">{E(text)}</span>' for lang, text in zip(('vi', 'ja', 'en'), (vi, ja, en)))
++
++def p(vi, ja, en, cls=''):
++    return f'<p class="{cls}">{tr(vi, ja, en)}</p>'
++
++def title(number, vi, ja, en, desc):
++    return f'<div class="section-heading"><span class="section-no">{number}</span><div><h2>{tr(vi, ja, en)}</h2>{p(*desc)}</div></div>'
++
++def command(id_, text, shell=True):
++    if shell:
++        subprocess.run(['bash', '-n'], input=text, text=True, check=True, capture_output=True)
++        COMMANDS.append(text)
++    return f'<div class="code"><div class="code-top"><span>{"TERMINAL" if shell else "URL"}</span><button type="button" class="copy interactive" data-copy="{id_}">{tr("Sao chép", "コピー", "Copy")}</button></div><pre id="{id_}"><code>{E(text)}</code></pre></div>'
++
++def step(n, heading, body, result=None):
++    return f'<li class="step"><span class="step-no">{n:02}</span><div><h3>{tr(*heading)}</h3>{p(*body)}'+(f'<p class="expected"><b>{tr("Mong đợi", "確認する結果", "Expected")}</b> {tr(*result)}</p>' if result else '')+'</div></li>'
++
++def image(id_, caption, hero=False):
++    meta = next(i for i in FACTS['images'] if i['id'] == id_)
++    raw = (HERE / meta['file']).read_bytes()
++    assert hashlib.sha256(raw).hexdigest() == meta['sha256'], 'Screenshot changed: '+id_
++    uri = 'data:image/png;base64,'+base64.b64encode(raw).decode()
++    alts = ' '.join(f'data-alt-{lang}="{E(text, quote=True)}"' for lang, text in zip(('vi','ja','en'),caption))
++    return f'<figure class="shot {"hero-shot" if hero else ""}"><button type="button" data-zoom="{id_}" class="image-button" aria-label="{E(caption[0], quote=True)}" {alts}><img src="{uri}" width="{meta["width"]}" height="{meta["height"]}" alt="{E(caption[0], quote=True)}" {alts} loading="{"eager" if hero else "lazy"}"></button><figcaption>{tr(*caption)} <span class="shot-scope">{tr("Ảnh kiểm thử tự động · local", "自動テストの画像 · ローカル", "Automated test capture · local")}</span></figcaption></figure>'
++
++def feature(num, name, desc, tag):
++    return f'<article class="feature"><div class="feature-top"><span>{num}</span><small>{E(tag)}</small></div><h3>{tr(*name)}</h3>{p(*desc)}</article>'
++
++def details(heading, body):
++    return f'<details><summary>{tr(*heading)}</summary><div class="details-body">{body}</div></details>'
++
++assert FACTS['schemaVersion'] == 1 and FACTS['humanAcceptance'] is False
++assert re.fullmatch('[a-f0-9]{40}', FACTS['runtimeSourceCommit'])
++assert FACTS['cloud']['httpSmoke'] == 'tested' and FACTS['cloud']['browserSmoke'] == 'passed'
++assert FACTS['manualBrowserChecks']['status'] == 'not_run'
++assert FACTS['productionLabStatus'] == 'READY' and FACTS['productionSourceStatus'] == 'READY'
++CLOUD = FACTS['cloud']['url']
++LOCAL = 'http://127.0.0.1:4175/#twin'
++
++nav = [('overview','Tổng quan','概要','Overview'),('connect','Chọn Web / Local','Web / ローカル','Web / Local'),('demo','Demo tay máy','アームのデモ','Arm demo'),('features','Chức năng','機能','Features'),('capabilities','Backend & môi trường','Backendと環境','Backends & environments'),('proof','Bằng chứng','証跡','Evidence'),('help','Xử lý nhanh','トラブル対処','Troubleshooting')]
++sidebar = '<aside class="sidebar"><a class="brand" href="#overview"><span class="brand-mark" aria-hidden="true">M</span><span>MEKONIQ<small>ROBOT LAB</small></span></a><div class="edition">R2a <span>DEMO GUIDE</span></div><nav>'+''.join(f'<a href="#{id_}"><span>{i:02}</span>{tr(vi,ja,en)}</a>' for i,(id_,vi,ja,en) in enumerate(nav))+'</nav><div class="sidebar-note">'+p('Từ giao diện đến một lần chạy có bằng chứng.','画面から証跡付きの実行まで。','From the interface to an evidenced run.')+'<span class="mono">14 NOV 2026</span></div></aside>'
++toolbar = '<div class="toolbar"><a class="mobile-brand" href="#overview">MEKONIQ <span>R2a</span></a><div class="toolbar-right"><div class="language interactive" role="group" aria-label="Language">'+''.join(f'<button type="button" data-lang-switch="{lang}" aria-pressed="{str(lang=="vi").lower()}">{label}</button>' for lang,label in [('vi','VI'),('ja','日本語'),('en','EN')])+'</div><button class="print interactive" type="button" data-print>'+tr('In / PDF','印刷 / PDF','Print / PDF')+'</button></div></div>'
++hero = '<section id="overview" class="hero"><div class="hero-copy"><p class="eyebrow">R2a / '+tr('HƯỚNG DẪN DEMO','デモガイド','DEMO GUIDE')+'</p><h1>'+tr('Một tay máy.\nHai cách demo.','ひとつのアーム。\nふたつのデモ。','One arm.\nTwo ways to demo.')+'</h1>'+p('Khám phá xArm 6 trong MuJoCo, theo dõi từng khớp và phát lại một lần gắp cốc — trên runtime cloud hoặc máy của bạn.','MuJoCo内のxArm 6を動かし、各関節を確認し、カップ把持を再生。クラウドまたは自分のマシンで実行します。','Explore the xArm 6 in MuJoCo, inspect its joints and replay a cup transfer — using a cloud runtime or your own machine.','hero-lead')+'<div class="hero-actions"><a class="button lime" href="#connect" data-route-link="local">'+tr('Bắt đầu tại máy này','ローカルで始める','Start locally')+' <span aria-hidden="true">↗</span></a><a class="button outline" href="#connect" data-route-link="web">'+tr('Xem cách demo Web','Webデモを見る','Explore the web route')+'</a></div><div class="hero-metrics"><div><b>xArm 6 + G2</b><span>'+tr('Mô hình được mô phỏng','シミュレーションするモデル','Model being simulated')+'</span></div><div><b>4,800</b><span>'+tr('tick · CL01 qua HTTP','tick · HTTP CL01','ticks · HTTP CL01')+'</span></div><div><b>2</b><span>'+tr('lượt phục vụ hoàn tất','完了した提供数','completed servings')+'</span></div></div></div>'+image('arm',('MuJoCo: cốc được gắp bằng tiếp xúc mô phỏng.','MuJoCo: 模擬接触によるカップ把持。','MuJoCo: a cup held by simulated contact.'),True)+'</section>'
++state = '<div class="status-strip"><span class="status good">'+tr('Cloud Run · HTTP đã đạt','Cloud Run · HTTP検証済み','Cloud Run · HTTP tested')+'</span><span class="status good">'+tr('Lab production · READY','本番Lab · READY','Production Lab · READY')+'</span><span class="status neutral">'+tr('Chưa nghiệm thu bởi con người','人による承認は未実施','Human acceptance pending')+'</span></div>'+p('Snapshot 14/11/2026. Hai nhánh main đã push; source và Lab đã READY trên production. Runtime cloud chạy cùng pin 4f893ac; demo Chrome production đã đạt. Ảnh minh họa vẫn là bản ghi kiểm UI local.','2026年11月14日の状態。両mainをpush済みで、sourceとLabの本番はREADYです。cloud runtimeは固定版4f893acを実行し、本番Chromeデモも成功。説明用画像はローカルUIテストの記録です。','Snapshot: 14 November 2026. Both main branches were pushed; source and Lab are READY in production. Cloud runs the same 4f893ac pin; the production Chrome demo passed. Illustrations remain local UI test captures.','snapshot')
++
++web = '<section id="route-web" data-route-panel="web" aria-labelledby="tab-web"><div class="route-heading"><div><span class="eyebrow">WEB / CLOUD RUN</span><h3>'+tr('Demo không cần engine trên máy khách','クライアントにエンジン不要','No engine on the client machine')+'</h3></div><span class="status good">'+tr('Lab production · READY','本番Lab · READY','Production Lab · READY')+'</span></div>'+p('Dùng giao diện Lab qua HTTPS và runtime MuJoCo đã deploy tại Singapore. Trước buổi demo, build Lab phải ghim source 4f893ac; bản khác sẽ bị chặn bằng RUNTIME_PIN_MISMATCH.','HTTPSのLab画面と、シンガポールに公開済みのMuJoCoランタイムを使います。デモ前にLabがsource 4f893acを固定している必要があります。異なる版はRUNTIME_PIN_MISMATCHで拒否されます。','Use the HTTPS Lab interface and the MuJoCo runtime deployed in Singapore. Before the demo, the Lab build must pin source 4f893ac; another version is blocked with RUNTIME_PIN_MISMATCH.','route-lead')+'<ol class="steps">'+step(1,('Mở đúng build Lab','対応するLabビルドを開く','Open the matching Lab build'),('Mở mekoniq-lab.vercel.app và chọn “Bản sao số”. Bản production a744954 đã READY. Trang web chỉ là giao diện; runtime nằm ở URL bên dưới.','mekoniq-lab.vercel.appで「デジタルツイン」を開きます。本番a744954はREADYです。WebページはUIで、ランタイムは下記URLにあります。','Open mekoniq-lab.vercel.app and select Digital twin. Production build a744954 is READY. The web page is the UI; the runtime lives at the URL below.'))+step(2,('Chọn “Địa chỉ khác”','「別のアドレス」を選択','Choose “Another address”'),('Mở chip Runtime trên thanh trên cùng. Chọn “Địa chỉ khác”, rồi dán nguyên URL chuẩn — không dùng URL Cloud Run có số project.','上部のRuntimeチップを開き、「別のアドレス」を選んで正規URLを貼り付けます。プロジェクト番号入りの別URLは使いません。','Open the Runtime chip, choose Another address and paste the exact canonical URL. Do not substitute the Cloud Run alias containing the project number.'))+'</ol>'+command('cloud-url',CLOUD,False)+'<ol class="steps" start="3">'+step(3,('Ghép nối bằng khóa truy cập','アクセスキーでペアリング','Pair with the access key'),('Nhập khóa do người vận hành cấp vào ô mã ghép nối, rồi bấm “Ghép nối runtime”. Cloud dùng khóa chung; mã local một lần không dùng ở đây. HTML này không chứa hoặc đọc khóa.','運用担当者から受け取ったキーをペアリング欄に入力し、ペアリングします。クラウドでは共通アクセスキーを使用し、ローカルのワンタイムコードは使いません。このHTMLはキーを含まず読み取りもしません。','Enter the operator-provided access key in the pairing field and click Pair runtime. Cloud uses a shared access key; a local one-time code will not work here. This HTML never contains or reads the key.'),('“Lab ghim” và “Runtime chạy” cùng 4f893ac; trạng thái sẵn sàng.','「Labの固定」と「ランタイムの版」がともに4f893acで、準備完了になる。','Lab pinned to and Runtime runs both show 4f893ac; the connection is ready.'))+'</ol><div class="route-links"><a class="button dark" href="'+FACTS['productionLabUrl']+'/#twin" target="_blank" rel="noopener">'+tr('Mở Lab production ↗','本番Labを開く ↗','Open production Lab ↗')+'</a><a href="'+CLOUD+'/lab/v2/health" target="_blank" rel="noopener">'+tr('Xem health công khai ↗','公開healthを見る ↗','View public health ↗')+'</a></div>'+p('Cloud runtime này có mock và mujoco_arm. IR-SIM, Webots và LinkForge cần môi trường local. Origin web được phép là https://mekoniq-lab.vercel.app; một trang localhost không tự được quyền gọi runtime cloud này.','このクラウドランタイムにはmockとmujoco_armがあります。IR-SIM、Webots、LinkForgeはローカル環境が必要です。許可されたWebオリジンはhttps://mekoniq-lab.vercel.appで、localhostのページは自動では許可されません。','This cloud runtime includes mock and mujoco_arm. IR-SIM, Webots and LinkForge require the local environment. The allowed web origin is https://mekoniq-lab.vercel.app; a localhost page is not automatically allowed to call this cloud runtime.','note')+'</section>'
++
++local = '<section id="route-local" data-route-panel="local" aria-labelledby="tab-local"><div class="route-heading"><div><span class="eyebrow">LOCAL / MAC · LINUX</span><h3>'+tr('Demo ngay trên máy đã chuẩn bị','準備済みのマシンでデモ','Demo on a prepared machine')+'</h3></div><span class="status good">'+tr('UI đã kiểm tự động','UI自動テスト済み','UI automatically tested')+'</span></div>'+p('UI và runtime cùng chạy loopback. Cần Node 24.22.2, pnpm 10.32.1, runtime đã nhập đúng pin, source ở cạnh lab và .venv-mujoco đã cài theo lock. Launcher không tự tải engine hoặc đổi pin.','UIとランタイムを同じマシンのループバックで動かします。Node 24.22.2、pnpm 10.32.1、固定版のランタイム、labと隣接するsource、lockどおりの.venv-mujocoが必要です。ランチャーはエンジンのダウンロードや固定版の変更を行いません。','UI and runtime both run on loopback. You need Node 24.22.2, pnpm 10.32.1, the imported pinned runtime, source beside lab, and .venv-mujoco installed from its lock. The launcher does not download an engine or change the pin.','route-lead')+p('Từ thư mục workspace robot trên máy hiện tại:','現在のマシンのrobotワークスペースから:','From the robot workspace on the current machine:')+command('launch-mujoco','export PATH="$HOME/.nvm/versions/node/v24.22.2/bin:$PATH"\ncd lab\npnpm check:source\npnpm lab:mujoco')+'<ol class="steps">'+step(1,('Giữ terminal chạy','ターミナルを起動したままにする','Leave the terminal running'),('Launcher mở UI 4175 và runtime 4176, rồi in mã ghép nối một lần. Chỉ chạy một launcher dùng các cổng này; Ctrl+C trong terminal đó để dừng sau demo.','ランチャーがUIの4175とランタイムの4176を開き、ワンタイムコードを表示します。同じポートではランチャーを1つだけ実行し、デモ後はそのターミナルでCtrl+Cを押します。','The launcher opens UI 4175 and runtime 4176, then prints a one-time pairing code. Run only one launcher on these ports; use Ctrl+C in that terminal to stop it after the demo.'))+step(2,('Mở Lab local và ghép nối','ローカルLabを開いてペアリング','Open local Lab and pair'),('Mở URL bên dưới, chọn “Máy này” trong hộp Runtime, rồi nhập mã vừa in. UI do launcher phục vụ dùng runtime cùng origin; không cần dán URL cloud.','下記URLを開き、Runtimeで「このマシン」を選択して表示されたコードを入力します。ランチャーのUIは同一オリジンのランタイムを使うため、クラウドURLは不要です。','Open the URL below, choose This machine in the Runtime box and enter the printed code. The launcher-served UI uses its same-origin runtime; no cloud URL is needed.'),('Runtime sẵn sàng; kịch bản MuJoCo có thể chọn.','Runtimeが準備完了となり、MuJoCoシナリオを選択できる。','The runtime is ready and the MuJoCo scenario can be selected.'))+'</ol>'+command('local-url',LOCAL,False)+details(('Chỉ muốn xem thiết kế hoặc demo mock?','設計の閲覧やmockだけ試したい場合','Only need design preview or a mock demo?'),p('Trong thư mục lab, chọn một lệnh. pnpm dev chỉ mở UI để thiết kế; pnpm lab:mock mở cả UI và runtime mock. Dừng launcher đang dùng trước khi đổi.','labディレクトリでいずれかのコマンドを選びます。pnpm devは設計用UIだけ、pnpm lab:mockはUIとmockランタイムを起動します。切り替え前に既存のランチャーを停止してください。','In lab, choose one command. pnpm dev opens design UI only; pnpm lab:mock starts both UI and the mock runtime. Stop the current launcher before switching.')+command('launch-preview','pnpm dev')+command('launch-mock','pnpm lab:mock'))+details(('Chuẩn bị MuJoCo trên máy mới','新しいマシンでMuJoCoを準備','Prepare MuJoCo on a new machine'),p('Cần Python 3.11. Từ source, bootstrap công cụ theo lock; sau đó nhận/import runtime export đúng source mà Lab đang ghim. Nếu RUNTIME_NOT_INSTALLED hoặc PORTABLE_TOOLS_MISMATCH, xử lý gói runtime trước, không sửa lock chỉ để vượt kiểm tra.','Python 3.11が必要です。sourceからlockに従ってツールを準備し、Labの固定版と同じsourceからexportしたランタイムを受け取り/importします。RUNTIME_NOT_INSTALLEDやPORTABLE_TOOLS_MISMATCHの場合、チェック回避のためにlockを書き換えず、ランタイムの配布物を修正します。','Python 3.11 is required. From source, bootstrap the tool from its lock, then obtain/import a runtime export matching the source commit pinned by Lab. Resolve RUNTIME_NOT_INSTALLED or PORTABLE_TOOLS_MISMATCH through the runtime package; do not edit the lock to bypass the check.')+command('bootstrap-mujoco','cd source\nnode scripts/bootstrap-portable-simulation.mjs mujoco'))+p('Dùng http://127.0.0.1:4175 cho đường local trực tiếp. Kết nối từ một trang HTTPS đến loopback còn phụ thuộc allowlist origin và quyền trình duyệt; kiểm tay Chrome/Firefox/Safari cho luồng đó chưa chạy.','直接ローカルで使う場合はhttp://127.0.0.1:4175を開きます。HTTPSページからloopbackへの接続はオリジン許可とブラウザ権限に依存し、Chrome/Firefox/Safariでの手動確認は未実施です。','Use http://127.0.0.1:4175 for the direct local route. HTTPS-page-to-loopback access also depends on origin allowance and browser permissions; manual Chrome/Firefox/Safari checks of that route have not run.','note')+'</section>'
++
++connect = '<section id="connect" class="section">'+title('01','Chọn nơi chạy runtime','ランタイムの実行場所を選ぶ','Choose where the runtime runs',('Hai đường dẫn đến cùng giao diện Bản sao số. Chọn Local để demo ngay trong môi trường đã chuẩn bị.','同じデジタルツインUIに至る2つの経路。準備済み環境ではローカルで開始できます。','Two routes to the same Digital twin interface. Choose Local to start in the prepared environment.'))+'<div class="route-tabs interactive" role="tablist" aria-label="Demo route"><button type="button" id="tab-local" role="tab" data-route="local" aria-controls="route-local" aria-selected="true">'+tr('Local · máy này','ローカル · このマシン','Local · this machine')+'</button><button type="button" id="tab-web" role="tab" data-route="web" aria-controls="route-web" aria-selected="false" tabindex="-1">'+tr('Web · Cloud Run','Web · Cloud Run','Web · Cloud Run')+'</button></div><div class="route-card">'+local+web+'</div></section>'
++
++demoSteps = [
++ (('Chọn đúng kịch bản','正しいシナリオを選択','Choose the scenario'),('Trong “Bản sao số”, mở “Kịch bản” trên thanh đầu. Chọn “MuJoCo · cà phê với tay máy xArm 6”, rồi bấm “Chạy MuJoCo (tay máy)”.','「デジタルツイン」の上部「シナリオ」から「MuJoCo · xArm 6でコーヒー」を選び、「MuJoCo実行(アーム)」を押します。','In Digital twin, open the Scenario picker. Choose “MuJoCo · coffee with xArm 6”, then “Run MuJoCo (arm)”.'),('Nhãn “Mô phỏng · chưa hiệu chuẩn”; source 4f893ac; cảnh mở ở trạm tay máy.','「シミュレーション · 未校正」、source 4f893ac、アームセルが表示される。','The label says Simulation · not calibrated, source is 4f893ac, and the view frames the arm cell.')),
++ (('Cho chạy 1× và quan sát','1×で実行して観察','Run at 1× and observe'),('Chọn 1× rồi bấm “Tự chạy”. Quan sát kẹp đóng, cốc được nâng và chuyển đến khay. Xoay camera, dùng Home để về trạm; Fit khi không chọn đối tượng để thấy cả mặt bằng.','1×を選び「自動実行」。グリッパーが閉じ、カップを持ち上げトレーへ移す様子を見ます。カメラを回し、Homeでセルへ戻り、未選択のFitで床全体を表示します。','Select 1× and click Auto-run. Watch the gripper close, lift a cup and transfer it to the tray. Orbit the camera, use Home to frame the cell, or Fit with nothing selected to show the floor.'),('Camera bạn chọn được giữ khi tick mới đến; khối lượng/giới hạn danh định, tiếp xúc và bố trí vẫn giả định.','tick更新後もカメラ視点を保持。質量と制限は公称値、接触と配置は仮定のまま。','Your camera stays in place as ticks arrive. Masses and limits are nominal; contact and cell layout are still assumed.')),
++ (('Giải thích dữ liệu đang thấy','表示データを説明','Explain the observed data'),('Mở “Chi tiết” → “Đối tượng”, chọn “Cánh tay 1”; qua “Kỹ thuật” để so khớp quan sát từ MuJoCo với khớp lệnh. Tạm dừng mô phỏng khi cần nói; tiếp tục và bật Tự chạy lại nếu cần.','「詳細」→「対象」でアーム1を選び、「エンジニアリング」でMuJoCo観測関節と指令関節を比較します。説明中はシミュレーションを一時停止し、再開後は必要に応じて自動実行を再度オンにします。','Open Details → Objects, select Arm 1, then use Engineering to compare MuJoCo-observed joints with commanded joints. Pause simulation while explaining; resume and re-enable Auto-run if needed.'),('Hai cột giá trị có đơn vị và nguồn. Chế độ xem ẩn phần giao diện phụ, vẫn có nút thoát để chạm.','2列に単位と出典を表示。視聴モードは補助UIを隠し、タッチで終了できる。','Both columns show values, units and source. Watch mode hides secondary UI and keeps a touch-accessible exit.')),
++ (('Tăng tốc để hoàn tất','加速して完了まで進める','Speed up to completion'),('Chọn 16× để đi đến cuối bài demo. Các mức 1×/4×/16×/64× là mục tiêu nhịp; nếu máy hoặc mạng chậm, đọc tốc độ đo được thay vì hứa đạt hệ số đã chọn.','16×でデモの終わりまで進めます。1×/4×/16×/64×は目標ペースです。マシンやネットワークが遅い場合、選択倍率を保証せず実測速度を読みます。','Choose 16× to reach the end. The 1×/4×/16×/64× choices are pacing targets; when the machine or network is slow, use the measured speed instead of promising the selected factor.'),('“Hoàn thành”, “Đã giao 2”. Đọc tick cuối trong báo cáo: bài kiểm UI ghi 4810, còn CL01 qua HTTP ghi 4800 do chia bước khác nhau.','「完了」「提供数2」を確認し、最終tickをレポートで読みます。UIテストは4810、HTTP CL01は4800。ステップ単位の違いによるものです。','Look for Completed and Served 2, then read the final tick in the report. The UI baseline records 4810; HTTP CL01 records 4800 because it uses different step batches.')),
++ (('Giữ bằng chứng và phát lại','証跡を保存して再生','Keep evidence and replay'),('Trong “Chi tiết” → “Báo cáo”, xem engine mujoco_3d, grip contact, not_calibrated và kiểm va chạm. Xuất JSON/CSV/HTML hoặc “Lưu báo cáo bất biến”. Chọn “Xem lại (chỉ đọc)” rồi kéo thanh tick về lúc gắp cốc.','「詳細」→「レポート」でmujoco_3d、contact把持、not_calibrated、衝突チェックを確認します。JSON/CSV/HTML出力または不変レポート保存後、「再生(読み取り専用)」で把持時点に戻します。','In Details → Report, inspect mujoco_3d, contact grip, not_calibrated and collision checks. Export JSON/CSV/HTML or Save immutable report. Select Replay (read only) and scrub back to the cup transfer.'),('Chip “Bản ghi”; tay máy và cốc theo mẫu đã lưu. Replay không chạy lại engine hoặc gửi lệnh robot.','「記録」チップが表示され、アームとカップは保存サンプルに従う。再生はエンジン再実行やロボット指令を行わない。','The chip says Recorded; arm and cup follow saved samples. Replay does not rerun the engine or send robot commands.')),
++]
++demo = '<section id="demo" class="section">'+title('02','Một kịch bản demo trọn vẹn','ひととおりのデモ手順','One complete demo sequence',('Chuẩn bị 5–8 phút cho phần giới thiệu, thao tác và giải thích kết quả. Đây là thời lượng trình bày gợi ý, không phải cam kết hiệu năng.','紹介、操作、結果説明に5〜8分を用意。これはプレゼンの目安であり、性能保証ではありません。','Allow 5–8 minutes to introduce, operate and explain the result. This is a presentation suggestion, not a performance guarantee.'))+'<ol class="steps demo-steps">'+''.join(step(i,h,b,r) for i,(h,b,r) in enumerate(demoSteps,1))+'</ol><div class="checklist"><h3>'+tr('Trước khi bắt đầu trình bày','発表を始める前に','Before presenting')+'</h3><div class="checks">'+''.join('<label><input type="checkbox" class="prep-check">'+tr(*c)+'</label>' for c in [('Đúng pin ở cả Lab và runtime','Labとruntimeの固定版が一致','Lab and runtime pins match'),('Có mã/khóa ghép nối hợp lệ','有効なコード/キーを用意','Valid pairing code/key is available'),('Chọn được preset MuJoCo','MuJoCoプリセットを選択可能','MuJoCo preset can be selected'),('Giải thích rõ phạm vi mô phỏng','シミュレーションの範囲を説明','Explain the simulation scope')])+'</div><div class="prep-footer"><output id="prep-count">0 / 4</output><span>'+tr('mục chuẩn bị đã đánh dấu · không phải kết quả kiểm thử','準備項目にチェック · テスト結果ではない','preparation items checked · not test results')+'</span><button type="button" class="interactive" data-reset-checks>'+tr('Bỏ đánh dấu','クリア','Clear')+'</button></div></div></section>'
++
++demo = demo.replace('</ol><div class="checklist">', '</ol><div class="notice">'+p('Trước lượt MuJoCo tiếp theo: thoát replay, rồi bấm “Chạy lại cùng đầu vào” trong cùng tab. Lab lưu bằng chứng và archive lượt cũ trước khi tạo lượt mới. Cloud có một chỗ chạy MuJoCo; chỉ ngắt kết nối không giải phóng chỗ đó. Với local, dùng Ctrl+C trong terminal launcher khi kết thúc demo.','次のMuJoCoデモ前に再生を終了し、同じタブで「同じ入力で再実行」を押します。Labは証跡を保存し旧runをarchiveしてから次を作成します。cloudのMuJoCo枠は1つで、切断だけでは解放されません。ローカルのデモ終了時はランチャーのターミナルでCtrl+Cを押します。','Before the next MuJoCo demo, exit replay and use Run again with same inputs in the same tab. Lab saves evidence and archives the previous run before creating the next one. Cloud has one MuJoCo worker slot; disconnecting alone does not free it. For local demos, finish with Ctrl+C in the launcher terminal.')+'</div><div class="checklist">')
++
++features = '<section id="features" class="section">'+title('03','Những chức năng nên cho xem','紹介したい機能','Features worth showing',('Thiết kế, quan sát và kiểm kết quả là ba việc khác nhau. Chỉ runtime thực thi mới tạo kết quả chạy.','設計、観察、結果の確認は別の作業です。実行結果はランタイムが生成します。','Designing, observing and checking results are distinct. Only an executing runtime produces a run result.'))+'<div class="features">'+''.join([
++feature('01',('Thiết kế không cần runtime','ランタイム不要の設計','Design without a runtime'),('Khám phá cấu hình robot, bố trí và bản xem trước. Các thay đổi thiết kế không tự thay thế fixture xArm của bài mô phỏng.','ロボット構成、配置、プレビューを探索。設計変更がxArmシミュレーションのfixtureを自動置換することはありません。','Explore robot configuration, layout and preview. Design changes do not automatically replace the xArm simulation fixture.'),'DESIGN'),
++feature('02',('Tay máy từ mesh thực','実モデルのメッシュ表示','Arm from actual model meshes'),('xArm 6 và kẹp G2 hiển thị từ mesh; cốc theo pose plant. Nếu mesh thiếu, hình thay thế và lưu ý vẫn hiện.','xArm 6とG2をメッシュで表示し、カップはプラントposeに従う。メッシュ欠落時は代替形状と注意を表示。','xArm 6 and G2 use meshes; cups follow plant poses. Missing meshes produce fallback geometry with a visible note.'),'MUJOCO'),
++feature('03',('Nhịp và điều khiển gọn','ペースとコンパクトな操作','Pacing and compact controls'),('Tự chạy, +5 s, tạm dừng/tiếp tục, tốc độ và hủy lần chạy. Thanh trạng thái giữ nhãn mô phỏng ở mọi chế độ.','自動実行、+5秒、一時停止/再開、速度、キャンセル。状態バーは常にシミュレーション表示を保持。','Auto-run, +5 s, pause/resume, speed and cancel. The status bar keeps the simulation label visible.'),'1× / 4× / 16× / 64×'),
++feature('04',('Không gian quan sát','観察するための画面','A workspace for observation'),('Đổi 2D/3D, orbit, Home/Fit, mở Chi tiết khi cần. Chế độ xem có nút thoát trên cả màn hình cảm ứng.','2D/3D、orbit、Home/Fit、必要なときだけ詳細を表示。視聴モードはタッチでも終了できる。','Switch 2D/3D, orbit, use Home/Fit and open Details when needed. Watch mode can be exited on touch screens.'),'VIEWPORT'),
++feature('05',('Lệnh so với quan sát','指令と観測を比較','Commanded versus observed'),('Đọc vị trí khớp, đơn vị, nguồn và tuổi dữ liệu. Không nhầm giá trị lệnh với số đo từ plant.','関節値、単位、出典、データ経過時間を確認。指令値とプラント観測を区別。','Read joint positions, units, source and age. Distinguish commanded values from plant observations.'),'TELEMETRY'),
++feature('06',('Báo cáo và replay','レポートと再生','Reports and replay'),('Xuất JSON/CSV/HTML, lưu báo cáo bất biến và kéo thanh tick. Replay dùng dữ liệu đã ghi, không tạo run mới.','JSON/CSV/HTML出力、不変レポート保存、tick移動。再生は記録データを使い新規実行を作らない。','Export JSON/CSV/HTML, save an immutable report and scrub ticks. Replay uses recorded data without creating a new run.'),'EVIDENCE')])+'</div><div class="gallery">'+image('joints',('Kỹ thuật: so sánh khớp quan sát và lệnh.','エンジニアリング: 観測関節と指令を比較。','Engineering: compare observed and commanded joints.'))+image('replay',('Replay: quay lại thời điểm cốc đang được chuyển.','再生: カップ搬送中の時点に戻る。','Replay: return to the middle of a cup transfer.'))+image('watch',('Chế độ xem và nút thoát cảm ứng — ảnh từ kịch bản mock.','視聴モードとタッチ用終了ボタン — mockシナリオの画像。','Watch mode and its touch exit — captured in a mock scenario.'))+'</div></section>'
++
++rows=[
++ (('Xem thiết kế / bản xem trước','設計 / プレビュー','Design / preview'),('Có UI; không cần runtime','UIのみで利用可能','UI only; no runtime needed'),('pnpm dev','pnpm dev','pnpm dev')),
++ (('Mock phục vụ và cà phê','配膳・コーヒーのmock','Serving and coffee mocks'),('Có trong image','イメージに含まれる','Included in the image'),('pnpm lab:mock','pnpm lab:mock','pnpm lab:mock')),
++ (('MuJoCo xArm 6 · MJ-BV01','MuJoCo xArm 6 · MJ-BV01','MuJoCo xArm 6 · MJ-BV01'),('Có · HTTP CL01 đã đạt','対応 · HTTP CL01検証済み','Available · HTTP CL01 tested'),('pnpm lab:mujoco','pnpm lab:mujoco','pnpm lab:mujoco')),
++ (('IR-SIM 2D + LinkForge shadow','IR-SIM 2D + LinkForge shadow','IR-SIM 2D + LinkForge shadow'),('Không đóng gói','含まれない','Not packaged'),('pnpm lab:irsim + venv theo lock','pnpm lab:irsim + lock準拠venv','pnpm lab:irsim + locked venvs')),
++ (('Webots 3D / tay máy Webots','Webots 3D / Webotsアーム','Webots 3D / Webots arm'),('Không đóng gói','含まれない','Not packaged'),('pnpm lab:webots + Webots R2025a','pnpm lab:webots + Webots R2025a','pnpm lab:webots + Webots R2025a')),
++ (('Robot thật / LinuxCNC / Gazebo','実機 / LinuxCNC / Gazebo','Real robot / LinuxCNC / Gazebo'),('Ngoài demo R2a này','このR2aデモの範囲外','Outside this R2a demo'),('Không suy ra từ bài mô phỏng','このシミュレーションから推定しない','Not established by this simulation')),
++]
++capabilities='<section class="section" id="capabilities">'+title('04','Chạy được ở đâu?','どこで実行できるか','What runs where?',('Ma trận này mô tả image cloud đã deploy và các launcher hiện có, không hứa mọi backend có trên một runtime.','この表は公開済みクラウドイメージと既存ランチャーの範囲です。1つのruntimeで全backendを提供するものではありません。','This matrix describes the deployed cloud image and available launchers; a single runtime does not expose every backend.'))+'<div class="table-wrap"><table><thead><tr><th>'+tr('Chức năng','機能','Capability')+'</th><th>Web / Cloud Run</th><th>Local</th></tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+tr(*cell)+'</td>' for cell in row)+'</tr>' for row in rows)+'</tbody></table></div>'+p('Đổi launcher sau khi dừng launcher cũ. Không dùng các cổng robot vận hành 1880/1884 cho buổi demo.','既存ランチャーを停止してから切り替えます。デモで稼働中ロボットの1880/1884ポートを使わないでください。','Stop the previous launcher before switching. Do not use the operational robot ports 1880/1884 for this demo.','note')+'</section>'
++
++proof='<section id="proof" class="section">'+title('05','Điều đã được chứng minh','確認できたこと','What the evidence establishes',('Kết quả kiểm phần mềm, nghiệm thu và giới hạn mô hình được ghi riêng.','ソフトウェア検証、承認、モデルの限界を区別します。','Software verification is kept distinct from acceptance and the limits of the model.'))+'<div class="proof-grid"><article class="proof-card"><span class="status good">'+tr('Đã chạy','実行済み','Executed')+'</span><h3>Cloud Run · CL01</h3>'+p('Health, ghép nối khóa sai/đúng, mock FD01, SSE nối lại và MJ-BV01 đều đạt trên Linux x86-64 thật. MJ-BV01 kết thúc ở tick 4800, phục vụ 2; vòng bước HTTP khoảng 71,3 giây, gồm mạng và xử lý; không phải số đo CPU mỗi tick. Cả hai run của bài kiểm đã được archive.','health、誤/正キーのペアリング、mock FD01、SSE再接続、MJ-BV01がLinux x86-64実機上で成功。MJ-BV01はtick 4800・提供2で終了。HTTPステップ全体はネットワーク込みで約71.3秒。CPU/tickの指標ではありません。テストの2つのrunはarchive済みです。','Health, wrong/right-key pairing, mock FD01, SSE reconnection and MJ-BV01 passed on native Linux x86-64. MJ-BV01 finished at tick 4800, served 2; HTTP stepping took about 71.3 seconds including network and processing, not a CPU-per-tick benchmark. Both runs created by the check were archived.')+'</article><article class="proof-card"><span class="status good">'+tr('Đã kiểm tự động','自動検証済み','Automatically tested')+'</span><h3>'+tr('Lab local + hồi quy','ローカルLab + 回帰','Local Lab + regression')+'</h3>'+p('Các bản ghi IR-SIM, R1, R1.1, R2a và R-MOCK mới dùng cùng pin. UI đã kiểm mesh, điều khiển, kết nối, watch mode, báo cáo và replay; ảnh trong tài liệu lấy từ các bài này.','IR-SIM、R1、R1.1、R2a、R-MOCKの新しい記録は同じ固定版を使用。UIはmesh、操作、接続、視聴モード、レポート、再生を検証し、この資料の画像もそのテストから取得。','The new IR-SIM, R1, R1.1, R2a and R-MOCK records share the same pin. UI checks cover meshes, controls, connection, watch mode, reports and replay; this guide’s images come from those tests.')+'</article><article class="proof-card"><span class="status good">'+tr('Chrome tự động · đã đạt','Chrome自動テスト済み','Automated Chrome · passed')+'</span><h3>'+tr('Production UI & trình duyệt','本番UIとブラウザ','Production UI & browsers')+'</h3>'+p('Source d1a2522 và Lab a744954 đã READY trên Vercel; /health/live và /health/ready trả HTTP 200 với true. Chrome 157 headless từ origin production đã ghép nối và hoàn thành MJ-BV01: tick 4810, phục vụ 2, đã archive run. Ở mức chọn 16×, lượt UI mất 78,4 giây gồm mạng, UI và đọc báo cáo; không phải đo CPU hay nhịp 1×. Kiểm tay Chrome/Firefox/Safari cho HTTPS → loopback và nghiệm thu bởi con người chưa thực hiện.','source d1a2522とLab a744954はVercelでREADY。/health/liveと/health/readyはHTTP 200、trueです。本番originのheadless Chrome 157でペアリングとMJ-BV01が成功し、tick 4810・提供2で終了、runはarchive済み。選択16×のUI実行はネットワーク・UI・レポート取得込みで78.4秒。CPUや1×ペースの測定ではありません。HTTPS→loopbackのChrome/Firefox/Safari手動確認と人による承認は未実施です。','Source d1a2522 and Lab a744954 are READY on Vercel; /health/live and /health/ready returned HTTP 200 with true. Headless Chrome 157 from the production origin paired and completed MJ-BV01 at tick 4810, served 2; the run was archived. With 16× selected, the UI run took 78.4 seconds including network, UI and report overhead, not a CPU or 1× pacing benchmark. Manual Chrome/Firefox/Safari HTTPS-to-loopback checks and human acceptance have not run.')+'</article></div><div class="scope"><h3>'+tr('Cách nói chính xác khi demo','デモでの正確な説明','How to describe the demo accurately')+'</h3>'+p('“Đây là xArm 6 với kẹp G2 được mô phỏng bằng MuJoCo. Cốc được gắp bằng tiếp xúc trong mô hình; máy pha và AMR vẫn là mock. Tham số chưa hiệu chuẩn, nên kết quả chưa chứng minh tay máy, lực kẹp hay cốc thật.”','「これはMuJoCoでシミュレーションしたxArm 6とG2です。カップはモデル内の接触で把持しますが、コーヒーマシンとAMRはmockです。未校正のため、実機のアーム、把持力、カップの動作を証明するものではありません。」','“This is an xArm 6 with a G2 gripper simulated in MuJoCo. Cups are held by contact inside the model; the coffee machine and AMR remain mocks. Parameters are not calibrated, so this does not establish how a real arm, grip force or cup behaves.”')+p('Giá đỡ có phần được mô phỏng và phần minh họa; xem lưu ý trong menu Hiển thị. Replay thể hiện mẫu đã lưu, không nội suy thành bằng chứng vật lý mới.','支持構造にはシミュレーション部分と説明用部分があり、表示メニューの注意を確認します。再生は保存サンプルの表示で、新たな物理的証拠を生成しません。','Supports include simulated and illustrative pieces; read the Display menu note. Replay shows saved samples and does not create new physical evidence.')+'</div><details><summary>'+tr('Định danh và nguồn tham chiếu','識別情報と参照','Identity and references')+'</summary><div class="details-body"><dl class="identities"><div><dt>Source / runtime pin</dt><dd><code>'+FACTS['runtimeSourceCommit']+'</code></dd></div><div><dt>Lab · record commit</dt><dd><code>'+FACTS['labCommit']+'</code></dd></div><div><dt>Lab · production READY</dt><dd><code>'+FACTS['productionLabCommit']+'</code></dd></div><div><dt>Source · verified production</dt><dd><code>'+FACTS['productionSourceCommit']+'</code></dd></div><div><dt>Cloud Run revision</dt><dd><code>'+FACTS['cloud']['revision']+'</code></dd></div></dl><ul class="references"><li><a href="../docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md">R2a · '+tr('đặc tả','仕様','specification')+'</a></li><li><a href="../docs/implementation/evidence/sim-extension/r2a-candidate-02/README.md">R2a candidate-02 · '+tr('bản ghi cục bộ','ローカル記録','local qualification')+'</a></li><li><a href="../docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md">Cloud Run · CL01</a></li><li><a href="../docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json">Production · Chrome smoke</a></li><li><a href="../docs/operations/lab-runtime-cloud-run.md">Cloud Run · '+tr('vận hành và chi phí','運用と費用','operations and cost')+'</a></li></ul>'+p('Liên kết source cần giữ cấu trúc repository. Nếu gửi riêng HTML, toàn bộ nội dung và ảnh vẫn đọc được offline.','sourceへのリンクにはrepository構造が必要です。HTML単体でも内容と画像はofflineで読めます。','Source links require the repository layout. The standalone HTML still contains all text and images for offline reading.')+'</div></details></section>'
++
++cloud_gate_note = p('G-CLOUD1 = tested qua guard bổ sung cloud-run, gắn với đúng SHA-256 của bản ghi R2a. JSON R2a gốc vẫn giữ blocked_external theo định dạng cũ; bản bổ sung không sửa dữ liệu gốc và không thay thế nghiệm thu bởi con người.','G-CLOUD1 = testedはR2a記録の正確なSHA-256に紐づく追加guard cloud-runによるものです。元のR2a JSONは旧形式のblocked_externalを保持します。追加証跡は元データを変更せず、人による承認を代替しません。','G-CLOUD1 = tested through the supplemental cloud-run guard, bound to the exact R2a record SHA-256. The original R2a JSON retains its legacy blocked_external value; the supplement does not rewrite that record or replace human acceptance.','note')
++proof = proof.replace('<div class="scope">', cloud_gate_note+'<div class="scope">', 1)
++
++issues=[
++ (('MUJOCO_CAPACITY: chỗ chạy đang được giữ','MUJOCO_CAPACITY: 実行枠を使用中','MUJOCO_CAPACITY: the worker slot is occupied'),('Cloud có một chỗ chạy MuJoCo. Sau khi xem báo cáo, thoát replay và bấm “Chạy lại cùng đầu vào” trong tab đang giữ run: Lab lưu báo cáo, archive run cũ rồi mới tạo run mới. “Ngắt kết nối” không archive. Nếu đã mất tab/phiên giữ run, nhờ người vận hành dọn run; đây là giới hạn dung lượng, không phải lỗi vật lý.','cloudのMuJoCo実行枠は1つです。レポート確認後に再生を終了し、runを保持するタブで「同じ入力で再実行」を押します。Labがレポート保存・旧runのarchive後に新規runを作成します。「切断」ではarchiveされません。タブ/sessionを失った場合は運用担当者にrunの解放を依頼します。物理エラーではなく枠の制限です。','Cloud has one MuJoCo worker slot. After reviewing the report, exit replay and use Run again with same inputs in the tab that owns the run: Lab saves the report and archives the previous run before creating the next one. Disconnect does not archive. If that tab/session is lost, ask the operator to clear the run. This is a capacity limit, not a physics failure.')),
++ (('“Khác phiên bản” / RUNTIME_PIN_MISMATCH','「バージョン違い」/ RUNTIME_PIN_MISMATCH','“Other version” / RUNTIME_PIN_MISMATCH'),('So “Lab ghim” với “Runtime chạy”. Với cloud hiện tại, cả hai phải là 4f893ac. Dùng build/runtime tương ứng; không đổi lock tùy tiện hoặc bỏ kiểm tra.','「Labの固定」と「ランタイムの版」を比較。現在のcloudでは両方4f893acが必要です。対応するbuild/runtimeを使い、lockの書換えや検査回避はしません。','Compare Lab pinned to and Runtime runs. Both must be 4f893ac for this cloud runtime. Use the matching build/runtime; do not arbitrarily change the lock or bypass the check.')),
++ (('Không thấy runtime','Runtimeが見つからない','Runtime is not reachable'),('Local: giữ launcher chạy và mở 127.0.0.1:4175. Web: chọn Địa chỉ khác và dùng URL HTTPS chuẩn. Nếu API trả HOST_FORBIDDEN, kiểm tra chính xác host; nếu lỗi origin, dùng đúng origin được phép.','ローカルではランチャーを起動したまま127.0.0.1:4175を開きます。Webでは別のアドレスと正規HTTPS URLを使います。HOST_FORBIDDENはhost、originエラーは許可オリジンを確認します。','Local: leave the launcher running and open 127.0.0.1:4175. Web: choose Another address and use the canonical HTTPS URL. For HOST_FORBIDDEN, check the exact host; for origin failures, use the allowed origin.')),
++ (('Mã sai hoặc thử quá nhiều lần','コード不正・試行回数超過','Invalid code or too many attempts'),('Local dùng mã một lần mới trong terminal; cloud dùng khóa truy cập do người vận hành cấp. PAIRING_RATE_LIMITED: chờ một phút rồi thử lại, không lặp gửi mã liên tục.','ローカルはターミナルの新しいワンタイムコード、cloudは運用担当者のアクセスキーを使用。PAIRING_RATE_LIMITEDでは1分待ち、連続送信しません。','Local uses the fresh one-time terminal code; cloud uses the operator-provided access key. For PAIRING_RATE_LIMITED, wait a minute before trying again rather than repeatedly submitting codes.')),
++ (('Preset bị vô hiệu hóa','プリセットが無効','A preset is disabled'),('Đọc mã lý do “Runtime này không chạy được”. Image cloud không có IR-SIM/Webots. Chuyển về đúng launcher local cho backend đó; không coi fallback mock là bằng chứng engine.','「このランタイムでは実行不可」の理由コードを読みます。cloud imageにはIR-SIM/Webotsがありません。対応するローカルランチャーを使い、mock代替をエンジン証拠と見なしません。','Read the “Not runnable on this runtime” reason. The cloud image has no IR-SIM/Webots. Use the matching local launcher; do not treat a mock fallback as engine evidence.')),
++ (('Trình duyệt chặn loopback','ブラウザがloopbackをブロック','The browser blocks loopback access'),('Theo checklist LOOPBACK_BLOCKED của UI: runtime phải chạy, origin phải được phép và trình duyệt phải cấp quyền mạng cục bộ. Đường demo đơn giản hơn là UI local + runtime local; kiểm tay đa trình duyệt chưa được ghi nhận.','UIのLOOPBACK_BLOCKEDチェックに従い、runtime起動、origin許可、ブラウザのローカルネットワーク権限を確認します。簡単な経路はローカルUI＋ローカルruntimeです。複数ブラウザの手動検証は未記録です。','Follow the UI’s LOOPBACK_BLOCKED checklist: running runtime, allowed origin and local-network browser permission. The simpler demo route is local UI plus local runtime; cross-browser manual checks have not been recorded.')),
++ (('Không có mesh hoặc WebGL','meshまたはWebGLが使えない','Meshes or WebGL are unavailable'),('Đọc lưu ý về hình thay thế, hoặc chuyển 2D. Đây là suy giảm hiển thị; kiểm báo cáo và trạng thái run riêng, không tự diễn giải thành engine thành công hay thất bại.','代替形状の注意を読むか2Dへ切り替えます。表示の劣化なので、レポートとrun状態を別途確認し、エンジンの成功/失敗と混同しません。','Read the fallback-geometry note or switch to 2D. This is a rendering limitation; check the report and run state separately instead of inferring engine success or failure.')),
++ (('Run đã mất sau khi đóng tab / thay instance','タブを閉じた後・instance変更後にrunが消えた','The run is lost after closing the tab or replacing an instance'),('Cloud giữ run/session trong bộ nhớ. Khi instance dừng hoặc bị thay, có thể cần ghép nối và tạo run mới. Xuất/lưu báo cáo trước khi kết thúc demo.','cloudはrun/sessionをメモリに保持します。instance停止・置換時は再ペアリングと新規runが必要な場合があります。デモ終了前にレポートを出力/保存してください。','Cloud stores runs and sessions in memory. If an instance stops or is replaced, you may need to pair again and create a new run. Export/save the report before ending the demo.')),
++]
++help_='<section id="help" class="section">'+title('06','Nếu buổi demo bị ngắt','デモが止まったとき','If the demo is interrupted',('Giữ mã lỗi và xử lý đúng tầng: địa chỉ, phiên, phiên bản, backend hoặc hiển thị.','エラーコードを保持し、アドレス、session、version、backend、表示の層を切り分けます。','Keep the error code and resolve the right layer: address, session, version, backend or rendering.'))+'<div class="faq">'+''.join(details(h,p(*b)) for h,b in issues)+'</div></section>'
++footer='<footer>'+p('Tài liệu hướng dẫn độc lập. Nút trong HTML chỉ điều hướng, sao chép hoặc phóng ảnh; không chạy mô phỏng, triển khai hay gửi lệnh robot.','この独立ガイドのボタンは移動、コピー、画像拡大のみ。シミュレーション、デプロイ、ロボット指令は実行しません。','This standalone guide only navigates, copies text and enlarges images. It does not run a simulation, deploy anything or send robot commands.')+'<a href="#overview">'+tr('Về đầu trang ↑','先頭へ ↑','Back to top ↑')+'</a></footer>'
++dialog='<dialog id="lightbox" aria-labelledby="lightbox-title"><div class="lightbox-top"><h2 id="lightbox-title">'+tr('Ảnh từ kiểm thử local','ローカルテスト画像','Local test capture')+'</h2><button type="button" id="close-lightbox">'+tr('Đóng','閉じる','Close')+'</button></div><img id="lightbox-image" alt=""><div id="lightbox-caption"></div></dialog><div id="toast" role="status" aria-live="polite"></div>'
++css=(HERE/'style.css').read_text();js=(HERE/'app.js').read_text()
++body=sidebar+'<main>'+toolbar+hero+state+connect+demo+features+capabilities+proof+help_+footer+'</main>'+dialog
++result='<!doctype html><html lang="vi" data-lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>MEKONIQ R2a · Demo Web & Local</title><style>'+css+'</style></head><body><a class="skip-link" href="#connect">'+tr('Đến hướng dẫn demo','デモ手順へ','Skip to demo instructions')+'</a><noscript><p class="no-script">'+tr('JavaScript đang tắt: toàn bộ hướng dẫn vẫn đọc được; nút đổi ngôn ngữ, sao chép và phóng ảnh không hoạt động.','JavaScriptが無効です。全手順は読めますが、言語切替・コピー・画像拡大は動作しません。','JavaScript is disabled: all instructions remain readable; language switching, copy and image zoom are unavailable.')+'</p></noscript>'+body+'<script>'+js+'</script></body></html>'
++OUT.write_text(result)
++manifest={'schemaVersion':1,'artifact':OUT.name,'sha256':hashlib.sha256(OUT.read_bytes()).hexdigest(),'bytes':OUT.stat().st_size,'inputs':{name:hashlib.sha256((HERE/name).read_bytes()).hexdigest() for name in ['build.py','style.css','app.js','facts.json']},'translationTriples':len(TRANSLATIONS),'shellCommands':COMMANDS,'images':FACTS['images'],'runtimeSourceCommit':FACTS['runtimeSourceCommit'],'labCommit':FACTS['labCommit']}
++(HERE/'build-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
++print(f'Built {OUT.name}: {manifest["bytes"]} bytes, {len(TRANSLATIONS)} translation triples, {len(COMMANDS)} shell blocks')
+diff --git a/artifacts/src/r2a-demo-guide/facts.json b/artifacts/src/r2a-demo-guide/facts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..a089a28fb8732bfb021c7c8ad89973a52865d8f9
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/facts.json
+@@ -0,0 +1,119 @@
++{
++  "schemaVersion": 1,
++  "asOf": "2026-11-14",
++  "runtimeSourceCommit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
++  "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
++  "runtimeArtifactSha256": "55dd3585fb386953512554ca52d54c9463e7028286a64a66425a4f5dbe8e6270",
++  "productionLabUrl": "https://mekoniq-lab.vercel.app",
++  "productionLabStatus": "READY",
++  "cloud": {
++    "url": "https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app",
++    "project": "mekoniq",
++    "region": "asia-southeast1",
++    "revision": "mekoniq-lab-runtime-00002-9lx",
++    "httpSmoke": "tested",
++    "browserSmoke": "passed",
++    "tick": 4800,
++    "served": 2,
++    "httpStepWallMs": 71313,
++    "httpStepTimingScope": "Final CL01 attempt-03 HTTP loop, including network and processing; not a CPU/tick benchmark",
++    "ownRunsArchived": true,
++    "qualificationGate": {
++      "id": "G-CLOUD1",
++      "status": "tested",
++      "basis": "cloud-run supplemental guard",
++      "originalR2aStatus": "blocked_external",
++      "accepted": false
++    },
++    "browserSmokeScope": "automated headless Chrome157 from production Lab origin to Cloud Run; not manual HTTPS-to-loopback qualification"
++  },
++  "humanAcceptance": false,
++  "images": [
++    {
++      "id": "arm",
++      "file": "images/arm.png",
++      "sha256": "079de9679ba1dafc5278e3f7988f9f12bb981a395d8b35ef0fb24671a6488750",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "joints",
++      "file": "images/joints.png",
++      "sha256": "e921c33089182f6cdb3d429258a189c4531ffc2d9a71a043d454216dc9d7a1e7",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "replay",
++      "file": "images/replay.png",
++      "sha256": "e1b05b736f23a52e5141693853b3bea52cca752c6b119ff82800fdfe3b998188",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
++      "scope": "automated local UI test; not deployed production UI"
++    },
++    {
++      "id": "watch",
++      "file": "images/watch.png",
++      "sha256": "cd9368dad6c2a863b30a94d09ff04e5289f210f003bff5378447ca5d2f3886ff",
++      "width": 1440,
++      "height": 900,
++      "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
++      "scope": "automated local UI test; not deployed production UI"
++    }
++  ],
++  "productionLabCommit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
++  "productionSourceCommit": "d1a2522a89f17d0f9d8d2c444975778844f74425",
++  "productionSourceUrl": "https://www.mekoniq.app",
++  "productionSourceStatus": "READY",
++  "productionVerifiedAt": "2026-11-14T01:29:09.640714+00:00",
++  "productionHttpSmoke": {
++    "status": "tested",
++    "sourceLive": {
++      "status": 200,
++      "live": true
++    },
++    "sourceReady": {
++      "status": 200,
++      "ready": true
++    },
++    "sourceRoot": 200,
++    "labRoot": 200
++  },
++  "labCommitRole": "historical local qualification and screenshot capture",
++  "manualBrowserChecks": {
++    "status": "not_run",
++    "scope": "human Chrome/Firefox/Safari HTTPS-to-loopback permissions"
++  },
++  "localUiBaseline": {
++    "scenarioId": "MJ-BV01",
++    "finalTick": 4810,
++    "served": 2,
++    "initialStepTicks": 250,
++    "pacedStepTicks": 20,
++    "sourceEvidence": "docs/implementation/evidence/sim-extension/r2a-candidate-02/suites/lab-e2e-mujoco-coffee.log",
++    "labCommit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00"
++  },
++  "productionBrowserSmoke": {
++    "status": "passed",
++    "automated": true,
++    "headless": true,
++    "browser": "157.0.8103.78",
++    "finishedAt": "2026-11-14T01:35:34.055Z",
++    "finalTick": 4810,
++    "served": 2,
++    "wallMs": 78411,
++    "selectedSpeed": "16x",
++    "timingScope": "includes network, UI and report overhead; not a CPU/tick or 1x benchmark",
++    "ownRunArchived": true,
++    "pageErrors": [],
++    "manualBrowserCheck": "not_run",
++    "accepted": false,
++    "evidenceFile": "docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
++    "evidenceSha256": "fa5f1a4843482e1dd75f10e45b763908e969568b2acbf0e959488b084ac44bdb"
++  }
++}
+diff --git a/artifacts/src/r2a-demo-guide/style.css b/artifacts/src/r2a-demo-guide/style.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..2ac11bb021e897eab86a8f06ba9b806cbb734b24
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/style.css
+@@ -0,0 +1,10 @@
++:root{--paper:#f0f4f0;--ink:#102c2e;--muted:#506a68;--line:#cfddd4;--green:#b6ff79;--forest:#0b272b;--white:#fff;--amber:#76510a;--amber-bg:#fff4d6;--radius:16px;--sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
++*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:80px}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6}html[data-lang=vi] .i18n:not([lang=vi]),html[data-lang=ja] .i18n:not([lang=ja]),html[data-lang=en] .i18n:not([lang=en]){display:none}a{color:inherit;text-underline-offset:4px}button,input{font:inherit}button,a,input,summary{-webkit-tap-highlight-color:transparent}button,summary{cursor:pointer}button{min-height:44px;border:1px solid var(--line);border-radius:9px;background:var(--white);color:var(--ink);padding:8px 14px;transition:background .16s,border-color .16s}button:hover{background:#e4eee6;border-color:#8ca799}a:hover{color:#317443}button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #237242;outline-offset:4px}h1,h2,h3,p{margin:0}h1,h2,h3{text-wrap:balance}h1{font-size:clamp(38px,4vw,66px);line-height:1.05;font-weight:760;letter-spacing:-2px;white-space:pre-line}h2{font-size:clamp(26px,2.3vw,36px);line-height:1.17;letter-spacing:-.8px}h3{font-size:20px;line-height:1.35;letter-spacing:-.2px}p+p{margin-top:12px}code,.mono{font-family:var(--mono)}code{font-size:.9em;overflow-wrap:anywhere}small{font-size:12px}main{margin-left:220px;padding:0 36px 24px;max-width:1600px}section{scroll-margin-top:80px}.i18n{white-space:inherit}.sidebar{position:fixed;inset:0 auto 0 0;width:220px;padding:32px 20px;background:var(--forest);color:#ecf9ef;display:flex;flex-direction:column;border-right:1px solid #294145;z-index:10}.brand{display:flex;gap:11px;align-items:center;text-decoration:none;font-weight:800;font-size:21px;letter-spacing:-.6px}.brand:hover{color:var(--green)}.brand-mark{display:grid;place-content:center;width:35px;height:35px;border:2px solid var(--green);color:var(--green);border-radius:12px 12px 12px 2px;font:700 22px var(--mono)}.brand small{display:block;font:600 10px var(--mono);letter-spacing:2.3px;color:#9ebbb6}.edition{margin:40px 10px 20px;font:700 26px var(--mono);color:var(--green)}.edition span{display:block;margin-top:6px;font-size:11px;color:#a7c0b7;letter-spacing:1.5px}.sidebar nav{display:grid;gap:6px}.sidebar nav a{display:flex;gap:12px;align-items:center;text-decoration:none;min-height:48px;padding:10px;border-radius:8px;font-size:14px}.sidebar nav a:hover{background:#17383a;color:var(--green)}.sidebar nav a>span:first-child{font:11px var(--mono);color:#82a19a}.sidebar-note{margin-top:auto;padding:24px 10px 0;color:#a7c0b7;font-size:13px}.sidebar-note .mono{display:block;margin-top:20px;font-size:10px;letter-spacing:1px}.toolbar{height:82px;display:flex;justify-content:flex-end;align-items:center;gap:12px}.toolbar-right{display:flex;gap:12px;align-items:center}.language{display:flex;border:1px solid #bdcfc3;border-radius:10px;padding:3px;background:#e5eee7}.language button{border:0;background:none;font-size:12px;min-width:44px;min-height:36px;padding:5px 10px}.language button[aria-pressed=true]{background:var(--forest);color:var(--white)}.print{background:transparent;font-size:13px}.mobile-brand{display:none}.hero{background:var(--forest);color:var(--white);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr);align-items:center}.hero-copy{padding:34px 28px 30px 34px;min-width:0}.eyebrow{font:600 11px var(--mono);letter-spacing:1.8px;color:#356345}.hero .eyebrow{color:var(--green);margin-bottom:22px}.hero-lead{font-size:16px;color:#b9d1c8;margin-top:22px;max-width:46ch}.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}.button{display:inline-flex;align-items:center;justify-content:center;gap:14px;border-radius:9px;min-height:46px;padding:10px 15px;font-size:13px;font-weight:650;text-decoration:none;border:1px solid transparent}.button.lime{background:var(--green);color:var(--forest)}.button.lime:hover{background:#d1ffa9;color:var(--forest)}.button.outline{border-color:#53746c;color:#e8f8e8}.button.outline:hover{background:#25463f;color:var(--white)}.button.dark{background:var(--forest);color:var(--white)}.button.dark:hover{background:#244d42}.hero-metrics{display:flex;gap:28px;margin-top:35px;padding-top:23px;border-top:1px solid #31524d}.hero-metrics>div{min-width:0}.hero-metrics b{display:block;font:650 20px var(--mono);white-space:nowrap}.hero-metrics span{display:block;font-size:11px;line-height:1.4;color:#a9c6bb;margin-top:8px}.shot{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}.shot img{width:100%;height:auto;display:block;background:var(--forest)}.image-button{display:block;padding:0;border:0;border-radius:0;width:100%;min-height:0;background:var(--forest)}.image-button:hover{background:var(--forest)}.image-button:focus-visible{outline-offset:-4px}.shot figcaption{padding:14px 16px;font-size:13px;line-height:1.5}.shot-scope{display:block;color:var(--muted);font-size:11px;margin-top:6px}.hero-shot{align-self:stretch;display:flex;flex-direction:column;justify-content:center;border:0;border-radius:0;background:#10252d;padding:20px 20px 20px 0}.hero-shot figcaption{padding:12px 0 0;color:#c6dcd3}.hero-shot .shot-scope{color:#91b3a8}.hero-shot .image-button{border:1px solid #355349;border-radius:12px;overflow:hidden}.hero-shot img{aspect-ratio:1.6;object-fit:contain}.status-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}.status{display:inline-flex;align-items:center;gap:8px;border:1px solid;padding:6px 10px;border-radius:7px;font-size:11px;font-weight:650;line-height:1.45}.status:before{content:"";width:6px;height:6px;flex:none;background:currentColor;border-radius:50%}.status.good{color:#17613a;background:#e1f3df;border-color:#b8d8b2}.status.pending{color:var(--amber);background:var(--amber-bg);border-color:#e4cf99}.status.neutral{color:#47635c;background:#e6ece7;border-color:#cbd8cc}.snapshot{font-size:12px;color:var(--muted);margin-top:12px;max-width:105ch}.section{margin-top:64px}.section-heading{display:flex;gap:18px;margin-bottom:26px}.section-heading p{font-size:14px;color:var(--muted);margin-top:12px;max-width:78ch}.section-no{font:13px var(--mono);padding-top:6px;color:#467450}.route-tabs{display:flex;gap:4px;border:1px solid var(--line);padding:5px;background:#e4ece5;border-radius:12px;width:max-content;max-width:100%;margin-bottom:16px}.route-tabs button{border:none;background:none;font-weight:650;font-size:14px}.route-tabs button[aria-selected=true]{background:var(--forest);color:var(--white)}.route-card{border:1px solid var(--line);background:var(--white);border-radius:var(--radius);padding:30px}.route-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:16px}.route-heading h3{font-size:25px;margin-top:8px}.route-lead{color:var(--muted);max-width:95ch;font-size:15px;margin-bottom:24px}.code{border:1px solid #c7d8ce;border-radius:10px;margin:18px 0;overflow:hidden;background:#edf4ee}.code-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #d3e1d6;padding:4px 8px 4px 16px;color:#47715b}.code-top>span{font:10px var(--mono);letter-spacing:1.5px}.code .copy{border:0;background:transparent;font-size:12px;min-height:36px}.code pre{padding:16px;margin:0;white-space:pre-wrap;word-break:break-word;font:13px/1.65 var(--mono);color:#174331}.steps{list-style:none;padding:0;margin:24px 0;display:grid;gap:24px}.step{display:grid;grid-template-columns:35px minmax(0,1fr);gap:16px}.step-no{width:35px;height:35px;border:1px solid #bfd3c3;background:#eff7ef;border-radius:50%;display:grid;place-content:center;font:12px var(--mono);color:#376345}.step h3{font-size:18px;margin:4px 0 10px}.step p{color:var(--muted);font-size:14px}.step p.expected{padding:10px 13px;border-left:2px solid #7fae68;background:#eff5eb;color:#26492f;font-size:13px;margin-top:13px}.expected b{font-weight:750;margin-right:8px}.route-links{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin:24px 0}.route-links>a:not(.button){font-size:13px}.note{padding:13px 16px;background:#f4f5ee;border:1px solid #dcded0;border-radius:9px;color:#526248;font-size:13px}.demo-steps{padding:28px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);gap:28px}.demo-steps .step:not(:last-child){padding-bottom:25px;border-bottom:1px solid #e0e9e1}.checklist{border-radius:var(--radius);border:1px solid #bdd8ba;background:#e7f1df;padding:25px}.checklist h3{font-size:18px}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px;margin:16px 0}.checks label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;cursor:pointer}.checks input{width:18px;height:18px;flex:none;accent-color:#245e37}.prep-footer{border-top:1px solid #c2d6bb;padding-top:14px;display:flex;align-items:center;gap:12px}.prep-footer output{font:600 16px var(--mono);white-space:nowrap}.prep-footer>span{font-size:11px;color:#52694b}.prep-footer button{margin-left:auto;background:transparent;font-size:12px}.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.feature{border:1px solid var(--line);border-radius:12px;padding:22px;background:var(--white);min-width:0}.feature-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font:11px var(--mono);color:#477059;margin-bottom:27px}.feature-top small{font-size:9px;letter-spacing:.6px}.feature h3{font-size:18px;margin-bottom:12px}.feature p{font-size:13px;color:var(--muted)}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}.gallery .shot:last-child{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;align-items:center}.gallery .shot:last-child figcaption{padding:28px;font-size:16px}.table-wrap{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}th,td{text-align:left;vertical-align:top;padding:18px;border-bottom:1px solid #dce6dd;overflow-wrap:anywhere}th{background:#e4eee3;color:#2d5737;font-size:12px}td:first-child{font-weight:650;width:34%}tr:last-child td{border-bottom:none}.table-wrap+.note{margin-top:15px}.proof-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.proof-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px}.proof-card h3{font-size:18px;margin:18px 0 12px}.proof-card p{font-size:13px;color:var(--muted)}.pending-card{background:#faf7ed}.scope{margin:22px 0;padding:26px 28px;border:1px solid #284b3b;border-radius:12px;background:#193a2d;color:#eef6e8}.scope h3{color:#d0f4b7;margin-bottom:15px}.scope p{font-size:15px;max-width:98ch}.scope p+p{font-size:12px;color:#b6cdb9}.faq{display:grid;gap:10px}details{background:#fff;border:1px solid var(--line);border-radius:11px;margin-top:12px}summary{padding:16px 20px;font-size:14px;font-weight:650;min-height:52px;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}summary::-webkit-details-marker{display:none}summary:after{content:"+";font:22px var(--mono);color:#568264}details[open]>summary:after{content:"−"}.details-body{padding:0 20px 20px}.details-body p{font-size:13px;color:var(--muted)}.identities{display:grid;gap:12px;margin:0 0 20px}.identities div{display:grid;grid-template-columns:190px minmax(0,1fr);gap:10px;padding-bottom:10px;border-bottom:1px solid #e0e9df}.identities dt{font-size:12px;font-weight:650}.identities dd{margin:0;font-size:12px}.references{padding-left:20px;font-size:13px;line-height:2}footer{display:flex;gap:20px;justify-content:space-between;border-top:1px solid #becfc2;margin-top:60px;padding-top:25px;font-size:12px;color:var(--muted)}footer p{max-width:85ch}footer a{white-space:nowrap}.skip-link{position:fixed;left:240px;top:-60px;z-index:40;padding:10px 16px;background:#fff;border:2px solid #2a643e}.skip-link:focus{top:12px}.no-script{margin:0 0 0 220px;padding:20px;background:#fff0c8;font-size:13px}html:not(.js) .interactive{display:none}html:not(.js) [data-route-panel]+[data-route-panel]{margin-top:40px;padding-top:30px;border-top:1px solid var(--line)}dialog{border:1px solid #6d8b77;border-radius:15px;padding:18px;max-width:min(1400px,96vw);width:fit-content;max-height:95vh;overflow:auto;background:#f1f6f0;color:var(--ink)}dialog::backdrop{background:#061a21d9}.lightbox-top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:12px}.lightbox-top h2{font-size:18px}#lightbox-image{display:block;width:100%;height:auto;max-height:77vh;object-fit:contain}#lightbox-caption{font-size:13px;margin-top:10px}#toast:empty{display:none}#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 32px);padding:13px 18px;background:#163e2a;color:#fff;border:1px solid #6f9e7d;border-radius:10px;font-size:13px;z-index:30;box-shadow:0 5px 20px #071f2124}
++@media(min-width:1800px){main{margin-right:auto;margin-left:max(220px,calc((100vw - 1600px)/2 + 220px))}}
++@media(max-width:1280px){.sidebar{width:190px;padding:26px 15px}.brand{font-size:18px;gap:8px}.brand-mark{width:30px;height:30px}.sidebar nav a{font-size:12px;padding:10px 6px;gap:8px}main{margin-left:190px;padding:0 24px 24px}.hero{grid-template-columns:1fr}.hero-copy{padding:32px}.hero-shot{padding:0 32px 24px}.hero-shot img{aspect-ratio:1.85;object-fit:cover;object-position:center}.hero-metrics{max-width:600px}.hero-metrics>div{flex:1}.hero h1{font-size:54px}.hero-lead{max-width:75ch}.features{grid-template-columns:repeat(2,minmax(0,1fr))}.proof-grid{grid-template-columns:1fr}.proof-card p{max-width:100ch}.proof-card h3{margin-top:14px}.no-script{margin-left:190px}}
++@media(max-width:800px){.sidebar{display:none}main{margin:0;padding:0 20px 24px}.toolbar{justify-content:space-between;height:76px}.mobile-brand{display:block;font-weight:850;text-decoration:none;font-size:17px;letter-spacing:-.7px}.mobile-brand span{display:inline-block;color:#44784e;font:11px var(--mono);margin-left:6px}.toolbar-right{gap:8px}.print{padding:7px 10px;font-size:11px}.language button{padding:5px 8px;min-width:36px;min-height:36px}.hero h1{font-size:49px}.hero-copy{padding:28px}.hero-shot{padding:0 24px 20px}.hero-shot img{aspect-ratio:1.6;object-fit:contain}.hero-metrics{gap:14px}.section{margin-top:44px}.section-heading{gap:10px}.route-card{padding:23px}.route-heading{flex-direction:column;gap:12px}.checks{grid-template-columns:1fr}.gallery{grid-template-columns:1fr}.gallery .shot:last-child{display:block}.gallery .shot:last-child figcaption{padding:14px 16px;font-size:13px}.identities div{grid-template-columns:1fr;gap:3px}.no-script{margin-left:0}.skip-link{left:16px}footer{flex-direction:column;margin-top:40px}}
++@media(max-width:480px){main{padding:0 14px 22px}.toolbar{height:auto;min-height:76px;flex-wrap:wrap;padding:12px 0;gap:8px}.toolbar-right{margin-left:auto}.mobile-brand{font-size:16px}.print{display:none}.hero{border-radius:18px}.hero-copy{padding:24px 22px}.hero h1{font-size:42px;letter-spacing:-1.6px}.hero-lead{font-size:14px;line-height:1.65;margin-top:18px}.hero .eyebrow{font-size:9px;margin-bottom:18px;letter-spacing:1.2px}.hero-actions{margin-top:20px}.hero-actions .button{width:100%;font-size:12px}.hero-metrics{gap:10px;margin-top:26px;padding-top:18px}.hero-metrics b{font-size:14px}.hero-metrics span{font-size:10px}.hero-shot{padding:0 12px 14px}.hero-shot figcaption{font-size:11px;padding:10px 6px 0}.hero-shot .shot-scope{font-size:10px}.status{font-size:10px;padding:6px 8px}.snapshot{font-size:11px}.section-heading h2{font-size:26px}.section-heading p{font-size:13px}.route-tabs{width:100%}.route-tabs button{flex:1;font-size:11px;padding:9px 8px}.route-card{padding:19px 16px}.route-heading h3{font-size:22px}.route-lead{font-size:14px}.step{grid-template-columns:27px minmax(0,1fr);gap:10px}.step-no{width:27px;height:27px;font-size:10px}.step h3{font-size:16px;margin-top:1px}.step p{font-size:13px}.step p.expected{padding:9px 11px;font-size:12px}.demo-steps{padding:20px 16px}.code pre{font-size:11px;padding:13px}.code-top{padding-left:13px}.features{grid-template-columns:1fr;gap:12px}.feature{padding:20px}.feature-top{margin-bottom:19px}.checklist{padding:19px 16px}.prep-footer{flex-wrap:wrap;gap:8px}.prep-footer>span{max-width:180px}.prep-footer button{font-size:11px;padding:7px 9px}th,td{padding:12px 9px;font-size:11px}th{font-size:10px}.scope{padding:22px 18px}.scope p{font-size:14px}.proof-card{padding:20px}summary{padding:15px 16px;font-size:13px}.details-body{padding:0 16px 17px}dialog{padding:12px}.lightbox-top h2{font-size:15px}.lightbox-top button{font-size:12px;padding:7px 10px}}
++@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
++@media print{html{scroll-behavior:auto}body{background:#fff;color:#000;font-size:11pt}.sidebar,.toolbar,.interactive,.hero-actions,dialog,#toast,.skip-link,.route-tabs,.prep-footer button{display:none!important}main{margin:0;padding:0;max-width:none}.hero{background:#fff;color:#000;border:1px solid #aaa;display:block}.hero-copy{padding:20px}.hero h1{font-size:34pt}.hero-lead,.hero-metrics span,.hero .eyebrow{color:#333}.hero-metrics{border-color:#aaa;max-width:600px}.hero-shot{padding:0 20px 20px;background:#fff}.hero-shot img{max-height:360px;object-fit:contain}.hero-shot figcaption,.hero-shot .shot-scope{color:#333}.section{margin-top:30px}.section-heading,.feature,.proof-card,.step,.shot,details{break-inside:avoid}.features,.proof-grid{grid-template-columns:repeat(2,minmax(0,1fr))}[data-route-panel]{display:block!important}[data-route-panel]+[data-route-panel]{margin-top:30px;border-top:1px solid #aaa;padding-top:24px}details>.details-body{display:block!important}details>summary{list-style:none}details>summary:after{display:none}.scope{background:#f2f2f2;color:#000;border-color:#aaa}.scope h3,.scope p+p{color:#333}.note{background:#f4f4f4;color:#222}button.image-button{border:0}.gallery .shot:last-child{display:block}.gallery .shot:last-child img{max-height:320px;object-fit:contain}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}footer{margin-top:30px}.no-script{display:none}}
++
++.notice{margin:20px 0;padding:18px 20px;border-left:3px solid #6b985b;background:#e8efdf;border-radius:8px;color:#365335;font-size:14px}
+diff --git a/artifacts/src/r2a-demo-guide/verification.json b/artifacts/src/r2a-demo-guide/verification.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..57b75ff6c88c85ec5ad7d9937132c5b08d60aeed
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/verification.json
+@@ -0,0 +1,67 @@
++{
++  "schemaVersion": 1,
++  "recordedAt": "2026-11-14T01:37:33.075Z",
++  "artifact": "mekoniq-r2a-demo-guide.html",
++  "mode": "browser",
++  "checks": [
++    {
++      "name": "Artifact/input/original screenshot hashes, translation triples, scope markers, source links, offline dependencies, secret scan and shell syntax",
++      "details": {
++        "translations": 177,
++        "images": 4,
++        "shellBlocks": 4
++      },
++      "passed": true
++    },
++    {
++      "name": "VI/JA/EN text and image labels; no horizontal overflow at 320/390/768/1024/1440 px",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Web/local buttons, arrow/Home keyboard navigation, focus and hero links",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Copy preserves exact command bytes; denied clipboard selects text for manual copy",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Preparation checklist counts and resets without marking test evidence",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "All four original images open at real dimensions; Escape restores keyboard focus",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Print reveals both routes and all disclosure content; state is restored afterwards",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Fresh-page previews contain one toolbar at the top, one mobile brand and three status chips",
++      "details": {
++        "strategy": "fresh page per viewport; no print-media transitions"
++      },
++      "passed": true
++    },
++    {
++      "name": "No-JavaScript fallback keeps both demo routes and all features readable",
++      "details": true,
++      "passed": true
++    },
++    {
++      "name": "Zero browser errors or HTTP resource requests; no runtime or operational services started",
++      "details": true,
++      "passed": true
++    }
++  ],
++  "passed": true,
++  "sha256": "a22dabf893a7bea5f5aaaa72dfac8e1c060602c497b7d5b24708f959e097e540",
++  "browser": "157.0.8103.78"
++}
+diff --git a/artifacts/src/r2a-demo-guide/verify.cjs b/artifacts/src/r2a-demo-guide/verify.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..51d2e04203ad0682bd6a5587cbc326358963f8f0
+--- /dev/null
++++ b/artifacts/src/r2a-demo-guide/verify.cjs
+@@ -0,0 +1,198 @@
++#!/usr/bin/env node
++'use strict';
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const crypto = require('node:crypto');
++const {pathToFileURL} = require('node:url');
++const {spawnSync} = require('node:child_process');
++const {createRequire} = require('node:module');
++const here = __dirname;
++const artifact = path.resolve(here, '../../mekoniq-r2a-demo-guide.html');
++const staticOnly = process.argv.includes('--static');
++const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
++const receipt = {schemaVersion:1, recordedAt:new Date().toISOString(), artifact:path.basename(artifact), mode:staticOnly?'static':'browser', checks:[], passed:false};
++const check = (name, details=true) => receipt.checks.push({name, details, passed:true});
++
++(async () => {
++  const bytes = fs.readFileSync(artifact), html = bytes.toString();
++  const build = JSON.parse(fs.readFileSync(path.join(here, 'build-manifest.json')));
++  const facts = JSON.parse(fs.readFileSync(path.join(here, 'facts.json')));
++  receipt.sha256 = sha(bytes);
++  assert.equal(receipt.sha256, build.sha256);
++  for (const [name, digest] of Object.entries(build.inputs)) assert.equal(sha(fs.readFileSync(path.join(here,name))), digest, 'Changed input '+name);
++  assert(!/<script[^>]+src=|<link[^>]+(?:href|rel)=|<iframe|<img[^>]+src="(?!data:)/i.test(html), 'External rendering dependency');
++  assert(!/sb_(?:publishable|secret)_[A-Za-z0-9_-]{10,}|BEGIN (?:RSA |EC )?PRIVATE KEY|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/.test(html), 'Possible key/token embedded');
++  for (const marker of ['RUNTIME_PIN_MISMATCH','MUJOCO_CAPACITY','LOOPBACK_BLOCKED','not_calibrated','1880/1884','Chạy lại cùng đầu vào','G-CLOUD1 = tested','cloud-run','71,3',facts.cloud.url,facts.runtimeSourceCommit,facts.labCommit]) assert(html.includes(marker), 'Missing scope marker '+marker);
++  assert.equal(facts.cloud.qualificationGate.status, 'tested');
++  assert.equal(facts.cloud.qualificationGate.basis, 'cloud-run supplemental guard');
++  assert.equal(facts.cloud.httpStepWallMs, 71313);
++  assert.equal(facts.humanAcceptance, false);
++  assert.equal(facts.productionLabStatus, 'READY');
++  assert.equal(facts.productionSourceStatus, 'READY');
++  assert.notEqual(facts.labCommit, facts.productionLabCommit);
++  assert.equal(facts.cloud.browserSmoke, 'passed');
++  assert.equal(facts.manualBrowserChecks.status, 'not_run');
++  const productionBytes = fs.readFileSync(path.resolve(here, '../../..', facts.productionBrowserSmoke.evidenceFile));
++  assert.equal(sha(productionBytes), facts.productionBrowserSmoke.evidenceSha256);
++  const production = JSON.parse(productionBytes);
++  assert.equal(production.status, 'passed');
++  assert.equal(production.accepted, false);
++  assert.equal(production.manualBrowserCheck, 'not_run');
++  assert.equal(production.runtimePin, facts.runtimeSourceCommit);
++  assert.equal(production.labCommit, facts.productionLabCommit);
++  assert.equal(production.sourceCommit, facts.productionSourceCommit);
++  assert.equal(production.run.tick, facts.productionBrowserSmoke.finalTick);
++  assert.equal(Number(production.run.served), facts.productionBrowserSmoke.served);
++  assert.equal(production.run.wallMs, facts.productionBrowserSmoke.wallMs);
++  assert(production.cleanup.length > 0 && production.cleanup.every(x => x.archived));
++  assert.deepEqual(production.pageErrors, []);
++  assert(html.includes(facts.productionLabCommit));
++  assert(html.includes(facts.productionSourceCommit));
++  assert(!/chờ bản pin mới|Cần cập nhật Lab production|neither main branch has been pushed|new pin pending|production đang chờ kết quả|production origin awaits results/.test(html), 'Stale deployment/browser status');
++  for (const lang of ['vi','ja','en']) assert.equal([...html.matchAll(new RegExp('class="i18n" lang="'+lang+'"','g'))].length, build.translationTriples);
++  for (const command of build.shellCommands) {
++    const result = spawnSync('bash', ['-n'], {input:command, encoding:'utf8'});
++    assert.equal(result.status, 0, result.stderr);
++  }
++  for (const im of build.images) {
++    assert.equal(sha(fs.readFileSync(path.join(here, im.file))), im.sha256);
++    assert(html.includes('data-zoom="'+im.id+'"'));
++    const original = path.resolve(here, '../../..', im.sourceEvidence);
++    assert.equal(sha(fs.readFileSync(original)), im.sha256, 'Original evidence screenshot differs');
++  }
++  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]);
++  assert.equal(new Set(ids).size, ids.length, 'Duplicate HTML ids');
++  for (const match of html.matchAll(/\bhref="#([^"]+)"/g)) assert(ids.includes(match[1]), 'Broken anchor '+match[1]);
++  for (const match of html.matchAll(/\bhref="(\.\.\/docs\/[^"#]+)"/g)) assert(fs.existsSync(path.resolve(path.dirname(artifact),match[1])), 'Missing source link '+match[1]);
++  check('Artifact/input/original screenshot hashes, translation triples, scope markers, source links, offline dependencies, secret scan and shell syntax', {translations:build.translationTriples, images:build.images.length, shellBlocks:build.shellCommands.length});
++  if (staticOnly) { receipt.passed = true; return; }
++
++  const pw = createRequire(path.resolve(here, '../../../package.json'))('@playwright/test');
++  const options = {headless:true};
++  if (process.env.PLAYWRIGHT_CHROMIUM) options.executablePath = process.env.PLAYWRIGHT_CHROMIUM;
++  else if (fs.existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')) options.executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
++  const browser = await pw.chromium.launch(options);
++  receipt.browser = browser.version();
++  try {
++    const page = await browser.newPage({viewport:{width:1440,height:1000}, reducedMotion:'reduce'});
++    const errors = [], requests = [];
++    page.on('pageerror', e => errors.push(e.message));
++    page.on('request', r => {if (/^https?:/.test(r.url())) requests.push(r.url());});
++    await page.route(/^https?:/, r => r.abort());
++    await page.goto(pathToFileURL(artifact).href+'?lang=vi');
++    assert.equal(await page.locator('html').getAttribute('lang'), 'vi');
++    assert.equal(await page.locator('.feature').count(), 6);
++    assert.equal(await page.locator('.shot').count(), 4);
++    assert.equal(await page.locator('#demo .demo-steps>.step').count(), 5);
++    for (const lang of ['vi','ja','en']) {
++      await page.locator(`[data-lang-switch="${lang}"]`).click();
++      assert.equal(await page.locator('html').getAttribute('lang'), lang);
++      assert.equal(await page.locator(`[data-lang-switch="${lang}"]`).getAttribute('aria-pressed'), 'true');
++      assert.equal(await page.locator(`.i18n:not([lang="${lang}"]):visible`).count(), 0);
++      assert.equal(await page.locator('.shot img').first().getAttribute('alt'), await page.locator('.shot img').first().getAttribute('data-alt-'+lang));
++      for (const width of [1440,1024,768,390,320]) {
++        await page.setViewportSize({width,height:1000});
++        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Overflow: '+lang+' / '+width);
++      }
++    }
++    check('VI/JA/EN text and image labels; no horizontal overflow at 320/390/768/1024/1440 px');
++    await page.setViewportSize({width:1440,height:1000});
++    await page.locator('[data-lang-switch="vi"]').click();
++    assert(await page.locator('#route-local').isVisible());
++    assert(!(await page.locator('#route-web').isVisible()));
++    await page.locator('#tab-local').focus();
++    await page.keyboard.press('ArrowRight');
++    assert(await page.locator('#route-web').isVisible());
++    assert.equal(await page.locator('#tab-web').getAttribute('aria-selected'), 'true');
++    assert(await page.locator('#tab-web').evaluate(e => e === document.activeElement));
++    await page.keyboard.press('Home');
++    assert(await page.locator('#route-local').isVisible());
++    await page.locator('[data-route-link="web"]').click();
++    assert(await page.locator('#route-web').isVisible());
++    await page.locator('#tab-local').click();
++    check('Web/local buttons, arrow/Home keyboard navigation, focus and hero links');
++
++    const copy = page.locator('[data-copy="launch-mujoco"]');
++    const expected = await page.locator('#launch-mujoco').textContent();
++    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {configurable:true,value:{writeText:async t => {window.__copied=t;}}}));
++    await copy.click();
++    assert.equal(await page.evaluate(() => window.__copied), expected);
++    assert.equal(await page.locator('#toast').textContent(), 'Đã sao chép.');
++    await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {configurable:true,value:{writeText:async () => {throw new Error('denied');}}}));
++    await copy.click();
++    assert.equal(await page.evaluate(() => getSelection().toString()), expected);
++    check('Copy preserves exact command bytes; denied clipboard selects text for manual copy');
++
++    for (const box of await page.locator('.prep-check').all()) await box.check();
++    assert.equal(await page.locator('#prep-count').textContent(), '4 / 4');
++    await page.locator('[data-reset-checks]').click();
++    assert.equal(await page.locator('#prep-count').textContent(), '0 / 4');
++    check('Preparation checklist counts and resets without marking test evidence');
++
++    for (const zoom of await page.locator('[data-zoom]').all()) {
++      await zoom.click();
++      assert(await page.locator('#lightbox').isVisible());
++      assert(await page.locator('#lightbox-image').evaluate(i => i.naturalWidth === 1440 && i.naturalHeight === 900));
++      await page.keyboard.press('Escape');
++      assert(!(await page.locator('#lightbox').isVisible()));
++      assert(await zoom.evaluate(e => e === document.activeElement));
++    }
++    check('All four original images open at real dimensions; Escape restores keyboard focus');
++
++    await page.emulateMedia({media:'print'});
++    await page.evaluate(() => dispatchEvent(new Event('beforeprint')));
++    assert(await page.locator('#route-local').isVisible());
++    assert(await page.locator('#route-web').isVisible());
++    assert.equal(await page.locator('details:not([open])').count(), 0);
++    assert.equal(await page.locator('.copy:visible').count(), 0);
++    await page.evaluate(() => dispatchEvent(new Event('afterprint')));
++    assert.equal(await page.locator('details[open]').count(), 0);
++    await page.emulateMedia({media:'screen'});
++    check('Print reveals both routes and all disclosure content; state is restored afterwards');
++
++    // A prior Chrome157 capture from the print/resize test page contained a duplicated raster
++    // near y=930 although its DOM had one toolbar. Capture deliverables from fresh pages,
++    // without print-media transitions, and verify the source layout before taking the PNG.
++    const preview = async (file, width) => {
++      const capture = await browser.newPage({viewport:{width,height:1000},reducedMotion:'reduce'});
++      capture.on('pageerror', e => errors.push(e.message));
++      capture.on('request', r => {if (/^https?:/.test(r.url())) requests.push(r.url());});
++      await capture.route(/^https?:/, r => r.abort());
++      await capture.goto(pathToFileURL(artifact).href+'?lang=vi');
++      await capture.evaluate(async () => {
++        await document.fonts.ready;
++        await document.querySelector('.hero-shot img').decode();
++        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
++      });
++      assert.equal(await capture.locator('.toolbar').count(), 1);
++      assert.equal(await capture.locator('.mobile-brand').count(), 1);
++      assert.equal(await capture.locator('[data-lang-switch]:visible').count(), 3);
++      assert.equal(await capture.locator('.status-strip .status:visible').count(), 3);
++      assert.equal(await capture.locator('.toolbar').evaluate(e => Math.round(e.getBoundingClientRect().top)), 0);
++      if (width < 800) assert.equal(await capture.locator('.mobile-brand:visible').count(), 1);
++      await capture.screenshot({path:path.join(here,file)});
++      await capture.close();
++    };
++    await preview('desktop-preview.png',1440);
++    await preview('mobile-preview.png',390);
++    check('Fresh-page previews contain one toolbar at the top, one mobile brand and three status chips', {strategy:'fresh page per viewport; no print-media transitions'});
++    const noJS = await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
++    const staticPage = await noJS.newPage();
++    await staticPage.goto(pathToFileURL(artifact).href);
++    assert(await staticPage.locator('noscript').isVisible());
++    assert(await staticPage.locator('#route-local').isVisible());
++    assert(await staticPage.locator('#route-web').isVisible());
++    assert.equal(await staticPage.locator('.feature:visible').count(), 6);
++    assert(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
++    await noJS.close();
++    check('No-JavaScript fallback keeps both demo routes and all features readable');
++    assert.deepEqual(errors, []);
++    assert.deepEqual(requests, []);
++    check('Zero browser errors or HTTP resource requests; no runtime or operational services started');
++    receipt.passed = true;
++  } finally { await browser.close(); }
++})().catch(e => {receipt.error=e.stack;process.exitCode=1;}).finally(() => {
++  fs.writeFileSync(path.join(here,staticOnly?'verification-static.json':'verification.json'),JSON.stringify(receipt,null,2)+'\n');
++  console.log(JSON.stringify({passed:receipt.passed,mode:receipt.mode,checks:receipt.checks.length,error:receipt.error}));
++});

@@ -1,0 +1,777 @@
+{
+  "at": "2026-11-15T20:51:55.414578+00:00",
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "scope": "Root direct byte/manifest/outcome readback; no physics or test rerun",
+  "campaignSummary": {
+    "accepted": false,
+    "expectedRuns": 19,
+    "completedCases": 19,
+    "missingArtifacts": [],
+    "faultCases": [
+      {
+        "id": "worker-kill",
+        "detected": true,
+        "falseServed": false
+      },
+      {
+        "id": "ack-loss",
+        "detected": true,
+        "falseServed": false
+      },
+      {
+        "id": "cup-fall",
+        "detected": true,
+        "falseServed": false
+      }
+    ],
+    "issues": []
+  },
+  "caseArtifactEntriesVerified": 1360,
+  "caseArtifactBytesVerified": 111450045,
+  "cases": [
+    {
+      "id": "turn-empty-s7",
+      "kind": "turn",
+      "runId": "6c228498-12d2-4035-9dd4-a6b6cb5a72f4",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3451,
+        "simTimeNs": "69020000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3451,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-center-s7",
+      "kind": "turn",
+      "runId": "4e150f9f-8503-4317-8e31-beb8bb1d1923",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3443,
+        "simTimeNs": "68860000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3443,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-offset-s7",
+      "kind": "turn",
+      "runId": "42793c1d-44ab-43cc-9355-bd5697207cf5",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3666,
+        "simTimeNs": "73320000000"
+      },
+      "artifactsVerified": 87,
+      "spawns": 1,
+      "stepRequests": 3666,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-empty-s19",
+      "kind": "turn",
+      "runId": "10d2fdac-8376-4c43-ba18-1843cd2de5a3",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3270,
+        "simTimeNs": "65400000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3270,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-center-s19",
+      "kind": "turn",
+      "runId": "74e04c0e-86ac-478b-b064-7f3f6111a3a1",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3227,
+        "simTimeNs": "64540000000"
+      },
+      "artifactsVerified": 79,
+      "spawns": 1,
+      "stepRequests": 3227,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-offset-s19",
+      "kind": "turn",
+      "runId": "a1099ca8-860a-450b-bd31-68f9d5d0c22b",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3461,
+        "simTimeNs": "69220000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3461,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-empty-s41",
+      "kind": "turn",
+      "runId": "76beee78-868f-4693-a17a-a04b88605ab4",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3288,
+        "simTimeNs": "65760000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3288,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-center-s41",
+      "kind": "turn",
+      "runId": "931d6fd9-a8ad-4350-ae34-95d8aafea8d5",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3276,
+        "simTimeNs": "65520000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3276,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "turn-offset-s41",
+      "kind": "turn",
+      "runId": "aaf2d524-cf77-4a40-b7d7-bb0d01ece827",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3463,
+        "simTimeNs": "69260000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3463,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "repeat-center-s7-r1",
+      "kind": "repeat",
+      "runId": "44cc8054-34b6-4fd3-91d0-e0aa2610a634",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3443,
+        "simTimeNs": "68860000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3443,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "repeat-center-s7-r2",
+      "kind": "repeat",
+      "runId": "434df9bf-ceaa-4d82-a3da-84ddeea97045",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3443,
+        "simTimeNs": "68860000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3443,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "repeat-center-s7-r3",
+      "kind": "repeat",
+      "runId": "e93cd267-5775-4167-8c1b-f21d7e757c15",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3443,
+        "simTimeNs": "68860000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3443,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "brake-slow",
+      "kind": "brake",
+      "runId": "d2c59d86-83dc-4d95-8dc7-4c94ef955628",
+      "outcome": {
+        "status": "cancelled",
+        "served": "0",
+        "tick": 519,
+        "simTimeNs": "10380000000"
+      },
+      "artifactsVerified": 39,
+      "spawns": 1,
+      "stepRequests": 519,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "brake-fast",
+      "kind": "brake",
+      "runId": "f5b1e48a-5945-4d62-85bd-e3880568ab71",
+      "outcome": {
+        "status": "cancelled",
+        "served": "0",
+        "tick": 551,
+        "simTimeNs": "11020000000"
+      },
+      "artifactsVerified": 39,
+      "spawns": 1,
+      "stepRequests": 551,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "friction-low",
+      "kind": "friction",
+      "runId": "76152c8c-c650-46a8-a38f-0891577966c3",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3443,
+        "simTimeNs": "68860000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3443,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "friction-high",
+      "kind": "friction",
+      "runId": "ac63fd43-0f4e-42e3-8a06-3eb7ac40caf6",
+      "outcome": {
+        "status": "completed",
+        "served": "1",
+        "tick": 3436,
+        "simTimeNs": "68720000000"
+      },
+      "artifactsVerified": 83,
+      "spawns": 1,
+      "stepRequests": 3436,
+      "retryRefused": false,
+      "attentions": []
+    },
+    {
+      "id": "worker-kill",
+      "kind": "worker-kill",
+      "runId": "5832be25-7057-4f15-a2a5-b202d5f04165",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 500,
+        "simTimeNs": "10000000000"
+      },
+      "artifactsVerified": 40,
+      "spawns": 1,
+      "stepRequests": 501,
+      "retryRefused": true,
+      "attentions": [
+        {
+          "reason": "WORKER_LOST",
+          "subjectId": "WORKER_EXITED",
+          "tick": 500
+        },
+        {
+          "reason": "EXECUTION_UNKNOWN",
+          "robotId": "amr-1",
+          "subjectId": "mission-e791768cf034226a1203a7f948a63c0c",
+          "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+          "tick": 500
+        }
+      ]
+    },
+    {
+      "id": "ack-loss",
+      "kind": "ack-loss",
+      "runId": "3d6f0794-8d17-4811-aeb0-aaab35f23719",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 500,
+        "simTimeNs": "10000000000"
+      },
+      "artifactsVerified": 40,
+      "spawns": 1,
+      "stepRequests": 501,
+      "retryRefused": true,
+      "attentions": [
+        {
+          "reason": "WORKER_LOST",
+          "subjectId": "WORKER_TIMEOUT",
+          "tick": 500
+        },
+        {
+          "reason": "EXECUTION_UNKNOWN",
+          "robotId": "amr-1",
+          "subjectId": "mission-e791768cf034226a1203a7f948a63c0c",
+          "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+          "tick": 500
+        }
+      ]
+    },
+    {
+      "id": "cup-fall",
+      "kind": "cup-fall",
+      "runId": "182e3292-73af-4b20-95c3-dfb7d5b22d8a",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 520,
+        "simTimeNs": "10400000000"
+      },
+      "artifactsVerified": 40,
+      "spawns": 1,
+      "stepRequests": 520,
+      "retryRefused": true,
+      "attentions": [
+        {
+          "reason": "LOAD_FELL",
+          "robotId": "amr-1",
+          "tick": 520
+        },
+        {
+          "reason": "LOAD_FELL",
+          "subjectId": "LOAD_FELL",
+          "tick": 520
+        },
+        {
+          "reason": "EXECUTION_UNKNOWN",
+          "robotId": "amr-1",
+          "subjectId": "mission-e791768cf034226a1203a7f948a63c0c",
+          "commandId": "robot-command-b89f9563bb8198e188c22d7861f22993",
+          "tick": 520
+        }
+      ]
+    }
+  ],
+  "ownInvocations": [
+    {
+      "schemaVersion": 1,
+      "startedAt": "2026-11-15T20:35:05.678Z",
+      "finishedAt": "2026-11-15T20:42:10.037Z",
+      "status": "completed",
+      "reason": null,
+      "exitCode": 0,
+      "exitSignal": null,
+      "spawnError": null,
+      "writeError": null,
+      "command": "node",
+      "args": [
+        "scripts/lab-mujoco.mjs",
+        "run",
+        "--campaign",
+        "payload-v1",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign"
+      ],
+      "stdout": "stdout.log",
+      "stderr": "stderr.log"
+    },
+    {
+      "schemaVersion": 1,
+      "startedAt": "2026-11-15T20:42:50.209Z",
+      "finishedAt": "2026-11-15T20:42:55.094Z",
+      "status": "completed",
+      "reason": null,
+      "exitCode": 0,
+      "exitSignal": null,
+      "spawnError": null,
+      "writeError": null,
+      "command": "node",
+      "args": [
+        "scripts/lab-mujoco.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign"
+      ],
+      "stdout": "stdout.log",
+      "stderr": "stderr.log"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/campaign.json",
+      "bytes": 3997,
+      "sha256": "b6924bf4361642a7cf0854a7b6954b936c5a7c9b81d17ea8494719c68afd60eb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/summary.json",
+      "bytes": 401,
+      "sha256": "8c9a0df3a381de055a01fbb436b296a326c7bcfa9e275f383dc2c2186ef0e3c7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s7/case.json",
+      "bytes": 15865,
+      "sha256": "6080bd23a9fce852356eecffdd624c5ca2bcf6b795c2f69fac73ab6f8b33a6a3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s7/report.json",
+      "bytes": 864571,
+      "sha256": "ffd67a7bd05956e27562ffac02ccee1bb961436d17eb2c89e6fd139a7ce1baf5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s7/trace.json",
+      "bytes": 305099,
+      "sha256": "26051dbbfeee6477f9af92b8c741a81635d2063231210cb0b3bee9acf6b0c0b8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s7/case.json",
+      "bytes": 15880,
+      "sha256": "4adbc6bbf221e75282fc0ae9bd5ba500f224e090674b6864aa2e21cdb31329f6"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s7/report.json",
+      "bytes": 1812522,
+      "sha256": "3352896b4d4b8711b811913ad34feaa0f91559111130331fc20dcc1eb9483e1e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s7/trace.json",
+      "bytes": 304387,
+      "sha256": "61f18251a521991c028c2049bbc897376b650150af9740edbe3daee0af0843f3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s7/case.json",
+      "bytes": 16611,
+      "sha256": "04d2711f054b4c00a3d4670fe13e90df4ecd346280edaababb7d8e9c229cdff1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s7/report.json",
+      "bytes": 1924905,
+      "sha256": "01745fcd6d5a64cf900d6627214fb47e5dc0387d52712ff53f694a9b2cf4fa1d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s7/trace.json",
+      "bytes": 324234,
+      "sha256": "32badff1160a830d1d39f98c4af06bccd31c7aa478046880f3a5997465fca6c9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s19/case.json",
+      "bytes": 15866,
+      "sha256": "9a404f7c9f4f2e1675c35311ed895d4846e456751393563d214944ee42733b9e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s19/report.json",
+      "bytes": 832337,
+      "sha256": "4fa62dbe1e694a7b5212b019e4f660267e06381ee0c253b37e187c58a598588b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s19/trace.json",
+      "bytes": 288990,
+      "sha256": "abb312ea5a91780d559e6863c140d12fef5e40bf37f56c780cca73bf35a87379"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s19/case.json",
+      "bytes": 15152,
+      "sha256": "298446593e3a8653a425a1a75af32f874ffdbf1a7cfca3df14e79b89d3705e48"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s19/report.json",
+      "bytes": 1711008,
+      "sha256": "8260ab4679e85b9222a87fafa97ff06d32d312fbaaa2ad0580937c29b23dc67c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s19/trace.json",
+      "bytes": 285163,
+      "sha256": "c5b3f8b400484a0edfb2306d6ca178c2da023e953a232f3f984824b24b21c5f3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s19/case.json",
+      "bytes": 15883,
+      "sha256": "b024977d92f9d73b2a47249bf998fa115060f445a8ad6d0b19acaedc1fda5c47"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s19/report.json",
+      "bytes": 1828167,
+      "sha256": "0676e6d5b69ab159f562f5204aff05131903f2b9a34430cd208baccd8a02e1d0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s19/trace.json",
+      "bytes": 305989,
+      "sha256": "0d38789c9e0e2d577d2f814a0c0df85a3eb7eabb1c49097d70c2ee5ee4fb8d7b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s41/case.json",
+      "bytes": 15866,
+      "sha256": "c8375058431ca90c15b73437f031e48dd6de9d2c956499ba5ba6005a386f086d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s41/report.json",
+      "bytes": 835066,
+      "sha256": "cc9dbad7ed6dae18f50f4e0cc2de813472fac72f3e04cd91b10fe9ee989b1483"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-empty-s41/trace.json",
+      "bytes": 290592,
+      "sha256": "d733c115bfb554473d0454bf6b25a70f2d7be17f5ae8cc94e7b9bde54ba6fbe8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s41/case.json",
+      "bytes": 15879,
+      "sha256": "4b33d3a1b0377225fde865ea87c4c097fdf5fc4c5cbd2eb3af057a2ad82e3526"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s41/report.json",
+      "bytes": 1737888,
+      "sha256": "aa3e0649fb8752dd193da0a42dfa0dc45985b415153024184150f9b7b0b39d7d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-center-s41/trace.json",
+      "bytes": 289524,
+      "sha256": "5ab85d23e7ca64a096e0467acd8211260f76a057c15b3b7f83dafcb29721caf9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s41/case.json",
+      "bytes": 15883,
+      "sha256": "95af3a8839715ef7fd8e35e3a25e294b5bbbe6271c6c9ea27edfbf2e64cf0969"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s41/report.json",
+      "bytes": 1827873,
+      "sha256": "97c64252471c42ea84501794c21478c53b1ca91d3a5757da4b9b689920045dd6"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/turn-offset-s41/trace.json",
+      "bytes": 306167,
+      "sha256": "96d03a5c7da380111d031ab323aac31842e8329c63a4617194243b545cf7bad1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r1/case.json",
+      "bytes": 15887,
+      "sha256": "1c820bf6cb0fee58bb6004187f85d58519566fde5c722e0d9063b386d06c4d7b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r1/report.json",
+      "bytes": 1812522,
+      "sha256": "0157749aaf047584c520d8b83ad7f7703769dff25fe2f41766ac41924605323e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r1/trace.json",
+      "bytes": 304387,
+      "sha256": "361335b7a65a1cec8906bb619ffd4d8796dd554918ed9eca5efb1e25cc699fcd"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r2/case.json",
+      "bytes": 15887,
+      "sha256": "0223da31b686d8358fd1666c91f8220e698cfd35104e724dd7ac905abae37213"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r2/report.json",
+      "bytes": 1812522,
+      "sha256": "16a320aa8edc3d784628a8eb248dc8cb37decb7d0381860776fa8504dfdb9b2e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r2/trace.json",
+      "bytes": 304388,
+      "sha256": "ed00c010e09ba38fe0e752a927db3d9d64829b13fb5cc4f114a64395e8205d1a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r3/case.json",
+      "bytes": 15887,
+      "sha256": "3a7e4c7e20546443c08608a946357546780a43d4c6079db096a82d09a625130a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r3/report.json",
+      "bytes": 1812522,
+      "sha256": "e208058f6ea56b3062baefe3d163194c44c56f2b83d19f105f03810d41fc2778"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/repeat-center-s7-r3/trace.json",
+      "bytes": 304388,
+      "sha256": "89b3f560524dd01e15823ff1b6dcdf7b35946c0447359851e6ff2863d00f03bb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-slow/case.json",
+      "bytes": 7951,
+      "sha256": "065a727294a0b0050b0020ce098c23570fa01d92814ed4b5e4492fd610b8924b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-slow/report.json",
+      "bytes": 307572,
+      "sha256": "35c83abefce90596b0e9ed9f8f99e972c8f08678c054c3dcbdb03061662f0716"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-slow/trace.json",
+      "bytes": 45111,
+      "sha256": "dc0f032d0bf45e979d366d28f9f43a0083a28224c11b0aad736d1e54441d77bd"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-fast/case.json",
+      "bytes": 7951,
+      "sha256": "d936ce928784375281b16048181122f7daa79384dfa7ebc5ca1a57eadfa4b7a2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-fast/report.json",
+      "bytes": 324398,
+      "sha256": "413130aa98bd562e46decdf5d3cea094c60628c101b60d2252b8da8d0305656d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/brake-fast/trace.json",
+      "bytes": 47895,
+      "sha256": "17ecc4eae1cdb035851f45e383ff1f1021e2ad4ccee2e43abc3dc96363e35b0d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-low/case.json",
+      "bytes": 15886,
+      "sha256": "fe557c725b1996c6fc3094409921a27efcd9ab2ed99dd25a1bfcedbf95fad1a1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-low/report.json",
+      "bytes": 1812519,
+      "sha256": "1ba5545a6e3fd51b4673b1979652dcb5943073bac26212ff78d3825d5b74d802"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-low/trace.json",
+      "bytes": 304388,
+      "sha256": "025f790a393c434ab1548a951037dc37a51ba317b2132f588b482bd64b2969c7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-high/case.json",
+      "bytes": 15891,
+      "sha256": "44b6853311bd4700ed4d5a72da34b61911065ebe099493a78b9801b18e3ebcd8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-high/report.json",
+      "bytes": 1810197,
+      "sha256": "81fb93b3fe02887cb6350466d96aa2bea29535df9d910b78e6220a8318b3b82f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/friction-high/trace.json",
+      "bytes": 303765,
+      "sha256": "66c064d71d4800930b35d378c71a47001b3399bd17d90b2c17354ffcc86f2cba"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/worker-kill/case.json",
+      "bytes": 8006,
+      "sha256": "f5ab21b0a2e5af5989e4abf61c9cfce4f3489ea5eed94cc78648af256d388c16"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/worker-kill/report.json",
+      "bytes": 295350,
+      "sha256": "51577804ec327683dcf157d93271ecf31bcbe7e8a5a7f8d41efa7bc5ab635ef9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/worker-kill/trace.json",
+      "bytes": 43805,
+      "sha256": "52dd5bd7684f284e9afc9603f9aaa40cd026baca7600e5db80025f998b7162ab"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/ack-loss/case.json",
+      "bytes": 8000,
+      "sha256": "f97fc52b47ff00a10f815b266be7dbfa6b97796a5c6385dde01cc004f74cea2c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/ack-loss/report.json",
+      "bytes": 295351,
+      "sha256": "bc48679d177517f36f77cc0e505a0b61e42ae255e47b21164d70e8a3f9575e1c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/ack-loss/trace.json",
+      "bytes": 43784,
+      "sha256": "2959b44f8822ca98ec13bda67c6bb8e9066ad2e7c3d6e9190696af9f4f5f7761"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/cup-fall/case.json",
+      "bytes": 8560,
+      "sha256": "4e83224ec9ec97f08da16ed14ccc5ff7616fad77889e41bd77fd2297c166e648"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/cup-fall/report.json",
+      "bytes": 302850,
+      "sha256": "ccf3d1fc1305f415ea9c5c767cb1ef238a4fbef48df55a743a4f90941794bd49"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign/cup-fall/trace.json",
+      "bytes": 45226,
+      "sha256": "eafea5d461025b994cb6aa180d1ddc953ab33e351f2675b1bc2cc78dad502714"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/payload-campaign.receipt.json",
+      "bytes": 5095,
+      "sha256": "4f07e05292f5813ddb07f98d39e305709d3e54c9e4ec635c7a88d90dbcd80e62"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/payload-campaign.log",
+      "bytes": 435,
+      "sha256": "17b9f9c66f9ae7cc10c607f12bafa455f8e08698f1aeec2c4117b806fbf3e34c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign-process/process.json",
+      "bytes": 521,
+      "sha256": "51660fc0ba1d9cd04385bf67237f20945dc24c326ea36abf6cb50c06a2da4779"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/payload-campaign-process/stdout.log",
+      "bytes": 380,
+      "sha256": "8905a586d3873a62782fc84653b1f9aba8e928ca05e788aec1d2f9da8481f1c7"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-payload-campaign.receipt.json",
+      "bytes": 5069,
+      "sha256": "03ab2389e77945eae978031ccb45d45b2e117af358f46dd7f437d9b5dcfc80ad"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-payload-campaign.log",
+      "bytes": 414,
+      "sha256": "a00795fcecc074572185f850f3ec69d58ed3b2c6c1188c3c9f88f97d62f7d3c7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-payload-campaign-process/process.json",
+      "bytes": 490,
+      "sha256": "26067565ca4c31904f52e693522d188e17492547f897ad8254e551af23da506e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-payload-campaign-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-payload-campaign-process/stdout.log",
+      "bytes": 380,
+      "sha256": "8905a586d3873a62782fc84653b1f9aba8e928ca05e788aec1d2f9da8481f1c7"
+    }
+  ],
+  "limitations": [
+    "Mac MuJoCo dynamics remain not_calibrated; accepted:false.",
+    "Cup fall is a registered applied30N force/0.02s perturbation, not unforced turn tipping.",
+    "Full G-MJ1 cloud/security suite and native/physical qualification remain open."
+  ]
+}

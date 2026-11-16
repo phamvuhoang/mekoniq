@@ -1,0 +1,17 @@
+{
+  "valid": false,
+  "accepted": false,
+  "issues": [
+    "R3_ARTIFACT_INVENTORY",
+    "R3_HANDOFF:REF_SIZE_MISMATCH",
+    "R3_HANDOFF:REF_HASH_MISMATCH",
+    "R3_DERIVED_MISMATCH:cases",
+    "R3_DERIVED_MISMATCH:gates",
+    "R3_DERIVED_MISMATCH:capabilities",
+    "R3_DERIVED_MISMATCH:levels",
+    "R3_DERIVED_MISMATCH:issues",
+    "R3_SCOPE_INCOMPLETE",
+    "R3_ARTIFACT_CHANGED_DURING_READBACK"
+  ],
+  "note": "Supplied artifact consistency only; sidecar authorship/signature and host provenance require independent review."
+}

@@ -1,0 +1,30 @@
+{
+  "id": "world-full-capsule-v1",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "status": "pass",
+  "complete": true,
+  "reasonCodes": [],
+  "sourceJournal": "trusted_source_session",
+  "geometry": {
+    "status": "pass",
+    "checkedIntervals": 10850,
+    "expectedIntervals": 10850,
+    "distinctSceneRevisions": 10850,
+    "uncertainIntervals": 0,
+    "geometryHash": "20884076ed6e2f1c8e7d0ba4fff9f073cf7dd9ba0a0d4aabd745fd9f9c1e62a7",
+    "firstFailure": null
+  },
+  "nativeContacts": {
+    "status": "pass",
+    "aggregateRows": 52446,
+    "unexpected": 0,
+    "firstUnexpected": null
+  },
+  "method": {
+    "engine": "capsule-sweep-v1",
+    "toleranceM": 0.0005,
+    "modelRevision": "e60fd6ca4431e6b1a37282f7e88a79931b47a0cc3ac52c76e9cc8c219bac057c",
+    "sampling": "actual consecutive arm joints and current observed full AMR geometry; native aggregates cover all10 substeps separately"
+  }
+}

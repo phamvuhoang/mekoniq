@@ -1,0 +1,234 @@
+{
+  "at": "2026-11-15T22:25:10.523340+00:00",
+  "scope": "Independent real browser+ownedHTTP diagnostic; synthetic fixture bytes, not Source performance/qualification. Original timed-out pendingURL remains unobserved.",
+  "cases": [
+    {
+      "name": "response-finished-reproduction",
+      "ownExit": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T22:20:36.314Z",
+      "finishedAt": "2026-11-15T22:20:41.274Z",
+      "verdict": "Specific download liveness hazard not reproduced",
+      "hazardConfirmed": false,
+      "beforeClose": [
+        {
+          "url": "http://127.0.0.1:49744/lab/v2/control",
+          "status": 200,
+          "state": "resolved",
+          "startedAtEpochMs": 1794781237954,
+          "settledAtEpochMs": 1794781237954,
+          "requestTiming": {
+            "startTime": 1794781237950.14,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.064,
+            "responseStart": 0.327,
+            "responseEnd": 0.638
+          },
+          "requestFailure": null
+        }
+      ],
+      "afterClose": [
+        {
+          "url": "http://127.0.0.1:49744/lab/v2/control",
+          "status": 200,
+          "state": "resolved",
+          "startedAtEpochMs": 1794781237954,
+          "settledAtEpochMs": 1794781237954,
+          "requestTiming": {
+            "startTime": 1794781237950.14,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.064,
+            "responseStart": 0.327,
+            "responseEnd": 0.638
+          },
+          "requestFailure": null
+        }
+      ],
+      "cleanup": {
+        "atEpochMs": 1794781241264,
+        "ownedBrowserClosed": true,
+        "ownedServerClosed": true,
+        "otherProcessesStopped": false
+      }
+    },
+    {
+      "name": "response-abort-reproduction",
+      "ownExit": 1,
+      "signal": null,
+      "startedAt": "2026-11-15T22:22:05.803Z",
+      "finishedAt": "2026-11-15T22:22:10.250Z",
+      "verdict": "RED: requestfailed after response leaves response.finished pending until target closure",
+      "hazardConfirmed": true,
+      "beforeClose": [
+        {
+          "url": "http://127.0.0.1:49957/lab/v2/control",
+          "status": 200,
+          "state": "resolved",
+          "startedAtEpochMs": 1794781326885,
+          "settledAtEpochMs": 1794781326885,
+          "requestTiming": {
+            "startTime": 1794781326884.4302,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.088,
+            "responseStart": 0.401,
+            "responseEnd": 0.795
+          },
+          "requestFailure": null
+        },
+        {
+          "url": "http://127.0.0.1:49957/lab/v2/aborted",
+          "status": 200,
+          "state": "pending",
+          "startedAtEpochMs": 1794781326887,
+          "requestTiming": {
+            "startTime": 1794781326887.107,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.074,
+            "responseStart": 0.34,
+            "responseEnd": 104.044
+          },
+          "requestFailure": {
+            "errorText": "net::ERR_ABORTED"
+          }
+        }
+      ],
+      "afterClose": [
+        {
+          "url": "http://127.0.0.1:49957/lab/v2/control",
+          "status": 200,
+          "state": "resolved",
+          "startedAtEpochMs": 1794781326885,
+          "settledAtEpochMs": 1794781326885,
+          "requestTiming": {
+            "startTime": 1794781326884.4302,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.088,
+            "responseStart": 0.401,
+            "responseEnd": 0.795
+          },
+          "requestFailure": null
+        },
+        {
+          "url": "http://127.0.0.1:49957/lab/v2/aborted",
+          "status": 200,
+          "state": "rejected",
+          "startedAtEpochMs": 1794781326887,
+          "error": "Error: Target page, context or browser has been closed",
+          "settledAtEpochMs": 1794781330006,
+          "requestTiming": {
+            "startTime": 1794781326887.107,
+            "domainLookupStart": -1,
+            "domainLookupEnd": -1,
+            "connectStart": -1,
+            "secureConnectionStart": -1,
+            "connectEnd": -1,
+            "requestStart": 0.074,
+            "responseStart": 0.34,
+            "responseEnd": 104.044
+          },
+          "requestFailure": {
+            "errorText": "net::ERR_ABORTED"
+          }
+        }
+      ],
+      "cleanup": {
+        "atEpochMs": 1794781330240,
+        "ownedBrowserClosed": true,
+        "ownedServerClosed": true,
+        "otherProcessesStopped": false
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction/result.json",
+      "bytes": 4577,
+      "sha256": "0a930057f22a8c0f378f2786775987195bd364c5da29913ce0088bdd7f46738f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction/cleanup.json",
+      "bytes": 125,
+      "sha256": "e46b89c4edda3b851b0755e4b06d50777289dc132e5ad73b9158f9e13db085d1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction/before-target-close.json",
+      "bytes": 3359,
+      "sha256": "e31fa918af78cebbd76694db1e29fe1e3ea2a9413c69b6d2ccf334e69b2c830d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction/downloaded.bin",
+      "bytes": 41,
+      "sha256": "7271eff14679ab960b986156df859caf315f7cc9837e01e46374914bd6908202"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-finished-reproduction/fixture.bin",
+      "bytes": 41,
+      "sha256": "7271eff14679ab960b986156df859caf315f7cc9837e01e46374914bd6908202"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/reproduce-response-finished.mjs",
+      "bytes": 5833,
+      "sha256": "20f8d012f2ce8514e12c173626f0437f9120febbc74293d4eccd02ba89a128cb"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/reproduce-response-finished.receipt.json",
+      "bytes": 4702,
+      "sha256": "cd5f36a2b5db1fd7b7f764a18456bc67732f2988b3ebe3932ffa81f9c6064c1c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/reproduce-response-finished.log",
+      "bytes": 374,
+      "sha256": "8e0d54c4a5fab0d6b5a2bdb98c50cca7f8598eb88b9d1e58aebdfbeee6bdfc64"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-abort-reproduction/result.json",
+      "bytes": 6811,
+      "sha256": "edffbc9b6b6a05cd22c81f13d5b4fd284c026bc0823e7659d72b330f7f51a59f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-abort-reproduction/cleanup.json",
+      "bytes": 125,
+      "sha256": "5bad448476f6a35aa63a74e16b1e22a5f92de29a43528ec53f545f8c47aa4dfd"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/response-abort-reproduction/before-target-close.json",
+      "bytes": 4609,
+      "sha256": "9a1e717e409c40ca97e939877c09d09e66a9e1d26d9f9c03c3749173eb95784d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/reproduce-response-abort.mjs",
+      "bytes": 5424,
+      "sha256": "9e3b06db8a9bc1ac7c54c0285777b7c5cdbde3432a6bbc920ad21eedc840b4be"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/reproduce-response-abort.receipt.json",
+      "bytes": 4699,
+      "sha256": "2b3a6a843586789da0be3587a969f71a23e71201336b35a156b5c0110bf891c2"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/reproduce-response-abort.log",
+      "bytes": 632,
+      "sha256": "521f1caa8e10ad1911281fc0e81f4d489e354968f866c0762e8b5cbcc791dd4b"
+    }
+  ]
+}

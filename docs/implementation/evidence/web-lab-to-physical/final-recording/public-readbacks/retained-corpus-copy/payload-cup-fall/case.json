@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "case": {
+    "id": "cup-fall",
+    "experimentId": "payload-center-v1",
+    "seed": 7,
+    "kind": "cup-fall",
+    "atTick": 500,
+    "perturbation": {
+      "id": "payload-cup-forward-impulse-v1",
+      "targetTick": 501,
+      "frameSampleTick": 500,
+      "forceTransform": "support-at-start-of-tick-held-in-map",
+      "frameId": "support",
+      "supportId": "amr-1/tray-1",
+      "forceN": [
+        30,
+        0,
+        0
+      ],
+      "durationS": 0.02,
+      "impulseNs": [
+        0.6,
+        0,
+        0
+      ],
+      "substeps": 10,
+      "propId": "cup-1",
+      "method": "mujoco-xfrc-applied",
+      "provenance": "assumed_simulation_fault"
+    }
+  },
+  "accepted": false,
+  "sourceCommit": "681b8adb8ed473f7195062773b23fabc3b922cd5",
+  "runId": "69dd0480-e1d6-4707-8be6-6f77052eac8b",
+  "inputs": {
+    "projectDigest": "77f0a996daef4b4c54e22865149d64fa6d7a4b467873cad6157361b5d547374b",
+    "sceneDigest": "dc90f74bdeb9ddbb88bfae21fe0fad6c0e456dacf1165a598b56406b87e9f710",
+    "loadProfileSha256": "0290f280969726aadde1137c502f128738912e4b08c9328b1af4fd6c914ecfc5",
+    "physicsProfileSha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+    "canonicalPhysicalSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+    "physicalModelDigest": "0a9197303c622f92fcffb8e3b814a8d14b07377dd502c3a2c6f51c1f6f7f0623",
+    "navigationModelDigest": "ddb6cee06cea50c51e9b85b256630ee48b56453e4872817ebca85379952ecf92",
+    "policyHash": "e27ac0cb974b24838ad4c88d2739c8d3e1e56b4b6ddb31d7e0feab5af9a4f1f8",
+    "controllerPolicySha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+    "stopPolicySha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+    "entitySpeedLimitMps": null
+  },
+  "artifacts": [
+    {
+      "path": "bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    },
+    {
+      "path": "bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    {
+      "path": "bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+    },
+    {
+      "path": "bundle/cup-center.json",
+      "bytes": 4188,
+      "sha256": "0290f280969726aadde1137c502f128738912e4b08c9328b1af4fd6c914ecfc5"
+    },
+    {
+      "path": "bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3"
+    },
+    {
+      "path": "bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb"
+    },
+    {
+      "path": "bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c"
+    },
+    {
+      "path": "bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "2b6d210787d8fc67950c3364fbdb735f11c5a11e55b30b8d57332135f71fda1c"
+    },
+    {
+      "path": "bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9a416e1c783c01627c402171ef4ccbaf60e05d4d67a2d04724bd71d90d262a41"
+    },
+    {
+      "path": "input.json",
+      "bytes": 12054,
+      "sha256": "6a95fd7f5f9f0c923a2dafb239487e8376c16e2339b27b99d9611c1b69450776"
+    },
+    {
+      "path": "report.json",
+      "bytes": 302850,
+      "sha256": "b4b76a1b2b7c982779f4f8b9869c097d41fe3a57a88f09a0adfe9839af41be50"
+    },
+    {
+      "path": "run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    },
+    {
+      "path": "run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    {
+      "path": "run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1"
+    },
+    {
+      "path": "run/bundle/cup-center.json",
+      "bytes": 4188,
+      "sha256": "0290f280969726aadde1137c502f128738912e4b08c9328b1af4fd6c914ecfc5"
+    },
+    {
+      "path": "run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3"
+    },
+    {
+      "path": "run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb"
+    },
+    {
+      "path": "run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c"
+    },
+    {
+      "path": "run/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "2b6d210787d8fc67950c3364fbdb735f11c5a11e55b30b8d57332135f71fda1c"
+    },
+    {
+      "path": "run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9a416e1c783c01627c402171ef4ccbaf60e05d4d67a2d04724bd71d90d262a41"
+    },
+    {
+      "path": "run/evidence/control-000001-e6944caa.ndjson.gz",
+      "bytes": 1531,
+      "sha256": "1b37d05a4308a80717c00575894d33d0dacc9ff2f9b25d74b609a936a255e463"
+    },
+    {
+      "path": "run/evidence/control-000002-70f774e7.ndjson.gz",
+      "bytes": 3423,
+      "sha256": "a123352636fc70d5081b218be65b79cccf830ad94243522689aed0e04a04112f"
+    },
+    {
+      "path": "run/evidence/control-000003-ed5613f2.ndjson.gz",
+      "bytes": 546,
+      "sha256": "1e8536de80b9ef375cd35dcb8b53b14239c6590b5a2841f805a9791380118306"
+    },
+    {
+      "path": "run/evidence/manifest.json",
+      "bytes": 1978,
+      "sha256": "a3ca307f7e6345b8f38b9c3bd7f559b15022734e08945f3c76e445e7ba8370ed"
+    },
+    {
+      "path": "run/evidence/sensors-000001-f4560af9.ndjson.gz",
+      "bytes": 98822,
+      "sha256": "989d84b1306223f82a17bd4ff5c7989a7c92f5fcfd3bea46ec6bbc4b10ed8dd2"
+    },
+    {
+      "path": "run/evidence/sensors-000002-cd6a4448.ndjson.gz",
+      "bytes": 138924,
+      "sha256": "5641e3a62e1dbcd7633d3b3d6a0ae63fe1e0cc3821bbbe85801fcb6595435f83"
+    },
+    {
+      "path": "run/evidence/sensors-000003-f74218fe.ndjson.gz",
+      "bytes": 14484,
+      "sha256": "5ead35b84a5330694b41e8cd6f08ee9bd25f4b619abf2aa6c9d41e6784743a5a"
+    },
+    {
+      "path": "run/evidence/trajectory-000001-a232d999.ndjson.gz",
+      "bytes": 18831,
+      "sha256": "bd94a4bfeffc91dc0e55ed9f2616af14f8b29182c104d4511b844eaa27343e26"
+    },
+    {
+      "path": "run/evidence/trajectory-000002-f9049e56.ndjson.gz",
+      "bytes": 21131,
+      "sha256": "cb14590c8c07b23c858591a15b643bf96e9a0600a77244250cbad875e83dcd28"
+    },
+    {
+      "path": "run/evidence/trajectory-000003-2a1c4945.ndjson.gz",
+      "bytes": 1894,
+      "sha256": "2f7194f1e4d805df3e3bc63b0a9c3b602d8d4dd3847d0ddd834e380cbf5c6083"
+    },
+    {
+      "path": "run/journal.db",
+      "bytes": 270336,
+      "sha256": "9be93fa14262a36712c26b2b565b7d36d6cc082f890b9da25a58b922131a8a8e"
+    },
+    {
+      "path": "run/physics/manifest.json",
+      "bytes": 1318,
+      "sha256": "691c8c6d0e30b6259b4277674347f83feb2dce458b5b433aedce01ab25b23c8e"
+    },
+    {
+      "path": "run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run/physics/physics-000000-0c5c270e.ndjson.gz",
+      "bytes": 172439,
+      "sha256": "d7acce9234ca465933f982e410eede959a91faa1125938350741bc8a67e60858"
+    },
+    {
+      "path": "run/physics/physics-000001-9387057e.ndjson.gz",
+      "bytes": 193112,
+      "sha256": "e0a138abd212f8a8c8e25a2aa41ee4be72abdfbd295270c78ce625bf50b1142d"
+    },
+    {
+      "path": "run/physics/physics-000002-8e6c84e6.ndjson.gz",
+      "bytes": 16023,
+      "sha256": "ab926ed57625f64b42102ce289133d88734f09da010a0bc5eb3f8b6b42e95472"
+    },
+    {
+      "path": "run/run.json",
+      "bytes": 24507,
+      "sha256": "020de9a4bcfc6569ab6aa79caaa61d7bab6aa15c66100d63e14f8d85a4addad9"
+    },
+    {
+      "path": "run/signing-key.json",
+      "bytes": 176,
+      "sha256": "d0689777a13ae6b23edf7ac29a4eef089640a9bfff9cad8c16ba8bd4fb38e997"
+    },
+    {
+      "path": "run/worker/payload-perturbation.json",
+      "bytes": 1271,
+      "sha256": "07040d0f89cad008dd9fd32f70fcfcca5deb83eee067cf82468828e983aa57d6"
+    },
+    {
+      "path": "trace.json",
+      "bytes": 45226,
+      "sha256": "2f2199f0f8063c1ea287822fd71b116d25ed8767b54a543a4ef77e4b69d42149"
+    }
+  ]
+}

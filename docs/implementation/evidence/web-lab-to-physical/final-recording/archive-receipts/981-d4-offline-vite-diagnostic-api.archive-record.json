@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-offline-vite-diagnostic-api",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-api",
+  "archive": "981-d4-offline-vite-diagnostic-api.tar.gz",
+  "archiveBytes": 555,
+  "archiveSha256": "59aaeb3e8940c4734b1e8c0deda94fe36880a78bf8d791c07830d492490f2343",
+  "memberIndex": "981-d4-offline-vite-diagnostic-api.members.json",
+  "memberIndexSha256": "6dc762124e7562929c27c5a4da33834da9601c0d423f8c3674433f17ce12c86b",
+  "memberCount": 2,
+  "memberBytes": 789,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-offline-vite-diagnostic-api.extract.json",
+  "safeExtractionReceiptSha256": "0c93fdb42e345d0e4e38cc23ef50e00772334e4a0d14689c6597555291631d5b",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-offline-vite-diagnostic-api",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

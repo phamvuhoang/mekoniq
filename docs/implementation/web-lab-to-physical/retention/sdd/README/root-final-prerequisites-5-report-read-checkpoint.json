@@ -1,0 +1,6 @@
+{
+  "bytesRead": 19464,
+  "sha256": "83002a867eb17cde60ed887e2d7a156d5fb67e7bca10ac6aa2683f5becd8404d",
+  "previousReadBytes": 11893,
+  "note": "Root read complete19464B report in bounded sequential passes; frozenhandoff audited. Nativehashattribution clarified in rootaudit, not a Lablockfield."
+}

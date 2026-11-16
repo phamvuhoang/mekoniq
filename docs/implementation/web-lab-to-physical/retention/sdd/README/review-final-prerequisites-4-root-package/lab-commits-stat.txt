@@ -1,0 +1,12 @@
+commit b0fcedec2bc826c4501972f424f3c9798b6b7449
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 23:57:26 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 23:57:26 2026 +0700
+
+    chore: pin source runtime 981e234
+
+ config/source-runtime.lock.json | 4 ++--
+ src/shared/engineering.ts       | 2 +-
+ src/shared/navigation2d.ts      | 2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)

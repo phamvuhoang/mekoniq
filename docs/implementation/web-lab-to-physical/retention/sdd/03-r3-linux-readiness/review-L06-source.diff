@@ -1,0 +1,645 @@
+diff --git a/docs/operations/native-profile-case-matrix.md b/docs/operations/native-profile-case-matrix.md
+new file mode 100644
+index 0000000..7df6ed5
+--- /dev/null
++++ b/docs/operations/native-profile-case-matrix.md
+@@ -0,0 +1,115 @@
++# R3 profile qualification and reproduction
++
++R3 records are evidence inputs with `accepted:false` and `dynamics:not_calibrated`. The recorder recomputes retained files; a doctor report, a supplied pass list, protocol double, numeric subset, or reviewer name in the candidate cannot establish native qualification. This tooling phase does not record the final candidates. Final Source CI, Lab checks and candidate recording follow independent B10/L06 review at one clean committed/exported/pinned tuple.
++
++| Level | Recorded meaning | Current qualification boundary |
++| --- | --- | --- |
++| R3.0 | `DEP-PREP-01`: the supplied L00 handoff passes static document, path, hash, schema, profile and tuple checks | Does not rerun all code tests or authenticate an installed host. Final prepared records still await the final tuple. |
++| R3.1 | Required native cases for this exact profile, ISA and scope are tested | Incomplete: no assigned host; the observation/verifier gaps below also remain. Assigning Linux alone does not close them. |
++| R3.2 | Both physical branches have reviewed preparation code and a reproducible commissioning plan | L05 preparation was reviewed separately. This recorder does not rerun/sign commissioning conformance or authenticate dossier references; `PHYS-PREP-01` and the R3.2 record level remain `not_run` here. |
++
++No R3 record changes G-HW, G-HW-READY, G-HW-ACCEPT, calibration G3, venue acceptance or any hardware manifest rank. Source owns mission/journal/custody. Lab has no hardware route. No performance portability between CPUs or architectures is inferred.
++
++## Closed matrix
++
++The executable authority is `scripts/sim-extension-r3.mjs:tableR3`. It returns fresh tables; modifying a returned array or supplying `requiredCases` cannot reduce requirements. All profiles require DEP-PREP-01. Every record also lists its full native cases, including cases outside the requested subset, and PHYS-PREP-01. `blockedNativeCases` retains every native case that is not tested.
++
++| Profile | ISA | Allowed scope | Additional required cases | Native gate |
++| --- | --- | --- | --- | --- |
++| mujoco-linux-amd64 | amd64 | prepared, full | full: DEP-MJ-01, DEP-SEC-01 | G-NATIVE-MJ; never G-NATIVE-ARM |
++| mujoco-linux-arm64 | arm64 | prepared, full | full: DEP-MJ-01, DEP-SEC-01 | G-NATIVE-MJ; current campaign adapters are amd64 only |
++| engineering-amd64 | amd64 | prepared, motion, full | motion/full: DEP-NAV-01/02/03/04, DEP-SEC-01 | G-NATIVE-AMR |
++| engineering-arm64 | arm64 | prepared, motion, full | motion/full: DEP-NAV-01/02/03/04, DEP-SEC-01 | G-NATIVE-AMR |
++| xarm6-jazzy-sim | exact handoff ISA | prepared, motion, contact, full | motion: DEP-XARM-01/02, DEP-SEC-01; contact/full additionally DEP-XARM-03 | G-NATIVE-ARM, profile and scope bound |
++| puma560-linuxcnc-sim | exact handoff ISA | prepared, terminal, full | terminal: DEP-CNC-01/02, ALG04, DEP-SEC-01; full additionally DEP-CNC-03 | G-NATIVE-ARM, profile and scope bound |
++
++ROS profiles require Ubuntu 24.04. The current LinuxCNC candidate requires Debian 12; another distro/version needs a separately reviewed profile. The xArm producer's internal versioned profile ID is `xarm6-jazzy-sim-v1`; its qualification target is `xarm6-jazzy-sim`, and its environment is separately `engineering-amd64` or `engineering-arm64`. None substitutes for another. Native inventory still binds exact package/library/plugin/profile hashes per host. Common Source/Lab/schema/input identities must match. A selected native closure must match exactly; L00 `nativeClosureHash:null` remains an optional subject boundary, distinct from the observer checkout’s recorded native closure; native libraries on different ISAs need not have equal hashes.
++
++## Required observations, readback gaps and next actions
++
++`not_run` describes absent or insufficient observations. Actual malformed artifacts, identity conflicts, or observed failed assertions are failures and invalidate the supplied directory. A gate with a tooling gap remains `not_run`, with explicit blocker categories/reasons, rather than implying that only an external host is missing. A prepared record cannot mark a native gate tested.
++
++| Case | Required observations | Supported readback and remaining gap | Next action |
++| --- | --- | --- | --- |
++| DEP-PREP-01 | L00 manifest and every declared input/schema/runtime/native/portable closure | Existing L00 validator, exact target profile/ISA/OS and Source/Lab/pin binding; recomputed locally | Assemble from final clean export and matching Lab commit; run verifier. |
++| DEP-MJ-01 | Historical R2a M00 10 trials, three seeds, faults and exact engine/host/image; separate current R2b payload/cell campaign | Calls historical public checked probe and reviewed B10 current public checked probe separately. Historical/current subject and checker tuples stay distinct. Current subject must equal the R3 handoff. Both must pass; supplied inventory must be native-ready. No arm64 campaign implementation is supplied by these amd64 readers. | Assign exact host/image; execute both supported amd64 campaigns with their proper subjects. Implement/review a separate arm64 campaign before claiming arm64. |
++| DEP-NAV-01 | Host/install inventory, canonical physical mapping, live TF and clocks | Reads the actual compiled canonical world, native inventory, raw clock observations and copied SQLite topic/timestamp coverage. Bag payloads are not deserialized into verified TF semantics. | Supply assigned-host capture, then implement/review TF-payload readback. |
++| DEP-NAV-02 | FD01 load/travel/handoff/return, actual Nav2 feedback and Source confirmations | Checks retained Source journal/business ordering and raw coverage. It cannot independently join bag action UUIDs to every Source command/result. | Add reviewed UUID/command-to-feedback semantic readback; run actual nominal seeds. |
++| DEP-NAV-03 | Obstacle/no-path/cancel/worker-loss, no false completion/replay, owned cleanup | Reuses the existing fault assessor and requires raw fault or Source cancel observation, no repeated effects and no false served/completed outcome. Complete isolation/cleanup qualification is not established. | Run all fixed fault records; add missing ownership/cleanup/security observations and their reader. |
++| DEP-NAV-04 | Full bag/controller trace/report/replay and repeated nominal seeds | Fixed directory slots for nominal 7/42/99 and four fault cases; missing slots stay not_run. Verified byte copies are opened read-only. Topic/time coverage alone is not semantic replay qualification. | Retain complete actual cases and implement semantic replay checks. |
++| DEP-XARM-01 | X0 mapping plus X1 fake system contract, cancel/result/freshness and actual controller restart | Reuses raw URDF/mapping checker; verifies mode/profile/ISA/source, bag topic counts, actual sample shape/clock/epoch, and Source/native command/run binding. X1 is `ros2_fake_system`, never dynamics/contact. | Capture complete X1 cases; add actual controller restart evidence. Same-run reopen refusal is insufficient. |
++| DEP-XARM-02 | X2 actual Gazebo trajectory, limits/stop/controller restart and collision planning where required | X2 must be `gazebo_actual`; direct trajectory samples are retained as an observation subset. Action payload semantics and collision/restart qualification remain incomplete. | Implement/review the missing planning/restart observations and reader, then execute assigned-host cases. |
++| DEP-XARM-03 | Actual G2 grip/release and transfer/contact observations | No supported X3 collector/verifier. A motion pass, fake gripper, or unobserved G2 support cannot close it. | Investigate G2 on assigned Jazzy/Harmonic stack; implement/review contact collection, or record observed unsupported reason. |
++| DEP-CNC-01 | Installed controller inventory, terminal smoke and exact model/units | Existing strict actual-joint trace validator consumes `actual-joint-trace.json`; a `native_capture` JSON label is not authenticated execution or terminal qualification. | Capture assigned controller/install/terminal observations and implement their complete reader. |
++| DEP-CNC-02 | Arbiter/tunnel/deadline/restart/fault, atomic command fencing and no auto-resume | Trace epochs remain separate segments. Epoch labels do not establish an atomic fence or continuous motion. | Add those missing controller/tunnel observations and readback. |
++| DEP-CNC-03 | Package install/rollback/trust and manual GUI evidence | Native tool closure binds scripts/packaging bytes only; it does not establish installed provenance or a GUI verdict. | Execute assigned host package/trust/rollback/GUI checklist and add reviewed reader. |
++| ALG04 | Actual/commanded angles, synchronized controller time and comparable controller Cartesian/DH/TCP endpoints | Calls `validateLinuxcncTrace`; numerical RTB/TypeScript FK parity and summary verdicts never establish overall ALG04. Controller timing, synchrony and Cartesian endpoints remain unavailable. No oracle is run merely to reread the trace. | Extend the producer under separate scope to capture required controller observations, then rerun ALG04. |
++| DEP-SEC-01 | Profile-specific isolation, allowlists, one writer, endpoint/MDI/HAL refusals and no Lab→hardware route | No complete host artifact producer/reader exists. Docker containment flags, doctor output and portable security tests are insufficient. | Implement/review the explicit security observation contract and collector/reader before host qualification. |
++| PHYS-PREP-01 | Both target dossiers, unknown-field/refusal, calibration/signature/conformance preparation | Existing L05 assessor checks reference structure only. This R3 recorder retains not_run; it cannot convert reference strings into measurements, signatures or live admission. | Use [target selection](physical-target-selection.md) and [arm preparation](arm-commissioning-preparation.md); review their separately recorded checks at the final tuple. |
++
++## Input directories and interfaces
++
++`record-sim-extension.mjs --release r3 --handoff DIR --native-records DIR --profile PROFILE --scope SCOPE --out NEW_DIR [--lab DIR] [--candidate-id ID]` copies bounded input files into a fresh external directory and recomputes qualification. It requires a clean audited Source checker and clean matching Lab pin. It does not launch a native/browser campaign, Docker, doctor, install, host provisioning or hardware command. `--plan` prints only the fixed matrix and performs no prerequisite probe. Duplicate/unknown options are rejected. Exit 0 means the requested scope is internally consistent, never accepted; exit 1 is a failed/incomplete requested scope; exit 2 is usage/preparation refusal.
++
++For prepared-only recording, supply the final valid L00 handoff and a new empty native-records directory. Do not fabricate inventory. The handoff profile ID must equal the requested target. `DEP-PREP-01` can be tested while native cases and R3.2 remain not_run. Every automated record carries null reviewer fields.
++
++When actual supported observations exist, put `index.json` in the native-records directory:
++
++```json
++{
++  "schemaVersion": 1,
++  "profile": "engineering-amd64",
++  "architecture": "amd64",
++  "subject": "replace this string with the exact handoff subject object",
++  "records": {"engineering": {"directory": "engineering"}}
++}
++```
++
++The example is a shape guide, not valid evidence. Roles are closed by target: MuJoCo accepts `historical`, `current`, optional `r2bQualification`; engineering accepts `engineering`; xArm accepts `xarm`; PUMA accepts `linuxcnc`. Every role value has only a single safe directory basename. The index and all supplied files are included in the outer inventory. Wrong profile/ISA/subject, unexpected roles or path escapes fail. Doctor-only files never populate native cases.
++
++- `historical/` is a complete original L01 record; `current/` is a complete B10 native payload/cell record. They keep different subject tuples. Both require their exact recorded checker revision on readback. `r2bQualification/`, when supplied, is the complete public R2b directory of the R3 tuple; verification delegates to `verifyR2bDirectory`, including its reviewed browser/WEB05 readers. It is never a summary substitute for native execution.
++- `engineering/` has fixed slots `nominal-7`, `nominal-42`, `nominal-99`, `obstacle-7`, `no-path-7`, `cancel-7`, `worker-loss-7`. Each slot is the **run directory** containing `run-manifest.json`, `bundle/`, Source journal/effects, `engineering-native-evidence.json`, native inventory/events/commands and `rosbag2/`. This is usually the producer's `run-1/`, not the outer campaign envelope. Copy complete retained runs; do not edit them or synthesize case names/results.
++- `xarm/` has fixed slots `X1-nominal`, `X1-cancel`, `X1-restart`, `X2-nominal`, `X2-cancel`, `X2-restart`, holding original L03 output directories. Required raw files include expanded URDF/mapping, observations, Source/native journals, command/outcome/lifecycle, native-started marker, bag coverage and verified bag. The slot name is checked against actual mode/case. A slot called restart still denotes the current producer's reopen-refusal probe, not a new controller-restart claim.
++- `linuxcnc/` retains `actual-joint-trace.json` and the rest of the original L04 output. The strict model/frame/unit/samples/timing validator is reused. A separate `algorithm-results.json` pass label does not override missing controller timing.
++
++All observed subsets are under `capabilities.observations`; `qualification:not_run` remains explicit. They do not reduce required cases. Preserve original failed/incomplete records. Readback inventories all files; symlinks, traversal and oversized evidence are refused. SQLite runs only against an owned temporary verified byte copy, never the supplied/original database; cleanup removes only that copy. Stop active writers and retain a consistent bag with the producer before transferring it. WAL recovery of original databases is not performed by this reader.
++
++## Recipient sequence
++
++1. Install/verify the exact selected profile under its separately authorized host scope. Follow [L00 transfer instructions](native-simulation-handoff.md). Retain exact Source/Lab/schema/input and per-host OS/ISA/engine/tool identities. Do not resolve a missing native package by borrowing another profile's image or declaring emulation native.
++2. With Node 24.22.2 / pnpm 10.32.1, run L00 verification, then the selected read-only doctor. Use portable Python 3.11 with `PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider'`; ROS uses its distro Python. Doctor is prerequisite evidence only.
++3. Execute only the assigned profile's case commands, serially. [MuJoCo historical](mujoco-native-probe.md), [current B10](r2b-qualification.md), [engineering navigation](engineering-native-navigation.md), [xArm](xarm-native-sim.md) and [LinuxCNC](linuxcnc-native-sim-handoff.md) give exact producer commands and requirements. Examples after authorized host assignment:
++
++   ```sh
++   node scripts/native-sim/r2b-campaign.mjs --handoff "$current_handoff" --out "$new_current_record"
++   node scripts/lab-sil.mjs run --scenario FD01 --seed 7 --out "$new_nav_record" --backend-set engineering-rigid-v1 --environment-profile engineering-amd64 --engineering-project robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json --engineering-case nominal
++   pnpm exec tsx packages/lab-runtime/src/v2/sil/xarm-cli.ts --out "$new_xarm_record" --mode X2 --environment-profile engineering-amd64 --case nominal
++   node scripts/lab-algorithm.mjs linuxcnc --trace "$retained_trace" --out "$new_algorithm_record"
++   ```
++
++   Repeat the fixed seeds/cases into new directories; a failed/unknown action is not resent or resumed by respawn. Missing tooling in the matrix must be implemented/reviewed before claiming the affected scope. These commands are not instructions to run hardware or provision a host as part of preparation.
++4. Verify and replay/export using each producer's exact checker. Retain raw logs, clock mappings, bags/controller traces, report and archive bytes. Preserve before/after identities and each command's own exit status. Never replace a failed command's receipt with a successful trailing shell command. Clean up only named processes/containers/domains owned by that run; use its ownership receipt, never broad kill/reset/volume deletion. Rollback chooses the previous immutable tuple in a new run; it does not edit evidence or continue an uncertain action.
++5. At the fixed final Source/Lab tuple, record and read back into a fresh directory **outside both repositories**:
++
++   ```sh
++   node scripts/record-sim-extension.mjs --release r3 --handoff "$handoff" --native-records "$records" --profile "$profile" --scope prepared --out "$new_candidate"
++   node scripts/verify-r3.mjs "$new_candidate"
++   LAB_SIMEXT_EVIDENCE_DIR="$new_candidate" pnpm test:acceptance -- sim-extension
++   ```
++
++   The acceptance suite routes R3 to mandatory asynchronous artifact readback. Requested native scopes fail while any required case is missing. Prepared candidates remain valid evidence of preparation with explicit native/tooling blockers. No final record is produced by this code/test handoff.
++6. Submit the immutable candidate and a separate human review sidecar. The sidecar fields are `schemaVersion:1`, `documentType:r3-human-review`, SHA256 of the exact `qualification.json` bytes as `candidateSha256`, `candidateId`, `profile`, `architecture`, `scope`, `decision:accept|reject`, nonblank `reviewer`, and RFC3339 `reviewedAt`. Keep it **outside** the candidate so adding a review does not alter its inventory:
++
++   ```sh
++   node scripts/verify-r3.mjs "$new_candidate" --sidecar "$review_sidecar"
++   ```
++
++   This verifies binding and record consistency only, not the reviewer's identity or signature. The responsible reviewer supplies actual authorization/signing through the established process. It never changes the candidate's `accepted:false` or upgrades native/physical gates.
++
++## Exact checker reproduction and publication
++
++Record subject, producer, checker and publication identities separately. L01 and B10 native readers require their exact clean checker Source commit and full audited tool graph, not simply compatible-looking files. A later documentation/evidence commit is not automatically a valid historical checker. Use an isolated checkout at the **recorded checker SHA** with its lockfile dependencies and invoke that checkout's public verifier against the unchanged record. Never retag an old manifest or weaken identity checks to make HEAD accept it.
++
++An R3 candidate that consumes both historical and current native records must be generated with a reviewed checker able to verify their recorded checker identities; records checked at different revisions are not silently transferable. At present this reader invokes the current audited public checkers and explicitly rejects old checker mismatches. Use independently retained exact-revision historical readback for review, or a new authorized historical-subject campaign at the final checker, without altering the old record. Prepared-only final records need neither native execution nor an identity workaround.
++
++Evidence publication belongs under `docs/implementation/evidence/sim-extension/r3-<profile>-candidate-NN/` only after review and clean recording. Copy the immutable directory byte-for-byte and retain the built-from checker tuple separately from the later publication commit. Existing historical evidence and old producer identities remain unchanged.
+diff --git a/scripts/r3-native-readback.mjs b/scripts/r3-native-readback.mjs
+new file mode 100644
+index 0000000..1149147
+--- /dev/null
++++ b/scripts/r3-native-readback.mjs
+@@ -0,0 +1,83 @@
++// Read-only adapters for the observations existing L02–L04 producers actually retain.
++// Original bags are byte-copied and verified before SQLite is opened.
++import {mkdtemp,writeFile,readFile,rm} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join} from 'node:path';
++import {createHash} from 'node:crypto';
++import {isDeepStrictEqual as same} from 'node:util';
++import {tsImport} from 'tsx/esm/api';
++import xarmProfile from '../robotics/manipulation/profiles/xarm6-jazzy-sim.json' with {type:'json'};
++import {boundedEvidenceRead as bytes,evidenceInventory} from './r2b-readback.mjs';
++export const ENGINEERING_RUNS=[... [7,42,99].map(seed=>({directory:'nominal-'+seed,nativeCase:'nominal',seed})),...['obstacle','no-path','cancel','worker-loss'].map(nativeCase=>({directory:nativeCase+'-7',nativeCase,seed:7}))];
++export const XARM_RUNS=['X1','X2'].flatMap(mode=>['nominal','cancel','restart'].map(nativeCase=>({directory:mode+'-'+nativeCase,mode,nativeCase})));
++const sha=b=>createHash('sha256').update(b).digest('hex'),read=(root,p)=>JSON.parse(bytes(root,p));
++export async function readEngineeringBag(root){
++ const all=evidenceInventory(root);if(all.some(f=>/\.db3-(wal|shm)$/.test(f.file)))throw Error('R3_BAG_SNAPSHOT_REQUIRED');
++ const entries=all.filter(f=>/^[\w.-]+\.db3$/.test(f.file));if(!entries.length)throw Error('R3_RAW_BAG_MISSING');
++ const temp=await mkdtemp(join(tmpdir(),'r3-bag-readback-'));try{
++  const {DatabaseSync}=await import('node:sqlite'),topics=new Map();let count=0;
++  for(const f of entries){const b=bytes(root,f.file);if(sha(b)!==f.sha256)throw Error('R3_BAG_CHANGED');const path=join(temp,f.file);await writeFile(path,b,{flag:'wx'});if(sha(await readFile(path))!==f.sha256)throw Error('R3_BAG_COPY');
++   const db=new DatabaseSync(path,{readOnly:true});try{
++    if(db.prepare('PRAGMA quick_check').get().quick_check!=='ok')throw Error('R3_BAG_CORRUPT');
++    const query=db.prepare('SELECT topics.name AS topic,messages.timestamp AS stamp,length(messages.data) AS bytes FROM messages JOIN topics ON topics.id=messages.topic_id ORDER BY messages.timestamp');query.setReadBigInts(true);
++    for(const row of query.iterate()){if(++count>2_000_000||row.bytes<=0n||row.stamp<0n)throw Error('R3_BAG_MESSAGE_INVALID');const a=topics.get(row.topic)??[];a.push(row.stamp);topics.set(row.topic,a);}
++   }finally{db.close();}
++  }
++  if(!same(all,evidenceInventory(root)))throw Error('R3_BAG_CHANGED');
++  return {storageId:'sqlite3',topics:Object.fromEntries([...topics].sort(([a],[b])=>a.localeCompare(b)).map(([name,stamps])=>{stamps.sort((a,b)=>a<b?-1:a>b?1:0);let gap=0n;for(let i=1;i<stamps.length;i++)if(stamps[i]-stamps[i-1]>gap)gap=stamps[i]-stamps[i-1];return [name,{count:stamps.length,firstNs:String(stamps[0]),lastNs:String(stamps.at(-1)),maxGapNs:String(gap)}];}))};
++ }finally{await rm(temp,{recursive:true,force:true});}
++}
++export async function readEngineeringObservation(root,subject,profile){
++ evidenceInventory(root);const m=read(root,'run-manifest.json'),e=read(root,'engineering-native-evidence.json');
++ const {hashJson}=await tsImport('../packages/lab-runtime/src/v2/hash.ts',import.meta.url);
++ const {manifestHash,...body}=m;if(hashJson(body)!==manifestHash)throw Error('R3_RUN_MANIFEST_HASH');
++ if(m.sourceCommit!==subject.sourceCommit||m.evidence!=='sil'||m.mode!=='simulation'||m.access!=='simulated'||m.backendSetId!=='engineering-rigid-v1'||m.scenario?.id!=='FD01'||m.backendCapability?.evidence!=='sil'||m.backendCapability?.available!==true||e.producer!=='native')throw Error('R3_ENGINEERING_IDENTITY');
++ if(!Array.isArray(m.outputs)||new Set(m.outputs.map(f=>f.path)).size!==m.outputs.length)throw Error('R3_OUTPUTS');
++ for(const f of m.outputs)if(sha(bytes(root,f.path))!==f.sha256)throw Error('R3_OUTPUT_HASH:'+f.path);
++ for(const p of ['engineering-native-evidence.json','native-inventory.json','native-events.jsonl','native-commands.json','journal.json','effects.json'])if(!m.outputs.some(f=>f.path===p))throw Error('R3_OUTPUT_MISSING:'+p);
++ const {validNativeProfileReport}=await import('./native-sim/profile-report.mjs'),inventory=read(root,'native-inventory.json');if(inventory.available!==true||!validNativeProfileReport(inventory,profile))throw Error('R3_NATIVE_PROFILE_INVENTORY');
++ const api=await tsImport('../packages/lab-runtime/src/v2/sil/engineering-native.ts',import.meta.url);await api.readEngineeringCompiledWorld(join(root,'bundle'));
++ const bag=await readEngineeringBag(join(root,'rosbag2'));if(!same(bag,e.bag))throw Error('R3_BAG_REPLAY_MISMATCH');
++ for(const f of evidenceInventory(join(root,'rosbag2')))if(!m.outputs.some(x=>x.path==='rosbag2/'+f.file&&x.sha256===f.sha256))throw Error('R3_BAG_NOT_BOUND');
++ const events=bytes(root,'native-events.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)),rawClock=events.filter(x=>x.event==='clock-mapping').map(x=>x.payload);
++ if(rawClock.length<2||!Array.isArray(e.clockMapping)||!e.clockMapping.every(x=>rawClock.some(y=>y.providerSimNs===x.providerSimNs&&y.sourceTick===x.sourceTick)))throw Error('R3_RAW_CLOCK_MAPPING_MISSING');
++ const assessment=api.assessEngineeringEvidence({...e,bag});if(assessment.result!=='pass')throw Error('R3_ENGINEERING_COVERAGE:'+assessment.blockers.join(','));
++ const journal=read(root,'journal.json'),effects=read(root,'effects.json'),domain=journal.flatMap(x=>x.events),observedCompleted=domain.filter(x=>x.type==='RobotCommandObserved'&&x.state.status==='completed').length;
++ if(!Array.isArray(effects)||effects.some(x=>!Number.isSafeInteger(x.attempts)||x.attempts>1))throw Error('R3_COMMAND_REPLAY');
++ if(['no-path','cancel','worker-loss'].includes(e.nativeCase)){
++  const fault=api.assessEngineeringFault({nativeCase:e.nativeCase,fault:e.fault,status:m.status,served:domain.some(x=>x.type==='DeliveryHandedOff')?'1':'0',effects,observedCompleted});if(fault.result!=='pass')throw Error('R3_FAULT:'+fault.reason);
++  if(e.nativeCase==='cancel'?!domain.some(x=>x.type==='RobotCommandObserved'&&x.state.status==='cancelled'):!events.some(x=>x.event==='native-fault'&&x.payload.case===e.nativeCase&&x.payload.status==='applied'))throw Error('R3_RAW_FAULT_MISSING');
++ }else{
++  const types=domain.map(x=>x.type);if(!['nominal','obstacle'].includes(e.nativeCase)||m.status!=='completed'||!observedCompleted||types.indexOf('CargoLoaded')<0||types.indexOf('DeliveryHandedOff')<=types.indexOf('CargoLoaded'))throw Error('R3_NATIVE_BUSINESS_INCOMPLETE');
++  if(e.nativeCase==='obstacle'&&!events.some(x=>x.event==='native-fault'&&x.payload.case==='obstacle'&&x.payload.status==='applied'))throw Error('R3_RAW_FAULT_MISSING');
++ }
++ return {nativeCase:e.nativeCase,seed:m.seed,runId:m.runId,rawCoverage:'tested',businessFaultReadback:'tested',qualification:'not_run',limitations:['TF_PAYLOAD_AND_COMMAND_CORRELATION_NOT_INDEPENDENTLY_VERIFIED','ISOLATION_INSTALL_TRUST_AND_REPLAY_QUALIFICATION_INCOMPLETE']};
++}
++export async function readXarmObservation(root,subject,profile){
++ evidenceInventory(root);const m=read(root,'run-manifest.json'),{hashJson}=await tsImport('../packages/lab-runtime/src/v2/hash.ts',import.meta.url);
++ if(m.sourceCommit!==subject.sourceCommit||m.dirty!==false||m.targetProfileId!==xarmProfile.id||m.subjectProfileId!=='engineering-'+profile.architecture||m.accepted!==false||!['X1','X2'].includes(m.mode)||m.evidenceKind!==xarmProfile.modes[m.mode].evidenceKind||m.profileHash!==hashJson(xarmProfile))throw Error('R3_XARM_IDENTITY');
++ if(!Array.isArray(m.artifacts)||new Set(m.artifacts.map(f=>f.path)).size!==m.artifacts.length)throw Error('R3_XARM_ARTIFACTS');
++ for(const f of m.artifacts)if(sha(bytes(root,f.path))!==f.sha256)throw Error('R3_XARM_ARTIFACT_HASH');
++ const bags=m.artifacts.filter(f=>f.path.startsWith('verified-bag/')&&f.path.endsWith('.db3'));if(!bags.length)throw Error('R3_RAW_BAG_MISSING');
++ const required=['source-lifecycle.json','source-command.json','source-outcome.json','native-started.json','source-xarm-journal.json','native-journal.json','mapping.json','expanded.urdf','bag-coverage.json','observations.jsonl'];
++ for(const path of required)if(!m.artifacts.some(f=>f.path===path))throw Error('R3_XARM_TRACE_MISSING:'+path);
++ const bag=await readEngineeringBag(join(root,'verified-bag'));if(!same(bag,read(root,'bag-coverage.json')))throw Error('R3_BAG_REPLAY_MISMATCH');
++ for(const topic of ['/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status',...m.mode==='X2'?['/clock']:[]])if(!bag.topics[topic]?.count)throw Error('R3_XARM_BAG_TOPIC:'+topic);
++ const {validateXarmMappingRecord}=await tsImport('../packages/lab-runtime/src/v2/sil/xarm-mapping.ts',import.meta.url),mapping=read(root,'mapping.json');
++ if(mapping.evidenceKind!==m.evidenceKind||mapping.mode!==m.mode)throw Error('R3_XARM_MAPPING_KIND');
++ validateXarmMappingRecord(bytes(root,'expanded.urdf').toString(),mapping,{sourceCommit:subject.sourceCommit,profileId:m.subjectProfileId,architecture:profile.architecture,modelSha256:profile.modelSha256});
++ const samples=bytes(root,'observations.jsonl').toString().trim().split('\n').filter(Boolean).map(line=>JSON.parse(line)).filter(x=>x.kind==='sample').map(x=>x.sample);
++ if(samples.length<2)throw Error('R3_XARM_ACTUAL_SAMPLES_MISSING');
++ for(const [i,s]of samples.entries()){
++  if(!s||!Number.isSafeInteger(s.seq)||!Number.isSafeInteger(s.stampNs)||!Number.isSafeInteger(s.clockNs)||s.stampNs<0||s.clockNs<s.stampNs||!Number.isFinite(s.receivedMs)||s.receivedMs<0||!['actualRad','commandedRad','tcpM'].every(k=>Array.isArray(s[k])&&s[k].length===(k==='tcpM'?3:6)&&s[k].every(Number.isFinite)))throw Error('R3_XARM_SAMPLE_INVALID');
++  if(i&&(s.seq<=samples[i-1].seq||s.stampNs<=samples[i-1].stampNs||s.clockNs<samples[i-1].clockNs||s.receivedMs<samples[i-1].receivedMs||s.bootId!==samples[0].bootId||s.epoch!==samples[0].epoch))throw Error('R3_XARM_SAMPLE_EPOCH_OR_CLOCK');
++ }
++ const start=read(root,'native-started.json'),source=read(root,'source-xarm-journal.json'),native=read(root,'native-journal.json'),command=read(root,'source-command.json').command;
++ if(start.mode!==m.mode||start.runId!==source.runId||start.runId!==native.runId||start.runId!==command.runId||source.evidenceKind!==m.evidenceKind||native.evidenceKind!==m.evidenceKind||native.bootId!==samples[0].bootId||native.epoch!==samples[0].epoch||native.receipts?.[command.commandId]?.hash!==hashJson(command)||!Array.isArray(source.receipts)||source.receipts.length!==1||!same(source.receipts[0].command,command))throw Error('R3_XARM_RUN_COMMAND_BINDING');
++ return {mode:m.mode,nativeCase:m.nativeCase,evidenceKind:m.evidenceKind,modelMapping:'tested',sampleCoverage:'tested',qualification:'not_run',limitations:['CONTROLLER_RESTART_NOT_OBSERVED','COLLISION_PLANNING_NOT_OBSERVED','G2_CONTACT_NOT_OBSERVED','DIRECT_TRAJECTORY_SUMMARY_IS_NOT_QUALIFICATION','BAG_ACTION_PAYLOAD_SEMANTICS_NOT_INDEPENDENTLY_VERIFIED']};
++}
++export async function readLinuxcncObservation(root,subject){
++ evidenceInventory(root);const trace=read(root,'actual-joint-trace.json');if(trace.sourceCommit!==subject.sourceCommit||trace.evidenceKind!=='native_capture')throw Error('R3_LINUXCNC_NATIVE_TRACE_REQUIRED');
++ const {validateLinuxcncTrace}=await tsImport('../packages/lab-runtime/src/v2/algorithm/linuxcnc-trace.ts',import.meta.url);const v=validateLinuxcncTrace(trace);
++ return {samples:v.trace.samples.length,segments:v.segments,qualification:'not_run',limitations:['CONTROLLER_SAMPLE_TIME_UNAVAILABLE','FIELD_SYNCHRONY_UNAVAILABLE','CONTROLLER_CARTESIAN_DH_TCP_ENDPOINT_NOT_ESTABLISHED','CONTINUOUS_MOTION_AND_ATOMIC_FENCING_NOT_QUALIFIED','TERMINAL_GUI_PACKAGE_TRUST_NOT_QUALIFIED']};
++}
+diff --git a/scripts/r3-readback.mjs b/scripts/r3-readback.mjs
+new file mode 100644
+index 0000000..1943915
+--- /dev/null
++++ b/scripts/r3-readback.mjs
+@@ -0,0 +1,89 @@
++import {isDeepStrictEqual as same} from 'node:util';
++import {createHash} from 'node:crypto';
++import {join,resolve} from 'node:path';
++import {tsImport} from 'tsx/esm/api';
++import {tableR3,checkR3Structure} from './sim-extension-r3.mjs';
++import {boundedEvidenceRead as bytes,evidenceInventory,verifyR2bDirectory} from './r2b-readback.mjs';
++import {readEngineeringObservation,readXarmObservation,readLinuxcncObservation,ENGINEERING_RUNS,XARM_RUNS} from './r3-native-readback.mjs';
++const sha=b=>createHash('sha256').update(b).digest('hex'),read=(r,p)=>JSON.parse(bytes(r,p));
++const missing=(reason,category='missing_observation')=>({status:'not_run',reason,category});
++const limitations={
++ engineering:['TF_PAYLOAD_AND_COMMAND_CORRELATION_NOT_INDEPENDENTLY_VERIFIED','ISOLATION_INSTALL_TRUST_AND_REPLAY_QUALIFICATION_INCOMPLETE'],
++ xarm:['CONTROLLER_RESTART_NOT_OBSERVED','COLLISION_PLANNING_NOT_OBSERVED','G2_CONTACT_NOT_OBSERVED'],
++ linuxcnc:['CONTROLLER_CLOCK_SYNCHRONY_CARTESIAN_ENDPOINTS_UNAVAILABLE','TERMINAL_ATOMIC_FENCING_GUI_PACKAGE_TRUST_NOT_QUALIFIED'],
++ mujoco:[],
++};
++export async function collectR3Artifacts(root,m){
++ root=resolve(root);const detail=value=>String(value?.message??value).split(root).join('<evidence>');
++ const t=tableR3(m.profile,m.scope),issues=[],cases=Object.fromEntries(t.cases.map(id=>[id,missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING','external')])),observations={};
++ cases['PHYS-PREP-01']=missing('DOSSIER_AND_CONFORMANCE_EXECUTION_NOT_RECORDED; structure-only readiness cannot prove commissioning preparation','missing_observation');
++ let handoff,assessment,architecture;
++ try{
++  const api=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);handoff=await api.readNativeHandoff(join(root,'inputs/handoff'));architecture=handoff.profile.architecture;
++  if(['engineering','xarm'].includes(t.kind)&&(handoff.profile.os.id!=='ubuntu'||handoff.profile.os.version!=='24.04')||t.kind==='linuxcnc'&&(handoff.profile.os.id!=='debian'||handoff.profile.os.version!=='12'))issues.push('R3_PROFILE_OS_BINDING');
++  let inventory;try{inventory=read(root,'inputs/handoff/inventory.json');}catch(e){if(e.code!=='ENOENT')throw e;}
++  assessment=await api.validateNativeHandoff(join(root,'inputs/handoff'),handoff,inventory);
++  if(!assessment.prepared)issues.push(...assessment.issues.filter(i=>i.severity==='error').map(i=>'R3_HANDOFF:'+i.code));
++  const kind={mujoco:'mujoco_image',engineering:'ros2_native',xarm:'ros2_native',linuxcnc:'linuxcnc_native'}[t.kind];
++  if(handoff.profile.id!==m.profile||t.architecture&&architecture!==t.architecture||!['amd64','arm64'].includes(architecture)||handoff.subject.executionKind!==kind)issues.push('R3_PROFILE_BINDING');
++  if(!same(handoff.subject,m.subject))issues.push('R3_SUBJECT_BINDING');
++  const s=handoff.subject,b=m.identity?.before,p=m.lab?.pin;
++  if(b?.sourceCommit!==s.sourceCommit||b?.toolClosures?.portable!==s.portableClosureHash||s.nativeClosureHash!==null&&b?.toolClosures?.native!==s.nativeClosureHash||m.lab?.commit!==s.labCommit||p?.sourceCommit!==s.sourceCommit||p?.schemaHash!==s.schemaHash||p?.artifactSha256!==s.runtimeArtifactSha256||p?.portableToolsDigest!==s.portableClosureHash)issues.push('R3_COMMON_TUPLE');
++  cases['DEP-PREP-01']=issues.length?{status:'failed',reason:issues.join(';'),category:'invalid_artifact'}:{status:'tested',reason:'L00_STATIC_HANDOFF_RECOMPUTED; supplied inventory is not scenario evidence',category:'prepared'};
++ }catch(e){issues.push('R3_HANDOFF_UNREADABLE:'+detail(e));cases['DEP-PREP-01']={status:'failed',reason:issues.at(-1),category:'invalid_artifact'};}
++ // Known producer limitations stay visible even when no host has been assigned.
++ for(const id of t.nativeCases)if(limitations[t.kind].length)cases[id]=missing('ASSIGNED_HOST_CASE_ARTIFACTS_MISSING; '+limitations[t.kind].join(';'),'tooling_and_observation');
++ let index;try{index=read(root,'inputs/native/index.json');}catch(e){if(e.code!=='ENOENT')issues.push('R3_NATIVE_INDEX_UNREADABLE:'+detail(e));}
++ if(index){
++  const roles={mujoco:['historical','current','r2bQualification'],engineering:['engineering'],xarm:['xarm'],linuxcnc:['linuxcnc']}[t.kind];
++  if(index.schemaVersion!==1||index.profile!==m.profile||index.architecture!==architecture||!same(index.subject,handoff?.subject)||!index.records||typeof index.records!=='object'||Array.isArray(index.records)||Object.keys(index.records).some(k=>!roles.includes(k)))issues.push('R3_NATIVE_INDEX_BINDING');
++  else for(const [role,entry]of Object.entries(index.records))try{
++   if(!entry||!same(Object.keys(entry).sort(),['directory'])||typeof entry.directory!=='string'||!/^[\w-]+$/.test(entry.directory))throw Error('R3_NATIVE_RECORD_PATH');
++   const dir=join(root,'inputs/native',entry.directory);evidenceInventory(dir);
++   if(role==='historical'||role==='current'){
++    const raw=read(dir,'manifest.json');if(role==='current'&&!same(raw.subject,handoff.subject))throw Error('R3_CURRENT_SUBJECT_BINDING');
++    // Public native readers audit their exact clean checker graph; never substitute a caller checker.
++    const {invokeCheckedProbe}=await import('./native-sim/probe-bootstrap.mjs');const v=await invokeCheckedProbe(role==='historical'?'verify':'verify-r2b',{root:dir});
++    observations[role]={subject:raw.subject,checker:raw.checker,passed:v.passed,issues:v.issues.map(detail)};if(!v.passed)issues.push(...v.issues.map(i=>'R3_NATIVE:'+role+':'+detail(i)));
++   }else if(role==='r2bQualification'){
++    const q=read(dir,'qualification.json');if(q.release!=='r2b'||q.identity?.before?.sourceCommit!==handoff.subject.sourceCommit||q.lab?.commit!==handoff.subject.labCommit||q.lab?.pin?.schemaHash!==handoff.subject.schemaHash||q.lab?.pin?.artifactSha256!==handoff.subject.runtimeArtifactSha256)throw Error('R3_R2B_TUPLE');
++    const problems=await verifyR2bDirectory(dir);observations[role]={passed:!problems.length,issues:problems};issues.push(...problems.map(i=>'R3_R2B:'+i));
++   }else{
++    if(role==='linuxcnc')observations[role]=await readLinuxcncObservation(dir,handoff.subject);
++    else{
++     observations[role]=[];
++     for(const spec of role==='engineering'?ENGINEERING_RUNS:XARM_RUNS){
++      try{const path=join(dir,spec.directory),result=role==='engineering'?await readEngineeringObservation(path,handoff.subject,m.profile):await readXarmObservation(path,handoff.subject,handoff.profile);
++       if(result.nativeCase!==spec.nativeCase||role==='engineering'&&result.seed!==spec.seed||role==='xarm'&&result.mode!==spec.mode)throw Error('R3_RUN_CASE_BINDING');observations[role].push({...spec,...result});
++      }catch(e){const absent=e.code==='ENOENT';observations[role].push({...spec,status:absent?'not_run':'failed',reason:detail(e)});if(!absent)issues.push('R3_NATIVE:'+role+':'+spec.directory+':'+detail(e));}
++     }
++    }
++   }
++  }catch(e){issues.push('R3_NATIVE:'+role+':'+detail(e));observations[role]={qualification:'failed',issues:[detail(e)]};}
++ }
++ if(t.kind==='mujoco'&&observations.historical?.passed&&observations.current?.passed&&assessment?.nativeReady&&architecture==='amd64')cases['DEP-MJ-01']={status:'tested',reason:'Historical R2a and current R2b public native artifact readers passed independently',category:'native'};
++ const affected={historical:['DEP-MJ-01'],current:['DEP-MJ-01'],engineering:['DEP-NAV-01','DEP-NAV-02','DEP-NAV-03','DEP-NAV-04'],xarm:['DEP-XARM-01','DEP-XARM-02'],linuxcnc:['DEP-CNC-01','ALG04']};
++ for(const [role,ids]of Object.entries(affected)){const failures=issues.filter(i=>i.startsWith('R3_NATIVE:'+role+':'));if(failures.length)for(const id of ids)if(id in cases)cases[id]={status:'failed',reason:failures.join(';'),category:'invalid_artifact'};}
++ // DEP-SEC-01 remains a required case: Docker containment is not the complete native security matrix.
++ cases['DEP-SEC-01']=missing('ASSIGNED_HOST_SECURITY_ARTIFACTS_MISSING; COMPLETE_PROFILE_SECURITY_OBSERVATION_READER_NOT_IMPLEMENTED','tooling_and_observation');
++ const requiredCases=t.requiredCases,blockedNativeCases=t.nativeCases.filter(id=>cases[id].status!=='tested').map(id=>({id,...cases[id]}));
++ const gateCases=m.scope==='prepared'?t.nativeCases:requiredCases.filter(id=>id!=='DEP-PREP-01');
++ const nativeStatus=gateCases.every(id=>cases[id].status==='tested')?'tested':issues.some(i=>i.startsWith('R3_NATIVE:'))?'failed':blockedNativeCases.every(c=>c.category==='external')?'blocked_external':'not_run';
++ const gates={'G-PREP':{status:cases['DEP-PREP-01'].status,accepted:false,cases:['DEP-PREP-01']},[t.gate]:{status:nativeStatus,accepted:false,cases:gateCases,blockers:blockedNativeCases.map(c=>({id:c.id,category:c.category,reason:c.reason}))},'G-PHYS-PREP':{status:'not_run',accepted:false,cases:['PHYS-PREP-01']}};
++ return {requiredCases,cases,gates,blockedNativeCases,capabilities:{architecture:architecture??null,scope:m.scope,observations,preparation:assessment??null,toolingLimitations:[...limitations[t.kind],...t.kind==='mujoco'&&architecture==='arm64'?['MUJOCO_ARM64_CAMPAIGN_ADAPTER_NOT_IMPLEMENTED']:[],'COMPLETE_PROFILE_SECURITY_OBSERVATION_READER_NOT_IMPLEMENTED'],hardware:'not_run',calibration:'not_calibrated'},levels:{'R3.0':cases['DEP-PREP-01'].status,'R3.1':m.scope!=='prepared'&&nativeStatus==='tested'?'tested':'not_run','R3.2':'not_run'},issues};
++}
++export async function assessR3Directory(root,m){
++ const issues=checkR3Structure(m);try{
++  if(!same(evidenceInventory(root),m.artifacts))issues.push('R3_ARTIFACT_INVENTORY');
++  const derived=await collectR3Artifacts(root,m);issues.push(...derived.issues);
++  for(const key of ['requiredCases','cases','gates','blockedNativeCases','capabilities','levels','issues'])if(!same(m[key],derived[key]))issues.push('R3_DERIVED_MISMATCH:'+key);
++  if(derived.requiredCases.some(id=>derived.cases[id].status!=='tested'))issues.push('R3_SCOPE_INCOMPLETE');
++  if(!same(evidenceInventory(root),m.artifacts))issues.push('R3_ARTIFACT_CHANGED_DURING_READBACK');
++ }catch(e){issues.push('R3_READBACK:'+e.message);}return [...new Set(issues)];
++}
++export async function verifyR3Directory(root){try{return await assessR3Directory(root,read(root,'qualification.json'));}catch(e){return ['R3_RECORD_UNREADABLE:'+e.message];}}
++export async function verifyR3Sidecar(root,sidecar){
++ const issues=await verifyR3Directory(root);try{const b=bytes(root,'qualification.json'),m=JSON.parse(b);
++  if(sidecar?.schemaVersion!==1||sidecar.documentType!=='r3-human-review'||sidecar.candidateSha256!==sha(b)||sidecar.candidateId!==m.candidateId||sidecar.profile!==m.profile||sidecar.architecture!==m.capabilities.architecture||sidecar.scope!==m.scope||!['accept','reject'].includes(sidecar.decision)||typeof sidecar.reviewer!=='string'||!sidecar.reviewer.trim()||typeof sidecar.reviewedAt!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(sidecar.reviewedAt)||!Number.isFinite(Date.parse(sidecar.reviewedAt)))issues.push('R3_SIDECAR_BINDING');
++ }catch{issues.push('R3_SIDECAR_BINDING');}return [...new Set(issues)];
++}
+diff --git a/scripts/record-sim-extension-r3.mjs b/scripts/record-sim-extension-r3.mjs
+new file mode 100644
+index 0000000..fdeb3c1
+--- /dev/null
++++ b/scripts/record-sim-extension-r3.mjs
+@@ -0,0 +1,27 @@
++import {execFileSync} from 'node:child_process';
++import {mkdir,writeFile,readFile,cp,realpath,lstat} from 'node:fs/promises';
++import {existsSync} from 'node:fs';
++import {resolve,join,dirname} from 'node:path';
++import {fileURLToPath} from 'node:url';
++import {isDeepStrictEqual as same} from 'node:util';
++import {tableR3} from './sim-extension-r3.mjs';
++import {collectR3Artifacts,verifyR3Directory} from './r3-readback.mjs';
++import {evidenceInventory} from './r2b-readback.mjs';
++import {closureIdentity} from './lab-irsim.mjs';
++import {checkedCheckerIdentity} from './native-checker-bootstrap.mjs';
++const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++export async function recordR3(args){
++ const o={};for(let i=0;i<args.length;i++){const k=args[i];if(k==='--plan'){if(o.plan)throw Error('R3_DUPLICATE_OPTION');o.plan=true;continue;}if(!['--release','--handoff','--native-records','--profile','--scope','--out','--lab','--candidate-id'].includes(k)||o[k]!==undefined||!args[i+1]||args[i+1].startsWith('--'))throw Error('R3_INVALID_OPTION:'+k);o[k]=args[++i];}
++ const table=tableR3(o['--profile'],o['--scope']);if(o.plan){console.log(JSON.stringify({...table,note:'Fixed table only; no host/Docker prerequisites probed. Preparation is not native or physical qualification.'},null,2));return 0;}
++ for(const k of ['--handoff','--native-records','--out'])if(!o[k])throw Error('MISSING_OPTION:'+k);
++ const out=resolve(o['--out']),lab=await realpath(resolve(o['--lab']??join(root,'../lab'))),parent=await realpath(dirname(out));if(existsSync(out))throw Error('OUT_EXISTS');
++ for(const repo of [await realpath(root),lab])if(parent===repo||parent.startsWith(repo+'/'))throw Error('OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES');
++ const checker=await checkedCheckerIdentity(),git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8'}).trim(),snapshot=()=>({sourceCommit:git(root,'rev-parse','HEAD'),dirty:!!git(root,'status','--porcelain','--untracked-files=all'),toolClosures:closureIdentity()}),before=snapshot();
++ const labCommit=git(lab,'rev-parse','HEAD'),pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8'));if(git(lab,'status','--porcelain','--untracked-files=all')||pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
++ await mkdir(out,{mode:0o700});await mkdir(join(out,'inputs'));
++ for(const [key,dest]of [['--handoff','handoff'],['--native-records','native']]){const input=resolve(o[key]);if(!(await lstat(input)).isDirectory()||(await lstat(input)).isSymbolicLink())throw Error('INPUT_DIRECTORY_REQUIRED');const original=evidenceInventory(input);await cp(input,join(out,'inputs',dest),{recursive:true,force:false,errorOnExist:true});if(!same(evidenceInventory(input),original)||!same(evidenceInventory(join(out,'inputs',dest)),original))throw Error('INPUT_CHANGED');}
++ const handoff=JSON.parse(await readFile(join(out,'inputs/handoff/manifest.json'),'utf8')),after=snapshot(),stable=same(before,after)&&git(lab,'rev-parse','HEAD')===labCommit&&!git(lab,'status','--porcelain','--untracked-files=all')&&same(checker,await checkedCheckerIdentity());
++ const m={schemaVersion:1,documentType:'sim-extension-qualification',release:'r3',profile:o['--profile'],scope:o['--scope'],candidateId:o['--candidate-id']??out.split('/').at(-1),accepted:false,acceptedBy:null,acceptedAt:null,dynamics:'not_calibrated',subject:handoff.subject,checker,identity:{before,after,identityStable:stable},lab:{commit:labCommit,dirty:!stable,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}},campaign:null,performance:null};
++ Object.assign(m,await collectR3Artifacts(out,m));m.identity.after=snapshot();m.identity.identityStable=m.identity.identityStable&&same(m.identity.before,m.identity.after)&&git(lab,'rev-parse','HEAD')===labCommit&&!git(lab,'status','--porcelain','--untracked-files=all')&&same(checker,await checkedCheckerIdentity());m.lab.dirty=!m.identity.identityStable;m.artifacts=evidenceInventory(out);await writeFile(join(out,'qualification.json'),JSON.stringify(m,null,2)+'\n',{flag:'wx'});
++ const issues=await verifyR3Directory(out);console.log(JSON.stringify({accepted:false,profile:m.profile,scope:m.scope,levels:m.levels,gates:m.gates,blockedNativeCases:m.blockedNativeCases,issues}));return issues.length?1:0;
++}
+diff --git a/scripts/record-sim-extension.mjs b/scripts/record-sim-extension.mjs
+index f742aff..e8223f8 100644
+--- a/scripts/record-sim-extension.mjs
++++ b/scripts/record-sim-extension.mjs
+@@ -31,6 +31,7 @@ import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.
+ import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkLabCommits,preflight,screenLockedFromIoreg,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
+ import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++if(process.argv[process.argv.indexOf('--release')+1]==='r3'){try{const {recordR3}=await import('./record-sim-extension-r3.mjs');process.exit(await recordR3(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
+ if(process.argv[process.argv.indexOf('--release')+1]==='r2b'){try{const {recordR2b}=await import('./record-sim-extension-r2b.mjs');process.exit(await recordR2b(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
+ const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
+ const raw=process.argv.slice(2),own={release:undefined,out:undefined,candidateId:undefined,irsimRecord:undefined,r1Record:undefined,r11Record:undefined,mock:undefined,lab:undefined,skipSuites:false,plan:false,webotsHome:undefined,webotsPython:undefined,blocked:undefined,blockedReason:undefined,mujocoProbe:undefined};
+diff --git a/scripts/sim-extension-qualification.mjs b/scripts/sim-extension-qualification.mjs
+index ee55521..6a8de2d 100644
+--- a/scripts/sim-extension-qualification.mjs
++++ b/scripts/sim-extension-qualification.mjs
+@@ -1,3 +1,5 @@
++import {checkR3Structure} from './sim-extension-r3.mjs';
++export {tableR3} from './sim-extension-r3.mjs';
+ import {checkR2bStructure} from './sim-extension-r2b.mjs';
+ export {CASES_R2B,GATES_R2B,SUITES_R2B,tableR2b} from './sim-extension-r2b.mjs';
+ // sim-extension-qualification/1 (W09 Release 1; X08 Release 1.1 adds the `r1.1` table below): the one mapping from the verification cases of spec 2026-11-10-simulation-extension-design.md §6.3 to the evidence that
+@@ -300,4 +302,4 @@ export const qualifyR2a=(input)=>qualifyWith(input,tableR2a(input.blocked?.gates
+ 
+ export const qualify=(input)=>qualifyWith(input,TABLE);
+ /** The table follows the record's own release; a record that names none of them is checked as R1 and fails on its content. */
+-export const checkQualification=(m,read)=>m?.release==='r2b'?[...checkR2bStructure(m,read),'R2B_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
++export const checkQualification=(m,read)=>m?.release==='r3'?[...checkR3Structure(m),'R3_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2b'?[...checkR2bStructure(m,read),'R2B_ARTIFACT_READBACK_REQUIRED']:m?.release==='r2a'?check(m,read,tableR2a(m.blocked?.gates??[],m.blocked?.reason)):m?.release==='r1.1'?check(m,read,TABLE_R11):check(m,read,TABLE);
+diff --git a/scripts/sim-extension-r3.mjs b/scripts/sim-extension-r3.mjs
+new file mode 100644
+index 0000000..2269e77
+--- /dev/null
++++ b/scripts/sim-extension-r3.mjs
+@@ -0,0 +1,27 @@
++// R3 scopes are fixed here, never selected by an evidence manifest's pass list.
++import {isDeepStrictEqual as same} from 'node:util';
++const prep='DEP-PREP-01',sec='DEP-SEC-01';
++const profiles={
++ 'mujoco-linux-amd64':{architecture:'amd64',kind:'mujoco',gate:'G-NATIVE-MJ',scopes:{prepared:[],full:['DEP-MJ-01',sec]}},
++ 'mujoco-linux-arm64':{architecture:'arm64',kind:'mujoco',gate:'G-NATIVE-MJ',scopes:{prepared:[],full:['DEP-MJ-01',sec]}},
++ 'engineering-amd64':{architecture:'amd64',kind:'engineering',gate:'G-NATIVE-AMR',scopes:{prepared:[],motion:['DEP-NAV-01','DEP-NAV-02','DEP-NAV-03','DEP-NAV-04',sec],full:['DEP-NAV-01','DEP-NAV-02','DEP-NAV-03','DEP-NAV-04',sec]}},
++ 'engineering-arm64':{architecture:'arm64',kind:'engineering',gate:'G-NATIVE-AMR',scopes:{prepared:[],motion:['DEP-NAV-01','DEP-NAV-02','DEP-NAV-03','DEP-NAV-04',sec],full:['DEP-NAV-01','DEP-NAV-02','DEP-NAV-03','DEP-NAV-04',sec]}},
++ 'xarm6-jazzy-sim':{architecture:null,kind:'xarm',gate:'G-NATIVE-ARM',scopes:{prepared:[],motion:['DEP-XARM-01','DEP-XARM-02',sec],contact:['DEP-XARM-01','DEP-XARM-02','DEP-XARM-03',sec],full:['DEP-XARM-01','DEP-XARM-02','DEP-XARM-03',sec]}},
++ 'puma560-linuxcnc-sim':{architecture:null,kind:'linuxcnc',gate:'G-NATIVE-ARM',scopes:{prepared:[],terminal:['DEP-CNC-01','DEP-CNC-02','ALG04',sec],full:['DEP-CNC-01','DEP-CNC-02','DEP-CNC-03','ALG04',sec]}},
++};
++export function tableR3(profile,scope){
++ const p=Object.hasOwn(profiles,profile)?profiles[profile]:null;if(!p)throw Error('R3_PROFILE_UNSUPPORTED');if(!Object.hasOwn(p.scopes,scope))throw Error('R3_SCOPE_UNSUPPORTED');
++ return structuredClone({profile,scope,architecture:p.architecture,kind:p.kind,gate:p.gate,requiredCases:[prep,...p.scopes[scope]],nativeCases:p.scopes.full,cases:[prep,...p.scopes.full,'PHYS-PREP-01']});
++}
++export function checkR3Structure(m){
++ const r=[];if(m?.accepted!==false||m?.acceptedBy!==null||m?.acceptedAt!==null)r.push('RECORD_ACCEPTED');
++ if(m?.schemaVersion!==1||m?.documentType!=='sim-extension-qualification'||m?.release!=='r3'||m?.dynamics!=='not_calibrated')r.push('R3_RECORD_SCHEMA');
++ try{const t=tableR3(m.profile,m.scope);if(!same(m.requiredCases,t.requiredCases))r.push('R3_REQUIRED_CASES');if(!same(Object.keys(m.cases??{}).sort(),t.cases.slice().sort()))r.push('R3_CASE_TABLE');}catch(e){r.push(e.message);}
++ if(!/^[\w.-]{1,160}$/.test(m?.candidateId??''))r.push('R3_CANDIDATE_ID');
++ if(!/^[a-f0-9]{40}$/.test(m?.checker?.sourceCommit??'')||!/^[a-f0-9]{64}$/.test(m?.checker?.toolSha256??''))r.push('R3_CHECKER_IDENTITY');
++ if(m?.checker?.sourceCommit!==m?.identity?.before?.sourceCommit)r.push('R3_CHECKER_TUPLE');
++ if(m?.identity?.identityStable!==true||!same(m?.identity?.before,m?.identity?.after)||m?.identity?.before?.dirty!==false||m?.lab?.dirty!==false)r.push('R3_IDENTITY_UNSTABLE');
++ if(m?.campaign!==null||m?.performance!==null)r.push('R3_UNEXPECTED_SUMMARY');
++ for(const k of ['requiredCaseOverride','artifactsVerified','nativeReady','acceptedScope','suites'])if(k in (m??{}))r.push('R3_OVERRIDE_UNSUPPORTED:'+k);
++ return r;
++}
+diff --git a/scripts/verify-r3.mjs b/scripts/verify-r3.mjs
+new file mode 100644
+index 0000000..8b44cda
+--- /dev/null
++++ b/scripts/verify-r3.mjs
+@@ -0,0 +1,11 @@
++#!/usr/bin/env node
++// Offline supplied-artifact verification; no native case or prerequisite probe is launched.
++import {resolve,dirname,basename} from 'node:path';
++import {boundedEvidenceRead} from './r2b-readback.mjs';
++import {verifyR3Directory,verifyR3Sidecar} from './r3-readback.mjs';
++const [directory,flag,file,...rest]=process.argv.slice(2);
++try{
++ if(!directory||rest.length||flag&&flag!=='--sidecar'||flag&&!file||!flag&&file)throw Error('USAGE: verify-r3.mjs DIR [--sidecar SIDECAR_FILE]');
++ const root=resolve(directory),issues=file?await verifyR3Sidecar(root,JSON.parse(boundedEvidenceRead(dirname(resolve(file)),basename(file)))):await verifyR3Directory(root);
++ console.log(JSON.stringify({valid:!issues.length,accepted:false,issues,note:'Supplied artifact consistency only; sidecar authorship/signature and host provenance require independent review.'},null,2));process.exitCode=issues.length?1:0;
++}catch(e){console.error(e.message);process.exitCode=2;}
+diff --git a/tests/acceptance/sim-extension.acceptance.test.ts b/tests/acceptance/sim-extension.acceptance.test.ts
+index b0b89cf..3d4c06d 100644
+--- a/tests/acceptance/sim-extension.acceptance.test.ts
++++ b/tests/acceptance/sim-extension.acceptance.test.ts
+@@ -1,3 +1,5 @@
++// @ts-expect-error mandatory asynchronous R3 profile artifact readback
++import {verifyR3Directory} from '../../scripts/r3-readback.mjs';
+ // @ts-expect-error mandatory asynchronous R2b artifact readback
+ import {verifyR2bDirectory} from '../../scripts/r2b-readback.mjs';
+ // Acceptance guard for the simulation-extension qualification: Release 1 (plan 01 W09), Release 1.1 (Webots arm, X08) and Release R2a (MuJoCo arm, web runtime, twin UI, Q01); the record names its release. It reads one recorded candidate directory (LAB_SIMEXT_EVIDENCE_DIR, written by
+@@ -9,21 +11,21 @@ import {spawnSync} from 'node:child_process';
+ import {existsSync,readdirSync,readFileSync} from 'node:fs';
+ import {join,resolve} from 'node:path';
+ // @ts-expect-error plain ESM script without types
+-import {GATE_IDS,GATE_IDS_R11,GATE_IDS_R2A,GATES_R2B,tableR2b,checkQualification} from '../../scripts/sim-extension-qualification.mjs';
++import {GATE_IDS,GATE_IDS_R11,GATE_IDS_R2A,GATES_R2B,tableR2b,tableR3,checkQualification} from '../../scripts/sim-extension-qualification.mjs';
+ type Manifest=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+ const dir=process.env.LAB_SIMEXT_EVIDENCE_DIR?resolve(process.env.LAB_SIMEXT_EVIDENCE_DIR):null;
+ const read=(p:string)=>{const f=join(dir!,p);return existsSync(f)?readFileSync(f):null;};
+ const SIMEXT='docs/implementation/evidence/sim-extension',IRSIM='docs/implementation/evidence/linkforge-irsim';
+-const NO_CAMPAIGN=['r1.1','r2a','r2b'];
++const NO_CAMPAIGN=['r1.1','r2a','r2b','r3'];
+ const manifest=():Manifest=>{const b=read('qualification.json');if(!b)throw new Error(`EVIDENCE_MISSING: ${dir}/qualification.json (record with node scripts/record-sim-extension.mjs --release r1 --out <new dir> ...)`);return JSON.parse(b.toString('utf8'));};
+ 
+ test('a candidate directory is named and holds a qualification record',()=>{
+  expect(dir,'EVIDENCE_MISSING: set LAB_SIMEXT_EVIDENCE_DIR to a recorded candidate directory').toBeTruthy();
+  expect(manifest()).toMatchObject({schemaVersion:1,documentType:'sim-extension-qualification'});
+- expect(['r1','r1.1','r2a','r2b']).toContain(manifest().release);
++ expect(['r1','r1.1','r2a','r2b','r3']).toContain(manifest().release);
+ });
+ test('the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)',async()=>{
+- expect(manifest().release==='r2b'?await verifyR2bDirectory(dir):checkQualification(manifest(),read)).toEqual([]);
++ expect(manifest().release==='r3'?await verifyR3Directory(dir):manifest().release==='r2b'?await verifyR2bDirectory(dir):checkQualification(manifest(),read)).toEqual([]);
+ });
+ test('the Webots campaign directory re-verifies from disk through the headless CLI (exit 0)',()=>{
+  if(NO_CAMPAIGN.includes(manifest().release)){expect(manifest().campaign).toBeNull();return;} // R1.1 and R2a record no campaign; their engine evidence is the suites on the real engine
+@@ -64,10 +66,11 @@ test('the IR-SIM record it builds on is the one in the tree (byte for byte) and
+  expect(m.irsimRecord.sourceCommit).toBe(m.identity.before.sourceCommit);
+ });
+ test('no gate is accepted by this record, only its own release\'s gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)',()=>{
+- const m=manifest(),ids=m.release==='r2b'?Object.keys(tableR2b(m.scope).gates):m.release==='r2a'?GATE_IDS_R2A:m.release==='r1.1'?GATE_IDS_R11:GATE_IDS;
++ const m=manifest(),ids=m.release==='r3'?['G-PREP',tableR3(m.profile,m.scope).gate,'G-PHYS-PREP']:m.release==='r2b'?Object.keys(tableR2b(m.scope).gates):m.release==='r2a'?GATE_IDS_R2A:m.release==='r1.1'?GATE_IDS_R11:GATE_IDS;
+  expect(Object.keys(m.gates).sort()).toEqual([...ids].sort());
+  for(const g of ids)expect(m.gates[g].accepted,g).toBe(false);
+  expect(m.accepted).toBe(false);expect(m.acceptedBy).toBeNull();
++ if(m.release==='r3'){for(const id of tableR3(m.profile,m.scope).requiredCases)expect(m.cases[id].status,id).toBe('tested');expect(m.capabilities.hardware).toBe('not_run');return;}
+  for(const n of m.notRun as {id:string;reason:string}[])expect(n.reason,n.id).toMatch(/\S/);
+  if(m.release==='r2b'){expect(Object.keys(m.gates)).toEqual(Object.keys(m.scope==='mobility'?tableR2b('mobility').gates:GATES_R2B));for(const g of ids)expect(m.gates[g].status).toBe(g==='G-HOST1'?'blocked_external':'tested');return;}
+  if(m.release==='r1.1'){for(const g of ids)expect(m.gates[g].status,g).toBe('tested');return;}
+diff --git a/tests/unit/r3-native-readback.test.ts b/tests/unit/r3-native-readback.test.ts
+new file mode 100644
+index 0000000..b33502c
+--- /dev/null
++++ b/tests/unit/r3-native-readback.test.ts
+@@ -0,0 +1,76 @@
++import {expect,test} from 'vitest';
++import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
++import {join,resolve} from 'node:path';
++import {tmpdir} from 'node:os';
++import {spawnSync} from 'node:child_process';
++import {createHash} from 'node:crypto';
++import {DatabaseSync} from 'node:sqlite';
++import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
++import {ENGINEERING_TOPICS} from '../../packages/lab-runtime/src/v2/sil/engineering-native';
++// @ts-expect-error plain ESM artifact reader
++import {readEngineeringBag,readEngineeringObservation,readXarmObservation,readLinuxcncObservation} from '../../scripts/r3-native-readback.mjs';
++// @ts-expect-error plain ESM artifact inventory
++import {evidenceInventory} from '../../scripts/r2b-readback.mjs';
++type Doc=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explicit-any
++const commit='1'.repeat(40),sha=(b:Buffer|string)=>createHash('sha256').update(b).digest('hex'),hex='a'.repeat(64);
++async function engineering(){
++ const root=await mkdtemp(join(tmpdir(),'r3-engineering-fixture-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),typeof v==='string'?v:JSON.stringify(v));};
++ const p=spawnSync(resolve('.venv-irsim/bin/python'),['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',join(root,'bundle')],{cwd:resolve('robotics/simulation'),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});expect(p.status,p.stderr).toBe(0);
++ await mkdir(join(root,'rosbag2'));const db=new DatabaseSync(join(root,'rosbag2/observations.db3'));db.exec('CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT); CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER,timestamp INTEGER,data BLOB)');let id=0;for(const [i,topic]of ENGINEERING_TOPICS.entries()){db.prepare('INSERT INTO topics VALUES(?,?)').run(i,topic);for(let j=0;j<11;j++)db.prepare('INSERT INTO messages VALUES(?,?,?,?)').run(++id,i,1_000_000_000+j*100_000_000,Buffer.from('synthetic CDR fixture'));}db.close();
++ const bag=await readEngineeringBag(join(root,'rosbag2')),clockMapping=[{providerSimNs:'1000000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:50,receiveMonotonicNs:'1000000100'}];
++ const inventory:Doc={id:'engineering-amd64',available:true,reasonCodes:[],installation:'native_apt',headless:true,image:null,profileSha256:hex,inventorySha256:hex,actual:{platform:'linux',arch:'amd64',os:'ubuntu24.04',packages:{ros:'fixture'},digests:{'/fixture':hex},aptProvenance:{sources:{'/fixture':hex}},runtime:{rosDistro:'jazzy',amentPrefixes:[],overlayManifests:{},pythonPath:'',libraryPath:'',gazeboPluginPath:'',executables:Object.fromEntries(['ros2','gz','python3'].map(k=>[k,{path:'/fixture/'+k,sha256:hex}]))}}};
++ await put('engineering-native-evidence.json',{producer:'native',nativeCase:'nominal',clockMapping,bag,blockers:[]});await put('native-inventory.json',inventory);await put('native-events.jsonl',clockMapping.map(payload=>JSON.stringify({event:'clock-mapping',payload})).join('\n'));await put('native-commands.json',{commands:[]});await put('journal.json',[{events:[{type:'CargoLoaded',state:{}},{type:'RobotCommandObserved',state:{status:'completed'}},{type:'DeliveryHandedOff',state:{}}]}]);await put('effects.json',[{attempts:1}]);
++ const m:Doc={sourceCommit:commit,runId:'synthetic-r3',evidence:'sil',mode:'simulation',access:'simulated',backendSetId:'engineering-rigid-v1',scenario:{id:'FD01'},backendCapability:{evidence:'sil',available:true},status:'completed',seed:7};
++ const seal=async()=>{m.outputs=evidenceInventory(root).filter((f:Doc)=>f.file!=='run-manifest.json'&&!f.file.startsWith('bundle/')).map((f:Doc)=>({path:f.file,sha256:f.sha256}));const {manifestHash:old,...body}=m;void old;m.manifestHash=hashJson(body);await put('run-manifest.json',m);};await seal();
++ return {root,m,inventory,put,seal,cleanup:()=>rm(root,{recursive:true,force:true})};
++}
++test('R3 engineering adapter replays copied SQLite bytes and supported observations without promoting them to a complete native case',async()=>{
++ const f=await engineering();try{const before=sha(await readFile(join(f.root,'rosbag2/observations.db3')));expect(await readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).toMatchObject({rawCoverage:'tested',businessFaultReadback:'tested',qualification:'not_run'});expect(sha(await readFile(join(f.root,'rosbag2/observations.db3')))).toBe(before);}finally{await f.cleanup();}
++});
++test.each(['unavailable inventory','missing bag','missing raw clock','fake evidence','wrong source','wrong architecture','replayed command','skipped raw topic'])('R3 engineering rejects %s after complete coherent artifact reseal',async mutation=>{
++ const f=await engineering();try{
++  if(mutation==='unavailable inventory'){await f.put('native-inventory.json',{...f.inventory,available:false,reasonCodes:['INVENTORY_UNRESOLVED']});}
++  if(mutation==='missing bag')await rm(join(f.root,'rosbag2/observations.db3'));
++  if(mutation==='missing raw clock')await f.put('native-events.jsonl','');
++  if(mutation==='fake evidence')f.m.evidence='protocol_double';
++  if(mutation==='wrong source')f.m.sourceCommit='e'.repeat(40);
++  if(mutation==='wrong architecture'){f.inventory.actual.arch='arm64';await f.put('native-inventory.json',f.inventory);}
++  if(mutation==='replayed command')await f.put('effects.json',[{attempts:2}]);
++  if(mutation==='skipped raw topic'){const db=new DatabaseSync(join(f.root,'rosbag2/observations.db3'));db.exec('DELETE FROM messages WHERE topic_id=0');db.close();const e=JSON.parse(await readFile(join(f.root,'engineering-native-evidence.json'),'utf8'));e.bag=await readEngineeringBag(join(f.root,'rosbag2'));await f.put('engineering-native-evidence.json',e);}
++  await f.seal();await expect(readEngineeringObservation(f.root,{sourceCommit:commit},'engineering-amd64')).rejects.toThrow();
++ }finally{await f.cleanup();}
++});
++test('R3 arm readers reject summary-only contact, absent raw controller traces and foreign branch evidence',async()=>{
++ const root=await mkdtemp(join(tmpdir(),'r3-arm-reader-'));try{
++  await writeFile(join(root,'run-manifest.json'),JSON.stringify({sourceCommit:commit,dirty:false,targetProfileId:'xarm6-jazzy-sim-v1',subjectProfileId:'engineering-amd64',accepted:false,mode:'X2',evidenceKind:'gazebo_actual',profileHash:hashJson((await import('../../robotics/manipulation/profiles/xarm6-jazzy-sim.json')).default),motion:{result:'pass'},contact:{result:'pass'},artifacts:[]}));await expect(readXarmObservation(root,{sourceCommit:commit},{architecture:'amd64'})).rejects.toThrow('R3_RAW_BAG_MISSING');
++  await expect(readLinuxcncObservation(root,{sourceCommit:commit})).rejects.toThrow();await writeFile(join(root,'actual-joint-trace.json'),JSON.stringify({sourceCommit:commit,evidenceKind:'protocol_double',backend:'xarm'}));await expect(readLinuxcncObservation(root,{sourceCommit:commit})).rejects.toThrow('R3_LINUXCNC_NATIVE_TRACE_REQUIRED');
++ }finally{await rm(root,{recursive:true,force:true});}
++});
++
++async function xarm(){
++ const f=await engineering(),profile=(await import('../../robotics/manipulation/profiles/xarm6-jazzy-sim.json')).default,target=(await import('../../robotics/manipulation/profiles/xarm6-native-mapping.json')).default;
++ const {cp}=await import('node:fs/promises');await cp(join(f.root,'rosbag2'),join(f.root,'verified-bag'),{recursive:true});const db=new DatabaseSync(join(f.root,'verified-bag/observations.db3'));
++ const topics=['/clock','/joint_states','/tf','/tf_static','/xarm6_traj_controller/controller_state','/xarm6_traj_controller/follow_joint_trajectory/_action/status'];for(const [i,topic]of topics.entries())db.prepare('UPDATE topics SET name=? WHERE id=?').run(topic,i);db.close();await f.put('bag-coverage.json',await readEngineeringBag(join(f.root,'verified-bag')));
++ const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');await f.put('expanded.urdf',xml);
++ const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const mapping={...validateXarmUrdf(xml,'X2'),producer:'native_xarm.robot_description.v1',sourceCommit:commit,subjectProfileId:'engineering-amd64',environmentProfile:'engineering-amd64',sourceModelSha256:target.sourceModelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector,evidenceKind:profile.modes.X2.evidenceKind,controller:{joints:profile.jointMap.map(j=>j.native),commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot name="unit"/>'}};await f.put('mapping.json',mapping);
++ const command={commandId:'c1',runId:'xarm-X2-nominal'},sample=(i:number)=>({seq:i+1,bootId:'boot',epoch:1,receivedMs:1000+i*100,stampNs:1000000000+i*100000000,clockNs:1000000000+i*100000000,actualRad:[0,0,-1,0,0,0],commandedRad:[0,0,-1,0,0,0],tcpM:[0,0,0]});
++ await f.put('observations.jsonl',[0,1].map(i=>JSON.stringify({kind:'sample',sample:sample(i)})).join('\n'));await f.put('source-command.json',{command,ack:{accepted:true,unknown:false}});await f.put('source-outcome.json',{status:'completed'});await f.put('source-lifecycle.json',{startup:'ready'});await f.put('native-started.json',{runId:command.runId,mode:'X2'});await f.put('native-journal.json',{runId:command.runId,bootId:'boot',epoch:1,evidenceKind:profile.modes.X2.evidenceKind,receipts:{c1:{hash:hashJson(command),status:'completed'}}});await f.put('source-xarm-journal.json',{runId:command.runId,mode:'X2',evidenceKind:profile.modes.X2.evidenceKind,receipts:[{command,status:'completed'}]});
++ const m:Doc={sourceCommit:commit,dirty:false,targetProfileId:profile.id,subjectProfileId:'engineering-amd64',profileHash:hashJson(profile),accepted:false,mode:'X2',nativeCase:'nominal',evidenceKind:profile.modes.X2.evidenceKind};
++ const seal=async()=>{m.artifacts=evidenceInventory(f.root).filter((r:Doc)=>r.file!=='run-manifest.json').map((r:Doc)=>({path:r.file,sha256:r.sha256}));await f.put('run-manifest.json',m);};await seal();return {...f,m,mapping,seal,profile:{architecture:'amd64',modelSha256:target.sourceModelSha256}};
++}
++test('R3 xArm reader recomputes pinned model and raw sample coverage while preserving unqualified native scope',async()=>{
++ const f=await xarm();try{expect(await readXarmObservation(f.root,{sourceCommit:commit},f.profile)).toMatchObject({mode:'X2',modelMapping:'tested',sampleCoverage:'tested',qualification:'not_run'});}finally{await f.cleanup();}
++});
++test.each(['fake producer','wrong mapping','missing actual samples','crossed run'])('R3 xArm reader refuses %s after coherent artifact reseal',async mutation=>{
++ const f=await xarm();try{if(mutation==='fake producer')f.m.evidenceKind='protocol_double';if(mutation==='wrong mapping'){f.mapping.sourceModelSha256=hex;await f.put('mapping.json',f.mapping);}if(mutation==='missing actual samples')await f.put('observations.jsonl','');if(mutation==='crossed run')await f.put('native-started.json',{runId:'other-run',mode:'X2'});await f.seal();await expect(readXarmObservation(f.root,{sourceCommit:commit},f.profile)).rejects.toThrow();}finally{await f.cleanup();}
++});
++
++test('R3 LinuxCNC validates the exact supplied actual-joint format but never promotes a native_capture label or numeric summary to ALG04',async()=>{
++ const root=await mkdtemp(join(tmpdir(),'r3-cnc-fixture-'));try{
++  const digest=async(p:string)=>sha(await readFile(p)),base='integrations/arm-controller/',model='models/puma560-reference/';
++  const trace={schemaVersion:1,kind:'linuxcnc_actual_joint_trace',backend:'linuxcnc_sim',provenance:'controller_sim',evidenceKind:'native_capture',sourceCommit:commit,controller:{version:'unit-only',identityMethod:'linux-proc-boot-id-pid-starttime'},model:{id:'puma560-reference',manifestSha256:await digest(base+model+'manifest.json'),dhSha256:await digest(base+model+'modified-dh.json'),framesSha256:await digest(base+model+'frames.json'),profileSha256:await digest(base+'configs/sim/puma560/profile.json'),baseFrame:'arm_base',tcpFrame:'tcp',toolRevision:'tool-0-notool'},units:{rawJoint:'deg',joint:'rad',receiveTime:'ns'},clock:{receive:'host_monotonic',controller:'unavailable'},samples:[0,1].map(i=>({sequence:i,epoch:'boot:task:'+i,receiveMonotonicNs:[String(100+i*100),String(110+i*100)],controllerTime:null,synchrony:'unavailable',actual:{sampleId:'a'+i,rawDeg:[0,0,0,0,0,0],rad:[0,0,0,0,0,0]},commanded:{sampleId:'c'+i,rawDeg:[0,0,0,0,0,0],rad:[0,0,0,0,0,0]}}))};
++  await writeFile(join(root,'actual-joint-trace.json'),JSON.stringify(trace));await writeFile(join(root,'algorithm-results.json'),JSON.stringify({numericVerdict:'pass',verdict:'pass'}));
++  const r=await readLinuxcncObservation(root,{sourceCommit:commit});expect(r.qualification).toBe('not_run');expect(r.segments).toHaveLength(2);expect(r.limitations).toContain('CONTROLLER_SAMPLE_TIME_UNAVAILABLE');
++  trace.model.id='xarm6';await writeFile(join(root,'actual-joint-trace.json'),JSON.stringify(trace));await expect(readLinuxcncObservation(root,{sourceCommit:commit})).rejects.toThrow('PUMA_MODEL_FRAME_HASH_MISMATCH');
++ }finally{await rm(root,{recursive:true,force:true});}
++});
+diff --git a/tests/unit/sim-extension-qualification.test.ts b/tests/unit/sim-extension-qualification.test.ts
+index b5fbe00..479442c 100644
+--- a/tests/unit/sim-extension-qualification.test.ts
++++ b/tests/unit/sim-extension-qualification.test.ts
+@@ -451,3 +451,93 @@ test('R2b refuses caller-selected reduced tables, accepted true and a fabricated
+  const r=Q.checkQualification(c.m,c.read);
+  expect(r).toContain('RECORD_ACCEPTED');expect(r).toContain('CASE_TABLE_MISMATCH');expect(r).toContain('R2B_ARTIFACT_READBACK_REQUIRED');
+ });
++
++test('R3 cannot fall through to historical R1 qualification or historical accepted compatibility',()=>{
++ for(const accepted of [false,true]){
++  const c=candidate();c.m.release='r3';c.m.profile='xarm6-jazzy-sim';c.m.scope='motion';c.m.accepted=accepted;
++  if(accepted){c.m.acceptedBy='fabricated';c.m.acceptedAt='today';}
++  const issues=checkQualification(c.m,c.read);
++  expect(issues).toContain('R3_ARTIFACT_READBACK_REQUIRED');
++  if(accepted)expect(issues).toContain('RECORD_ACCEPTED');
++ }
++});
++
++test('R3 recorder recognizes the closed profile matrix without a prerequisite probe',()=>{
++ const p=spawnSync(process.execPath,['scripts/record-sim-extension.mjs','--release','r3','--profile','xarm6-jazzy-sim','--scope','contact','--plan'],{encoding:'utf8',timeout:10000,env:{...process.env,PATH:'/nonexistent'}});
++ expect(p.status,p.stderr).toBe(0);expect(JSON.parse(p.stdout).requiredCases).toEqual(['DEP-PREP-01','DEP-XARM-01','DEP-XARM-02','DEP-XARM-03','DEP-SEC-01']);
++});
++
++// @ts-expect-error plain ESM artifact reader
++const r3api=async()=>import('../../scripts/r3-readback.mjs');
++async function r3Fixture(profile='mujoco-linux-amd64',scope='prepared'){
++ const {nativeHandoffFixture}=await import('../fixtures/native-handoff');
++ const {cp,writeFile,mkdir,rm}=await import('node:fs/promises');
++ // @ts-expect-error plain ESM artifact inventory
++ const {evidenceInventory}=await import('../../scripts/r2b-readback.mjs');
++ const mode=profile.startsWith('engineering-')?'ros_navigation':profile==='xarm6-jazzy-sim'?'ros_xarm':profile==='puma560-linuxcnc-sim'?'native_apt':'oci';
++ const f=await nativeHandoffFixture(mode);f.manifest.profile.id=profile;f.inventory.profileId=profile;if(mode==='ros_navigation'||mode==='ros_xarm')f.manifest.profile.os={id:'ubuntu',version:'24.04'};await f.reseal();
++ const root=mkdtempSync(join(tmpdir(),'r3-directory-'));await mkdir(join(root,'inputs'));await cp(f.root,join(root,'inputs/handoff'),{recursive:true});await mkdir(join(root,'inputs/native'));await rm(f.root,{recursive:true});
++ const s=f.manifest.subject,m:M={schemaVersion:1,documentType:'sim-extension-qualification',release:'r3',profile,scope,candidateId:'r3-unit',accepted:false,acceptedBy:null,acceptedAt:null,dynamics:'not_calibrated',subject:s,checker:{sourceCommit:s.sourceCommit,toolSha256:HEX},identity:{before:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},after:{sourceCommit:s.sourceCommit,dirty:false,toolClosures:{portable:s.portableClosureHash,native:s.nativeClosureHash}},identityStable:true},lab:{commit:s.labCommit,dirty:false,pin:{sourceCommit:s.sourceCommit,artifactSha256:s.runtimeArtifactSha256,schemaHash:s.schemaHash,portableToolsDigest:s.portableClosureHash}},campaign:null,performance:null};
++ const seal=async()=>{m.artifacts=evidenceInventory(root);await writeFile(join(root,'qualification.json'),JSON.stringify(m));};
++ const derive=async()=>{Object.assign(m,await (await r3api()).collectR3Artifacts(root,m));await seal();};
++ return {root,m,seal,derive,cleanup:()=>rm(root,{recursive:true}),write:async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v));}};
++}
++
++test('R3 prepared directory is recomputed, retains every missing native case, and never claims native or physical acceptance',async()=>{
++ const f=await r3Fixture();try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.cases['DEP-PREP-01'].status).toBe('tested');expect(f.m.gates['G-NATIVE-MJ'].status).toBe('not_run');expect(f.m.blockedNativeCases.map((c:M)=>c.id)).toEqual(['DEP-MJ-01','DEP-SEC-01']);expect(f.m.levels['R3.1']).toBe('not_run');expect(f.m.levels['R3.2']).toBe('not_run');}finally{await f.cleanup();}
++});
++
++test.each([
++ ['accepted reviewer fields',(m:M)=>{m.accepted=true;m.acceptedBy='invented';m.acceptedAt='today';},'RECORD_ACCEPTED'],
++ ['reduced required cases',(m:M)=>{m.requiredCases=[];},'R3_REQUIRED_CASES'],
++ ['invented tested gate',(m:M)=>{m.gates['G-NATIVE-MJ'].status='tested';},'R3_DERIVED_MISMATCH:gates'],
++ ['skipped case relabelled tested',(m:M)=>{m.cases['DEP-MJ-01'].status='tested';},'R3_DERIVED_MISMATCH:cases'],
++ ['another ISA',(m:M)=>{m.profile='mujoco-linux-arm64';},'R3_PROFILE_BINDING'],
++ ['MuJoCo replaces xArm',(m:M)=>{m.profile='xarm6-jazzy-sim';},'R3_PROFILE_BINDING'],
++ ['checker replacement',(m:M)=>{m.checker.sourceCommit='e'.repeat(40);},'R3_CHECKER_TUPLE'],
++ ['subject replacement',(m:M)=>{m.subject.sourceCommit='e'.repeat(40);},'R3_SUBJECT_BINDING'],
++])('R3 public readback rejects %s after coherent inventory reseal',async(_name,mutate,reason)=>{
++ const f=await r3Fixture();try{await f.derive();mutate(f.m);await f.seal();expect((await (await r3api()).verifyR3Directory(f.root)).join('|')).toContain(reason);}finally{await f.cleanup();}
++});
++
++test('R3 doctor-only and fake summaries cannot establish a native scope',async()=>{
++ const f=await r3Fixture('mujoco-linux-amd64','full');try{
++  await f.write('inputs/native/doctor.json',{available:true,nativeReady:true,profileId:f.m.profile,passed:true});await f.derive();expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_SCOPE_INCOMPLETE');
++  await f.write('inputs/native/index.json',{schemaVersion:1,profile:f.m.profile,architecture:'amd64',subject:f.m.subject,records:{current:{directory:'current'}}});await f.write('inputs/native/current/manifest.json',{kind:'r2b-native-payload-cell',qualification:'passed',accepted:false,subject:f.m.subject,cases:[],artifacts:[]});await f.derive();expect(f.m.cases['DEP-MJ-01'].status).not.toBe('tested');expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_SCOPE_INCOMPLETE');
++ }finally{await f.cleanup();}
++});
++
++test('R3 sidecar binds exact immutable candidate hash, profile, ISA and scope without accepting the candidate',async()=>{
++ const f=await r3Fixture();try{await f.derive();const q=await r3api(),sidecar={schemaVersion:1,documentType:'r3-human-review',candidateSha256:sha(readFileSync(join(f.root,'qualification.json'),'utf8')),candidateId:f.m.candidateId,profile:f.m.profile,architecture:'amd64',scope:'prepared',decision:'accept',reviewer:'unit-test-only',reviewedAt:'2026-11-15T00:00:00.000Z'};expect(await q.verifyR3Sidecar(f.root,sidecar)).toEqual([]);expect(await q.verifyR3Sidecar(f.root,{...sidecar,candidateSha256:HEX})).toContain('R3_SIDECAR_BINDING');expect(await q.verifyR3Sidecar(f.root,{...sidecar,scope:'full'})).toContain('R3_SIDECAR_BINDING');expect(f.m.accepted).toBe(false);}finally{await f.cleanup();}
++});
++
++test.each(['engineering-amd64','xarm6-jazzy-sim','puma560-linuxcnc-sim'])('R3 prepared %s retains its own complete native case matrix and explicit verifier gaps',async profile=>{
++ const f=await r3Fixture(profile);try{await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);expect(f.m.capabilities.toolingLimitations.length).toBeGreaterThan(0);expect(f.m.blockedNativeCases.every((c:M)=>c.status==='not_run')).toBe(true);
++ if(profile==='puma560-linuxcnc-sim'){f.m.profile='xarm6-jazzy-sim';await f.seal();expect((await (await r3api()).verifyR3Directory(f.root)).join()).toContain('R3_PROFILE_BINDING');}
++ }finally{await f.cleanup();}
++});
++test('R3 motion cannot close contact, terminal excludes only GUI/package case, and caller mutations cannot reduce the matrix',()=>{
++ const motion=Q.tableR3('xarm6-jazzy-sim','motion'),contact=Q.tableR3('xarm6-jazzy-sim','contact');expect(motion.requiredCases).not.toContain('DEP-XARM-03');expect(motion.nativeCases).toContain('DEP-XARM-03');expect(contact.requiredCases).toContain('DEP-XARM-03');motion.requiredCases.length=0;expect(Q.tableR3('xarm6-jazzy-sim','motion').requiredCases).toHaveLength(4);
++ expect(Q.tableR3('puma560-linuxcnc-sim','terminal').requiredCases).toEqual(['DEP-PREP-01','DEP-CNC-01','DEP-CNC-02','ALG04','DEP-SEC-01']);expect(()=>Q.tableR3('puma560-linuxcnc-sim','contact')).toThrow('R3_SCOPE_UNSUPPORTED');
++});
++
++test('R3 offline CLI verifies prepared bytes and a separate sidecar without changing the candidate',async()=>{
++ const f=await r3Fixture(),other=mkdtempSync(join(tmpdir(),'r3-sidecar-'));try{
++  await f.derive();const path=join(f.root,'qualification.json'),before=readFileSync(path,'utf8');const run=(...args:string[])=>spawnSync(process.execPath,['scripts/verify-r3.mjs',f.root,...args],{encoding:'utf8',timeout:15000});
++  const r=run();expect(r.status,r.stderr).toBe(0);expect(JSON.parse(r.stdout)).toMatchObject({valid:true,accepted:false});
++  const sidecar=join(other,'review.json');writeFileSync(sidecar,JSON.stringify({schemaVersion:1,documentType:'r3-human-review',candidateSha256:sha(before),candidateId:f.m.candidateId,profile:f.m.profile,architecture:'amd64',scope:'full',decision:'accept',reviewer:'unit-only',reviewedAt:'2026-11-15T00:00:00Z'}));const bad=run('--sidecar',sidecar);expect(bad.status).toBe(1);expect(JSON.parse(bad.stdout).issues).toContain('R3_SIDECAR_BINDING');expect(readFileSync(path,'utf8')).toBe(before);
++ }finally{await f.cleanup();rmSync(other,{recursive:true,force:true});}
++});
++
++test('R3 missing native slots remain reproducible when the immutable candidate directory is copied',async()=>{
++ const f=await r3Fixture('engineering-amd64'),copy=mkdtempSync(join(tmpdir(),'r3-published-copy-'));try{
++  const {mkdir,cp}=await import('node:fs/promises');await mkdir(join(f.root,'inputs/native/engineering'));await f.write('inputs/native/index.json',{schemaVersion:1,profile:f.m.profile,architecture:'amd64',subject:f.m.subject,records:{engineering:{directory:'engineering'}}});await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
++  await cp(f.root,join(copy,'candidate'),{recursive:true});expect(await (await r3api()).verifyR3Directory(join(copy,'candidate'))).toEqual([]);expect(f.m.capabilities.observations.engineering).toHaveLength(7);
++ }finally{await f.cleanup();rmSync(copy,{recursive:true,force:true});}
++});
++
++test('R3 recorder observer closure does not force L00 optional native closure onto a portable-only subject',async()=>{
++ const f=await r3Fixture();try{
++  expect(f.m.subject.nativeClosureHash).toBeNull();f.m.identity.before.toolClosures.native=HEX;f.m.identity.after.toolClosures.native=HEX;await f.derive();expect(await (await r3api()).verifyR3Directory(f.root)).toEqual([]);
++ }finally{await f.cleanup();}
++});

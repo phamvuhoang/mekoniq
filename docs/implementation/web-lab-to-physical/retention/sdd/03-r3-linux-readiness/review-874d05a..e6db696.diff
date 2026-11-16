@@ -1,0 +1,1910 @@
+# Review package: 874d05aedfbf573496994fd73016f19ef19e6932..e6db696b2ac1266fdeede8c2a64521cd4064481a
+
+## Commits
+e6db696 feat: prepare canonical engineering Gazebo lifecycle
+
+## Files changed
+ docs/operations/engineering-native-navigation.md   |  58 ++++++
+ .../lab-runtime/src/v2/backends/gazebo-nav2.ts     |  29 +--
+ packages/lab-runtime/src/v2/sil/campaign.ts        |  33 +++-
+ packages/lab-runtime/src/v2/sil/cli.ts             |  39 +++-
+ .../lab-runtime/src/v2/sil/engineering-native.ts   | 135 +++++++++++++
+ .../src/v2/sil/native-handoff-documents.ts         |  17 +-
+ robotics/simulation/bridge/engineering_bag.py      |  53 +++++
+ robotics/simulation/bridge/engineering_launch.py   |  29 +++
+ robotics/simulation/bridge/engineering_profile.py  |  21 ++
+ robotics/simulation/bridge/engineering_session.py  | 215 +++++++++++++++++++++
+ robotics/simulation/bridge/engineering_worker.py   |  30 +++
+ robotics/simulation/bridge/native_profile.py       |  24 ++-
+ robotics/simulation/compiler/engineering_native.py | 114 +++++++++++
+ .../compiler-manifest.json                         |  91 +++++++++
+ .../engineering-navigation-v1/native-mapping.json  |  35 ++++
+ .../simulation/launch/engineering_world.launch.py  |  50 +++++
+ .../tests/test_engineering_native_parity.py        | 152 +++++++++++++++
+ .../simulation/tests/test_engineering_profile.py   |   8 +
+ scripts/lab-sil.mjs                                |  15 +-
+ scripts/native-sim/profile-report.mjs              |   1 +
+ scripts/native-sim/tool-identity.mjs               |   2 +-
+ .../engineering-native-evidence.test.ts            |  39 ++++
+ .../engineering-native-lifecycle.test.ts           |  46 +++++
+ .../engineering-profile-routing.test.ts            |   2 +-
+ 24 files changed, 1197 insertions(+), 41 deletions(-)
+
+## Diff
+diff --git a/docs/operations/engineering-native-navigation.md b/docs/operations/engineering-native-navigation.md
+new file mode 100644
+index 0000000..6dbb9de
+--- /dev/null
++++ b/docs/operations/engineering-native-navigation.md
+@@ -0,0 +1,58 @@
++# Canonical engineering Gazebo/Nav2 preparation (L02)
++
++Under ruling R85, this is an executable **prepared** FD01 AMR path for Ubuntu 24.04, ROS 2 Jazzy, Gazebo Harmonic, and `gz_ros2_control`. It has not run on an assigned native host. It is not a qualification, calibration, hardware commissioning, or a Lab hardware route. Candidate records remain `accepted:false` and `not_calibrated`.
++
++## Subject and mapping
++
++Use the unchanged L00 canonical input at `robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json`, its `navigation-scene.json`, and `physical-model-amr-1.json`. The project’s historical requested profile and portable scene engine identity are preserved. `compiler.engineering_native` writes a separate `engineering-gazebo-canonical-v1` mapping and compiler manifest. It never changes those inputs into a Gazebo scene by relabeling them. FD01 is the Source business scenario; the older `tests/fixtures/engineering/fd01.project.json` describes a different reference robot and is rejected by this mapping.
++
++The compiler preserves physical link/joint identities, SI inertials and colliders, wheel radius/separation, LiDAR parent frame and beam/range/rate model. The canonical world supplies obstacle heights and assumed friction. Gazebo consumes one ros2_control velocity writer per wheel. The launcher fills one verified controller-file placeholder, then starts robot_state_publisher, the Gazebo model, controller spawners, the fixed topic bridge, and the existing simulation navigation launch. Nav2 Twist output is stamped by the worker for the Jazzy diff_drive_controller input. Dynamic motor, current, voltage, contact, and friction calibration remain unverified.
++
++The committed `robotics/simulation/fixtures/engineering-navigation-v1/{compiler-manifest,native-mapping}.json` records reproducible static outputs. The native launcher rebuilds the mapping in a temporary directory and compares the complete manifest before starting processes. The TypeScript factory also checks the committed manifest, every file digest and canonical documents. A resealed but different artifact is refused.
++
++For L00 handoff, retain the original canonical document refs and portable engine lock; additionally attach the native manifest, native mapping, and all manifest outputs with source paths under `robotics/simulation/fixtures/engineering-navigation-v1/`. The document validator distinguishes a missing mapping, incomplete native artifact closure, and unresolved native environment profile. Mapping preparation alone never sets native readiness.
++
++## Host qualification prerequisites
++
++The shipped `engineering-amd64` and `engineering-arm64` locks deliberately retain `qualification:not_run`, `packages:null`, and `digests:null`. Only capture and update the architecture actually installed on an assigned host. Do not copy inventory from a container or another architecture.
++
++After clean installation on the assigned host, record `python3 -m bridge.native_profile --profile engineering-amd64` from `robotics/simulation`. The inspector reads installed dpkg versions, hashes every absolute plugin path in the lock’s `digests`, fingerprints `ros2`, `gz`, and distro Python, ROS prefixes and overlays, Python/library/plugin paths, and apt source files. A future qualified lock must bind these actual values through `packages`, `digests`, `runtimePin`, and `aptProvenance`. Preserve forbidden packages. Actual package repository Release/package provenance and the native-host provenance record must also meet L00’s native_apt handoff requirements; this local consistency inspection is not host authenticity.
++
++Required software includes the existing engineering required packages, the SQLite rosbag2 storage plugin, robot_state_publisher, rclpy/tf2_ros, the source navigation package, and the source worker/compiler dependencies. No invented package versions or plugin digests are supplied here. ROS uses its distro Python; portable tests use Python 3.11.
++
++## Prepared execution
++
++Commit Source changes, export a clean runtime, import/sync/check/typecheck Lab, and commit the Lab pin before recording a native case. Use a unique output directory, and preserve failed attempts. On the qualified native host:
++
++```sh
++node scripts/lab-sil.mjs doctor --backend gazebo_nav2 --environment-profile engineering-amd64 --json
++perl -e 'alarm 1800; exec @ARGV' node scripts/lab-sil.mjs run \
++  --scenario FD01 --seed 17 --repeat 3 --out "$native_evidence_dir" \
++  --backend-set engineering-rigid-v1 --environment-profile engineering-amd64 \
++  --engineering-project robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json
++node scripts/lab-sil.mjs verify --input "$native_evidence_dir"
++```
++
++The engineering repeats use seeds 17, 18, 19. These seeds drive Source scripted timing, not a claim of deterministic ROS/Gazebo physics. The native factory consumes the compiled bundle and server-selected engineering environment profile. No topic, action, executable, or launch option is accepted from a project.
++
++Run upstream/legacy smoke separately before these cases. Native nominal, obstacle/no-path, cancellation and worker-loss cases remain `not_run` here. Protocol tests exercise their command outcomes; they are not plant evidence. Use `--engineering-case obstacle`, `no-path`, `cancel`, or `worker-loss` with a unique output directory per case. The server fixes each case: a blocker on the first kitchen route, four barriers around the kitchen target, cancel after the first accepted goal, or abrupt loss of the owned worker. Negative cases require explicit attention, zero served/completed outcomes and no command replay. Native campaign evidence remains required before DEP-NAV-01–04/SEC-01 or G-NATIVE-AMR is proposed.
++
++## Ownership, time and evidence
++
++Each run owns a worker process group, a ROS domain lease in 101–200, a run-specific GZ partition and localhost-only ROS transport. It refuses a nonempty ROS graph and an existing worker state directory. A worker exit triggers cleanup of its owned group. Normal shutdown stops the owned launch, flushes the bag, and writes shutdown blockers. Source issues business commands and confirmations; Gazebo produces observations only. A lost acknowledgement stays unknown with its original durable command receipt. The worker is never restarted to continue the run.
++
++The world starts paused; startup enables simulation integration for controllers, TF, sensors and localization to initialize. Business dispatch waits for live prerequisites. `clockMapping` records provider nanoseconds, source logical tick (20 ms), and monotonic receipt time. A reset or stale clock latches failure; TF, scan and joint freshness checks refuse commands/results when observation quality is insufficient. The fixed-step portable runners are unchanged.
++
++`native-events.jsonl` contains normalized trajectory, contact, joint, LiDAR and clock observations; nonfinite LiDAR no-return values become null with an explicit policy. `native-commands.json` retains the durable Nav2 goal receipts. Source `journal.json`, `effects.json`, assertions and telemetry remain authoritative for business outcomes. Inventory, shutdown, event/command files and finalized rosbag copies have artifact hashes. A rosbag is recorded with simulation timestamps and an explicit topic allowlist. The recorder’s original files stay in `.native/raw-bag`; `rosbag2/` is a byte-verified finalized copy for retention/replay. After the deliberate worker-loss case, the parent uses a read-only SQLite backup and checks the message-content digest before retaining the recovered copy; it never treats missing recovery data as a pass.
++
++Offline verification rereads actual SQLite topic timestamps rather than accepting `metadata.yaml`. Every expected topic must contain messages; continuous clock/TF/odom/joints/scan/pose/contact topics must cover the run with no gap over 500 ms. Static TF and event-driven command/action/AMCL topics require presence. Missing/partial bags produce `not_run`. Full decoding/independent physical trajectory assertions on an assigned native host remain required for qualification; this portable verifier does not attest host authenticity.
++
++## API references used
++
++- [Jazzy gz_ros2_control](https://control.ros.org/jazzy/doc/gz_ros2_control/doc/index.html): Harmonic pairing, system plugin, controller manager and ROS namespace/remapping.
++- [Jazzy diff_drive_controller](https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html): TwistStamped input, wheel interfaces and timeout.
++- [Jazzy rosbag2 record implementation](https://github.com/ros2/rosbag2/blob/jazzy/ros2bag/ros2bag/verb/record.py): explicit topics, hidden topics, SQLite storage and simulation timestamps.
++- [Jazzy TF listener implementation](https://github.com/ros2/geometry2/blob/jazzy/tf2_ros_py/tf2_ros/transform_listener.py): TF topic remapping is on the node; the constructor has no `tf_topic` keyword.
++- [Jazzy Nav2 defaults](https://github.com/ros-navigation/navigation2/blob/jazzy/nav2_bringup/params/nav2_params.yaml): map/base/odom frames and navigation parameter structure.
++
++These are versioned upstream API references, not exact installed package/plugin locks.
+diff --git a/packages/lab-runtime/src/v2/backends/gazebo-nav2.ts b/packages/lab-runtime/src/v2/backends/gazebo-nav2.ts
+index b10f9b9..8949e4a 100644
+--- a/packages/lab-runtime/src/v2/backends/gazebo-nav2.ts
++++ b/packages/lab-runtime/src/v2/backends/gazebo-nav2.ts
+@@ -52,87 +52,88 @@ export interface GazeboBackend {
+  /** Model effects and receiver binding use only pinned fixture ids; observations arrive independently through onEvent. */
+  bindTransfer?(identity:{worldRevision:string;cupId:string;fixtureId:string;transferId:string;commandId:string;payloadHash:string;controlEpoch:number;robotId:string;slot:number}):Promise<JsonObject>;
+  setBlocker?(enabled:boolean):Promise<JsonObject>;
+  setCupPose?(effect:{worldRevision:string;fixtureId:string;positionM:[number,number,number]}):Promise<JsonObject>;
+  close():Promise<void>;
+ }
+ const SIM_ROOT=resolve(fileURLToPath(new URL('../../../../../robotics/simulation/',import.meta.url)));
+ /** Per-run ROS domain (1..100) and Gazebo partition from the run id: two runs on one host never share a graph (the worker keeps them if set). */
+ export function partitionEnv(runId:string){const n=parseInt(createHash('sha256').update(runId).digest('hex').slice(0,8),16);return {ROS_DOMAIN_ID:String(1+n%100),GZ_PARTITION:`lab-${runId}`};}
+ /** Fixed argv for the worker (shell:false): module, bundle, run id, namespaces, state dir, optional scenario fixture. No user string reaches it. */
+-export function workerArgv(world:CompiledWorld,runId:string,python='python3',scenarioFile?:string,simulationRoot=SIM_ROOT){
+- return {command:python,args:['-m','bridge.nav2_session','--bundle',world.outputDirectory,'--run-id',runId,'--robots',world.robots.map(r=>r.namespace).join(','),'--state-dir',join(world.outputDirectory,'.bridge'),...scenarioFile?['--scenario',scenarioFile]:[]],cwd:simulationRoot,
+-  env:{...process.env,PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId)}};
++export function workerArgv(world:CompiledWorld,runId:string,python='python3',scenarioFile?:string,simulationRoot=SIM_ROOT,engineeringProfile?:string,engineeringCase?:string){
++ return {command:python,args:['-m',engineeringProfile?'bridge.engineering_session':'bridge.nav2_session','--bundle',world.outputDirectory,'--run-id',runId,'--robots',world.robots.map(r=>r.namespace).join(','),'--state-dir',join(world.outputDirectory,'.bridge'),...scenarioFile?['--scenario',scenarioFile]:[],...engineeringProfile?['--profile',engineeringProfile,...engineeringCase?['--case',engineeringCase]:[]]:[]],cwd:simulationRoot,
++  env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId),...engineeringProfile?{ROS_DOMAIN_ID:String(100+Number(partitionEnv(runId).ROS_DOMAIN_ID)),ROS_LOCALHOST_ONLY:'1',GZ_IP:'127.0.0.1'}:{}}};
+ }
+ /** JSON-lines request/response over a child's stdio; one in-flight request at a time per id, bounded wait. */
+ export class StdioWorkerPort implements WorkerPort {
+  private pending=new Map<string,{resolve:(v:JsonObject)=>void;reject:(e:Error)=>void}>();private seq=0;private exited:Error|null=null;private listeners=new Set<(e:WorkerEvent)=>void>();
+- constructor(private child:ChildProcess,private timeoutMs=10000){
++ constructor(private child:ChildProcess,private timeoutMs=10000,private closeTimeoutMs=10000,private ownedGroup=false){
+   createInterface({input:child.stdout!}).on('line',line=>{let m:JsonObject;try{m=JSON.parse(line) as JsonObject;}catch{return;}
+    if(typeof m.event==='string'){for(const l of this.listeners)l({event:m.event,payload:(m.payload??{}) as JsonObject});return;}
+    const p=typeof m.id==='string'?this.pending.get(m.id):undefined;if(!p)return;this.pending.delete(String(m.id));
+    if(m.ok===true)p.resolve(m.result as JsonObject);else p.reject(new Error(`WORKER_ERROR:${String((m.error as JsonObject|undefined)?.code??'UNKNOWN')}`));});
+   const gone=(e:Error)=>{this.exited=e;for(const p of this.pending.values())p.reject(e);this.pending.clear();};
+-  child.once('exit',code=>gone(new Error(`WORKER_EXITED:${code}`)));
++  child.once('exit',code=>{gone(new Error(`WORKER_EXITED:${code}`));if(this.ownedGroup&&child.pid)try{process.kill(-child.pid,'SIGKILL');}catch{/* owned group is already gone */}});
+   child.stdin!.on('error',e=>gone(new Error(`WORKER_STDIN:${(e as NodeJS.ErrnoException).code??e.message}`))); // EPIPE after a worker death must never escape the event loop
+  }
+  request(op:WorkerOp,args:JsonObject,timeoutMs=this.timeoutMs):Promise<JsonObject>{
+   if(this.exited)return Promise.reject(this.exited);
+   const id=`r${++this.seq}`;
+   return new Promise((res,rej)=>{
+    const timer=setTimeout(()=>{this.pending.delete(id);rej(new Error('WORKER_TIMEOUT'));},timeoutMs);
+    this.pending.set(id,{resolve:v=>{clearTimeout(timer);res(v);},reject:e=>{clearTimeout(timer);rej(e);}});
+    this.child.stdin!.write(JSON.stringify({id,op,args})+'\n');
+   });
+  }
+  onEvent(listener:(e:WorkerEvent)=>void){this.listeners.add(listener);return ()=>{this.listeners.delete(listener);};}
+- async close(){if(this.exited)return;await this.request('close',{}).catch(()=>{});this.child.kill('SIGTERM');}
++ async close(){if(this.exited)return;await this.request('close',{},this.closeTimeoutMs).catch(()=>{});this.child.kill('SIGTERM');}
+ }
+-async function spawnWorker(world:CompiledWorld,runId:string,python:string,scenarioFile?:string,simulationRoot=SIM_ROOT):Promise<{port:WorkerPort|null;reasons:string[]}>{
+- const a=workerArgv(world,runId,python,scenarioFile,simulationRoot);
++async function spawnWorker(world:CompiledWorld,runId:string,python:string,scenarioFile?:string,simulationRoot=SIM_ROOT,engineeringProfile?:string,engineeringCase?:string):Promise<{port:WorkerPort|null;reasons:string[]}>{
++ const a=workerArgv(world,runId,python,scenarioFile,simulationRoot,engineeringProfile,engineeringCase);
+  return new Promise(res=>{
+   // stderr is inherited: rclpy/Nav2 logging never fills a pipe nobody drains (which would block the worker into WORKER_TIMEOUT)
+-  const child=spawn(a.command,a.args,{cwd:a.cwd,env:a.env,stdio:['pipe','pipe','inherit'],shell:false});
++  const child=spawn(a.command,a.args,{cwd:a.cwd,env:a.env,stdio:['pipe','pipe','inherit'],shell:false,detached:!!engineeringProfile});
+   child.once('error',e=>res({port:null,reasons:[(e as NodeJS.ErrnoException).code==='ENOENT'?'PYTHON_MISSING':`WORKER_SPAWN_FAILED:${(e as Error).message}`]}));
+-  child.once('spawn',()=>res({port:new StdioWorkerPort(child),reasons:[]}));
++  child.once('spawn',()=>res({port:new StdioWorkerPort(child,10000,engineeringProfile?90000:10000,!!engineeringProfile),reasons:[]}));
+  });
+ }
+ /**
+  * Start the backend for one run. `options.port` injects a worker transport (tests: a protocol double); otherwise the Python worker is spawned.
+  * Poll only the same worker during bounded startup; terminal failure remains unavailable, with no fallback.
+  */
+-export async function startGazeboBackend(world:CompiledWorld,runId:string,options:{simulationRoot?:string;port?:WorkerPort;python?:string;scenarioFile?:string;startupTimeoutMs?:number;startupPollMs?:number;environmentProfile?:string}={}):Promise<GazeboBackend>{
++export async function startGazeboBackend(world:CompiledWorld,runId:string,options:{simulationRoot?:string;port?:WorkerPort;python?:string;scenarioFile?:string;startupTimeoutMs?:number;startupPollMs?:number;environmentProfile?:string;engineering?:boolean;engineeringCase?:string}={}):Promise<GazeboBackend>{
++ if(options.engineering&&(!/^engineering-(amd64|arm64)$/.test(options.environmentProfile??'')||options.scenarioFile))throw Error('ENGINEERING_PROFILE_REQUIRED');
+  const simRoot=options.simulationRoot??SIM_ROOT;
+  let image:JsonObject|undefined;try{image=JSON.parse(await readFile(join(simRoot,'image.lock.json'),'utf8')) as JsonObject;}catch{image=undefined;}
+  let environment:JsonObject|undefined;
+  if(options.environmentProfile){
+   image=undefined;
+-  const p=spawnSync(options.python??'python3',['-m','bridge.native_profile','--profile',options.environmentProfile],{cwd:simRoot,env:{...process.env,PYTHONPATH:`${simRoot}:${resolve(simRoot,'../agent')}`},encoding:'utf8',timeout:30000});
++  const p=spawnSync(options.python??'python3',['-m','bridge.native_profile','--profile',options.environmentProfile],{cwd:simRoot,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simRoot}:${resolve(simRoot,'../agent')}`},encoding:'utf8',timeout:30000});
+   try{const inspected:unknown=JSON.parse(p.stdout);if(p.status!==0||!validNativeProfileReport(inspected,options.environmentProfile))throw new Error();environment=inspected as JsonObject;}catch{environment={id:options.environmentProfile,available:false,reasonCodes:['PROFILE_INVENTORY_UNREADABLE']};}
+  }
+  let port=options.port??null,reasons:string[]=[];
+  if(environment&&environment.available!==true){reasons=Array.isArray(environment.reasonCodes)?environment.reasonCodes.map(String):['PROFILE_UNAVAILABLE'];await port?.close();port=null;}
+- if(!port&&(!environment||environment.available===true)){const spawned=await spawnWorker(world,runId,options.python??'python3',options.scenarioFile,simRoot);port=spawned.port;reasons=spawned.reasons;}
++ if(!port&&(!environment||environment.available===true)){const spawned=await spawnWorker(world,runId,options.python??'python3',options.scenarioFile,simRoot,options.engineering?options.environmentProfile:undefined,options.engineeringCase);port=spawned.port;reasons=spawned.reasons;}
+  let capability:BackendCapability={backendId:'gazebo_nav2',available:false,step:false,version:GAZEBO_NAV2.version,reasons,evidence:'none',bootId:null,robots:[],...image?{image}:{},...environment?{environment}:{}};
+  if(port){
+   const timeoutMs=options.startupTimeoutMs??60_000,pollMs=options.startupPollMs??250;
+   if(!Number.isFinite(timeoutMs)||timeoutMs<0||!Number.isFinite(pollMs)||pollMs<=0)throw new Error('STARTUP_POLICY_INVALID');
+   const deadline=performance.now()+timeoutMs;
+   do{
+    let timer:ReturnType<typeof setTimeout>|undefined;
+    try{
+     // ROS health probes may exceed the normal command timeout; readiness owns this request's bounded budget.
+     const c=await Promise.race([port.request('capability',{},Math.max(1,deadline-performance.now())),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('STARTUP_TIMEOUT')),Math.max(1,deadline-performance.now()));})]);
+     capability={...capability,available:c.available===true,step:c.step===true,version:String(c.version??GAZEBO_NAV2.version),reasons:Array.isArray(c.reasons)?c.reasons.map(String):[],evidence:options.port?'protocol_double':String(c.evidence??'unknown'),bootId:typeof c.bootId==='string'?c.bootId:null,robots:Array.isArray(c.robots)?c.robots.map(String):[],...c.beverage&&typeof c.beverage==='object'&&!Array.isArray(c.beverage)?{beverage:structuredClone(c.beverage) as unknown as NonNullable<BackendCapability['beverage']>}:{}};
+    }catch(e){capability={...capability,reasons:[`WORKER_UNAVAILABLE:${(e as Error).message}`]};break;}
+    finally{if(timer)clearTimeout(timer);}
+-   if(capability.available||!capability.reasons.length||capability.reasons.some(r=>r!=='CLOCK_MISSING'&&!r.startsWith('NAV2_NOT_READY:'))||performance.now()>=deadline)break;
++   if(capability.available||!capability.reasons.length||capability.reasons.some(r=>r!=='CLOCK_MISSING'&&!r.startsWith('NAV2_NOT_READY:')&&!(options.engineering&&(/^(TF_MISSING|SCAN_FEEDBACK_STALE|JOINTS_FEEDBACK_STALE)/.test(r))))||performance.now()>=deadline)break;
+    await new Promise(r=>setTimeout(r,Math.min(pollMs,Math.max(0,deadline-performance.now()))));
+   }while(performance.now()<deadline);
+  }
+ 
+  const namespaceOf=(robotId:string)=>world.robots.find(r=>r.entityId===robotId)?.namespace;
+  const unavailable=(commandId:string|null):JsonObject=>({...commandId?{commandId}:{},status:'rejected',reason:'BACKEND_UNAVAILABLE'});
+  return {
+   world,runId,
+   async capability(){if(port&&capability.beverage){try{const c=await port.request('capability',{});if(c.beverage&&typeof c.beverage==='object'&&!Array.isArray(c.beverage))capability.beverage=structuredClone(c.beverage) as unknown as NonNullable<BackendCapability['beverage']>;}catch{capability.beverage={available:false,reasonCodes:['TRAY_WORKER_UNREACHABLE']};}}return structuredClone(capability);},
+   onEvent(listener){return port?.onEvent?.(e=>listener(e.event==='barrier'?{...e,payload:{...e.payload,participant:world.robots.find(r=>r.namespace===e.payload.participant)?.entityId??String(e.payload.participant)}}:e))??(()=>{});},
+diff --git a/packages/lab-runtime/src/v2/sil/campaign.ts b/packages/lab-runtime/src/v2/sil/campaign.ts
+index 0b01aa1..c851b24 100644
+--- a/packages/lab-runtime/src/v2/sil/campaign.ts
++++ b/packages/lab-runtime/src/v2/sil/campaign.ts
+@@ -1,10 +1,11 @@
++import {engineeringNativeAdmission,assessEngineeringEvidence,assessEngineeringFault,type EngineeringNativeFactory} from './engineering-native';
+ import {assessPhysicsObservations} from './physics-assessment';
+ import {runNativeSilScenario} from './native-campaign';
+ import type {NativeProviderFactory} from './native-lifecycle';
+ import {validateFaultSchedule} from '../fault-schedule';
+ // SIL scenario orchestrator (SIM-10): drives a registry scenario through the real source domain/journal/dispatcher with the gazebo_nav2
+ // backend. It is NOT a second business engine: orders, admission, arrival, confirmations and parking are source commands; this file only
+ // paces them by iteration, feeds worker telemetry/contacts into evidence and writes a hashed run bundle whose assertions separate business
+ // results (from the journal) from physics evidence (only with a real SIL worker, never a protocol double).
+ import {randomUUID} from 'node:crypto';
+ import {mkdir,writeFile} from 'node:fs/promises';
+@@ -27,47 +28,48 @@ import {createBarrierCoordinator} from '../backends/clock-barrier';
+ import {createFaultRegistry,scheduleFaults,WORKER_FAULTS,type FaultEntry} from '../backends/fault-schedule';
+ import {requiredBackends} from '../scenario-matrix';
+ import type {RobotManifest} from '../../../../robot-adapters/src/contract';
+ export const SIL_TICK_MS=20;
+ /** Backends this orchestrator can drive; a scenario needing more is refused before any effect (no fallback to a mock). */
+ const IMPLEMENTED=['gazebo_nav2'];
+ const FINAL=['completed','cancelled','failed'];
+ /** Iterations a link/sensor fault stays active (disconnect, reboot, sensor-drop): long enough for a poll to see it, short enough to resume. */
+ const FAULT_ITERATIONS=25;
+ export interface SilRunOptions {
+- nativeFactory?:NativeProviderFactory;
++ nativeFactory?:NativeProviderFactory;engineeringFactory?:EngineeringNativeFactory;
+  scenarioId:string;scenarioRevision:number;seed:number;project:unknown;sourceCommit:string;outDir:string;world:CompiledWorld;backendSetId:string;
+  maxIterations:number;paceMs:number;backendFactory(world:CompiledWorld,runId:string):Promise<GazeboBackend>;
+  scenarios?:ReadonlyMap<string,ScenarioDefinition>;catalog?:CapabilityCatalog;nowMs?:()=>number;
+  /** The scenario fixture's fault schedule; worker-scoped entries are the worker's (scene loop), orchestrator-scoped ones fire here. */
+  faults?:readonly FaultEntry[];barrierTimeoutMs?:number;
+ }
+ export interface SilAssertion {id:string;result:'pass'|'fail'|'not_run';reason?:string;detail?:string}
+ export interface SilRunManifest {
+  nativeFaultExpectation?:import('./native-fault-oracle').NativeFaultExpectation;schemaVersion:1;runId:string;sourceCommit:string;mode:'simulation';access:'simulated';backendSetId:string;backends:string[];
+  scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{inputHash:string;manifestHash:string;mapId:string;mapRevision:string};
+  seed:number;prng:typeof PRNG;clock:{iterationMs:number;source:string};evidence:string;backendCapability:BackendCapability;status:'completed'|'needs_attention'|'timeout';iterations:number;
+  businessDigest:string;hashAlgorithm:'sha256-canonical-json-v1';outputs:{path:string;sha256:string}[];limitations:string[];manifestHash?:string;
+ }
+ export interface SilRunResult {manifest:SilRunManifest;business:{served:string;missions:{completed:number;needsAttention:number;open:number}};assertions:SilAssertion[]}
+ interface Work {actor:string;tableId:string;quantity:number;atTick:number;sessionId:string;placed:boolean;lineId?:string;allocationId?:string;missionId?:string}
+ const UUID=/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,ISO=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+ const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
+ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
+  if(o.scenarioId==='BV01'){if(!o.nativeFactory)throw new Error('BACKEND_MISSING:linuxcnc_sim,coffee_io_sim:NATIVE_FACTORY_REQUIRED');return runNativeSilScenario(o,o.nativeFactory);}
+- const registry=o.scenarios??scenarioRegistry,catalog=o.catalog??defaultCatalog,nowMs=o.nowMs??Date.now;
++ const sourceEpoch=Date.now(),registry=o.scenarios??scenarioRegistry,catalog=o.catalog??defaultCatalog,nowMs=o.engineeringFactory?()=>sourceEpoch+o.engineeringFactory!.clock.tick*20:o.nowMs??Date.now;
+  const registered=registry.get(o.scenarioId);if(!registered)throw new Error('SCENARIO_UNSUPPORTED');
+  const scenario=structuredClone(registered);checkScenario(scenario);
+  if(scenario.revision!==o.scenarioRevision)throw new Error('SCENARIO_REVISION_MISMATCH');
+  const set=Object.hasOwn(catalog.sets,o.backendSetId)?catalog.sets[o.backendSetId]!:undefined;
+  if(!set||set.mode!=='simulation')throw new Error('BACKEND_SET_UNKNOWN');
+- if(set.scenarioIds)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');
++ if(set.scenarioIds){if(!o.engineeringFactory)throw new Error('ENGINEERING_LIFECYCLE_UNAVAILABLE');engineeringNativeAdmission(o.project,o.scenarioId,o.backendSetId,o.engineeringFactory.profile);if(o.world.inputHash!==o.engineeringFactory.world.inputHash)throw Error('ENGINEERING_BUNDLE_MISMATCH');}
++ else if(o.engineeringFactory)throw Error('ENGINEERING_BACKEND_SET_REQUIRED');
+  const required=requiredBackends(scenario,'simulation',o.backendSetId,catalog);
+  const missing=required.filter(b=>!set.backends.includes(b)||!IMPLEMENTED.includes(b));
+  if(missing.length)throw new Error(`BACKEND_MISSING:${missing.join(',')}`);
+  const valid=validateProjectV2(o.project);if(!valid.ok)throw new Error('INVALID_PROJECT');
+  const project=structuredClone(valid.value),roles=resolveRoles(scenario,project);
+  validateFaultSchedule(project.faultSchedule??[],project.entities,'simulation');
+  if(!Number.isSafeInteger(o.seed)||o.seed<0||o.seed>0xffffffff)throw new Error('INVALID_SEED');
+  const barrierTimeoutMs=o.barrierTimeoutMs??60_000;if(!Number.isSafeInteger(barrierTimeoutMs)||barrierTimeoutMs<=0)throw new Error('BARRIER_TIMEOUT_INVALID');
+  const runId=randomUUID();
+  // ---- faults: validated before any effect; worker-scoped entries are announced here and applied by the worker's scene loop ----
+@@ -79,21 +81,21 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
+  fault('reorder-observation','entity',t=>pendingReorder.add(String(t)));
+  fault('sensor-drop','entity',t=>sensorDrop.set(String(t),FAULT_ITERATIONS));
+  fault('sensor-stale','entity',t=>{const last=lastSample.get(String(t));if(last){const r=ingest.accept(last);ingestLog[r.status]++;}});
+  fault('disconnect','run',()=>{link.downUntil=iteration+FAULT_ITERATIONS;});
+  fault('reboot','run',()=>{link.downUntil=iteration+FAULT_ITERATIONS;link.dropEventsUntil=iteration+FAULT_ITERATIONS;});
+  const isWorkerFault=(f:FaultEntry)=>(WORKER_FAULTS as readonly string[]).includes(f.faultId);
+  const schedule=scheduleFaults((o.faults??[]).filter(f=>!isWorkerFault(f)),faultRegistry);
+  if(schedule.issues.length)throw new Error(`FAULT_SCHEDULE_INVALID:${schedule.issues.map(i=>`${i.index}:${i.reasonCodes.join('|')}`).join(';')}`);
+  for(const f of (o.faults??[]).filter(isWorkerFault))faultLog.push({faultId:f.faultId,entityId:f.entityId??null,atTick:f.atTick,scope:'worker',applied:'deferred_to_worker'});
+  // ---- backend first: an unavailable simulator is refused before the journal exists (never an attempt, never a mock) ----
+- const backend=await o.backendFactory(o.world,runId),capability=await backend.capability();
++ const backend=await (o.engineeringFactory?o.engineeringFactory.open(runId):o.backendFactory(o.world,runId)),capability=await backend.capability();
+  if(!capability.available){await backend.close().catch(()=>{});throw new Error(`BACKEND_UNAVAILABLE:${capability.reasons.join(',')||'NO_REASON'}`);}
+  const linked:GazeboBackend={...backend,execute:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.execute(r,c),query:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.query(r,c),
+   cancel:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.cancel(r,c),stop:(r,c)=>link.downUntil>=iteration?Promise.reject(new Error('LINK_DOWN')):backend.stop(r,c)};
+  await mkdir(join(o.outDir,'source'),{recursive:true,mode:0o700});
+  const source=await SourceSession.open(join(o.outDir,'source'),runId,nowMs,{project,navigation:{mapId:o.world.mapId,mapRevision:o.world.mapRevision,bindings:o.world.bindings},robots:roles.robots.map(r=>({...r,trays:1})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},true);
+  const draws=new Map<string,ReturnType<typeof actorStream>>(),draw=(actor:string,range:readonly [number,number])=>{const s=draws.get(actor)??actorStream(o.seed,actor);draws.set(actor,s);return s.int(range[0],range[1]);};
+  const workload:Work[]=scenario.orders.map((x,i)=>({actor:x.actor,tableId:roles.tables[x.table]!,quantity:x.quantity,atTick:draw(x.actor,x.atTick),sessionId:`sil-session-${i+1}`,placed:false}));
+  for(const r of roles.robots)manifests.set(r.id,{id:r.id,adapter:'simulator',protocolVersion:'1',firmware:`${GAZEBO_NAV2.id}@${GAZEBO_NAV2.version}`,capabilities:['delivery'],mapId:o.world.mapId,mapRevision:o.world.mapRevision,offlineExecution:true,maxLoadMinor:'10000',trays:1,validation:'simulated'});
+  const adapters=roles.robots.map(r=>new SimulatedNavigationAdapter(linked,manifests.get(r.id)!,nowMs));
+  const observations:RobotEvent[]=[];for(const a of adapters)a.observe(e=>observations.push(e));
+@@ -176,70 +178,85 @@ export async function runSilScenario(o:SilRunOptions):Promise<SilRunResult>{
+   }
+  };
+  const missionsDone=async()=>{
+   if(workload.some(w=>!w.placed||!w.missionId))return false;
+   for(const w of workload)if((await source.read('mission',w.missionId!)).state.status!=='completed')return false;
+   if(!scenario.park)return true;
+   for(const r of roles.robots){const s=(await source.read('robot',r.id)).state;if(s.missionId||s.availability!=='idle'||s.position!==r.parkingId)return false;}
+   return true;
+  };
+  try{
+-  for(iteration=0;iteration<o.maxIterations;iteration++){
++  const wallDeadline=performance.now()+Math.max(1000,o.maxIterations*20);
++  for(iteration=0;iteration<o.maxIterations;iteration=o.engineeringFactory?iteration:iteration+1){
++   if(o.engineeringFactory){
++    const clock=o.engineeringFactory.clock;
++    while(clock.tick<=iteration&&!clock.failure&&performance.now()<wallDeadline){await sleep(20);if(clock.mapping.length)try{clock.assertFresh();}catch{/* latched below */}}
++    if(clock.failure||performance.now()>=wallDeadline){attention.push({reason:clock.failure??'NATIVE_WALL_DEADLINE',iteration});status='needs_attention';break;}
++    iteration=clock.tick;
++   }
+    if(!suspended){
+     try{
+      for(const w of workload)if(!w.placed&&w.atTick<=iteration)await placeOrder(w);
+      if(scenario.batch&&workload.length&&workload.every(w=>w.placed&&!w.missionId)){const missionId=String((await must('Mission.Create',{allocationIds:workload.map(w=>w.allocationId!)})).value.missionId);for(const w of workload)w.missionId=missionId;}
+      for(const [key,x] of [...confirmations])if(x.due<=iteration&&scenario.confirm.mode==='scripted')await confirmStop(key);
+     }catch(e){if((e as Error).message!=='SCRIPTED_INPUT_REJECTED')throw e;attention.push({reason:`SCRIPTED_INPUT_REJECTED:${(e as {code:string}).code}`,iteration});suspended=true;}
+    }
+    for(const f of schedule.due(iteration)){const r=faultRegistry.resolve(f.faultId,f.payload);if(r.ok)r.injector.inject(f.entityId??null,f.payload);faultLog.push({faultId:f.faultId,entityId:f.entityId??null,atTick:f.atTick,iteration,scope:'orchestrator',applied:r.ok});}
+    for(const a of adapters)await dispatchRobotEffects(source.store,source.scope,a,nowMs());
+    await drain();
+    for(const a of adapters)await a.poll();
+    await drain();await scanArrivals();
+    barriers.tick();
+    for(const b of barriers.attention().slice(barrierAttention))attention.push({reason:`BARRIER_TIMEOUT:${b.barrierId}:${b.missing.join(',')}`,iteration});
+    barrierAttention=barriers.attention().length;
+    if(attention.length){status='needs_attention';break;}
+    if(await missionsDone()){status='completed';break;}
+    if(o.paceMs>0)await sleep(o.paceMs);else await new Promise<void>(resolve=>setImmediate(resolve));
+   }
+   if(status==='timeout'&&[...confirmations.values()].some(x=>x.barrier==='pending')){status='needs_attention';for(const b of barriers.records().filter(b=>b.status==='pending'))attention.push({reason:`BARRIER_INCOMPLETE:${b.barrierId}:${b.missing.join(',')}`,iteration});}
++  const engineeringEvidence=o.engineeringFactory?await o.engineeringFactory.finish():null;
++  const engineeringAssessment=engineeringEvidence?assessEngineeringEvidence(engineeringEvidence):null;
+   // ---- evidence ----
+   const journal=(await source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))}));
+   const effects=(await source.effects()).filter(e=>String(e.type).startsWith('robot.')).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject}));
+   const types=journal.flatMap(j=>j.events.map(e=>e.type));
+   let served=0n;for(const w of workload)if(w.lineId)served+=BigInt(String((await source.read('fulfillment',w.lineId)).state.served??'0'));
+   const missions=(await source.store.snapshots(source.scope)).filter(s=>s.ref.kind==='mission').map(s=>String(s.state.status));
+   const business={served:String(served),missions:{completed:missions.filter(s=>s==='completed').length,needsAttention:missions.filter(s=>s==='needs_attention').length,open:missions.filter(s=>!FINAL.includes(s)&&s!=='needs_attention').length}};
+   const physics=capability.evidence==='sil'&&capability.available;
+   const physicsAssessment=assessPhysicsObservations({robots:roles.robots.map(r=>r.id),contacts,liveness:Object.fromEntries(liveness),contactGaps:[...contactGaps],poseGaps:[...poseGaps],separation});
+   const expected=workload.reduce((n,w)=>n+w.quantity,0);
+   const arrivals=types.filter(t=>t==='MissionArrived').length,observedCompleted=journal.flatMap(j=>j.events).filter(e=>e.type==='RobotCommandObserved'&&e.state.status==='completed').length;
+   const lastMission=[...journal.flatMap(j=>j.events)].reverse().find(e=>e.type==='MissionCreated');
+   const standby=lastMission&&((lastMission.state.stops as JsonObject[])??[]).every(s=>s.action==='standby'&&roles.robots.some(r=>r.parkingId===s.targetId));
+   const assertions:SilAssertion[]=[
++   ...engineeringAssessment?[{id:'FD01.native-evidence',result:engineeringAssessment.result,reason:engineeringAssessment.blockers.join(',')}]:[],
+    {id:`${scenario.id}.served-after-handoff`,...served===BigInt(expected)&&expected>0&&types.indexOf('CargoLoaded')<types.indexOf('DeliveryHandedOff')&&types.includes('DeliveryHandedOff')?{result:'pass',detail:`served ${served}/${expected} after CargoLoaded`}:{result:'fail',reason:'SERVED_MISMATCH',detail:`served ${served}/${expected}`}},
+    {id:`${scenario.id}.arrival-from-observation`,...arrivals>0&&arrivals===observedCompleted?{result:'pass',detail:`${arrivals} arrivals from ${observedCompleted} observed completions`}:{result:'fail',reason:'ARRIVAL_WITHOUT_OBSERVATION',detail:`${arrivals} arrivals, ${observedCompleted} observed completions`}},
+    ...scenario.park?[{id:`${scenario.id}.parked-not-charging`,...status==='completed'&&standby?{result:'pass' as const,detail:'last mission is a standby at the robot parking point'}:{result:'fail' as const,reason:'NOT_PARKED'}}]:[],
+    {id:'SIM.progress-or-reason',...status==='completed'?{result:'pass',detail:`completed in ${iteration+1} iterations`}:status==='needs_attention'?{result:'pass',detail:`explicit attention: ${attention.map(a=>a.reason).join(',')}`}:{result:'fail',reason:'NO_PROGRESS:ITERATION_LIMIT',detail:`${o.maxIterations} iterations without completion or an explicit reason`}},
+    ...physicsAssessment.map(a=>physics?a:{id:a.id,result:'not_run' as const,reason:a.reason==='SINGLE_ROBOT'?'SINGLE_ROBOT':'PHYSICS_EVIDENCE_MISSING',detail:`backend evidence ${capability.evidence}`}),
+   ];
++  if(o.engineeringFactory&&['no-path','cancel','worker-loss'].includes(o.engineeringFactory.nativeCase)){
++   for(let i=assertions.length-1;i>=0;i--)if(/\.(served-after-handoff|arrival-from-observation|parked-not-charging)$/.test(assertions[i]!.id))assertions.splice(i,1);
++   assertions.push({id:'FD01.native-fault',...assessEngineeringFault({nativeCase:o.engineeringFactory.nativeCase,fault:o.engineeringFactory.fault,status,served:business.served,effects,observedCompleted})});
++  }
++  if(o.engineeringFactory?.nativeCase==='obstacle')assertions.push({id:'FD01.native-fault',result:o.engineeringFactory.fault.status==='applied'?'pass':'not_run',reason:o.engineeringFactory.fault.status});
+   // Canonical business form: runtime UUIDs become logical ids, wall-clock stamps (keys *At/*AtMs, ISO strings) are dropped; causal order, ids, quantities and statuses stay.
+   const canonical=(v:unknown):unknown=>{const ids=new Map<string,string>();const norm=(x:unknown):unknown=>typeof x==='string'?(ISO.test(x)?'<time>':x.replace(UUID,m=>{const k=m.toLowerCase();if(!ids.has(k))ids.set(k,`uuid#${ids.size+1}`);return ids.get(k)!;})):Array.isArray(x)?x.map(norm):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).filter(([k])=>k!=='at'&&!/At(Ms)?$/.test(k)).map(([k,y])=>[k,norm(y)])):x;return norm(v);};
+   const businessDigest=hashJson(canonical({events:journal.map(j=>j.events),outcome:{status,served:business.served},effects:effects.map(e=>({type:e.type,status:e.status,attempts:e.attempts}))}));
+-  const files:Record<string,string>={'journal.json':JSON.stringify(journal),'effects.json':JSON.stringify(effects),
++  const files:Record<string,string>={...engineeringEvidence?{'engineering-native-evidence.json':JSON.stringify({...engineeringEvidence,...engineeringAssessment,nativeCase:o.engineeringFactory!.nativeCase,fault:o.engineeringFactory!.fault})}:{},'journal.json':JSON.stringify(journal),'effects.json':JSON.stringify(effects),
+    'telemetry.json':JSON.stringify({...recorder.report(),source:'gazebo_nav2 worker events',ingest:ingestLog,sensorReports:poseSensorReports}),
+    'contacts.json':JSON.stringify({available:physics,...physics?{}:{reason:'PHYSICS_EVIDENCE_MISSING'},evidence:capability.evidence,physicsAssessment,contacts,sensorReports,coverage:{contactGaps:[...contactGaps].sort(),poseGaps:[...poseGaps].sort()},liveness:Object.fromEntries(liveness),separation:{samples:separation.samples,min:separation.min}}),
+    'barriers.json':JSON.stringify(barriers.records()),'faults.json':JSON.stringify(faultLog),'assertions.json':JSON.stringify(assertions)};
+   for(const [name,text] of Object.entries(files))await writeFile(join(o.outDir,name),text);
+   const manifest:SilRunManifest={schemaVersion:1,runId,sourceCommit:o.sourceCommit,mode:'simulation',access:'simulated',backendSetId:o.backendSetId,backends:required,
+    scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},
+-   world:{inputHash:o.world.inputHash,manifestHash:o.world.manifestHash,mapId:o.world.mapId,mapRevision:o.world.mapRevision},seed:o.seed,prng:{...PRNG},clock:{iterationMs:SIL_TICK_MS,source:'orchestrator iteration; the worker runs on its own /clock'},
++   world:{inputHash:o.world.inputHash,manifestHash:o.world.manifestHash,mapId:o.world.mapId,mapRevision:o.world.mapRevision},seed:o.seed,prng:{...PRNG},clock:{iterationMs:SIL_TICK_MS,source:o.engineeringFactory?'provider /clock mapped to source tick; receipt monotonic watchdog':'orchestrator iteration; the worker runs on its own /clock'},
+    evidence:capability.evidence,backendCapability:capability,status,iterations:iteration+1,businessDigest,hashAlgorithm:'sha256-canonical-json-v1',
+-   outputs:Object.entries(files).map(([path,text])=>({path,sha256:createHash('sha256').update(text).digest('hex')})),
++   outputs:[...Object.entries(files).map(([path,text])=>({path,sha256:createHash('sha256').update(text).digest('hex')})),...engineeringEvidence?.artifacts??[]],
+    limitations:['Business results come from the source journal; physics rows need a real SIL worker (evidence sil) and stay not_run otherwise.','Mock-only scenario obstacles are ignored in SIL; scene actors/blockers come from the scenario fixture through the compiled world.',...physics?[]:[`Backend evidence is ${capability.evidence}: no plant telemetry, no contacts, no separation.`]]};
+   manifest.manifestHash=hashJson(manifest);
+   await writeFile(join(o.outDir,'run-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+   return {manifest,business,assertions};
+  }finally{stopEvents();await backend.close().catch(()=>{});await source.close();}
+ }
+diff --git a/packages/lab-runtime/src/v2/sil/cli.ts b/packages/lab-runtime/src/v2/sil/cli.ts
+index 0efeaf5..d3ed5d5 100644
+--- a/packages/lab-runtime/src/v2/sil/cli.ts
++++ b/packages/lab-runtime/src/v2/sil/cli.ts
+@@ -1,52 +1,73 @@
++import {engineeringNativeProviderFactory,assessEngineeringEvidence,readEngineeringCompiledWorld,assessEngineeringFault} from './engineering-native';
+ import {nativeProviderFactory,doctorNativeArm,type NativeServerConfig} from './native-providers';
+ // tsx entry used by scripts/lab-sil.mjs: `preflight` (scenario/backend-set admission without effects) and `run` (one SIL run over the real
+ // worker). Arguments are a fixed schema; nothing here accepts a topic, endpoint or shell string.
+ import {readFile} from 'node:fs/promises';
+-import {resolve} from 'node:path';
++import {resolve,join} from 'node:path';
++import {execFile} from 'node:child_process';
++import {promisify} from 'node:util';
+ import {defaultCatalog} from '../capabilities';
+ import {scenarioRegistry} from '../scenario-registry';
+ import {resolveBackends} from '../scenario-matrix';
+ import type {FaultEntry} from '../backends/fault-schedule';
+ import {readCompiledWorld,startGazeboBackend} from '../backends/gazebo-nav2';
+ import {runSilScenario} from './campaign';
+ const FIXTURE:Record<string,{project:string;scenario:string|null}>={BV01:{project:'sil/bv01.json',scenario:'sil/bv01.json'},FD01:{project:'restaurant-v2.json',scenario:null},FD02:{project:'restaurant-v2.json',scenario:null},FD03:{project:'restaurant-v2.json',scenario:'scenarios/fd03-crossing.json'},
+  FD04:{project:'restaurant-v2.json',scenario:'scenarios/fd04-blocked.json'},FD07:{project:'corridor-v2.json',scenario:'scenarios/fd07-corridor.json'}};
+ // FD08 (scenarios/fd08-localization.json) has no runner scenario in the registry yet: its SIL faults are exercised by the scene-loop/adapter tests only.
+ function args(argv:string[]){const o:Record<string,string>={};for(let i=0;i<argv.length;i++){const a=argv[i]!;if(!a.startsWith('--')||argv[i+1]===undefined||argv[i+1]!.startsWith('--'))throw new Error(`USAGE:${a}`);o[a.slice(2)]=argv[++i]!;}return o;}
+ export function preflight(scenarioId:string,backendSetId:string){
+  const scenario=scenarioRegistry.get(scenarioId);
+  if(!scenario)return {ok:false,reasons:['SCENARIO_UNSUPPORTED'],required:[] as string[]};
+  const set=Object.hasOwn(defaultCatalog.sets,backendSetId)?defaultCatalog.sets[backendSetId]!:undefined;
+  if(!set||set.mode!=='simulation')return {ok:false,reasons:['BACKEND_SET_UNKNOWN'],required:[] as string[]};
+  const resolution=resolveBackends(scenario,'simulation',backendSetId,defaultCatalog);
+  if(!resolution.ok)return {ok:false,reasons:resolution.reasonCodes,required:[] as string[]};
+- // engineering sets have no SIL lifecycle yet: refuse explicitly (after listing any missing providers) rather than start the legacy plant
++ // Only canonical engineering FD01 has a separate executable lifecycle.
+  const required=resolution.required;
+  const missing=required.filter(b=>!set.backends.includes(b)||!['gazebo_nav2','coffee_io_sim','linuxcnc_sim'].includes(b));
+- const fixture=FIXTURE[scenarioId]??null;
++ const engineeringFd01=backendSetId==='engineering-rigid-v1'&&scenarioId==='FD01';
++ const fixture=engineeringFd01?null:FIXTURE[scenarioId]??null;
+  if(scenario.coffee&&[...set.backends].sort().join()!==[...required].sort().join())return {ok:false,reasons:['BACKEND_SET_EXACT_MISMATCH'],required,scenarioRevision:scenario.revision,fixture};
+- const engineering=!!set.scenarioIds;
+- return {ok:!missing.length&&!!fixture&&!engineering,reasons:[...missing.length?[`BACKEND_MISSING:${missing.join(',')}`]:[],...fixture?[]:['SIL_FIXTURE_MISSING'],...engineering?['ENGINEERING_LIFECYCLE_UNAVAILABLE']:[]],required,scenarioRevision:scenario.revision,fixture};
++ const engineering=!!set.scenarioIds&&!engineeringFd01;
++ return {ok:!missing.length&&(!!fixture||engineeringFd01)&&!engineering,reasons:[...missing.length?[`BACKEND_MISSING:${missing.join(',')}`]:[],...fixture||engineeringFd01?[]:['SIL_FIXTURE_MISSING'],...engineering?['ENGINEERING_LIFECYCLE_UNAVAILABLE']:[]],required,scenarioRevision:scenario.revision,fixture};
+ }
+ export async function runCli(argv:string[]){
+  const [command,...rest]=argv,o=args(rest);
+  if(command==='doctor-arm'){if(!o['native-config'])throw new Error('NATIVE_SERVER_CONFIG_REQUIRED');const result=await doctorNativeArm(JSON.parse(await readFile(resolve(o['native-config']),'utf8')) as NativeServerConfig);console.log(JSON.stringify(result));process.exit(result.prerequisitesMet?0:2);}
+  if(command==='preflight'){const r=preflight(String(o.scenario),String(o['backend-set']??'simulation-default'));console.log(JSON.stringify(r));process.exit(r.ok?0:2);}
++ if(command==='verify-engineering'){
++  const directory=resolve(o.input!),evidence=JSON.parse(await readFile(join(directory,'engineering-native-evidence.json'),'utf8'));
++  await readEngineeringCompiledWorld(join(directory,'bundle'));
++  const replay=await promisify(execFile)(o.python??'python3',['-m','bridge.engineering_bag','--input',join(directory,'rosbag2')],{cwd:resolve('robotics/simulation'),env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:30000});
++  if(JSON.stringify(JSON.parse(replay.stdout))!==JSON.stringify(evidence.bag)){const {isDeepStrictEqual}=await import('node:util');if(!isDeepStrictEqual(JSON.parse(replay.stdout),evidence.bag))throw Error('BAG_REPLAY_MISMATCH');}
++  if(['no-path','cancel','worker-loss'].includes(evidence.nativeCase)){
++   const journal=JSON.parse(await readFile(join(directory,'journal.json'),'utf8')) as {events:{type:string;state:{status?:string}}[]}[],effects=JSON.parse(await readFile(join(directory,'effects.json'),'utf8')),manifest=JSON.parse(await readFile(join(directory,'run-manifest.json'),'utf8'));
++   const events=journal.flatMap(row=>row.events),fault=assessEngineeringFault({nativeCase:evidence.nativeCase,fault:evidence.fault,status:manifest.status,served:events.some(e=>e.type==='DeliveryHandedOff')?'1':'0',effects,observedCompleted:events.filter(e=>e.type==='RobotCommandObserved'&&e.state.status==='completed').length});
++   if(fault.result!=='pass')throw Error(fault.reason);
++   const observations=(await readFile(join(directory,'native-events.jsonl'),'utf8')).trim().split('\n').map(line=>JSON.parse(line));
++   if(evidence.nativeCase!=='cancel'&&!observations.some(e=>e.event==='native-fault'&&e.payload.case===evidence.nativeCase&&e.payload.status==='applied'))throw Error('FAULT_NOT_OBSERVED');
++   if(evidence.nativeCase==='cancel'&&!events.some(e=>e.type==='RobotCommandObserved'&&e.state.status==='cancelled'))throw Error('CANCEL_NOT_OBSERVED');
++  }
++  const result=assessEngineeringEvidence({...evidence,bag:JSON.parse(replay.stdout)});console.log(JSON.stringify(result));process.exit(result.result==='pass'?0:2);
++ }
+  if(command!=='run')throw new Error('USAGE:command');
+  const pre=preflight(String(o.scenario),String(o['backend-set']??'simulation-default'));if(!pre.ok)throw new Error(pre.reasons.join(','));
+  for(const k of ['fixture','bundle','out','seed','source-commit'])if(o[k]===undefined)throw new Error(`USAGE:--${k}`);
+- const fixture=JSON.parse(await readFile(resolve(o.fixture!),'utf8')) as {project:unknown};
+- const world=await readCompiledWorld(resolve(o.bundle!));
++ const engineering=o['backend-set']==='engineering-rigid-v1';
++ const engineeringFactory=engineering?await engineeringNativeProviderFactory({bundleDirectory:resolve(o.bundle!),environmentProfile:o['environment-profile']??'',python:o.python,simulationRoot:resolve('robotics/simulation'),nativeCase:o['engineering-case']}):undefined;
++ const fixture=engineering?{project:JSON.parse(await readFile(join(resolve(o.bundle!),'runtime-project.json'),'utf8'))}:JSON.parse(await readFile(resolve(o.fixture!),'utf8')) as {project:unknown};
++ const world=engineeringFactory?.world??await readCompiledWorld(resolve(o.bundle!));
+  // the scenario fixture (actors, blockers, faults) goes to the worker's scene loop; its fault schedule also drives the orchestrator-scoped faults
+  const scenarioFile=o.scenario_file??(pre.fixture?.scenario?(pre.fixture.scenario===pre.fixture.project?resolve(o.fixture!):resolve(o.fixture!,'..',pre.fixture.scenario)):undefined);
+  const faults=scenarioFile?((JSON.parse(await readFile(scenarioFile,'utf8')) as {faults?:FaultEntry[]}).faults??[]):[];
+  const nativeConfig=o['native-config']?JSON.parse(await readFile(resolve(o['native-config']),'utf8')) as NativeServerConfig:null;
+  const combined=pre.required.includes('linuxcnc_sim')&&pre.required.includes('coffee_io_sim');
+  if(combined&&!nativeConfig)throw new Error('NATIVE_SERVER_CONFIG_REQUIRED');
+  const nativeFactory=combined&&nativeConfig?await nativeProviderFactory({...nativeConfig,environmentProfile:o['environment-profile']??nativeConfig.environmentProfile,bundleDirectory:world.outputDirectory}):undefined;
+- const result=await runSilScenario({nativeFactory,scenarioId:String(o.scenario),scenarioRevision:pre.scenarioRevision!,seed:Number(o.seed),project:fixture.project,sourceCommit:String(o['source-commit']),outDir:resolve(o.out!),world,backendSetId:String(o['backend-set']??'simulation-default'),
++ const result=await runSilScenario({nativeFactory,engineeringFactory,scenarioId:String(o.scenario),scenarioRevision:pre.scenarioRevision!,seed:Number(o.seed),project:fixture.project,sourceCommit:String(o['source-commit']),outDir:resolve(o.out!),world,backendSetId:String(o['backend-set']??'simulation-default'),
+   maxIterations:Number(o['max-iterations']??90000),paceMs:Number(o['pace-ms']??20),faults,backendFactory:(w,runId)=>startGazeboBackend(w,runId,{python:o.python,environmentProfile:o['environment-profile'],...scenarioFile?{scenarioFile}:{}})});
+  console.log(JSON.stringify({runId:result.manifest.runId,status:result.manifest.status,evidence:result.manifest.evidence,assertions:result.assertions}));
+- process.exit(result.assertions.some(a=>a.result==='fail')?1:result.manifest.status==='completed'||result.manifest.status==='needs_attention'?0:1);
++ process.exit(result.assertions.some(a=>a.result==='fail')?1:engineering&&result.assertions.some(a=>a.id==='FD01.native-evidence'&&a.result!=='pass')?2:result.manifest.status==='completed'||result.manifest.status==='needs_attention'?0:1);
+ }
+ if(process.argv[1]&&/sil[\\/]cli\.ts$/.test(process.argv[1]))runCli(process.argv.slice(2)).catch(e=>{console.error(e instanceof Error?e.message:String(e));process.exit(2);});
+diff --git a/packages/lab-runtime/src/v2/sil/engineering-native.ts b/packages/lab-runtime/src/v2/sil/engineering-native.ts
+new file mode 100644
+index 0000000..59f6bce
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/sil/engineering-native.ts
+@@ -0,0 +1,135 @@
++// Canonical AMR native path. No legacy fixture or coffee/arm provider participates.
++import {createHash} from 'node:crypto';
++import {readFile,lstat,readdir,writeFile} from 'node:fs/promises';
++import {join,resolve,sep} from 'node:path';
++import {execFile} from 'node:child_process';
++import {promisify} from 'node:util';
++import {isDeepStrictEqual as same} from 'node:util';
++import {hashJson} from '../hash';
++import {readCompiledWorld,startGazeboBackend,type CompiledWorld,type GazeboBackend} from '../backends/gazebo-nav2';
++import canonicalManifest from '../../../../../robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json';
++import {validNativeProfileReport} from '../../../../../scripts/native-sim/profile-report.mjs';
++import canonicalProject from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json';
++import canonicalScene from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene.json';
++import canonicalPhysical from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json';
++export const ENGINEERING_TOPICS=['/clock','/amr_1/tf','/amr_1/tf_static','/amr_1/odom','/amr_1/joint_states','/amr_1/scan','/amr_1/cmd_vel','/amr_1/amcl_pose','/model/amr_1/pose','/model/amr_1/contacts','/amr_1/navigate_to_pose/_action/status'];
++export interface ClockMapping {providerSimNs:string;sourceTick:number;receiveMonotonicNs:string}
++export class EngineeringClock {
++ mapping:ClockMapping[]=[];tick=0;failure:string|null=null;private origin:bigint|null=null;private last:bigint|null=null;private receipt:bigint|null=null;
++ observe(value:string,now:bigint){
++  if(this.failure)throw Error(this.failure);
++  if(!/^\d+$/.test(value)||now<0n){this.failure='CLOCK_INVALID';throw Error(this.failure);}
++  const ns=BigInt(value);if(this.last!==null&&(ns<this.last||now<this.receipt!)){this.failure='CLOCK_RESET';throw Error(this.failure);}
++  this.origin??=ns;this.tick=Number((ns-this.origin)/20_000_000n);
++  if(ns!==this.last){this.receipt=now;this.mapping.push({providerSimNs:value,sourceTick:this.tick,receiveMonotonicNs:String(now)});}
++  this.last=ns;
++ }
++ assertFresh(now=process.hrtime.bigint()){
++  if(!this.failure&&(this.receipt===null||now-this.receipt>500_000_000n))this.failure='FEEDBACK_STALE';
++  if(this.failure)throw Error(this.failure);
++ }
++}
++export function engineeringNativeAdmission(project:unknown,scenario:string,set:string,profile:string){
++ if(scenario!=='FD01'||set!=='engineering-rigid-v1')throw Error('ENGINEERING_SCENARIO_UNSUPPORTED');
++ if(!/^engineering-(amd64|arm64)$/.test(profile))throw Error('ENGINEERING_PROFILE_REQUIRED');
++ if(!same(project,canonicalProject.runtimeProject))throw Error('ENGINEERING_PROJECT_MISMATCH');
++}
++export async function readEngineeringCompiledWorld(directory:string){
++ const root=resolve(directory),manifest=JSON.parse(await readFile(join(root,'compiler-manifest.json'),'utf8'));
++ if(!same(manifest.compiler,{id:'engineering-gazebo-canonical',version:'1'}))throw Error('ENGINEERING_BUNDLE_REQUIRED');
++ if(!same(manifest,canonicalManifest))throw Error('NATIVE_MAPPING_MISMATCH');
++ const {manifestHash,...body}=manifest;if(hashJson(body)!==manifestHash)throw Error('BUNDLE_MANIFEST_MISMATCH');
++ const seen=new Set<string>();
++ for(const file of manifest.outputs){
++  const path=resolve(root,file.path);if(!path.startsWith(root+sep)||seen.has(file.path)||(await lstat(path)).isSymbolicLink())throw Error('BUNDLE_PATH_INVALID');seen.add(file.path);
++  if(createHash('sha256').update(await readFile(path)).digest('hex')!==file.sha256)throw Error('BUNDLE_DIGEST_MISMATCH');
++ }
++ for(const [name,want] of [['engineering-project.json',canonicalProject],['navigation-scene.json',canonicalScene],['physical-model.json',canonicalPhysical],['runtime-project.json',canonicalProject.runtimeProject]] as const){
++  if(!seen.has(name)||!same(JSON.parse(await readFile(join(root,name),'utf8')),want))throw Error('CANONICAL_INPUT_MISMATCH');
++ }
++ if(manifest.inputHash!==hashJson([canonicalProject,canonicalScene,canonicalPhysical]))throw Error('CANONICAL_INPUT_MISMATCH');
++ return readCompiledWorld(root);
++}
++interface TopicCoverage {count:number;firstNs:string;lastNs:string;maxGapNs:string}
++export interface EngineeringEvidence {producer:string;clockMapping:ClockMapping[];bag:{storageId:string;topics:Record<string,TopicCoverage>};blockers:string[];artifacts?:{path:string;sha256:string}[]}
++export function assessEngineeringEvidence(e:EngineeringEvidence){
++ const blockers=[...e.blockers],clock=e.clockMapping;
++ if(e.producer!=='native')blockers.push('NATIVE_EXECUTION_NOT_OBSERVED');
++ let valid=clock.length>=2;
++ for(let i=0;i<clock.length;i++){
++  const c=clock[i]!,p=clock[i-1];
++  if(!/^\d+$/.test(c.providerSimNs)||!/^\d+$/.test(c.receiveMonotonicNs)||!Number.isSafeInteger(c.sourceTick)||c.sourceTick<0){valid=false;break;}
++  if(p&&(BigInt(c.providerSimNs)<=BigInt(p.providerSimNs)||BigInt(c.receiveMonotonicNs)<BigInt(p.receiveMonotonicNs)))valid=false;
++  if(c.sourceTick!==Number((BigInt(c.providerSimNs)-BigInt(clock[0]!.providerSimNs))/20_000_000n))valid=false;
++ }
++ if(!valid)blockers.push('CLOCK_MAPPING_INVALID');
++ if(e.bag.storageId!=='sqlite3')blockers.push('BAG_STORAGE_INVALID');
++ for(const topic of ENGINEERING_TOPICS){
++  const t=e.bag.topics[topic];if(!t||!Number.isSafeInteger(t.count)||t.count<1){blockers.push(`BAG_TOPIC_MISSING:${topic}`);continue;}
++  if(![t.firstNs,t.lastNs,t.maxGapNs].every(x=>/^\d+$/.test(x))){blockers.push(`BAG_TIME_COVERAGE:${topic}`);continue;}
++  // Static TF is latched; AMCL, commands and action status are event-driven, not continuous sensors.
++  const continuous=['/clock','/amr_1/tf','/amr_1/odom','/amr_1/joint_states','/amr_1/scan','/model/amr_1/pose','/model/amr_1/contacts'].includes(topic);
++  if(valid&&continuous&&(t.count<2||BigInt(t.firstNs)>BigInt(clock[0]!.providerSimNs)+500_000_000n||BigInt(t.lastNs)+500_000_000n<BigInt(clock.at(-1)!.providerSimNs)||BigInt(t.maxGapNs)>500_000_000n))blockers.push(`BAG_TIME_COVERAGE:${topic}`);
++ }
++ return {result:blockers.length?'not_run' as const:'pass' as const,blockers:[...new Set(blockers)],accepted:false as const,calibration:'not_calibrated' as const};
++}
++export const ENGINEERING_CASES=['nominal','obstacle','no-path','cancel','worker-loss'] as const;
++export interface EngineeringNativeFactory {
++ kind:'engineering-gazebo-canonical-v1';nativeCase:string;fault:{status:string;commandId?:string;reason?:string};world:CompiledWorld;profile:string;clock:EngineeringClock;
++ open(runId:string):Promise<GazeboBackend>;finish():Promise<EngineeringEvidence>;
++}
++export async function engineeringNativeProviderFactory(config:{bundleDirectory:string;environmentProfile:string;python?:string;simulationRoot:string;nativeCase?:string}):Promise<EngineeringNativeFactory>{
++ engineeringNativeAdmission(canonicalProject.runtimeProject,'FD01','engineering-rigid-v1',config.environmentProfile);
++ const nativeCase=config.nativeCase??'nominal';if(!(ENGINEERING_CASES as readonly string[]).includes(nativeCase))throw Error('ENGINEERING_CASE_INVALID');
++ const fault:EngineeringNativeFactory['fault']={status:nativeCase==='nominal'?'not_requested':'pending'};
++ const world=await readEngineeringCompiledWorld(config.bundleDirectory),clock=new EngineeringClock(),blockers:string[]=[];
++ let backend:GazeboBackend|undefined,off:(()=>void)|undefined,closed=false;
++ const close=async()=>{if(closed)return;closed=true;await backend?.close();off?.();};
++ return {kind:'engineering-gazebo-canonical-v1',nativeCase,fault,world,profile:config.environmentProfile,clock,
++  async open(runId){
++   if(backend||closed)throw Error('NATIVE_REOPEN_RECONCILE_REQUIRED');
++   backend=await startGazeboBackend(world,runId,{python:config.python,simulationRoot:config.simulationRoot,environmentProfile:config.environmentProfile,engineering:true,engineeringCase:nativeCase,startupTimeoutMs:120000});
++   off=backend.onEvent(e=>{try{if(e.event==='clock-mapping')clock.observe(String(e.payload.providerSimNs),process.hrtime.bigint());if(e.event==='fatal')clock.failure=String(e.payload.reason);}catch(error){blockers.push((error as Error).message);}});
++   const actual=backend;
++   return {...actual,execute:async(r,c)=>{
++    clock.assertFresh();
++    if(fault.status==='pending'&&['obstacle','no-path'].includes(nativeCase)){
++     fault.status='intent';const response=await actual.setBlocker!(true);fault.status=response.applied===true?'applied':'unknown';if(fault.status!=='applied')throw Error('FAULT_EFFECT_UNKNOWN');
++    }
++    const answer=await actual.execute(r,c);
++    if(fault.status==='pending'&&answer.status==='accepted'){
++     fault.status='intent';fault.commandId=c.commandId;
++     // Source receives the original ACK; the selected fault runs once afterwards, never a replay.
++     setTimeout(()=>{void (nativeCase==='cancel'?actual.cancel(r,c.commandId):actual.setBlocker!(true)).then(reply=>{fault.status=reply.acknowledged===true||reply.applied===true?'applied':'unknown';}).catch(error=>{fault.status=nativeCase==='worker-loss'&&/WORKER_EXITED:86/.test((error as Error).message)?'worker_lost':'unknown';fault.reason=(error as Error).message;});},50);
++    }
++    return answer;
++   },close};
++  },
++  async finish(){
++   await close();
++   if(clock.failure&&!(nativeCase==='worker-loss'&&fault.status==='worker_lost'))blockers.push(clock.failure);
++   let bag:EngineeringEvidence['bag']={storageId:'sqlite3',topics:{}};
++   try{const result=await promisify(execFile)(config.python??'python3',['-m','bridge.engineering_bag','--input',join(world.outputDirectory,'..','rosbag2'),...nativeCase==='worker-loss'&&fault.status==='worker_lost'?['--retain-from',join(world.outputDirectory,'.native/raw-bag')]:[]],{cwd:config.simulationRoot,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:config.simulationRoot},timeout:30000,maxBuffer:8*1024*1024});bag=JSON.parse(result.stdout);}catch{blockers.push('BAG_REPLAY_FAILED');}
++   const directory=resolve(world.outputDirectory,'..'),artifacts:{path:string;sha256:string}[]=[];
++   const retain=async(name:string,from:string,json=true)=>{try{const bytes=await readFile(from);await writeFile(join(directory,name),bytes);artifacts.push({path:name,sha256:createHash('sha256').update(bytes).digest('hex')});return json?JSON.parse(bytes.toString()):null;}catch{blockers.push('NATIVE_ARTIFACT_MISSING:'+name);return null;}};
++   const inventory=await retain('native-inventory.json',join(world.outputDirectory,'.bridge/inventory.json'));
++   if(!validNativeProfileReport(inventory,config.environmentProfile))blockers.push('NATIVE_INVENTORY_INVALID');
++   await retain('native-events.jsonl',join(world.outputDirectory,'.bridge/native-events.jsonl'),false);
++   await retain('native-commands.json',join(world.outputDirectory,'.bridge/nav2-commands.json'));
++   const shutdown=nativeCase==='worker-loss'&&fault.status==='worker_lost'?null:await retain('native-shutdown.json',join(world.outputDirectory,'.native/shutdown.json'));
++   if(shutdown?.blockers?.length)blockers.push(...shutdown.blockers);
++   for(const name of await readdir(join(directory,'rosbag2')).catch(()=>[])){
++    const path=join(directory,'rosbag2',name);if(!(await lstat(path)).isFile()||(await lstat(path)).isSymbolicLink()){blockers.push('BAG_FILE_INVALID');continue;}
++    artifacts.push({path:'rosbag2/'+name,sha256:createHash('sha256').update(await readFile(path)).digest('hex')});
++   }
++   return {producer:'native',clockMapping:clock.mapping,bag,blockers,artifacts};
++  },
++ };
++}
++
++export function assessEngineeringFault(input:{nativeCase:string;fault:{status:string};status:string;served:string;effects:{attempts:number}[];observedCompleted:number}){
++ if(!['no-path','cancel','worker-loss'].includes(input.nativeCase))return {result:'not_run' as const,reason:'NEGATIVE_CASE_REQUIRED'};
++ if(!['applied','worker_lost'].includes(input.fault.status))return {result:'not_run' as const,reason:'FAULT_NOT_OBSERVED'};
++ if(input.status!=='needs_attention'||input.served!=='0'||input.observedCompleted!==0||input.effects.some(e=>e.attempts>1))return {result:'fail' as const,reason:'FALSE_COMPLETION_OR_REPLAY'};
++ return {result:'pass' as const,reason:'OBSERVED_FAULT_WITHOUT_COMPLETION_OR_REPLAY'};
++}
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts b/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
+index a3bfac0..d744b0a 100644
+--- a/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
++++ b/packages/lab-runtime/src/v2/sil/native-handoff-documents.ts
+@@ -24,20 +24,24 @@ import pumaManifest from '../../../../../integrations/arm-controller/models/puma
+ import pumaFrames from '../../../../../integrations/arm-controller/models/puma560-reference/frames.json';
+ import pumaConfig from '../../../../../integrations/arm-controller/configs/sim/puma560/profile.json';
+ import pumaScenario from '../../../../../tests/fixtures/digital-twin/sil/bv01.json';
+ import projectSchema from '../../../../contracts/schemas/lab-project-v2.schema.json';
+ import componentSchema from '../../../../contracts/schemas/engineering-component.schema.json';
+ import worldSchema from '../../../../contracts/schemas/lab-world-scene-v1.schema.json';
+ import physicalSchema from '../../../../contracts/schemas/robot-physical-model-v1.schema.json';
+ import navigationSchema from '../../../../contracts/schemas/navigation-model-2d-v1.schema.json';
+ import sceneSchema from '../../../../contracts/schemas/navigation-scene-v1.schema.json';
+ import cellSchema from '../../../../contracts/schemas/arm-cell-scene-v1.schema.json';
++import nativeNavigationManifest from '../../../../../robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json';
++import nativeNavigationMapping from '../../../../../robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json';
++import engineeringAmd64 from '../../../../../robotics/simulation/profiles/engineering-amd64.lock.json';
++import engineeringArm64 from '../../../../../robotics/simulation/profiles/engineering-arm64.lock.json';
+ import navProject from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json';
+ import navScene from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene.json';
+ import navPhysical from '../../../../../robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json';
+ import engineeringProjectSchema from '../../../../contracts/schemas/engineering-project.schema.json';
+ import loadSchema from '../../../../contracts/schemas/load-profile-v1.schema.json';
+ const SCHEMAS={'load-profile-v1.schema.json':loadSchema,'engineering-project.schema.json':engineeringProjectSchema,'lab-project-v2.schema.json':projectSchema,'engineering-component.schema.json':componentSchema,'lab-world-scene-v1.schema.json':worldSchema,'robot-physical-model-v1.schema.json':physicalSchema,'navigation-model-2d-v1.schema.json':navigationSchema,'navigation-scene-v1.schema.json':sceneSchema,'arm-cell-scene-v1.schema.json':cellSchema};
+ export type DocumentIssue={code:string;path:string;severity:'error'|'prerequisite'};
+ const hash=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),canonical=(v:unknown)=>hash(canonicalize(v));
+ const pumaModel=toSI({id:pumaDh.id,convention:'modified_dh',provenance:'illustrative_reference',mekoniqRobotCode:null,units:pumaDh.units as ArmSourceModel['units'],joints:pumaDh.joints.map(j=>({name:j.name,alpha:j.alpha,a:j.a,d:j.d,thetaOffset:j.thetaOffset,min:j.min,max:j.max,maxVelocity:j.maxVelocity})),toolTranslation:pumaDh.toolTranslation as [number,number,number],tolerances:pumaManifest.tolerances});
+ const WORLD_KINDS=['mujoco_world_v1','mujoco_cell_v1','xarm_ros_canonical_v1'];
+@@ -78,21 +82,32 @@ export function validateNativeDocuments(m:NativeHandoffV1,contents:ReadonlyMap<s
+   for(const [name,schema]of Object.entries(SCHEMAS)){const ref=m.refs.schema.find(r=>r.sourcePath===name);if(!ref)throw Error('DOCUMENT_SCHEMA_MISSING');if(!same(JSON.parse(contents.get(ref.path)!.toString()),schema))throw Error('DOCUMENT_SCHEMA_UNSUPPORTED');}
+   const p=read('project'),w=read('world'),model=read('model'),kind=m.profile.documents.kind,binding=nativeDocumentBinding(kind);
+   if(kind==='engineering_navigation_ros_canonical_v1'){
+    if(m.subject.executionKind!=='ros2_native'||m.profile.installation.kind!=='native_apt')throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
+    if(!validateEngineeringProject(p).ok||!validateNavigationDocument(w).ok||!validateNavigationDocument(model).ok)throw Error('DOCUMENT_NAVIGATION_INVALID');
+    const scene=w as NavigationSceneV1,mobile=model as RobotPhysicalModelV1;
+    physicalTree(mobile.links,mobile.joints,mobile.baseFrameId);
+    if(mobile.robotId!==m.profile.modelId||!same(m.profile.documents,binding)||m.frames.world!=='map'||m.frames.robotBase!==mobile.baseFrameId||m.frames.tool!==null)throw Error('DOCUMENT_MAPPING_MISMATCH');
+    if(!same(p,navProject)||!same(w,navScene)||!same(model,navPhysical)||canonical(p)!==mobile.inputs.project.digest||!same(scene.inputs,mobile.inputs)||canonical((p as typeof navProject).runtimeProject.world)!==scene.inputs.world.hash||!same(projectNavigationModel(mobile,scene.policy),scene.robots[0]!.model))throw Error('NAVIGATION_PROJECT_MODEL_MISMATCH');
+    if(!m.refs.engine.some(r=>r.sourcePath==='robotics/simulation-3d/requirements.lock'))throw Error('DOCUMENT_ENGINE_MISMATCH');
+-   add('NATIVE_ENGINE_MAPPING_UNRESOLVED','/profile/documents','prerequisite');return issues;
++   const base='robotics/simulation/fixtures/engineering-navigation-v1/';
++   if(!m.refs.engine.some(r=>r.sourcePath===base+'compiler-manifest.json')){add('NATIVE_ENGINE_MAPPING_UNRESOLVED','/profile/documents','prerequisite');return issues;}
++   if(!same(JSON.parse(bySource(base+'compiler-manifest.json').toString()),nativeNavigationManifest)||!same(JSON.parse(bySource(base+'native-mapping.json').toString()),nativeNavigationMapping))throw Error('NATIVE_ENGINE_MAPPING_MISMATCH');
++   for(const output of nativeNavigationManifest.outputs){
++    const ref=all.find(r=>r.sourcePath===base+output.path);
++    if(!ref){add('NATIVE_ARTIFACT_CLOSURE_MISSING','/refs/engine','prerequisite');break;}
++    if(hash(contents.get(ref.path)!)!==output.sha256)throw Error('NATIVE_ARTIFACT_MAPPING_MISMATCH');
++   }
++   const lock=m.profile.architecture==='amd64'?engineeringAmd64:engineeringArm64;
++   // Static mapping is now explicit. Installed package/plugin qualification is a separate unresolved gate.
++   if(m.profile.id!==lock.id||lock.qualification!=='qualified'||!lock.packages||!lock.digests)add('NATIVE_ENGINE_PROFILE_UNRESOLVED','/profile','prerequisite');
++   return issues;
+   }
+   if(!validateProjectV2(p).ok)throw Error('DOCUMENT_PROJECT_INVALID');
+   if(!same(m.profile.documents,binding))throw Error('DOCUMENT_MAPPING_MISMATCH');
+   if(m.frames.world!==binding.frameMap.world||m.frames.robotBase!==binding.frameMap.robotBase||m.frames.tool!==binding.frameMap.tcp)throw Error('DOCUMENT_FRAME_MISMATCH');
+   if(kind==='puma_controller_reference_v1'){
+    if(m.subject.executionKind!=='linuxcnc_native'||m.profile.installation.kind!=='native_apt'||!m.subject.nativeClosureHash)throw Error('DOCUMENT_PROFILE_UNSUPPORTED');
+    const base='integrations/arm-controller/models/puma560-reference/',manifest=JSON.parse(bySource(base+'manifest.json').toString()) as typeof pumaManifest,frames=JSON.parse(bySource(base+'frames.json').toString()) as typeof pumaFrames;
+    if(!same(manifest,pumaManifest)||!same(model,pumaDh)||!same(frames,pumaFrames)||m.profile.modelId!==pumaDh.id)throw Error('PUMA_CANONICAL_MODEL_MISMATCH');
+    for(const [name,sha]of Object.entries(manifest.hashes)){const bytes=name==='modified-dh.json'?contents.get(m.refs.model[0].path)!:bySource(base+name);if(hash(bytes)!==sha)throw Error('PUMA_MODEL_REF_MISMATCH');}
+    if(hash(bySource(base+'origin/puma560_dh.hal'))!==manifest.origin.files['configs/sim/axis/vismach/puma/puma560_dh.hal'].vendoredSha256)throw Error('PUMA_MODEL_REF_MISMATCH');
+diff --git a/robotics/simulation/bridge/engineering_bag.py b/robotics/simulation/bridge/engineering_bag.py
+new file mode 100644
+index 0000000..9069f56
+--- /dev/null
++++ b/robotics/simulation/bridge/engineering_bag.py
+@@ -0,0 +1,53 @@
++"""Offline read-only rosbag2 SQLite coverage, derived from actual messages (not metadata claims)."""
++import argparse
++import hashlib
++import json
++import sqlite3
++from pathlib import Path
++
++
++def inspect_bag(directory):
++    root=Path(directory);files=sorted(root.glob('*.db3'))
++    if not files:raise ValueError('BAG_STORAGE_MISSING')
++    rows={}
++    for file in files:
++        if file.is_symlink():raise ValueError('BAG_SYMLINK')
++        conn=sqlite3.connect(file.resolve().as_uri()+'?mode=ro',uri=True)
++        try:
++            if conn.execute('pragma quick_check').fetchone()[0]!='ok':raise ValueError('BAG_CORRUPT')
++            for topic,stamp in conn.execute('select topics.name,messages.timestamp from messages join topics on topics.id=messages.topic_id order by messages.timestamp'):
++                rows.setdefault(topic,[]).append(stamp)
++        finally:conn.close()
++    topics={}
++    for topic,stamps in rows.items():
++        stamps.sort();topics[topic]={'count':len(stamps),'firstNs':str(stamps[0]),'lastNs':str(stamps[-1]),'maxGapNs':str(max((b-a for a,b in zip(stamps,stamps[1:])),default=0))}
++    return {'storageId':'sqlite3','topics':topics}
++
++def retain_recovered_bag(source,destination):
++    original=Path(source);target=Path(destination)
++    if target.exists():return
++    files=sorted(original.glob('*.db3'))
++    if not files:raise ValueError('BAG_STORAGE_MISSING')
++    target.mkdir()
++    records=[]
++    for file in files:
++        if file.is_symlink():raise ValueError('BAG_SYMLINK')
++        src=sqlite3.connect(file.resolve().as_uri()+'?mode=ro',uri=True)
++        copy=sqlite3.connect(target/file.name)
++        def digest(connection):
++            h=hashlib.sha256()
++            for row in connection.execute('select topic_id,timestamp,data from messages order by id'):
++                h.update(str(row[0]).encode()+b'\0'+str(row[1]).encode()+b'\0'+row[2])
++            return h.hexdigest()
++        try:
++            before=digest(src);src.backup(copy);after=digest(copy)
++            if before!=after or copy.execute('pragma quick_check').fetchone()[0]!='ok':raise ValueError('BAG_COPY_MISMATCH')
++            records.append({'file':file.name,'messageDigest':after,'method':'sqlite-readonly-backup-after-owned-worker-loss'})
++        finally:copy.close();src.close()
++    (target/'retention.json').write_text(json.dumps(records,sort_keys=True))
++
++
++if __name__=='__main__':
++    parser=argparse.ArgumentParser();parser.add_argument('--input',required=True);parser.add_argument('--retain-from');args=parser.parse_args()
++    if args.retain_from:retain_recovered_bag(args.retain_from,args.input)
++    print(json.dumps(inspect_bag(args.input),sort_keys=True))
+diff --git a/robotics/simulation/bridge/engineering_launch.py b/robotics/simulation/bridge/engineering_launch.py
+new file mode 100644
+index 0000000..de90228
+--- /dev/null
++++ b/robotics/simulation/bridge/engineering_launch.py
+@@ -0,0 +1,29 @@
++"""Server-owned engineering launch policy; no caller-provided nodes, topics or arguments."""
++import hashlib
++import json
++import tempfile
++from pathlib import Path
++from compiler.manifest import canonical_hash
++
++
++def plan_engineering_launch(bundle_dir):
++    root=Path(bundle_dir).resolve()
++    manifest=json.loads((root/'compiler-manifest.json').read_text())
++    if manifest.get('compiler') != {'id':'engineering-gazebo-canonical','version':'1'}:
++        raise ValueError('ENGINEERING_BUNDLE_REQUIRED')
++    if canonical_hash({k:v for k,v in manifest.items() if k!='manifestHash'}) != manifest.get('manifestHash'):
++        raise ValueError('BUNDLE_MANIFEST_MISMATCH')
++    for entry in manifest['outputs']:
++        path=root/entry['path']
++        if path.is_symlink() or not path.resolve().is_relative_to(root) or hashlib.sha256(path.read_bytes()).hexdigest()!=entry['sha256']:
++            raise ValueError('BUNDLE_DIGEST_MISMATCH:'+entry['path'])
++    from compiler.engineering_native import compile_native, CANONICAL, NAMES
++    with tempfile.TemporaryDirectory(prefix='engineering-reproduce-') as directory:
++        compile_native(*[json.loads((CANONICAL/name).read_text()) for name in NAMES],directory)
++        expected=json.loads((Path(directory)/'compiler-manifest.json').read_text())
++        if manifest != expected:raise ValueError('NATIVE_MAPPING_MISMATCH')
++    robots=manifest['robots']
++    if len(robots)!=1 or robots[0]['namespace']!='amr_1' or robots[0]['entityId']!='amr-1':
++        raise ValueError('ENGINEERING_ROBOT_MISMATCH')
++    topics=['/clock','/amr_1/tf','/amr_1/tf_static','/amr_1/odom','/amr_1/joint_states','/amr_1/scan','/amr_1/cmd_vel','/amr_1/amcl_pose','/model/amr_1/pose','/model/amr_1/contacts','/amr_1/navigate_to_pose/_action/status']
++    return {'world':str(root/'world.sdf'),'map':str(root/'map.yaml'),'mapId':manifest['map']['mapId'],'mapRevision':manifest['map']['mapRevision'],'robots':robots,'actors':[],'blockers':[],'cups':[],'topics':topics,'actions':['/amr_1/navigate_to_pose']}
+diff --git a/robotics/simulation/bridge/engineering_profile.py b/robotics/simulation/bridge/engineering_profile.py
+index d86a435..fc19db2 100644
+--- a/robotics/simulation/bridge/engineering_profile.py
++++ b/robotics/simulation/bridge/engineering_profile.py
+@@ -21,10 +21,31 @@ def qualify_inventory(actual: dict, locked: dict) -> dict:
+             reasons.append(f"PACKAGE_MISMATCH:{name}")
+     digests = actual.get("digests") or {}
+     for name, digest in sorted((locked.get("digests") or {}).items()):
+         if name not in digests:
+             reasons.append(f"DIGEST_MISSING:{name}")
+         elif digests[name] != digest:
+             reasons.append(f"DIGEST_MISMATCH:{name}")
+     for name in sorted(set(locked.get("forbidden") or []) & set(installed)):
+         reasons.append(f"HARDWARE_PLUGIN_PRESENT:{name}")
+     return {"qualified": not reasons, "reasons": reasons}
++
++
++def qualify_native_inventory(actual, locked):
++    """Native execution additionally binds actual plugin files, launch environment and apt sources.
++    The generic comparator above remains a portable consistency test, not a host attestation.
++    """
++    report=qualify_inventory(actual,locked);reasons=report['reasons']
++    plugins=locked.get('digests')
++    if not isinstance(plugins,dict) or not plugins or not all(name.startswith('/') and len(digest)==64 for name,digest in plugins.items()):
++        reasons.append('PLUGIN_INVENTORY_UNRESOLVED')
++    runtime=locked.get('runtimePin')
++    if not isinstance(runtime,dict) or not runtime:
++        reasons.append('RUNTIME_INVENTORY_UNRESOLVED')
++    elif actual.get('runtime') != runtime:
++        reasons.append('RUNTIME_INVENTORY_MISMATCH')
++    provenance=locked.get('aptProvenance')
++    if not isinstance(provenance,dict) or not provenance:
++        reasons.append('APT_PROVENANCE_UNRESOLVED')
++    elif actual.get('aptProvenance') != provenance:
++        reasons.append('APT_PROVENANCE_MISMATCH')
++    return {'qualified':not reasons,'reasons':reasons}
+diff --git a/robotics/simulation/bridge/engineering_session.py b/robotics/simulation/bridge/engineering_session.py
+new file mode 100644
+index 0000000..900ce3e
+--- /dev/null
++++ b/robotics/simulation/bridge/engineering_session.py
+@@ -0,0 +1,215 @@
++"""Native engineering entrypoint. Exact profile admission, isolated ownership and durable no-resend Nav2 protocol.
++ROS imports occur only after profile admission. Protocol tests do not substitute native qualification.
++"""
++import argparse
++import hashlib
++import json
++import math
++import os
++from pathlib import Path
++import shutil
++import signal
++import subprocess
++import sys
++import threading
++import time
++from .engineering_launch import plan_engineering_launch
++from .engineering_worker import NativeClockMapping
++from .nav2_session import RosPorts, Nav2Session, _SceneNode, _emit, serve
++from .native_profile import inspect_profile
++
++
++class EngineeringRosPorts(RosPorts):
++    def __init__(self,bundle,log,emit):
++        self.plan=plan_engineering_launch(bundle); self.robots=['amr_1'];self.bundle=Path(bundle);self.log_path=log
++        self._proc=self._log=self._scene=None;self._scene_lock=threading.Lock();self._clients={}
++        self.mapping=NativeClockMapping();self.emit=emit;self.fatal=None;self._bag=None;self._closed=False;self._leases=[]
++        self._scan=None;self._joints=None;self._tf=None;self._ready=False;self._health_lock=threading.RLock();self._startup=time.monotonic()
++
++    def launch(self):
++        if self._proc:return
++        # Exclusive domain lease prevents hash collisions with another owned engineering run.
++        import fcntl
++        lease=Path('/tmp')/f'mekoniq-ros-domain-{os.environ["ROS_DOMAIN_ID"]}.lock'
++        stream=lease.open('a');fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB);self._leases.append(stream)
++        graph=subprocess.run(['ros2','node','list','--no-daemon'],capture_output=True,text=True,timeout=15,check=False)
++        if graph.returncode!=0 or graph.stdout.strip():raise RuntimeError('ROS_DOMAIN_NOT_EMPTY')
++        self._log=open(self.log_path,'w')
++        (self.bundle/'.native').mkdir(exist_ok=True)
++        launch=Path(__file__).resolve().parents[1]/'launch/engineering_world.launch.py'
++        self._proc=subprocess.Popen(['ros2','launch',str(launch),f'bundle:={self.bundle}'],stdout=self._log,stderr=subprocess.STDOUT,start_new_session=False,shell=False)
++        self._bag=subprocess.Popen(['ros2','bag','record','--storage','sqlite3','--use-sim-time','--include-hidden-topics','--output',str(self.bundle/'.native/raw-bag'),'--topics',*self.plan['topics']],stdout=self._log,stderr=subprocess.STDOUT,start_new_session=False,shell=False)
++
++    def _node(self):
++        with self._scene_lock:
++            if self._scene is None:
++                from geometry_msgs.msg import Twist,TwistStamped
++                from sensor_msgs.msg import LaserScan,JointState
++                from rclpy.parameter import Parameter
++                from rclpy.qos import qos_profile_sensor_data
++                from tf2_ros import Buffer,TransformListener
++                self._scene=_SceneNode(self.plan,['amr_1']); node=self._scene.node
++                node.set_parameters([Parameter('use_sim_time',value=True)])
++                import rclpy
++                self._tf_node=rclpy.create_node('engineering_tf_observer',cli_args=['--ros-args','-r','/tf:=/amr_1/tf','-r','/tf_static:=/amr_1/tf_static'])
++                self._scene.executor.add_node(self._tf_node)
++                self._tf=Buffer();self._listener=TransformListener(self._tf,self._tf_node,spin_thread=False)
++                def scan(msg):
++                    receipt=time.monotonic_ns();self._scan=(msg,receipt)
++                    self.emit('native-sensor',{'sensor':'lidar-2d','frame':msg.header.frame_id,'providerSimNs':str(msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec),'receiveMonotonicNs':str(receipt),'rangesM':[float(x) if math.isfinite(x) else None for x in msg.ranges],'nonfinitePolicy':'null_no_return'})
++                node.create_subscription(LaserScan,'/amr_1/scan',scan,qos_profile_sensor_data)
++                def joints(msg):
++                    receipt=time.monotonic_ns();self._joints=(msg,receipt)
++                    self.emit('native-joints',{'names':list(msg.name),'positionRad':list(msg.position),'velocityRadS':list(msg.velocity),'providerSimNs':str(msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec),'receiveMonotonicNs':str(receipt)})
++                node.create_subscription(JointState,'/amr_1/joint_states',joints,10)
++                pub=node.create_publisher(TwistStamped,'/amr_1/diff_drive_controller/cmd_vel',10)
++                def forward(msg):
++                    if self.fatal:return
++                    out=TwistStamped();out.header.stamp=node.get_clock().now().to_msg();out.twist=msg;pub.publish(out)
++                node.create_subscription(Twist,'/amr_1/cmd_vel',forward,10)
++            return self._scene
++
++    def health(self):
++        with self._health_lock:
++            return self._health()
++
++    def _health(self):
++        from rclpy.time import Time
++        reasons=[]
++        base=super().health();reasons.extend(base['reasons'])
++        now=time.monotonic_ns();clock=self.clock_ns()
++        if self._proc and self._proc.poll() is not None:reasons.append('WORKER_PROCESS_DOWN')
++        if self._bag and self._bag.poll() is not None:reasons.append('BAG_PROCESS_DOWN')
++        if clock is not None:
++            try:
++                mapped=self.mapping.observe(clock,now);self.emit('clock-mapping',mapped)
++                if self._ready:self.mapping.check_fresh(now)
++            except RuntimeError as error:reasons.append(str(error));self.fatal=str(error)
++        for name,sample in [('SCAN',self._scan),('JOINTS',self._joints)]:
++            if sample is None or now-sample[1]>500_000_000 or clock is not None and sample is not None and abs(clock-(sample[0].header.stamp.sec*1_000_000_000+sample[0].header.stamp.nanosec))>500_000_000:reasons.append(name+'_FEEDBACK_STALE')
++        if self._joints and not {'wheel-left/axle','wheel-right/axle'} <= set(self._joints[0].name):reasons.append('JOINT_IDENTITY_MISMATCH')
++        if self._tf:
++            for target,source in [('map','chassis/base'),('chassis/base','lidar/head')]:
++                if not self._tf.can_transform(target,source,Time()):reasons.append('TF_MISSING:'+target+':'+source)
++        else:reasons.append('TF_MISSING')
++        # Startup advances only the spawned simulation world; no navigation command is sent before all prerequisites are observed.
++        if not self._ready and (clock is None or clock==0) and time.monotonic()-self._startup>1:
++            self.pause(False)
++        if not reasons:self._ready=True
++        if self._ready and reasons:self.fatal=self.fatal or reasons[0]
++        if self.fatal:
++            reasons.append(self.fatal);self.emit('fatal',{'reason':self.fatal})
++        return {'alive':not reasons,'reasons':sorted(set(reasons))}
++
++    def close(self):
++        if self._closed:return
++        self._closed=True
++        if hasattr(self,'stop'):self.stop.set()
++        errors=[]
++        for client in self._clients.values():
++            try:client.client.close()
++            except Exception as error:errors.append(str(error))
++        if self._scene is not None:self._scene.close()
++        if hasattr(self,'_tf_node'):self._tf_node.destroy_node()
++        # Both are children in the parent-owned worker process group. ros2 launch handles its
++        # children on SIGINT; the Node supervisor kills the entire owned group on worker exit.
++        for process in (self._proc,self._bag):
++            if process and process.poll() is None:
++                try:
++                    process.send_signal(signal.SIGINT);process.wait(15)
++                except subprocess.TimeoutExpired:
++                    process.kill();process.wait(5);errors.append('OWNED_PROCESS_SHUTDOWN_TIMEOUT')
++                except ProcessLookupError:pass
++        if self._log:self._log.close()
++        if errors:self.fatal=';'.join(errors)
++        raw=self.bundle/'.native/raw-bag';archive=self.bundle.parent/'rosbag2'
++        if raw.is_dir():
++            archive.mkdir(exist_ok=False)
++            for source in raw.iterdir():
++                if not source.is_file() or source.is_symlink():raise RuntimeError('BAG_FILE_INVALID')
++                destination=archive/source.name;shutil.copyfile(source,destination)
++                if hashlib.sha256(source.read_bytes()).digest()!=hashlib.sha256(destination.read_bytes()).digest():raise RuntimeError('BAG_COPY_MISMATCH')
++        (self.bundle/'.native/shutdown.json').write_text(json.dumps({'closed':True,'blockers':[self.fatal] if self.fatal else []}))
++        for stream in self._leases:stream.close()
++
++
++CASES=('nominal','obstacle','no-path','cancel','worker-loss')
++
++def engineering_fault_poses(case):
++    if case=='obstacle':return [('engineering_fault_0',(1.9,3.0,.6,0.0))]
++    if case=='no-path':return [(f'engineering_fault_{i}',pose) for i,pose in enumerate([(1.1,6,.6,0),(2.7,6,.6,0),(1.9,5.2,.6,0),(1.9,6.8,.6,0)],1)]
++    if case in CASES:return []
++    raise ValueError('ENGINEERING_CASE_INVALID')
++
++
++class EngineeringNav2Session(Nav2Session):
++    def native_blocker(self,args):
++        from . import protocol
++        protocol.validate_args('native_blocker',args)
++        if args['enabled'] is not True:raise ValueError('ENGINEERING_CASE_INVALID')
++        case=getattr(self.ports,'native_case','nominal')
++        if case not in ('obstacle','no-path','worker-loss'):raise ValueError('ENGINEERING_CASE_INVALID')
++        self.ports.emit('native-fault',{'case':case,'status':'intent'})
++        for name,(x,y,z,yaw) in engineering_fault_poses(case):
++            if not self.ports.set_pose(name,x,y,z,yaw):raise RuntimeError('FAULT_EFFECT_UNKNOWN')
++        self.ports.emit('native-fault',{'case':case,'status':'applied'})
++        if case=='worker-loss':
++            # Abrupt worker loss: parent owns group cleanup. No synthetic success reply or continuation.
++            os._exit(86)
++        return {'applied':True,'case':case}
++
++    def execute(self,args):
++        # Existing receipts are authoritative even after health loss: no second physical send.
++        if args.get('commandId') in self._table:return super().execute(args)
++        health=self.ports.health()
++        if not health['alive']:return {'commandId':args.get('commandId'),'status':'rejected','reason':','.join(health['reasons'])}
++        return super().execute(args)
++
++    def query(self,args):
++        health=self.ports.health()
++        if not health['alive']:return {'commandId':args.get('commandId'),'status':'unknown','evidence':{'reason':','.join(health['reasons'])}}
++        return super().query(args)
++
++
++def main():
++    parser=argparse.ArgumentParser();parser.add_argument('--bundle',required=True);parser.add_argument('--run-id',required=True);parser.add_argument('--robots',required=True);parser.add_argument('--state-dir',required=True);parser.add_argument('--profile',required=True);parser.add_argument('--case',choices=CASES,default='nominal');args=parser.parse_args()
++    if args.profile not in ('engineering-amd64','engineering-arm64') or args.robots!='amr_1':raise RuntimeError('ENGINEERING_PROFILE_REQUIRED')
++    report=inspect_profile(args.profile)
++    if not report['available']:raise RuntimeError('ENGINEERING_PREREQUISITES:'+','.join(report['reasonCodes']))
++    # Never resume a worker against a prior command journal.
++    state=Path(args.state_dir)
++    if state.exists():raise RuntimeError('NATIVE_REOPEN_RECONCILE_REQUIRED')
++    state.mkdir(parents=True);(state/'inventory.json').write_text(json.dumps(report,sort_keys=True))
++    lock=threading.Lock();stop=threading.Event()
++    event_file=(state/'native-events.jsonl').open('x')
++    def emit(kind,payload):
++        with lock:
++            event_file.write(json.dumps({'event':kind,'payload':payload},allow_nan=False)+'\n');event_file.flush()
++        _emit(sys.stdout,lock,kind,payload)
++    ports=EngineeringRosPorts(args.bundle,str(state/'native.log'),emit)
++    ports.stop=stop;ports.native_case=args.case
++    def shutdown(_signum,_frame):
++        stop.set();ports.close();raise SystemExit(2)
++    signal.signal(signal.SIGTERM,shutdown);signal.signal(signal.SIGINT,shutdown)
++    try:
++        session=EngineeringNav2Session(ports,args.run_id,['amr_1'],args.state_dir)
++        from .scene_loop import SceneLoop
++        manifest=json.loads((Path(args.bundle)/'compiler-manifest.json').read_text())
++        loop=SceneLoop(ports,{'seed':0,'actors':[],'blockers':[],'faults':[]},manifest['robots'],run_id=args.run_id,boot_id=session.boot_id,emit=emit)
++        session.scene_loop=loop
++        def watch():
++            while not stop.wait(.02):
++                try:
++                    health=ports.health()
++                    if ports.fatal:ports.pause(True)
++                    if health['alive']:loop.step()
++                except Exception as error:
++                    ports.fatal=type(error).__name__+':'+str(error);emit('fatal',{'reason':ports.fatal})
++        thread=threading.Thread(target=watch,daemon=True);thread.start()
++        serve(sys.stdin,sys.stdout,session,lock)
++    finally:
++        stop.set()
++        if 'thread' in locals():thread.join(5)
++        ports.close();event_file.close()
++
++if __name__=='__main__':main()
+diff --git a/robotics/simulation/bridge/engineering_worker.py b/robotics/simulation/bridge/engineering_worker.py
+index cf071e9..2c6804e 100644
+--- a/robotics/simulation/bridge/engineering_worker.py
++++ b/robotics/simulation/bridge/engineering_worker.py
+@@ -87,10 +87,40 @@ class SimClock:
+         self.paused = True
+ 
+     def resume(self):
+         self.paused = False
+ 
+     def advance(self, dt_ns):
+         if dt_ns < 0:
+             raise RuntimeError("CLOCK_REGRESSION")
+         if not self.paused:
+             self.sim_ns += dt_ns
++
++
++class NativeClockMapping:
++    """Receipt clock never substitutes for provider time. A reset/stall latches failure."""
++    def __init__(self):
++        self.origin = self.last = self.received = None
++        self.failed = False
++
++    def observe(self, provider_ns, receive_ns):
++        if self.failed:
++            raise RuntimeError('CLOCK_FAILED')
++        if not isinstance(provider_ns, int) or provider_ns < 0 or not isinstance(receive_ns, int) or receive_ns < 0:
++            self.failed = True
++            raise RuntimeError('CLOCK_INVALID')
++        if self.last is not None and (provider_ns < self.last or receive_ns < self.received):
++            self.failed = True
++            raise RuntimeError('CLOCK_RESET')
++        if self.origin is None:
++            self.origin = provider_ns
++        if self.last != provider_ns:
++            self.received = receive_ns
++        self.last = provider_ns
++        return {'providerSimNs':str(provider_ns),'sourceTick':(provider_ns-self.origin)//20_000_000,'receiveMonotonicNs':str(receive_ns)}
++
++    def check_fresh(self, now_ns):
++        if self.failed:
++            raise RuntimeError('CLOCK_FAILED')
++        if self.received is None or now_ns-self.received > 500_000_000:
++            self.failed = True
++            raise RuntimeError('FEEDBACK_STALE')
+diff --git a/robotics/simulation/bridge/native_profile.py b/robotics/simulation/bridge/native_profile.py
+index a90dbb4..b5d2e36 100644
+--- a/robotics/simulation/bridge/native_profile.py
++++ b/robotics/simulation/bridge/native_profile.py
+@@ -74,21 +74,21 @@ def worker_pythonpath_identity(value, simulation_root):
+     # External Python roots retain their actual paths; the raw execution paths stay in the inventory.
+     root = Path(simulation_root).resolve()
+     local = {str(root): "$NATIVE_SOURCE/robotics/simulation", str(root.parent / "agent"): "$NATIVE_SOURCE/robotics/agent"}
+     return os.pathsep.join(local.get(str(Path(p).resolve()), p) if p else p for p in value.split(os.pathsep))
+ 
+ 
+ ENGINEERING_PROFILES = {"engineering-arm64": "arm64", "engineering-amd64": "amd64"}
+ 
+ 
+ def inspect_engineering_profile(profile_id):
+-    from bridge.engineering_profile import qualify_inventory
++    from bridge.engineering_profile import qualify_native_inventory
+     lock_file = PROFILES / f"{profile_id}.lock.json"
+     locked = json.loads(lock_file.read_text())
+     os_release = {}
+     try:
+         for line in Path("/etc/os-release").read_text().splitlines():
+             if "=" in line:
+                 key, value = line.split("=", 1)
+                 os_release[key] = value.strip('"')
+     except OSError:
+         pass
+@@ -97,21 +97,41 @@ def inspect_engineering_profile(profile_id):
+     actual = {"os": f"{os_release.get('ID', '')}{os_release.get('VERSION_ID', '')}", "arch": arch, "packages": {}, "digests": {}}
+     try:
+         result = subprocess.run(["dpkg-query", "-W", "-f=${binary:Package}\t${db:Status-Abbrev}\t${Version}\n"], capture_output=True, text=True, timeout=10, check=False)
+         if result.returncode == 0:
+             for line in result.stdout.splitlines():
+                 fields = line.split("\t")
+                 if len(fields) == 3 and fields[1].startswith("ii "):
+                     actual["packages"][fields[0]] = fields[2]
+     except (OSError, subprocess.TimeoutExpired):
+         pass
+-    report = qualify_inventory(actual, locked)
++    for path in (locked.get("digests") or {}):
++        try:
++            file=Path(path)
++            if file.is_absolute() and file.is_file():actual["digests"][path]=hashlib.sha256(file.read_bytes()).hexdigest()
++        except OSError:pass
++    executables={}
++    for name in ("ros2","gz","python3"):
++        found=shutil.which(name)
++        if found:
++            file=Path(found).resolve()
++            executables[name]={"path":str(file),"sha256":hashlib.sha256(file.read_bytes()).hexdigest()}
++    prefixes=[p for p in os.environ.get("AMENT_PREFIX_PATH","").split(os.pathsep) if p]
++    actual["runtime"]={"rosDistro":os.environ.get("ROS_DISTRO"),"executables":executables,"amentPrefixes":prefixes,"pythonPath":worker_pythonpath_identity(os.environ.get("PYTHONPATH",""),Path(__file__).resolve().parents[1]),"libraryPath":os.environ.get("LD_LIBRARY_PATH",""),"gazeboPluginPath":os.environ.get("GZ_SIM_SYSTEM_PLUGIN_PATH","")}
++    try:actual["runtime"]["overlayManifests"]={p:overlay_fingerprint(p) for p in prefixes if Path(p).resolve()!=Path('/opt/ros/jazzy')}
++    except (OSError,ValueError) as error:actual["runtime"]["overlayError"]=str(error)
++    sources={}
++    for file in [Path('/etc/apt/sources.list'),*sorted(Path('/etc/apt/sources.list.d').glob('*'))]:
++        if file.is_file():sources[str(file)]=hashlib.sha256(file.read_bytes()).hexdigest()
++    actual["aptProvenance"]={"sources":sources}
++    actual["platform"]=platform.system().lower()
++    report = qualify_native_inventory(actual, locked)
+     reasons = list(report["reasons"])
+     if platform.system().lower() != "linux":
+         reasons.insert(0, "PROFILE_PLATFORM_MISMATCH")
+     if locked.get("qualification") != "qualified" and "INVENTORY_UNRESOLVED" not in reasons:
+         reasons.append("INVENTORY_UNRESOLVED")
+     digest = hashlib.sha256(json.dumps(actual, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+     return {"id": profile_id, "available": not reasons, "reasonCodes": reasons, "installation": "native_apt", "headless": True, "image": None, "profileSha256": hashlib.sha256(lock_file.read_bytes()).hexdigest(), "actual": actual, "inventorySha256": digest}
+ 
+ 
+ def inspect_profile(profile_id):
+diff --git a/robotics/simulation/compiler/engineering_native.py b/robotics/simulation/compiler/engineering_native.py
+new file mode 100644
+index 0000000..2e92ba7
+--- /dev/null
++++ b/robotics/simulation/compiler/engineering_native.py
+@@ -0,0 +1,114 @@
++"""Explicit Gazebo mapping of L00's canonical AMR documents. No portable scene relabeling.
++The original project/scene/model are copied unchanged; native outputs have a separate digest.
++Only this audited canonical subject is supported until further mappings get readback tests.
++"""
++import argparse
++import hashlib
++import json
++from pathlib import Path
++import xml.etree.ElementTree as ET
++import yaml
++from .description import render_urdf, dump, g
++from .manifest import canonical_hash
++from .occupancy import occupancy_pgm, map_identity, map_yaml
++from worlds.generate_restaurant import box_sdf
++
++CANONICAL = Path(__file__).resolve().parents[2] / 'simulation-3d/fixtures/serve-3d-v1'
++NAMES = ('serve-3d-project.json', 'navigation-scene.json', 'physical-model-amr-1.json')
++COMPILER = {'id': 'engineering-gazebo-canonical', 'version': '1'}
++
++
++def compile_native(project, scene, physical, out_dir):
++    for actual, name in zip((project, scene, physical), NAMES):
++        if actual != json.loads((CANONICAL / name).read_text()):
++            raise ValueError('CANONICAL_INPUT_MISMATCH:' + name)
++    robot, ns = scene['robots'][0], 'amr_1'
++    drive, sensor = physical['drive'], physical['sensors'][0]
++    model, root = robot['model'], physical['baseFrameId']
++    k = model['kinematics']
++    # Keep link/joint names and every inertial/collider from the physical model.
++    urdf = ET.fromstring(render_urdf(physical['robotId'], physical['links'], physical['joints']))
++    for link in physical['links']:
++        for i, collision in enumerate(urdf.findall(f"link[@name='{link['id']}']/collision")):
++            collision.set('name', f"{link['id'].replace('/', '_')}_collision_{i}")
++        gz = ET.SubElement(urdf, 'gazebo', reference=link['id'])
++        friction = scene['world3d']['casterFriction'] if link['id'].startswith('caster-') else scene['world3d']['floorFriction']
++        for tag in ('mu1','mu2'):
++            ET.SubElement(gz, tag).text = g(friction)
++    for joint in physical['joints']:
++        if joint['kind'] == 'fixed':
++            ET.SubElement(ET.SubElement(urdf, 'gazebo', reference=joint['id']), 'preserveFixedJoint').text = 'true'
++    control = ET.SubElement(urdf, 'ros2_control', name='GazeboSimSystem', type='system')
++    ET.SubElement(ET.SubElement(control, 'hardware'), 'plugin').text = 'gz_ros2_control/GazeboSimSystem'
++    for joint in (drive['leftJointId'], drive['rightJointId']):
++        node = ET.SubElement(control, 'joint', name=joint)
++        cmd = ET.SubElement(node, 'command_interface', name='velocity')
++        for name, sign in [('min',-1),('max',1)]:
++            ET.SubElement(cmd, 'param', name=name).text = g(sign * drive['actuatorMaxSpeedRadps']['value'])
++        for name in ('position','velocity'):
++            ET.SubElement(node, 'state_interface', name=name)
++    plugin = ET.SubElement(ET.SubElement(urdf, 'gazebo'), 'plugin', filename='libgz_ros2_control-system.so', name='gz_ros2_control::GazeboSimROS2ControlPlugin')
++    # The trusted launcher substitutes this single path after digest verification.
++    ET.SubElement(plugin, 'parameters').text = '__ENGINEERING_CONTROLLER_FILE__'
++    ros = ET.SubElement(plugin, 'ros')
++    ET.SubElement(ros, 'namespace').text = ns
++    ET.SubElement(ros, 'remapping').text = '/tf:=tf'
++    ET.SubElement(ros, 'remapping').text = '/tf_static:=tf_static'
++    ET.SubElement(ros, 'remapping').text = 'diff_drive_controller/odom:=odom'
++    pose = ET.SubElement(ET.SubElement(urdf, 'gazebo'), 'plugin', filename='gz-sim-pose-publisher-system', name='gz::sim::systems::PosePublisher')
++    for tag, value in [('publish_model_pose','true'),('publish_link_pose','false'),('use_pose_vector_msg','true'),('update_frequency','50')]:
++        ET.SubElement(pose, tag).text = value
++    s = sensor['model']
++    lidar = ET.SubElement(ET.SubElement(urdf, 'gazebo', reference=sensor['parentLinkId']), 'sensor', name='engineering_lidar', type='gpu_lidar')
++    for tag, value in [('topic', f'/{ns}/scan'),('update_rate',g(s['rateHz']['value'])),('always_on','true'),('gz_frame_id',sensor['parentLinkId'])]:
++        ET.SubElement(lidar, tag).text = value
++    ray = ET.SubElement(lidar, 'lidar')
++    horizontal = ET.SubElement(ET.SubElement(ray,'scan'), 'horizontal')
++    for tag, value in [('samples',str(s['lidar2d']['beamCount'])),('resolution','1'),('min_angle',g(-s['fieldOfView']['value']/2)),('max_angle',g(s['fieldOfView']['value']/2))]:
++        ET.SubElement(horizontal, tag).text = value
++    rang = ET.SubElement(ray,'range')
++    for tag, value in [('min',g(s['range']['min']['value'])),('max',g(s['range']['max']['value'])),('resolution','0.01')]:
++        ET.SubElement(rang,tag).text = value
++    contact = ET.SubElement(ET.SubElement(urdf,'gazebo',reference=root),'sensor',name='engineering_contact',type='contact')
++    ET.SubElement(contact,'always_on').text='true'
++    ET.SubElement(contact,'update_rate').text='50'
++    ET.SubElement(contact,'topic').text=f'/model/{ns}/contacts'
++    ET.SubElement(ET.SubElement(contact,'contact'),'collision').text=root.replace('/','_')+'_collision_0'
++    controllers={'controller_manager': {'ros__parameters': {'update_rate':100,'use_sim_time':True,'diff_drive_controller':{'type':'diff_drive_controller/DiffDriveController'},'joint_state_broadcaster':{'type':'joint_state_broadcaster/JointStateBroadcaster'}}},
++                 'diff_drive_controller': {'ros__parameters': {'left_wheel_names':[drive['leftJointId']], 'right_wheel_names':[drive['rightJointId']], 'wheel_radius':drive['wheelRadiusM']['value'],'wheel_separation':drive['wheelSeparationM']['value'],'base_frame_id':root,'odom_frame_id':'odom','tf_frame_prefix_enable':False,'enable_odom_tf':True,'open_loop':False,'publish_rate':50.0,'cmd_vel_timeout':0.5,
++                    'linear':{'x':{'has_velocity_limits':True,'max_velocity':k['maxLinearMps'],'min_velocity':-k['maxLinearMps']}},'angular':{'z':{'has_velocity_limits':True,'max_velocity':k['maxAngularRadps'],'min_velocity':-k['maxAngularRadps']}}}}}
++    # Wildcard namespace is local to this isolated ROS domain, with exactly one robot.
++    controllers={f'/amr_1/{name}':value for name,value in controllers.items()}
++    world=scene['world']; rects=[]; boxes=[]
++    for boundary in [*world['boundaries'],*world['obstacles']]:
++        points=boundary['verticesM']; x=min(v[0] for v in points); y=min(v[1] for v in points); w=max(v[0] for v in points)-x; h=max(v[1] for v in points)-y
++        rects.append((x,y,w,h)); height=scene['world3d']['wallHeightM'] if boundary in world['boundaries'] else scene['world3d']['obstacleHeightM']
++        boxes.append(box_sdf(boundary['id'],x+w/2,y+h/2,w,h,height))
++    # Dormant static case fixtures are outside the navigable world until a server-selected fault moves them.
++    for i,(w,h) in enumerate([(0.8,0.8),(0.2,1.6),(0.2,1.6),(1.6,0.2),(1.6,0.2)]):
++        boxes.append(box_sdf(f'engineering_fault_{i}',-10-i*2,-10,w,h,1.2))
++    plugins=''.join(f'<plugin filename="gz-sim-{name}-system" name="gz::sim::systems::{cls}"/>' for name,cls in [('physics','Physics'),('user-commands','UserCommands'),('scene-broadcaster','SceneBroadcaster'),('contact','Contact')])
++    friction=g(scene['world3d']['floorFriction'])
++    sdf=f'''<sdf version="1.9"><world name="lab"><physics name="fixed" type="ignored"><max_step_size>0.002</max_step_size><real_time_factor>1</real_time_factor></physics>{plugins}<plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"><render_engine>ogre2</render_engine></plugin><model name="floor"><static>true</static><link name="floor"><collision name="floor"><geometry><plane><normal>0 0 1</normal><size>{world['widthM']} {world['heightM']}</size></plane></geometry><surface><friction><ode><mu>{friction}</mu><mu2>{friction}</mu2></ode></friction></surface></collision></link></model>{''.join(boxes)}</world></sdf>'''
++    map_id='eng-'+project['id']; revision=str(world['revision']); pgm=occupancy_pgm(rects,world['widthM'],world['heightM'])
++    _, identity=map_identity(map_id,revision,world['hash'],pgm,world['widthM'],world['heightM'])
++    bindings={t['pointId']:{'waypointId':t['pointId'],'mapId':map_id,'mapRevision':revision,'frame':'map',**{k:t[k] for k in ('x','y','yaw')}} for t in robot['targetBindings']}
++    footprint=model['footprint']['verticesM']; spawn=dict(zip(('x','y','yaw'),robot['initialPoseMap'])); spawn['z']=drive['wheelRadiusM']['value']
++    robot_entry={'entityId':physical['robotId'],'namespace':ns,'spawn':spawn,'footprint':{'min':[min(v[i] for v in footprint) for i in (0,1)],'max':[max(v[i] for v in footprint) for i in (0,1)]},'baseFrame':root,'sensorFrame':sensor['parentLinkId']}
++    mapping={'schemaVersion':1,'kind':'engineering-gazebo-canonical-v1','compiler':COMPILER,'projectDigest':physical['inputs']['project']['digest'],'navigationSceneDigest':scene['sceneDigest'],'physicalModelDigest':physical['modelDigest'],'calibration':'not_calibrated','sourceUnits':{'length':'m','angle':'rad'},'profiles':['engineering-amd64','engineering-arm64'],'targetBackendSet':'engineering-rigid-v1','frameMap':{'world':'map','base':root,'odom':'odom','sensor':sensor['parentLinkId']},'jointMap':[drive['leftJointId'],drive['rightJointId']],'assumptions':['mass, inertia, friction and sensor parameters are assumed','ideal velocity actuation; no torque/current/voltage model']}
++    files={'world.sdf':sdf.encode(),'robots/amr-1.urdf':ET.tostring(urdf),'controllers/amr-1.yaml':yaml.safe_dump(controllers).encode(),'map.pgm':pgm,'map.yaml':map_yaml().encode(),'map.identity.json':identity,'bindings.json':dump({'frame':'map','mapId':map_id,'mapRevision':revision,'bindings':bindings}),'scene-index.json':dump({'actors':[],'blockers':[]}), 'native-mapping.json':dump(mapping),'engineering-project.json':dump(project),'navigation-scene.json':dump(scene),'physical-model.json':dump(physical),'runtime-project.json':dump(project['runtimeProject'])}
++    manifest={'schemaVersion':1,'compiler':COMPILER,'inputHash':canonical_hash([project,scene,physical]),'map':{'mapId':map_id,'mapRevision':revision},'robots':[robot_entry],'outputs':[{'path':p,'sha256':hashlib.sha256(b).hexdigest()} for p,b in sorted(files.items())]}
++    manifest['manifestHash']=canonical_hash(manifest); files['compiler-manifest.json']=dump(manifest)
++    out=Path(out_dir)
++    for name,data in files.items():
++        path=out/name; path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
++    return mapping
++
++
++def main():
++    parser=argparse.ArgumentParser();parser.add_argument('--project',required=True);parser.add_argument('--out',required=True);args=parser.parse_args()
++    values=[json.loads(Path(args.project).read_text()),*[json.loads((CANONICAL/n).read_text()) for n in NAMES[1:]]]
++    print(json.dumps(compile_native(*values,args.out),sort_keys=True))
++
++if __name__=='__main__':
++    main()
+diff --git a/robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json b/robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json
+new file mode 100644
+index 0000000..95c91fd
+--- /dev/null
++++ b/robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json
+@@ -0,0 +1,91 @@
++{
++  "compiler": {
++    "id": "engineering-gazebo-canonical",
++    "version": "1"
++  },
++  "inputHash": "9b85b4e8ca0173a57b70d7cf20e594b0760b4480f64bc39f84b2df77d1a08f23",
++  "manifestHash": "541648e62c684a7e5ebb426e593b2cbcee8e126e5c815149996d2a959312d945",
++  "map": {
++    "mapId": "eng-serve-serve-3d",
++    "mapRevision": "1"
++  },
++  "outputs": [
++    {
++      "path": "bindings.json",
++      "sha256": "bebee712c53438fe27aa34f50963ac4332d507849f0c70bbf52f10c3021dd733"
++    },
++    {
++      "path": "controllers/amr-1.yaml",
++      "sha256": "6471f1f779271303840b6ded6b251808e0148d54c87931a096654b3d4b5aa743"
++    },
++    {
++      "path": "engineering-project.json",
++      "sha256": "b32c6d4d96edf0a82a9dae58ab417804c6677ced642372e4e4e070eb05d84abf"
++    },
++    {
++      "path": "map.identity.json",
++      "sha256": "0733d0b318db0a6c40b151ab21bb2bc04eea21d0ae09d96e3c655e9b095f0304"
++    },
++    {
++      "path": "map.pgm",
++      "sha256": "a17d6b1b022e982123a94a5aecbdb7b91d2fea5d709f68dc46337c7c75e07aba"
++    },
++    {
++      "path": "map.yaml",
++      "sha256": "160f68bfa681bc856b03efe99c03b0a3675940af451c8b5bbfdba62460cf711f"
++    },
++    {
++      "path": "native-mapping.json",
++      "sha256": "44e44bde4cc708c4821840e600212e6b0ad83c80468db0197390895a7dcb22ab"
++    },
++    {
++      "path": "navigation-scene.json",
++      "sha256": "f95f5afb6bcc44dbb6e8f12a9cb83b8a3d480b1e6bb891429f29ad8d4f142ceb"
++    },
++    {
++      "path": "physical-model.json",
++      "sha256": "5fecddde81df06fbb642359752a82cd0745cca6468fe9e5db8dccc28085257c8"
++    },
++    {
++      "path": "robots/amr-1.urdf",
++      "sha256": "48049a8170dc1f516a201fa515d1cbe5f71943527afcfedb4519d53bd6dc36b8"
++    },
++    {
++      "path": "runtime-project.json",
++      "sha256": "531b2c54c15c1d225d4ab13b316d87acb450ec55efc0333edeec0646e6258bbb"
++    },
++    {
++      "path": "scene-index.json",
++      "sha256": "8699158158640a2ab59bd9050a4ce726ce7490b48d391f919566c8a97dbaf2e7"
++    },
++    {
++      "path": "world.sdf",
++      "sha256": "8c8b2a42cc5bf0f2d227e1fdb958c0ef16fdf5196dbff11cc681d80d70fc4485"
++    }
++  ],
++  "robots": [
++    {
++      "baseFrame": "chassis/base",
++      "entityId": "amr-1",
++      "footprint": {
++        "max": [
++          0.3,
++          0.27
++        ],
++        "min": [
++          -0.40534674241424906,
++          -0.27
++        ]
++      },
++      "namespace": "amr_1",
++      "sensorFrame": "lidar/head",
++      "spawn": {
++        "x": 2,
++        "y": 1.5,
++        "yaw": 0,
++        "z": 0.09
++      }
++    }
++  ],
++  "schemaVersion": 1
++}
+diff --git a/robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json b/robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json
+new file mode 100644
+index 0000000..2b9f3fb
+--- /dev/null
++++ b/robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json
+@@ -0,0 +1,35 @@
++{
++  "assumptions": [
++    "mass, inertia, friction and sensor parameters are assumed",
++    "ideal velocity actuation; no torque/current/voltage model"
++  ],
++  "calibration": "not_calibrated",
++  "compiler": {
++    "id": "engineering-gazebo-canonical",
++    "version": "1"
++  },
++  "frameMap": {
++    "base": "chassis/base",
++    "odom": "odom",
++    "sensor": "lidar/head",
++    "world": "map"
++  },
++  "jointMap": [
++    "wheel-left/axle",
++    "wheel-right/axle"
++  ],
++  "kind": "engineering-gazebo-canonical-v1",
++  "navigationSceneDigest": "23f4aef19621e4da55f814f6cac6f09ee69eb7ee0206f1e48e96761494f54462",
++  "physicalModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
++  "profiles": [
++    "engineering-amd64",
++    "engineering-arm64"
++  ],
++  "projectDigest": "a129edccc0ccaf2ca3a87400237ae77b82f4aa8c2da4bad1abec03855b93a938",
++  "schemaVersion": 1,
++  "sourceUnits": {
++    "angle": "rad",
++    "length": "m"
++  },
++  "targetBackendSet": "engineering-rigid-v1"
++}
+diff --git a/robotics/simulation/launch/engineering_world.launch.py b/robotics/simulation/launch/engineering_world.launch.py
+new file mode 100644
+index 0000000..f4ee830
+--- /dev/null
++++ b/robotics/simulation/launch/engineering_world.launch.py
+@@ -0,0 +1,50 @@
++"""Canonical engineering AMR only. Gazebo starts paused; the owned worker controls activation."""
++import json
++import os
++import sys
++from pathlib import Path
++import yaml
++from ament_index_python.packages import get_package_share_directory
++from launch import LaunchDescription
++from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
++from launch.launch_description_sources import PythonLaunchDescriptionSource
++from launch.substitutions import LaunchConfiguration
++from launch_ros.actions import Node
++sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
++from bridge.engineering_launch import plan_engineering_launch
++
++
++def setup(context):
++    bundle=Path(LaunchConfiguration('bundle').perform(context)); plan=plan_engineering_launch(bundle); r=plan['robots'][0]; ns=r['namespace']
++    native=bundle/'.native';native.mkdir(exist_ok=True)
++    urdf=(bundle/'robots/amr-1.urdf').read_text().replace('__ENGINEERING_CONTROLLER_FILE__',str(bundle/'controllers/amr-1.yaml'))
++    (native/'spawn.urdf').write_text(urdf)
++    scene=json.loads((bundle/'navigation-scene.json').read_text());model=scene['robots'][0]['model'];kin=model['kinematics']
++    nav=Path(get_package_share_directory('mekoniq_navigation'))
++    params=yaml.safe_load((nav/'config/nav2_params.yaml').read_text())
++    def rewrite(value):
++        if isinstance(value,dict):
++            for key,v in value.items():
++                if key in ('base_frame_id','robot_base_frame','base_frame'): value[key]=r['baseFrame']
++                elif key in ('odom_frame_id','odom_frame'): value[key]='odom'
++                elif key=='odom_topic':value[key]='odom'
++                else:rewrite(v)
++        elif isinstance(value,list):
++            for v in value:rewrite(v)
++    rewrite(params)
++    amcl=params['amcl']['ros__parameters'];amcl.update({'set_initial_pose':True,'initial_pose':{**{k:r['spawn'][k] for k in ('x','y','yaw')},'z':0.0}})
++    for cm in ('local_costmap','global_costmap'):
++        params[cm][cm]['ros__parameters']['footprint']=json.dumps(model['footprint']['verticesM'])
++    params['velocity_smoother']['ros__parameters']['max_velocity']=[kin['maxLinearMps'],0.0,kin['maxAngularRadps']]
++    param_file=native/'nav2.yaml';param_file.write_text(yaml.safe_dump(params))
++    spawn=r['spawn']; gz=Path(get_package_share_directory('ros_gz_sim'))/'launch/gz_sim.launch.py'
++    return [IncludeLaunchDescription(PythonLaunchDescriptionSource(str(gz)),launch_arguments={'gz_args':f'-s --headless-rendering {bundle}/world.sdf','on_exit_shutdown':'true'}.items()),
++            Node(package='robot_state_publisher',executable='robot_state_publisher',namespace=ns,parameters=[{'robot_description':urdf,'use_sim_time':True}],remappings=[('/tf','tf'),('/tf_static','tf_static')]),
++            Node(package='ros_gz_sim',executable='create',arguments=['-world','lab','-file',str(native/'spawn.urdf'),'-name',ns,'-x',str(spawn['x']),'-y',str(spawn['y']),'-z',str(spawn['z']),'-Y',str(spawn['yaw'])]),
++            Node(package='controller_manager',executable='spawner',namespace=ns,arguments=['joint_state_broadcaster','diff_drive_controller','--controller-manager',f'/{ns}/controller_manager','--controller-manager-timeout','60','--switch-timeout','60']),
++            Node(package='ros_gz_bridge',executable='parameter_bridge',arguments=['/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',f'/{ns}/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',f'/model/{ns}/pose@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V',f'/model/{ns}/contacts@ros_gz_interfaces/msg/Contacts[gz.msgs.Contacts']),
++            IncludeLaunchDescription(PythonLaunchDescriptionSource(str(nav/'launch/navigation.launch.py')),launch_arguments={'namespace':ns,'use_sim_time':'true','map':plan['map'],'params_file':str(param_file),'autostart':'true'}.items())]
++
++
++def generate_launch_description():
++    return LaunchDescription([DeclareLaunchArgument('bundle'),OpaqueFunction(function=setup)])
+diff --git a/robotics/simulation/tests/test_engineering_native_parity.py b/robotics/simulation/tests/test_engineering_native_parity.py
+new file mode 100644
+index 0000000..4080758
+--- /dev/null
++++ b/robotics/simulation/tests/test_engineering_native_parity.py
+@@ -0,0 +1,152 @@
++"""Portable compilation and protocol checks only; these never qualify ROS/Gazebo."""
++import copy
++import json
++import xml.etree.ElementTree as ET
++from pathlib import Path
++import pytest
++
++ROOT = Path(__file__).resolve().parents[3]
++FIX = ROOT / 'robotics/simulation-3d/fixtures/serve-3d-v1'
++
++
++def inputs():
++    return [json.loads((FIX / p).read_text()) for p in ('serve-3d-project.json', 'navigation-scene.json', 'physical-model-amr-1.json')]
++
++
++def test_native_mapping_preserves_canonical_physics_and_single_writer(tmp_path):
++    from compiler.engineering_native import compile_native
++    project, scene, physical = inputs()
++    mapping = compile_native(project, scene, physical, tmp_path)
++    assert mapping['physicalModelDigest'] == physical['modelDigest']
++    assert mapping['navigationSceneDigest'] == scene['sceneDigest']
++    root = ET.parse(tmp_path / 'robots/amr-1.urdf').getroot()
++    for link in physical['links']:
++        actual = root.find(f"link[@name='{link['id']}']")
++        assert float(actual.find('inertial/mass').get('value')) == link['massKg']['value']
++        inertia = actual.find('inertial/inertia')
++        assert [float(inertia.get(k)) for k in ('ixx','ixy','ixz','iyy','iyz','izz')] == link['inertiaKgM2']
++        assert len(actual.findall('collision')) == len(link['collision'])
++    assert root.find('ros2_control/hardware/plugin').text == 'gz_ros2_control/GazeboSimSystem'
++    assert len(root.findall('ros2_control/joint')) == 2
++    assert 'DiffDrive' not in (tmp_path / 'robots/amr-1.urdf').read_text()
++    assert root.find("gazebo/plugin[@name='gz_ros2_control::GazeboSimROS2ControlPlugin']") is not None
++    assert root.find('.//sensor[@type="gpu_lidar"]') is not None
++    assert mapping['calibration'] == 'not_calibrated'
++    assert compile_native(project, scene, physical, tmp_path / 'again') == mapping
++
++
++def test_wrong_physical_model_or_legacy_project_is_refused_before_writes(tmp_path):
++    from compiler.engineering_native import compile_native
++    project, scene, physical = inputs()
++    wrong = copy.deepcopy(physical)
++    wrong['links'][0]['massKg']['value'] += 1
++    for args in [(project, scene, wrong), (project['runtimeProject'], scene, physical)]:
++        with pytest.raises(ValueError, match='CANONICAL_INPUT_MISMATCH'):
++            compile_native(*args, tmp_path / 'rejected')
++    assert not (tmp_path / 'rejected').exists()
++
++
++def test_clock_reset_and_stale_feedback_fail_closed():
++    from bridge.engineering_worker import NativeClockMapping
++    clock = NativeClockMapping()
++    assert clock.observe(1_000_000_000, 50)['sourceTick'] == 0
++    assert clock.observe(1_040_000_000, 100)['sourceTick'] == 2
++    with pytest.raises(RuntimeError, match='CLOCK_RESET'):
++        clock.observe(1_000_000_000, 110)
++    with pytest.raises(RuntimeError, match='CLOCK_FAILED'):
++        clock.observe(1_060_000_000, 120)
++    clock = NativeClockMapping()
++    clock.observe(100, 100)
++    with pytest.raises(RuntimeError, match='FEEDBACK_STALE'):
++        clock.check_fresh(600_000_101)
++
++
++def test_native_launch_rejects_missing_plugin_and_foreign_bundle(tmp_path):
++    from compiler.engineering_native import compile_native
++    from bridge.engineering_launch import plan_engineering_launch
++    compile_native(*inputs(), tmp_path)
++    plan = plan_engineering_launch(tmp_path)
++    assert plan['robots'][0]['namespace'] == 'amr_1'
++    assert '/clock' in plan['topics'] and '/amr_1/scan' in plan['topics']
++    assert plan['actions'] == ['/amr_1/navigate_to_pose']
++    path = tmp_path / 'robots/amr-1.urdf'
++    path.write_text(path.read_text().replace('gz_ros2_control/GazeboSimSystem', 'evil/Hardware'))
++    with pytest.raises(ValueError, match='BUNDLE_DIGEST_MISMATCH'):
++        plan_engineering_launch(tmp_path)
++
++
++def test_resealed_native_bundle_is_reproduced_not_trusted(tmp_path):
++    from compiler.engineering_native import compile_native
++    from compiler.manifest import canonical_hash
++    from bridge.engineering_launch import plan_engineering_launch
++    import hashlib
++    compile_native(*inputs(),tmp_path)
++    path=tmp_path/'robots/amr-1.urdf';path.write_text(path.read_text().replace('gz_ros2_control/GazeboSimSystem','evil/Hardware'))
++    manifest=json.loads((tmp_path/'compiler-manifest.json').read_text())
++    for entry in manifest['outputs']:
++        if entry['path']=='robots/amr-1.urdf':entry['sha256']=hashlib.sha256(path.read_bytes()).hexdigest()
++    manifest['manifestHash']=canonical_hash({k:v for k,v in manifest.items() if k!='manifestHash'})
++    (tmp_path/'compiler-manifest.json').write_text(json.dumps(manifest))
++    with pytest.raises(ValueError,match='NATIVE_MAPPING_MISMATCH'):
++        plan_engineering_launch(tmp_path)
++
++
++def test_bag_replay_reads_message_times_not_claimed_metadata(tmp_path):
++    import sqlite3
++    from bridge.engineering_bag import inspect_bag
++    conn=sqlite3.connect(tmp_path/'test.db3');conn.executescript('create table topics(id integer,name text);create table messages(topic_id integer,timestamp integer);insert into topics values(1,"/clock");insert into messages values(1,1000000000);insert into messages values(1,2000000000);');conn.close()
++    (tmp_path/'metadata.yaml').write_text('fake: complete')
++    assert inspect_bag(tmp_path)['topics']['/clock']=={'count':2,'firstNs':'1000000000','lastNs':'2000000000','maxGapNs':'1000000000'}
++
++
++def test_native_protocol_refuses_stale_tf_and_keeps_lost_ack_unknown(tmp_path):
++    from bridge.engineering_session import EngineeringNav2Session
++    from test_nav2_session import FakePorts,execute_args
++    ports=FakePorts(['robot_amr_1']); session=EngineeringNav2Session(ports,'run-1',['robot_amr_1'],tmp_path)
++    ports.health_reasons=['TF_MISSING:map:chassis/base']
++    assert session.execute(execute_args())['status']=='rejected'
++    assert ports.clients['robot_amr_1'].sent==[]
++    ports.health_reasons=[];ports.clients['robot_amr_1'].unreachable=True
++    assert session.execute(execute_args('lost'))['status']=='unknown'
++    ports.clients['robot_amr_1'].unreachable=False
++    assert session.execute(execute_args('lost'))['status']=='unknown'
++    ports.health_reasons=['SCAN_FEEDBACK_STALE']
++    assert session.query({'commandId':'lost','robotId':'robot_amr_1'})['status']=='unknown'
++
++
++@pytest.mark.parametrize('terminal,code,status',[('ABORTED',208,'failed'),('CANCELED',0,'cancelled')])
++def test_native_obstacle_no_path_and_cancel_are_never_completion(tmp_path,terminal,code,status):
++    from bridge.engineering_session import EngineeringNav2Session
++    from test_nav2_session import FakePorts,execute_args
++    ports=FakePorts(['robot_amr_1']); session=EngineeringNav2Session(ports,'run-1',['robot_amr_1'],tmp_path)
++    accepted=session.execute(execute_args());ports.clients['robot_amr_1'].settle(accepted['nativeGoalId'],terminal,code)
++    assert session.query({'commandId':'cmd-1','robotId':'robot_amr_1'})['status']==status
++
++
++def test_fault_effects_are_allowlisted_and_owned_by_the_engineering_session(tmp_path):
++    from bridge.engineering_session import engineering_fault_poses
++    assert len(engineering_fault_poses('obstacle'))==1
++    assert len(engineering_fault_poses('no-path'))==4
++    for model,pose in engineering_fault_poses('no-path'):
++        assert model.startswith('engineering_fault_') and len(pose)==4
++    with pytest.raises(ValueError,match='ENGINEERING_CASE_INVALID'):
++        engineering_fault_poses('custom-shell')
++
++
++def test_recovered_bag_is_a_verified_copy_and_original_is_unchanged(tmp_path):
++    import sqlite3,hashlib
++    from bridge.engineering_bag import retain_recovered_bag,inspect_bag
++    raw=tmp_path/'raw';raw.mkdir();file=raw/'run.db3'
++    conn=sqlite3.connect(file);conn.executescript('create table topics(id integer,name text);create table messages(id integer,topic_id integer,timestamp integer,data blob);insert into topics values(1,"/clock");insert into messages values(1,1,1000000000,x\'0102\');insert into messages values(2,1,2000000000,x\'0304\');');conn.close()
++    before=hashlib.sha256(file.read_bytes()).hexdigest()
++    retain_recovered_bag(raw,tmp_path/'copy')
++    assert hashlib.sha256(file.read_bytes()).hexdigest()==before
++    assert inspect_bag(raw)==inspect_bag(tmp_path/'copy')
++    assert json.loads((tmp_path/'copy/retention.json').read_text())[0]['method']=='sqlite-readonly-backup-after-owned-worker-loss'
++
++
++def test_frozen_native_manifest_matches_current_compiler(tmp_path):
++    from compiler.engineering_native import compile_native
++    compile_native(*inputs(),tmp_path)
++    for name in ('compiler-manifest.json','native-mapping.json'):
++        assert (tmp_path/name).read_bytes()==(ROOT/'robotics/simulation/fixtures/engineering-navigation-v1'/name).read_bytes()
+diff --git a/robotics/simulation/tests/test_engineering_profile.py b/robotics/simulation/tests/test_engineering_profile.py
+index 8d4350d..abbbf47 100644
+--- a/robotics/simulation/tests/test_engineering_profile.py
++++ b/robotics/simulation/tests/test_engineering_profile.py
+@@ -59,10 +59,18 @@ def test_shipped_locks_are_candidates_with_no_invented_inventory():
+         assert lock["qualification"] == "not_run" and lock["packages"] is None
+         assert {"ros-jazzy-navigation2", "ros-jazzy-moveit", "ros-jazzy-gz-ros2-control"} <= set(lock["required"])
+ 
+ 
+ def test_inspect_on_an_unprovisioned_host_reports_blockers_not_availability():
+     from bridge.native_profile import inspect_profile
+     report = inspect_profile("engineering-arm64")
+     assert report["id"] == "engineering-arm64" and report["available"] is False
+     assert "INVENTORY_UNRESOLVED" in report["reasonCodes"]
+     assert inspect_profile("engineering-unknown")["reasonCodes"] == ["PROFILE_UNKNOWN"]
++
++
++def test_native_profile_requires_plugins_runtime_and_apt_provenance():
++    from bridge.engineering_profile import qualify_native_inventory
++    candidate=locked()
++    assert 'PLUGIN_INVENTORY_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']
++    assert 'RUNTIME_INVENTORY_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']
++    assert 'APT_PROVENANCE_UNRESOLVED' in qualify_native_inventory(actual(),candidate)['reasons']
+diff --git a/scripts/lab-sil.mjs b/scripts/lab-sil.mjs
+index 00371dd..0d559c7 100644
+--- a/scripts/lab-sil.mjs
++++ b/scripts/lab-sil.mjs
+@@ -9,21 +9,21 @@ import {validNativeProfileReport} from './native-sim/profile-report.mjs';
+ import {spawnSync} from 'node:child_process';
+ import {createHash} from 'node:crypto';
+ import {existsSync} from 'node:fs';
+ import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
+ import {dirname,join,resolve} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),SIM=join(root,'robotics/simulation'),TSX=join(root,'node_modules/.bin/tsx'),CLI=join(root,'packages/lab-runtime/src/v2/sil/cli.ts');
+ const BACKENDS=['gazebo_nav2','linuxcnc_sim'],ARM=join(root,'integrations/arm-controller');
+ const sha=(s)=>createHash('sha256').update(s).digest('hex');
+ const usage=(m)=>{console.error(`${m}\nusage: lab-sil.mjs doctor --backend gazebo_nav2 [--json] [--environment-profile ID] | run (--scenario ID --seed N | --campaign ID [--seed N]) [--repeat N] --out DIR [--backend-set ID] [--environment-profile ID] [--engineering-project PATH] | verify --input DIR`);process.exit(2);};
+-const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path','engineering-project':'path'},verify:{input:'path'}};
++const SCHEMA={doctor:{backend:'string',json:'flag','environment-profile':'id','native-config':'path'},run:{scenario:'id',campaign:'id',seed:'int',repeat:'int',out:'path','backend-set':'id','environment-profile':'id','native-config':'path','engineering-project':'path','engineering-case':'id'},verify:{input:'path'}};
+ function parse(command,argv){
+  const schema=SCHEMA[command];if(!schema)usage(`UNKNOWN_COMMAND:${command??''}`);
+  const o={};
+  for(let i=0;i<argv.length;i++){
+   const a=argv[i];if(!a.startsWith('--'))usage(`UNEXPECTED_ARGUMENT:${a}`);
+   const key=a.slice(2),kind=schema[key];if(!kind)usage(`UNKNOWN_OPTION:${a}`);
+   if(kind==='flag'){o[key]=true;continue;}
+   const v=argv[++i];if(v===undefined||v.startsWith('--'))usage(`MISSING_VALUE:${a}`);
+   if(kind==='int'&&!/^[0-9]{1,9}$/.test(v))usage(`INVALID_INT:${a}`);
+   if(kind==='id'&&!/^[A-Za-z0-9_.:-]{1,200}$/.test(v))usage(`INVALID_ID:${a}`);
+@@ -83,53 +83,57 @@ const preflightOf=(scenario,backendSet)=>{
+ /** A campaign fixture names its scenarios, seeds, repeats and the backend set each needs; --seed/--repeat override for every scenario. */
+ async function campaignEntries(o){
+  let fixture;try{fixture=JSON.parse(await readFile(join(root,'tests/fixtures/digital-twin/campaigns',`${o.campaign}.json`),'utf8'));}catch{usage(`CAMPAIGN_UNKNOWN:${o.campaign}`);}
+  if(fixture.schemaVersion!==1||fixture.id!==o.campaign||!Array.isArray(fixture.scenarios)||!fixture.scenarios.length)usage(`CAMPAIGN_INVALID:${o.campaign}`);
+  return fixture.scenarios.map(s=>({id:s.id,seed:o.seed??s.seed,repeat:o.repeat??s.repeat,backendSet:s.simulation.backendSetId,requires:s.simulation.requires}));
+ }
+ async function run(o){
+  if(!o.out)usage('MISSING_OPTION:--out');
+  if(o.campaign&&(o.scenario||o['backend-set']))usage('CAMPAIGN_EXCLUDES:--scenario/--backend-set');
+  // engineering sets run a compiled project, never a preset; a project with a legacy set is a mistake, not a fallback
++ if(o['engineering-case']&&!['nominal','obstacle','no-path','cancel','worker-loss'].includes(o['engineering-case']))usage('ENGINEERING_CASE_INVALID');
+  const engineeringSet=String(o['backend-set']??'').startsWith('engineering-');
++ const subjectCommit=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
++ if(o['engineering-case']&&!engineeringSet)usage('ENGINEERING_CASE_NEEDS_ENGINEERING_BACKEND_SET');
+  if(engineeringSet&&!o['engineering-project'])usage('MISSING_OPTION:--engineering-project');
+  if(o['engineering-project']&&!engineeringSet)usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_BACKEND_SET');
+  if(o['engineering-project']&&!/^engineering-(arm64|amd64)$/.test(String(o['environment-profile']??'')))usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_ENVIRONMENT_PROFILE');
+  if(o['engineering-project']&&!existsSync(o['engineering-project']))usage(`ENGINEERING_PROJECT_MISSING:${o['engineering-project']}`);
+  if(!o.campaign)for(const k of ['scenario','seed'])if(o[k]===undefined)usage(`MISSING_OPTION:--${k}`);
+  const entries=o.campaign?await campaignEntries(o):[{id:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSet:o['backend-set']??'simulation-default',requires:null}];
+  for(const e of entries){e.preflight=preflightOf(e.id,e.backendSet);if(e.requires&&e.preflight.ok&&[...e.requires].sort().join()!==[...e.preflight.required].sort().join())e.preflight={...e.preflight,ok:false,reasons:[...e.preflight.reasons,`CAMPAIGN_REQUIRES_MISMATCH:${e.requires.join(',')}`]};}
+  const blocked=entries.filter(e=>!e.preflight.ok);
+  if(!o.campaign&&blocked.length){console.error(`PREFLIGHT_FAILED: ${JSON.stringify(blocked[0].preflight)}`);process.exit(2);}
+  const reports=await Promise.all([...new Set(entries.flatMap(e=>e.preflight.required))].map(b=>doctor(b,o['environment-profile'],o['native-config']??process.env.LAB_NATIVE_CONFIG)));
+  const report=reports.length===1?reports[0]:{prerequisitesMet:reports.length>0&&reports.every(r=>r.prerequisitesMet),checks:reports.flatMap(r=>r.checks.map(c=>({...c,id:`${r.backend}:${c.id}`}))),providers:reports};
+  await mkdir(o.out,{recursive:true});
+  const manifestFile=join(o.out,o.campaign?'campaign-manifest.json':'run-manifest.json');
+  const scenarios=entries.map(e=>({scenarioId:e.id,seed:e.seed,repeat:e.repeat,backendSetId:e.backendSet,requiredBackends:e.preflight.required,...e.preflight.ok?{}:{reasons:e.preflight.reasons}}));
+  const expectedRuns=entries.reduce((n,e)=>n+e.repeat,0);
+  if(!report.prerequisitesMet||blocked.length){
+   // every scenario or nothing: a campaign with one blocked scenario is not_run as a whole, never "pass with skips"
+   const reasons=[...report.checks.filter(c=>!c.ok).map(c=>`PREREQUISITE_MISSING:${c.id}`),...blocked.map(e=>`SCENARIO_BLOCKED:${e.id}:${e.preflight.reasons.join('|')}`)];
+-  await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'not_run',result:'blocked_external',...o.campaign?{campaignId:o.campaign,scenarios,expectedRuns}:{scenarioId:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSetId:entries[0].backendSet,requiredBackends:entries[0].preflight.required},reasons,doctor:report},null,2)+'\n');
++  await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'not_run',result:'blocked_external',...engineeringSet?{sourceCommit:subjectCommit,engineeringCase:o['engineering-case']??'nominal',accepted:false,dynamics:'not_calibrated'}:{},...o.campaign?{campaignId:o.campaign,scenarios,expectedRuns}:{scenarioId:o.scenario,seed:o.seed,repeat:o.repeat??1,backendSetId:entries[0].backendSet,requiredBackends:entries[0].preflight.required},reasons,doctor:report},null,2)+'\n');
+   console.error(`NOT_RUN: ${reasons.join(', ')} (see ${manifestFile})`);process.exit(2);
+  }
+  const fixtures=join(root,'tests/fixtures/digital-twin');
+  const commit=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
+  if(o.campaign)await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'running',campaignId:o.campaign,sourceCommit:commit,scenarios,expectedRuns,doctor:report},null,2)+'\n');
+  let failed=0,completed=0;
+  for(const e of entries){
+-  const fixture=join(fixtures,e.preflight.fixture.project),scenarioFile=e.preflight.fixture.scenario?join(fixtures,e.preflight.fixture.scenario):null;
++  const engineering=e.backendSet==='engineering-rigid-v1';
++  const fixture=engineering?o['engineering-project']:join(fixtures,e.preflight.fixture.project),scenarioFile=e.preflight.fixture?.scenario?join(fixtures,e.preflight.fixture.scenario):null;
+   for(let i=1;i<=e.repeat;i++){
+    const dir=o.campaign?join(o.out,e.id,`run-${i}`):join(o.out,`run-${i}`);await mkdir(dir,{recursive:true});
+-   const compiled=spawnSync('python3',['-m','compiler','--fixture',fixture,'--out',join(dir,'bundle'),...scenarioFile?['--scenario',scenarioFile]:[]],{cwd:SIM,env:{...process.env,PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`},encoding:'utf8'});
++   const compiled=spawnSync('python3',engineering?['-m','compiler.engineering_native','--project',fixture,'--out',join(dir,'bundle')]:['-m','compiler','--fixture',fixture,'--out',join(dir,'bundle'),...scenarioFile?['--scenario',scenarioFile]:[]],{cwd:SIM,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${SIM}:${join(root,'robotics/agent')}`},encoding:'utf8'});
+    if(compiled.status!==0){console.error(`COMPILE_FAILED: ${compiled.stderr.trim()}`);process.exit(1);}
+-   const r=spawnSync(TSX,[CLI,'run','--scenario',e.id,'--seed',String(e.seed),'--out',dir,'--fixture',fixture,'--bundle',join(dir,'bundle'),'--backend-set',e.backendSet,'--source-commit',commit,...o['environment-profile']?['--environment-profile',o['environment-profile']]:[],...(o['native-config']??process.env.LAB_NATIVE_CONFIG)?['--native-config',o['native-config']??process.env.LAB_NATIVE_CONFIG]:[]],{stdio:'inherit',timeout:3600000});
++   const r=spawnSync(TSX,[CLI,'run','--scenario',e.id,'--seed',String(engineering?e.seed+i-1:e.seed),'--out',dir,'--fixture',fixture,'--bundle',join(dir,'bundle'),'--backend-set',e.backendSet,'--source-commit',commit,...o['environment-profile']?['--environment-profile',o['environment-profile']]:[],...engineering&&o['engineering-case']?['--engineering-case',o['engineering-case']]:[],...(o['native-config']??process.env.LAB_NATIVE_CONFIG)?['--native-config',o['native-config']??process.env.LAB_NATIVE_CONFIG]:[]],{stdio:'inherit',timeout:3600000});
+    if(r.status!==0)failed++;else completed++;
+   }
+  }
+  if(o.campaign)await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:failed?'failed':'completed',campaignId:o.campaign,sourceCommit:commit,scenarios,expectedRuns,completedRuns:completed,failedRuns:failed,doctor:report},null,2)+'\n');
+  process.exit(failed?1:0);
+ }
+ async function verify(o){
+  if(!o.input)usage('MISSING_OPTION:--input');
+  let entries;try{entries=await readdir(o.input,{withFileTypes:true});}catch{console.error(`INPUT_MISSING:${o.input}`);process.exit(2);}
+  let campaign=null;try{campaign=JSON.parse(await readFile(join(o.input,'campaign-manifest.json'),'utf8'));}catch{campaign=null;}
+@@ -137,20 +141,21 @@ async function verify(o){
+  const runDir=/^run-\d+$/;
+  const dirs=[o.input,...entries.filter(e=>e.isDirectory()&&runDir.test(e.name)).map(e=>join(o.input,e.name))];
+  // a campaign nests <scenario>/run-N
+  for(const e of entries)if(e.isDirectory()&&!runDir.test(e.name))try{for(const r of await readdir(join(o.input,e.name),{withFileTypes:true}))if(r.isDirectory()&&runDir.test(r.name))dirs.push(join(o.input,e.name,r.name));}catch{/* not a scenario directory */}
+  const manifests=[];
+  for(const d of dirs){try{manifests.push([d,JSON.parse(await readFile(join(d,'run-manifest.json'),'utf8'))]);}catch{/* not a run directory */}}
+  if(!manifests.length){console.error('INPUT_EMPTY: no run-manifest.json');process.exit(2);}
+  let failures=[],notRun=[];
+  for(const [d,m] of manifests){
+   if(m.status==='not_run'||m.evidence!=='sil'){notRun.push(`${d}: ${m.status==='not_run'?(m.reasons??[]).join(',')||'not_run':`evidence ${m.evidence}`}`);continue;}
++  if(m.backendSetId==='engineering-rigid-v1'){const checked=spawnSync(TSX,[CLI,'verify-engineering','--input',d],{encoding:'utf8',timeout:60000});if(checked.status!==0)failures.push(`${d}: engineering evidence replay failed: ${(checked.stdout||checked.stderr).trim()}`);}
+   for(const out of m.outputs??[]){let bytes;try{bytes=await readFile(join(d,out.path));}catch{failures.push(`${d}: missing ${out.path}`);continue;}if(sha(bytes)!==out.sha256)failures.push(`${d}: hash mismatch ${out.path}`);}
+   if(m.scenario?.id==='BV01'&&m.nativeFaultExpectation){
+    try{const path='fault-case-assessment.json',assessment=JSON.parse(await readFile(join(d,path),'utf8'));if(!m.outputs?.some(o=>o.path===path)||JSON.stringify(assessment.expectation)!==JSON.stringify(m.nativeFaultExpectation)||assessment.producer!=='native'||assessment.businessOutcome?.status!=='needs_attention'||assessment.businessOutcome?.served!=='0'||!Array.isArray(assessment.assessment)||!assessment.assessment.length)failures.push(`${d}: invalid negative-case assessment`);if(assessment.result==='not_run')notRun.push(`${d}: negative-case assessment not_run`);if(!['pass','not_run'].includes(assessment.result)||assessment.assessment.some(a=>a.result==='fail')||assessment.result==='pass'&&assessment.assessment.some(a=>a.result!=='pass'))failures.push(`${d}: negative-case assessment failed`);}catch{failures.push(`${d}: negative-case assessment unreadable`);}
+   }
+   try{const t=JSON.parse(await readFile(join(d,'telemetry.json'),'utf8'));if(!Array.isArray(t.samples)||!t.samples.length)failures.push(`${d}: zero telemetry samples`);}catch{failures.push(`${d}: telemetry unreadable`);}
+   try{const a=JSON.parse(await readFile(join(d,'assertions.json'),'utf8'));if(!Array.isArray(a)||!a.length)failures.push(`${d}: no assertions`);for(const x of a){if(x.result==='fail')failures.push(`${d}: ${x.id} failed`);if(m.scenario?.id==='BV01'&&x.result==='not_run')notRun.push(`${d}: ${x.id} not_run`);}if(m.scenario?.id==='BV01')for(const required of ['ARM03','SIM.engine-samples','BV01.cup-ledger','SIM.no-contact','BV01.native-verification',...m.nativeFaultExpectation?['BV01.fault-schedule','BV01.fault-observed','BV01.expected-attention','BV01.custody-preserved','BV01.no-replay']:['BV01.served-after-handoff']])if(!a.some(x=>x.id===required))failures.push(`${d}: missing ${required}`);}catch{failures.push(`${d}: assertions unreadable`);}
+  }
+  if(campaign){
+   // exact run count, one source commit and one world/backend identity per scenario across its repeats
+   if(manifests.length!==campaign.expectedRuns)failures.push(`${o.input}: ${manifests.length} runs, campaign expects ${campaign.expectedRuns}`);
+diff --git a/scripts/native-sim/profile-report.mjs b/scripts/native-sim/profile-report.mjs
+index f4eb049..7bd0d97 100644
+--- a/scripts/native-sim/profile-report.mjs
++++ b/scripts/native-sim/profile-report.mjs
+@@ -1,11 +1,12 @@
+ import {isSha256 as sha,nativeInventoryIssues} from './native-inventory.mjs';
+ const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+ const strings=v=>Array.isArray(v)&&v.every(x=>typeof x==='string');
+ export function validNativeProfileReport(v,id,expected){
+  if(expected!==undefined)return v?.profileId===id&&expected?.profile?.id===id&&nativeInventoryIssues(v,expected).length===0;
+  if(!object(v)||v.id!==id||typeof v.available!=='boolean'||!strings(v.reasonCodes))return false;
+  if(!v.available)return v.reasonCodes.length>0;
+  if(v.reasonCodes.length||!sha(v.profileSha256)||!sha(v.inventorySha256)||v.installation!=='native_apt'||v.image!==null||v.headless!==true)return false;
+  const a=v.actual,r=a?.runtime;
++ if(/^engineering-(amd64|arm64)$/.test(id))return object(a)&&a.platform==='linux'&&a.arch===id.slice(12)&&a.os==='ubuntu24.04'&&object(a.packages)&&Object.keys(a.packages).length>0&&object(a.digests)&&Object.keys(a.digests).length>0&&Object.entries(a.digests).every(([p,d])=>p.startsWith('/')&&sha(d))&&object(a.aptProvenance?.sources)&&Object.keys(a.aptProvenance.sources).length>0&&Object.values(a.aptProvenance.sources).every(sha)&&object(r)&&r.rosDistro==='jazzy'&&strings(r.amentPrefixes)&&object(r.overlayManifests)&&Object.values(r.overlayManifests).every(sha)&&!r.overlayError&&['pythonPath','libraryPath','gazeboPluginPath'].every(k=>typeof r[k]==='string')&&['ros2','gz','python3'].every(k=>object(r.executables?.[k])&&typeof r.executables[k].path==='string'&&r.executables[k].path.startsWith('/')&&sha(r.executables[k].sha256));
+  return object(a)&&a.platform==='linux'&&a.architecture==='arm64'&&a.os?.id==='ubuntu'&&a.os.version==='24.04'&&object(a.packages)&&Object.keys(a.packages).length>0&&Object.values(a.packages).every(x=>typeof x==='string'&&x.length>0)&&object(r)&&r.rosDistro==='jazzy'&&strings(r.amentPrefixes)&&object(r.overlayManifests)&&Object.values(r.overlayManifests).every(sha)&&['pythonPath','libraryPath','gazeboPluginPath'].every(k=>typeof r[k]==='string')&&['ros2','gz'].every(k=>object(r.executables?.[k])&&typeof r.executables[k].path==='string'&&r.executables[k].path.startsWith('/')&&sha(r.executables[k].sha256));
+ }
+diff --git a/scripts/native-sim/tool-identity.mjs b/scripts/native-sim/tool-identity.mjs
+index baf0f17..87d8f41 100644
+--- a/scripts/native-sim/tool-identity.mjs
++++ b/scripts/native-sim/tool-identity.mjs
+@@ -3,15 +3,15 @@ import {readdirSync,readFileSync,realpathSync} from 'node:fs';
+ import {join,resolve} from 'node:path';
+ import {createHash} from 'node:crypto';
+ function toolClosure(root,paths,symlink,ignorePythonMetadata=false){
+  root=realpathSync(root);const files=[];
+  const walk=(relative)=>{const path=join(root,relative);if(realpathSync(path)!==resolve(path))throw new Error(symlink);for(const e of readdirSync(path,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name,'en'))){if(['__pycache__','.pytest_cache','.venv','tests'].includes(e.name)&&relative!=='tests/fixtures')continue;if(ignorePythonMetadata&&/\.(egg|dist)-info$/.test(e.name))continue;const r=relative+'/'+e.name;if(e.isDirectory())walk(r);else if(e.isFile()&&!/\.(pyc|pyo)$/.test(e.name)){const full=join(root,r);if(realpathSync(full)!==full)throw new Error(symlink);const bytes=readFileSync(full);files.push({path:r,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length});}else if(e.isSymbolicLink())throw new Error(symlink);}};
+  for(const path of paths)walk(path);
+  files.sort((a,b)=>a.path<b.path?-1:1);return {version:1,digest:createHash('sha256').update(JSON.stringify(files)).digest('hex'),files};
+ }
+ // Editable installs generate distribution metadata in robotics/agent. It is not an imported tool or consumed resource; including it makes a clean clone export a different runtime.
+ // Portable roots keep their strict file inventory (the Lab launcher verifies every distributed file).
+-export const nativeToolClosure=(root)=>toolClosure(root,['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK',true);
++export const nativeToolClosure=(root)=>toolClosure(root,['robotics/simulation','robotics/simulation-3d/fixtures/serve-3d-v1','robotics/navigation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK',true);
+ /** Portable (macOS/Linux developer) Python tools: IR-SIM worker + its fixtures, LinkForge shadow worker, the Robotics Toolbox/PID algorithm checker, the Webots 3D plant compiler/worker (the engine is a host install), the MuJoCo arm cell compiler (the engine is the pinned wheel of its lock) with its xarm6 fixture, the shared description/compiler helper with the robotics/simulation
+  * packages it imports (compiler/__init__ -> compile_world -> worlds.generate_restaurant, actors.blocker/scenario/pedestrian) and the contract schemas. Separate from the native closure; neither replaces the other. */
+ export const PORTABLE_TOOL_PATHS=['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation-3d','robotics/simulation-mujoco','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas'];
+ export const portableToolClosure=(root)=>toolClosure(root,PORTABLE_TOOL_PATHS,'PORTABLE_TOOL_SYMLINK');
+diff --git a/tests/integration/engineering-native-evidence.test.ts b/tests/integration/engineering-native-evidence.test.ts
+new file mode 100644
+index 0000000..c2feb12
+--- /dev/null
++++ b/tests/integration/engineering-native-evidence.test.ts
+@@ -0,0 +1,39 @@
++import {expect,test} from 'vitest';
++import {assessEngineeringEvidence,ENGINEERING_TOPICS} from '../../packages/lab-runtime/src/v2/sil/engineering-native';
++const bag=()=>({storageId:'sqlite3',topics:Object.fromEntries(ENGINEERING_TOPICS.map(topic=>[topic,{count:10,firstNs:'1000000000',lastNs:'2000000000',maxGapNs:'100000000'}]))});
++const coverage=()=>({clockMapping:[{providerSimNs:'1000000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:50,receiveMonotonicNs:'1000000100'}],bag:bag(),producer:'native',blockers:[]});
++test('a bag needs actual expected topics and full provider-clock time coverage',()=>{
++ expect(assessEngineeringEvidence(coverage()).result).toBe('pass');
++ const absent=coverage();delete (absent.bag.topics as Record<string,unknown>)['/amr_1/scan'];expect(assessEngineeringEvidence(absent).blockers).toContain('BAG_TOPIC_MISSING:/amr_1/scan');
++ const late=coverage();late.bag.topics['/amr_1/scan']!.firstNs='1700000000';expect(assessEngineeringEvidence(late).blockers).toContain('BAG_TIME_COVERAGE:/amr_1/scan');
++ const gap=coverage();gap.bag.topics['/clock']!.maxGapNs='700000000';expect(assessEngineeringEvidence(gap).blockers).toContain('BAG_TIME_COVERAGE:/clock');
++});
++test('protocol doubles, clock reset and no clock cannot qualify native evidence',()=>{
++ expect(assessEngineeringEvidence({...coverage(),producer:'protocol_double'}).result).toBe('not_run');
++ expect(assessEngineeringEvidence({...coverage(),clockMapping:[]}).result).toBe('not_run');
++ const reset=coverage();reset.clockMapping[1]!.providerSimNs='0';expect(assessEngineeringEvidence(reset).blockers).toContain('CLOCK_MAPPING_INVALID');
++});
++
++test('canonical handoff requires matching native artifact mapping and still needs host qualification',async()=>{
++ const {nativeHandoffFixture}=await import('../fixtures/native-handoff');
++ const {validateNativeHandoff}=await import('../../packages/lab-runtime/src/v2/sil/native-handoff');
++ const {readFile,rm}=await import('node:fs/promises');
++ const f=await nativeHandoffFixture('ros_navigation');
++ try{
++  const base='robotics/simulation/fixtures/engineering-navigation-v1';
++  for(const name of ['compiler-manifest.json','native-mapping.json'])await f.put('engine','native/'+name,await readFile(base+'/'+name),base+'/'+name);
++  await f.reseal();const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);
++  expect(r.issues.map(x=>x.code)).not.toContain('NATIVE_ENGINE_MAPPING_UNRESOLVED');
++  expect(r.issues.map(x=>x.code)).toContain('NATIVE_ARTIFACT_CLOSURE_MISSING');
++  expect(r.nativeReady).toBe(false);
++ }finally{await rm(f.root,{recursive:true,force:true});}
++});
++
++test('negative cases require observed fault, no served business outcome, and no replay',async()=>{
++ const {assessEngineeringFault}=await import('../../packages/lab-runtime/src/v2/sil/engineering-native');
++ const observed={nativeCase:'cancel',fault:{status:'applied',commandId:'c1'},status:'needs_attention',served:'0',effects:[{attempts:1}],observedCompleted:0};
++ expect(assessEngineeringFault(observed).result).toBe('pass');
++ expect(assessEngineeringFault({...observed,served:'1'}).result).toBe('fail');
++ expect(assessEngineeringFault({...observed,fault:{status:'intent'}}).result).toBe('not_run');
++ expect(assessEngineeringFault({...observed,effects:[{attempts:2}]}).result).toBe('fail');
++});
+diff --git a/tests/integration/engineering-native-lifecycle.test.ts b/tests/integration/engineering-native-lifecycle.test.ts
+new file mode 100644
+index 0000000..880f881
+--- /dev/null
++++ b/tests/integration/engineering-native-lifecycle.test.ts
+@@ -0,0 +1,46 @@
++import {expect,test} from 'vitest';
++import {spawnSync} from 'node:child_process';
++import {existsSync} from 'node:fs';
++import {resolve as absolute} from 'node:path';
++const nativeCompilerPython=process.env.ENGINEERING_PYTHON??(existsSync('.venv/bin/python')?absolute('.venv/bin/python'):'python3');
++const nativeCompilerAvailable=spawnSync(nativeCompilerPython,['-c','import yaml,rfc8785'],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:5000,stdio:'ignore'}).status===0;
++import {EngineeringClock,engineeringNativeAdmission} from '../../packages/lab-runtime/src/v2/sil/engineering-native';
++import project from '../../robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json';
++import {preflight} from '../../packages/lab-runtime/src/v2/sil/cli';
++
++test('engineering FD01 uses its own project admission and never a legacy fixture',()=>{
++ expect(preflight('FD01','engineering-rigid-v1')).toMatchObject({ok:true,fixture:null});
++ expect(()=>engineeringNativeAdmission(project.runtimeProject,'FD01','engineering-rigid-v1','engineering-amd64')).not.toThrow();
++ expect(()=>engineeringNativeAdmission({...project.runtimeProject,id:'legacy'},'FD01','engineering-rigid-v1','engineering-amd64')).toThrow('ENGINEERING_PROJECT_MISMATCH');
++ expect(()=>engineeringNativeAdmission(project.runtimeProject,'BV01','engineering-contact-v1','engineering-amd64')).toThrow('ENGINEERING_SCENARIO_UNSUPPORTED');
++ expect(()=>engineeringNativeAdmission(project.runtimeProject,'FD01','engineering-rigid-v1','utm-ubuntu-arm64')).toThrow('ENGINEERING_PROFILE_REQUIRED');
++});
++
++test('provider clock maps 20ms source ticks and latches reset or stale feedback',()=>{
++ const clock=new EngineeringClock();clock.observe('1000000000',10n);clock.observe('1040000000',30n);
++ expect(clock.tick).toBe(2);expect(clock.mapping).toEqual([{providerSimNs:'1000000000',sourceTick:0,receiveMonotonicNs:'10'},{providerSimNs:'1040000000',sourceTick:2,receiveMonotonicNs:'30'}]);
++ expect(()=>clock.observe('1000000000',40n)).toThrow('CLOCK_RESET');
++ expect(()=>clock.assertFresh(50n)).toThrow('CLOCK_RESET');
++ const stale=new EngineeringClock();stale.observe('0',0n);stale.observe('0',400000000n);
++ expect(()=>stale.assertFresh(500000001n)).toThrow('FEEDBACK_STALE');
++});
++
++test.skipIf(!nativeCompilerAvailable)('real canonical compiler feeds the engineering factory, whose unresolved host inventory blocks startup',async()=>{
++ const {execFile}=await import('node:child_process');const {promisify}=await import('node:util');const {mkdtemp,rm,readFile,writeFile}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join,resolve}=await import('node:path');
++ const {engineeringNativeProviderFactory,readEngineeringCompiledWorld}=await import('../../packages/lab-runtime/src/v2/sil/engineering-native');
++ const directory=await mkdtemp(join(tmpdir(),'l02-factory-')),python=nativeCompilerPython;
++ try{
++  await promisify(execFile)(python,['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',directory],{cwd:resolve('robotics/simulation'),env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});
++  const world=await readEngineeringCompiledWorld(directory);expect(world.robots).toEqual([{entityId:'amr-1',namespace:'amr_1'}]);
++  const factory=await engineeringNativeProviderFactory({bundleDirectory:directory,environmentProfile:'engineering-amd64',python,simulationRoot:resolve('robotics/simulation')});
++  const backend=await factory.open('portable-prerequisite-test');try{const cap=await backend.capability();expect(cap.available).toBe(false);expect(cap.reasons).toContain('INVENTORY_UNRESOLVED');}finally{await backend.close();}
++  const file=join(directory,'robots/amr-1.urdf');await writeFile(file,(await readFile(file,'utf8')).replace('value="20"','value="21"')+'<!-- tampered -->');
++  await expect(readEngineeringCompiledWorld(directory)).rejects.toThrow('BUNDLE_DIGEST_MISMATCH');
++ }finally{await rm(directory,{recursive:true,force:true});}
++});
++
++test('engineering worker selection cannot fall through to a legacy worker without its profile',async()=>{
++ const {startGazeboBackend}=await import('../../packages/lab-runtime/src/v2/backends/gazebo-nav2');
++ const port={async request(){return {available:true,robots:[],evidence:'protocol_double'};},async close(){}};
++ await expect(startGazeboBackend({} as never,'r',{engineering:true,port})).rejects.toThrow('ENGINEERING_PROFILE_REQUIRED');
++});
+diff --git a/tests/integration/engineering-profile-routing.test.ts b/tests/integration/engineering-profile-routing.test.ts
+index 7ea39c5..65075a6 100644
+--- a/tests/integration/engineering-profile-routing.test.ts
++++ b/tests/integration/engineering-profile-routing.test.ts
+@@ -92,21 +92,21 @@ test('health keeps the legacy requirements and adds per-set requirements the eng
+   expect(bySet.FD01['coffee-simulation']).toEqual({ supported: true, required: ['gazebo_nav2'], reasonCodes: [] }); // legacy answer unchanged
+   expect(bySet.FD01['hardware-live']).toBeUndefined(); // hardware sets are not simulation candidates
+ });
+ 
+ test('the legacy native lifecycle and SIL preflight refuse engineering sets instead of running the wrong plant', () => {
+   const input = { project: coffeeProject(), scenarioId: 'BV01', scenarioRevision: scenarioRegistry.get('BV01')!.revision, seed: 1, mode: 'simulation' as const, access: 'simulated' as const, backendSetId: 'engineering-contact-v1', sourceCommit: 'c' };
+   expect(() => assertNativeAdmission(input, { directory: '/nonexistent' }, {} as never)).toThrow(/ENGINEERING_LIFECYCLE_UNAVAILABLE/);
+   const r = preflight('BV01', 'engineering-contact-v1');
+   expect(r.ok).toBe(false);
+   expect(r.reasons.join()).toContain('BACKEND_MISSING:moveit_gazebo_arm');
+-  expect(preflight('FD01', 'engineering-rigid-v1').reasons.join()).toContain('ENGINEERING_LIFECYCLE_UNAVAILABLE');
++  expect(preflight('FD01', 'engineering-rigid-v1')).toMatchObject({ok:true,fixture:null});
+ });
+ 
+ test('with the engineering service the engineering sets are listed as supported per scenario', async () => {
+   const directory = await mkdtemp(join(tmpdir(), 'eng-health2-')); roots.push(directory);
+   const engineering = createEngineeringService({ directory: join(directory, 'engineering'), catalogRoot: 'robotics/catalog', compiler: testCompiler });
+   const g = await startLabGateway({ port: 0, directory: join(directory, 'runs'), sourceCommit: 'test-commit', schemaHash: 'a'.repeat(64), v2: { engineering } }); gateways.push(g);
+   const bySet = (await (await fetch(g.url + '/lab/v2/health')).json()).scenarioRequirementsByBackendSet;
+   expect(bySet.BV01['engineering-contact-v1']).toEqual({ supported: true, required: ['gazebo_nav2', 'moveit_gazebo_arm', 'engineering_coffee_process'], reasonCodes: [] });
+   expect(bySet.BV01['engineering-rigid-v1']).toEqual({ supported: false, required: [], reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] });
+   expect(bySet.FD01['engineering-rigid-v1'].required).toEqual(['gazebo_nav2']);

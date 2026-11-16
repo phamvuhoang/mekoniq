@@ -1,0 +1,727 @@
+{
+  "scope": "Every whole physical literal Ruling/Sequencing-ruling line from four active ledgers; intentional duplicates and all clauses on multi-ruling lines preserved. Index does not replace original full ledgers.",
+  "records": [
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 11,
+      "text": "- Ruling: Native create_worktree failed because workspace root is not a repo and tool has no repo parameter; use paired Git worktrees outside both repos — avoids modifying main .gitignore.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 12,
+      "text": "- Ruling: task-brief script only supports numeric headings, but plan uses B/L IDs; extracted exact task sections with a local regex — no requirements modified.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 13,
+      "text": "- Ruling: source/Lab documentation commits after recording do not invalidate recorded runtime identity; preserve both identities and verify candidate before changes.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 14,
+      "text": "- Ruling: user authorized implementation supersedes doc-authoring restriction; qualification tested, accepted:false remains explicit. No acceptance fabricated.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 15,
+      "text": "- Ruling: no Linux host/hardware provided; complete portable implementation and prepared tooling, record unavailable native execution without claiming gates.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 118,
+      "text": "- Ruling: recorded source bb16724 and documentation HEAD 086121c have different portable closure (MuJoCo README); export and re-pin worktree after B00, never mutate qualification identity or main pin.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 124,
+      "text": "- Task B01 implementer: /root/b01_payload_contracts, source BASE e137b57, Lab BASE09dec0a. Ruling: minimal Lab Ajv registration belongs to B01 contract compatibility; implementer now owns both worktrees for this task and handles source commit → clean export → Lab import/sync/check/unit → Lab commit. Controller will review both diffs. Main checkouts remain read-only.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 128,
+      "text": "Ruling: MuJoCo engine.timestepMs is the substep duration (2), substeps=10, logical scene.clock.tickMs=20. Align mobile with existing arm convention, check cross-field product; B01 implementer notified.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 131,
+      "text": "Ruling: split B02 into sequential B02a (real Python mobile compiler/worker + bounded dynamics probe/lock) and B02b (TypeScript compiler/provider/readiness/slot/catalog integration). This is a review boundary, not a scope reduction; parent B02 remains incomplete until both pass review. B02a source commit is exported/re-pinned by controller after review before B02b. No mobile capability is advertised by B02a.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 139,
+      "text": "- Sequencing ruling for final evidence: finish all runtime/schema changes for prepared R3 lanes before the final shared source/Lab qualification recording. B10/L06 tooling can be implemented/reviewed sequentially, then one final clean tuple records R2b and prepared/native-not_run scopes. Do not run a costly full qualification then invalidate its runtime tuple by L00/L05 schema changes. Web functionality remains first priority (B02–B09 before R3 prep). Native cases still require actual host and remain not_run here.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 153,
+      "text": "Ruling: B02b uses a separate hashed mobile observation policy with tilt pi/4, height sanity -0.6/+4 radii and 0.10m relative load drop sustained5ticks; locked numerical inputs stay unchanged — no numeric stop values were specified and Webots tilt should not govern new tipping experiments — if unsuitable, revise registered policy identity and rerun affected campaigns, never reinterpret previous evidence. Implementer /root/b02b_mobile_provider owns B02b from eef984e; root handles reviewed export/pin.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 163,
+      "text": "Ruling: mobile command acceleration ramps from previous sent command, not near-zero measured velocity — actual MuJoCo trace proves the old ramp is trapped below static-friction breakaway (NO_PROGRESS tick493), while direct probes move normally — if the command policy needs further adjustment, version/requalify it; preserve actual velocity checks and legacy defaults, never retune locked physics to conceal a controller defect.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 173,
+      "text": "Ruling: add sequential B00R baseline refresh after reviewed B02b/pin, before B03 — original main advanced with material R2a arm/gateway and recorder/native-identity fixes while qualification runs; user requested latest implementation and isolation — merge frozen source4f893ac6fb75dff414a3ee42a726defb7935c734/Lab a6ec316fb3ac2f71afff25e6fa77e931f4439e00 only into feature worktrees, resolve overlaps and verify/re-pin. Cost if wrong: isolated merge can be reverted, affected integration tests/campaigns rerun. Original checkouts/processes remain read-only. Brief task-B00R prepared, pending B02b gate.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 184,
+      "text": "Ruling: integrate this frozen upstream source11d25b4/Laba744954 after B09 and before L00/finalqualification as B00R2, in featureworktreesonly, with scopedcloudguard/docs merge review and clean export/pin. No active B04 edits interrupted; oldbaseline numerical/runtime bytes unchanged. Costifwrong: one extra merge/export/review and possible recorder conflicts; avoids stale host claims and keeps finalbranch aligned with current R2a production evidence without chasing movingmain.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 244,
+      "text": "Ruling: R93 records the current Docker-blocked regression boundary through existing public tooling without changing qualification policy. After actual current R1/R1.1 inputs qualify, use a new R2a --skip-suites record so its recorder does not repeat the known-unreachable Docker prerequisite; every skipped suite remains not_run. Execute each available unchanged non-container SUITES_R2A entry separately with its real argv/cwd/environment/own receipts and preserve it as supplemental evidence, never splice results into the immutable partial candidate. Feed that genuine same-tuple partial R2a directory and actual independent payload/cell/study/web inputs to the normal full R2b recorder. Preserve its derived REG04 failed/R2A_GATE_NOT_TESTED and nonzero public readback, while missing WEB05 is separately not_run. Do not use the R2a --blocked spike-failure override, omit a real partial input to improve status, reduce full R2b scope, alter tables/thresholds or re-probe/reset unrelated Docker/services. Reason: required current container execution is unavailable but the user-authorized local web/physics/regression work can still produce independently useful evidence; existing guards must expose the missing dependency. Cost if wrong: the recorded R2a candidate understates separately observed local suite coverage and REG04 remains failed, so full release qualification is incomplete until the reviewed current container and complete chain can run; supplemental passes cannot be advertised as full R2a/R2b qualification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 264,
+      "text": "Final correction3: Lab7d385 clean; default strict replay3/3, owned transport7/7, B07 external replay3/3; corrective broad61/1/42 own1, sole unchanged brand focus failure. Root verified6 inputs and viewed PNG. Ruling: authorize one controlled actual health-response diagnostic before product edits — render replacement can lose unkeyed link focus; cost if wrong is bounded diagnostic work, no acceptance relaxation. Correction3 first review still pending.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 266,
+      "text": "Final correction3: controlled brand diagnostic own1/two failures demonstrates normal health render disconnecting focused header anchors; real HTTP200 forwarded unchanged, document focus retained but activeElement BODY, next Tab restarts at skip. Ruling: authorize exactly two stable anchor IDs plus deterministic delayed-health keyboard regression — reuse existing focus restoration, preserve native link semantics; cost if wrong is incorrect focus restoration or id collision, checked by regression and independent review. Same correction3 batch, first review pending.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 270,
+      "text": "Task final-recording prerequisite: fix round3/5 complete (7addressed,0open; Source2bd66e6..229efa7 /Lab111ed9a..45794aa). Review specPASS/qualityAPPROVE, no newfindings; root READALL15349B e2a831f6c95a22e1bdeb4b241382bf7fc8e6276e2643aad62219e16db4da799f. EveryCannot-verify disposition in root-final-prerequisites-3-review-dispositions.md. Ruling: resume fullfinalrecording at reviewed tuple — verified fixes and explicit remaining evidence/native limits — cost if wrong is a retained later matrix/qualification failure requiring reviewed correction, never gate relaxation. Finalbriefentry2bd archived; currentbriefupdated. ONEwholebranchreview stilllater.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 276,
+      "text": "Final prerequisite correction4: NEW real full-security IR-SIM concurrentHTTPstep/cancel regression at229/457; cancel409REVISION_CONFLICT expected200/<=1tick. Root readrawfailure, gatewayfullactionserial and fixedsteppriorityqueue; actual-executioncallback also dropped inqueuedcontrols. Frozenphase READALL82236Bf776790ede1f9ffb854d4206dcdf6e983bb9da168890edf11c48905085cf2575; rootaudit6131B77056a781d934922ae15d8128f57d3232047ea2b31b4118b02ebb3bb3e3fa89e verifies139metadata/4937external/20inputpairs/49receipts/cleanheads. Prioragent final_recording idle; no morechecks or campaigns. Ruling: preserve both tick-boundary control and B09 execution-timewriter/lifecycleauthority; minimally redesign scheduling and forwardcontrolauthoritycallbacks — fullactionserialization prevents the old valid contract — cost if wrong is delayedcancel or unauthorized/stale mutation/resource overlap. Fresh stronger architectural implementer required for round4; scope in fix-final-prerequisites-4-dispatch.md; no fullmock/qualification before scopedreview.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 292,
+      "text": "Task final-recording prerequisite: fix round4/5 complete (findings1–5addressed,0newbreakage; Source229efa7..981e234 /Lab45794aa..b0fcede). Root READALL review14954B SHA6af047b47c884b7be95b77c53afa50f4ef03fff2cc329e05eb1ceb47abd0abe8, specPASS/qualityAPPROVED. EveryCannot-verify disposition retained in root-final-prerequisites-4-review-dispositions.md. Ruling: retain unchanged cold-reclaim session-expiry observation for whole-branch triage — outside thisfix and no new unsafe mutation demonstrated — cost if wrong is a later confirmed policy defect requiring final-wave repair/new evidence, never silently accepted authority. Ruling: resume wholefinalrecording at reviewed981/b0f — scoped review and exacthandoff checks pass — cost if wrong is retained subsequent regression/campaign failure requiring disposition, never gate relaxation or old-result transfer. ONEwholebranchreview remainslater.",
+      "explicitClauses": 2
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 306,
+      "text": "Ruling: continue unchanged current981 engine recording after the bounded scrubber investigation, with the malformed legacy JUnit artifacts retained and explicitly disclosed; defer format/interoperability repair to concrete whole-branch triage. Reason: record-irsim.mjs is byte-identical to frozen upstream11d25b and both recorder scrub lines plus the regex pytest summary are unchanged; actual pytest own exits/logs/counters and public byte/hash/counter readback remain separately observable, with no new unsafe admission or changed assertion demonstrated. Cost if wrong: consumers needing valid JUnit cannot ingest these artifacts and a final confirmed blocking contract defect may require recorder repair plus fresh appropriately attributed evidence. This is not a declaration of valid XML, a gate waiver, or permission to rewrite recorded outputs. Root proof: root-final-981-junit-observation.json; original three XML parse errors and hashes retained. Hold only of owned orchestration parent was authorized to prevent automatic new campaigns while triaging; current recorder continued, and root released hold for normal continuation after evidence confirmed unchanged baseline.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 312,
+      "text": "Ruling: execute unchanged complete R1/R1.1 public acceptance from a new paired isolated checkout at exact Source981e234/Lab b0fcede, after staging byte-verified actual upstream evidence directories only into absent legacy paths expected by the inherited guard. Keep the active producer clean and all original failed/successful artifacts immutable; capture actual staged cwd, checked code/blob identities, dependency resolution, staged data-only dirtiness and new own receipts/logs. Reason: the unchanged legacy guard fixes its IRSIM/SIMEXT roots while the recorder legitimately accepts fresh external inputs; the observed R1 failure is only missing in-tree lookup despite byte-identical carried upstream and all primary readback assertions passing. Cost if wrong: the staging layout may expose another dependency/integrity failure, which must remain a real failure; a passing staged check establishes that exact fixture layout, not clean production execution or portable arbitrary-layout support. Continue R1.1 recording in the original clean producer only after the staged R1 guard actually passes. Use the same input staging for partial R2a lineage, preserving its real failed gate/screenshot assertions and the existing R93 incomplete-qualification boundary. No producer rerun, artifact/status/hash rewrite, test/table/threshold change, service operation or gate waiver is authorized by this ruling. Root proof: root-final-981-r1-layout-handoff-audit.json verifies all16original/snapshot pairs and unchanged legacy segments against frozen11d25b. Original R1 recorderown0/qualification4dede52285ed09b5e23b189c7b1ca125eafa4c38e7ad2f5d0877b18330f62fff and acceptance11pass1fail own1 stay immutable. No product correction round opened.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 316,
+      "text": "Ruling: preserve the actual current R1.1 SCREEN_LOCKED refusal and keep R1.1-dependent partial R2a/full R2b plus the Webots semantic-study stage pending until a genuine external state change; continue independent headless payload/cell, available unchanged R2a supplemental rows, available web checks and document preparation. Reason: normal Webots preflight exited2 before creating an R1.1 candidate, so no genuine same-tuple R1.1 input exists for the R93 lineage and elapsed time is not an unlock. Cost if wrong: some independent work may also encounter an actual prerequisite failure and full qualification remains incomplete; preserve such failures rather than substituting older inputs, omitting required real dependencies, changing gates or inventing execution. User was asked asynchronously to report when the Mac is unlocked. Do not unlock/change host settings or blindly repeat GUI probes; on reported state change use a fresh normal invocation/receipt and preserve the original refusal. The existing owned payload child may complete while only its orchestration parent is held before semantic Webots; settle that parent after its child finishes, retain the control signal separately, then continue unchanged independent commands.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 325,
+      "text": "Ruling: retain final raw campaigns in versioned per-record compressed archives with complete original-member byte/hash indices, archive hashes, exact producer identities, explicit path mapping, dependency descriptors and fresh safe extraction/public-readback receipts. Keep reports/reviews/rulings/deferred findings readable as ordinary files. Cost: consumers must extract the archive before replay/readback; byte verification and actual path-bound refusals must remain explicit. No original byte rewriting, evidence retagging or cleanup before root audit/final review; heavy compression outside benchmark windows.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 340,
+      "text": "Ruling: preserve the real failed1024 one-row requirement and unresolved cause for ONE final whole-branch triage, and continue independent unchanged remaining supplemental rows and captures without another prerequisite repair loop. No pass/waiver, threshold change or green-seeking retry. Cost: final review may require a correction and fresh affected browser/build evidence. Original stopped execution index/own1 stays immutable; new continuation index must cover the exact remaining table rows, combined with the original prefix exactly once including failed/not_run. No qualification status splice.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 342,
+      "text": "Ruling: default-config future browser invocations may use existing LAB_PW_OUTPUT_DIR with explicit artifact-location metadata. Closed b07b/irsim paths lacking that override must use fresh paired exact981/b0f checkouts with byte-identical dist/runtime/tools, declared locked dependency reuse, actual cwd/Git boundaries and pristine default output. Preserve default artifacts before reuse. Cost: extra isolated checkout/copy and separate path mapping; it proves unchanged producer execution with reused dependencies, not independent-host authenticity. No hidden flag, preload/spawn monkeypatch, test/config edit or mutation of original default failure bytes. Long benchmark notice/serialization still required.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 357,
+      "text": "Final prerequisites5 — Ruling: Move the already observed1024px run-bar failure from final whole-branch-only triage into the same scoped Lab correction as the independently reproduced aborted-response observer liveness defect. Both block a complete usable final Lab observation; the observer correction already requires a new Lab identity and fresh Lab-bound qualification. Original negative download diagnostic, abort RED, timed-out producer and layout failure stay immutable, and original pendingURL/layout cause remain unproven until diagnosis. Keep Source981/runtime/pin unchanged if possible and preserve all reader thresholds. Cost: this expands the correction from recorder-only to one small UI requirement and requires focused independent review; it avoids intentionally re-recording on a Lab commit with a known layout failure before another full rerun. The ONE final whole-branch review still receives original evidence and the complete scoped correction/disposition.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 373,
+      "text": "Final recording resumption5 sequencing — Ruling: Once scoped correction5 is independently approved, run the fresh unchanged production benchmark, closed production browser and required production replay scopes on the new Lab subject before the replacement complete Lab-bound qualification chain. Retain the original payload/cell at unchangedSource981 binding and every old failed record. Reason: the demonstrated failures occurred late in producer integration after expensive complete regressions; the primary user priority is usable web simulation, and early producer verification can expose a new actionable defect before duplicating the chain. Cost: the web observations precede aggregate qualification and cannot be called qualified until all required actual inputs/readbacks are assembled; no check/scope/target is omitted or relaxed and external not_run constraints remain.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 383,
+      "text": "Final prerequisites5 integration — Ruling: Extend this same scoped Lab correction to consume and validate the replay-release DELETE JSON confirmation with a finite independent cleanup deadline. The new1256 diagnostic exposed a requiredDELETE200 without terminalevent, and the owned identical-response comparison proves unreadbody versus consumedbody terminal behavior on the pinnedbrowser; root read allprimarydiagnostic records. Preserve Source981/runtime/pin, strict required-observation errors and the immutable1256 failure; no target/reader relaxation. Reason: fixing observation alone correctly exposes the existing Labclient header-only release, so the public releasepath must complete its response to support the userflow and measurement. Cost: one additional Labclient integration surface and tests/newcommit/shortdiagnostic need independentreview; the original20min pendingURL remainsunobserved and thisfixture doesnotretroactivelyidentify it.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 403,
+      "text": "Final prerequisites5 environment — Ruling: Permit one unchanged complete release browser-file rerun with caffeinate -dims and the samePerl120 bound in a fresh output directory. Read-onlypmset own0 shows992s host sleep from22:47:00Z to23:03:32Z inside the1005s failedinvocation; root read both exacteventrows/receipt andverified32001B excerpt SHAd9a4eeaa6dbf55ad6390c308220f1b35aa2b33dd05c7708cd000124c0a1d924f. Original4pass/1timeout remainsfailed, notpass. Reason: actualsleep is a demonstrated environmental cause of wall-time inflation, and the unfinished-bodybehavior remainsunresolved on finalbytes whileawake. Cost: one additional genuine invocation; cannotinfer an awakepass or productionqualification untilitactuallyreturns. No timeout/test/code/reader change and noOSsettings modified. Root root-final-fix5-sleep-wake-audit.json bindsreadscope.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 427,
+      "text": "Final prerequisites5 review — Ruling: Accept completeindependentscopedSpecApproved/qualityApproved review (19487B/d0365596) andresumerecording atSource981/Labd4c3032. ParkM1fixture/colorlognoise forONEfinalwholebranchtriage; actualpairedflow/assertionspassed andoriginalerrors remainvisible, soanotherpre-recordingcodecycle isnotrequired. CorrectM2nativehashattribution prospectively throughrootdisposition/publication, preservingfrozenreport. AllCannotverifyitems remainexplicitexecutionlimits, notpasses. Cost: fixturelogsremainnoisy untilfinaltriage and fullnewsubjectqualification/targets/native gatesstillneedactualevidence. Complete report+dispositions retained, nofinalwholebranchapprovalinferred.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 433,
+      "text": "Task final-review packaging: Ruling: package the complete net text diff with10lines context and standard binary markers, plus all changed paths/Gitblob identities/current byte+SHA256 matrix, canonical archive-member indices, safe extraction/readback evidence and relevant images; retain exact unexecuted full-binary-diff reproduction argv separately rather than materializing opaque base85 archive payloads into the review text — readable semantic review must cover all implementation and new publication claims, while complete binary bytes remain in their retained artifacts — if wrong, overlooked binary semantics could hide a defect, so no archive/fixture/image may be silently omitted or deemed reviewed merely by its hash. Original unexecuted package-final-review.py preserved; new package-final-review-text.py AST parsed only; actual final packaging still awaits clean final publication heads.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 435,
+      "text": "Task final-recording prerequisite clarification: Ruling: fresh R1 remains required for the new Lab-bound chain but is not_run pending a relevant actual GUI-state change, under the existing no-Webots-retry boundary; do not execute another R1/R1.1 screen preflight or record merely because root reminded the lineage requirement — root read scripts/sim-extension-qualification.mjs284–298 and confirmed both R1 campaign and R1.1 always start Webots, correcting the incomplete root scheduling reminder; the last actual SCREEN_LOCKED observation retains its old invocation/time/tuple, and no freshd4 refusal is invented — if wrong, an unreported unlock may delay qualification, but independent mock/IR/R3/stock/supplemental work and truthful publication continue; no oldR1 retag, scope reduction, candidate fabrication or extra user permission question.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 441,
+      "text": "Task final-recording external-state observation: Ruling: permit ONE bounded read-only OS screen-state observation now, using the existing screenLockedFromIoreg parser and an actual successful ioreg response, solely to determine whether the shared Webots prerequisite has changed — the unanswered user question is information, not required approval, and direct current state may resolve the dependency; this is not a Webots launch, full R1/R11 preflight, unlock, power-setting change or time-based assumption — if the parser still reports locked or the read is ambiguous/failed, retain that observation and keep Webots-dependent stages not_run without another probe; only an observed qualifying state change may authorize the ordinary serialized full preflight/record. If wrong, one extra bounded OS read adds work without resolving the gate; it cannot substitute for the official recorder admission or qualification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 445,
+      "text": "Task final-recording default-output correction: Ruling: retain and disclose the observed activeLab default-output deviation, use the already preserved byte-identical external copies as the surviving locations for the three indexed historical twin-polish artifacts, and route subsequent closed-argv GUI producers to fresh isolated default outputs — root verified current active .last-run changed and two old failure files absent while all3pre-existing external copies and8other triage records match original bytes; IR launcher/config does not honor LAB_PW_OUTPUT_DIR, and exact deletion operation was not observed — do not restore/retag originals, rewrite oldindices or keep claiming activeoldpaths untouched. If wrong, an unindexed artifact could be missing; finalretention must map the complete recorded original tree/index and make any unresolved absence explicit. Existing currentIR recorded outcomes are not altered by this location deviation; their full1602artifact inventory was separately verified.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 447,
+      "text": "Task final-recording stock diagnosis: Ruling: allow ONE bounded offline-only diagnostic after the currently owned engine/ports settle, using the same isolated Vite setup and explicit request-abort/console observations for the concrete hypothesis that the unchanged **/lab/** denial matches filesystem moduleURLs — this isolates the actual dev-browser blank-page failure without changing product/assertions or rerunning qualification blindly — exact blocked URL is still unobserved until that diagnostic. Preserve failed normal/canonical stockattempts and diagnostic separately; no fullstock retry or newproductfix until evidence is reviewed. If wrong, this adds one bounded diagnostic without explaining the failure; full devproof remains failed.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 451,
+      "text": "Task publication privacy: Ruling: keep the two newly identified full-host process inventory originals (takeover-owned-state-and-path.json and r1-invocation-boundary.json) and the historical2bd host-sleep-observation.log external/private, retain their exact byte/hash descriptors, and publish clearly marked task-scoped derivatives only — the actual originals include unrelated applications or host assertion/activity context that is unnecessary for public qualification evidence; preserve relevant task ownership or exact Sleep/DarkWake observations without copying unrelated host context — original receipts still reference the excluded original log hashes, never a rewritten derivative. Preserve originals unchanged and explicitly list these exclusions alongside the private-owner DB exclusion; if wrong, public consumers cannot inspect the excluded raw context directly, so disclose that audit/provenance limit and do not claim every raw original is publicly archived. No original qualification result, source code or full task/review report is rewritten.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "README/progress.md",
+      "lineAtSnapshot": 457,
+      "text": "Task final-recording normal stock reproduction: Ruling: after the currently owned dependent chain and its ports settle, permit ONE complete unchanged public stock-launcher browser run from the clean active981/d4 worktrees with the existing real Lab dependency layout and a new explicit external --output — the bounded diagnostic actually observed the unchanged blanket **/lab/** denial abort the isolated Vite @fs module twice, while the separately labeled API-path-only control mounted replay; root read all diagnostic events/caller and viewed both PNGs, and verified the active dependency module resides inside the normal Lab root — rebind metadata/cwd only, keep the public command, test, blanket denial, product/config and all assertions unchanged; preserve both original stock failures and both diagnostic setup failures. Do not claim a pass until the complete new invocation settles. If wrong, another layout-independent failure may remain, so report it and do not repeat or silently weaken the test. This run must finish before tracked publication edits alter the producer identity.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 14,
+      "text": "Ruling: split B02 into sequential B02a (real Python mobile compiler/worker + bounded dynamics probe/lock) and B02b (TypeScript compiler/provider/readiness/slot/catalog integration). This is a review boundary, not a scope reduction; parent B02 remains incomplete until both pass review. B02a source commit is exported/re-pinned by controller after review before B02b. No mobile capability is advertised by B02a.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 28,
+      "text": "Ruling: B02b uses a separate hashed mobile observation policy with tilt pi/4, height sanity -0.6/+4 radii and 0.10m relative load drop sustained5ticks; locked numerical inputs stay unchanged — no numeric stop values were specified and Webots tilt should not govern new tipping experiments — if unsuitable, revise registered policy identity and rerun affected campaigns, never reinterpret previous evidence. Implementer /root/b02b_mobile_provider owns B02b from eef984e; root handles reviewed export/pin.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 32,
+      "text": "Ruling: mobile command acceleration ramps from previous sent command, not near-zero measured velocity — actual MuJoCo trace proves the old ramp is trapped below static-friction breakaway (NO_PROGRESS tick493), while direct probes move normally — if the command policy needs further adjustment, version/requalify it; preserve actual velocity checks and legacy defaults, never retune locked physics to conceal a controller defect.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 38,
+      "text": "Ruling: add sequential B00R baseline refresh after reviewed B02b/pin, before B03 — original main advanced with material R2a arm/gateway and recorder/native-identity fixes while qualification runs; user requested latest implementation and isolation — merge frozen source4f893ac6fb75dff414a3ee42a726defb7935c734/Lab a6ec316fb3ac2f71afff25e6fa77e931f4439e00 only into feature worktrees, resolve overlaps and verify/re-pin. Cost if wrong: isolated merge can be reverted, affected integration tests/campaigns rerun. Original checkouts/processes remain read-only. Brief task-B00R prepared, pending B02b gate.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 49,
+      "text": "Ruling: extend B00R with test-process isolation correction — concrete legacy global-worker kill can affect the user's concurrent R2a work; all destructive selectors must target only exact test-owned process/run identity and cleanup assertions retain that same ownership scope. Add a regression proving an unrelated sentinel survives. Cost if wrong: accidental scope can still kill unrelated processes; review matching and run a controlled sentinel test before any native suite.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 53,
+      "text": "Ruling: do not start any Webots/MuJoCo/IR-SIM worker or runtime browser server while original .qualification/r2a-final-20261114-xqub7yqk/run.py pipeline remains active. Original tests still contain global process-empty checks and global worker kills, so even our corrected owned selectors would not prevent interference in the opposite direction. Use pure/static tests, controlled generic sentinels, compile/type/lint and review meanwhile. Defer real-engine rechecks to the first free window after read-only progress.json confirms pipeline completion; count deferred checks not_run, never pass. Cost if wrong: task integration lacks immediate engine regression proof, which must be closed before final qualification. This user-protecting scheduling change does not remove any required release check.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 58,
+      "text": "Ruling: B03's stronger ACK→structural validation→durable observations→logical commit order supersedes the intermediate B02b expectation that a malformed physics ACK advances logical tick. For structurally invalid/missing physics or durable append failure after engine advancement, preserve last committed logical tick, explicitly record next/known-advanced tick as a gap and terminal unknown, and never observe cancellation/valid telemetry or resend/respawn. Preserve B02b cancellation/startup invariants and update only the fault-horizon assertion with a new gap/pending-operation assertion. A structurally valid snapshot that crosses an experimental cutoff (e.g. BASE_TIPPED/LOAD_FELL) can be durably recorded and its observed tick committed, but stop monitoring must still precede source outcome confirmation. Cost if wrong: report horizons and legacy fault consumers diverge; scope the stronger path to new mobile/world and retain explicit logical vs known-advanced evidence checks.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 64,
+      "text": "Ruling: PhysicsEvidenceV1 identity.loadProfileDigest and physicsProfileDigest bind the exact admitted file-byte SHA-256 in scene.engine.loadProfileRef.sha256 / physicsProfileRef.sha256; metricsPolicyDigest binds the separately admitted observation/stop policy bytes for B03. SceneDigest remains canonical scene digest. Profile documents' own canonical digest and numericalInputsDigest remain independently validated inside those files, never substituted for the file hash. This resolves the previously unspecified identity-field ambiguity and matches the B02b navigation evidence engine refs. Cost if wrong: readers/campaigns would disagree on profile identity; document the semantics in source, tests and versioned contract docs before any B03 artifact is accepted.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 72,
+      "text": "Ruling: B00R fixround1 may use Node24 diagnostics_channel('child_process') in test-only ownership helper for per-spawn lifecycle observation. Local pinned Node24.22.2 builtin source confirms {process:this}; officialNode24docs document event since16.18 but mark Process channels experimental (https://nodejs.org/docs/latest-v24.x/api/diagnostics_channel.html#event-child_process). Exact spawnargs +registeredroot/provenance permit immediate identity capture; missedknownspawn or unresolvedorphan must fail cleanupverification, never extendkillauthority. No productionhook/API edit. Require generic event-delivery regression, bounded subscription/listener lifetime, callback errors latched instead of throwing from subscriber, same-process/batchscope checked; no sampling fallback that claimscomplete. Cost if wrong: Nodechannel change can break test observability; failclosed test and pinnedtoolchain expose it, and unprovenprocesses remainunsignalled.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 82,
+      "text": "Ruling: split B04 sequentially into B04a(source registeredexperiments/campaign/committedpayloadtelemetry +cleanexport/pin) and B04b(Labpreset/import/render/report/replay +realbrowserproof). B04 spans numericalprofileadmission,18runartifactcampaign andcomplexUI; a small typedhandoff keeps eachreviewbounded. Parent B04 requiresboth, nooriginalexitcriteriondropped. Costifwrong: extraexport/pin/reviewhandoff, possibleAPIseamfix; no parallelimplementers. Briefs prepared, notdispatched untilB03reviewclean.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 86,
+      "text": "Ruling: aggregate contact/interval metrics cover logical intervals(0,lastTick], excluding tick0 priming; preserve rawtick0, and mark tick0-only interval metrics unavailable. Pose/slipbaseline andmax tilt may includeinitialstate; threshold durationscountpositive-tick intervals only. B03 implementer proposed andcontrollerapproved; boundarytest/docrequired, no schemaorphysicsretune. Costifwrong: downstreamB04/B07 summariescouldincludeextra20ms/primingimpulse; explicitwindowmetadata/rulepreventsambiguity.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 103,
+      "text": "Ruling: B04 speed mechanical identity uses stable canonical fixture bytes and validated mechanics shape; compiled physical-model files retain current project/world/assembly provenance and may change digest, as may rebound load and navigation projection. Existing navigation-compiler.ts31–32 requires matching model.inputs; never substitute old canonical.inputs or relax validation to force byte equality. Report all derived changes and allow only registered field-level differences in B08. Cost if wrong: study comparisons could misclassify provenance changes as mechanics or hide real mechanics changes; explicit immutable canonical hash plus bounded input-diff validation controls this. B04a brief clarified and implementer informed before edits.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 108,
+      "text": "Ruling: add a supplementary actualenginecupfallcase tooriginal18 (expectedRuns19/completedCases19), consistentwithspecminimum18; B03thresholdtestalone insufficient. If existingregisteredbrakecase naturallyfallswithretainedproof, it may satisfycoveragewithoutnewdisturbance; reportactualcount. Otherwise minimalserverowned once-only boundedphysicalforce/impulse viaengineintegration, withknownprop/frame/duration/tick andrecordedidentity; noposeteleport/ledgerdrop/arbitrarybrowservectors, nofixture/numericalbaselineedit. Costifwrong: extra19thrun and smallnewprotocol/registryreviewseam; protectsvisiblefaultandMJ04evidencefrombeingonlya syntheticmonitorcheck. Briefupdated andagentinformed, nativefaultseamreusablebyB06onlywithits ownrecord.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 114,
+      "text": "Ruling: B04a registered payload-brake-observation-v1 may retain five additional real, committed zero-target ticks in the same world after business cancellation, bound into case/manifest/configuration identity. B03 stopDistance hold/coverage criteria and default-provider cancellation stay unchanged. The physical run/slot remains live until the bounded observation finishes; report/reopen/one-tick consumers must not mistake an incomplete tail for terminal evidence. Fault/lostACK abort normally, no retry/respawn, no dispatch or confirmation during tail. Cost if wrong: terminal-status ambiguity can strand the worker or produce unavailable/mislabelled stop evidence; targeted single-tick and interrupted-tail checks and explicit final boundary are required. Implementer final19 recording at94270c8 started before this boundary review; controller flagged view.cancelled-before-tail for assessment before final handoff.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 118,
+      "text": "Ruling: B04a PAYLOAD_SPEED_DIFFERENCES is a descriptive future-consumer list, not an implemented comparator. Permit documented omission of derived navigation.navigationPolicyRef.id/hash and mirrored scene/file refs at this source commit; final B04a report/all7 compiled-identity artifact must enumerate them. B08 must complete and test an exhaustive allowed-field definition before comparison exists; no broad ignore mask. Cost if wrong: treating the current list as exhaustive could reject legitimate registered speed pairs; it cannot justify accepting undeclared input differences. Avoid another19-run recording solely for unused descriptive metadata, while preserving the explicit consumer obligation and review visibility.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 131,
+      "text": "Ruling: B04b may fix payload UI paused-cancel by first journaling cancel to the current Source run, then resuming only that run's paused simulation clock and observing bounded Source steps until Source confirms cancelled/attention. Preserve controller/stop definitions, no campaign tail/new workload, no local terminal/slot release. Guard every await with current run/view epoch and writer access; stop on error/unknown/attention/budget and show actual pending result, no auto-resume after a subsequent explicit user pause and no action on a replacement run. Scope newpayload UI only, olderprovidercontrols preserved. Cost if wrong: stale async callbacks could advance the wrong run or misreport a freed slot; require pausedcancel, interruption andstaleepoch tests plusrealbrowserproof.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 138,
+      "text": "Ruling: B04b payload-only create starts at the committed tick0 observation without the legacy automatic250-tick (+5s) bootstrap. User Play proceeds at the selected default1x; preserve original presets and declared native priming. The unpaced bootstrap undermines the new preset's stated1x experience. Require a focused create-does-not-step check and repeat only the affected actual browser journey, retaining prior captures as superseded development evidence. Cost if wrong: initial UI/readiness might assume positive ticks; validate initial observation/render and explicit Play/step/cancel/replay. No numerical/runtime/source changes.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "01-r2b-mobility/progress.md",
+      "lineAtSnapshot": 160,
+      "text": "Ruling: review B00R2 as a frozen-history import with complete original-base diff packages retained, a full path/mode/blob inventory checked against the frozen upstream, and bounded explicit code/guide/README/guard/pin review packages. Do not manually reread thousands of unchanged historical tick records merely because Git imports them; their exact inherited bytes/deletions and identity-binding manifests/guards must be verified instead. Every executable presentation source, platform change, conflict resolution, feature overlap or historical blob mismatch remains an explicit review input; directory-based filtering alone is insufficient. No new feature/evidence content may be silently omitted. Cost if wrong: an inherited record's old semantic defect may not be rediscovered during this import review; exact upstream equality and retained guard checks establish provenance only, never new R2b qualification or human acceptance. The final branch review still covers all net feature changes and newly produced evidence separately.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 16,
+      "text": "Ruling: stress UI titles must match actual physical input. B04a's registered cup-fall is caused by a once-only external impulse, not demonstrated turn-only slip; B04b may show this real recorded fault through validated import/replay, while B07 owns the narrow source-admitted live stress selector. If B07 reuses this impulse, title it cup fall from disturbance (VI/JA/EN), preserve input/event provenance and no arbitrary browser forces. Cost if wrong: a polished animation could imply unsupported turn instability or hardware prediction; retain a concrete source-linked cause and change label only with new actual evidence. No required visible-fault or live stress experience is removed.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 21,
+      "text": "Ruling: B05 may adjust the new world fixture's explicit dock, waypoints or arm placement to find a feasible physical corridor. B01 only proved reach; original vendor geometry and arm/mobile profiles remain unchanged. Do not shrink the corrected palm proxy, remove receiver rails/supports or exempt real collisions. Keep FK/frame/source/render metadata consistent, retain each probe/configuration identity and freeze a viable candidate before the10-trial rig. Cost if wrong: a changed layout can hide a frame mismatch or move collision elsewhere; actual contacts, conservative sweep and full-stage rig must agree. Escalate a coupled design choice if bounded alternatives fail; do not silently reorder the workflow or claim success from reachable endpoints alone.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 27,
+      "text": "Ruling: B05 adds optional worldInteractions to the existing step payload for world-only birth/removal intents, one-to-one with propPlacements and bound to admitted cup/prop identity, unique eventId, legal lifecycle and targetTick. Reject in old arm/mobile modes before mutation; no placements for grip/release/handoff and no worker custody decision. Source persists pending intent before send; observed lifecycle evidence follows validated ACK, with unknown/no resend on lost ACK. Rig event IDs have explicit rig provenance; B06 must correlate real journal events rather than treating an eventId as proof. Record immutable bounded/hash-covered interaction evidence with before/after poses, reason and command/event/tick references; a manifest/admission block only indexes/declares lifecycle, never replaces required records or weakens fixed mobile admission. Cost if wrong: schema/worker/evidence changes could authorize undeclared prop changes or imply business custody; negative missing/duplicate/wrong-binding/tick/outside-world cases and legacy checks are required.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 28,
+      "text": "Ruling: WorldPlantBindings may add required source-only evidence ports (append/fail/finish) constructed by the world factory from independently admitted inputs. Never infer admission from the first snapshot or expose this interface to browser/wire callers. A temporary observationTick/nowMs during commit can stamp staged callbacks with the ACK tick; public clock/snapshot/telemetry/ledger and durable business events must remain last-committed until success. On commit failure retain durable ACK/pending horizon, no event drain/partial confirmation/retry. Cost if wrong: immediate journal appends or mutable public views can escape a failed commit; test event timestamps and mid-commit failures, and adjust any immediate-persistence callback at the explicit seam. Existing helper ACK→append→commit order and old-provider behavior remain unchanged.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 31,
+      "text": "Ruling: world-only pose-consistency validation may compare equivalent quaternion representations sign-invariantly at tolerance1e-10, retaining finite/unit checks and all raw values. The observed~6e-16 free-joint versus matrix-conversion discrepancy is floating-point representation, not physics retuning. Test q versus−q, tiny perturbation, outside-tolerance orientation and invalid/zero input; preserve failed ACK/gap and document the comparison convention. Cost if wrong: broad or angularly unstable tolerance could hide a real pose mismatch; scope it to equivalent world quaternion representations and retain strict identity/geometry checks.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 32,
+      "text": "Ruling: Source may receive source-only navigation bindings from independently admitted world inputs, checkpointed with scene identity for read-only reopen. Existing default yaw0 conflicts with actual candidate dockyawpi/2; goals must use AMR base dockpose/yaw, not tray center. Legacy bindings remain unchanged and recovery cannot read latest fixture or reset last actual pose. Cost if wrong: domain goals can rotate into a physically invalid corridor or silently change on reopen; test target pose and persisted recovery identity. CoffeeDriver direct ctx.source.submit/store mutations must also be fenced during staged observation commit, not only ctx.must/submit.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 36,
+      "text": "Ruling: B05 final10-trial gate must run the declared nozzle-offset set through the actual production IPC worker and world recorder after physical inputs/controller/lifecycle behavior are frozen. Direct rig has one cup (nq28/nv26,29bodies/26geoms), production preallocates two (nq35/nv32,30bodies/27geoms); shared inspected physical arrays/options and waypoint vectors match, but model dimensions differ. Keep the direct10/10 as feasibility evidence, not proof of the final two-slot fixture. Reuse choreography/oracles/offsets, record final model/config/command identities, native counters, quotas and readback; retain all failed/representative attempts. No causal-isolation probe, old campaign rerun or full Source served2 workflow is required here; B06 owns business correlation. Cost if wrong: a direct-model proof could be misapplied to a materially different production model. The10mmZ difference is declared support-frame origin; measured XY/joint drift is not uniquely attributed to the inactive slot without an isolating experiment.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 41,
+      "text": "Ruling: correct world-recorder completion lifecycle so an active prefix cannot masquerade as a finished run after a process dies with a later step unresolved. Preserve readable committed data and distinguish active/incomplete from corruption/gaps; do not change legacy mobile semantics incidentally. Add a focused crash regression and revalidate finished production campaign artifacts with the final reader. Reuse the current10physical trials only if model, commands, physics and record bytes are demonstrably unchanged and the post-freeze diff is solely manifest completion lifecycle; record before/after hashes and validation. Otherwise reassess affected gate before reuse. Cost if wrong: silently reusing old code evidence can hide changed recording behavior, while rerunning unaffected physical dynamics adds no evidence about the actual crash edge; test the changed durability boundary directly and retain original run provenance.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 48,
+      "text": "Ruling: B05 review recorder-error-path corrections may reuse the existing physical10-trial gate only if physical inputs, commands, snapshots and normal record serialization remain unchanged, demonstrated by exact diff/hash records, targeted boundary regressions and final-reader validation of all retained finished artifacts. Keep original policy/campaign/inventory/audit/completion-fix records immutable and add a namedR1patch/hash/readback audit. Reassess affected gate if normal record or physical semantics change. Cost if wrong: a broadly interpreted prior completion waiver could conceal changed recording behavior; this separate ruling requires direct failure-path proof and preserved original provenance instead of rerunning unaffected dynamics. No minor-noise fix loop.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 57,
+      "text": "Ruling: B06 selects correlated custody through an explicit optional Source-only CoffeePlantPorts evidence mode, never by pretending the real world arm snapshot is null. Require ledger binding and exclude legacy st.trays/synthesized receiver completion for this mode; preserve absent-field mock/R2a and existing arm:null controller behavior. Add narrowly named MuJoCo world arm/tray producers with fidelity modeled, distinct logical observers and shared run/boot/scene/clock provenance, not independent hardware sensors. Bind pending identities to actual Source journal/admitted commands; enforce world dock/receipt/epoch windows and post-successful-commit ingestion, with no partial confirmations or automatic recovery after world uncertainty. Cost if wrong: a capability flag or two observer strings could authorize invented custody or regress native/mock routing; test missing ledger/evidence, forbidden legacy fallback, temporal identity and old ports.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 62,
+      "text": "Ruling: B06 may add explicit admitted signed planner bounds/origin for the new shared world while keeping physical cell geometry/placement unchanged. Bind finite bounds/padding provenance to world scene/controller-policy identity; consistently use them for lattice indices, disc reach, endpoints, full footprint/swept turns, goals and reported map extent. Do not skip bounds or shrink hull/obstacles. Preserve legacy zero-origin behavior/identity and reject unsupported consumption of the world-only option. Test boundary negatives/old routes and actual new native outbound/return paths. Cost if wrong: an implicit padding can allow motion beyond declared geometry or misalign rendering; justify it against the floor/no-wall fixture, hash inputs and carry signed extent to B07. B05 local handoff rig does not prove this new route; physical geometry change requires separate assessment.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 63,
+      "text": "Ruling: B06 must not add a production custody bypass keyed to the test scenario string B05-RIG. Upgrade existing real-factory seam tests to the strict correlated world API with explicit minimal Source/pending-custody fixtures and admitted scenario/backend, preserving slot/close/empty-load/lifecycle assertions. Keep direct physical worker rigs unchanged and test scope explicit; actual production admission uses capability/evidence, never old mock receiver fallback or hidden arm=null. Cost if wrong: preserving a convenient unsafe test cast could create an authority exception in production; update the test fixture and retain real Source nominal/fault qualification. Add a separate reusable observation-only factory only if a concrete production need is established.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 66,
+      "text": "Ruling: B06 may declare tighter world-only controller tolerances: translation0.004m, goal position0.008m and goal yaw0.016rad, with exact every-leg versus final-translation semantics named and bound to the new world controller policy/scene/report. Legacy LEG_TOL0.02 and optionless behavior/identity remain unchanged; stopped velocities already match dock0.01m/s and0.02rad/s, arrivalHold5 does not replace dockHold10. Cost if wrong: command completion may still leave measured braking/drift outside the stricter dock window; unit negatives plus actual native return and second pick must prove it. No pose snapping/retry, physics retuning or relaxation of dock/receipt/freshness thresholds.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 69,
+      "text": "Ruling: B06 may add world-only registered physical perturbation intents/receipts for dock drift and cup fall, admitted once at factory/worker creation from server-owned campaign config. Fixed preset ID/revision/dose/frame/duration/target rules, bounded phase/scene/cup binding, one-shot consumption before application and force cleanup in finally are required; ordinary worlds and old modes reject unadmitted input before mutation. Source pending plus durable evidence retain run/boot/request/tick/scene and before-after/frame provenance; lost ACK remains unknown/no resend. Dock fault must be triggered while actual gripper is closed early enough to observe violation before opening; test observed stop/violation timing. Cup fall uses real tray-relative dynamics, with physical lost/unknown and last-confirmed domain ownership distinguished; never false served. Cost if wrong: a generic force API or cached phase could fabricate faults or permit unscoped commands; keep narrow server presets, negative admission tests, unchanged geometry/friction/placements, frozen doses and retained failed probes. Existing mobile tick501 fault remains unchanged.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 79,
+      "text": "Ruling: B06 may add narrowly validated source-owned worldControl context to the exact pending/recorded world command and derive a named full-world sweep report from the bounded durable world stream, preserving the legacy4096interval checkpoint cap. Moving AMR geometry changes each tick, so the old report can truncate before the required two-cup route finishes. Bind actual selected program/command/phase/waypoint/held-cup/interlock context to admitted scene/program and Source journal; metadata cannot grant arbitrary allowed pairs or physical authority. Recheck consecutive actual joints with full actual AMR geometry/pose using the online convention and derive phase/pair/region permissions from admission. Preserve whole interval coverage; missing/tampered context, gaps, quota or uncertain sweeps cannot pass. Keep generic truncated ARM03 honest and clearly label the separate full-stream method/coverage. Old modes reject the new optional command field; retain existing30k/byte bounds and raw all-substep contacts as separate evidence. Cost if wrong: extra schema/reader/CPU can diverge from online checking or launder descriptive metadata into authorization; test beyond4096changing-scene intervals, phase permission transitions, invalid context and short native online-versus-readback equivalence, then freeze before final campaign. Do not raise legacy cap or add an unbounded parallel archive.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 83,
+      "text": "Ruling: split B07 into sequential B07a (Source replay package/export, owner-scoped live snapshot endpoint, registered stress admission and bounded pure Lab reader) then B07b (offline app entry, cell UI/cameras/stories/catalogue, browser/accessibility and actual production performance). Parent B07 completes only after both reviews; all original exit criteria remain. The data/security seam deserves a review before UI consumes it, and the active-cell performance task must not be hidden in exporter completion. One implementer at a time after B06; clean Source export/Lab pin at each runtime change. Cost if wrong: one additional review/pin and possible API adjustment; B07a report must hand exact format/limits/endpoints/selectors to B07b, which may make measured source fixes with its own tests/pin.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 87,
+      "text": "Ruling: B06 includes normal portable bootstrap/dispatcher and composition-specific shared-world readiness before freeze. Existing single_world dispatch required caller-injected worldPorts, while readiness chose legacy arm checks; a directly wired campaign does not prove the advertised normal runtime route. Use configured verified MuJoCo runtime and exact supported world set/engine, without inferring world readiness from arm capability or silently enabling missing providers. Check admitted fixture/project/closure/lock/policy/clock/capacity and real shared-model create with inactive slots/no business effects. Hold the same exclusive engine slot until actual worker close, including abort/failure; cache only successful exact admitted identity while rechecking mutable prerequisites/capacity. Preserve legacy routes and valid Source-only injections. Cost if wrong: shared readiness may spawn a second world, cache mismatched geometry or advertise an unusable set; test normal configured factory create/steps/close without injected worldPorts plus routing/disabled/missing/wrong-input/lock/busy cases. No duplicate full campaign solely for dispatch, but distinguish normal bootstrap smoke from direct campaign evidence. B07 owns consumer UI, not this missing backend route.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 109,
+      "text": "Ruling: fix the single-observation world-producer provenance/phase validation gap after the loaded freeze-01 nominal case ends; keep its inputs/artifacts immutable. A completed seed7 may be reused only as development B06 evidence if the final diff solely adds fail-closed guards for invalid inputs, with unchanged factory/controller/physics/timing/normal serialization/effects, all persisted observations and pending identities pass the new predicates/correlation, retained artifact and other input hashes match, and valid-input equivalence regressions pass. Record recording-freeze01 versus validating-freeze02 plus separate patch/hash/audit, never claim it ran on freeze02. Do not retimestamp or rebase receipt clocks to prove past freshness; the original runtime validation carries that claim, while the new audit closes structural provenance/phase/correlation (use recorded original policy if present). Incomplete case, unavailable full rows, invalid rows or broader behavior changes forbid reuse and require rerun. Remaining seeds/faults use finalfreeze02; B10 still records all required cases on one final clean tuple. Read retained SQLite only via verified isolated copy. Cost if wrong: mixed code evidence could conceal changed confirmation behavior or fabricated freshness; independent review must check the exact guard-only patch and complete row inventory before accepting conditional reuse.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 112,
+      "text": "Ruling: B06 may revise only the shared-world navigation controller policy to v2 with assumed designBrakingDecelerationMps20.25, preserving command acceleration bound0.5, physics, goal/dock/receipt thresholds and legacy defaults. Retained actualtrace shows remaining100.50mm/measuredv0.3415 at3060 already needs116.6mm at0.5m/s2; at3080 translation retires with3.9225mmremaining/v0.1435 andrampsuntil3094,finallyovershoots16.934mm. Apply the declared conservative braking target and require actual position inside leg tolerance plus existing stoppedLinearMps before every translation retires, including before a final rotate. Settling must command bounded zero/braking rather than keep driving into the target. Preserve wheel/angular/ramp/full-footprint/dynamic checks and Source command identity; no snap, resend, new goal retry or fabricated arrival. Test lagged-drive premature-retirement RED, convergence within declared test dynamics and unchanged legacy route golden. Version/hash scene/controller/report and freeze02 after provenance guard/tests. Cost if wrong: design deceleration may still mispredict actual load/inertia or cause chatter/no-progress; retain failed probes, measure the new route/return/secondpickup, never relax acceptance. All3nominalseeds+5faults run fresh because freeze01 is interrupted, so ruling45 reuse condition is not met. No repeat of unchanged B05 local rig is required solely for new navigation policy.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 120,
+      "text": "Ruling: correct shared-world stop evidence timestamps to the actual triggering observed snapshot tick before the final fault matrix. world.commit currently halts before arm.advance, so MockArmPlant.stop labels the prior generator tick even though violation was observed at s.tick. Use a Source-only explicit event-tick override or equivalent without changing the generator clock/default legacy behavior; keep disturbance/violation/public commit/next physical command and actual stopped observation distinct. Do not imply physical stopping before it was observed. Cost if wrong: relabelling can corrupt generator sequencing or falsely claim zero response latency; test exact phase boundaries, actual gripper/commands and legacy timestamps.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 124,
+      "text": "Ruling: move bounded shared-world checkpoint/preview-state performance correction into B06 before the remaining full native matrix. Root measured closed freeze01 run.json tick3208 (SHA0d5f9dbfd70da8c8d2293838842317f6a9b7f67942ef46cb70f72ffefc24a8c4):11,942,457bytes;collision.evidence10,380,708bytes with3208worlds/intervals;tracking.props1,215,984bytes. Node24 medians stringify42.052ms,cloneCoffee57.577ms,cloneArm55.491ms; inspected hot path executes3full synchronous checkpoint rewrites plus those2clones, about239ms CPU beforeIO/physics, incompatible with20ms pacing. Stop only the exact owned freeze02 suite at a controlled boundary, retain/hash its interrupted prefix and never count it nominal. Implement a world-only bounded critical-state representation/retention, moving duplicated derived collision/prop history out of repeated checkpoints/clones while preserving the existing complete durable world stream, every live sweep, actual state, stats/counters/firstFailure, command/program/grip/custody, staged rollback and crash/failure horizons. World reports/traces must derive complete evidence from the verified stream as needed; removing a cache cannot make legacy truncated/not-run pass. Do not relax fsync/ACK ordering/freshness or change physics/controller/tolerances/default legacy4096 behavior for speed. Add bounded-growth, actual rollback/crash and full-stream report-equivalence regressions; measure same closed input and needed real Source work, not native-only FPS. Freeze03 then all3freshnominal+5faults. B07b still owns180sproduction browser/IPC/pause and achieved-speed checks. Cost if wrong: moving derived data can omit critical recovery state or distort reports; keep the change minimal, explicit and reviewed, with raw bytes/coverage intact. It avoids spending hours recording a tuple that the required web performance fix would immediately invalidate.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 128,
+      "text": "Ruling: approve Source-only world_durable_v1 history retention limit16 and an armReportState(publicCommittedTick) callback backed by a bounded committed-prefix world reader. Keep critical arm/program/grip/custody state, counters/stats/immutablefirstFailure and defaultlegacy4096 semantics; reconstructed full report state stays transient, never written back to checkpoint/preview. Run.report currently only awaits its queue then reads across awaits; capture trusted horizon plus criticalstate/manifest/businessjournal/effects within a boundary serialized with actions (no self-await deadlock), then materialize from immutable captured inputs. Recorder capture also serializes manifest/chunkrefs/durabletail; use exact synced buffered lines or bounded WAL snapshot, never racy mutable tail. No flush/finish/republish/repair by the read path. Require trustedrun/boot/scene/admission/H, rejectrequestedH>publicH, contiguousvalidated0..H with all existingbounds/identity/commands/interactions, exclude durableACKH+1. Prefixcoverage is not runcompletion: preserve active/terminal/gap/write-intent status; missing/corrupt/ambiguoustail cannotpass orbecomequalification. Ordinary archived readWorldEvidence completion semantics stay unchanged; reopen uses retained admittedbundle/horizon read-only, neverlatestfixture/respawn. Cost if wrong: a fast cache can turn mixed-horizon/uncommitted data into a report or erase sample semantics; test midcommit/race/flushboundaries/failureintent/corruption/limits/hashimmutability/reopen/fullstreamequivalence includingstops, and label exact program-only versusall-world trace window. B07a reuses this capture seam for export. Normal runtime/gateway report must expose the named full-stream worldSweep method, actual coverage and status or explicit unavailable from that same captured Source journal/H; a campaign-helper-only injected result is insufficient. Keep legacy ARM03 computed from bounded critical cache before any transient full-trace reconstruction. Scope source_committed_prefix/prefixCovered versus streamFinalized/publication distinctly; streamFinalized means gap-free recording finalization, not business success, which remains outcome.status/served. Content-addressed report artifacts keep concurrent H1/H2 references stable.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 152,
+      "text": "Ruling: approve world-only controllerpolicyv3 with assumed terminalApproachDistanceM0.20, internalstagingXY=goalXY−0.20*[cos(goalYaw),sin(goalYaw)], then feedbackdriven translation to unchangedactualgoal and finalheading settle. Preserve sameSourcegoal/commandid, physics, .25designbraking/currentthresholds/holds/sensors/ramp/wheels/no-progress andlegacydefaults; no newgoalretry/snap/fakearrival. Staging never emitsSourcearrival/confirmation and must not become another strictbusiness-arrivaldeadlock; finallegusesactualposefeedback tocorrectlateralturnerror, notopenloopfixedheading. Preservealreadysettlednear-goalbehavior soinitiallydockedrobot neednotdriveaway. Use samepolicy in static/dynamic/replannedroute and exposeactualpath. Explicitlycheck appendedstaging→goal translation plusposes/turns/fullfootprint/signedbounds againstsameobstacles: currentverified() alone doesnotchecktranslations. Impossibleapproachmustrefuse,no uncheckedfallback. Retainexistingadmittedsceneversions/archivereadcompatibility. Isolatepathcorrection; no separateangular-retirementgate inthisrevision. Deterministicturn-driftRED+legacygoldens, then scopedactualnative3Dforward-staging/return corridor/contact/sweep beforefreeze04/full3nominal+5faults. Dockstaging[.35,.2859136622] movesclosertofixedarm/stand, soB05/empty2Dmapdonotproveclearance; unsafeprobemustberetained/reassessedwithoutgeometry/tolerancerelaxation. Version/hashnewpolicy/scene and allfreshcases; freeze03failednominalcannotbereused. Costifwrong: addedtravel/turns or infeasible/unclearednear-armapproach, and plannerprogressdeadlock ifstagingmistakenforbusinessgoal; actualconvergence/clearance gatesdecide.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 156,
+      "text": "Ruling: every subsequent development freeze must retain complete source bytes for all changed/untracked inputs, plus explicit immutableGitbase/lock/closure identities for unchanged dependencies; a tracked-only Gitpatch and hashes of untracked files are insufficient for later source reconstruction. Use a complete hashed source archive or a committed exact source snapshot; retain hashes and original artifacts, and restore oldermissingbytes only into additive artifacts with exactfrozenhash equality. Freeze03 untracked recovery is now complete and independentlychecked, withoutrewritingoriginals orclaiminganewphysicsrun. Costifwrong: small additional storage/capture work versus irrecoverable implementation provenance after edits; never fabricate unavailablebytes or treat a sourcecopy as qualification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 160,
+      "text": "Ruling: approve world-only controllerpolicyv4 reverse terminal approach with explicitdistance0.20: stagegoalXY+0.20*[cos(goalYaw),sin(goalYaw)], orientgoalYaw, then closed-loopnegative-v terminalstep to unchangedSourcegoal. Keep samegoal/commandid, allthresholds/.25braking/holds/ramp/wheel/sensor/no-progress/legacy andsettledstartbehavior; no generalreverse latticeexpansion,newgoalretry,snap oruncheckedfallback. Distinguishtraveldirectionfrombodyyaw: reversefeedbackbodyheading=atan2(goal−pose)+pi, asymmetricfullfootprints useactual/intendedbodyorientationwhiletranslatingtowardrear; turnguardsuseintendedbodyyaw,stopping/dynamic/invalid-beamguardsusetraveldirection. Existingadmittedsensor2piFOV/360beams requiresfreshusable rearcoverage; invalid/missing/rearobstacleholds, notclear. PlanarLiDAR doesnotproveclearance of thelowstand. Check signednegative-v acceleration/wheellimits, exactactualpose/bothspeed/hold beforearrival, static/dynamiccorridor/bounds andblock/no-progress tests, observed-driftregression andlegacygoldens. Scopedactualnative reversecorridor mustverifyallnativecontactpairs includingAMR/stand, arm-sweep scope separately, finaldockerrors/vel/hold beforefullfresh3nominal+5faults. Preservev3unsafeartifacts/source andv1/v2/v3archivereadability, do notadvertiseunsafev3 asnewlivedefault. No geometryraising/shrinking/contact suppression/acceptanceretuning. Costifwrong: newboundedreverse mode canmisorientfootprints ormissrearobservations; nativeclearance/convergence decidesfeasibility andreversecapabilityisnotphysicalhardwarequalification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 168,
+      "text": "Ruling: v4-only terminalarrival must honor previous-sent-command accelerationbounds. Once actualpose/both-speed hold is satisfied, retainoriginalgoal/commandid andrequestboundedzero throughsamecommandramp; emitSourcearrived onlywhen resultingsentv/omega arezero andactualacceptancewindowremains satisfied. Recheckactualwindoweverytick; no stickyarrived/settlinglatch ifpose/velocityleavestolerance, no reset/bypass ofno-progress/deadline/sensorguards. Emitarrivalonce. Legacy/v1-v3unchanged. Retainpreviousv4nativeprobe asclearance/convergence evidencewithterminalrampexception, notfullypassingcommandbounds. Regressionfromretainedjump plusleave-window/no-prematurearrival/singlearrival, then rerunscopedreverse nativeprobe includingterminalzero signedv/omega bounds andactualdockhold beforefreeze04. No physical/threshold/new-goalretrychange. Costifwrong: extra settling canleavegoalwindow orstall; actualwindow/progressguard mustremainauthoritative andthephysicalprobe establishesbehavior.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 188,
+      "text": "Ruling: runtime manifest byte ceiling becomes explicit256KiB in Lab importer and Source exporter contract/tests. Current complete compact65810B exceedsold65536 legitimately; preserve allclosurepaths/hashes/schema/provenance andexistingcount/path/digest validation (closure4096/schema256/path512), nevertrim authoritativeentries ornotes merelytofit. Exporter refuses above samebound. Focused tests validaboveoldcap/exactnewcap/cap+1 refusebefore destination/pinmutation plusmalformed/tamperedregressions; thenfreshcleanexport/import/check/type. Retainoriginalfailedexport/log immutable. Packaging-onlychanges outside73nativeinputs do notrequirephysicsrerun, butrecordseparatecommit/hash andinclude Source+Labdiff inB06review. Costifwrong: boundedparsebudget grows64→256KiB andfuturegrowthstillrefusesexplicitly; avoidingcosmetictrimmingpreventsrepeatedclosure failures inB07/R3.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 200,
+      "text": "Ruling: B06reviewI1 isImportant andmustfix: simultaneoussame-H reportmaterialization mayrace onwriteDurable fixedtempname andonewhole reportrejectsENOENT. Makecontentaddressedpublicationconcurrent-safe whilekeepingwrite/fsync/atomicrename/directoryfsync/hashchecks/immutableH1H2refs andmaterializationoutsideSourceactionqueue. Deterministicsame-Htrace+props/bothresolve/hashreadback plusdifferent-H/actionprogress andaffectedrecorderdurabilityregressions required. Reuseoriginalfreeze04physical3+5evidence onlyifdiffispublication/temp-file-only, controller/physics/authority/validserializedbytesunchanged; recordexactdiff/newvalidatingidentity andretainednominalreadonlycopyreadback/originalhashes, neverrelabeloldruns. No fullnativecampaignsolelyforfilesystemrace; widerstep/ACK/physicalchange requiresnewevidencedecision. Costifwrong: sharedhelperchange couldaltercrash/recoverysemantics orhideimmutablefileconflicts; focusedfailure/durabilitytestsandscopedreviewmustguardthoseboundaries.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 222,
+      "text": "Ruling: B07a maysupplementmissingarchivedNOTICE/licensing fromimmutablepinnedrepo/vendorrecords andverbatimbytes onlywithcomplete relevantcomponent/mesh/model hashmappingequalretainedadmittedassets. Label supplemental_licensing, sourcecommit/record+NOTICEhashes/matchingassetidentities, notoriginaladmission/acceptance. Nevermutateoldbundle/use latestfixturegeometry. Unknown/ambiguous/mismatch provenance refusesvendorassetexport(or explicitexistingproxyfallback ifsupported), neverinventterms. Testunknown/mismatch/tamperedNOTICE; sameforB04ifneeded. Costifwrong: a matchingmesh alone maynotestablishwholemodelprovenance/license, sofullrelevantmappingandimmutablevendorrecord arerequired; metadata cannotretroactivelybecomeengineinput.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 224,
+      "text": "Ruling: B07a mayaddnarrowoptionalSource-onlyreplayconsumer/sink throughB06deferredmaterialization, boundtothesameaction-serializedH/state/journal andrecorderimmutableprefix. Onlyvalidatedboundedrecords/assets/context, explicitownership/immutability; no mutationofcriticalstate/normalreport, nopublicRunReport rawrecords/functions, nosecondcapturealgorithm/dispatcher/freshmutablemanifestorjournalread. Materialization/sinkoutsideactionqueue; failure/abort export-only, no flush/finish/repair/worldcancel/sharedpublicationcancel. Keepnormalreport/legacyunchanged. Testexport-step/sameH/H+1/failureabortisolation/readonlyreopen andreportexacttypes. Costifwrong: consumer couldmixhorizons, duplicatehugebuffers orcoupleexportfailuretorun; boundedhandoffandisolationtestsrequired.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 230,
+      "text": "Ruling: B07a indexedexport resourcepolicy ismax2pending+retainedversionsperrun, max2activecaptures/exportsprocess-wide, max8pending+retainedversionsoverall/200MiBstoredpackages. Explicit429/expiry/delete/archive/closecleanup, onlypackage-ownedoutputs; privateothersession404checkedfirst. Abortedpendingcapacity releasesafterownedworkstops/cleanup, nevercancel/deleteanother validversion ororiginalevidence. Focusedcapacity/concurrentabort/ownership/lifecycle tests andexactB07bhandoff, no broaderstorageinfrastructure. Costifwrong: smalllimitsmayrefuselegitimateparallelviewers andboundstoredbytesdoesnotalonebounddecodedCPU/memory; activecapture/readbudgets remainnecessary, andB09separatelyownsprocess/data-rootexclusion.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 240,
+      "text": "Ruling: B07a mayincludeoriginalB04payload-perturbation.json asnarrowmodeledworkerreceiptasset onlyverifiedagainstretainedcaseinventoryhashandrun/boot/scene/profile/targetidentity, within capturedH. Scheduledperturbationisnotappliedreceipt orSourcecustody/eventauthority; missing/unknown/mismatchnotinvented. No later-appliedsidecarread duringmaterialization canleakpastcapturedH. Preserveoriginals andpreliminaryexports, emitfreshpackage/summaryfornewasset/correctedaudit. B07bhandoffnamesexactSourceprogram/events/issueobjecttick andlivecompositionsupport; per-cursorclaims retainclockscope. Costifwrong: a sidecarcouldwronglyproveanimpulse foranothercase/futuretick; immutableidentity/hash/horizon bindingandtruthfulmissing-data labelsareload-bearing.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 244,
+      "text": "Ruling: B07a mustguardrestartresidue beforefinalreview. Useboundeddirectoryiteration (notunboundedreaddir+slice), coherentserializedscan/admission/pendingreservation, allpersistentexport-ownedoutput/stagingnamespaces. Unknown/untracked/unreadableresiduehasunknownsize: failclosedNEWexports429/recovery-required beforenewcapture/write, neverassumeunknownfolderfits25MiB/followsymlinks/deleteunknown data. Existingvalidtrackedversionsremainusable. InspectseparatecapturestagingandstateOS-temporphan scopehonestly. Testfreshregistrycrashresidue/boundedenumeration/concurrentadmissioncleanup/siblingpreservation. NoGCservice/crossprocesslock/nativecampaign; retain716e16b/c95b68bevidence andappendnarrowcommit/focusedchecks/cleanexportpin. Costifwrong: residuecanblocklegitimateexportsuntiloperatorrecovery, butsilentlyignoringitallowsexports toaccumulate acrossrestarts andinvalidatesboundedstorageclaim.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 250,
+      "text": "Ruling: B07a keeps the existing public Source event shape; raw journal entryId/event-index resolution is explicitly unavailable in the display-only package. Required phase/issue/object/tick links use preserved Source transitions, program/cup/command/interaction fields and clock, while original-journal correlation is checked by the producer sweep. B07b must label raw-entry drilldown unavailable and never infer custody from proximity or opaque IDs. No new mapping/schema/export round solely for journal inspection. Cost if wrong: future journal-inspection UX needs an additive sanitized mapping and fresh package, without rewriting archives.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 260,
+      "text": "Ruling: B07a indexed asset reads receive a process-wide maximum4active downloads and16MiB total reserved encoded bytes, measured from admitted asset sizes and reserved after private owner/version/index checks before allocation. No unbounded queue; excess429 REPLAY_READ_CAPACITY. Hold each reservation until both owned IO cleanup and response finish/close; disconnect does not release while owned read still runs. These limits bound admitted work/queued encoded buffers, not total JS heap. Cover held parallel reads, slow/disconnected responses, error/abort and private404 precedence. Cost if wrong: legitimate parallel viewers can receive429 and retry later, but storage/export quotas alone permit unbounded download buffering; B07b should consume sequentially and show truthful retry/refusal.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 272,
+      "text": "Ruling: B07a scoped review closes I1–I4 but carries unchanged public gateway shutdown ordering to B09 drain/stop ownership work. Current parent g.close awaits server.close before internal v2.close, so a held active response can delay reaching new abort/destroy cleanup; current active-shutdown claim is internal-only, not proved for public close. B09 must test public g.close with held download/pending owned IO and fix ordering so request admission stops, owned responses/captures abort and settle, workers close, then data-root ownership releases; preserve exact ownership and legacy lifecycle. Cost if wrong: until B09, graceful shutdown may wait for active clients and cannot be advertised as promptly aborting them; deferral must remain visible and close before final runtime qualification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 280,
+      "text": "Ruling: B07b uses a narrow owner-scoped read-only committed world-observation seam instead of full snapshot fields in RunView, because scenario-runner stores every RunView in up to10000action receipts and would recreate checkpoint-history growth. Add optional Source capture and specific GET, serialized at one committed H/revision; return one bounded owned snapshot with run/boot/scene/tick/simtime and explicit valid/stale/unknown availability. Control context must match that committed tick, never pendingH+1/current-nextprogram; one bounded committed-control projection is allowed, missing legacy/reopen context unavailable. Bind view metadata/assets to actual admitted identities; no latestfixture guessing, rawassets/history in receipts, worker/report-per-frame or authority changes. Test H0/H7/step-H+1failure/stale-reopen/privacy-reclaim/mutation-isolation and boundedcheckpointgrowth. Cost if wrong: another display API and context binding can drift or add polling latency; typed/versioned bounded snapshots, same-H tests, exactmodeldigests and upcoming actualperformance measurement are required.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 294,
+      "text": "Ruling: B07b first profiles actual outside-worker costs with bounded low-overhead short stage diagnostics, then may make localized evidence-backed performance fixes before final180s freeze. Preserve ACK/durablewrites/freshness/collision/physics/samples/clock; persistence/recovery restructuring needs concrete measured options to root. Report actualachieved/limitedpacing and unmettargets, nevermark0.56x as1x. Final usesclean unchanged exportedCLI +productionUI; CLI-onlybundle lacksproviderdiagnosticexports, so an externaltask-ownedpreload mayobserve onlyitsownPythonchild complete matchingrequest/ACK lines withoutalteringIO/backpressure/error/close, withboundedbuffers/logs andrecordedwrapperhash/overheadscope. WireACK isworkerIPC, notSourcecommit; pause-to-lastcommitted usesSourceconfirmedhorizon/response (explicitconservativebrowserupperboundallowed), separatelyfrompauseACK/UI. Cost if wrong: instrumentation canperturblatency ormislabelsnapshotACKascommit; keeprawtimelines/identities, diagnosticvsfinalscopes andvisibleunmettargets, withtestsforanyactualoptimization.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 300,
+      "text": "Ruling: B07b revision reset clears interpolation/history, but may retain ONE wholly coherent previous committed display frame for<=500ms during same-run/boot/scene next-action transition. Retain its original H/revision/age; no newer telemetry/business context mixed in or extrapolation, controls usecurrentauthorityrevision. Newrun/boot/scene/replay clearsimmediately; unknown/failed physical state isshownexplicitly, notmasked ascurrent-valid bylastknownpose. This isboundedlastknownframe, nothistorybridge. Cost if wrong: up to500msvisiblelag ormaskedfault; explicitfreshness/horizon, immediatereset andunknown-state tests required.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 312,
+      "text": "Ruling: B07b may add readStoredAsset(path) to the Source-owned synced ReplayReader, reusing the same serialized admitted-path bounded load and complete encoded/decoded size/hash validation; readAsset keeps decoded semantics. Return fresh verified stored bytes, no new raw transport/parser/recompression or retained encoded cache. Preserve abort/close/final-digest checks and package limits; test gzip/identity/tamper/path/abort plus ZIP encoded-entry hashes and genuine H7 production roundtrip. Source commit/export/sync/pin required. Cost if wrong: local ZIP may contain decoded bytes under encoded hashes, exceed budgets or bypass reader lifecycle; prior failed REPLAY_ASSET_SIZE roundtrip remains evidence, no export-success claim before corrected import.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 320,
+      "text": "Ruling: B07b final185s remains valid only for its actual measured scope: real active world, attempted then cancelled concurrent large-prefix export, not a completed large export. Post-pause Source GET/world-display took4153/4105ms outside active-window loop summary, so authorize one bounded separate COMPLETE export/profile on a verified copy of the captured paused run, recording whole export HTTP/event-loop/ownership/cancellation. Localize synchronous serialization/compression/reconstruction and propose smallest yielding/async fix through existing captured immutable data outside authority queue; preserve ACK/durability/physics/evidence/budgets. No originalSQLite writes, new B06 campaign or worker/persistence/recovery redesign without concrete options. Changed runtime/UI justifies new clean export/pin/freeze185s; oldattempt and identities retained. Cost if wrong: extra profiling/recording or yielding races can add delay or break capture consistency; require same-H, abort/lifetime and actual completed-export responsiveness proof. Scene-loaded geometry counts do not prove every moving body remains in camera; final Cell camera lets AMR leave view and must be reported explicitly.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 322,
+      "text": "Ruling: the B07b complete-export diagnostic may rotate only the task-owned verified COPY reclaim.json proofHash to a fresh local secret because the original browser reclaim secret was correctly not persisted. Verify original/copied bytes first, record the sole auth-sidecar before/after hash exception, keep secrets out of logs/commits and bind localhost. All runtime paths must stay in the copy; no original SQLite access, symlink/reference back, evidence/checkpoint/run identity or physics provenance changes. Cost if wrong: this fixture could bypass the ownership boundary being measured or contaminate original evidence; treat it as export/performance profiling with fixture auth only, never production reclaim/auth qualification.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 324,
+      "text": "Ruling: B07b measured complete-export CPU profile authorizes one shared world-sweep generator/core with unchanged synchronous API/drain plus additive async drain yielding setImmediate every32 records including prevalidation, used only by deferred report materialization. Export uses sequential async gzip and yields between validated chunks/assets, with no unbounded parallel buffers. Preserve every validation/interval/callback order/count/failure reason, immutable captured H/journal/admission, stored and decoded hash bytes, publication/fsync/ACK/physics. Tests compare sync/async nominal/fault/invalid/source mismatch, event-loop progress, same-H report with Source action during yield, captured-input byte equality and abort/cleanup/lifetime. Reprofile complete copied export and health/view/world GETs; changed tuple requires clean export/pin/new185s. Cost if wrong: added yielding/compression concurrency can expose mutation/cancel/publication races or change deterministic artifacts, and one extra recording cycle is needed; preserve prior failed evidence and stop scope expansion at a concrete residual finding.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 346,
+      "text": "Ruling: B07b fix1 I1/I2 stays UI-only: normal drawing/step/worker pacing and Source pin unchanged, but current-state Pause/Resume rendering removes up to500ms retained-display delay. Verify deterministic replay/retention/current-control cases and real native Pause/Resume plus both H7 report-replay paths on a fresh production build; no extra185s for this narrow fix. Old e07685d/89b4a38 performance remains that exact tuple only, never transfer ACK/UI or measured timing to the new UI head. New-head long performance is not rerun; B10 final qualification must record it directly after all changes, performance acceptance/D0 remain open. Cost if wrong: a new UI latency regression can remain unmeasured until B10; make the limit explicit and reconsider if fix changes normal pacing/render cadence/Source/measurement semantics.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 348,
+      "text": "Ruling: include the same-H/new-revision stale-world fallback in B07b fix1 because it is the frame predicate implicated by I1/I2 and R66. Live-world attachment must match sourceRevision to selected view.runRevision as well as existing run/boot/scene/availability guards. During allowed retention keep the old wholly coherent pair; after500ms show unavailable until matching observation arrives, never stamp old geometry with current revision. Cover expiry and late response regressions. Cost if wrong: missing or delayed matching observations temporarily hide geometry, but allowing indefinite mismatched context would misstate Source state. No normal cadence/tick/Source change; R71 scoped verification still applies.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 388,
+      "text": "Ruling: B08 fix1 is scoped to offline semantic admission of the registered MuJoCo baseline profile and empty-load content, with fully resealed negative tests and genuine retained clean-X01 readback. Do not repeat native X01 solely for this pure consumer/test fix: the native producer remains Source709a797, while the new validator/export/Lab pin identities are recorded separately and never substituted into old artifacts. Preserve original input/report/recording bytes and write new readback/audit outputs outside that recording. Require focused semantic/physics admission tests, raw actual X01 CLI equality/rejection checks, affected helper tests and clean Source export/Lab pin/type/check/synced-view checks. If producer/compiler/controller/physics/measurement or UI behavior changes, raise the changed boundary for appropriately scoped execution before claiming coverage. Cost if wrong: consumer changes could reject valid old data or affect shared admission semantics; exact actual readback, coherent negative fixtures and independent scoped review guard that risk. Final B10 still records the final all-changes tuple; no new native/performance qualification is claimed in fix1.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 418,
+      "text": "Ruling: B09 may add an opaque public sessionId distinct from the bearer/cookie secret and a writer-only POST /runs/:runId/writer with operation grant_read or transfer, recipientSessionId and expected controlEpoch. Recipient must be an active paired session in this runtime; do not add a session listing endpoint. Explicit grant gives only run-scoped read/report/SSE/display/download authority; unrelated sessions still see private404. Transfer preserves authorized readers, changes the one writer and monotonically increments epoch; no disconnect/expiry/reclaim automatically acquires motion authority. X-Lab-Control-Epoch may be omitted only by the original epoch0 writer before any transfer; supplied mismatches are always refused, and every later writer mutation requires the current epoch. Authority check and mutation/transfer must be linearizable at execution, not only HTTP admission, including queued actions and session expiry. Preserve read-only reclaim/reconcile and existing proof-owner replay/archive housekeeping without extending it to granted readers or allowing resume. Validate Origin/CSRF and CORS for the additive route/header; expose public writer/epoch state without bearer/reclaim secrets. Cost if wrong: credential disclosure, stale queued writes or former-owner expiry could violate privacy/control; independent IDs, real two-session HTTP races, delayed-action/transfer and expiration/reclaim regressions must prove these boundaries. This adds simulation authority only, never Lab hardware control.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 424,
+      "text": "Ruling: B09 explicit gateway reclaim may pass a server-owned reclaimOnly provider option, requiring an existing identity-validated checkpoint and selecting retained/frozen arm ports before any coffeePorts or worker/world creation. Actual Mac MuJoCo test proved public close released its child, but cold arm reclaim spawned a new child before holdForReclaim; this violates read-only recovery. Keep ordinary direct-runner R2a reopen semantics unchanged outside the explicit reclaim path. Missing checkpoint/fresh or missing required retained state fails closed; no new world, normal physical initialization, scene/bundle rewrite, substituted boot identity or synthetic motion/contact observations during reclaim. Preserve committed state/report references, explicit unknown/unavailable coverage and Source-only reconciliation. Cost if wrong: a recovery-only mode could lose report fidelity or accidentally alter legacy/native lifecycle; focused actual arm cold/repeated reclaim and no-checkpoint refusal, owned-PID cleanup, plus relevant existing world/mobile no-respawn regressions must verify the seam. Keep the observed failing run/log; do not modify original historical recordings.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 428,
+      "text": "Ruling: B09's implementation may enter independent review and downstream portable preparation after its clean export/pin, while actual container WEB05 execution remains not_run/blocked_environment. Repeated Docker prerequisite observations produced no valid server metadata (two effective owned-child timeouts and an earlier root attempt requiring explicit owned-process cleanup); the final owned client60963 timed out15.013s and TERM-exited143 without daemon/container/volume changes. Do not reset unrelated Docker or repeat stalled attempts. Keep image identity null/unbuilt, distinct from clean runtime export artifact. Carry actual arm/mobile/cell image compile/readiness/run, competing named-volume containers, crash-release/committed chunks and finished replay into B10 final qualification; execute only when the Docker prerequisite is available, otherwise hand off the open gate explicitly. L00 must treat current R2b image origin as unresolved/nativeReadyfalse, separately from historical R2a images. Cost if wrong: container-only closure, permissions, filesystem or lifecycle defects may remain until execution; reviewed deployment code, portable-only compiler checks, actual Mac worker lifecycle and local process races reduce but do not replace that missing proof. This changes verification sequencing, not the acceptance threshold; no WEB05/native/TLS/cloud/hardware pass is inferred.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 452,
+      "text": "Ruling: R90 adds a separately identified current-R2b per-case process deadline bounded at6,100,000ms maximum, derived from the admitted mj-cell-bv01-v1 nativeDeadlineSecondsPerCase6000 plus100seconds orchestration allowance. Preserve historical runProbeCommand1800000ms public cap and exact R2a profile/checker semantics; do not shorten the current campaign policy or widen the historical cap. Share low-level owned-process mechanics where practical without verbatim duplication, and bind any new/refactored bytes in the new closure. Require finite positive integer policy bounds, incremental stdout/stderr/own-exit receipts on timeout/abort/output-limit, exact owned child/container cleanup and no uncertain-case resume. Per-case execution is allowed, but full campaign readback still requires all3nominal+5fault registered cases, exact identities and actual artifacts; check outer worker/CLI bounds rather than inheriting the old25/30minute ceiling. Reason: the existing generic probe cap would reject legitimate current6000second cases before their registered deadline. Cost if wrong: larger budgets can consume a host for longer or hide stalled children; retain finite per-case/aggregate orchestration, portable short timeout/abort/ownership tests and honest incomplete evidence. No100minute test wait, Docker retry, host assignment or native qualification is authorized by this policy.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 456,
+      "text": "Ruling: R91 binds the generated current-R2b campaign package manifest as an OCI-label-bound companion artifact, preserving the L00 handoff schema and immutable engine/tool closure admission. Clean build.sh sets fixed labels for exact package-manifest and bundle SHA256s; current admission reads the already hash-admitted raw platform image config from inventory provenance, validates those labels and compares actual inspect labels plus in-container file hashes. The package binds observer/input graph and source/runtime/schema/portable/profile/campaign identity; mismatched build export/source, missing/wrong labels, config-versus-manifest digest confusion, mutable tag substitution, altered companion/bundle/observer and coherent wrong tuples must fail. Apply bounded safe-path/symlink/size/secret and artifact retention rules; the generated companion cannot fill immutable closure membership or bypass nativeReady. Reason: L00 correctly refuses generated build output as refs.engine/tool, while the immutable image config can bind those packaged bytes without another generated-artifact role. Cost if wrong: self-declared labels could be mistaken for provenance or execution; preserve platform/config digest verification, compare the actual packaged inputs/output under the declared build policy, test coherent negatives and retain host/image/native gates. Labels and synthetic config/inspect tests do not authenticate a host or prove a campaign ran; absent image/host remains not_run/nativeReadyfalse.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "02-r2b-cell-and-web/progress.md",
+      "lineAtSnapshot": 462,
+      "text": "Ruling: R92 provides an explicit no-push local OCI export/load association for current R2b instead of requiring a registry RepoDigest from a local docker build. Preserve L00 raw platform-manifest to config digest verification; compare actual inspect configId, OS/architecture, R91 labels and RootFS.Layers against raw config.rootfs.diff_ids, and execute by exact config ID. An absent RepoDigests list is admissible only with the verified local export association and recorded as such, never as a registry-manifest observation; present conflicting values fail closed. Verify OCI descriptor/blob hashes, sizes and selected platform with bounded safe paths, no symlinks or unchecked archive extraction. Prepare one-build OCI plus Docker-export/load outputs on an explicitly supported local Buildx/BuildKit>=0.13 driver, verify their exact config association rather than assuming it, and fail unsupported/missing inputs. No registry push, remote builder/context or unrelated-builder mutation. Reason: existing build.sh local docker build -t produces no explicit offline OCI admission package, so mandatory RepoDigests would leave the advertised local preparation path unusable. Cost if wrong: daemon/exporter differences or a forged association can admit wrong filesystem provenance; coherent fixture negatives and exact artifact/config/rootfs checks reduce this risk, but actual build/export/load and WEB05/native execution remain not_run until the final owned prerequisite stage. Source27d6be9 smoke is an earlier local producer and remains separately attributed after R92 changes.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 17,
+      "text": "Ruling: L00 supports two explicit, discriminated installation provenance modes, OCI image and native_apt, selected by the locked subject profile rather than as a fallback for missing image evidence. OCI requires exact single-platform manifest/config bytes and platform identity; multiarch index/config ID alone is insufficient. native_apt requires its own exact distro/ISA/package/repository or archive provenance locks and matching actual inventory; unresolved locks/origin remain nativeReady:false. Existing MuJoCo R2a image campaign and current R2b image handoff remain OCI-bound: image:null/unbuilt cannot become ready by relabeling installation mode or borrowing ROS/CNC inventory. Preserve legacy two-argument native_apt validation unchanged. New mode support validates supplied consistency/prerequisites, not host authenticity, native execution, commissioning or acceptance. Reason: ROS and LinuxCNC host installations do not inherently have an OCI image, and the L00 contract must prepare both authorized branches without inventing one. Cost if wrong: a permissive mode switch could bypass required image provenance or mix incompatible package/host profiles; require focused mode/profile-confusion negatives, unresolved-lock refusal and unchanged current-R2b null-image regression before review.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 21,
+      "text": "Ruling: complete L00 static compatibility with explicit supported document/profile kinds, reusing existing Lab-world/component and engineering-navigation/physical-model validators and adding a narrow adapter for the existing pinned PUMA model conventions when its refs can be bound cleanly. Do not leave the authorized custom/PUMA branch categorically unpreparable merely because its older DH/TCP JSON differs from ROS models; do not invent a generic translation or operational parameters. Validate actual document schemas/IDs/refs/frames/units and applicable joints/limits/inertia, with coherently resealed negative cases, rather than hash-only identity or labels. Unsupported combinations fail clearly. L03 still owns native expanded-URDF/controller/plugin/contact parity, and L04 owns actual controller/trace/ALG04; no static adapter claims that evidence. If PUMA binding requires undocumented semantics or substantive model translation, escalate the exact gap before inventing it. Reason: the L00 handoff must prepare both authorized branches using their real existing model data. Cost if wrong: extra multi-format admission complexity can falsely accept cross-model documents; closed discriminators, reused model conventions and independent static-compatibility review are required.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 25,
+      "text": "Ruling: L00 may use an explicit bounded shared-world compatibility adapter rather than applying standalone navigation-scene input equality to the embedded adapted world. Existing generate-coffee-delivery-world-fixture.mjs copies the mobile physical/navigation baseline, changes the outer navigation world/project/pose/profile refs and seals the combined scene; current Source admission binds Lab project to outer scene.inputs.projectDigest. Preserve and validate original physical-model to navigation-model projection identity, and separately validate outer Lab project/world/frame/model bindings and the exact supported adaptation policy. Enumerate each intentional identity/field difference and reject all unsupported adaptations; no broad ignore mask, arbitrary input replacement, label-only approval or weakening of standalone validators. Existing fixture/evidence bytes remain unchanged. Require coherent resealed negative tests for altered source-model inputs, outer project/world identity and geometry/frames, and record the exact producer/adaptation evidence in the report. Reason: the existing reviewed shared-world format deliberately reuses baseline model provenance; generic standalone equality would reject the current valid format without testing its actual boundaries. Cost if wrong: an overly broad adapter could accept a different world or model under a valid hash; explicit reconstruction/binding, closed adaptation scope and independent review are mandatory. No native/physics rerun is implied by this new pure handoff consumer alone.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 33,
+      "text": "Ruling: assign the historical R2a arm-only static handoff adapter to L01's exact-R2a-image probe task, while L00 closes preparation only for its explicitly supported current shared-world/cell, canonical ROS AMR/xArm and pinned PUMA kinds. L00 must document arm-only as unsupported, never force it through newer world files; L01 must implement/review the old shape and frozen-model/ref bindings before its probe can admit that subject. The actual old runtime55dd3585... is retained and hash-verified at original Lab cache with Source4f893ac; use read-only verified copies and frozen Git objects, not a HEAD rebuild or mutation of original main/cache. Its existence is not image manifest/config, complete closure or native-execution proof. Reason: arm-only baseline adapter and old-image probe share exact historical semantics; keeping them in L01 avoids expanding L00 into probe-specific reconstruction while retaining an explicit viable dependency. Cost if wrong: L01 gains an additive schema/validator integration step and must preserve/retest all current static admission boundaries; neither task may claim arm-only preparation or DEP-MJ-01 until that adapter and required evidence exist.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 49,
+      "text": "Ruling: R82 scopes DEP-MJ-01 bad-state to an explicitly instrumented historical WorkerSession plus real MuJoCo engine subcase, alongside unchanged historical-runtime MJ-BV01 and worker-loss cases. The old gateway exposes no bad-state injection API; observer-owned fault code and verbatim frozen M00 recipe extraction have separate hashes/provenance and never become claimed historical image files. Bad-state must retain inputs/state/warnings, prove actual engine instability, failure/no successful post-fault step and bounded stop; it makes no Source custody/served assertion. Full-runtime worker-loss separately requires Source no false serve, no resend/respawn and stop/unknown outcomes. The manifest/reader must require every named scope and refuse unit-only evidence. The new amd64 profile is observer-authored compatibility data, not a historical build file. Reason: the compatibility case tests engine/platform behavior while preserving the immutable R2a subject and making instrumentation visible. Cost if wrong: component bad-state does not independently prove end-to-end Source fault propagation; that limitation must remain explicit, and no broader full-runtime bad-state or hardware gate may be claimed.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 55,
+      "text": "Ruling: R83 keeps L01 exact historical R2a native campaign and assigns the executable current-R2b payload/cell native campaign adapter to B10 tooling, where current campaign and image closure integration is owned. B10 must implement and independently review that prepared execution path before final qualification; an image-unbuilt not_run record alone is not the adapter. Each subject has its own clean runtime/schema/closure/profile/image tuple, independently recorded observer code and actual artifact reader; no historical image with current worker/campaign substitution. L01 records R2b not_run/image-unbuilt and this dependency. Missing native host/image keeps actual current campaign execution not_run, without weakening readiness or acceptance. Reason: current image construction and campaign qualification already converge in B10 while L01 must preserve the immutable R2a baseline. Cost if wrong: B10 gains an additive native orchestration integration and can delay final tooling completion; final handoff must expose any unimplemented path instead of silently declaring R2b Linux-ready.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 57,
+      "text": "Ruling: R84 permits a separately hashed observer-owned Node preload to passively capture actual worker stdin requests/stdout ACKs and owned spawn/exit identities for historical-runtime worker-loss assertions. Record unchanged subject bytes with passive instrumentation, not uninstrumented execution; preserve spawn arguments/options/returns/events and stream-write behavior, never replace commands/ACKs or disclose environment/secrets. Bound and retain observations; missing, overflowed or incomplete trace cannot prove no resend. SIGKILL and cleanup target only the observed task-owned worker/processes. Focused forwarding, ownership and trace-loss refusal tests are required. Reason: the historical gateway exposes no wire trace hook, and HTTP logs alone do not establish no resend. Cost if wrong: observer timing overhead or a missed import binding may invalidate measured behavior; record instrumentation/timing scope and fail the affected assertion, never fill the gap with inferred success.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 93,
+      "text": "Ruling: R85 scopes L02 native FD01 to the exact unchanged L00 canonical serve-3d EngineeringProject, NavigationScene and RobotPhysicalModel, with a separately identified Gazebo compiler/artifact/profile mapping. Replace the plan's older tests/fixtures/engineering/fd01.project.json native command example with robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json; the old reference fixture remains intact and unsupported only by this new exact native adapter, without changing existing non-native/legacy readers. Preserve its requestedProfile engineering-webots-3d-v1 as source provenance and bind the explicit target engineering-rigid-v1 backend plus engineering-amd64/arm64 environment profile separately; do not broadly ignore requested-profile mismatches or mutate canonical bytes. Required FD01 nominal/fault/clock/bag cases and Source confirmations remain unchanged. Reason: the spec requires the same canonical model as handoff, while the older reference fixture is a different project/world/model with no L00 binding. Cost if wrong: native support is deliberately limited to one canonical subject and cannot claim the older reference fixture or arbitrary project compatibility; a second subject needs its own audited mapping/readback and native qualification, not a fallback. No native run or package/plugin readiness is inferred.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 121,
+      "text": "Ruling: R86 adds an optional nativeMapping artifact role to native-handoff-v1 for the xarm_ros_canonical_v1 subject: exactly two references for captured expanded URDF and its mapping/readback record. Existing manifests remain valid and canonical model/tool/engine roles retain their meaning. Apply existing bounded path, symlink, size, hash, subject identity and secret checks, plus a closed xArm semantic reader binding the raw URDF, canonical model/profile, producer identity, joint/tool/plugin mapping and actual-versus-double evidence kind. These produced artifacts must not substitute for immutable runtime/tool closure membership or clear host/package/execution prerequisites. Missing mapping remains a prerequisite; malformed, mismatched, wrong-kind or cross-profile artifacts fail closed. Reason: model is intentionally singular and engine/tool refs must belong to the committed closure; generated native readback is neither canonical input nor immutable tooling. Cost if wrong: an extra artifact role could admit spoofed mapping or blur subject/observer provenance; require coherent-resealed negatives, cross-role/closure-confusion checks and independent review. Static consistency never authenticates a host or proves native motion/contact, and old evidence bytes/identities remain unchanged.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 125,
+      "text": "Ruling: R87 uses the fixed simulation-only model selector XI13050520BB00 through the pinned upstream robot_sn launch argument, explicitly named and documented as syntheticSimModelSelector, never a hardware serial or identity. The pinned parser decodes xArm6, model1305, dateCode2005, HD B and HT_BR2 inertia; model1300=false alone does not choose1305. Keep the selector server-owned, bind it to profile/launch/mapping provenance and verify decoded variant plus actual expanded-URDF limits/geometry/inertia. Do not accept browser substitution, infer a device exists or reuse this value as commissioning evidence. Reason: this selects the existing canonical1305 model through immutable upstream semantics without patching vendor code. Cost if wrong: an incorrect or changed decoder could choose different geometry/limits, or synthetic identity could leak into physical claims; pin decoder bytes, test wrong/older selectors and retain independent expanded readback plus distinct physical dossier prerequisites. Native expansion/execution remains not_run until its real prerequisites are met.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 131,
+      "text": "Ruling: R88 tracks L03 prepared-code review and required native qualification as separate gates, applying the existing no-assigned-host preparation scope to review finding L03-R1-05. Fix L03-R1-01 through04 as code defects; retain R1-05 as an unmet external qualification requirement, never ADDRESSED/pass from portable tests or documents. After the prepared-code gate is independently clean, continue downstream portable L04/L05 and qualification tooling while the L03 native gate remains incomplete/not_run. Required actual X1/X2 provenance, expansion, motion/fault/stop/controller-restart evidence and X3 ten contact trials or observed unsupported result remain unchanged for a later authorized matching host. Same-run reopen refusal is not controller-restart proof; direct FollowJointTrajectory is not collision-planned motion; G2 not-observed is not demonstrated unsupported. Report any locally actionable preparation gap separately rather than hiding it under absent-host status. Reason: the user asked for web-first work ready for a future Linux host and supplied no native target; repeatedly dispatching code fixes cannot produce missing host evidence. Cost if wrong: portable preparation can still contain native integration/contact defects, so final handoff and L06 must expose the incomplete scope and refuse native gates until their actual evidence exists. This is scope/sequence disposition, not an early waiver of a code finding or a completed native task.",
+      "explicitClauses": 1
+    },
+    {
+      "ledger": "03-r3-linux-readiness/progress.md",
+      "lineAtSnapshot": 155,
+      "text": "Ruling: R89 includes integrations/arm-controller/scripts and integrations/arm-controller/packaging in the current nativeToolClosure, preserving its existing deterministic inventory, symlink refusal and generated-cache exclusions. These immutable recorder, launcher, inventory, installer/trust and candidate-lock bytes must be present and bound by the native export/handoff, not replaced by caller-supplied per-trace SHA claims. Generated traces, runtime inventory observations and run artifacts remain separate evidence outside the immutable closure. Add behavioral closure-membership and mutation checks; clean Source commit/export/Lab pin creates a new tuple, preserving every old artifact and exact historical checker reproduction. Reason: L04 discovered the existing closure includes controller bridge/configs/models/programs but omits the actual smoke/recording scripts and packaging consumed by this path, so a native preparation hash could otherwise miss executable/provenance inputs. Cost if wrong: the native closure expands and its digest changes for all current subjects, requiring fresh export/pin and later preparation records; extra immutable packaging files may be conservative, but neither closure inclusion nor unresolved candidate locks prove installed host provenance, native execution or physical readiness.",
+      "explicitClauses": 1
+    }
+  ],
+  "physicalLines": 120,
+  "explicitClauses": 121
+}

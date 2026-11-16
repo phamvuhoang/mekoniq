@@ -1,0 +1,8 @@
+{
+  "exitCode": 1,
+  "toolChunk": "582c8d",
+  "phase": "Comparing dist copy inventory against production identity file list",
+  "reason": "Incorrectly required list order equality: Python inventory uses case-sensitive path ordering, productionBuildIdentity uses localeCompare. Both200member path maps and saved-order build digest match.",
+  "correction": "Compare complete path maps for membership/bytes/hash; independently retain and verify original production ordered-list digest.",
+  "productOrInputChange": false
+}

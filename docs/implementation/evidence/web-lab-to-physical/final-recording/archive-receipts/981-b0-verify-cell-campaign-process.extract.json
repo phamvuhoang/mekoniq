@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:06.632303+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-cell-campaign-process",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-verify-cell-campaign-process.tar.gz",
+  "archiveSha256": "acb1616e6e162445c4b99c7b192bb2f518e31f7ee7f852033fa2854ac31d79fd",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-verify-cell-campaign-process.members.json",
+  "memberIndexSha256": "7e6cb2708469fd38090fc6da5e789848943a182c13870447f8721097de4cb5bf",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-verify-cell-campaign-process",
+  "verifiedFiles": 3,
+  "verifiedBytes": 576,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

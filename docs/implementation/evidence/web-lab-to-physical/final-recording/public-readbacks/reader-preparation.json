@@ -1,0 +1,824 @@
+{
+  "policy": "Exact detached recorded checker/producer code; explicit existingNode dependency reuse with equal lock bytes, no installation/download/fresh-host claim",
+  "operations": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f'...\ndone.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "229efa7f565876f8f9d69634f8fbc24b9196ed3f"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "HEAD is now at 229efa7 test: align native gateway and closure fixtures\n"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "229efa7f565876f8f9d69634f8fbc24b9196ed3f\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7'...\ndone.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "2bd66e679aba431a84736eb10e04717dc4d32ce7"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "HEAD is now at 2bd66e6 fix: admit pinned vendor metadata in native handoffs\n"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "2bd66e679aba431a84736eb10e04717dc4d32ce7\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "2bd66e679aba431a84736eb10e04717dc4d32ce7\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "2bd66e679aba431a84736eb10e04717dc4d32ce7\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "2bd66e679aba431a84736eb10e04717dc4d32ce7\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "2bd66e679aba431a84736eb10e04717dc4d32ce7\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4'...\ndone.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "981e234b1a0da8c72d220445daaf780b3bf65ae4"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "HEAD is now at 981e234 fix: admit tick-boundary controls under the run reservation\n"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--shared",
+        "--no-checkout",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/bab05a5311a9db3be447519b3b9ac48eb0e4a90d"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/bab05a5311a9db3be447519b3b9ac48eb0e4a90d'...\ndone.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--detach",
+        "bab05a5311a9db3be447519b3b9ac48eb0e4a90d"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "HEAD is now at bab05a5 fix: guard final recording prerequisites and retain native blockers\n"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain",
+        "--untracked-files=all"
+      ],
+      "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

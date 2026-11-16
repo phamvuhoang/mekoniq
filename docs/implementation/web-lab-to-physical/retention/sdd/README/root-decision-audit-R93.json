@@ -1,0 +1,11 @@
+{
+  "snapshot": "Final current-container dependency R93",
+  "humanEntries": 93,
+  "rawRecords": 97,
+  "exactRawLedgerMatch": true,
+  "prior96recordsPreserved": true,
+  "humanFileSha256": "93f936322bc31ddcdeeeeb821103af6815393e4bb34f22250024c2401bcc84e7",
+  "rawFileSha256": "94ca6d3b4eac542cdd161bb62ed8b4da8d4565487e62e0b8b73841f61c7586a0",
+  "sources": [],
+  "evidence": "Root read actual record-sim-extension skip-suites/preflight/input/gate path, SUITES_R2A and full R2b recorder/readback classification. No code/threshold change, Docker/service probe or fabricated qualification."
+}

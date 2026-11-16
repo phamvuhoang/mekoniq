@@ -1,0 +1,152 @@
+# Review package: 709a797fa791727d0a8c830e935e0d80192843b0..922abb77fbd3315038584b63599032db61d1b665
+
+## Commits
+922abb7 fix: enforce registered semantic study physics inputs
+
+## Files changed
+ .../src/v2/simulation3d/semantic-study-profiles.ts | 28 ++++++++++++++++++++++
+ .../src/v2/simulation3d/semantic-study.ts          |  5 ++--
+ tests/support/simulation-study-mutations.ts        | 25 +++++++++++++++++++
+ tests/unit/semantic-study.test.ts                  | 23 ++++++++++++++++++
+ 4 files changed, 79 insertions(+), 2 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts b/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts
+new file mode 100644
+index 0000000..eb37417
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts
+@@ -0,0 +1,28 @@
++/** X01's closed MuJoCo input scope. Names alone never establish the empty-load/baseline experiment. */
++import {hashJson} from '../hash';
++import {documentDigest,validateNavigationDocument,type LoadProfileV1,type RobotPhysicalModelV1} from '../navigation2d/contracts';
++import {validateLoadProfile} from './load-profile';
++import type {verifiedSimulationInput} from './simulation-input';
++const BASELINE_PHYSICS_SHA256='9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3';
++// Entire registered empty document except its resealed digest and current compiled-model byte binding.
++const EMPTY_SHAPE_SHA256='43176b16326df374a96e5e35a7924172f78a040072aacc7383b053a2362b684c';
++export function verifySemanticMujocoProfiles(v:ReturnType<typeof verifiedSimulationInput>):void{
++ const {scene,get,refs,report}=v,e=scene.engine;if(e.id!=='mujoco_3d')return;
++ const bound=(ref:{id:string;revision:number;path:string;sha256:string},path:string,id:string)=>ref.id===id&&ref.revision===1&&ref.path===path&&ref.sha256===refs.get(path)?.sha256&&scene.files.some(f=>f.path===path&&f.sha256===ref.sha256&&f.bytes===refs.get(path)?.bytes);
++ if(!bound(e.physicsProfileRef,'drive-contact-profile.json','serve-drive-contact-v1'))throw Error('SEMANTIC_PHYSICS_BASELINE_REQUIRED');
++ const physics=get<{id:string;revision:number;digest:string}>(e.physicsProfileRef.path);
++ if(physics.digest!==documentDigest(physics,'digest'))throw Error('SEMANTIC_PHYSICS_DIGEST_MISMATCH');
++ if(physics.id!==e.physicsProfileRef.id||physics.revision!==1||e.physicsProfileRef.sha256!==BASELINE_PHYSICS_SHA256)throw Error('SEMANTIC_PHYSICS_BASELINE_REQUIRED');
++ if(!bound(e.loadProfileRef,'empty.json','empty'))throw Error('SEMANTIC_EMPTY_LOAD_REQUIRED');
++ const load=get<LoadProfileV1>(e.loadProfileRef.path);
++ if(!validateLoadProfile(load).ok)throw Error('SEMANTIC_EMPTY_LOAD_INVALID');
++ if(load.props.length)throw Error('SEMANTIC_EMPTY_LOAD_POPULATION_NOT_EMPTY');
++ const {digest:_digest,modelRef,...empty}=load;void _digest;
++ if(hashJson(empty)!==EMPTY_SHAPE_SHA256)throw Error('SEMANTIC_EMPTY_LOAD_BASELINE_REQUIRED');
++ const robot=scene.robots[0]!,path=`physical-model/${robot.robotId}.json`,model=get<RobotPhysicalModelV1>(path),file=refs.get(path);
++ if(!file||modelRef.path!==path||modelRef.sha256!==file.sha256||!scene.files.some(f=>f.path===path&&f.sha256===file.sha256&&f.bytes===file.bytes)||!validateNavigationDocument(model).ok||model.robotId!==robot.robotId||model.modelDigest!==robot.model.physicalModelDigest||hashJson(model.inputs)!==hashJson(scene.inputs))throw Error('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');
++ const n=report.navigation2d!.engine;
++ if(n.id!=='mujoco_3d'||hashJson(n.loadProfileRef)!==hashJson(e.loadProfileRef)||hashJson(n.physicsProfileRef)!==hashJson(e.physicsProfileRef))throw Error('SEMANTIC_PHYSICS_REPORT_BINDING_MISMATCH');
++ const p=report.physicsEvidence?.manifest.identity;
++ if(p&&(p.sceneDigest!==scene.sceneDigest||p.loadProfileDigest!==e.loadProfileRef.sha256||p.physicsProfileDigest!==e.physicsProfileRef.sha256))throw Error('SEMANTIC_PHYSICS_REPORT_BINDING_MISMATCH');
++}
+diff --git a/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts b/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts
+index 609d898..b056525 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts
+@@ -1,28 +1,29 @@
+ import {hashJson} from '../hash';
+ import {scenarioRegistry,scenarioHash,resolveRoles} from '../scenario-registry';
+ import type {BusinessEvent} from '../report';
+ import type {EngineeringProject} from '../../engineering/contracts';
+ import {verifiedSimulationInput,type SimulationRunInput,type StudyRef} from './simulation-input';
+ import {navigationMetrics} from '../navigation2d/evidence';
++import {verifySemanticMujocoProfiles} from './semantic-study-profiles';
+ import {studyTrajectory} from './study-navigation';
+ export interface EquivalenceRef {id:string;sha256:string}
+ export interface SemanticStudyInput {equivalence:Record<'model'|'world'|'task'|'commonProjection',EquivalenceRef>;runs:(SimulationRunInput&{commonProjection:EquivalenceRef})[];invariantPolicy:{id:string;revision:number}}
+ export interface StudyInvariant {runId:string;id:string;status:'pass'|'fail'|'not_run';reasonCodes:string[];tick:number|null}
+ export interface SemanticStudyV1 {schemaVersion:1;documentType:'semantic-study';accepted:false;status:'complete'|'incomparable'|'failed';reasonCodes:string[];equivalence:SemanticStudyInput['equivalence'];invariantPolicy:SemanticStudyInput['invariantPolicy'];runs:{runId:string;engine:string;reportRef:StudyRef;artifactRefs:StudyRef[];sceneDigest:string;modelDigest:string;firstTick:number;lastTick:number;replay:{runId:string;tick:number}}[];invariants:StudyInvariant[];differences:{runId:string;dimension:string;value:number|null;unit:string;status:'observed'|'unavailable';reason:string|null}[];unsupportedDimensions:{engine:string;dimension:string;status:'unsupported';reason:string}[];percentiles:null;limitations:string[]}
+ const ref=(id:string,v:unknown):EquivalenceRef=>({id,sha256:hashJson(v)});
+ /** Common planar projection includes every model field except its explicitly derived input identities. */
+ export function semanticEquivalence(input:SimulationRunInput):SemanticStudyInput['equivalence']{
+- const {scene,report,project}=verifiedSimulationInput(input),robot=scene.robots[0]!,{inputs:_inputs,modelDigest:_digest,physicalModelDigest:_physical,...model}=robot.model;void _inputs;void _digest;void _physical;
++ const verified=verifiedSimulationInput(input);verifySemanticMujocoProfiles(verified);
++ const {scene,report,project}=verified,robot=scene.robots[0]!,{inputs:_inputs,modelDigest:_digest,physicalModelDigest:_physical,...model}=robot.model;void _inputs;void _digest;void _physical;
+  const scenario=scenarioRegistry.get(report.manifest.scenario.id),base=report.manifest.scenario.basedOn;
+  if(!scenario||base?.id!=='FD01'||base.revision!==1||scenarioHash(scenario)!==report.manifest.scenario.hash||scenario.confirm.mode!=='scripted'||scene.actors.length||scene.zones.length||robot.model.sensors.some(s=>s.noise.stddevM!==0||s.noise.distribution!=='none')||scene.clock.tickMs!==20||report.manifest.simulationPerturbation)throw Error('INPUTS_NOT_EQUIVALENT');
+- if(scene.engine.id==='mujoco_3d'&&(scene.engine.loadProfileRef.id!=='empty'||scene.engine.physicsProfileRef.id!=='serve-drive-contact-v1'))throw Error('INPUTS_NOT_EQUIVALENT');
+  const task={basedOn:base,orders:scenario.orders,confirm:scenario.confirm,park:scenario.park,roles:resolveRoles(scenario,(project as unknown as EngineeringProject).runtimeProject),seed:report.manifest.seed,controller:report.navigation2d!.controller,policy:scene.policy};
+  const common={model,world:scene.world,initialPoseMap:robot.initialPoseMap,goals:robot.targetBindings,clock:scene.clock,task,noise:'off',load:'empty',actors:[]};
+  return {model:ref('serve-empty-geometric-v1',model),world:ref(scene.world.id,scene.world),task:ref('FD01-scripted-v1',task),commonProjection:ref('serve-empty-fd01-planar-v1',common)};
+ }
+ const before=(a:BusinessEvent,b:BusinessEvent)=>Date.parse(a.at)<=Date.parse(b.at)&&BigInt(a.sequence)<=BigInt(b.sequence);
+ function sourceInvariants(v:ReturnType<typeof verifiedSimulationInput>):StudyInvariant[]{
+  const r=v.report,n=r.navigation2d!,rows:StudyInvariant[]=[],tick=(e:BusinessEvent)=>Math.round((Date.parse(e.at)-n.clock.businessEpochMs)/20);
+  const result=(id:string,ok:boolean,reasons:string[],at:number|null)=>rows.push({runId:r.manifest.runId,id,status:ok?'pass':'fail',reasonCodes:reasons,tick:at});
+  const arrivals=r.businessEvents.filter(e=>e.type==='MissionArrived'),confirmations=r.businessEvents.filter(e=>['CargoLoaded','DeliveryHandedOff','CargoReturned'].includes(e.type)),handoffs=confirmations.filter(e=>e.type==='DeliveryHandedOff'),served=r.businessEvents.filter(e=>e.kind==='fulfillment'&&BigInt(String(e.state.served??'0'))>0n);
+  let bad:BusinessEvent|undefined;
+diff --git a/tests/support/simulation-study-mutations.ts b/tests/support/simulation-study-mutations.ts
+new file mode 100644
+index 0000000..71895c3
+--- /dev/null
++++ b/tests/support/simulation-study-mutations.ts
+@@ -0,0 +1,25 @@
++/** Coherent offline mutations only. Producer evidence is never edited or reidentified on disk. */
++import type {SimulationRunInput} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
++import type {NavigationSceneV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import type {RunReport} from '../../packages/lab-runtime/src/v2/report';
++import {sealDocument} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import {artifact,sha} from './simulation-study';
++export function resealStudyProfile(input:SimulationRunInput,path:string,mutate:(document:Record<string,unknown>)=>void,seal=true):SimulationRunInput{
++ const run=structuredClone(input),index=run.artifacts.findIndex(a=>a.ref.path===path);if(index<0)throw Error('MUTATION_ARTIFACT_MISSING');
++ const value=JSON.parse(run.artifacts[index]!.content);mutate(value);run.artifacts[index]=artifact(path,seal?sealDocument(value,'digest'):value);
++ const scene=JSON.parse(run.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.content) as NavigationSceneV1;
++ if(scene.engine.id!=='mujoco_3d')throw Error('MUTATION_ENGINE_UNSUPPORTED');
++ const changed=run.artifacts[index]!.ref,entry=scene.files.find(f=>f.path===path);if(!entry)throw Error('MUTATION_REF_MISSING');Object.assign(entry,{sha256:changed.sha256,bytes:changed.bytes});
++ for(const ref of [scene.engine.loadProfileRef,scene.engine.physicsProfileRef])if(ref.path===path)ref.sha256=changed.sha256;
++ const sealed=sealDocument(scene,'sceneDigest');
++ for(const p of ['navigation-scene.json','scene.json']){const i=run.artifacts.findIndex(a=>a.ref.path===p);if(i>=0)run.artifacts[i]=artifact(p,sealed);}
++ const sceneRef=run.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.ref,report=JSON.parse(run.report.content) as RunReport,n=report.navigation2d!;
++ n.sceneDigest=sealed.sceneDigest;n.sceneRef={...sceneRef,path:'bundle/navigation-scene.json'};
++ for(const m of report.manifest.models)if(m.id===scene.engine.id)m.hash=sealed.sceneDigest;
++ if(n.engine.id!=='mujoco_3d')throw Error('MUTATION_REPORT_ENGINE_UNSUPPORTED');
++ n.engine.loadProfileRef={...scene.engine.loadProfileRef};n.engine.physicsProfileRef={...scene.engine.physicsProfileRef};
++ if(report.physicsEvidence){const p=report.physicsEvidence;p.manifest.identity.sceneDigest=sealed.sceneDigest;p.manifest.identity.loadProfileDigest=scene.engine.loadProfileRef.sha256;p.manifest.identity.physicsProfileDigest=scene.engine.physicsProfileRef.sha256;
++  const m=artifact('physics/manifest.json',p.manifest),i=run.artifacts.findIndex(a=>a.ref.path===m.ref.path);if(i>=0){run.artifacts[i]=m;p.manifestSha256=m.ref.sha256;}else p.manifestSha256=sha(JSON.stringify(p.manifest));
++ }
++ run.report=artifact(run.report.ref.path,report);return run;
++}
+diff --git a/tests/unit/semantic-study.test.ts b/tests/unit/semantic-study.test.ts
+index 3ee26ea..6017668 100644
+--- a/tests/unit/semantic-study.test.ts
++++ b/tests/unit/semantic-study.test.ts
+@@ -53,10 +53,33 @@ test('arrival is judged against the registered five-tick position, yaw and stopp
+ });
+ test('legacy compareRuns keeps cross-backend deltas null',async()=>{
+  const {compareRuns}=await import('../../packages/lab-runtime/src/v2/comparison');const a=JSON.parse(runs[0]!.report.content),b=JSON.parse(runs[1]!.report.content),comparison=compareRuns(a,b);expect(comparison.comparable).toBe(false);expect(comparison.reasons).toContain('BACKENDS_DIFFER');expect(comparison.kpis.every(k=>k.delta===null)).toBe(true);
+ });
+ test('nominal cancel and unknown clauses are explicitly unexercised',()=>{
+  const study=buildSemanticStudy(input());expect(study.invariants.filter(x=>['cancel-causality','unknown-no-redispatch'].includes(x.id)).every(x=>x.status==='not_run')).toBe(true);
+ });
+ test('a load arrival cannot stand in for a handoff and scripted confirmations retain their admitted delay',()=>{
+  for(const mutate of [(r:Record<string,unknown>)=>{const events=r.businessEvents as {state:{stops:{action:string}[]}}[];events[0]!.state.stops[0]!.action='load';},(r:Record<string,unknown>)=>{const confirmations=r.confirmations as {provenance:string}[];confirmations[0]!.provenance='manual';}]){const i=input(),r=JSON.parse(i.runs[0]!.report.content);mutate(r);i.runs[0]!.report=artifact('report.json',r);expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='arrival-confirmation-served')?.status).toBe('fail');}
+ });
++import {resealStudyProfile} from '../support/simulation-study-mutations';
++import {verifiedSimulationInput} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
++import {documentDigest} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import cupProfile from '../../robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-center.json';
++const profileMutations:[string,string,(d:Record<string,unknown>)=>void,boolean?][]=[
++ ['friction','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;}],
++ ['solver','drive-contact-profile.json',d=>{(d.solver as {iterations:number}).iterations++;}],
++ ['actuator','drive-contact-profile.json',d=>{d.velocityGainNmsPerRad=2.01;}],
++ ['unsealed-physics','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;},false],
++ ['nonempty','empty.json',d=>{d.props=structuredClone(cupProfile.props);}],
++ ['malformed-empty','empty.json',d=>{d.unregisteredLoadSetting=true;}],
++ ['model-hash','empty.json',d=>{(d.modelRef as {sha256:string}).sha256='f'.repeat(64);}],
++ ['model-path','empty.json',d=>{d.modelRef={path:'canonical-physical-model.json',sha256:'830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9'};}],
++];
++test.each(profileMutations)('rejects coherent resealed %s input at semantic admission',(kind,path,mutate,seal=true)=>{
++ const i=input(),original=JSON.stringify(runs[2]),run=resealStudyProfile(i.runs[2]!,path,mutate,seal);
++ // The scene seal, every declared file ref and report/physics identity mirror are already coherent.
++ expect(()=>verifiedSimulationInput(run)).not.toThrow();const changed=JSON.parse(run.artifacts.find(a=>a.ref.path===path)!.content);
++ if(seal)expect(changed.digest).toBe(documentDigest(changed,'digest'));
++ i.runs[2]={...run,commonProjection:i.equivalence.commonProjection};const study=buildSemanticStudy(i);
++ expect(study.status,kind).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(study.reasonCodes.some(r=>/^SEMANTIC_(PHYSICS|EMPTY_LOAD|LOAD_MODEL)_/.test(r))).toBe(true);
++ expect(JSON.stringify(runs[2])).toBe(original);
++});

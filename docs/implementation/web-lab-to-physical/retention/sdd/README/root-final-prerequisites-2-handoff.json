@@ -1,0 +1,1992 @@
+{
+  "source": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+  "lab": "111ed9a763a5fea24ab3180834c83c1db97417dd",
+  "clean": true,
+  "trees": [
+    {
+      "name": "source",
+      "base": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+      "head": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "tree": "a2304bf4040ca84e8c3df25537e078049d8709b8",
+      "files": [
+        {
+          "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+          "bytes": 17820,
+          "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+        },
+        {
+          "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+          "bytes": 16011,
+          "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+        },
+        {
+          "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+          "bytes": 6376,
+          "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+        },
+        {
+          "path": "tests/unit/lab-sil-cli.test.ts",
+          "bytes": 11719,
+          "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+        },
+        {
+          "path": "tests/unit/native-handoff-current-puma.test.ts",
+          "bytes": 5743,
+          "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea"
+        }
+      ],
+      "patchBytes": 14488,
+      "patchSha256": "262a085b8ea22fa291af4e6438bf618a874177cf02136cc9087b6a542353a047"
+    },
+    {
+      "name": "lab",
+      "base": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+      "head": "111ed9a763a5fea24ab3180834c83c1db97417dd",
+      "tree": "d43ad1dfb26cb8255004459dcefb5d0de17c3eb5",
+      "files": [
+        {
+          "path": "config/source-runtime.lock.json",
+          "bytes": 534,
+          "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+        },
+        {
+          "path": "src/shared/engineering.ts",
+          "bytes": 46638,
+          "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+        },
+        {
+          "path": "src/shared/navigation2d.ts",
+          "bytes": 48892,
+          "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+        }
+      ],
+      "patchBytes": 2794,
+      "patchSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47"
+    }
+  ],
+  "patches": {
+    "source": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-2-source.diff",
+      "bytes": 14488,
+      "sha256": "262a085b8ea22fa291af4e6438bf618a874177cf02136cc9087b6a542353a047",
+      "files": 5
+    },
+    "lab": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-2-lab.diff",
+      "bytes": 2794,
+      "sha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+      "files": 3
+    }
+  },
+  "report": {
+    "bytes": 33938,
+    "sha256": "e9e94faa374c794ffc77c1ad68af563c4be2bedcc3a344b28177035f481ee7f7"
+  },
+  "export": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/fix2/export-final",
+  "externalExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/export",
+  "exportFiles": 60,
+  "runtimeArtifactSha256": "5678c2f0cc62713b61790cd2b1847b38219c1b1d1882f6a33463bcb36ad2d2d9",
+  "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+  "schemas": 58,
+  "closures": {
+    "native": {
+      "files": 226,
+      "bytes": 1578397,
+      "digest": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634",
+      "changedEntries": [
+        "packages/contracts/schemas/native-handoff-v1.schema.json"
+      ]
+    },
+    "portable": {
+      "files": 238,
+      "bytes": 8116001,
+      "digest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "changedEntries": [
+        "packages/contracts/schemas/native-handoff-v1.schema.json"
+      ]
+    }
+  },
+  "checker": {
+    "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+    "toolSha256": "4598c7ab2b4d7fc7e991ca5af8f485982197140b0108cdbb240052f5d7a808f2"
+  },
+  "checks": {
+    "assemble-puma": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        ".superpowers/sdd/README/evidence-final-recording/fix2/assemble-prepared.mjs",
+        "puma560-linuxcnc-sim",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-input"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:05:27.344Z",
+      "finishedAt": "2026-11-15T13:05:28.092Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "7825bb01d9292ddd129c524d2d2ddf88c0a67c02950bd3c5ac8a8e69f2e940d8",
+      "receiptSha256": "81f822491e257389667541ce17d56f81956c5372adb511a0845b48dbc0ac6215",
+      "logBytes": 926
+    },
+    "checker-identity": {
+      "argv": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import {checkedCheckerIdentity} from './scripts/native-checker-bootstrap.mjs'; console.log(JSON.stringify(await checkedCheckerIdentity()));"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:06:34.584Z",
+      "finishedAt": "2026-11-15T13:06:35.017Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "112a07269db59e4b8354395c7d04777550b1d80b9de9752162da594f6ac440c7",
+      "receiptSha256": "1f5268ef16de3caa18150d044e36023e447653f93bb3ec3d7966ce2af5b14db4",
+      "logBytes": 140
+    },
+    "contracts-generate": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "contracts:generate"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:01:33.997Z",
+      "finishedAt": "2026-11-15T13:01:34.618Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "ff5b67150aff1c9d99e442b8d213893c15463a5301a1409c3fb7c95e0924a455",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "ffa2a7457d15c9d236c3a8c3dc990b060265634ebf507f177b87764d25ca1089"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "ff5b67150aff1c9d99e442b8d213893c15463a5301a1409c3fb7c95e0924a455",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "ffa2a7457d15c9d236c3a8c3dc990b060265634ebf507f177b87764d25ca1089"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "aa47705ec20621c8404036a2ae75f2f020f03a436958f39da0dddc02061cca05",
+      "receiptSha256": "1d142b6ae4245e9e7814af78b5985b9b4b4137368edec413eade4a665af23d08",
+      "logBytes": 264
+    },
+    "diff-check": {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:03:42.244Z",
+      "finishedAt": "2026-11-15T13:03:42.260Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": "M  packages/contracts/schemas/native-handoff-v1.schema.json\nM  packages/lab-runtime/src/v2/sil/native-handoff.ts\nM  tests/unit/capabilities-mujoco-arm.test.ts\nM  tests/unit/lab-sil-cli.test.ts\nA  tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "262a085b8ea22fa291af4e6438bf618a874177cf02136cc9087b6a542353a047",
+        "changed": []
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": "M  packages/contracts/schemas/native-handoff-v1.schema.json\nM  packages/lab-runtime/src/v2/sil/native-handoff.ts\nM  tests/unit/capabilities-mujoco-arm.test.ts\nM  tests/unit/lab-sil-cli.test.ts\nA  tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "262a085b8ea22fa291af4e6438bf618a874177cf02136cc9087b6a542353a047",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "410530b9c2da1816a0e1330775a082836d5bf098b1ce1de2276da485016d40aa",
+      "logBytes": 0
+    },
+    "export-clean": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        "scripts/export-lab-runtime.mjs",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/export"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:03:57.268Z",
+      "finishedAt": "2026-11-15T13:03:57.969Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "8836c03451da6ea92b0701fad92e3479a9d1eb9b45a3a23fb70139d22fc74e1a",
+      "receiptSha256": "e128f8419e3d6af54ad3010df436bf54d7dce6baa353891aad2f7fb60e0e9f90",
+      "logBytes": 103297
+    },
+    "final-audit": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "python3",
+        ".superpowers/sdd/README/evidence-final-recording/fix2/audit.py"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:07:36.437Z",
+      "finishedAt": "2026-11-15T13:07:37.997Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "33d1b33b006b07142bbe7a7a77a01f20e459e5ba31578ea0393bd30c1064a248",
+      "receiptSha256": "be4577ddc48c6adf4a54c5efb02606b0a84587c5988bc1121e1a74b8ade34e98",
+      "logBytes": 4381
+    },
+    "final-test-lint": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "tests/unit/native-handoff-current-puma.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:05:16.559Z",
+      "finishedAt": "2026-11-15T13:05:17.319Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "3da25e3a08d012be15fbe14640dc4317b3d99ed8d3c1727e0199868f95a390dd",
+      "logBytes": 0
+    },
+    "focused-combined": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/native-handoff-current-puma.test.ts",
+        "tests/unit/native-handoff.test.ts",
+        "tests/security/native-handoff.test.ts",
+        "tests/security/native-handoff-checker.test.ts",
+        "tests/unit/sim-extension-qualification.test.ts",
+        "tests/unit/r3-native-readback.test.ts",
+        "tests/unit/capabilities-mujoco-arm.test.ts",
+        "tests/unit/lab-sil-cli.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:01:57.602Z",
+      "finishedAt": "2026-11-15T13:02:49.105Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "61076ff036179deae168a0e3234d3c57cb6ed7842e0f62605a35991778ee37aa",
+      "receiptSha256": "ce29e0a0822b5f01efe8cc1b0d559a5650c88f5e8401948541cacc55d2396788",
+      "logBytes": 4416
+    },
+    "lab-check-source": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "check:source"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:04:51.060Z",
+      "finishedAt": "2026-11-15T13:04:51.347Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "after": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "0e6bd36b82716048c8c468c9725bdf8bc5beba19774518df430f17ccb1a416fb",
+      "receiptSha256": "871b0ac8dcdf3eb4573962c81428350d34bfbde247827fad8714f0d3fb57ed64",
+      "logBytes": 295
+    },
+    "lab-commit": {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "chore: pin source runtime 2bd66e6"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:05:27.021Z",
+      "finishedAt": "2026-11-15T13:05:27.054Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": "M  config/source-runtime.lock.json\nM  src/shared/engineering.ts\nM  src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": []
+      },
+      "after": {
+        "commit": "111ed9a763a5fea24ab3180834c83c1db97417dd",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "842fd4583b4168ef3f313c743056ce3be1025d7f8998af176376125ac6d55cd5",
+      "receiptSha256": "408b48a77b5b9e3766dc78544b72de5026a29f2b06c7c76c3090299488fefb79",
+      "logBytes": 120
+    },
+    "lab-import": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        "scripts/import-runtime.mjs",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/export"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:04:05.738Z",
+      "finishedAt": "2026-11-15T13:04:06.204Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n",
+        "diffSha256": "187817a3df60596cb2523accde9d61dfa6098df9299f7c97c66fcbee6906e9b3",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "7b7f7907ac407292257a28d7dfd1f4b68c99102cb7e0ecc41f6d6a995872a867",
+      "receiptSha256": "5ffbb1a16ef901955997a4a5c0c2637629b9543cf91a56c077b9309ead1962bf",
+      "logBytes": 198
+    },
+    "lab-relevant": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 240; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/regression-recorder.test.ts",
+        "tests/unit/recorder-lint.test.ts",
+        "tests/integration/runtime-artifact.test.ts",
+        "tests/integration/mujoco-launcher.test.ts",
+        "tests/integration/webots-launcher.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:04:52.787Z",
+      "finishedAt": "2026-11-15T13:04:55.260Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "after": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "f6d4b189a103ac1b0a50dba0cdbd6f9e4ade3b04f7c97d15b0aac852ba068b16",
+      "receiptSha256": "3686a22fb8d621c4d043591dea305ba0c46489c19a33945b60ac9e1d1fab7379",
+      "logBytes": 255
+    },
+    "lab-sync": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:04:06.454Z",
+      "finishedAt": "2026-11-15T13:04:06.599Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n",
+        "diffSha256": "187817a3df60596cb2523accde9d61dfa6098df9299f7c97c66fcbee6906e9b3",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          }
+        ]
+      },
+      "after": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837",
+      "receiptSha256": "a42ce28654d57c1d702be4d1ae0b02ab01c4b122db2fd8f1b46b62058803e254",
+      "logBytes": 220
+    },
+    "lab-type": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:04:51.590Z",
+      "finishedAt": "2026-11-15T13:04:54.522Z",
+      "before": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "after": {
+        "commit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+        "status": " M config/source-runtime.lock.json\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+        "diffSha256": "3777cf8a7614d993e033793dc1037bbb0d1979b43e63b596c601b856f4a70f47",
+        "changed": [
+          {
+            "path": "config/source-runtime.lock.json",
+            "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a"
+          },
+          {
+            "path": "src/shared/engineering.ts",
+            "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8"
+          },
+          {
+            "path": "src/shared/navigation2d.ts",
+            "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "receiptSha256": "e2760ca6f64ff54bdc128788a0a77570571d318e44afb963e734046948a1c548",
+      "logBytes": 122
+    },
+    "puma-acceptance-r3": {
+      "argv": [
+        "env",
+        "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/r3-puma-prepared",
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "test:acceptance",
+        "--",
+        "sim-extension"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:06:33.402Z",
+      "finishedAt": "2026-11-15T13:06:34.915Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "340acc3d0c82298112f42c07d035fcfdebeeeb01cd92d76caa9abc267c8404c1",
+      "receiptSha256": "987744d566e27145438dba29aec2dbabdd86543ad07d6854ec1169fe29e74ef7",
+      "logBytes": 621
+    },
+    "puma-export": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/native-handoff.mjs",
+        "export",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-input",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-export"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:05:41.401Z",
+      "finishedAt": "2026-11-15T13:05:42.787Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "56a12a467c03b24181d6dec3ec2a82b385976e2f0b89023f6966708871082a43",
+      "receiptSha256": "df7bfb31477c586624601ef977bb086707effb5ef2f421b98d38904946f8450d",
+      "logBytes": 1458
+    },
+    "puma-final": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/native-handoff-current-puma.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:03:22.416Z",
+      "finishedAt": "2026-11-15T13:03:26.160Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "c0cb4477208ee637dd6d42ee76522be1e0cf452781c3b38440e128db0e0b78f9",
+      "receiptSha256": "6e0f97dca12b96f6d321587fc8348f987b80191be444c0f0ae8df42c066929f7",
+      "logBytes": 451
+    },
+    "puma-green": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/native-handoff-current-puma.test.ts",
+        "tests/unit/capabilities-mujoco-arm.test.ts",
+        "tests/unit/lab-sil-cli.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:01:04.769Z",
+      "finishedAt": "2026-11-15T13:01:17.251Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "ff5b67150aff1c9d99e442b8d213893c15463a5301a1409c3fb7c95e0924a455",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "ffa2a7457d15c9d236c3a8c3dc990b060265634ebf507f177b87764d25ca1089"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "ff5b67150aff1c9d99e442b8d213893c15463a5301a1409c3fb7c95e0924a455",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "ffa2a7457d15c9d236c3a8c3dc990b060265634ebf507f177b87764d25ca1089"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "bae844ee378e88342229879c1cc36075190812fadcc5214d2a7b6acff45b9b6d",
+      "receiptSha256": "15c8faee8c4d7e7625201d37cd692ff990543a590e88ca0cd539108a92c5e76d",
+      "logBytes": 1048
+    },
+    "puma-readback-r3": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/verify-r3.mjs",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/r3-puma-prepared"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:06:32.419Z",
+      "finishedAt": "2026-11-15T13:06:33.218Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "receiptSha256": "dd839a2a5f1a681ba254d3722a9307aaca03b0c64f434214d24fd937ab486d76",
+      "logBytes": 183
+    },
+    "puma-record-r3": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        "scripts/record-sim-extension.mjs",
+        "--release",
+        "r3",
+        "--handoff",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-export",
+        "--native-records",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/native-empty",
+        "--profile",
+        "puma560-linuxcnc-sim",
+        "--scope",
+        "prepared",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/r3-puma-prepared",
+        "--candidate-id",
+        "r3-puma-fix2-2bd66e6"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:06:04.020Z",
+      "finishedAt": "2026-11-15T13:06:06.429Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "3ce8f6d4e832c940c5a583d54d40dba6a779f5f5cecda3df002b0f61d60fb203",
+      "receiptSha256": "a58fcf1bef3ebadce1a5c8fff1cb896b907f2735a5828a312e72e25564fd5367",
+      "logBytes": 2655
+    },
+    "puma-red": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/native-handoff-current-puma.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:00:07.810Z",
+      "finishedAt": "2026-11-15T13:00:09.804Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": "?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": "?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "98f7b4417ba9e48347c45454e345d7a69215be3e240f11f5bdc32c7c05226d66"
+          }
+        ]
+      },
+      "exitCode": 1,
+      "signal": null,
+      "logSha256": "f13dcb344f9868a52a2c16cd18fd17753939549708bd421288778a20cd1aa324",
+      "receiptSha256": "4df3c2ed631a2b91c2edf6b482459aa1cf01b09b5783c1ec1cff35df0d61de45",
+      "logBytes": 3966
+    },
+    "puma-verify-export": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/native-handoff.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-export"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:06:02.984Z",
+      "finishedAt": "2026-11-15T13:06:04.288Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "56a12a467c03b24181d6dec3ec2a82b385976e2f0b89023f6966708871082a43",
+      "receiptSha256": "6a002c9e8415dfb802eac9452d326039d449de36b30173d52ce6b85c4655a7c9",
+      "logBytes": 1458
+    },
+    "puma-verify-input": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        "scripts/native-handoff.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a/puma-input"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:05:40.337Z",
+      "finishedAt": "2026-11-15T13:05:41.634Z",
+      "before": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "56a12a467c03b24181d6dec3ec2a82b385976e2f0b89023f6966708871082a43",
+      "receiptSha256": "95c59eec0b89ca70e706a1b0b0d969cfbf24b125b432745c21b28b199d595d27",
+      "logBytes": 1458
+    },
+    "source-commit": {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "fix: admit pinned vendor metadata in native handoffs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:03:49.869Z",
+      "finishedAt": "2026-11-15T13:03:49.922Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": "M  packages/contracts/schemas/native-handoff-v1.schema.json\nM  packages/lab-runtime/src/v2/sil/native-handoff.ts\nM  tests/unit/capabilities-mujoco-arm.test.ts\nM  tests/unit/lab-sil-cli.test.ts\nA  tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "262a085b8ea22fa291af4e6438bf618a874177cf02136cc9087b6a542353a047",
+        "changed": []
+      },
+      "after": {
+        "commit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "59d2a029cec14a95379b9a43c33093832a576a0f9fa1534e649c93b6a40934fe",
+      "receiptSha256": "173b9dcf0d2aa1e4a859e3436606acf17bac64c7b5436d1ae8c47d62c634dbe6",
+      "logBytes": 207
+    },
+    "source-contracts": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "contracts:check"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:02:49.545Z",
+      "finishedAt": "2026-11-15T13:02:50.103Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "receiptSha256": "cf234860d5547a5a2cb482d2732d9a73e4d7204ba09e1567d58b40cb81e46eef",
+      "logBytes": 192
+    },
+    "source-lint": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+        "tests/unit/native-handoff-current-puma.test.ts",
+        "tests/unit/capabilities-mujoco-arm.test.ts",
+        "tests/unit/lab-sil-cli.test.ts"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:02:51.630Z",
+      "finishedAt": "2026-11-15T13:02:52.559Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "receiptSha256": "855b852e1a04467a5e0de823593079f63fbf5fbbb42ae383ea3d032f5e411888",
+      "logBytes": 0
+    },
+    "source-type": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:02:50.445Z",
+      "finishedAt": "2026-11-15T13:02:59.100Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "97bb612ea877d20903a71ab6a9f77b83be44d7dae44810a78e514336d5130376"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 2,
+      "signal": null,
+      "logSha256": "290d9b91cbdbde2aa77225d359d6e77d8a1ea035a44384857ce2608545f4fbb6",
+      "receiptSha256": "dc8a9602bd68055637711ebaf01b77a6b0ab9c1910eaf663a693f5e98180861c",
+      "logBytes": 386
+    },
+    "source-type2": {
+      "argv": [
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "env": {
+        "PATH": "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin:/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/go/bin:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.169.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03Kxx1F:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0LErfgd:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.168.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg02NGaWD:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.2-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg01UMKn9:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.1-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0DdpfG5:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.167.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0RSLleQ:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.166.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0WMaXuw:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.165.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0iWePVe:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.164.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg03adlrt:/Users/hoangpham/.codex-personal/packages/app-server-daemon/releases/0.163.0-aarch64-apple-darwin/codex-path:/Users/hoangpham/.codex-personal/tmp/arg0-macos/codex-arg0FLm6HK:/opt/homebrew/lib/node_modules/@openai/codex/node_modules/@openai/codex-darwin-arm64/vendor/aarch64-apple-darwin/codex-path:/opt/homebrew/Cellar/openjdk@21/21.0.12/libexec/openjdk.jdk/Contents/Home/bin:/Users/hoangpham/.local/bin:/Users/hoangpham/google-cloud-sdk/bin:/Users/hoangpham/.antigravity/antigravity/bin:/opt/homebrew/bin:/Users/hoangpham/Library/pnpm:/Users/hoangpham/.codeium/windsurf/bin:/Users/hoangpham/.pyenv/shims:/opt/ homebrew/opt/openjdk/bin:/Users/hoangpham/anaconda3/bin:/Users/hoangpham/.nvm/versions/node/v22.17.0/bin:/Users/hoangpham/.deno/bin:/opt/homebrew/sbin:/Users/hoangpham/.cargo/bin:/Users/hoangpham/Library/Application Support/org.dfinity.dfx/bin:/Users/hoangpham/.orbstack/bin:/Users/hoangpham/flutter/bin:/Users/hoangpham/.yarn/bin:/Users/hoangpham/.orbstack/bin",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTEST_ADDOPTS": "-p no:cacheprovider",
+        "MEKONIQ_RETAINED_INPUTS": "/tmp/b10-fix1-inputs/inputs.json",
+        "MEKONIQ_RETAINED_INPUTS_SHA256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+        "NODE_OPTIONS": null,
+        "COMMISSIONING_PYTHON": null,
+        "MEKONIQ_COMMISSIONING_PYTHON": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "LAB_IRSIM_EVIDENCE_DIR": null,
+        "LAB_SIMEXT_EVIDENCE_DIR": null
+      },
+      "startedAt": "2026-11-15T13:03:21.242Z",
+      "finishedAt": "2026-11-15T13:03:30.327Z",
+      "before": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "after": {
+        "commit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+        "status": " M packages/contracts/schemas/native-handoff-v1.schema.json\n M packages/lab-runtime/src/v2/sil/native-handoff.ts\n M tests/unit/capabilities-mujoco-arm.test.ts\n M tests/unit/lab-sil-cli.test.ts\n?? tests/unit/native-handoff-current-puma.test.ts\n",
+        "diffSha256": "c1d59d4105a539d82308abad1cbbc8085a0350531957529c875902e9aeed3a43",
+        "changed": [
+          {
+            "path": "tests/unit/native-handoff-current-puma.test.ts",
+            "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea"
+          },
+          {
+            "path": "packages/contracts/schemas/native-handoff-v1.schema.json",
+            "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543"
+          },
+          {
+            "path": "packages/lab-runtime/src/v2/sil/native-handoff.ts",
+            "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53"
+          },
+          {
+            "path": "tests/unit/capabilities-mujoco-arm.test.ts",
+            "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474"
+          },
+          {
+            "path": "tests/unit/lab-sil-cli.test.ts",
+            "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41"
+          }
+        ]
+      },
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "receiptSha256": "71fea8adb9b1c442a055b8c0b8541eb191dbff0a1549eae84e9e88a7935b12d6",
+      "logBytes": 232
+    }
+  },
+  "finalByteAttribution": {
+    "source/packages/contracts/schemas/native-handoff-v1.schema.json": {
+      "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543",
+      "sameBytesAtChecks": [
+        "assemble-puma",
+        "checker-identity",
+        "contracts-generate",
+        "export-clean",
+        "final-audit",
+        "final-test-lint",
+        "focused-combined",
+        "puma-acceptance-r3",
+        "puma-export",
+        "puma-final",
+        "puma-green",
+        "puma-readback-r3",
+        "puma-record-r3",
+        "puma-verify-export",
+        "puma-verify-input",
+        "source-commit",
+        "source-contracts",
+        "source-lint",
+        "source-type2"
+      ]
+    },
+    "source/packages/lab-runtime/src/v2/sil/native-handoff.ts": {
+      "sha256": "5742b3873d2cdf1a02b9e883d11d033c92db88eadf8ba0936a4c03c034826c53",
+      "sameBytesAtChecks": [
+        "assemble-puma",
+        "checker-identity",
+        "export-clean",
+        "final-audit",
+        "final-test-lint",
+        "focused-combined",
+        "puma-acceptance-r3",
+        "puma-export",
+        "puma-final",
+        "puma-readback-r3",
+        "puma-record-r3",
+        "puma-verify-export",
+        "puma-verify-input",
+        "source-commit",
+        "source-contracts",
+        "source-lint",
+        "source-type2"
+      ]
+    },
+    "source/tests/unit/capabilities-mujoco-arm.test.ts": {
+      "sha256": "f204d8db88176a420fcc8e15fad2b4e3c53033230e3cd65299e8bc05f7592474",
+      "sameBytesAtChecks": [
+        "assemble-puma",
+        "checker-identity",
+        "contracts-generate",
+        "export-clean",
+        "final-audit",
+        "final-test-lint",
+        "focused-combined",
+        "puma-acceptance-r3",
+        "puma-export",
+        "puma-final",
+        "puma-green",
+        "puma-readback-r3",
+        "puma-record-r3",
+        "puma-verify-export",
+        "puma-verify-input",
+        "source-commit",
+        "source-contracts",
+        "source-lint",
+        "source-type2"
+      ]
+    },
+    "source/tests/unit/lab-sil-cli.test.ts": {
+      "sha256": "8e8491e5e3773d590cdc06acd8d8b026d1bfd09c5354bde1f87e0efe01c43d41",
+      "sameBytesAtChecks": [
+        "assemble-puma",
+        "checker-identity",
+        "contracts-generate",
+        "export-clean",
+        "final-audit",
+        "final-test-lint",
+        "focused-combined",
+        "puma-acceptance-r3",
+        "puma-export",
+        "puma-final",
+        "puma-green",
+        "puma-readback-r3",
+        "puma-record-r3",
+        "puma-verify-export",
+        "puma-verify-input",
+        "source-commit",
+        "source-contracts",
+        "source-lint",
+        "source-type2"
+      ]
+    },
+    "source/tests/unit/native-handoff-current-puma.test.ts": {
+      "sha256": "d458da18fdfee759c80b04429783274585e02b591bfbc088d2404701f482f4ea",
+      "sameBytesAtChecks": [
+        "assemble-puma",
+        "checker-identity",
+        "export-clean",
+        "final-audit",
+        "final-test-lint",
+        "puma-acceptance-r3",
+        "puma-export",
+        "puma-final",
+        "puma-readback-r3",
+        "puma-record-r3",
+        "puma-verify-export",
+        "puma-verify-input",
+        "source-commit",
+        "source-type2"
+      ]
+    },
+    "lab/config/source-runtime.lock.json": {
+      "sha256": "3b967c683f13ba31fc5f2064f3b500b1cae171ffed518ec0e59c24c841bfc80a",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-import",
+        "lab-relevant",
+        "lab-sync",
+        "lab-type"
+      ]
+    },
+    "lab/src/shared/engineering.ts": {
+      "sha256": "7ce20e5c41143bf201c6309e1fbc98c6a67aa39b677004146391017060c36ec8",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-relevant",
+        "lab-sync",
+        "lab-type"
+      ]
+    },
+    "lab/src/shared/navigation2d.ts": {
+      "sha256": "f01cc939b3c9b91cf366ff847654428f2e5b6cba82b8dcad6812894804a5369a",
+      "sameBytesAtChecks": [
+        "lab-check-source",
+        "lab-commit",
+        "lab-relevant",
+        "lab-sync",
+        "lab-type"
+      ]
+    }
+  },
+  "preserved": [
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-evidence-file-index.json",
+      "files": 469
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-r1-evidence-file-index.json",
+      "files": 254
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/root-B10-smoke-27d6be9-file-index.json",
+      "files": 83
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L06-evidence-file-index.json",
+      "files": 136
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/root-L06-r1-evidence-file-index.json",
+      "files": 98
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-prerequisites-1-evidence-file-index.json",
+      "files": 130
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/fix1/initial-evidence-index.json",
+      "files": 42
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/bab05a5/phase-retention-index.json",
+      "files": 111
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/bab05a5/external-phase-retention-index.json",
+      "files": 3733
+    },
+    {
+      "index": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/fix1/external-original-tuple-index.json",
+      "files": 14
+    }
+  ],
+  "retained": [
+    {
+      "index": "retention-index.json",
+      "files": 131,
+      "bytes": 22750,
+      "sha256": "7fb602deeb9a1927b2414b05c968b88b3befce20c4bd2942f22e0eea5c954203"
+    },
+    {
+      "index": "external-retention-index.json",
+      "files": 1222,
+      "bytes": 258415,
+      "sha256": "89f47f9689790eaee6a38132e1e6b54b5571cb66db25043661e2ee13e753bd92"
+    }
+  ],
+  "puma": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix2-gj0p2i0a",
+    "refs": 386,
+    "qualificationSha256": "88c1642227e841e1312b73bd743ec6a88d50aad27cd5d9eb029c9c77964d8130",
+    "levels": {
+      "R3.0": "tested",
+      "R3.1": "not_run",
+      "R3.2": "not_run"
+    }
+  },
+  "limits": [
+    "Byte consistency and own-exit receipt attribution, not semantic coverage of every byte by every check or host authenticity.",
+    "Public PUMA preparation only; no native motion, physical, full CI or current production performance qualification.",
+    "No suites, Docker/services or original SQLite engine opens in this root audit."
+  ]
+}

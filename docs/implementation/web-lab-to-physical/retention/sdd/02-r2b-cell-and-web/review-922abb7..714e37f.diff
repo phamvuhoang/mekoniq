@@ -1,0 +1,108 @@
+# Review package: 922abb77fbd3315038584b63599032db61d1b665..714e37f9b8251663c3d7a3d3e668a0c35ca2d493
+
+## Commits
+714e37f fix: require a physical document for semantic load binding
+
+## Files changed
+ .../src/v2/simulation3d/semantic-study-profiles.ts          |  2 +-
+ tests/support/simulation-study-mutations.ts                 | 13 +++++++++++++
+ tests/unit/semantic-study.test.ts                           | 10 ++++++++--
+ 3 files changed, 22 insertions(+), 3 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts b/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts
+index eb37417..8ae9d12 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/semantic-study-profiles.ts
+@@ -13,16 +13,16 @@ export function verifySemanticMujocoProfiles(v:ReturnType<typeof verifiedSimulat
+  const physics=get<{id:string;revision:number;digest:string}>(e.physicsProfileRef.path);
+  if(physics.digest!==documentDigest(physics,'digest'))throw Error('SEMANTIC_PHYSICS_DIGEST_MISMATCH');
+  if(physics.id!==e.physicsProfileRef.id||physics.revision!==1||e.physicsProfileRef.sha256!==BASELINE_PHYSICS_SHA256)throw Error('SEMANTIC_PHYSICS_BASELINE_REQUIRED');
+  if(!bound(e.loadProfileRef,'empty.json','empty'))throw Error('SEMANTIC_EMPTY_LOAD_REQUIRED');
+  const load=get<LoadProfileV1>(e.loadProfileRef.path);
+  if(!validateLoadProfile(load).ok)throw Error('SEMANTIC_EMPTY_LOAD_INVALID');
+  if(load.props.length)throw Error('SEMANTIC_EMPTY_LOAD_POPULATION_NOT_EMPTY');
+  const {digest:_digest,modelRef,...empty}=load;void _digest;
+  if(hashJson(empty)!==EMPTY_SHAPE_SHA256)throw Error('SEMANTIC_EMPTY_LOAD_BASELINE_REQUIRED');
+  const robot=scene.robots[0]!,path=`physical-model/${robot.robotId}.json`,model=get<RobotPhysicalModelV1>(path),file=refs.get(path);
+- if(!file||modelRef.path!==path||modelRef.sha256!==file.sha256||!scene.files.some(f=>f.path===path&&f.sha256===file.sha256&&f.bytes===file.bytes)||!validateNavigationDocument(model).ok||model.robotId!==robot.robotId||model.modelDigest!==robot.model.physicalModelDigest||hashJson(model.inputs)!==hashJson(scene.inputs))throw Error('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');
++ if(!file||modelRef.path!==path||modelRef.sha256!==file.sha256||!scene.files.some(f=>f.path===path&&f.sha256===file.sha256&&f.bytes===file.bytes)||model?.documentType!=='robot-physical-model'||!validateNavigationDocument(model).ok||model.robotId!==robot.robotId||model.modelDigest!==robot.model.physicalModelDigest||hashJson(model.inputs)!==hashJson(scene.inputs))throw Error('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');
+  const n=report.navigation2d!.engine;
+  if(n.id!=='mujoco_3d'||hashJson(n.loadProfileRef)!==hashJson(e.loadProfileRef)||hashJson(n.physicsProfileRef)!==hashJson(e.physicsProfileRef))throw Error('SEMANTIC_PHYSICS_REPORT_BINDING_MISMATCH');
+  const p=report.physicsEvidence?.manifest.identity;
+  if(p&&(p.sceneDigest!==scene.sceneDigest||p.loadProfileDigest!==e.loadProfileRef.sha256||p.physicsProfileDigest!==e.physicsProfileRef.sha256))throw Error('SEMANTIC_PHYSICS_REPORT_BINDING_MISMATCH');
+ }
+diff --git a/tests/support/simulation-study-mutations.ts b/tests/support/simulation-study-mutations.ts
+index 71895c3..4a9e98b 100644
+--- a/tests/support/simulation-study-mutations.ts
++++ b/tests/support/simulation-study-mutations.ts
+@@ -16,10 +16,23 @@ export function resealStudyProfile(input:SimulationRunInput,path:string,mutate:(
+  const sceneRef=run.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.ref,report=JSON.parse(run.report.content) as RunReport,n=report.navigation2d!;
+  n.sceneDigest=sealed.sceneDigest;n.sceneRef={...sceneRef,path:'bundle/navigation-scene.json'};
+  for(const m of report.manifest.models)if(m.id===scene.engine.id)m.hash=sealed.sceneDigest;
+  if(n.engine.id!=='mujoco_3d')throw Error('MUTATION_REPORT_ENGINE_UNSUPPORTED');
+  n.engine.loadProfileRef={...scene.engine.loadProfileRef};n.engine.physicsProfileRef={...scene.engine.physicsProfileRef};
+  if(report.physicsEvidence){const p=report.physicsEvidence;p.manifest.identity.sceneDigest=sealed.sceneDigest;p.manifest.identity.loadProfileDigest=scene.engine.loadProfileRef.sha256;p.manifest.identity.physicsProfileDigest=scene.engine.physicsProfileRef.sha256;
+   const m=artifact('physics/manifest.json',p.manifest),i=run.artifacts.findIndex(a=>a.ref.path===m.ref.path);if(i>=0){run.artifacts[i]=m;p.manifestSha256=m.ref.sha256;}else p.manifestSha256=sha(JSON.stringify(p.manifest));
+  }
+  run.report=artifact(run.report.ref.path,report);return run;
+ }
++/** A different valid navigation document cannot impersonate the load's physical model, even after every derived binding is resealed. */
++export function substituteStudyPhysicalWithNavigation(input:SimulationRunInput):SimulationRunInput{
++ const run=structuredClone(input),scene=JSON.parse(run.artifacts.find(a=>a.ref.path==='navigation-scene.json')!.content) as NavigationSceneV1,robot=scene.robots[0]!,path=`physical-model/${robot.robotId}.json`;
++ const substituted=artifact(path,robot.model),physicalIndex=run.artifacts.findIndex(a=>a.ref.path===path),physicalRef=scene.files.find(f=>f.path===path);if(physicalIndex<0||!physicalRef)throw Error('MUTATION_PHYSICAL_MODEL_MISSING');
++ run.artifacts[physicalIndex]=substituted;Object.assign(physicalRef,substituted.ref);
++ robot.model=sealDocument({...robot.model,physicalModelDigest:robot.model.modelDigest},'modelDigest');
++ const navPath=`navigation-model/${robot.robotId}.json`,navIndex=run.artifacts.findIndex(a=>a.ref.path===navPath);if(navIndex<0)throw Error('MUTATION_NAVIGATION_MODEL_MISSING');run.artifacts[navIndex]=artifact(navPath,robot.model);
++ run.artifacts[run.artifacts.findIndex(a=>a.ref.path==='navigation-scene.json')]=artifact('navigation-scene.json',scene);
++ const report=JSON.parse(run.report.content) as RunReport;report.navigation2d!.modelDigests=scene.robots.map(r=>r.model.modelDigest);
++ for(const model of report.manifest.models)if(model.id===`navigation-model:${robot.robotId}`)model.hash=robot.model.modelDigest;
++ run.report=artifact(run.report.ref.path,report);
++ return resealStudyProfile(run,'empty.json',load=>{load.modelRef={path,sha256:substituted.ref.sha256};});
++}
+diff --git a/tests/unit/semantic-study.test.ts b/tests/unit/semantic-study.test.ts
+index 6017668..20e0226 100644
+--- a/tests/unit/semantic-study.test.ts
++++ b/tests/unit/semantic-study.test.ts
+@@ -53,33 +53,39 @@ test('arrival is judged against the registered five-tick position, yaw and stopp
+ });
+ test('legacy compareRuns keeps cross-backend deltas null',async()=>{
+  const {compareRuns}=await import('../../packages/lab-runtime/src/v2/comparison');const a=JSON.parse(runs[0]!.report.content),b=JSON.parse(runs[1]!.report.content),comparison=compareRuns(a,b);expect(comparison.comparable).toBe(false);expect(comparison.reasons).toContain('BACKENDS_DIFFER');expect(comparison.kpis.every(k=>k.delta===null)).toBe(true);
+ });
+ test('nominal cancel and unknown clauses are explicitly unexercised',()=>{
+  const study=buildSemanticStudy(input());expect(study.invariants.filter(x=>['cancel-causality','unknown-no-redispatch'].includes(x.id)).every(x=>x.status==='not_run')).toBe(true);
+ });
+ test('a load arrival cannot stand in for a handoff and scripted confirmations retain their admitted delay',()=>{
+  for(const mutate of [(r:Record<string,unknown>)=>{const events=r.businessEvents as {state:{stops:{action:string}[]}}[];events[0]!.state.stops[0]!.action='load';},(r:Record<string,unknown>)=>{const confirmations=r.confirmations as {provenance:string}[];confirmations[0]!.provenance='manual';}]){const i=input(),r=JSON.parse(i.runs[0]!.report.content);mutate(r);i.runs[0]!.report=artifact('report.json',r);expect(buildSemanticStudy(i).invariants.find(x=>x.runId===r.manifest.runId&&x.id==='arrival-confirmation-served')?.status).toBe('fail');}
+ });
+-import {resealStudyProfile} from '../support/simulation-study-mutations';
++import {resealStudyProfile,substituteStudyPhysicalWithNavigation} from '../support/simulation-study-mutations';
+ import {verifiedSimulationInput} from '../../packages/lab-runtime/src/v2/simulation3d/simulation-input';
+-import {documentDigest} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
++import {documentDigest,validateNavigationDocument} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+ import cupProfile from '../../robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-center.json';
+ const profileMutations:[string,string,(d:Record<string,unknown>)=>void,boolean?][]=[
+  ['friction','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;}],
+  ['solver','drive-contact-profile.json',d=>{(d.solver as {iterations:number}).iterations++;}],
+  ['actuator','drive-contact-profile.json',d=>{d.velocityGainNmsPerRad=2.01;}],
+  ['unsealed-physics','drive-contact-profile.json',d=>{(d.contact as {sliding:number}).sliding=.99;},false],
+  ['nonempty','empty.json',d=>{d.props=structuredClone(cupProfile.props);}],
+  ['malformed-empty','empty.json',d=>{d.unregisteredLoadSetting=true;}],
+  ['model-hash','empty.json',d=>{(d.modelRef as {sha256:string}).sha256='f'.repeat(64);}],
+  ['model-path','empty.json',d=>{d.modelRef={path:'canonical-physical-model.json',sha256:'830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9'};}],
+ ];
+ test.each(profileMutations)('rejects coherent resealed %s input at semantic admission',(kind,path,mutate,seal=true)=>{
+  const i=input(),original=JSON.stringify(runs[2]),run=resealStudyProfile(i.runs[2]!,path,mutate,seal);
+  // The scene seal, every declared file ref and report/physics identity mirror are already coherent.
+  expect(()=>verifiedSimulationInput(run)).not.toThrow();const changed=JSON.parse(run.artifacts.find(a=>a.ref.path===path)!.content);
+  if(seal)expect(changed.digest).toBe(documentDigest(changed,'digest'));
+  i.runs[2]={...run,commonProjection:i.equivalence.commonProjection};const study=buildSemanticStudy(i);
+  expect(study.status,kind).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(study.reasonCodes.some(r=>/^SEMANTIC_(PHYSICS|EMPTY_LOAD|LOAD_MODEL)_/.test(r))).toBe(true);
+  expect(JSON.stringify(runs[2])).toBe(original);
+ });
++
++test('rejects a coherent navigation document substituted for the physical model',()=>{
++ const i=input(),before=JSON.stringify(runs[2]),run=substituteStudyPhysicalWithNavigation(i.runs[2]!),verified=verifiedSimulationInput(run),model=verified.get<{documentType:string;robotId:string;modelDigest:string;inputs:unknown}>('physical-model/amr-1.json');
++ expect(model.documentType).toBe('navigation-model-2d');expect(validateNavigationDocument(model).ok).toBe(true);expect(model.robotId).toBe(verified.scene.robots[0]!.robotId);expect(model.modelDigest).toBe(verified.scene.robots[0]!.model.physicalModelDigest);expect(model.inputs).toEqual(verified.scene.inputs);
++ i.runs[2]={...run,commonProjection:i.equivalence.commonProjection};const study=buildSemanticStudy(i);expect(study.status).toBe('incomparable');expect(study.reasonCodes).toContain('INPUTS_NOT_EQUIVALENT');expect(study.reasonCodes).toContain('SEMANTIC_LOAD_MODEL_BINDING_MISMATCH');expect(JSON.stringify(runs[2])).toBe(before);
++});

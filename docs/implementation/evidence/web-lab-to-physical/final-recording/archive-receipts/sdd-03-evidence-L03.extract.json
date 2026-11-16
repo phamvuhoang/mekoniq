@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:40:22.327769+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/evidence-L03",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-03-evidence-L03.tar.gz",
+  "archiveSha256": "b4776fad9f7c9ffbb588048077a6d7f8aaf2d0b27779dd8a9f751dd2b9caa82d",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-03-evidence-L03.members.json",
+  "memberIndexSha256": "2c27297d4583741f1c378a57b43e527a18e41869ce4b17f504e698cfe2f44c11",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/sdd-03-evidence-L03",
+  "verifiedFiles": 265,
+  "verifiedBytes": 1778087,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

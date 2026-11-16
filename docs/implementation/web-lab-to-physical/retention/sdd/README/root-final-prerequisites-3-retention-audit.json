@@ -1,0 +1,19 @@
+{
+  "indices": [
+    {
+      "index": "metadata-retention-index-final-45794aa.json",
+      "indexSha256": "7a547eb34a4a30fa061258a21d6fae6578ff1f662bf19dfc69e4608653381cfe",
+      "files": 220,
+      "bytes": 5356305,
+      "symlinks": 0
+    },
+    {
+      "index": "external-retention-index-final-45794aa.json",
+      "indexSha256": "86c17a80ab39d057120277230f6110bff74f0d0feb29ad78e2a4fd17dc85b05a",
+      "files": 361,
+      "bytes": 56076844,
+      "symlinks": 3
+    }
+  ],
+  "scope": "Root independently hashed retained bytes and declared symlink targets, no engines or suites; completion self-exclusion retained."
+}

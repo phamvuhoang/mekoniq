@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:16.744951+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-mock-regression.tar.gz",
+  "archiveSha256": "76d5a926f75d044d96aaf2068c412236fd12c628fba01b51a5f9cbbf640a923d",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-mock-regression.members.json",
+  "memberIndexSha256": "19e7858d895fe9c4724520d94b6c4f3a0e54b8fe3d2fca1b9eacc98fa319bcba",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-mock-regression",
+  "verifiedFiles": 116,
+  "verifiedBytes": 11168165,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

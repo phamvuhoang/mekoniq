@@ -1,0 +1,339 @@
+# Review package: 3e0c60e4b57fd78b0c007a5361c6b85448c42e69..5235791218c6330c358676fe36ae0ed978be3654
+
+## Commits
+5235791 fix: make MuJoCo mobile lifecycle failures terminal
+
+## Files changed
+ packages/lab-runtime/src/v2/navigation2d/plant.ts  |  2 +
+ packages/lab-runtime/src/v2/navigation2d/runner.ts | 28 +++++--
+ .../src/v2/simulation3d/mujoco-mobile.ts           |  1 +
+ tests/integration/mujoco-mobile-lifecycle.test.ts  | 88 ++++++++++++++++++++++
+ 4 files changed, 113 insertions(+), 6 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/navigation2d/plant.ts b/packages/lab-runtime/src/v2/navigation2d/plant.ts
+index 20fdd7d..05cacbe 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/plant.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/plant.ts
+@@ -24,20 +24,22 @@ export interface PlantIdentity {
+ }
+ export type PlantRequest=WireRequest;
+ export type PlantResponse=IRSimResponseV1;
+ export interface PlantWorker {
+  request(r:PlantRequest):Promise<PlantResponse>;
+  close(reason:string):Promise<void>;
+  readonly state:'ready'|'failed'|'closed';readonly pid:number|undefined;readonly bootId:string|null;readonly stderrTail:string;
+ }
+ export type PlantStopMonitor=(snapshot:IRSimSnapshotV1)=>{code:string;robotId:string}|null;
+ export interface PlantPort {
++ /** Opt-in: persist a world-creation attempt before sending it; only these explicit pre-mutation create refusals permit a new attempt. */
++ startupPolicy?:{preMutationCreateRefusals:readonly string[]};
+  /** Admitted, plant-specific observation policy; returns a fresh monitor per run. */
+  prepareStopMonitor?(scene:NavigationSceneV1,read:(path:string)=>Promise<Uint8Array>):Promise<PlantStopMonitor>;
+ 
+  identity:PlantIdentity;
+  /** wire protocol of the worker, e.g. mekoniq-irsim/1 */protocol:string;
+  spawn(o:SpawnOptions):Promise<PlantWorker>;
+ }
+ /** Operator-owned worker options (never from a request). `entry`/`deadlinesMs` exist for test doubles and fault tests; `maxActiveRuns` (default 2) caps live workers per host;
+  * `evidence` lowers the durable evidence limits (default 100 MiB, 30,000 ticks) for limit tests. */
+ export interface IRSimRuntimeOptions {python:string;workerRoot:string;schemaDir:string;lockDigest:string;entry?:string[];deadlinesMs?:Record<string,number>;maxActiveRuns?:number;evidence?:{maxBytes?:number;maxTicks?:number;chunkTicks?:number}}
+diff --git a/packages/lab-runtime/src/v2/navigation2d/runner.ts b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+index b1be1b9..224d255 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/runner.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+@@ -48,21 +48,21 @@ export const activeRunCount=(provider:string,exceptRunId?:string)=>[...slotsOf(p
+ export const holdsSlot=(provider:string,runId?:string)=>runId!==undefined&&slotsOf(provider).has(runId);
+ export const holdSlot=(provider:string,runId:string)=>{slotsOf(provider).add(runId);};
+ export const releaseSlot=(provider:string,runId:string)=>{slotsOf(provider).delete(runId);};
+ /** Whether `runId` (or, without one, a new run) may hold a live worker now. */
+ export const irsimCapacity=(limit=2,runId?:string,provider:string=IRSIM_BACKEND)=>runId!==undefined&&slotsOf(provider).has(runId)||slotsOf(provider).size<limit;
+ /** `bundleFile` (RunProviders) is needed only for a new run: the gateway authorised the bundle for the session before the run exists. */
+ export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptions}
+ const TILT_LIMIT_RAD=0.35,EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
+ const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
+ interface Confirmation {due:number|null;type:string;robotId:string}
+-interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null}
++interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null;/** Mobile-only durable latch: create may have mutated the world, including tick-0 priming. */startupAttempt?:true}
+ interface Checkpoint {
+  schemaVersion:1;provider:string;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
+  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
+  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;attention:Attention[];
+  receipts:Record<string,{hash:string;view:RunView}>;rejectedObservations:RunReport['rejectedObservations'];reconciliations:RunReport['reconciliations'];
+  recoveredOps:RunReport['recoveredOps'];confirmationLog:RunReport['confirmations'];faults:RunReport['faults'];
+  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;
+  plant:PlantCheckpoint;adapters:Record<string,IRSimAdapterState>;distanceM:Record<string,number>;maxConcurrentMovers:number;
+  /** what the worker's describe reported when the plant started */
+  engine?:{packageVersion:string;pythonVersion:string};
+@@ -240,58 +240,69 @@ class FixedStepRun implements ScenarioRun {
+   const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;const at=String(process.hrtime.bigint()),stale=!this.verified();
+   // lossy in-memory samples for the live view; the durable per-tick record (and every metric) is the evidence store
+   this.telemetry.record(c.roles.robots.flatMap(({id}):TwinSampleV2[]=>{const r=this.robotObs(id),g=this.adapters.get(id)!.goal(),live=g&&(g.state==='executing'||g.state==='cancelling');if(!r)return [];
+    const [xM,yM,yawRad]=this.basePose(id,r.poseDriveMap),pose3d=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;
+    return [{schemaVersion:2,runId:c.runId,entityId:id,providerId:this.plant.identity.amr.id,bootId:c.plant.bootId??c.adapters[id]!.bootId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),observedAt:new Date(this.clock.nowMs()).toISOString(),receivedMonotonicNs:at,frameId:'map',origin:this.plant.identity.telemetryOrigin??'controller_sim',
+     quality:stale?'stale':'valid',reasonCodes:stale?['PLANT_NOT_LIVE']:[],commanded:live?{goalCommandId:g.commandId,goalState:g.state}:null,observed:{xM,yM,yawRad,...pose3d?{zM:pose3d.z,rollRad:pose3d.roll,pitchRad:pose3d.pitch}:{},moving:this.moving(id),hold:this.holds[id]??null},estimated:null,causationId:live?g.commandId:null} as TwinSampleV2];}));
+  }
+  // ---- plant (one worker process per run, never a second one) ----
+  private async ask(op:'describe'|'create'|'start'|'pause'|'resume',payload:Record<string,unknown>):Promise<Extract<IRSimResponseV1,{ok:true}>>{
+   const c=this.cp,r=await this.worker!.request({protocol:this.plant.protocol,requestId:`${op}-${++c.plant.requests}`,runId:c.runId,expectedTick:c.tick,op,payload} as never);
+-  if(!r.ok)throw new WorkerLostError(r.error.code,'not_sent',`${op} refused`);
++  if(!r.ok)throw new WorkerLostError(r.error.code,this.plant.startupPolicy&&op==='create'&&!this.plant.startupPolicy.preMutationCreateRefusals.includes(r.error.code)?'unknown':'not_sent',`${op} refused`);
+   return r;
+  }
+  private async startPlant(){
+-  const c=this.cp,o=this.irsim;
++  const c=this.cp,o=this.irsim;let created=false;
+   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
+   try{
+    const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
+    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
+    c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
+    // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
++   if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
+    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
++   created=true;
+    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
+    await this.ask('start',{});
+    await this.rec.append(snap,null);
+    c.plant={status:'live',reason:null,bootId:this.worker.bootId,requests:c.plant.requests,snapshot:snap};
+    for(const a of this.adapters.values())a.sink.observe(snap);
+-  }catch(e){await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);}
++  }catch(e){
++   if(this.plant.startupPolicy&&c.plant.startupAttempt){
++    // A known refusal/not-sent create is before mutation. Once create succeeds, even a not-sent start cannot recreate this run's world.
++    if(!created&&e instanceof WorkerLostError&&e.outcome==='not_sent')delete c.plant.startupAttempt;
++    else this.startupLost();
++   }
++   await this.worker.close('START_FAILED').catch(()=>{});this.worker=undefined;this.releaseSlot();throw new Error(`PLANT_START_FAILED:${e instanceof WorkerLostError?e.code:(e as Error).message.slice(0,80)}`);
++  }
+  }
++ private startupLost(){const c=this.cp;c.plant.status='lost';c.plant.reason='STARTUP_UNKNOWN';c.attention.push({reason:'STARTUP_UNKNOWN',tick:c.tick});this.suspend();}
+  private async plantLost(code:string,reason='WORKER_LOST'){
+   const c=this.cp;if(c.plant.status==='lost')return;
+   c.plant.status='lost';c.plant.reason=code;
+   const w=this.worker;this.worker=undefined;await w?.close(code).catch(()=>{});this.releaseSlot();
+   for(const a of this.adapters.values())a.sink.lost(reason);
+   c.attention.push({reason,subjectId:code,tick:c.tick});this.suspend();
+   // a zone held when the plant was lost stays held (the domain keeps it; nothing here frees it) and is named, never left implicit
+   for(const [zoneId,robotId] of Object.entries(this.traffic?.owners()??{}))if(robotId)c.attention.push({reason:'ZONE_HELD_UNKNOWN',robotId,subjectId:zoneId,tick:c.tick});
+   await this.rec.flush();await this.drain();
+  }
+  /** A step that was sent but not verified: the plant may be at tick+1 with a state nobody saw (a contact included). That tick is a recorded gap, then the plant is lost. */
+  private async stepLost(code:string){const t=this.cp.tick+1;await this.recordGap({fromTick:t,toTick:t,reason:'STEP_ACK_LOST'});await this.plantLost(code);}
+  /** A gap the run knows of goes into the checkpoint as well: if the recorder cannot write it now (it retries on every flush), a reopen records it from there. */
+  private async recordGap(g:Gap){const c=this.cp;(c.evidenceGaps??=[]).push(g);await this.rec.gap(g).catch(()=>{});}
+  /** A recording that ended (quota, tick limit, failed write) ends the plant too: no motion is ever left unrecorded. Legs in flight become unknown. */
+  private evidenceEnded(){this.cp.evidenceTerminal=this.rec.terminal?.slice(0,500)??null;return this.plantLost(`EVIDENCE:${this.rec.terminal}`,'EVIDENCE_INCOMPLETE');}
+  /** Reopened after a crash or restart: the journal is the truth. A leg the journal still shows travelling is unknown; cargo, reservations and custody stay. */
+  async recover(){
+   const c=this.cp;
++  if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)this.startupLost();
+   for(const op of c.pendingOps)c.recoveredOps.push({ordinal:op.ordinal,operationId:op.operationId,type:op.type,committed:!!await this.source.receipt(op.operationId,op.payloadHash)});
+   c.pendingOps=[];
+   if(c.plant.status==='live'){c.plant.status='lost';c.plant.reason='RUNTIME_RESTART';}
+   for(const a of this.adapters.values())a.state.plantLost=c.plant.status==='lost';
+   let travelling=0;
+   for(const {id} of c.roles.robots){
+    const robot=await this.source.read('robot',id);if(typeof robot.state.missionId!=='string')continue;
+    const m=await this.source.read('mission',robot.state.missionId),stop=(m.state.stops as JsonObject[]).find(s=>s.id===m.state.currentStopId);
+    if(!FINAL.includes(String(m.state.status))&&stop?.status==='travelling'&&typeof m.state.commandId==='string'){travelling++;this.adapters.get(id)!.sink.reportUnknown((await this.source.read('robot-command',m.state.commandId)).state as unknown as RobotCommand,'RECOVERY_UNKNOWN');}
+   }
+@@ -414,29 +425,32 @@ class FixedStepRun implements ScenarioRun {
+    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
+    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
+    next=r.result as IRSimSnapshotV1;
+    if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
+   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
+   const prev=c.plant.snapshot!;
+   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
+   // the verified tick goes to the evidence store with the step that produced it, before anything is derived from it
+   // a refused append is never skipped silently: it ends the recording (and so the plant) with the reason
+   await this.rec.append(next,payload).catch(async(e:Error)=>{const why=`EVIDENCE_REJECTED:${e.message.slice(0,60)}`;await this.recordGap({fromTick:c.tick,toTick:c.tick,reason:why});await this.rec.terminate(why);});
++  // Mobile faults retain the acknowledged tick as evidence but cannot confirm a source outcome or publish valid telemetry.
++  const observationFault=this.stopMonitor?.(next);
++  if(observationFault){c.attention.push({reason:observationFault.code,robotId:observationFault.robotId,tick:c.tick});await this.plantLost(observationFault.code,observationFault.code);return false;}
+   // live view distance at the robot base origin (the report's metric is recomputed from the durable evidence)
+   for(const r of next.robots){const p=prev.robots.find(x=>x.robotId===r.robotId);if(!p||c.distanceM[r.robotId]===undefined)continue;const a=this.basePose(r.robotId,r.poseDriveMap),b=this.basePose(r.robotId,p.poseDriveMap);c.distanceM[r.robotId]+=Math.hypot(a[0]-b[0],a[1]-b[1]);}
+   c.maxConcurrentMovers=Math.max(c.maxConcurrentMovers,c.roles.robots.filter(r=>this.moving(r.id)).length);
+   for(const a of this.adapters.values())a.sink.observe(next);
+   await this.drain();
+   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
+   if(this.rec.terminal){await this.evidenceEnded();return false;}
+   // a 3D plant's robot that tipped over, sank into the floor or left the physics ends the run now, with that reason: not at the mission timeout with a wrong one
+-  const unstable=this.stopMonitor?this.stopMonitor(next):(()=>{const robotId=this.unstableRobot(next);return robotId===null?null:{code:'PLANT_UNSTABLE',robotId};})();
++  const unstable=this.stopMonitor?null:(()=>{const robotId=this.unstableRobot(next);return robotId===null?null:{code:'PLANT_UNSTABLE',robotId};})();
+   if(unstable){c.attention.push({reason:unstable.code,robotId:unstable.robotId,tick:c.tick});await this.plantLost(unstable.code,unstable.code);return false;}
+   return true;
+  }
+  /** The robot whose 3D pose (pose3d, only 3D plants report it) is unstable (see poseUnstable). `restZ` is the height each robot first reported: the model's base frame may be on the floor or on the axle. */
+  private restZ=new Map<string,number>();
+  private unstableRobot(snap:IRSimSnapshotV1):string|null{
+   for(const r of snap.robots){
+    const p=(r as {pose3d?:{z:number;roll:number;pitch:number}}).pose3d;if(!p)continue;
+    if(!this.restZ.has(r.robotId)&&Number.isFinite(p.z))this.restZ.set(r.robotId,p.z);
+    const wheel=this.scene.robots.find(x=>x.robotId===r.robotId)?.model.kinematics.wheelRadiusM??0;
+@@ -476,20 +490,21 @@ class FixedStepRun implements ScenarioRun {
+   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;}
+  private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+   if(this.closed)throw new Error('RUN_CLOSED');
+   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
+   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
+   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
+   if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
+   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
+   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
+   const view=await this.view(),status=view.run.status;
++  if(a.kind==='start'&&this.plant.startupPolicy&&c.plant.startupAttempt)throw new Error('INVALID_STATE:STARTUP_UNKNOWN');
+   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
+   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
+   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
+   // no plant, no motion: a lost worker is never replaced and its steps are never replayed
+   if(a.kind==='step'&&c.plant.status!=='live')throw new Error(c.plant.status==='stopped'?'INVALID_STATE:RUN_FINISHED':'INVALID_STATE:PLANT_LOST');
+   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
+   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
+   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
+   if(a.kind==='injectFault'||a.kind==='restoreCup')throw new Error(a.kind==='injectFault'?'INVALID_FAULT':'INVALID_STATE:CUP_RESTORE_UNSAFE');
+   const pending=a.kind==='confirm'?Object.entries(c.confirmations).find(([k,x])=>x.due===null&&k.endsWith(`/${String(p.subjectId)}`)):undefined;
+@@ -559,21 +574,22 @@ class FixedStepRun implements ScenarioRun {
+   if(c.workload.some(w=>w.status!=='placed'))return false;
+   for(const w of c.workload)if((await this.source.read('mission',w.missionId!)).state.status!=='completed')return false;
+   if(!this.scenario.park)return true;
+   for(const r of c.roles.robots){const s=(await this.source.read('robot',r.id)).state;if(s.missionId||s.availability!=='idle'||s.position!==r.parkingId)return false;}
+   return true;
+  }
+  private async view():Promise<RunView>{
+   const c=this.cp,m=c.manifest;
+   let status:RunView['run']['status']='running';
+   const awaiting=Object.entries(c.confirmations).filter(([,x])=>x.due===null).map(([k,x])=>({subjectId:k.split('/')[1]!,confirmationType:x.type,missionId:k.split('/')[0]!,robotId:x.robotId}));
+-  if(!c.started)status='ready';
++  if(this.plant.startupPolicy&&c.plant.startupAttempt&&!c.started)status='needs_attention';
++  else if(!c.started)status='ready';
+   else if(c.attention.length)status='needs_attention';
+   else if(c.cancelled)status=await this.cancelDone()?'cancelled':'running';
+   else if(await this.missionsDone())status='completed';
+   else if(c.paused)status='paused';
+   else if(awaiting.length)status='awaiting_confirmation';
+   let served=0n;for(const w of c.workload)if(w.lineId)served+=BigInt(String((await this.source.read('fulfillment',w.lineId)).state.served??'0'));
+   const journal=await this.source.journal();
+   return {run:{schemaVersion:2,id:c.runId,mode:'simulation',access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
+    tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:this.plant.identity.amr.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
+  }
+diff --git a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+index 833df36..833da34 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/mujoco-mobile.ts
+@@ -1,19 +1,20 @@
+ import {createHash} from 'node:crypto';
+ import {hashJson} from '../hash';
+ import type {NavigationSceneV1,LoadProfileV1,Sim3DSnapshotV1} from '../navigation2d/contracts';
+ import {validateLoadProfile} from './load-profile';
+ import type {PlantPort,PlantStopMonitor} from '../navigation2d/plant';
+ import type {MujocoRuntimeOptions} from './mujoco';
+ import {spawnMujocoWorker} from './worker-client';
+ export const MUJOCO_MOBILE={id:'mujoco_3d',version:'3.17.0',model:'mujoco_serve_diff_drive',dynamics:true} as const;
+ export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions):PlantPort=>({
++ startupPolicy:{preMutationCreateRefusals:['SCENE_PATH_REJECTED','SCENE_SCHEMA_INVALID','SCENE_UNSUPPORTED','SCENE_DIGEST_MISMATCH','SCENE_FILE_MISMATCH','PROFILE_ID_MISMATCH','DIGEST_MISMATCH','MODEL_DIGEST_MISMATCH','WORLD_CAPACITY_EXCEEDED','PHYSICS_PROFILE_INVALID']},
+  prepareStopMonitor:prepareMobileStopMonitor,
+  identity:{amr:MUJOCO_MOBILE,adapterIdentity:MUJOCO_MOBILE,controller:{identity:{id:'grid-diff-v1',version:'2+mujoco-sent-ramp-v1'},options:{ramp:'previous-sent-command-v1'}},telemetryOrigin:'physics_sim',telemetryLabel:'mujoco_3d simulated plant (rigid-body physics, in memory)',capability:'sim3d_mujoco_mobile_v1',coverage:{dynamics:true},
+   limitations:['MuJoCo 3.17.0 rigid-body differential drive with fixed sliding sphere casters: not_calibrated.',
+    'One zero-target priming tick precedes tick 0: engine time is (tick+1)*20 ms; source time is tick*20 ms.',
+    'The seed is identity only: no stochastic engine, noisy sensors or actors. Fixed-caster drag and wheel-odometry slip are modeled limitations.',
+    'Instantaneous payload support is not proof of custody or delivery; durable physics coverage is not yet recorded.'],
+   evidence:{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'mujoco_3d rigid-body dynamics, not_calibrated; seed is identity only (no stochastic engine or sensor noise)',
+    engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
+  protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker(o),
+ });
+diff --git a/tests/integration/mujoco-mobile-lifecycle.test.ts b/tests/integration/mujoco-mobile-lifecycle.test.ts
+new file mode 100644
+index 0000000..a6e5d74
+--- /dev/null
++++ b/tests/integration/mujoco-mobile-lifecycle.test.ts
+@@ -0,0 +1,88 @@
++import {afterEach,expect,test} from 'vitest';
++import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {createMujocoCompiler} from '../../packages/lab-runtime/src/engineering/mujoco-compiler';
++import {createEngineeringService} from '../../packages/lab-runtime/src/engineering/gateway';
++import {lockDigestOf} from '../../packages/lab-runtime/src/engineering/linkforge';
++import {mujocoMobilePlant} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco-mobile';
++import {createFixedStepScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
++import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
++import {WorkerLostError} from '../../packages/lab-runtime/src/v2/navigation2d/plant';
++import type {PlantPort} from '../../packages/lab-runtime/src/v2/navigation2d/plant';
++import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
++import {navigationFixture} from '../support/navigation2d';
++import {testCompiler,writeFixtureCatalog} from '../support/engineering';
++const dirs:string[]=[],runs:ScenarioRun[]=[],root=resolve('robotics/simulation-mujoco');
++const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'mj-lifecycle-'));dirs.push(d);return d;};
++afterEach(async()=>{for(const r of runs.splice(0))await r.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
++async function setup(wrap:(plant:PlantPort)=>void){
++ const f=navigationFixture('serve-3d').fixture;f.project={...f.project,requestedProfile:'engineering-mujoco-3d-v1'};
++ const catalogRoot=await temp();await writeFixtureCatalog(catalogRoot,f);
++ const service=createEngineeringService({directory:await temp(),catalogRoot,compiler:testCompiler,compilers:{'engineering-mujoco-3d-v1':createMujocoCompiler({workerRoot:root})}});
++ const receipt=await service.compileEngineeringProject(f.project,'owner'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
++ const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++ const plant=mujocoMobilePlant(runtime);wrap(plant);
++ const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)},directory=await temp();
++ const open=async()=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
++ return {open,directory};
++}
++let ordinal=0;
++async function act(run:ScenarioRun,kind:string,payload={}){const v=await run.snapshot();return run.action({actionId:`act-${++ordinal}`,expectedRevision:v.run.runRevision,kind,payload});}
++
++test.each(['missing','clock'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
++ let fault=false;
++ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(fault&&req.op==='step'&&r.ok){const s=r.result as unknown as {robots:{bodyVelocity:number[]}[];physics?:{tick:number}};s.robots[0]!.bodyVelocity=[0,0];if(mode==='missing')delete s.physics;else s.physics!.tick++;}return r;}};};});
++ const run=await open();await run.start();let moving=await run.snapshot();while(!moving.entities[0]!.goal&&moving.tick<1000)moving=await act(run,'step',{ticks:20});const commandId=moving.entities[0]!.goal!.commandId;
++ await act(run,'cancel');fault=true;const stopped=await act(run,'step',{ticks:1}),report=await run.report();
++ expect(stopped.tick).toBe(moving.tick+1);expect(report.navigation2d?.clock.tickHorizon).toBe(stopped.tick);
++ expect(stopped.attention.map(x=>x.reason)).toContain('PHYSICS_OBSERVATION_INVALID');
++ expect(report.businessEvents.filter(e=>e.type==='RobotCommandObserved'&&e.id===commandId).map(e=>e.state.status)).not.toContain('cancelled');
++ expect(stopped.entities[0]!.goal?.state).toBe('unknown');
++ expect(report.rejectedObservations).toEqual(expect.arrayContaining([expect.objectContaining({commandId,type:'unknown',code:'CANCELLATION_RECONCILIATION_REQUIRED'})]));
++ expect(report.telemetry.samples.filter(s=>s.simTimeNs===String(stopped.tick*20_000_000)).every(s=>s.quality!=='valid')).toBe(true);
++},30_000);
++
++
++test.each(['create','start'])('lost %s ACK is terminal before a second start and after reopen',async op=>{
++ let spawns=0;
++ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op===op)throw new WorkerLostError('WORKER_TIMEOUT','unknown','applied but ACK lost');return r;}};};});
++ const run=await open();await expect(run.start()).rejects.toThrow('PLANT_START_FAILED:WORKER_TIMEOUT');
++ expect((await run.snapshot()).run.status).toBe('needs_attention');
++ await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
++ await run.close();const reopened=await open();expect((await reopened.snapshot()).run.status).toBe('needs_attention');
++ await expect(act(reopened,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
++},30_000);
++
++test('a process restart with create in flight refuses a new world under the same run ID',async()=>{
++ let spawns=0,checkpoint='';
++ const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='create')checkpoint=await readFile(join(o.runDirectory,'..','run.json'),'utf8');const r=await w.request(req);if(req.op==='create')throw new WorkerLostError('WORKER_TIMEOUT','unknown','ACK lost');return r;}};};});
++ const run=await open();await expect(run.start()).rejects.toThrow('PLANT_START_FAILED');await run.close();
++ // Restore the actual durable state captured before the create request, as a source crash would leave it.
++ await writeFile(join(directory,'run.json'),checkpoint);
++ const reopened=await open();await expect(act(reopened,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);expect((await reopened.snapshot()).run.status).toBe('needs_attention');
++},30_000);
++
++test.each(['PLANT_UNSTABLE','CONTACT_CAPACITY_EXCEEDED'])('an explicit %s create failure after priming is terminal, not a not-sent admission refusal',async code=>{
++ let spawns=0;
++ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);return req.op==='create'?{...r,ok:false,error:{code,message:'priming failed'}} as never:r;}};};});
++ const run=await open();await expect(run.start()).rejects.toThrow(code);await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
++},30_000);
++
++test('a real pre-mutation create schema refusal clears the latch and permits start after reopen',async()=>{
++ let spawns=0,refuse=true;
++ const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='create'&&refuse){refuse=false;const path=join(o.bundleRoot,'navigation-scene.json'),bytes=await readFile(path);try{await writeFile(path,'{}');return await w.request(req);}finally{await writeFile(path,bytes);}}return w.request(req);}};};});
++ const run=await open();await expect(run.start()).rejects.toThrow('PLANT_START_FAILED:SCENE_SCHEMA_INVALID');
++ expect(JSON.parse(await readFile(join(directory,'run.json'),'utf8')).plant.startupAttempt).toBeUndefined();await run.close();
++ const reopened=await open();await act(reopened,'start');expect(spawns).toBe(2);
++ expect(JSON.parse(await readFile(join(directory,'run.json'),'utf8')).started).toBe(true);
++},30_000);
++
++test('an uncertain startup keeps engine capacity until the lost worker closes',async()=>{
++ const {activeRunCount}=await import('../../packages/lab-runtime/src/v2/navigation2d/runner');
++ let entered!:()=>void,release!:()=>void;const reached=new Promise<void>(r=>entered=r),wait=new Promise<void>(r=>release=r);
++ const {open}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create')throw new WorkerLostError('WORKER_TIMEOUT','unknown','ACK lost');return r;},async close(reason){entered();await wait;await w.close(reason);}};};});
++ const run=await open(),starting=run.start().catch(e=>e);await reached;
++ try{expect(activeRunCount('mujoco_arm')).toBe(1);}finally{release();await starting;}
++ expect(activeRunCount('mujoco_arm')).toBe(0);await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');
++},30_000);

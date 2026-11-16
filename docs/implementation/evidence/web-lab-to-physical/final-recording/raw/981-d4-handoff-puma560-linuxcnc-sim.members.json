@@ -1,0 +1,2820 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:28:12.546230+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/handoff-puma560-linuxcnc-sim",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-handoff-puma560-linuxcnc-sim.tar.gz",
+  "archiveBytes": 2763772,
+  "archiveSha256": "05e3321ff1bd6a5e650ccec0dbe7ae31e60cb97fd88a608b59db308075b37b45",
+  "memberCount": 387,
+  "memberBytes": 11615737,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "inputs/project.json",
+      "bytes": 1282,
+      "sha256": "ef4ff70e76ebe6600193176776f0aaabdc15b74143f05e6f82a8bec0ff0f72cf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945280215384
+    },
+    {
+      "path": "inputs/world.json",
+      "bytes": 458,
+      "sha256": "61f7fe139f0b43b3511654318a4e40908493577b42983d6670cd028baefd42d7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945280341258
+    },
+    {
+      "path": "lab/source-runtime.lock.json",
+      "bytes": 534,
+      "sha256": "c4c04f91578e856471167a3126217a2b3e239c6fbd70c8f25c1490146d179228",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945286864972
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 144961,
+      "sha256": "b1e7e34c31ed6d46f39a00890b66c168355a470df0c6ea96fbf364ed10de94d0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945288279830
+    },
+    {
+      "path": "profile.json",
+      "bytes": 6825,
+      "sha256": "1cece2cd5ae154713bc7e8493cae8e6b9e90777db3d0a44d30bd5ae0b239f702",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945287285258
+    },
+    {
+      "path": "runtime/manifest.json",
+      "bytes": 78856,
+      "sha256": "d5a9b7386987437d916c1ab602c8fae36cdb55f2ad59ec41e12ac003b1adb7a8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945280748545
+    },
+    {
+      "path": "runtime/runtime.mjs",
+      "bytes": 2570054,
+      "sha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945284764914
+    },
+    {
+      "path": "schemas/algorithm-result-v1.schema.json",
+      "bytes": 1665,
+      "sha256": "3f8e662764289df06a6024d538e27c4b238830d731fa3e6cd42a35aace477842",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945172027551
+    },
+    {
+      "path": "schemas/arm-cell-scene-v1.schema.json",
+      "bytes": 5768,
+      "sha256": "c5acf75b8194cb306fee9714c2b9f3e24d1d55b7851b507c249607731f38901e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945172451837
+    },
+    {
+      "path": "schemas/arm-command.schema.json",
+      "bytes": 10216,
+      "sha256": "d0651b4c2b6426e61959d79256375de4b6694fa1def29d906bfacfec51f3089e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945172966789
+    },
+    {
+      "path": "schemas/arm-observation.schema.json",
+      "bytes": 19608,
+      "sha256": "ac79ea556862be1d1de4366a96c5f889179f7ac9e0ffa6847c803fab6914336e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945173631781
+    },
+    {
+      "path": "schemas/arm-scene-3d-v1.schema.json",
+      "bytes": 4374,
+      "sha256": "5ce0150cfbcb61c0da229d8fccb15812500bbd4c80b236e7af3945bb20df5255",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945174095609
+    },
+    {
+      "path": "schemas/asset-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "df1bb9f365c767f9ae2cc3108a54162fa3fa2bd05cb78e1b7b700147fe4829b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945174506938
+    },
+    {
+      "path": "schemas/asset-revision.schema.json",
+      "bytes": 8139,
+      "sha256": "ff741ad719244d9f16cd971b9fc8dc4e9a9462270e130cfd6f89f679c741721d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945174828851
+    },
+    {
+      "path": "schemas/authority-provision.schema.json",
+      "bytes": 208,
+      "sha256": "2e1da90406d1c13452f41788346f819960d614506d0f1ec0b2ac9390c2390b3b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945175165846
+    },
+    {
+      "path": "schemas/cell-command.schema.json",
+      "bytes": 20421,
+      "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945175481468
+    },
+    {
+      "path": "schemas/cell-observation.schema.json",
+      "bytes": 1986,
+      "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945175799922
+    },
+    {
+      "path": "schemas/coffee-recipe.schema.json",
+      "bytes": 9624,
+      "sha256": "e9ff88cb242ea4dad6beeea5e75f33601b40a411590a88ce8a72c17f07a53873",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945176105210
+    },
+    {
+      "path": "schemas/command.schema.json",
+      "bytes": 178,
+      "sha256": "98c4b1b65f35902a716ef4edabd0c0df9b4d1c9a4cf3867ffa8731290a201313",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945176338166
+    },
+    {
+      "path": "schemas/commit-batch.schema.json",
+      "bytes": 175,
+      "sha256": "7e8695e3d7a2617955b769267b515eac6308b534379d117380e520ad613b1c8b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945176587496
+    },
+    {
+      "path": "schemas/engineering-bundle.schema.json",
+      "bytes": 23448,
+      "sha256": "11cb042eefd50874c6933edbdc4eccb559a433075eba5efb042c39f4781374ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945176814493
+    },
+    {
+      "path": "schemas/engineering-calibration.schema.json",
+      "bytes": 9378,
+      "sha256": "b4758ae46ca512a01ca917b7824659198c5f8bed4d4b23d76ecf8a69dd9fa90f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945177054616
+    },
+    {
+      "path": "schemas/engineering-candidate.schema.json",
+      "bytes": 3345,
+      "sha256": "95db9205a1cef4aea9d5eb5458d4d4a50fff6e5358c3098d1c842aaf78938427",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945177255280
+    },
+    {
+      "path": "schemas/engineering-component.schema.json",
+      "bytes": 24517,
+      "sha256": "5e535859cfe6afa3f04fd46d137370b3b6d776762a657ba957f5c5ad041eae55",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945177507985
+    },
+    {
+      "path": "schemas/engineering-evidence.schema.json",
+      "bytes": 9358,
+      "sha256": "faaef3034432a8c21f3187b512fa1097c41e1721c9af30556033b3a59a958e7e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945177763815
+    },
+    {
+      "path": "schemas/engineering-project-archive.schema.json",
+      "bytes": 2470,
+      "sha256": "bb8c52729792f85b7b274684bc645da2e345440161a81da55e7fbadfd0e985af",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945177983188
+    },
+    {
+      "path": "schemas/engineering-project.schema.json",
+      "bytes": 4096,
+      "sha256": "75479e84f684727f9df84bfb2b75693dff41431416349f685efdb432fa608644",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945178171644
+    },
+    {
+      "path": "schemas/grant-return.schema.json",
+      "bytes": 185,
+      "sha256": "358827d5aceaa449a3784d0b13db45dd87dcd5694befc51dfd4d14d3831c9494",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945178395433
+    },
+    {
+      "path": "schemas/irsim-worker-v1.schema.json",
+      "bytes": 18478,
+      "sha256": "fa0dd48a828f4c38327af0c49fa9104ed4798a879ca2fe8f1f5498ba8d44d1f6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945178599681
+    },
+    {
+      "path": "schemas/journal.schema.json",
+      "bytes": 172,
+      "sha256": "ba4b8962bbad02633eb49ad239beb926ed18de35612028357ac01019b293844b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945178799595
+    },
+    {
+      "path": "schemas/lab-action-v2.schema.json",
+      "bytes": 9066,
+      "sha256": "75c0d8380699e5e9120505a45d47221cc37f2e687631d910bffaf5a6f7680c1f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945179013884
+    },
+    {
+      "path": "schemas/lab-arm-collision-evidence.schema.json",
+      "bytes": 8628,
+      "sha256": "f9dec2ad4b6f372a9d82a3f2bad5a6ad42c6aad7c7c1d495cd31a074e50fd8ee",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945179223215
+    },
+    {
+      "path": "schemas/lab-deployment.schema.json",
+      "bytes": 13270,
+      "sha256": "12d180b9c8c4dca598fd8711d1ecde913674726c86535871b4a8e7d9e4e98679",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945179593877
+    },
+    {
+      "path": "schemas/lab-evidence-v2.schema.json",
+      "bytes": 4569,
+      "sha256": "b9ebf24647539f91a6b9d112210282f46f5d568a739be77603b9ff19ef1c77e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945179998456
+    },
+    {
+      "path": "schemas/lab-fault-schedule.schema.json",
+      "bytes": 1582,
+      "sha256": "bdfac85d58c0b0887ad9cda85d3881480039a81a5d6226a55e5f5738db5e1062",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945180339785
+    },
+    {
+      "path": "schemas/lab-project-v2.schema.json",
+      "bytes": 10046,
+      "sha256": "29737e456a2fc664d174e03c4dc501a369341d893ef7f9e0a099e15a5a77bd22",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945180721614
+    },
+    {
+      "path": "schemas/lab-project.schema.json",
+      "bytes": 4638,
+      "sha256": "d6dda9f63e3ded3421004444a64a32cb0b7d4ccf1e139901ebc76c8e021a97ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945181069443
+    },
+    {
+      "path": "schemas/lab-run-v2.schema.json",
+      "bytes": 5101,
+      "sha256": "ea869a0d09cc6f98dc9279906ef088ac62b94cdaba125c34d7c0cdf76dbead73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945181406647
+    },
+    {
+      "path": "schemas/lab-run-verification.schema.json",
+      "bytes": 3619,
+      "sha256": "0ec157ef4060da1447992256d7c71d463d3b5835ef758dc5420524d59cafe90d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945181756476
+    },
+    {
+      "path": "schemas/lab-run.schema.json",
+      "bytes": 2573,
+      "sha256": "f2063867b11ee8e144cfe9f0785cb39fc5622e3dc2c9f060780fba851d139059",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945182092639
+    },
+    {
+      "path": "schemas/lab-transfer-evidence.schema.json",
+      "bytes": 7292,
+      "sha256": "d489a7967128503a13b6cd6a54552461a2c78aaf3f239498e21cbf3477bd89bf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945182435635
+    },
+    {
+      "path": "schemas/lab-world-scene-v1.schema.json",
+      "bytes": 16636,
+      "sha256": "ff031beef27431e0ee78a4996bdab03f64ff0e0ed80f8c6ae9f7dbddedc7647b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945182787756
+    },
+    {
+      "path": "schemas/load-profile-v1.schema.json",
+      "bytes": 9501,
+      "sha256": "3e633510e058471a0e268574821e7001f6a538250ef06c2c232050f92a1c3e70",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945183180168
+    },
+    {
+      "path": "schemas/model-validation-report-v1.schema.json",
+      "bytes": 6172,
+      "sha256": "4b1c8a3cfa70e6f65688c87c265a51d2b74b1ea9c4c01ef94988f2be69bff314",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945183491872
+    },
+    {
+      "path": "schemas/money.schema.json",
+      "bytes": 156,
+      "sha256": "b0ed9c5f9681da5fe247795bab29d77a72a8779d49cacbe4f8e48cf6f26db383",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945183811618
+    },
+    {
+      "path": "schemas/native-handoff-v1.schema.json",
+      "bytes": 17820,
+      "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945184126156
+    },
+    {
+      "path": "schemas/navigation-model-2d-v1.schema.json",
+      "bytes": 6499,
+      "sha256": "2b35b6d79bd21cc9b1d16bf7ddd49c27d051267c90d60f7ba39118a6044ac119",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945184474444
+    },
+    {
+      "path": "schemas/navigation-run-evidence-v1.schema.json",
+      "bytes": 26618,
+      "sha256": "7ba4164a7291a3e4771f3994500323afdbeae85da3c58341e0bfc633cadf118e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945184851189
+    },
+    {
+      "path": "schemas/navigation-scene-v1.schema.json",
+      "bytes": 20181,
+      "sha256": "8773cddcce70d27dcca50877e1bbab58e6a6af24e939b37ad932efa859b2a979",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945185219227
+    },
+    {
+      "path": "schemas/offline-grant.schema.json",
+      "bytes": 190,
+      "sha256": "a3d48413cbdb9a5ed793f3633e7a4e5a73b30359c2974019a251a4eb70251bb8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945185518348
+    },
+    {
+      "path": "schemas/ownership-grant.schema.json",
+      "bytes": 184,
+      "sha256": "f495946471e5ad00b01e70257f0b7974fef6640749cbb8231626a3148e7704e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945185786595
+    },
+    {
+      "path": "schemas/pairing-grant.schema.json",
+      "bytes": 190,
+      "sha256": "d36ef1da07f93cac9c30000da20bf89d80e9731f7d51c9b543fdf0a8db25b8e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945186047883
+    },
+    {
+      "path": "schemas/physical-target-dossier-v1.schema.json",
+      "bytes": 7731,
+      "sha256": "9706849a8ab13fda2a23c22db0e66ed8bbcf2414c08aec5ad8433a08c6a67dbc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945186418712
+    },
+    {
+      "path": "schemas/physics-evidence-v1.schema.json",
+      "bytes": 13126,
+      "sha256": "2341e8ba2dfad329fe496ab109c5f2ee8bf6445fc53aee7756743f2c96f266c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945186815041
+    },
+    {
+      "path": "schemas/robot-command.schema.json",
+      "bytes": 178,
+      "sha256": "9a39142ea1cbc4087dc04fc4af2204e6431e826d33d82321375b0206d985bc06",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945187126079
+    },
+    {
+      "path": "schemas/robot-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "63660819ee65df2ff0d005ddcc61fdd34dcfde116cbd586677487655507953f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945187457866
+    },
+    {
+      "path": "schemas/robot-physical-model-v1.schema.json",
+      "bytes": 6793,
+      "sha256": "3ff41bbf5b4c57dc66cbfa0e64556704a6a5ab5e6473b095b7ceb45dec8cb6ab",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945188230857
+    },
+    {
+      "path": "schemas/semantic-study-v1.schema.json",
+      "bytes": 9732,
+      "sha256": "8eb0babb54ab2407f5e275b5692bf57298b2c78532dcd16071951611ef88e4e6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945189963462
+    },
+    {
+      "path": "schemas/settlement-grant.schema.json",
+      "bytes": 187,
+      "sha256": "3b82f3ac830b6fe6a542cd3de54ab75a9ca96f9923e580105892004837c1ba4b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945190252291
+    },
+    {
+      "path": "schemas/sim3d-worker-v1.schema.json",
+      "bytes": 39618,
+      "sha256": "5295ede3c31be80d7241bcdf1367aa5c8f8e7fb06ecf96c08c96fb3817eadd11",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945190747286
+    },
+    {
+      "path": "schemas/sync-ack.schema.json",
+      "bytes": 163,
+      "sha256": "cec00df823d37bb6d1503721d95b68032d9c85da6df01e9d32d1c410e4a922e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945191008366
+    },
+    {
+      "path": "schemas/twin-sample-v2.schema.json",
+      "bytes": 14535,
+      "sha256": "3b465a07c80e57b7684cdd97f3eaf4c45e127c648b03383f9f493c562bf4faa6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945191295196
+    },
+    {
+      "path": "schemas/web-replay-package-v1.schema.json",
+      "bytes": 12015,
+      "sha256": "8caeb00a928d8ccf14bd11a0479241258f27a6c5fb54754072d55e2bc324d089",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945191521068
+    },
+    {
+      "path": "schemas/wire.schema.json",
+      "bytes": 49136,
+      "sha256": "4e0985c9db08871ddca853774c18bf4ef2f3f7fed6affed9654c50b0eddfb523",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945191736315
+    },
+    {
+      "path": "schemas/world-evidence-v1.schema.json",
+      "bytes": 13688,
+      "sha256": "bdf391fc3ee9ef2f26beff4e333a58e839ccbce8baf18de7d0758d969530a20a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945192076395
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/__init__.py",
+      "bytes": 148,
+      "sha256": "467438a81ada2fd406c99b783fb83dcc20f451280eadc26bb6fb5baeb3c2bf76",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945248762468
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/arbiter.py",
+      "bytes": 31658,
+      "sha256": "508c1667c27cf7254222ba53cefb55beacc78ca3fbd5f5565c9c12be70b61307",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945248954382
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/handoff.py",
+      "bytes": 2090,
+      "sha256": "e5dc01716229e75a440c767958fadd7c841e4b3cd8bbb1505b83bd561621a3e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945249134797
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/journal.py",
+      "bytes": 2496,
+      "sha256": "28cc18eea72c405c25b9c93221ed8213ae4bd22dbd2b92cb26eb70f6137c4348",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945249313545
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/linuxcnc_port.py",
+      "bytes": 10647,
+      "sha256": "80741a37a5eb43524850683aef58781fc3b69292ff71c83cb4b3029116ab5b0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945249503793
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/protocol.py",
+      "bytes": 8929,
+      "sha256": "238e8464261510d55786a5c2f526034304b3e8b49c6f53581be532b90d98c4e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945249750790
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/run.py",
+      "bytes": 1820,
+      "sha256": "a54e6af39b193c962e172fd7870d637911238b7e36f4aec00fe4def0e392fd3b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945249964121
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/service.py",
+      "bytes": 21171,
+      "sha256": "f1a92c6e42268f3e02aa947fe0e9d4612dec7f156265ed363060c6f7fc4915c9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945250169368
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/sim_geometry.py",
+      "bytes": 1022,
+      "sha256": "b186f517c8a0eb9a95e455b3b9537f874a78ae901159db41f172d6ba31e394db",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945250346407
+    },
+    {
+      "path": "source/integrations/arm-controller/bridge/sim_gripper.py",
+      "bytes": 8080,
+      "sha256": "16efe2ead4f8e355cfbd30b782c55fc47d2d5292d5504ce3682e74cbda0257ad",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945250522489
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/cup-geometry.json",
+      "bytes": 6298,
+      "sha256": "18e74fd42a32fda28d890f4390e161a92451641fe1619be944c9611ae8208ca7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945250882068
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/machine.hal",
+      "bytes": 1753,
+      "sha256": "83c88d7ea4ca84d6be30706b6ed920720197026dd333ad0610cb79f6ab45b396",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945251061732
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/mekoniq.ini",
+      "bytes": 3152,
+      "sha256": "e500350bc2294d5ae43c0a5179584f5bb1d2bedda5a80a2ff4b398506a4696d2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945251229939
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/profile.json",
+      "bytes": 3537,
+      "sha256": "3c6b0e0f0cdb2fcc906d090b793f1fd1b4e5e2966d3451d1686b033f6788ef93",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945251501227
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/puma560-dh.hal",
+      "bytes": 681,
+      "sha256": "1d27c5fc14a611e722a0742c4cec63580242f7abe808c7eee4451a921296deb4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945251772640
+    },
+    {
+      "path": "source/integrations/arm-controller/configs/sim/puma560/tool.tbl",
+      "bytes": 135,
+      "sha256": "c9a68097999276d075140993dd58b0ddc49c33d6a158dfdc702ddc1d35938b38",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945252093762
+    },
+    {
+      "path": "source/integrations/arm-controller/models/puma560-reference/frames.json",
+      "bytes": 2390,
+      "sha256": "7f93c97d985d31365d8e4897c5aaa53dc61f3e2b6f55cb1d2fcaaebdd73cb5de",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945252489549
+    },
+    {
+      "path": "source/integrations/arm-controller/models/puma560-reference/manifest.json",
+      "bytes": 3839,
+      "sha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945252708921
+    },
+    {
+      "path": "source/integrations/arm-controller/models/puma560-reference/modified-dh.json",
+      "bytes": 1764,
+      "sha256": "d0269d04828d26893f52087c5fcda8ab36a0f9333307a3ae0e100253b0bf171a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945252958918
+    },
+    {
+      "path": "source/integrations/arm-controller/models/puma560-reference/origin/puma560_dh.hal",
+      "bytes": 536,
+      "sha256": "dae628cb0d84ffbf858bfef12a9238e21a3e353029262d38174699a6e0efb80e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945253894282
+    },
+    {
+      "path": "source/integrations/arm-controller/models/puma560-reference/reference-poses.json",
+      "bytes": 4220,
+      "sha256": "4bd03c8d89715c4fb3d9b391474cf3cee5da1317bcc891f6e286af916eaa6ab1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945254174320
+    },
+    {
+      "path": "source/integrations/arm-controller/packaging/dependencies.arm64-vm.lock.json",
+      "bytes": 4097,
+      "sha256": "fce4e96d7c4dd70a9620810cf6f1ae3714a403d9c5f07f5a31e6d5060ca39f13",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945254620523
+    },
+    {
+      "path": "source/integrations/arm-controller/packaging/dependencies.lock.json",
+      "bytes": 3878,
+      "sha256": "3e661b818225e4d97d0e4666c59bd90cba325519e53e424390a3a2bce9db95ca",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945254913145
+    },
+    {
+      "path": "source/integrations/arm-controller/packaging/release-manifest.schema.json",
+      "bytes": 4380,
+      "sha256": "1e74c671a21b6988ea1194d367ff1e1bc53d61d6ae1db43e5307da352b0ce357",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945255160600
+    },
+    {
+      "path": "source/integrations/arm-controller/packaging/systemd/mekoniq-arm-bridge.service",
+      "bytes": 1417,
+      "sha256": "4df9c2e1910f988d4f3329db4a8a30577d67e254d6cb15fe1a383ab37667d226",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945255671011
+    },
+    {
+      "path": "source/integrations/arm-controller/packaging/trust-policy.json",
+      "bytes": 1127,
+      "sha256": "3876d990c70fb863067af499ea46fac9205bd4efbcd4ab1c328c3325c311aba8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945256065881
+    },
+    {
+      "path": "source/integrations/arm-controller/programs/cup-pick.ngc",
+      "bytes": 519,
+      "sha256": "67a9daa19a59a9a041d53b9e1403249c56a9b999e7a7ab108d313ad9d49951fb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945256398377
+    },
+    {
+      "path": "source/integrations/arm-controller/programs/cup-place.ngc",
+      "bytes": 519,
+      "sha256": "31d4b6434f113fcd4e251a1f40b6982992da894e8b30155f5a51ef8a05310486",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945256582208
+    },
+    {
+      "path": "source/integrations/arm-controller/programs/demo-six-axis.ngc",
+      "bytes": 529,
+      "sha256": "632f6da013644a03804dc3d4f68cd79227d584c63c3654cab21c640de6d710b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945256762498
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/install-sim.sh",
+      "bytes": 8536,
+      "sha256": "08c7bf7fef78a510666ca65b7221fc607d9dde2bdf305aea3814fbb9706eb15a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945257023828
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/prepare_smoke.py",
+      "bytes": 2643,
+      "sha256": "1b39e0e271ce697c7f5f2963c1c3c37deb3e33d485559586b2bebe9cd0bfbd78",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945257217201
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/runtime-inventory.py",
+      "bytes": 2975,
+      "sha256": "3301b7d8c15537860cc77222d75cad7f176cd69bcc7e3aad0277e014ae48f6be",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945257399949
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/smoke-sim.sh",
+      "bytes": 5797,
+      "sha256": "384bd43ce4375158445b1d4a9ab6abffc10a84412cfa122c54c01185003fd8eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945257591821
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/smoke_driver.py",
+      "bytes": 9724,
+      "sha256": "bc3eb51e27a2a086840b94dc65e05469c3de8333f8b21a386b83bf52f67a22d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945257868526
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/verify-install.sh",
+      "bytes": 1396,
+      "sha256": "88aa970de58902dc8ce151cb21003501c99ccb097a70236aea0da6259440cd5b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945258109232
+    },
+    {
+      "path": "source/integrations/arm-controller/scripts/verify-signature.py",
+      "bytes": 13254,
+      "sha256": "b636b5920ff4503ed31a0b5e1a163cba920f9a345d4db66028d4189da419df22",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945258369520
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/__init__.py",
+      "bytes": 425,
+      "sha256": "80fed95cd5866cca2550e02c43a463cbdca8ca3776bd5a31c27b259cd042e19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945258679933
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/executor.py",
+      "bytes": 11993,
+      "sha256": "e980d2f30486c5a4df820d81cf888fce7ec475d7453853b31bc343f04dbe4f8f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945258868223
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/journal.py",
+      "bytes": 7206,
+      "sha256": "c4f498f1e4e471853c0e40c5a6a254284d163d5d95091f6b5e51c5cfa290a3f4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259059137
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/nav2_adapter.py",
+      "bytes": 9954,
+      "sha256": "564726465baf4079ce181f15d842b698f73de60837442aea401e1bf7537a9a0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259250676
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/nav2_rclpy.py",
+      "bytes": 10941,
+      "sha256": "e350f25c3c17533197173cc1aa3fd9cfca68bf5cfb1724e11e69b706291ab8ad",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259433591
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/ownership.py",
+      "bytes": 2769,
+      "sha256": "a7b48a2655420bc1a4b8fd41e65bd8cdab97ae104154b184141e6ba3bd18139c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259610589
+    },
+    {
+      "path": "source/robotics/agent/mekoniq_agent/protocol.py",
+      "bytes": 7731,
+      "sha256": "adeea3262e600c9e788a0a9acae51e7db7e49654126b7f667911d3ef4343426d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259797920
+    },
+    {
+      "path": "source/robotics/agent/pyproject.toml",
+      "bytes": 658,
+      "sha256": "182531e351f6917ff43d9dff8a51bcc07936e425354af6bf3b15736b983d177f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945259969834
+    },
+    {
+      "path": "source/robotics/algorithm/README.md",
+      "bytes": 2273,
+      "sha256": "66028b76471be044ea11a095847a60af17a1c10b6934bb04fdfe5b9306c170be",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945192571806
+    },
+    {
+      "path": "source/robotics/algorithm/algorithm_checks/__init__.py",
+      "bytes": 2420,
+      "sha256": "27f98b5959c9172491757485ac4f48bf2bb303c7624c101d2fe51badb0795ef9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945192806678
+    },
+    {
+      "path": "source/robotics/algorithm/algorithm_checks/__main__.py",
+      "bytes": 27,
+      "sha256": "b9bb7a5f266f707c1d8c243dd01fd4e0c78ffb760976ecf9196502f723a092b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945192993467
+    },
+    {
+      "path": "source/robotics/algorithm/algorithm_checks/errors.py",
+      "bytes": 124,
+      "sha256": "83181321bb197535c14ccea5708f08a9b1ff70a7645d8ad6134bedc252c770de",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945193178340
+    },
+    {
+      "path": "source/robotics/algorithm/algorithm_checks/kinematics.py",
+      "bytes": 4040,
+      "sha256": "b7940ee70eb13b6f74ba31c68b5cb099d5ebd00eda355370b4eaa0d0bd43888c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945193362546
+    },
+    {
+      "path": "source/robotics/algorithm/algorithm_checks/pid.py",
+      "bytes": 4240,
+      "sha256": "7e47d79b23c2cf0893a554bf87eaabd99a2507af846abc7ee3d66703fc404d73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945193573127
+    },
+    {
+      "path": "source/robotics/algorithm/licenses.json",
+      "bytes": 4513,
+      "sha256": "2a9da78740522e9eb0a5522d4541979975a991f4e03658c80fb390f75a43bb1e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945193866748
+    },
+    {
+      "path": "source/robotics/algorithm/oracle-profile-v1.json",
+      "bytes": 2112,
+      "sha256": "1b40333361628f32cc94fe54d7320ad273eda07cf1580383ed1978cd8953d5ec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945194101829
+    },
+    {
+      "path": "source/robotics/algorithm/pyproject.toml",
+      "bytes": 346,
+      "sha256": "25f950b306aa0c76b2b0b9497ee0b5288cb8b888a0d7c15690b23467b2425366",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945194288743
+    },
+    {
+      "path": "source/robotics/algorithm/requirements.in",
+      "bytes": 56,
+      "sha256": "31965916cf1222f405d782bb9b98b6d51fc75b55fa62967be0082b473b25a9c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945194469991
+    },
+    {
+      "path": "source/robotics/algorithm/requirements.lock",
+      "bytes": 63288,
+      "sha256": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945195011026
+    },
+    {
+      "path": "source/robotics/manipulation/native-vendor.lock.json",
+      "bytes": 18676,
+      "sha256": "5ee56f0e23d946db1d9fa65422b86c90ba106272b2425cf45c06dcac1022aabf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945260223915
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/__init__.py",
+      "bytes": 64,
+      "sha256": "94c174b6e468da76dea51302ff65acd204ae586d2a135014226677fec1f2d008",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945260441662
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/mapping.py",
+      "bytes": 8106,
+      "sha256": "ae6c68619bfc58fb731eeaaf2f497fe437fe4183077df8a072925241d5c9394e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945260614743
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/policy.py",
+      "bytes": 4054,
+      "sha256": "45f4b56ccfd51c335f7c8c9ddb7592710d4d5089954fef2c13ec253930242793",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945260801574
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/ros.py",
+      "bytes": 8150,
+      "sha256": "5d7fc0fb2d3bff717b2c472fe0ef5a50b0cb5139975a4a2c5ba2f2f128bf812d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945260972114
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/session.py",
+      "bytes": 6679,
+      "sha256": "f8ccdb4a7e13e1893419a26284fea8abdaa2d990bce66a3cb7cfb31519f76895",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945261163320
+    },
+    {
+      "path": "source/robotics/manipulation/native_xarm/worker.py",
+      "bytes": 9835,
+      "sha256": "8d2d4df230629c996c5adc26709b94fac4b3bc46e535f782097dd68fb065cd67",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945261351860
+    },
+    {
+      "path": "source/robotics/manipulation/profiles/xarm6-jazzy-sim.json",
+      "bytes": 4051,
+      "sha256": "547b2749d4b8a61df1d02c36364d0b9b3bf45eed44bb1bf9bfe23df18355cedd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945261564107
+    },
+    {
+      "path": "source/robotics/manipulation/profiles/xarm6-native-mapping.json",
+      "bytes": 16993,
+      "sha256": "2fac12a74d83f93eab7ba6490d69d1060cc51bbeeabdd520707c484f98527b57",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945261756563
+    },
+    {
+      "path": "source/robotics/manipulation/profiles/xarm6-sim-extensions.json",
+      "bytes": 8150,
+      "sha256": "ba6c2e6915c62ab2f221ea85b3a7dc1107cab67cdceb104280c8ed1e3416bfbe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945261945561
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/.gitattributes",
+      "bytes": 99,
+      "sha256": "37991456045b2f43a9a624e14f2af90c33645175a0a3eabc14b19c4da83359fc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945262162975
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/LICENSE",
+      "bytes": 1538,
+      "sha256": "685e81e0cd30124e24e834ea2bf39bfead4efc9907d021bc9d1ae0f2dcea1431",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945262334390
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/NOTICE",
+      "bytes": 241,
+      "sha256": "16995da4ae5017ab338767ca02ee5ef83aca787f3ffe154d73d805d398b978d1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945262561345
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib/uf_robot_utils.py",
+      "bytes": 13875,
+      "sha256": "91f99f87d6c5467b02d3da4d9778e7db13b7d95bacc528329c35e22a0d7abd63",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945262971382
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_controller/config/xarm6_controllers.yaml",
+      "bytes": 935,
+      "sha256": "a3106b9c0518aa380ded12a840b85ebf21f98272c95045bcab877aeb69fdae3d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945263267128
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/common/common.gazebo.xacro",
+      "bytes": 1901,
+      "sha256": "a59da43657e269866019aa5693fcecc9daee150828719e7194cb464f186eae00",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945263636874
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/common/common.link.xacro",
+      "bytes": 12197,
+      "sha256": "bcdb75c2d56195d93e4637b790f9804782eacf5cb5d37a77ce31bf8bba9bc55d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945263827247
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.gazebo.xacro",
+      "bytes": 4174,
+      "sha256": "3a8c2d1d56cf39826c6d642b62e9d2a54a1092ee4181c6bf2733a5882cd611db",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945264081369
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.ros2_control.xacro",
+      "bytes": 829,
+      "sha256": "b10d2c9ba475f0eefa584c3e926b8856e3c979941d3a940450d0d6b3fac46aa2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945264261700
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro",
+      "bytes": 710,
+      "sha256": "83a1298210243871e0039cf58b2a09a9c24e0848432e02a4da960ec8efbdf771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945264437198
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+      "bytes": 9868,
+      "sha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945264638862
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper_macro.xacro",
+      "bytes": 2970,
+      "sha256": "60b681379a59957c31ef7b0e2b66ffa1c42c244d13f49aeff3690f4282e67a06",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945264832193
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.gazebo.xacro",
+      "bytes": 806,
+      "sha256": "45502e8d9dbfdc50a23fd7174e14ec71aa9cdc07e9981240551a1e3c8ac3d137",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945265087023
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro",
+      "bytes": 5205,
+      "sha256": "8bd4f1708880c7eb384bcc8dd3b979f6550257881b332741b726ddbc4408ef48",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945265264021
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.transmission.xacro",
+      "bytes": 3003,
+      "sha256": "536f1bcdf87ac6f08c6511dd89235a322803007628caf6beed7ed652dcfd7d6d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945265444769
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro",
+      "bytes": 3517,
+      "sha256": "754c352b96c09c4150508d69a0d0547a3b410efce79eb78c187c5d090e60da9a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945265629183
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device.urdf.xacro",
+      "bytes": 3953,
+      "sha256": "effbda7f945fcee8347c8e1f3bec59bbeea38f60a6e9a5b75aea221b3ed4e81a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945265805848
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device_macro.xacro",
+      "bytes": 16344,
+      "sha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945266138844
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_gazebo/launch/_robot_beside_table_gazebo.launch.py",
+      "bytes": 17460,
+      "sha256": "de1044e210c277a0a34043198178642967aeed6f5372deeb5344be82a84f9b63",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945266512256
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_moveit_config/launch/_robot_moveit_gazebo.launch.py",
+      "bytes": 7335,
+      "sha256": "8f39534351f7958ab122803d4e6625d43c4fde5634feac2f0ec6b559239bc464",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945266831252
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_moveit_config/launch/xarm6_moveit_fake.launch.py",
+      "bytes": 1129,
+      "sha256": "ce8c8d2d4b28312e39306b382411e4eca26ab63fbf6e81706889c35aaf95badf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945267067916
+    },
+    {
+      "path": "source/robotics/manipulation/vendor-source/xarm_moveit_config/launch/xarm6_moveit_gazebo.launch.py",
+      "bytes": 1172,
+      "sha256": "0c762d7fd30228ad2d66ebf9dd11235ea8a801b31846feca504775aea23af7a2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945267248164
+    },
+    {
+      "path": "source/robotics/manipulation/vendor.lock.json",
+      "bytes": 783,
+      "sha256": "4bd3e0f6891a6bdeba578daafd9b6073ac6205201fbd5791684234adacb8e4d4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945267428454
+    },
+    {
+      "path": "source/robotics/model-validation/README.md",
+      "bytes": 1810,
+      "sha256": "7fc186e61a68946642b702d89c385a05e3aa20b7c040a1960216dffadae5b8ed",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945195286773
+    },
+    {
+      "path": "source/robotics/model-validation/conftest.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945195491854
+    },
+    {
+      "path": "source/robotics/model-validation/licenses.json",
+      "bytes": 1950,
+      "sha256": "9cad148ddbb23387f9176967632800acec80fafa9edf9acc2c2f16f1c0546f0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945195718934
+    },
+    {
+      "path": "source/robotics/model-validation/linkforge_worker/__init__.py",
+      "bytes": 162,
+      "sha256": "29c1fb67e27ff72c406773534e8d77878b37c40362a0bd7dd8bfd50ba7030170",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945195940765
+    },
+    {
+      "path": "source/robotics/model-validation/linkforge_worker/__main__.py",
+      "bytes": 1210,
+      "sha256": "7cdfcf5c7b83c25d45609ee705c12dab179148adffca966f75c7d29106fc7049",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945196127555
+    },
+    {
+      "path": "source/robotics/model-validation/linkforge_worker/adapter.py",
+      "bytes": 19056,
+      "sha256": "20a4509af619a65034a26975e16cce8bd47d70b2fa8c4d2399b5fc95d0fa2b03",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945196343010
+    },
+    {
+      "path": "source/robotics/model-validation/linkforge_worker/names.py",
+      "bytes": 2601,
+      "sha256": "a2fed70ceb9637c43d23e9c39800fed187ad0d9e60b6adf3f1f1e3c70acaa410",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945196529092
+    },
+    {
+      "path": "source/robotics/model-validation/linkforge_worker/parity.py",
+      "bytes": 13099,
+      "sha256": "4141d07ff78c26ea48fe0c686a7361f8b179991a9ea176f40914d0b4e34507a0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945196799380
+    },
+    {
+      "path": "source/robotics/model-validation/pyproject.toml",
+      "bytes": 336,
+      "sha256": "1b264b8346c3b4258d499dcbd4eed5ae5bde26be2afb450b31bc04f10e65a6e4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945196981711
+    },
+    {
+      "path": "source/robotics/model-validation/requirements.in",
+      "bytes": 84,
+      "sha256": "a4671323fe59a76ab73c8597231f998a23959a51e410821b8db36ab082e2b2a2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945197160417
+    },
+    {
+      "path": "source/robotics/model-validation/requirements.lock",
+      "bytes": 19995,
+      "sha256": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945197359332
+    },
+    {
+      "path": "source/robotics/navigation/CMakeLists.txt",
+      "bytes": 187,
+      "sha256": "7a5a835138908918da5a0e11fa3ed90dc410a6785042eb6206779c19c881bf9f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945267659368
+    },
+    {
+      "path": "source/robotics/navigation/config/nav2_params.yaml",
+      "bytes": 8187,
+      "sha256": "ee42f91fa241fdf2be8bbf5b2d65dcc66d81eed665f8045bf21978b9c994339c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945267890490
+    },
+    {
+      "path": "source/robotics/navigation/launch/navigation.launch.py",
+      "bytes": 3806,
+      "sha256": "b35af72067916ddd39bfed66af4bf756ce735d954e05d875c866742fd35c78c4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945268103196
+    },
+    {
+      "path": "source/robotics/navigation/maps/restaurant_sim.identity.json",
+      "bytes": 457,
+      "sha256": "c8ef2ff81670673b577606c41d7c16aed6377dc2173096e73f7b8d627e63d911",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945268325235
+    },
+    {
+      "path": "source/robotics/navigation/maps/restaurant_sim.pgm",
+      "bytes": 38468,
+      "sha256": "9df9121a9623f4835d5b0638c866dca7991bfdbd4ce8fe156ae46227a890e246",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945268525732
+    },
+    {
+      "path": "source/robotics/navigation/maps/restaurant_sim.yaml",
+      "bytes": 131,
+      "sha256": "9dc4fe6b5bea1cab9e449aec6ba69a295da83dc4d14e7305952f02c5c5839ded",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945268708980
+    },
+    {
+      "path": "source/robotics/navigation/package.xml",
+      "bytes": 712,
+      "sha256": "b8f3776b0f51330586fcde8eb83aa057a81e299c1dfd82352eac0be401a6aaf6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945268881853
+    },
+    {
+      "path": "source/robotics/navigation-2d/README.md",
+      "bytes": 3171,
+      "sha256": "e5a71a424251679e577ca672becc7e9858ef5606476c20446b83986187f12517",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945197644953
+    },
+    {
+      "path": "source/robotics/navigation-2d/campaigns/c02-concurrent.json",
+      "bytes": 1258,
+      "sha256": "ea93c7ac9f7f586d135d89df80792af53a7f2cdd8deae28754bceb7774546724",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945197884034
+    },
+    {
+      "path": "source/robotics/navigation-2d/campaigns/c02-qualification.json",
+      "bytes": 9019,
+      "sha256": "2af4682ec97e65eef6e9f6540d3500f9b5ec3387f49f08d00121a6d3a876ec43",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945198098073
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/manifest.json",
+      "bytes": 1955,
+      "sha256": "802902b194932b083e567c85fa1c1da78a2ba859c0cb93a46179177b638d4d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945198412611
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945198612233
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-scene-two-robot.json",
+      "bytes": 18473,
+      "sha256": "3cedbc43e631cffea94a57e80e47c63ecb935dc944c9faf9a454b960873820d6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945198812939
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/navigation-scene.json",
+      "bytes": 12909,
+      "sha256": "4aff7df1b8daa33bd4b180a19f0f4e0783cce1f3880ce1ff17af3f3f476c6e82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945199063436
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/restaurant-10-tables.json",
+      "bytes": 4872,
+      "sha256": "8276f8ef026b17083d889e818d2c4322aa0f0e01e3e8354d5353833ca0bf4f25",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945199260351
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-components.json",
+      "bytes": 63686,
+      "sha256": "07cae981082cc084abef78ef675d7d8e67353000f5905125dcdd4f5c702efb23",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945199517264
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-enclosed-project.json",
+      "bytes": 11457,
+      "sha256": "90a73f17da8eea5739c95adc36f860c7cfca259c98526804d29b5ec67bf3d11f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945199852635
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-fleet-project.json",
+      "bytes": 15742,
+      "sha256": "8204f39a1a39db6ca13939b045418becf4dd54896fc77d2a85f202d9f49c2630",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945200274130
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-noisy-project.json",
+      "bytes": 11028,
+      "sha256": "e3f247fe423f9ec050554a04e3f84fbe33014394803ba874c44c922d3a208206",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945201063996
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-project.json",
+      "bytes": 11028,
+      "sha256": "5ca48410be47efe5e2cdc3afe7f492c43c69f799b6624955d76a26388f570d38",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945201574323
+    },
+    {
+      "path": "source/robotics/navigation-2d/fixtures/serve-demo-v1/serve-sensor-model.json",
+      "bytes": 2646,
+      "sha256": "b93879192cf9b9e505e6cece0f02d9491e5abcf1d5f2e6a1e1bcc5dbb35b6691",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945202185191
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/__init__.py",
+      "bytes": 167,
+      "sha256": "4c10a2c978de7d264d40e162b0cd81caab1089d0bcdf95380821c03dabaa7152",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945202433938
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/__main__.py",
+      "bytes": 2215,
+      "sha256": "50988a11a934973db169720ba6e81ec99630c5556d94617385e2e930badb9d21",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945202605436
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/compile.py",
+      "bytes": 4977,
+      "sha256": "89fa554419d94d1d61bad70d7b80c1a6e6eead371a88467e31ff23efb5274425",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945202788767
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/protocol.py",
+      "bytes": 3930,
+      "sha256": "fc350d89351c0a57c84f0ee4cee49e41bd59e393bf3b0cea5cc202ccdc523f83",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945202988306
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/scene.py",
+      "bytes": 5300,
+      "sha256": "4f6bb815e4febcdd0a5f45aa34bd15ab718ca69e655199bdab4a5f3add994210",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945203177971
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/session.py",
+      "bytes": 14142,
+      "sha256": "83fdf7040e87c534981708860f7b1f650967578a4e59b86ce222c5c8353b11c2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945203429884
+    },
+    {
+      "path": "source/robotics/navigation-2d/irsim_worker/snapshot.py",
+      "bytes": 3692,
+      "sha256": "fb1c9970f4181d4fc0e0f15df1f2053aa5ad46b8657369e1169f1060fe83c771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945203666756
+    },
+    {
+      "path": "source/robotics/navigation-2d/licenses.json",
+      "bytes": 3560,
+      "sha256": "77f763ce46d9da428e5019b42d2f91cfdb6523348d2752b628387240c930703d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945203855837
+    },
+    {
+      "path": "source/robotics/navigation-2d/pyproject.toml",
+      "bytes": 306,
+      "sha256": "bcaebcb5490447de8025fd71419dbeb102404d271b83095db51fa48c9a331c41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945204032877
+    },
+    {
+      "path": "source/robotics/navigation-2d/requirements.in",
+      "bytes": 63,
+      "sha256": "61896c0a18171a98093b588efc7098ccbba4af0434f73f65818b66f15515459b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945204199792
+    },
+    {
+      "path": "source/robotics/navigation-2d/requirements.lock",
+      "bytes": 73546,
+      "sha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945204434372
+    },
+    {
+      "path": "source/robotics/simulation/CMakeLists.txt",
+      "bytes": 951,
+      "sha256": "d670c08425303509c21c5005849e150e00ea86c3c7bfec6326d4e780f4d3c920",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269049518
+    },
+    {
+      "path": "source/robotics/simulation/Dockerfile",
+      "bytes": 1685,
+      "sha256": "86980b7611f2a0ce2588301cd6bad057b483f1d14ea1bb82519fb935e9758b58",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269220057
+    },
+    {
+      "path": "source/robotics/simulation/README.md",
+      "bytes": 1732,
+      "sha256": "e55745876b1c3cc7895c5c6f57dfa3272917223eb153e9432b120b083159489a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269399889
+    },
+    {
+      "path": "source/robotics/simulation/actors/__init__.py",
+      "bytes": 101,
+      "sha256": "2f5772071f2ba0fedc2bd33e13d23d5370b379f48b8af276b0d2bcf73352063f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945245241719
+    },
+    {
+      "path": "source/robotics/simulation/actors/blocker.py",
+      "bytes": 2182,
+      "sha256": "9c19912b2e5f9caffe7152053bbab3a1d5a44e2f98ecd8adba032953847a0567",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945245460924
+    },
+    {
+      "path": "source/robotics/simulation/actors/pedestrian.py",
+      "bytes": 4443,
+      "sha256": "cf8a2aac0d2e2cb95150ab049ee458c3ff4f269f08ed3e273413761b9b779e43",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945245746712
+    },
+    {
+      "path": "source/robotics/simulation/actors/scenario.py",
+      "bytes": 4683,
+      "sha256": "355cd9a60320255b87775486e1b23404acb634c744226d5414636bc4e6fbc171",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945245941960
+    },
+    {
+      "path": "source/robotics/simulation/beverage_cell.py",
+      "bytes": 5875,
+      "sha256": "4c899c162634ce11559e80f06cffb7d31acaa1b6c008f5be07cd727a35a809a6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269598594
+    },
+    {
+      "path": "source/robotics/simulation/bridge/__init__.py",
+      "bytes": 134,
+      "sha256": "50296d09f9b6a22a49edf40d839aaa46632afc791fbd59497be19cb5515b2113",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269814633
+    },
+    {
+      "path": "source/robotics/simulation/bridge/actuator_model.py",
+      "bytes": 3231,
+      "sha256": "408b4d2fc7b4bf41e819b8662098ca813389b809f0e1bbb2f1c13fa13869783f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945269978507
+    },
+    {
+      "path": "source/robotics/simulation/bridge/clock_barrier.py",
+      "bytes": 4573,
+      "sha256": "eaf20aa3fc7b6c212657816470296f208e66918312eb7ddbfb8a64935c1c69f8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270155838
+    },
+    {
+      "path": "source/robotics/simulation/bridge/coffee_process.py",
+      "bytes": 3976,
+      "sha256": "444655ed6bacd07aa147a594e1e568f8c9abdd0aee41a188526155bedc4ac4da",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270330794
+    },
+    {
+      "path": "source/robotics/simulation/bridge/contact_transfer.py",
+      "bytes": 8062,
+      "sha256": "32a942d1a0672de8535c37618cdc712bc601e9fa0d4dbf3764e80d9da708af5f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270504625
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_arm.py",
+      "bytes": 2459,
+      "sha256": "0da68aa853fb3a294dd68fb13c0d32b6fd88ab5398ee30a39d18ebbd31a0718d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270669790
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_bag.py",
+      "bytes": 2659,
+      "sha256": "0075dad78e8d2e8d0e5416f9c0c6d4fe6090140f9b4f323a002e4de2a00d7a7d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270832996
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_launch.py",
+      "bytes": 2013,
+      "sha256": "4b7119dfb0d3a5e9d7e3bd597fd3aa59ba59cc974adf569c03cd682683dfe16c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945270998786
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_profile.py",
+      "bytes": 2746,
+      "sha256": "bae3c0a032d4a8284c4fdde1803ef62342cc26020c7f0bbc70145a0704ec6e09",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945271181284
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_session.py",
+      "bytes": 15369,
+      "sha256": "4dfc260011db6e5220cc9000f302e35a9d6317cad1b8408f925820cb8d07f6ff",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945271442197
+    },
+    {
+      "path": "source/robotics/simulation/bridge/engineering_worker.py",
+      "bytes": 5037,
+      "sha256": "63d7e50b639b7d9607ac33d79e696077f9e09068bf0cffe77484692e6e65a6df",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945271628070
+    },
+    {
+      "path": "source/robotics/simulation/bridge/launch_plan.py",
+      "bytes": 4560,
+      "sha256": "1e59d1c425a6b3e627a334db05d5a00e7430974e960083f3982e8e31ffe9572c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945271804068
+    },
+    {
+      "path": "source/robotics/simulation/bridge/native_profile.py",
+      "bytes": 10388,
+      "sha256": "6d35e72042533452e060b8ee09ef30d0e76e1ec5770a28dd288a72c227e9a309",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945271986024
+    },
+    {
+      "path": "source/robotics/simulation/bridge/nav2_session.py",
+      "bytes": 25140,
+      "sha256": "66d9584b2d520d20519acdb68b0cabfe17dce65df5312f0cbb33ce6065e761c1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945272173689
+    },
+    {
+      "path": "source/robotics/simulation/bridge/protocol.py",
+      "bytes": 5921,
+      "sha256": "9dfdf2d6b412c3bf80379678b4822bafe6e68386769bb02b046489c4a3e9bdf8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945272367645
+    },
+    {
+      "path": "source/robotics/simulation/bridge/scene_loop.py",
+      "bytes": 12001,
+      "sha256": "b4d560636e348ab9a4b4cba7f505b88da82fceb02c17319dffcfc0a16787d053",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945272565851
+    },
+    {
+      "path": "source/robotics/simulation/bridge/telemetry.py",
+      "bytes": 2584,
+      "sha256": "a15056af15430c9084586c08392f77c6c4550773abb539fbc20f3067c831c59e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945272752973
+    },
+    {
+      "path": "source/robotics/simulation/bridge/tray_observer.py",
+      "bytes": 8160,
+      "sha256": "45aea5f59231a3c5421b50271bd81c63a397d4783391e395373d51ba86f30cdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945272939555
+    },
+    {
+      "path": "source/robotics/simulation/collision/__init__.py",
+      "bytes": 86,
+      "sha256": "dee35b94e933ad312092b389e92c480053a0c757c17ec9e8a014c541470bbc37",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945273145719
+    },
+    {
+      "path": "source/robotics/simulation/collision/__main__.py",
+      "bytes": 1198,
+      "sha256": "1e82e6ecfcfd5568e50ec9bb94b4f617ff31d112d1c1d691d5d6b4e267ad2d0a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945273316050
+    },
+    {
+      "path": "source/robotics/simulation/collision/arm_swept_path.py",
+      "bytes": 13561,
+      "sha256": "28da33d07eadbfd07be37e764e9ee99a8b4cd7d52e594eac7600c5d8fb803a24",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945273559589
+    },
+    {
+      "path": "source/robotics/simulation/compiler/__init__.py",
+      "bytes": 360,
+      "sha256": "1482a5f4fe9e2ef5fea7de1ff3170519b9150bb795e2e31b96000f9bd562eebd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945246166832
+    },
+    {
+      "path": "source/robotics/simulation/compiler/__main__.py",
+      "bytes": 2750,
+      "sha256": "01b62acd528480e5ff82ef12527d3be56d7c1e1acac106f79e5452fd11016737",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945246334830
+    },
+    {
+      "path": "source/robotics/simulation/compiler/compile_world.py",
+      "bytes": 18570,
+      "sha256": "dcc8e6ca8ef153c14900900cc9dbba1a9c486cbcf838bfebb00ed27c418cae99",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945246550745
+    },
+    {
+      "path": "source/robotics/simulation/compiler/description.py",
+      "bytes": 4262,
+      "sha256": "fa0c240b4377c117d23ca7fe5e1074587974c090f950f5200f24dd4a8da24993",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945246748492
+    },
+    {
+      "path": "source/robotics/simulation/compiler/engineering.py",
+      "bytes": 13668,
+      "sha256": "17c01a902c55955672760f975a985b483eb179f93f1379c1a908572d155621f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945246995864
+    },
+    {
+      "path": "source/robotics/simulation/compiler/engineering_native.py",
+      "bytes": 10783,
+      "sha256": "3d18e97331f487a5c3ba495371766882f11e13cc7aa53bd91f8091d8a487ecb0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945247204112
+    },
+    {
+      "path": "source/robotics/simulation/compiler/manifest.py",
+      "bytes": 2006,
+      "sha256": "9072c063fb24d6a01adece6404f19abb39ab2aff3f38eb0aa1db66b7f2a8397f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945247372193
+    },
+    {
+      "path": "source/robotics/simulation/compiler/models.py",
+      "bytes": 15254,
+      "sha256": "4d41340425241b8a230a4bf00973e2be11844c51ed6ae0d06200df8a2858e4b7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945247619982
+    },
+    {
+      "path": "source/robotics/simulation/compiler/occupancy.py",
+      "bytes": 1350,
+      "sha256": "39d308340650f69d81a3410495a7fea5c835d86ccd754e8c19e04198c1137a24",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945247801813
+    },
+    {
+      "path": "source/robotics/simulation/cup_transfer.py",
+      "bytes": 2618,
+      "sha256": "8988f5b2ee1f0a0a311a7ca2cd93ef74e3af8bf76b5ad5f39f468807283a188b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945273726212
+    },
+    {
+      "path": "source/robotics/simulation/fixtures/engineering-navigation-v1/compiler-manifest.json",
+      "bytes": 2477,
+      "sha256": "03e5eb26079b0b849b148293364dd35eb73d96265364edc569161a892605277b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274002042
+    },
+    {
+      "path": "source/robotics/simulation/fixtures/engineering-navigation-v1/native-mapping.json",
+      "bytes": 976,
+      "sha256": "44e44bde4cc708c4821840e600212e6b0ad83c80468db0197390895a7dcb22ab",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274168873
+    },
+    {
+      "path": "source/robotics/simulation/image.lock.json",
+      "bytes": 350,
+      "sha256": "8894cb90a4a103093d963ed88808d65ce3396dc2cbbb2733d37bf249c61602ca",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274326330
+    },
+    {
+      "path": "source/robotics/simulation/launch/engineering_world.launch.py",
+      "bytes": 3927,
+      "sha256": "26e371ec7f65a56523ed623f850f20aa6c1cb4c61ee0d96d5b74036ed4e77f9d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274539369
+    },
+    {
+      "path": "source/robotics/simulation/launch/lab_world.launch.py",
+      "bytes": 4938,
+      "sha256": "b13c43679249481d53b6f20f0cada03bb34a087af970f43349be678d0f096de4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274707325
+    },
+    {
+      "path": "source/robotics/simulation/launch/restaurant_sim.launch.py",
+      "bytes": 4098,
+      "sha256": "c157355d273b9cafd5015b8c7e4c34dc70a9aa849b61cdca9c2d2b562cc6b16d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945274881281
+    },
+    {
+      "path": "source/robotics/simulation/metrics/__init__.py",
+      "bytes": 101,
+      "sha256": "2b2944a25df30e0401f0715dcd8c509a1b95ba6e7b5811db8fac8f4e911982ee",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275099237
+    },
+    {
+      "path": "source/robotics/simulation/metrics/contact.py",
+      "bytes": 1853,
+      "sha256": "f3e9fd3fcc3ec0b25938f8bce303a4837b03cc10f613521ed0f93c659d0d835f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275266068
+    },
+    {
+      "path": "source/robotics/simulation/metrics/separation.py",
+      "bytes": 1934,
+      "sha256": "f18469c921a51dbdf8ea4cd7c6ff865732fc19295f24df63786d3a420f17b5e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275439316
+    },
+    {
+      "path": "source/robotics/simulation/package.xml",
+      "bytes": 891,
+      "sha256": "63e30607a762a0d24441d3798a1dea752c3a6af6c4d2d3c85d0d0b352ff68620",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275602773
+    },
+    {
+      "path": "source/robotics/simulation/profiles/engineering-amd64.lock.json",
+      "bytes": 866,
+      "sha256": "a837545033a40eb80bc07e26452762664609df8389ea11903af83b87254e0130",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275796062
+    },
+    {
+      "path": "source/robotics/simulation/profiles/engineering-arm64.lock.json",
+      "bytes": 866,
+      "sha256": "4dd125cce266ebd1a17572a53edbddceb7dd7775d7dc33fa27d0acf9e5c227f7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945275954977
+    },
+    {
+      "path": "source/robotics/simulation/profiles/utm-ubuntu-arm64.lock.json",
+      "bytes": 889,
+      "sha256": "11cdd9dbda782ef3f6057a65453b321b25de87ac2982c6de98d58aeceaf6d4cc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945276148183
+    },
+    {
+      "path": "source/robotics/simulation/requirements-dev.txt",
+      "bytes": 376,
+      "sha256": "991eb183d7e1f299632f8cc4eded3c6ae82e0332161266c0ef4dda0cd63f11b3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945276340847
+    },
+    {
+      "path": "source/robotics/simulation/worlds/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945248011019
+    },
+    {
+      "path": "source/robotics/simulation/worlds/generate_restaurant.py",
+      "bytes": 6512,
+      "sha256": "58b17d075f28df9d42775542882c203b97b43b2a57191d382c86af52b75fcdb1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945248222975
+    },
+    {
+      "path": "source/robotics/simulation/worlds/restaurant.sdf",
+      "bytes": 6997,
+      "sha256": "149be7d30a95a6065c953b5cc8ccb7ba5eba5991598b701cef020845395ce516",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945248411889
+    },
+    {
+      "path": "source/robotics/simulation-3d/README.md",
+      "bytes": 5046,
+      "sha256": "364f0cf0fa932d3940e070aa69f0500e97b9c2c29793a11578165139fc4da8fa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945204690036
+    },
+    {
+      "path": "source/robotics/simulation-3d/campaigns/r1-qualification.json",
+      "bytes": 7325,
+      "sha256": "00da63f7a094fce5337cf5618a2a5b677578015e3dca00368499fa03fd7a6775",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945204944449
+    },
+    {
+      "path": "source/robotics/simulation-3d/campaigns/r1-smoke.json",
+      "bytes": 890,
+      "sha256": "440f182ac863989735260e411e084166a3ee81c133f6bf3b4e7a4ca4265fdf70",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945205140697
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/arm-ref-3d-v1/README.md",
+      "bytes": 2626,
+      "sha256": "47710c343813c052f8e819c57fd78d84cad3361af3cc4d56563622617f2b81bc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945205424444
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/arm-ref-3d-v1/component.json",
+      "bytes": 26885,
+      "sha256": "18eba69d973279fcda541fc287f8531ed5997e4121d3f9c03653fed0a02ef6ae",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945205621608
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/arm-ref-3d-v1/fk-golden.json",
+      "bytes": 1146,
+      "sha256": "f3611159f6952a28ba370f7f6447efc6259fbcfa2f1c655dea2fcde4c1bf3d4a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945205808606
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/arm-ref-3d-v1/manifest.json",
+      "bytes": 883,
+      "sha256": "d2e85fe0c9b014e34e752f94df6e1e2300d4375ea019bb4f69825c6a1f29f3b3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945205983395
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/manifest.json",
+      "bytes": 1836,
+      "sha256": "920d586700e6cbfd4995322c26881b5445538505835963602c0d3207df57bc31",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945206207309
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene-two-robot.json",
+      "bytes": 18801,
+      "sha256": "6f027d5f0f78d7e834e88eff7669e3ea731ca2afc7cece5b0886af6462de21f4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945206402932
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/navigation-scene.json",
+      "bytes": 13156,
+      "sha256": "94f215d4ff81ea4889f41bd9a794d0a065d7102b76e839d62cec05886846645c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945206669804
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945206879385
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-robot01.json",
+      "bytes": 47581,
+      "sha256": "eed63815e489c890dc8ad608900bec0c9d1fe4dc52f64474bebb6471902460b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945207121298
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/physical-model-robot02.json",
+      "bytes": 47520,
+      "sha256": "b35d2070dcc93f43f7d4c26703b15c75e7db33aebb8fe1571443f714b14d0f88",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945207360796
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-components.json",
+      "bytes": 61944,
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945207608334
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-fleet-project.json",
+      "bytes": 17745,
+      "sha256": "40a9aad4a8ae5888a280a2baadc034cdc6a544bbf4fbdf3dec5459935e71fb0a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945207828290
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json",
+      "bytes": 12009,
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208027454
+    },
+    {
+      "path": "source/robotics/simulation-3d/fixtures/serve-3d-v1/world3d.json",
+      "bytes": 129,
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208217452
+    },
+    {
+      "path": "source/robotics/simulation-3d/licenses.json",
+      "bytes": 1724,
+      "sha256": "ff41df81d34be0b4a4c1216861ceb278350ea45b747ad41e4af4d0f7294b59b6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208401075
+    },
+    {
+      "path": "source/robotics/simulation-3d/pyproject.toml",
+      "bytes": 355,
+      "sha256": "1512a39368a1fca25c56d549505c3f5e65c950228a14faf3bdd8a54eabbdd093",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208582198
+    },
+    {
+      "path": "source/robotics/simulation-3d/requirements.in",
+      "bytes": 48,
+      "sha256": "dc6a16f79f9cfca7f005e94a8d841b1850b006c74e5f3c063a63695d67a15ead",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208751237
+    },
+    {
+      "path": "source/robotics/simulation-3d/requirements.lock",
+      "bytes": 13495,
+      "sha256": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945208992901
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945209173441
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/__main__.py",
+      "bytes": 2190,
+      "sha256": "e88659d752095f9b4eb5aac0f75a1a318c34fb4af938105e6dba317ecbc68a31",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945209381938
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/arm_controller.py",
+      "bytes": 1754,
+      "sha256": "c9d09449241298349e06156bd83b566b253e039393b0b3cfc763f6ba40c98f58",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945209561353
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/compile.py",
+      "bytes": 29363,
+      "sha256": "863f0cc4920f24fb36cb94dd29399534d8a487ddbfc5f06647a76987ad5321e7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945209749684
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/engine.py",
+      "bytes": 13230,
+      "sha256": "cb00a9620ad815855b6dc3c4c54e331b1fc79bc412d9bb03a597ac1b38fc79ad",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945210052764
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/protocol.py",
+      "bytes": 4087,
+      "sha256": "b5009e99ede179fa5ac377052ce28e171c5861af87d9d4d1169ab76ae8cbb238",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945210401259
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/robot_controller.py",
+      "bytes": 1741,
+      "sha256": "b5a28335c0d967d3d61b0f54f06555cb3a47c358f140b835866d524d0c64620f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945210945294
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/session.py",
+      "bytes": 20663,
+      "sha256": "afc461c76cb8e3b82fce7ec108b4536a26e7fe7415893aa8ee57d4ed2b2bda6a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945211559870
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/snapshot.py",
+      "bytes": 8151,
+      "sha256": "20bd6fcd1638931e0def6e9ce454570d1a0bd6671935856dc4db73f93a47130c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945211814201
+    },
+    {
+      "path": "source/robotics/simulation-3d/webots_worker/supervisor.py",
+      "bytes": 6061,
+      "sha256": "31e19c1ef3b75ceaf06290c1cecb1899d3eb6ba8c87d4ee12a9f620f3286da94",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945212634024
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/README.md",
+      "bytes": 8930,
+      "sha256": "2abe44643365a7981032894970c232e8720c3de580af752683e8fe4dc6db8ac4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945212974562
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/campaigns/mj-cell-bv01-v1.json",
+      "bytes": 2296,
+      "sha256": "270373713f61734a2ff411bc65fa85046af6e9ad6d6269927ccdc9e22ce63fa7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945213316058
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/campaigns/payload-v1.json",
+      "bytes": 3521,
+      "sha256": "65b6249a58beb1fec9cdefd78476a6d228f578d756a652e798387af79a33034a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945213524180
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/NOTICE",
+      "bytes": 1840,
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945213830760
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/README.md",
+      "bytes": 4673,
+      "sha256": "8c654e9628351570c79beca8a6280f0508e0bc2e7fda186475a8c7d97586ff8b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214009050
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214230297
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214442753
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214622251
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214801165
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/lab-world-scene.json",
+      "bytes": 20943,
+      "sha256": "1c9048ff8d42fa5afa586950474e71756cc963abc1ad180d0bbc849fb5a2a68b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945214983163
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/manifest.json",
+      "bytes": 1750,
+      "sha256": "c98024f99ab13571cf8c767844009a1f98c0abd9ec37d3ea70b653ead5bb072e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945215167161
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945215339242
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945215538531
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945215740571
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945215922735
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/NOTICE",
+      "bytes": 1840,
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945216133399
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/README.md",
+      "bytes": 1233,
+      "sha256": "c74fddf412c6c7d1c6c23082a93f58825d23286db805a86dc4e6814777c534ec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945216316189
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945216544394
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945216960098
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945217170804
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945217340677
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/lab-world-scene.json",
+      "bytes": 20089,
+      "sha256": "9abbc53d45e8b52224e7a53b91e678155a6404c989c043c3ca75b35f4186fabc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945217516591
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/manifest.json",
+      "bytes": 1751,
+      "sha256": "2fc80b1e6bda399309ee9d8a22eb66893f9ee3adec6f869099a34d20423d3428",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945217701297
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945217879420
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945218107667
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945218318206
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945218492746
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/NOTICE",
+      "bytes": 383,
+      "sha256": "80aded154e782fa1260475402e6e7051545373f876b638c5ad1d4ae34c432196",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945218721993
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/README.md",
+      "bytes": 1677,
+      "sha256": "40fb11cc46e52fafc0d8e915b41682f56693c743cdd8d3a4bb26b78e32054732",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945218901991
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945219074198
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-center.json",
+      "bytes": 4188,
+      "sha256": "d1b846f1d4f02cd9308a9b58cf503a1284d7f04dc3af61a0a8be48f99c41a0cf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945219340194
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "6633143ea5cd74f4bbdad5713505039fefcb7464af97057a2a55aa4350da9a14",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945219527234
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/dock-feasibility.json",
+      "bytes": 5374,
+      "sha256": "bf3fc0046af44719e8050c84a78cf9ad3b231d39b568486ccc3ce36d384de909",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945219772481
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-high-v1.json",
+      "bytes": 3118,
+      "sha256": "9d1f7f3315cfe9df89ed8b8b15361b3fd09d66dedbe4ea5240a5c04b54ecbe8a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945220035478
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-low-v1.json",
+      "bytes": 3116,
+      "sha256": "c9aec2a6a250e81f4c5c1d1372e88d7d90340b7e42f7526fe90a7ad3d1d4ad9c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945220255975
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945220486014
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/empty.json",
+      "bytes": 1479,
+      "sha256": "2118b79956c2015afb54d7adeadff5bd976f87eb9936043e1cda000590e4e5df",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945220688887
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/manifest.json",
+      "bytes": 2183,
+      "sha256": "c93d677ab4c71bfaa2d345b687377eae21964bc44180ac4f5906df3bd7e102c8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945220859093
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/navigation-scene.json",
+      "bytes": 14966,
+      "sha256": "d69f62f6a6d978549f7ae87a37852817d18be9c526bdd6d5a3e16490f0670881",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945221116965
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/physical-model-amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945221363503
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/registered-physics.json",
+      "bytes": 712,
+      "sha256": "c1ecd3fc2f9a9febb259046d5de49282246597590eaab7b1fb99433d9156136e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945221563543
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json",
+      "bytes": 61944,
+      "sha256": "475a785832cb1a54d588781075c86bfda7a5e9d965365469f7e48fac47f53f2b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945221798957
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-project.json",
+      "bytes": 12009,
+      "sha256": "f1c97e1bd6b6bd1258b08e82a9da3c565e398cfd7572d837d89c67d3a1340147",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945222037912
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/serve-payload-v1/world3d.json",
+      "bytes": 129,
+      "sha256": "68a6c28f4faf93da908c3c7f862e5d554fe605ddf91a84b96bdf6d34c0ec7808",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945222224993
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/NOTICE",
+      "bytes": 1840,
+      "sha256": "7b06a81d2e13936d721ea6ab2d0e3fc00901600a4f4c2cd6aa2829698518303c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945222454865
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/README.md",
+      "bytes": 5711,
+      "sha256": "df05605c06720016a640746dc5ec4f09e2f91c3b315c059d283e8c30fe347316",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945222649696
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945222895444
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945223259981
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945224438925
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945225192041
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945226696148
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945228974829
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945230891515
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945231380842
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945231860170
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945232311665
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945232844075
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945233997894
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945234963883
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945235406503
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945235720957
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json",
+      "bytes": 2917,
+      "sha256": "c22cc9d91c261e6b23d27c99472e5545c1a8fd9b564421fa86a4996f3f49ca7e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945236015412
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945236287909
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/fk-golden.json",
+      "bytes": 8008,
+      "sha256": "87dc76938e7687fb9543046c0fc1c3c8b522bf78c0ec286d9cd6d88206137d90",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945236533822
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/manifest.json",
+      "bytes": 7983,
+      "sha256": "51bad5842206673d9f417a5f0f4813ac904f64b12a53cbfb403e1e12294b3407",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945236754528
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945236947901
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/programs.json",
+      "bytes": 3914,
+      "sha256": "af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945237146649
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/vendor-manifest.json",
+      "bytes": 12148,
+      "sha256": "4c8e12ba58f748c0a5aefd879a5b349261fe0ea10d0255f2c3485cd1c5c2dbfe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945237355229
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/licenses.json",
+      "bytes": 2787,
+      "sha256": "d94d41581136307bf07c4b810f3ee823b8355d9461df892b5107e9ec3c0e01dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945237766308
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945239046417
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/__main__.py",
+      "bytes": 2197,
+      "sha256": "8188c231734d36d671cf3594a88148f03f7a42fc542fb465724eac03da2a27b5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945239962865
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/compile.py",
+      "bytes": 18480,
+      "sha256": "9185142c8dc3495790ba46369e07fe2041e439dd03343ff198d59f15950b572d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945241668511
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/compile_mobile.py",
+      "bytes": 17499,
+      "sha256": "f1a1c359902d51cbe7b581d8ce2f677d2edc94ddab784723cc4c09644b55c7f7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945242133756
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/compile_world.py",
+      "bytes": 3754,
+      "sha256": "23afdbedd42a71593fce540d47c8d33358d26e01c958c1831e2fa457649b5311",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945242383794
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/drive.py",
+      "bytes": 1296,
+      "sha256": "13f202fcf50c6858f94d7748e9186b79bcf7cfd16fd5f27cbed7142731b47282",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945242575125
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "bytes": 8850,
+      "sha256": "b10f38a6cf81a6630b6b699dfd57a83712ca86eaadc826407fd89b75766fde78",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945242792164
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py",
+      "bytes": 16006,
+      "sha256": "e720fe3b0251cf2736df0af1630f746479b28c7196469bb2d08deb84178b7b59",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945243068661
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/protocol.py",
+      "bytes": 4114,
+      "sha256": "058e47d8500e42b08f8176657b4fc9be034fa79b1d4f08378299bb5c4544df2b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945243262242
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/session.py",
+      "bytes": 37152,
+      "sha256": "4d85bf1ef3aed0606f2d235ae744895f3cc1caa21b0f791cad5d2df16d5447c9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945243479656
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/snapshot.py",
+      "bytes": 7163,
+      "sha256": "e4aecaf4d8847ba014d8e65d02d4c52d00f169ca406b8507eb616efeaa9053bb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945243689070
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/mujoco_worker/world_engine.py",
+      "bytes": 12419,
+      "sha256": "afbfeb123fd5b653f620ecb3643f2aad763f00b42d2e8a8f6d13390ff7d82950",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945243953776
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/probe_mobile.py",
+      "bytes": 8960,
+      "sha256": "49fbbef87b7217159d0bdb1230fbb89c6d8c26ddbb2ac525376fabbd04db9680",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945244149398
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/profiles/linux-amd64.json",
+      "bytes": 7823,
+      "sha256": "148afd50b392d9ab05845018a35cc5cc2c02e45d77e76bca0a64612670400263",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945244383937
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/pyproject.toml",
+      "bytes": 375,
+      "sha256": "fa87a87d4a37da5335e83244f2081311eb5bb5cebe2e92c22c0c96f88a85967f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945244562018
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/requirements.in",
+      "bytes": 83,
+      "sha256": "416004b2087a20b12533fc5e5c5b28cc44ed3e01913f88d9cf4fc9d692dba5d5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945244729266
+    },
+    {
+      "path": "source/robotics/simulation-mujoco/requirements.lock",
+      "bytes": 37555,
+      "sha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945244933597
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/arm/messages.json",
+      "bytes": 19196,
+      "sha256": "bc4a075f9fc251d81dca1a2add089e81113d14587868f39385e7b44bca6d64d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945276918049
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/arm-fk-golden.json",
+      "bytes": 3187,
+      "sha256": "cfcd9f15f67eff1420ffb0b76af729606b606417cd210a7221b54687f4dd894f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945276681760
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/arm-puma-reference.json",
+      "bytes": 3419,
+      "sha256": "34d5e28cb51841fb588c068ff6a6d540d35ddef2c6b84da1c4c3395b6daacc2b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277147504
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/coffee-machine-illustrative.json",
+      "bytes": 1295,
+      "sha256": "6929cb738e073244a702049d15ad1e2e8c77824c5e7c5d0949ee47b70e86e2bc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277321502
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/cup-paper-illustrative.json",
+      "bytes": 976,
+      "sha256": "4e62ddb446042c735ee7bde65ebc2fcb336fc0ca39e9b6c5fa4107d2ba936ae5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277494625
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/cup-v1.json",
+      "bytes": 1363,
+      "sha256": "931eedb062867fab5dcf65a7e61705d033743ab068cbd9e00dc3dc3c1dd2da54",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277651373
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/service-robot-v1.json",
+      "bytes": 2564,
+      "sha256": "82964d8b3f153d1d9c6c21fdd2ef632ac9f1d84931fad6898da532a6a1a012ac",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277818163
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/assets/table-v1.json",
+      "bytes": 1262,
+      "sha256": "bce792d1987543ee4deff97fb66e947e2f51bf2b7a96445b1529f2b5a5036eb7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945277980411
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/bundle/bindings.json",
+      "bytes": 1034,
+      "sha256": "18a1a724e14cd8e69cde2d45c0bcb6fbe7c1d799520dc8a0540c40dfbae2adde",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945278198159
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/bundle/compiler-manifest.json",
+      "bytes": 4472,
+      "sha256": "d6a30f36b52e726409179ca68a89b370d50ea51f12a1e47889182efb8b238ba0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945278383573
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/campaigns/food-beverage.json",
+      "bytes": 1447,
+      "sha256": "a3dd5712b03f4967124fea7af2f2ac52199c99c3304fdf996bfae895dc279c20",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945278596821
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/corridor-v2.json",
+      "bytes": 1356,
+      "sha256": "14bd1e8153d1b7f1dde20d43942d5dff9b574f627b12ba78d540d5d68dd5c721",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945278763068
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/restaurant-v2.json",
+      "bytes": 2085,
+      "sha256": "aec9fc270746071eab8f87672f5c9e7b3d46f47e1c812563d9d5e7310dd99203",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945278988149
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/scenarios/fd03-crossing.json",
+      "bytes": 1102,
+      "sha256": "8c5fc1467814f1abecdf5f904b10d196d3c62dc48323f65e476654c00e103a80",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945279232146
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/scenarios/fd04-blocked.json",
+      "bytes": 746,
+      "sha256": "f2982ff39c29d5b58e5741736c2def84301f8b6689f703e58fee63f75aa33ac5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945279415186
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/scenarios/fd07-corridor.json",
+      "bytes": 406,
+      "sha256": "c9190d194a4e6a3cf248d1f43810d68522ade04ab752adcb0341e6db23956c02",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945279574267
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/scenarios/fd08-localization.json",
+      "bytes": 459,
+      "sha256": "c12f879addcd1df1f9e0da25f5fbd61dba8445cb82fd597d0f976c3fe0ad84e4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945279732932
+    },
+    {
+      "path": "source/tests/fixtures/digital-twin/sil/bv01.json",
+      "bytes": 3552,
+      "sha256": "cf6f57c9550d293be3696bb4db5cdab4bc6abbe82f5a2c81ca774e0636d73298",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787945279943971
+    }
+  ],
+  "directories": [
+    "inputs",
+    "lab",
+    "runtime",
+    "schemas",
+    "source",
+    "source/integrations",
+    "source/integrations/arm-controller",
+    "source/integrations/arm-controller/bridge",
+    "source/integrations/arm-controller/configs",
+    "source/integrations/arm-controller/configs/sim",
+    "source/integrations/arm-controller/configs/sim/puma560",
+    "source/integrations/arm-controller/models",
+    "source/integrations/arm-controller/models/puma560-reference",
+    "source/integrations/arm-controller/models/puma560-reference/origin",
+    "source/integrations/arm-controller/packaging",
+    "source/integrations/arm-controller/packaging/systemd",
+    "source/integrations/arm-controller/programs",
+    "source/integrations/arm-controller/scripts",
+    "source/robotics",
+    "source/robotics/agent",
+    "source/robotics/agent/mekoniq_agent",
+    "source/robotics/algorithm",
+    "source/robotics/algorithm/algorithm_checks",
+    "source/robotics/manipulation",
+    "source/robotics/manipulation/native_xarm",
+    "source/robotics/manipulation/profiles",
+    "source/robotics/manipulation/vendor-source",
+    "source/robotics/manipulation/vendor-source/uf_ros_lib",
+    "source/robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib",
+    "source/robotics/manipulation/vendor-source/xarm_controller",
+    "source/robotics/manipulation/vendor-source/xarm_controller/config",
+    "source/robotics/manipulation/vendor-source/xarm_description",
+    "source/robotics/manipulation/vendor-source/xarm_description/urdf",
+    "source/robotics/manipulation/vendor-source/xarm_description/urdf/common",
+    "source/robotics/manipulation/vendor-source/xarm_description/urdf/gripper",
+    "source/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6",
+    "source/robotics/manipulation/vendor-source/xarm_gazebo",
+    "source/robotics/manipulation/vendor-source/xarm_gazebo/launch",
+    "source/robotics/manipulation/vendor-source/xarm_moveit_config",
+    "source/robotics/manipulation/vendor-source/xarm_moveit_config/launch",
+    "source/robotics/model-validation",
+    "source/robotics/model-validation/linkforge_worker",
+    "source/robotics/navigation",
+    "source/robotics/navigation/config",
+    "source/robotics/navigation/launch",
+    "source/robotics/navigation/maps",
+    "source/robotics/navigation-2d",
+    "source/robotics/navigation-2d/campaigns",
+    "source/robotics/navigation-2d/fixtures",
+    "source/robotics/navigation-2d/fixtures/serve-demo-v1",
+    "source/robotics/navigation-2d/irsim_worker",
+    "source/robotics/simulation",
+    "source/robotics/simulation/actors",
+    "source/robotics/simulation/bridge",
+    "source/robotics/simulation/collision",
+    "source/robotics/simulation/compiler",
+    "source/robotics/simulation/fixtures",
+    "source/robotics/simulation/fixtures/engineering-navigation-v1",
+    "source/robotics/simulation/launch",
+    "source/robotics/simulation/metrics",
+    "source/robotics/simulation/profiles",
+    "source/robotics/simulation/worlds",
+    "source/robotics/simulation-3d",
+    "source/robotics/simulation-3d/campaigns",
+    "source/robotics/simulation-3d/fixtures",
+    "source/robotics/simulation-3d/fixtures/arm-ref-3d-v1",
+    "source/robotics/simulation-3d/fixtures/serve-3d-v1",
+    "source/robotics/simulation-3d/webots_worker",
+    "source/robotics/simulation-mujoco",
+    "source/robotics/simulation-mujoco/campaigns",
+    "source/robotics/simulation-mujoco/fixtures",
+    "source/robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1",
+    "source/robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1",
+    "source/robotics/simulation-mujoco/fixtures/serve-payload-v1",
+    "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1",
+    "source/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/blobs",
+    "source/robotics/simulation-mujoco/mujoco_worker",
+    "source/robotics/simulation-mujoco/profiles",
+    "source/tests",
+    "source/tests/fixtures",
+    "source/tests/fixtures/digital-twin",
+    "source/tests/fixtures/digital-twin/arm",
+    "source/tests/fixtures/digital-twin/assets",
+    "source/tests/fixtures/digital-twin/bundle",
+    "source/tests/fixtures/digital-twin/campaigns",
+    "source/tests/fixtures/digital-twin/scenarios",
+    "source/tests/fixtures/digital-twin/sil"
+  ],
+  "declaredDependencySymlinks": []
+}

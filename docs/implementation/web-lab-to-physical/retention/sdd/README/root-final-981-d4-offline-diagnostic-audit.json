@@ -1,0 +1,221 @@
+{
+  "at": "2026-11-16T01:06:22.841803+00:00",
+  "scope": "Read-only exact diagnostic result/event/DOM/image/own-receipt audit; no runtime or browser rerun by root. Root directly viewed both PNGs.",
+  "identity": {
+    "sourceHead": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "labHead": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+    "sourceStatus": "",
+    "labStatus": ""
+  },
+  "files": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/admission.json",
+      "bytes": 141,
+      "sha256": "e8ab3d3c31fb1d230053c90d386097513386e637fa8e0890b05249e9d1f057a9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/api-path-control.html",
+      "bytes": 77104,
+      "sha256": "dd18499a5d9e4df702647b14aade19ec5d667da99c65c909c0ab912ca9e9ecb5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/api-path-control.json",
+      "bytes": 29441,
+      "sha256": "1278f991a32086344d173290f055180f83e20b98ada7995126bd9c06354957f5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/api-path-control.png",
+      "bytes": 18383,
+      "sha256": "059018b25c69859c0db2931c07ed4dc00debb359f01a5b51b3cf8ab1bb071eaf"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/cleanup.json",
+      "bytes": 152,
+      "sha256": "a7f97d0016bae622c30255523299fd97a76c70efc113e70ea9ac2bf4eff8bf95"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/invocation.json",
+      "bytes": 636,
+      "sha256": "5384e2aa4a79f36b711021c69bbd10aa7e99e3b1646de677a5e7770d7645fc5b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/original-blanket.html",
+      "bytes": 760,
+      "sha256": "df57049c1594538d182b613626a07bc187f1293321333805708c9e6eb6bfe6fb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/original-blanket.json",
+      "bytes": 5060,
+      "sha256": "56e047dcf1502a2f4c3fe499acfce151cc96f4d7aed9d3b5c5fea3c76b08c505"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/original-blanket.png",
+      "bytes": 4258,
+      "sha256": "d0c798eead52ffd055d1118f8ed01e50d6d236d0a86d44243b182c5f10fc52f7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs/result.json",
+      "bytes": 39739,
+      "sha256": "039c7bcd3bfd0420b6206bbe65d3dd05121b5be0b62ad5b129c3989fb93cf8c5"
+    }
+  ],
+  "caller": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/offline-vite-diagnostic-cjs.mjs",
+    "bytes": 4581,
+    "sha256": "d9bb0b005c703c3471c3ca0fcf12667be3cd21bc749a056d330bf05b937621b5"
+  },
+  "admission": {
+    "serverListeningAt": "2026-11-16T01:02:55.183Z",
+    "browserLaunchedAt": "2026-11-16T01:02:55.842Z",
+    "browserVersion": "157.0.8103.78"
+  },
+  "observations": {
+    "blanketPattern": "**/lab/**",
+    "actualAbortedURL": "http://127.0.0.1:4175/@fs/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/vite@7.3.1_@types+node@24.19.2/node_modules/vite/dist/client/env.mjs",
+    "abortedCount": 2,
+    "blanketDOM": {
+      "url": "http://127.0.0.1:4175/#replay",
+      "hash": "#replay",
+      "replaySummaryCount": 0,
+      "bodyText": "\n    \n    \n  \n\n"
+    },
+    "blanketConsole": [
+      {
+        "atEpochMs": 1794790976056,
+        "kind": "console",
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      },
+      {
+        "atEpochMs": 1794790976057,
+        "kind": "console",
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      }
+    ],
+    "blanketWaitError": "TimeoutError: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.replay-files>summary') to be visible\u001b[22m\n",
+    "controlRule": "URL pathname startsWith /lab/",
+    "controlDOM": {
+      "url": "http://127.0.0.1:4175/#replay",
+      "hash": "#replay",
+      "replaySummaryCount": 1,
+      "bodyText": "\n    MEKONIQ LabChạy thửXem mẫuVIJAEN\n  Chọn câu chuyệnChọn mẫu đã ghiGiao cà phêCốc rơi do tác độngTác động lên cốc di độngGói replayNhập thư mục góiHủy tảiXuất ZIP · giải nén để nhậpChọn vật thể—Tự theo phaChi tiết vật lý\n  Mô phỏng · chỉ đọc · chưa hiệu chuẩn\n  \n    \n  \n\n"
+    },
+    "controlConsole": [
+      {
+        "atEpochMs": 1794790991246,
+        "kind": "console",
+        "type": "debug",
+        "text": "[vite] connecting..."
+      },
+      {
+        "atEpochMs": 1794790991251,
+        "kind": "console",
+        "type": "debug",
+        "text": "[vite] connected."
+      }
+    ],
+    "controlAbortedCount": 0,
+    "controlRequestFailures": 0,
+    "controlPageErrors": 0,
+    "imagesViewed": "Original is blank dark; control shows MEKONIQ header/language tabs/replay picker and package control. No recording imported in this diagnostic."
+  },
+  "cleanup": {
+    "finishedAt": "2026-11-16T01:03:11.866Z",
+    "browserClosed": true,
+    "serverClosed": true,
+    "ownedResourcesOnly": true,
+    "runtimeStarted": false
+  },
+  "attemptReceipts": [
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic-api.receipt.json",
+        "bytes": 4715,
+        "sha256": "e4fcb7d076896f013c4435bb1cbb51bf9da6154c4a116b25b5e32ce063e94bf9"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic-api.log",
+        "bytes": 920,
+        "sha256": "96afee84f7cd5e8c952873b3d8848d9ccb56b204e3f9f79bfba32e445051047f"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/offline-vite-diagnostic-api.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-16T01:00:55.510Z",
+      "finishedAt": "2026-11-16T01:00:56.131Z",
+      "exitCode": 1,
+      "signal": null
+    },
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic-cjs.receipt.json",
+        "bytes": 4715,
+        "sha256": "94707d96a18c34c8ff22ffaa37d4b611f4e456330a5cee254074acdd61892dde"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic-cjs.log",
+        "bytes": 1222,
+        "sha256": "c07fd39be5094514411cb58192556ca66889a8ac888056028af395c901c0e850"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/offline-vite-diagnostic-cjs.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-16T01:02:54.497Z",
+      "finishedAt": "2026-11-16T01:03:11.881Z",
+      "exitCode": 0,
+      "signal": null
+    },
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic.receipt.json",
+        "bytes": 4711,
+        "sha256": "4752ff339aae1c59644f4c5997362a9d90d7deaf716f593c65c7dc84525f0f70"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/offline-vite-diagnostic.log",
+        "bytes": 917,
+        "sha256": "4824de2feaa7f4869c9d325572d1adc4defb4ba1f5005ea4f29dba63494ba70d"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 180; exec @ARGV",
+        "node",
+        ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/offline-vite-diagnostic.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-16T01:00:22.649Z",
+      "finishedAt": "2026-11-16T01:00:22.831Z",
+      "exitCode": 1,
+      "signal": null
+    }
+  ],
+  "normalActiveDependencyLayout": {
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "nodeModulesIsSymlink": false,
+    "actualEnvModule": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/vite@7.3.1_@types+node@24.19.2/node_modules/vite/dist/client/env.mjs",
+      "bytes": 612,
+      "sha256": "98339370fa9a7f50c9debe091db27248cbb7280e29cc9770d214e6dfa7b6f73a"
+    },
+    "resolvedWithinLab": true
+  },
+  "conclusion": "The blanket denial demonstrably blocks the isolated Vite external-filesystem module and prevents the replay entry from mounting; narrowing only the diagnostic route allows it to mount. This supports a caller/dependency-layout explanation and one normal-layout unchanged full stock run. It is not a qualification, proof of all replay behavior, or retrospective observation of the original failed browser request. Two caller setup failures remain separate actual own1 attempts; the second briefly started Vite without Chromium."
+}

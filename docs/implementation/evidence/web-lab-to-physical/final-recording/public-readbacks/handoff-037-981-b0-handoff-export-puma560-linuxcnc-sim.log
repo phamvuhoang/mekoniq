@@ -1,0 +1,41 @@
+{
+  "prepared": true,
+  "nativeReady": false,
+  "issues": [
+    {
+      "code": "PACKAGE_LOCK_UNRESOLVED",
+      "path": "/profile/requiredPackages/0",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "SOURCE_LOCK_UNRESOLVED",
+      "path": "/profile/installation/sources",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "HOST_INVENTORY_MISSING",
+      "path": "/inventory",
+      "severity": "prerequisite"
+    }
+  ],
+  "subject": {
+    "id": "final-prepared-puma560-linuxcnc-sim",
+    "executionKind": "linuxcnc_native",
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "labCommit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "portableClosureHash": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+    "nativeClosureHash": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634",
+    "runtimeArtifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+    "profileSha256": "1cece2cd5ae154713bc7e8493cae8e6b9e90777db3d0a44d30bd5ae0b239f702",
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "toolSha256": "d346b48d8c0af721dcfbdd3fcac6153b869d161552df9e85da197d568a28d2f3"
+  },
+  "inventoryAssessment": "supplied_records_only",
+  "qualification": "not_run",
+  "accepted": false,
+  "dynamics": "not_calibrated"
+}

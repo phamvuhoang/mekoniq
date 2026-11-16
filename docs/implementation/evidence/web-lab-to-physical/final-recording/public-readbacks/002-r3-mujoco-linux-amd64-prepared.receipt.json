@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/verify-r3.mjs",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/229efa7/r3-mujoco-linux-amd64-prepared"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "sourceCommit": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T00:31:30.954088+00:00",
+  "finishedAt": "2026-11-16T00:31:31.842738+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "002-r3-mujoco-linux-amd64-prepared.log",
+  "logBytes": 183,
+  "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+  "expectedHistoricalDisposition": "Original subject/status preserved; malformed/negative or partial candidates may correctly refuse",
+  "scope": "Public retained-data readback only, extracted copies; no campaign/native/engine execution or status rewriting"
+}

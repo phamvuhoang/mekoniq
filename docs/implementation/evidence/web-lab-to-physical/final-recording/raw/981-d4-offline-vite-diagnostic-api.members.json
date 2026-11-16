@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T01:46:18.341105+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-api",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-offline-vite-diagnostic-api.tar.gz",
+  "archiveBytes": 555,
+  "archiveSha256": "59aaeb3e8940c4734b1e8c0deda94fe36880a78bf8d791c07830d492490f2343",
+  "memberCount": 2,
+  "memberBytes": 789,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "cleanup.json",
+      "bytes": 153,
+      "sha256": "6b489b0b399c0e4046c4ac604c6e443f369e3178df51ced7b9e95fb69565eea1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790856121456633
+    },
+    {
+      "path": "invocation.json",
+      "bytes": 636,
+      "sha256": "f0c462ff01be1153a2a2f879a06b3839c5abd862ea4cc8274c3f6111eeb3f131",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790856008497593
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

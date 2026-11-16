@@ -1,0 +1,797 @@
+{
+  "at": "2026-11-16T01:32:32.139167+00:00",
+  "scope": "Read-only audit of exact declared supplemental table, actual own receipts/raw test results and both preserved newly owned defaults; no test rerun or qualification status splice.",
+  "kind": "r2b",
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/table.json",
+      "bytes": 2866,
+      "sha256": "b7ad24392f005ba3aa34ad67af5bb0a6823fc3b25c7c6c659185b009080ac305"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/execution-index.json",
+      "bytes": 13358,
+      "sha256": "efe778c59856d403116d59e578fc4923747b8949b45929d8ebe64aca8673510c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/row-coverage.json",
+      "bytes": 366,
+      "sha256": "ad0849effdf4f1b4e2021d78842f4c7b5ea51ea57932421ada8a1b620e1ec196"
+    }
+  ],
+  "tableSource": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/scripts/sim-extension-qualification.mjs",
+    "bytes": 30885,
+    "sha256": "b2e1ea4d1eb532d059798fb693152661e2aa6bac224e0bbbe8d62e4ab7ac046a"
+  },
+  "parentReceipt": {
+    "file": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplemental-current-gui.receipt.json",
+      "bytes": 4939,
+      "sha256": "f416e1680643762330cbbf44d7f83dc42322180bbe6fc5baafef646644e80fe5"
+    },
+    "log": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplemental-current-gui.log",
+      "bytes": 19890,
+      "sha256": "76352bf955c864895dd350df298c7d85af76015ada4872b14dcb81a678ee6cff"
+    },
+    "argv": [
+      "caffeinate",
+      "-dims",
+      "perl",
+      "-e",
+      "alarm 18000; exec @ARGV",
+      "node",
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/supplement-tables-current-gui.mjs",
+      "r2b"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "startedAt": "2026-11-16T01:16:24.031Z",
+    "finishedAt": "2026-11-16T01:28:43.929Z",
+    "exitCode": 0,
+    "signal": null,
+    "before": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "status": "",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changed": []
+    },
+    "after": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "status": "",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changed": []
+    }
+  },
+  "rows": [
+    {
+      "id": "mj-contracts",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-contracts.json",
+            "bytes": 6387,
+            "sha256": "8d2d2cd45c590823712b9b0ac22fcdb9c75c73d1b1d3e1c20c2b78ab6f52a270"
+          },
+          "actual": {
+            "passed": 22,
+            "failed": 0,
+            "notRun": 0,
+            "total": 22,
+            "rawStatusCounts": {
+              "passed": 22
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-contracts.receipt.json",
+          "bytes": 5531,
+          "sha256": "421643379df74188305a127116d2ca4cd81f74e5cee09f053375734f03f97466"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-contracts.log",
+          "bytes": 594,
+          "sha256": "c86257d57508845e6561d0781ddb181323ac3378f9866102b971e6b79fd9858d"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/contracts/mujoco-payload.test.ts",
+          "tests/unit/payload-fixture.test.ts",
+          "tests/unit/payload-experiments.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-contracts.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:16:24.273Z",
+        "finishedAt": "2026-11-16T01:16:25.675Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "mj-worker",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-worker.json",
+            "bytes": 10010,
+            "sha256": "dcaf94aa09c59373a0bceccc5aaec7623b61c7fa77bcfd2d7730f66f15f0acf5"
+          },
+          "actual": {
+            "passed": 29,
+            "failed": 0,
+            "notRun": 0,
+            "total": 29,
+            "rawStatusCounts": {
+              "passed": 29
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-worker.receipt.json",
+          "bytes": 5562,
+          "sha256": "27e9de6ec178665c91beab94040aee07b1c94ea10d1b87c4f962f5aea0e10648"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-worker.log",
+          "bytes": 4798,
+          "sha256": "2767e93cb1c7ca515f68a28ce9194bdd66df328496a48e3fdff44a76778d3d69"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-mobile-worker.test.ts",
+          "tests/integration/mujoco-mobile-lifecycle.test.ts",
+          "tests/integration/mujoco-mobile-readiness.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-worker.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:16:25.995Z",
+        "finishedAt": "2026-11-16T01:17:16.868Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "mj-evidence",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 1,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-evidence.json",
+            "bytes": 5389,
+            "sha256": "53de08b3b564129d846f8b01210d51734b266e8f0b6b00e665be48af23044e35"
+          },
+          "actual": {
+            "passed": 10,
+            "failed": 0,
+            "notRun": 4,
+            "total": 14,
+            "rawStatusCounts": {
+              "skipped": 4,
+              "passed": 10
+            },
+            "notPassed": [
+              {
+                "name": "no route reads a body larger than its own limit: 413 before any parsing or work",
+                "status": "skipped"
+              },
+              {
+                "name": "hostile JSON is refused cleanly: duplicate keys, absurd nesting, prototype pollution, non-objects",
+                "status": "skipped"
+              },
+              {
+                "name": "signed webhooks: an oversized body is refused before the signature work; a bad signature never reaches the parser",
+                "status": "skipped"
+              },
+              {
+                "name": "amount and quantity fields are decimal strings: floats, exponents, negatives and huge numbers are refused",
+                "status": "skipped"
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-evidence.receipt.json",
+          "bytes": 5534,
+          "sha256": "a5e22ab0145f5b87645acfeea8dc5110f7aa270e2684615e0d8a33b907aa0330"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-mj-evidence.log",
+          "bytes": 3737,
+          "sha256": "7e305bb139179b27cb9534302716291dd2bea6f500fbb18c5aa462e8d2f8bce6"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-payload-campaign.test.ts",
+          "tests/unit/physics-evidence.test.ts",
+          "tests/security/payload.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/mj-evidence.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:17:17.286Z",
+        "finishedAt": "2026-11-16T01:23:32.584Z",
+        "exitCode": 1,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "cell-contracts",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/cell-contracts.json",
+            "bytes": 14023,
+            "sha256": "c18c02e443e5371bc9895f3c8c7e5f7d385fa67ed256870d56c4bc7422a72630"
+          },
+          "actual": {
+            "passed": 49,
+            "failed": 0,
+            "notRun": 0,
+            "total": 49,
+            "rawStatusCounts": {
+              "passed": 49
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-cell-contracts.receipt.json",
+          "bytes": 5615,
+          "sha256": "2af47b873a9ef16f0fc6a2b78193ef48f2944eb2fc9b19ce4d19493dc24afa6a"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-cell-contracts.log",
+          "bytes": 943,
+          "sha256": "9375c355291bf7b6651ec9d117a49a6ebfa67b1091fcecc225abdcd8d6de1042"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/world-scene.test.ts",
+          "tests/unit/world-control.test.ts",
+          "tests/unit/world-handoff-policy.test.ts",
+          "tests/unit/world-sweep.test.ts",
+          "tests/security/mujoco-world-authority.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/cell-contracts.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:23:33.020Z",
+        "finishedAt": "2026-11-16T01:23:37.704Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "cell-runtime",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/cell-runtime.json",
+            "bytes": 7389,
+            "sha256": "b3049758cd3227d85f70fa4a24e938ce0d54b0d7ee5a48ccf619b7dc2a48f2a4"
+          },
+          "actual": {
+            "passed": 19,
+            "failed": 0,
+            "notRun": 0,
+            "total": 19,
+            "rawStatusCounts": {
+              "passed": 19
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-cell-runtime.receipt.json",
+          "bytes": 5502,
+          "sha256": "e67b0ef034175cd9c00f886241c9bb3c0cb4c1e484dc240ab9ed56cf6d0973f9"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-cell-runtime.log",
+          "bytes": 2517,
+          "sha256": "257d97644688618855baed8e5741f4943cfcd23fc688a9ae0015998f5291025b"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-world-rig.test.ts",
+          "tests/integration/mujoco-cell-readiness.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/cell-runtime.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:23:38.018Z",
+        "finishedAt": "2026-11-16T01:26:52.628Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "web-evidence",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/web-evidence.json",
+            "bytes": 10733,
+            "sha256": "8f3d9719d03eb10b3e16c1358e38cc4344f33d64a8f5c06f6e364fd296bf19ba"
+          },
+          "actual": {
+            "passed": 30,
+            "failed": 0,
+            "notRun": 0,
+            "total": 30,
+            "rawStatusCounts": {
+              "passed": 30
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-web-evidence.receipt.json",
+          "bytes": 5583,
+          "sha256": "c1ba511b5373cd9b1f77de2a71377169a0321eda251d5160ec5fb51b3b441fd4"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-web-evidence.log",
+          "bytes": 1861,
+          "sha256": "47a4c0eb37702848d15ae5635da3c2d0134f628b98baa4e358c4373c4b4027a3"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/web-replay-reader.test.ts",
+          "tests/unit/web-replay-capture.test.ts",
+          "tests/security/web-replay-export.test.ts",
+          "tests/security/web-replay-gateway.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/web-evidence.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:26:53.031Z",
+        "finishedAt": "2026-11-16T01:28:07.502Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "web-ui",
+      "repo": "lab",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/web-ui.json",
+            "bytes": 6606,
+            "sha256": "94ea603891384ece0ada02c6678fd12b97cb75d788bd1d95e9a0eccfdb7f722f"
+          },
+          "actual": {
+            "passed": 18,
+            "failed": 0,
+            "notRun": 0,
+            "total": 18,
+            "rawStatusCounts": {
+              "passed": 18
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-web-ui.receipt.json",
+          "bytes": 5518,
+          "sha256": "ae9e74d1df7adb78ef1e9b9bdb27d2df2f8a906f81f2f548e10bc99d4b8e655b"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-web-ui.log",
+          "bytes": 581,
+          "sha256": "a6d8ce1e1a67af260326a1a535bdb58ffd1c98a67ec3b0ec70b6b5b81fb0e0b2"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/world-view.test.ts",
+          "tests/unit/replay-transport.test.ts",
+          "tests/unit/workspace-replay-freshness.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/web-ui.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:28:07.882Z",
+        "finishedAt": "2026-11-16T01:28:08.864Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "web-container",
+      "status": "not_run",
+      "reason": "Latest actual Docker admission unavailable; no repeated probe/build or borrowed image/service receipt absent state change"
+    },
+    {
+      "id": "semantic",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/semantic.json",
+            "bytes": 8451,
+            "sha256": "1a6038750a56a9706a3a15b29032f87ee72b709ee806688b29785777257d6375"
+          },
+          "actual": {
+            "passed": 27,
+            "failed": 0,
+            "notRun": 0,
+            "total": 27,
+            "rawStatusCounts": {
+              "passed": 27
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-semantic.receipt.json",
+          "bytes": 5434,
+          "sha256": "92a9c8e4b5161148b87ef28e7147ca65cf765e7a9673f26c761492104a790ca0"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-semantic.log",
+          "bytes": 563,
+          "sha256": "37ac1fb0b1fdd34399999c7d47454f00ed738e0d8bc438f1e0b0af0faa42e3d3"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/semantic-study.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/semantic.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:28:09.148Z",
+        "finishedAt": "2026-11-16T01:28:12.204Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "r2b-regression",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/r2b-regression.json",
+            "bytes": 22500,
+            "sha256": "95f2b37be6ecba228d26a0fedbd56d3ca045877bea387a37131bc52826b319d0"
+          },
+          "actual": {
+            "passed": 59,
+            "failed": 0,
+            "notRun": 0,
+            "total": 59,
+            "rawStatusCounts": {
+              "passed": 59
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-r2b-regression.receipt.json",
+          "bytes": 5605,
+          "sha256": "c2946c7a7b02c22359de05a3dd625aee3f024db05c508d9d5fecdba0fda5dc79"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2b-supplement-r2b-regression.log",
+          "bytes": 4036,
+          "sha256": "be23eaf123e35f2b2c414920141cfab66392b8174fc72ff98d08e4a96e679831"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/bv01-mock-golden.test.ts",
+          "tests/integration/portable-tool-closure.test.ts",
+          "tests/integration/lab-runtime-artifact.test.ts",
+          "tests/unit/sim-extension-qualification.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui/suites/r2b-regression.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:28:12.525Z",
+        "finishedAt": "2026-11-16T01:28:43.781Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    }
+  ],
+  "totals": {
+    "tableRows": 10,
+    "ownZeroRows": 8,
+    "ownOneRows": 1,
+    "notRunRows": 1
+  },
+  "limits": [
+    "Supplemental observations never replace the genuine partial R2a record or its failed public guards.",
+    "Skipped individual cases and unavailable container rows remain not_run; overlapping suites and repeated invocations are not summed as unique test definitions.",
+    "Existing dependency reuse and sampled clean boundaries do not establish installation, native host, hardware, calibration or human acceptance.",
+    "Historical active default-output deviation stays disclosed separately; this audit checks only the current helper-owned copies and originals."
+  ]
+}

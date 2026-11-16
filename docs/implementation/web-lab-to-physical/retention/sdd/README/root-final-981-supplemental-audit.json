@@ -1,0 +1,368 @@
+{
+  "schema": "root-read-only-supplemental-audit/1",
+  "auditedAt": "2026-11-15T17:43:08.884119+00:00",
+  "receipts": [
+    {
+      "name": "source-contracts-final",
+      "sha256": "d4c45a380f16bb3534e3e256138368fd82b710149c05cdcef8a7757429469036",
+      "logSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:16:23.549Z",
+      "finishedAt": "2026-11-15T17:16:24.245Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "pnpm",
+        "contracts:check"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "source-type-final",
+      "sha256": "25a075992af42bb8da3bad8a2eae75144ce90913b49965e1bdb90b850d66af1e",
+      "logSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:16:24.561Z",
+      "finishedAt": "2026-11-15T17:16:33.638Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "typecheck"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "source-lint-final",
+      "sha256": "88f66d0ac9efe9cb481674011b6d91faddca44123fba745f6ee01102d3a708ca",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:16:33.982Z",
+      "finishedAt": "2026-11-15T17:16:41.618Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "exec",
+        "eslint",
+        ".",
+        "--ignore-pattern",
+        ".superpowers/**"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "source-build-final",
+      "sha256": "0ac84389ae30475f4b9671575a28ae1ddb45f9ce33c37cd1a05ec9daf64e8a49",
+      "logSha256": "b1828160294c2420acc050ce8bf3aaf37c2d0a21a745ce72b431fdb7cbffb8de",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:16:41.946Z",
+      "finishedAt": "2026-11-15T17:17:04.731Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 900; exec @ARGV",
+        "pnpm",
+        "build"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "mock-acceptance",
+      "sha256": "0c6b859f2a07b7b22eabac348bda7497f94d9489cb0360c1cb29b2527af2c716",
+      "logSha256": "450c23ff97f04b0c13f79f7860b3e9b969d81e8d4c64459a8fc3020bef8ea69a",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:35:49.547Z",
+      "finishedAt": "2026-11-15T17:37:19.854Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 3600; exec @ARGV",
+        "env",
+        "LAB_V2_REGRESSION_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-regression",
+        "LAB_V2_REQUIRE_LAB_FIXTURES=1",
+        "LAB_V2_MOCK_EVIDENCE=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-acceptance-evidence.json",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/acceptance/lab-v2-mock.acceptance.test.ts",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-acceptance-tests.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "opt-in-source-stream",
+      "sha256": "6c9e0a0812500ad2b028586e08f40ec1a77d382740ff0bf6280d99b114d607db",
+      "logSha256": "44aa198bf826da9d29e7ce5d042df29c0b2ea9421546e7603bc22d090327e20d",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:37:20.187Z",
+      "finishedAt": "2026-11-15T17:37:31.060Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 400; exec @ARGV",
+        "env",
+        "LAB_V2_MEASURE=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/stream-measurement.json",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/lab-v2-stream.test.ts",
+        "-t",
+        "measure telemetry latency",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/stream-measurement-tests.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "opt-in-lab-twin",
+      "sha256": "93c628bbfae78bab1b9fbffc0dd49ea1b2b2da568b6146a38ce05ab623a016a5",
+      "logSha256": "439438d2a93cf34d7619ce57e5aab751593bfba94bf1297024d0856c94ac4c0a",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:37:31.374Z",
+      "finishedAt": "2026-11-15T17:37:31.962Z",
+      "commit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "env",
+        "LAB_TWIN_MEASURE=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/twin-store-measurement.json",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/integration/twin-telemetry-measure.test.ts",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/twin-store-measurement-tests.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab"
+    },
+    {
+      "name": "source-adapters",
+      "sha256": "211f12c535016cd5665ba368249eedf1c83ddd1e0c8c1d83bb40d273aabca253",
+      "logSha256": "13a71e363d2696ddd90d43f8d4ed8d804b7eabc7e8b1617a55333a7e996e49f4",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:37:32.244Z",
+      "finishedAt": "2026-11-15T17:37:34.201Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/adapters",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/source-adapters.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "source-pytest-ci",
+      "sha256": "29c7a077a21f348c4d872935769fa57b57f484ec7bb9329e5f9e6be43bcb96f0",
+      "logSha256": "c5cfb93c6ccf4bc71eadf6fb1f761df74a81770ef4af10cf68c1da2ffdd06bf5",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:37:34.522Z",
+      "finishedAt": "2026-11-15T17:37:35.787Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 600; exec @ARGV",
+        "env",
+        "PYTHONPATH=robotics/agent",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+        "-m",
+        "pytest",
+        "robotics/agent/tests",
+        "tests/hardware",
+        "tests/contracts/test_schema_python.py",
+        "-q",
+        "--junitxml=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/source-pytest-ci.xml"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    },
+    {
+      "name": "source-security",
+      "sha256": "6ec8ebce7cce265db484517441987a63927f8ab7997ecd4d2516b9652ee8c963",
+      "logSha256": "4034756667de51c42c962dc9f63559f0c99ee36524c6a4073e94744ea1d4214e",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-11-15T17:37:36.099Z",
+      "finishedAt": "2026-11-15T17:39:54.627Z",
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 3600; exec @ARGV",
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "tests/security",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/source-security.json"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source"
+    }
+  ],
+  "results": [
+    {
+      "file": "mock-acceptance-tests.json",
+      "bytes": 15861,
+      "sha256": "980768c6f3c187669bffdf81fa5f99f82aecd3e5c710460353426edbe013dca0",
+      "rawAssertionCounts": {
+        "passed": 41
+      },
+      "failedFiles": [],
+      "reportedSuccess": true
+    },
+    {
+      "file": "stream-measurement-tests.json",
+      "bytes": 5635,
+      "sha256": "df968bf1b4e2b7f02816a05a26dc3c8108c1d1cfea3f24c9e7b80de6d947b6a7",
+      "rawAssertionCounts": {
+        "skipped": 14,
+        "passed": 1
+      },
+      "failedFiles": [],
+      "reportedSuccess": true
+    },
+    {
+      "file": "twin-store-measurement-tests.json",
+      "bytes": 995,
+      "sha256": "4e30c6ce5a9817fe6f2b6afd4346a6719029dbac125def1a1cf940e0c74e8010",
+      "rawAssertionCounts": {
+        "passed": 1
+      },
+      "failedFiles": [],
+      "reportedSuccess": true
+    },
+    {
+      "file": "source-adapters.json",
+      "bytes": 20714,
+      "sha256": "8e85aaacca252aff3a382b2bb24650f8e7ba7523abf3ed22fd9be4d36cf41fc0",
+      "rawAssertionCounts": {
+        "passed": 50
+      },
+      "failedFiles": [],
+      "reportedSuccess": true
+    },
+    {
+      "file": "source-security.json",
+      "bytes": 61271,
+      "sha256": "e82a0eb20772f7792cc6aa0854da96be13d57f5a43c893d1a9a6f4315c5b158c",
+      "rawAssertionCounts": {
+        "passed": 175,
+        "skipped": 14
+      },
+      "failedFiles": [
+        {
+          "name": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/guest.test.ts",
+          "message": "OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient",
+          "tests": 2
+        },
+        {
+          "name": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/payload.test.ts",
+          "message": "OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient",
+          "tests": 4
+        },
+        {
+          "name": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/session.test.ts",
+          "message": "OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient",
+          "tests": 3
+        },
+        {
+          "name": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/security/tenant-escape.test.ts",
+          "message": "OWNED_TEST_SERVICE_REQUIRED: run through scripts/owned-source-ci.mjs; a scratch DB alone is insufficient",
+          "tests": 5
+        }
+      ],
+      "reportedSuccess": false
+    },
+    {
+      "file": "source-pytest-ci.xml",
+      "bytes": 22720,
+      "sha256": "914e75b49d8360fa0833c058621be149d5086c39cb89ebb2c6abc7032164bbd2",
+      "counts": {
+        "passed": 178,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "auxiliaryArtifacts": [
+    {
+      "file": "mock-acceptance-evidence.json",
+      "bytes": 193114,
+      "sha256": "78047b40783d2e3959dd14279fb93e38eb96ce893b1f61ed50f4af146a911d29"
+    },
+    {
+      "file": "stream-measurement.json",
+      "bytes": 1419,
+      "sha256": "ce2a1e07c95e393c5d0c215ae4b022eb6a20c43410746fcfd388aec13abb8a70"
+    },
+    {
+      "file": "twin-store-measurement.json",
+      "bytes": 802,
+      "sha256": "4310a7a077df857719b50a12151defac055f240bb5e21e11fd2edf5ee0e73cbc"
+    }
+  ],
+  "securityDispositionSha256": "65f468903501b76365e455dbd30b6ef354f8bbc47cf057a6f2cec27d28790ad7",
+  "limits": [
+    "Full security command exited1; four prerequisite-refused suite hooks and14skipped tests remain not_run.",
+    "Opt-in targeted test excludes14cases; excluded cases remain not_run in that invocation.",
+    "No service admission, Docker, native Linux, hardware or production physics validation implied.",
+    "No test rerun by root; raw file hashes and result structures independently audited."
+  ]
+}

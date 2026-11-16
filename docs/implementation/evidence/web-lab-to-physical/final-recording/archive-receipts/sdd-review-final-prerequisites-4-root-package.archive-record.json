@@ -1,0 +1,15 @@
+{
+  "id": "sdd-review-final-prerequisites-4-root-package",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package",
+  "archive": "sdd-review-final-prerequisites-4-root-package.tar.gz",
+  "archiveBytes": 14440,
+  "archiveSha256": "f3838963f592edc3c5a54ead01ff362a70d3e6d68f9d11934cdd8317801b1f2d",
+  "memberIndex": "sdd-review-final-prerequisites-4-root-package.members.json",
+  "memberIndexSha256": "be08c204c09956017415c694afb0c4f51617c0fde9a45d85e630bff4ee90257a",
+  "memberCount": 4,
+  "memberBytes": 46948,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/sdd-review-final-prerequisites-4-root-package.extract.json",
+  "safeExtractionReceiptSha256": "9dbc50eaafc6f3b65cd3ff109ede35f5a4ebe9bb71f18c6d07f8ff38cea5bf16",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/sdd-review-final-prerequisites-4-root-package",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

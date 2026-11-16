@@ -1,0 +1,142 @@
+{
+  "at": "2026-11-16T01:50:53.058994+00:00",
+  "scope": "Read-only verification of original versus extracted whole-R2b public outcomes; no repeat or timeout relaxation.",
+  "files": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/readback-r2b-full.receipt.json",
+      "bytes": 5072,
+      "sha256": "2be597b45f7266a812efd26fe2f544bd1a385deeaf03776032a32c1f0cbbb097"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/readback-r2b-full.log",
+      "bytes": 1333,
+      "sha256": "98c78251b9835a1825f7ed2730f341c583c1a11c711b72251076870567b6c39a"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/extracted-readback-r2b-full.receipt.json",
+      "bytes": 4984,
+      "sha256": "0f982e2b510dd8f75a0b042ca56c0cf8019b42234f7cf23254bf408e31fd2d1b"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/extracted-readback-r2b-full.log",
+      "bytes": 1333,
+      "sha256": "98c78251b9835a1825f7ed2730f341c583c1a11c711b72251076870567b6c39a"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2b-full.receipt.json",
+      "bytes": 5106,
+      "sha256": "d1667c920bc1815361e3d4f7b748b32dbfcdd1563b835079fc51adef97a283a2"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-r2b-full.log",
+      "bytes": 5284,
+      "sha256": "e6cf72184b8444dbfe2f2c95687e4de84b498fdd43ce125aab0f4501d6ce29eb"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/extracted-acceptance-r2b-full.receipt.json",
+      "bytes": 5028,
+      "sha256": "e2a82ece4833af9530709eeea6090fd55027ae90a514e84d9637d9a04ed31de0"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/extracted-acceptance-r2b-full.log",
+      "bytes": 3642,
+      "sha256": "ab9f4baf26f815621eb231140f9a247c4a59b682098ce3677457251fbdbe24f0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/acceptance-r2b-full.json",
+      "bytes": 7011,
+      "sha256": "5f0140a3833746ae331211e4eec5476c55d62fdf23db6e4b38b733128a53cdce"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/extracted-acceptance-r2b-full.json",
+      "bytes": 8709,
+      "sha256": "880f7d90a7bda6f09b75ef0a224334bfee8730c55cb4abc4b19844b3265a435b"
+    }
+  ],
+  "receipts": [
+    {
+      "name": "readback-r2b-full",
+      "exitCode": 1,
+      "startedAt": "2026-11-16T01:44:13.685Z",
+      "finishedAt": "2026-11-16T01:45:05.753Z"
+    },
+    {
+      "name": "extracted-readback-r2b-full",
+      "exitCode": 1,
+      "startedAt": "2026-11-16T01:46:33.466Z",
+      "finishedAt": "2026-11-16T01:47:18.080Z"
+    },
+    {
+      "name": "acceptance-r2b-full",
+      "exitCode": 1,
+      "startedAt": "2026-11-16T01:45:06.771Z",
+      "finishedAt": "2026-11-16T01:45:54.842Z"
+    },
+    {
+      "name": "extracted-acceptance-r2b-full",
+      "exitCode": 1,
+      "startedAt": "2026-11-16T01:47:18.428Z",
+      "finishedAt": "2026-11-16T01:48:05.669Z"
+    }
+  ],
+  "sameAsyncIssues": [
+    "SUITE_FAILED:mj-evidence",
+    "SUITE_FAILED:web-container",
+    "SUITE_RESULT_MISSING:web-container",
+    "R2A:SUITE_MISSING:ma-static",
+    "R2A:SUITE_MISSING:ma-rtb",
+    "R2A:SUITE_MISSING:ma-py",
+    "R2A:SUITE_MISSING:ma-worker",
+    "R2A:SUITE_MISSING:ma-ports",
+    "R2A:SUITE_MISSING:ma-programs",
+    "R2A:SUITE_MISSING:ma-contact",
+    "R2A:SUITE_MISSING:ma-bv01",
+    "R2A:SUITE_MISSING:ma-faults",
+    "R2A:SUITE_MISSING:rt-remote",
+    "R2A:SUITE_MISSING:rt-paced",
+    "R2A:SUITE_MISSING:rt-container",
+    "R2A:SUITE_MISSING:regress",
+    "R2A:SUITE_MISSING:lab-rt-unit",
+    "R2A:SUITE_MISSING:lab-ui-unit",
+    "R2A:SUITE_MISSING:lab-arm-unit",
+    "R2A:SUITE_MISSING:lab-e2e-remote-origin",
+    "R2A:SUITE_MISSING:lab-e2e-twin-layout",
+    "R2A:SUITE_MISSING:lab-e2e-twin-polish",
+    "R2A:SUITE_MISSING:lab-e2e-twin-transport",
+    "R2A:SUITE_MISSING:lab-e2e-twin-workspace",
+    "R2A:SUITE_MISSING:lab-e2e-brand-accessibility",
+    "R2A:SUITE_MISSING:lab-e2e-arm-mesh",
+    "R2A:SUITE_MISSING:lab-e2e-arm-cell",
+    "R2A:SUITE_MISSING:lab-e2e-mujoco-coffee",
+    "R2A:SUITE_MISSING:lab-e2e-mujoco-mesh-fallback",
+    "R2A:SUITE_MISSING:lab-e2e-irsim-journey",
+    "R2A:SUITE_MISSING:lab-e2e-webots-coffee",
+    "R2A_GATE_NOT_TESTED:G-MA1",
+    "R2A_GATE_NOT_TESTED:G-MA2",
+    "R2A_GATE_NOT_TESTED:G-RT1",
+    "R2A_GATE_NOT_TESTED:G-RT2",
+    "R2A_GATE_NOT_TESTED:G-UI1",
+    "R2A_GATE_NOT_TESTED:G-INT4",
+    "CAPTURE_ACTIVE_DRAWING_DURATION",
+    "WEB_PERFORMANCE_TARGETS_NOT_MET",
+    "WEB05_MISSING"
+  ],
+  "acceptanceCounters": [
+    10,
+    2,
+    0
+  ],
+  "extractedFailedAssertions": [
+    {
+      "name": "the record is complete and consistent with every file beside it (fail-closed check shared with the recorder)",
+      "durationMs": 46167.890042,
+      "status": "failed"
+    },
+    {
+      "name": "no gate is accepted by this record, only its own release's gates are named, and every not_run case has a reason (R1: ALG04 is not_run for R3, WB04 carries its limitation)",
+      "durationMs": 3.4084160000056727,
+      "status": "failed"
+    }
+  ],
+  "distinction": "Original integrity assertion failed on the real issue array; extracted integrity assertion hit unchanged 45000ms timeout. Equal aggregate counts do not establish equal assertion outcomes. Native/performance/regression gates remain unqualified."
+}

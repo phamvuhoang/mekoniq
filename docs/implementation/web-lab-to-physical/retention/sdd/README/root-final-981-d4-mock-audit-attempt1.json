@@ -1,0 +1,8 @@
+{
+  "scope": "Root read-only audit implementation attempt, not a producer/test invocation",
+  "exitCode": 1,
+  "error": "KeyError: profiles in synthetic measurement parser",
+  "cause": "Raw measurement stores results; manifest summary exposes profiles. Initial root parser wrongly assumed identical keys.",
+  "inputsChanged": false,
+  "finalAudit": "Will rerun same byte/hash/semantic audit with actual raw measurement results mapping; no producer rerun or status rewriting."
+}

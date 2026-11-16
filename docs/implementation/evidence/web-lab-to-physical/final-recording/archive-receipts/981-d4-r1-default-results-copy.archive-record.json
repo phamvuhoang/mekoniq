@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-r1-default-results-copy",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1-default-results-copy",
+  "archive": "981-d4-r1-default-results-copy.tar.gz",
+  "archiveBytes": 153,
+  "archiveSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+  "memberIndex": "981-d4-r1-default-results-copy.members.json",
+  "memberIndexSha256": "6a27755167a1a2f5f546d51b38ff8c2dec9cff287911c5c4bf41efa656e35afd",
+  "memberCount": 1,
+  "memberBytes": 45,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-r1-default-results-copy.extract.json",
+  "safeExtractionReceiptSha256": "8846a0088521ff8effd4574b16afa20784ffec7502f6c10cd92970844cee69c4",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r1-default-results-copy",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

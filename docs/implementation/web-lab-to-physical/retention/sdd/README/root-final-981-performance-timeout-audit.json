@@ -1,0 +1,183 @@
+{
+  "at": "2026-11-15T22:19:33.120533+00:00",
+  "scope": "Root independently verified9original/frozen byte+mtime pairs and actual incomplete timeout/ownership receipts. No metric-derived gate or reconstructed final result.",
+  "originalInvocation": {
+    "argv": [
+      "caffeinate",
+      "-dims",
+      "perl",
+      "-e",
+      "alarm 1200; exec @ARGV",
+      "pnpm",
+      "exec",
+      "tsx",
+      "../lab/scripts/measure-cell-production.ts",
+      "--exported-runtime",
+      "--out",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance"
+    ],
+    "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source",
+    "startedAt": "2026-11-15T21:55:04.928Z",
+    "finishedAt": "2026-11-15T22:15:05.098Z",
+    "exitCode": null,
+    "signal": "SIGALRM"
+  },
+  "cleanupInitialPids": [
+    50835,
+    50858
+  ],
+  "signalsActuallySent": 0,
+  "cleanupFinalPids": [],
+  "lastTwoExitMechanism": "unobserved",
+  "actualRawFields": {
+    "elapsedMs": 185001,
+    "activeCellMs": 184988.09999961854,
+    "startTick": 140,
+    "endTick": 4430,
+    "clock": {
+      "browserTimeOriginEpochMs": 1794779708979.3,
+      "browserStartMs": 7413.60000038147,
+      "browserEndMs": 192414.60000038147,
+      "startEpochMs": 1794779716392.9001,
+      "endEpochMs": 1794779901393.9001
+    }
+  },
+  "missingFinalArtifacts": [
+    "actual-cell-production.json",
+    "error.txt",
+    "observer-summary.json"
+  ],
+  "files": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/build-identity.json",
+      "bytes": 39681,
+      "sha256": "3b0bccca2488ce0eab815e0a8181001f8aae16919b346ad4250130aae52b69fb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/build-identity.json",
+      "bytes": 39681,
+      "sha256": "3b0bccca2488ce0eab815e0a8181001f8aae16919b346ad4250130aae52b69fb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/capture-raw.json",
+      "bytes": 4811328,
+      "sha256": "16b3b4f668d7f62d14c50becea15c11eb6d4d725a0e9b391e2ef41c320eedaee"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/capture-raw.json",
+      "bytes": 4811328,
+      "sha256": "16b3b4f668d7f62d14c50becea15c11eb6d4d725a0e9b391e2ef41c320eedaee"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/io-diagnostic.json",
+      "bytes": 11268227,
+      "sha256": "1ad5a283880825141be8f6ec3fc42db614bc25c700ad0a776d2863e427db888c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/io-diagnostic.json",
+      "bytes": 11268227,
+      "sha256": "1ad5a283880825141be8f6ec3fc42db614bc25c700ad0a776d2863e427db888c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/live-complete-prefix.zip",
+      "bytes": 11803627,
+      "sha256": "0527871ed129cecbe78ea199ce6f75efe0dda7da32e192e56a02f52d04dbedf0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/live-complete-prefix.zip",
+      "bytes": 11803627,
+      "sha256": "0527871ed129cecbe78ea199ce6f75efe0dda7da32e192e56a02f52d04dbedf0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/post-window-source-event-loop.json",
+      "bytes": 1862,
+      "sha256": "b4b8350aeb509cf57e674ec2a152c868fbcdbbb86862233effa40c5bc4ccc56c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/post-window-source-event-loop.json",
+      "bytes": 1862,
+      "sha256": "b4b8350aeb509cf57e674ec2a152c868fbcdbbb86862233effa40c5bc4ccc56c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/production-active-cell.png",
+      "bytes": 135686,
+      "sha256": "6152fed1067800ff7ca7b81ae13df8d8d365bf34c6906b1b723a5e3d921d2ff1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/production-active-cell.png",
+      "bytes": 135686,
+      "sha256": "6152fed1067800ff7ca7b81ae13df8d8d365bf34c6906b1b723a5e3d921d2ff1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/production-paused-during-export.png",
+      "bytes": 140220,
+      "sha256": "216c7dc691f241a68c61cddafe6e33969ba33c37f46421a347559a760a99f5b0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/production-paused-during-export.png",
+      "bytes": 140220,
+      "sha256": "216c7dc691f241a68c61cddafe6e33969ba33c37f46421a347559a760a99f5b0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/runtime-observer.ndjson",
+      "bytes": 10888640,
+      "sha256": "5109421389fc468b93e498e1a4383ae0a7f6d5cfb1cec37a8c305464e8b16bd0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/runtime-observer.ndjson",
+      "bytes": 10888640,
+      "sha256": "5109421389fc468b93e498e1a4383ae0a7f6d5cfb1cec37a8c305464e8b16bd0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance/source-event-loop.json",
+      "bytes": 26441,
+      "sha256": "e35a39a633e900e90ede9a935d9813d0c3fc98f09dd124f1fa22260bc63302c4"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance-frozen-copy/source-event-loop.json",
+      "bytes": 26441,
+      "sha256": "e35a39a633e900e90ede9a935d9813d0c3fc98f09dd124f1fa22260bc63302c4"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/performance-incomplete-freeze.json",
+      "bytes": 8713,
+      "sha256": "be21b699a842a23cb34aecc22ee16f38b788b890984946e71eb8168e0fe2a71d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/production-performance-deadline-cleanup.json",
+      "bytes": 16215,
+      "sha256": "4f70e15c420a31f1c2af480f86c63bbc4e31e46eb050c6727877657c074fde11"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/production-performance-ownership-before-disposition.json",
+      "bytes": 18060,
+      "sha256": "0b55e703fed31bb39e0f07d053a77c8da4882ff9b337abe19821b4d636cb4a85"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/production-performance-wrapper-live-start.json",
+      "bytes": 1917,
+      "sha256": "644c52a2c67f193013331047acecd49b41701fde53509b6f3780f0fa7fc87bb7"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/production-performance.receipt.json",
+      "bytes": 4860,
+      "sha256": "8efc022b39f9ddd18c876754fac9c6acd6b83df38336234ebc8987b7b136a49d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/production-performance.log",
+      "bytes": 157,
+      "sha256": "81af7e86d9c08f79cf2cabbd4ff159126e516c42064c48a2ed4198ade408a9b3"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/freeze-performance-timeout.receipt.json",
+      "bytes": 4673,
+      "sha256": "28b17ce369825c9065c775b0cfc42fe5a174be2aec1fb8aa3f43cd32bc7f4a9f"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/freeze-performance-timeout.log",
+      "bytes": 611,
+      "sha256": "aa8e19db7a3e4388714b282451c4a48aace868f65b865d58785406fa9004ff0d"
+    }
+  ],
+  "qualification": "incomplete; not a successful benchmark"
+}

@@ -1,0 +1,13 @@
+commit 981e234b1a0da8c72d220445daaf780b3bf65ae4
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 23:56:17 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 23:56:17 2026 +0700
+
+    fix: admit tick-boundary controls under the run reservation
+
+ packages/lab-runtime/src/v2/gateway.ts             |  26 ++-
+ packages/lab-runtime/src/v2/navigation2d/runner.ts |  31 +++-
+ packages/lab-runtime/src/v2/scenario-runner.ts     |   4 +
+ tests/security/lab-run-controls.test.ts            | 176 +++++++++++++++++++++
+ 4 files changed, 228 insertions(+), 9 deletions(-)

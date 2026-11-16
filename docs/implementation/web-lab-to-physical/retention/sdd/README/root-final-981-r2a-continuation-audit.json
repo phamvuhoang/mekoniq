@@ -1,0 +1,867 @@
+{
+  "at": "2026-11-15T22:17:54.032633+00:00",
+  "scope": "Read-only primary evidence audit; exact28 IDs across original19 prefix and independent9 continuation. No qualification splicing or retry.",
+  "tableRows": 28,
+  "observations": {
+    "observed_pass": 25,
+    "not_run": 2,
+    "observed_failure": 1
+  },
+  "continuation": [
+    {
+      "id": "lab-e2e-twin-transport",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-transport.json",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-twin-transport",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-transport",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-transport",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-transport.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-15T21:26:35.584Z",
+        "finishedAt": "2026-11-15T21:26:52.641Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-transport-twin-transport.json",
+          "startTime": "2026-11-15T21:26:36.957Z",
+          "duration": 15592.133,
+          "expected": 7,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-twin-workspace",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-workspace.json",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-twin-workspace",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-workspace.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-15T21:26:52.905Z",
+        "finishedAt": "2026-11-15T21:27:01.605Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-workspace-twin-workspace.json",
+          "startTime": "2026-11-15T21:26:54.105Z",
+          "duration": 7413.796,
+          "expected": 5,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-brand-accessibility",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-brand-accessibility.json",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-brand-accessibility",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-brand-accessibility",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-brand-accessibility",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "brand-accessibility.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-15T21:27:01.852Z",
+        "finishedAt": "2026-11-15T21:27:09.748Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-brand-accessibility-brand-accessibility.json",
+          "startTime": "2026-11-15T21:27:03.139Z",
+          "duration": 6519.102,
+          "expected": 9,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-arm-mesh",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-mesh.json",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-arm-mesh",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "arm-mesh.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-15T21:27:09.995Z",
+        "finishedAt": "2026-11-15T21:27:19.409Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-mesh-arm-mesh.json",
+          "startTime": "2026-11-15T21:27:11.453Z",
+          "duration": 7868.719999999999,
+          "expected": 7,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-arm-cell",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-cell.json",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-arm-cell",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-cell",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-cell",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "arm-cell.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-15T21:27:19.656Z",
+        "finishedAt": "2026-11-15T21:27:28.198Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-cell-arm-cell.json",
+          "startTime": "2026-11-15T21:27:20.872Z",
+          "duration": 7238.0109999999995,
+          "expected": 6,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-mujoco-coffee",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-coffee.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab/scripts/test-irsim-e2e.mjs",
+          "--provider",
+          "mujoco",
+          "mujoco-coffee.spec.ts"
+        ],
+        "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab",
+        "startedAt": "2026-11-15T21:50:58.495Z",
+        "finishedAt": "2026-11-15T21:51:53.035Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-coffee.json",
+          "startTime": "2026-11-15T21:51:01.089Z",
+          "duration": 51775.907999999996,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-mujoco-mesh-fallback",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-mesh-fallback.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab/scripts/test-irsim-e2e.mjs",
+          "--provider",
+          "mujoco",
+          "mujoco-mesh-fallback.spec.ts"
+        ],
+        "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab",
+        "startedAt": "2026-11-15T21:51:53.321Z",
+        "finishedAt": "2026-11-15T21:52:15.015Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-mesh-fallback.json",
+          "startTime": "2026-11-15T21:51:55.295Z",
+          "duration": 19615.032,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-irsim-journey",
+      "receipt": {
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-irsim-journey.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab/scripts/test-irsim-e2e.mjs",
+          "irsim-journey.spec.ts"
+        ],
+        "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab",
+        "startedAt": "2026-11-15T21:52:15.267Z",
+        "finishedAt": "2026-11-15T21:52:41.826Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      "stats": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-irsim-journey.json",
+          "startTime": "2026-11-15T21:52:17.683Z",
+          "duration": 24028.666,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-webots-coffee",
+      "status": "not_run",
+      "reason": "Actual record-r11 SCREEN_LOCKED refusal; no reported external-state change; no GUI retry"
+    }
+  ],
+  "originalPrefixAudit": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-981-r2a-supplement-prefix-audit.json",
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/execution-index.json",
+      "bytes": 24790,
+      "sha256": "5aee418115d10aac0a11ae18d10a8673666cfd62c4fc5473d1d217f7dd95f903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/execution-index.json",
+      "bytes": 16161,
+      "sha256": "f8c1e449ec5194d10e368f2d8d6feef3f5ca12844a96b1c9772b3b3384070884"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/combined-row-coverage.json",
+      "bytes": 8709,
+      "sha256": "4a1d4ca8fd67b5edf2ce08c30fbca0b0717df81a1439a359bf3d775389d0b8a8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/table.json",
+      "bytes": 7315,
+      "sha256": "52e3b29088fcffebf8397cf12943f5c821f917e1926c9851de541a5bd1b366e2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/table.json",
+      "bytes": 7315,
+      "sha256": "52e3b29088fcffebf8397cf12943f5c821f917e1926c9851de541a5bd1b366e2"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-twin-transport.receipt.json",
+      "bytes": 5700,
+      "sha256": "58479f30f31e87f7dd79c46de645663adf1420edf356fee77b95fd7fe8b48137"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-twin-transport.log",
+      "bytes": 2026,
+      "sha256": "7f144ffe904d69d4c5332b9b3c42a7a6fe1584fca642a9d810199ab1433c5231"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-transport-twin-transport.json",
+      "bytes": 16150,
+      "sha256": "3167fc2f9ce0a03902b858e8fdf121708def86d8fc5f9502fb07e74e5245a4eb"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-twin-workspace.receipt.json",
+      "bytes": 5700,
+      "sha256": "e707ff2752c075feada90b8b9771b1be503b8f21b32882326108e12a54a64010"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-twin-workspace.log",
+      "bytes": 1572,
+      "sha256": "fa85f60179d4cfe29912a529ca1e2de11786d04d999f62a295bdff8bd54254f2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-twin-workspace-twin-workspace.json",
+      "bytes": 12993,
+      "sha256": "ffaf2fa8fafa90ee54fbca023c9a4b8848982dc3f313e108d1aea6e8a609fe31"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-brand-accessibility.receipt.json",
+      "bytes": 5725,
+      "sha256": "ca6f5aa47b518fa7158b9cb91e4da4d0544dfffe95e028b4731c941c1b4adee8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-brand-accessibility.log",
+      "bytes": 1832,
+      "sha256": "03ca2724b6d4d99cad1addff76b8b7474745ece0bfd459ff96604e37a885a94e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-brand-accessibility-brand-accessibility.json",
+      "bytes": 13221,
+      "sha256": "08346bf573e2f4d5187975f2ce6e73e1160398e99c6318f7ef3cbd79d35c759c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-arm-mesh.receipt.json",
+      "bytes": 5670,
+      "sha256": "1d5d2d798e37d0661f693fabd266ac72e10aff375b1b259189c7003ba0389ec8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-arm-mesh.log",
+      "bytes": 2118,
+      "sha256": "b0f4b2061caa444ba1ca32f8dea9f9299c5f9191668af2992db91967a5789a21"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-mesh-arm-mesh.json",
+      "bytes": 11775,
+      "sha256": "07e7f41ed11c05dfa09e3b1429ef590725add706807d0ae21fa2df756cfd87a8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-arm-cell.receipt.json",
+      "bytes": 5670,
+      "sha256": "28f8790082cf759bb82ddc89537fe0230e6e1ace1aa83d4fc2514c19c5bdd7ff"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-arm-cell.log",
+      "bytes": 1752,
+      "sha256": "b3b269a276d9548418274e7c9a088595cd2dd9d205e9cb01e289e8db09fd72e5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-arm-cell-arm-cell.json",
+      "bytes": 10286,
+      "sha256": "bd2d7e496181a94d2d011fe3f5b35da31e502dbfb196c42ce32806ee02a2a4f8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-mujoco-coffee.receipt.json",
+      "bytes": 5606,
+      "sha256": "9e78986a790aba07b2b5f847f86cb58f72cb23d5a27c8d60dd90a4307616302e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-mujoco-coffee.log",
+      "bytes": 1489,
+      "sha256": "e1c80038f70336a0caeffa76dad895c81b52d5e8da6aae1a53e22de0b7b27185"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-coffee.json",
+      "bytes": 5254,
+      "sha256": "7800adedb564faf082ce92ad8ff8174b8def7bbc4e2d4ecdf1c4bd734eda4100"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-copies/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-originals/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-mujoco-mesh-fallback.receipt.json",
+      "bytes": 5634,
+      "sha256": "8458eac86c20feb36cda10dad640f0b9e5ed64a817bdd4c88b3a1bbd9b21b780"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-mujoco-mesh-fallback.log",
+      "bytes": 1157,
+      "sha256": "dde2802eafde3053edd7c0edd867d3cd831db78f319b1566850c9ccb83ec0a0c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-mujoco-mesh-fallback.json",
+      "bytes": 4787,
+      "sha256": "b57c27746fcea0494042978ccdfb462c187485c28b3f89150bd9318295cf3631"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-copies/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-originals/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-irsim-journey.receipt.json",
+      "bytes": 5574,
+      "sha256": "337d7bec5d1ec6ee5e58b32fc729503ac4c7924c7f988bd9db94b94984ea9462"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-lab-e2e-irsim-journey.log",
+      "bytes": 1080,
+      "sha256": "9c54ce96f19fa5d12aaf7ff78ca14bc5461bcc2d7685873373713e3b316d1ff6"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/suites/lab-e2e-irsim-journey.json",
+      "bytes": 4765,
+      "sha256": "1e55c45aea480fa087c99761e60137b9a24904701b03f30428d01f7d587a32e8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-copies/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/default-originals/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/record-r11.receipt.json",
+      "bytes": 5245,
+      "sha256": "21b3f3c7db730f4b140234973c14a21c2f29fff9f420a504570e3456c930fd33"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/record-r11.log",
+      "bytes": 222,
+      "sha256": "24c9e3e27dec86488de0f781c690da48f8f4a2d08722d87abefe1827ea4f404d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-default-driver.receipt.json",
+      "bytes": 4698,
+      "sha256": "a10f8a7fce429464af184f1649e928bb871ad9f3c2709adc996226327df41646"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-default-driver.log",
+      "bytes": 9473,
+      "sha256": "6621d81d18186d4fe9c5fe9eb1b7b73ed0bd779fe4079bbcc6c433e94c8fe5e7"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-provider-driver.receipt.json",
+      "bytes": 4700,
+      "sha256": "1effa12d613df76294793b6f001fe0694c93d18de48edad3e1537fd5d4e559b5"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-continuation-provider-driver.log",
+      "bytes": 3844,
+      "sha256": "9eaa1d65976b04f89b99090910033af4736ad5cd6243d77a7f229524bc8b5ffb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/continuation-plan.json",
+      "bytes": 1360,
+      "sha256": "8ef86d908120a7d70daa2a31d0e793b83afa11c348fb6fc7e92404d15454ee74"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/lab-e2e-mujoco-coffee-default-preservation.json",
+      "bytes": 867,
+      "sha256": "7e6aa2b518470cd8fb47fb45401545d9f451d85266a3c690554a1e04042b99b1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/lab-e2e-irsim-journey-default-preservation.json",
+      "bytes": 867,
+      "sha256": "f23a44496f311eafd5c9a4aaf8378cd1867730ff67dbac699125f40934bb0d72"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/lab-e2e-mujoco-mesh-fallback-default-preservation.json",
+      "bytes": 881,
+      "sha256": "a674a9ea0e6860b23a14e4a792109c4108854fb3809f3339d2654d0215c64fcb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+      "bytes": 82140,
+      "sha256": "48866c48ea83348b91cff083317e73c2ddd2d278fc3e1a4e4b5ee794315c1709"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-transport/U03-replay-desktop-vi.png",
+      "bytes": 202317,
+      "sha256": "0caea8959fa6c4843452e0ad1410084b274b8665622618c955659c670a18b7d7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-transport/U03-shortcuts-desktop-vi.png",
+      "bytes": 137741,
+      "sha256": "be4fb091d4e476ac9464f8a06e5e329c9efd719f44c96aea92948684ba2e90ef"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-ja.png",
+      "bytes": 807530,
+      "sha256": "7186f8c75fd9a32a6538aefd30b230b98d12ca8b82b09474a32038589efcf642"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-en.png",
+      "bytes": 763514,
+      "sha256": "11f1ae6c12e382a3cc4aedde6b54edf7f3615b2fc8e02bcb65fc9294e8485c91"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-vi.png",
+      "bytes": 147800,
+      "sha256": "71bb8d4bc0931c4179c73c77777526877616743e96a833d0e33d74b36301228a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-ja.png",
+      "bytes": 783529,
+      "sha256": "8c629aeeaf1a7a84fe7b9963edba6a1cf8d1cc03bc2e623be42e325654a5e3e3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-en.png",
+      "bytes": 744541,
+      "sha256": "90b256bd2da31c0832d12f48796c05f8b77909c076b69b3e93dc937564a395f1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-en.png",
+      "bytes": 136507,
+      "sha256": "7efe5327d911f95c54e10d541daa3ee97abd59a5d99e018b476509dccb597256"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-ja.png",
+      "bytes": 146435,
+      "sha256": "58629d6c93ff7eccbd0b50bbc95b97921e31a42647df2ce54bd2a06f0aeb23f9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-vi.png",
+      "bytes": 140959,
+      "sha256": "bed2c6bf5833ca4fca8f2685edd289be3d5e503fa4d2d87e4ed75522b44a63cc"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-vi.png",
+      "bytes": 789539,
+      "sha256": "3a8b76c5552860419a65405091731493fc5040a52b6d2467cf13fd36ecd22fa5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-ja.png",
+      "bytes": 151077,
+      "sha256": "81972c3c5e04c6c3cccf894762ada7b84a697164b16dab21b8fbc67f1dd1327b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-en.png",
+      "bytes": 141318,
+      "sha256": "9d11cecb6aef0eeda4bac3651cfe28818b73b882cd8b860c639af5313adf6523"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-vi.png",
+      "bytes": 779118,
+      "sha256": "8e4051bc97d29f053c6a50fc01d0ce49f122948e1fd60f45ca1cca5825d08561"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-en.png",
+      "bytes": 126904,
+      "sha256": "a19c146a36467ee3db224b91b676fbf573920ab579630fc80b9a70915a821699"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-ja.png",
+      "bytes": 136203,
+      "sha256": "a5496b273008485850adb3c31e0da8974f86ddf98a04527ff127ac5597eef7fc"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-vi.png",
+      "bytes": 156848,
+      "sha256": "17fb7e2a507b18557d63e7dad4848c77df32c8543d7f42c5a581515bf4ce0d1a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-en.png",
+      "bytes": 150869,
+      "sha256": "f196c95b18063b39ec0920da4a0b65dbce1511cfd753687bdf088d69a2d153e8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-ja.png",
+      "bytes": 158870,
+      "sha256": "4b8b0cdc7e2d791ab9704dfe02489ae5b0aa4a18de941f779c547766f2da1e9c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-vi.png",
+      "bytes": 130883,
+      "sha256": "57ec19aa19abe3d8e9de4511fe64dd79073f2b521d0533a9ee80d7fdd3262334"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-ja.png",
+      "bytes": 71069,
+      "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-en.png",
+      "bytes": 74844,
+      "sha256": "444ec7f81aacfa8c4fcc32febd28713a0c23d816150e7e3841b43ae4ef40b959"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147452,
+      "sha256": "f44c2ae219a127562e28c71d3fd6a90e0d4c95ec617db4b5e9e87be068a997e5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-vi.png",
+      "bytes": 74255,
+      "sha256": "2e3b73c5a5833d0912d76ba4a23cd734f3c514e7a2b29338410c37787da3af7c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-coffee-run-desktop-vi.png",
+      "bytes": 143130,
+      "sha256": "397c038c5fa5905e83cf6577ce971269497567741b53405030265273c051d945"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-engineering-desktop-en.png",
+      "bytes": 170518,
+      "sha256": "4ba6818ecf6f2f379a4c832822f06410824d1654b7254131396e0968cb049b2e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-engineering-desktop-ja.png",
+      "bytes": 169042,
+      "sha256": "be1bbf52366c35258b5bb247be5b544dc8d327ea1f88568d7ce6c4af3b29dacb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-twin-workspace/F05-engineering-desktop-vi.png",
+      "bytes": 174660,
+      "sha256": "2102040e245940c5f8ede546d39aaff8802baf0ae2758dbe6fbfeb36adb5689b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding-fit.png",
+      "bytes": 102333,
+      "sha256": "fb76f46edc143a0171698593d6aa1b169d277f98b512ad7465c442733e46469e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-cell-start.png",
+      "bytes": 223035,
+      "sha256": "6e29b55690b2a2abb4e713c6daaab09c2a7928ffba87a2bab0f450310f5ed7f4"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-box-this-machine.png",
+      "bytes": 147550,
+      "sha256": "6907fe8746e4fe69fa8485e8e88c2555e7e23b1aad8fdd5212f59cfbc3e2a402"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-box-loopback-blocked.png",
+      "bytes": 174250,
+      "sha256": "0a4a3fc6d4c6b503810791c38ac7d7c5383c62eaf49f640c3540448cb8347da0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-report-plant.png",
+      "bytes": 291888,
+      "sha256": "05db2d0bb7ae2133fa983ce45a4d1737810ec122db320e9b0014020f446867d8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+      "bytes": 282875,
+      "sha256": "59e8b277c81257a352db1fa8c17a8c3bd09eb8ebe756aee3c6c629b9470fc6ca"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-box-web-page-initial.png",
+      "bytes": 148094,
+      "sha256": "2af51c7392c78be3b3387c455f0323c0bec9dcb6420e6a1df123684d76d667ef"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-cup-on-tray-robot-docked.png",
+      "bytes": 219573,
+      "sha256": "0987173484d57549ab2d2f2f02325e3e5df41bcf216c101507a3a5808e892c48"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+      "bytes": 215237,
+      "sha256": "c4b3de4330fca427f5552a9dec11a0a049192673de469732b1906ec6f62d5017"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-box-pin-mismatch.png",
+      "bytes": 144760,
+      "sha256": "115a9da0056b82c9f31250878c9bf20d339e496e6416d84c876951f82a6d72f2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-engineering-identity.png",
+      "bytes": 255704,
+      "sha256": "3c0cca1757545f243d6d6300ae7afafc1385d09104c86312b1468fec2428b443"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-cell-robot-left.png",
+      "bytes": 254877,
+      "sha256": "f91ff353cd4e3c733bb6e5015ae85d77caf6b859dd8ebed3e1e31e91a45ce82f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/U06-cell-fresh-mount.png",
+      "bytes": 222978,
+      "sha256": "a234d9f7c8fb15617e60162b2636992e372891e1ed2e7f77b7df112a0fd651a1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/final-I6-saved-report-mid-pick.png",
+      "bytes": 215516,
+      "sha256": "2257a48d96b281e448ae0a29949948b37c5f50d9f0d4b01cb32be2299dd1f5d8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+      "bytes": 215513,
+      "sha256": "fa3c18e5936d716be970e641100f110721c2cbac13edf398b29575d86fd00bf5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-mesh-pick-closed.png",
+      "bytes": 92877,
+      "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note.png",
+      "bytes": 16514,
+      "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-runbar-notes-only.png",
+      "bytes": 16450,
+      "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note-panel.png",
+      "bytes": 52341,
+      "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-runbar-notes-panel.png",
+      "bytes": 45630,
+      "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-mesh-home.png",
+      "bytes": 97842,
+      "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-arm-mesh/U05-fallback-problems.png",
+      "bytes": 92828,
+      "sha256": "0881ab1894343ce941b19209887e5d39f0c8a6242c3af20287b3a0843db2003c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback/U06-mesh-fallback-notes.png",
+      "bytes": 225276,
+      "sha256": "9037cbcf6cc1081cc66454e72e720b3a619d778f66ea165e6edfb0aabc903233"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1280x800.png",
+      "bytes": 198346,
+      "sha256": "51da4f76ea4a15584bbf27e8c97dfaf94b8f18cbc71a12a188d0371eb7b69096"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1440x900.png",
+      "bytes": 225814,
+      "sha256": "b19f4245728c24eb70c0b91303bab6e5708415c8cb41d9607b64567ab64cf575"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1024x700.png",
+      "bytes": 153172,
+      "sha256": "66f36d8a5def7dae2f83b38824683cae83d837763159c2799f7b73839ec96d43"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/screens/lab-e2e-mujoco-coffee/screens/mujoco-coffee.png",
+      "bytes": 254693,
+      "sha256": "cad59bd1db1c65a004ea0dc7fb3b403c9bbbcbeeaf57f78dc79b5c01140e9e02"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-arm-mesh/arm-mesh/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-twin-workspace/twin-workspace/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-arm-cell/arm-cell/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-brand-accessibility/brand-accessibility/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-continuation/playwright/lab-e2e-twin-transport/twin-transport/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    }
+  ],
+  "limitations": [
+    "One actual twin-polish failure remains unresolved; Webots/container not_run.",
+    "Copied dependencies and isolated producer boundary are disclosed local preparation, not independent host qualification."
+  ]
+}

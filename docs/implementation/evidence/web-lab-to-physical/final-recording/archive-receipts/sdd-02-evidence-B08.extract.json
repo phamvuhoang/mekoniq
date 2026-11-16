@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:40:18.963551+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B08",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-02-evidence-B08.tar.gz",
+  "archiveSha256": "6455f3eb2dcf39e77dfb09f77fb29526b25c61bc43f77802695d8ea1c2d1b847",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-02-evidence-B08.members.json",
+  "memberIndexSha256": "c6ac7b8c1d72ae97c6572a38dae73d321833c62a19ab8c2a2d2d957434ad0f0b",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/sdd-02-evidence-B08",
+  "verifiedFiles": 104,
+  "verifiedBytes": 1189266,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

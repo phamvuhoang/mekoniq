@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-loose-after-readback",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/981-d4-loose-after-readback",
+  "archive": "981-d4-loose-after-readback.tar.gz",
+  "archiveBytes": 1919,
+  "archiveSha256": "80dac050a6ffbcf71c57c1801cdbadc8e265929e068bd7dd86243d1e0385387b",
+  "memberIndex": "981-d4-loose-after-readback.members.json",
+  "memberIndexSha256": "f91f6224e16b19f2f79c033dd4e5f36372a20609469844e07cc399f633d1eb9c",
+  "memberCount": 1,
+  "memberBytes": 8709,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-loose-after-readback.extract.json",
+  "safeExtractionReceiptSha256": "53096ff92ef08ce6a9556d37287280e41b2643cd397c0b6c2a4c429b9b120564",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-loose-after-readback",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

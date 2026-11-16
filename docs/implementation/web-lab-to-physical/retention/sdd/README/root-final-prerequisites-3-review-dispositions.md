@@ -1,0 +1,14 @@
+# Root disposition of correction3 independent review
+
+Root read all15,349 bytes of task-final-prerequisites-review-3.md (SHAe2a831f6c95a22e1bdeb4b241382bf7fc8e6276e2643aad62219e16db4da799f). Scoped specPASS and qualityAPPROVE; all7findings addressed, no new Critical/Important/Minor or out-of-scope code defects. Both clean paired heads remain229efa7/45794aa. Correction3 is complete; final recording and ONEwholebranchreview remain active.
+
+Every explicit Cannot-verify disposition:
+
+1. Final complete green mock/regression: real gap in final-phase evidence, already required by final-recording brief, assigned to sole implementer in resumption. Existing failedba1 manifest and scopedlater passes remain immutable;42skips remainnot_run. This does not reopen the corrected code findings or assert fullmockpassed.
+2. Original timeout/childsignal/brandchronology/missing390trace: historical information was not recorded and cannot be reconstructed by a new test. Retain exact absence and separate later controlled mechanisms; no unsupported causal claim, no repair requested.
+3. Post-fix actual-runtimeHTTP200 keyboard run: not performed and not claimed. The shared unconditional render path plus controlled pre-fix200 and deterministic post-fix500/nativekeyboard tests support the narrow fix, as reviewer concludes. Preserve this scope; no redundant extra200 check requested merely to expand evidence. Actual forthcoming runtime journeys remain their own scopes, not retrospective reclassification.
+4. Host authenticity/resource ownership: local receipts and hashes provide stated local provenance, not external authenticity. Exact owned cleanup only; do not claim all-host cleanup. No infrastructure changes requested.
+5. Native/controller/physical/installed-host/security/calibration/actualtablet/human gates: unassigned hardware and hosts leave these explicitlyopen, accepted:false/not_calibrated. Both hardware preparation branches remain the goal; software checks cannot closephysicalgates. No new authority is granted.
+6. Current production performance, serviceCI, remaining campaigns/readback/publication/wholebranchreview: final-recording brief assigns available local parts after this reviewed correction. R93blocks unavailable currentDocker/ownedserviceparts with genuine partial/failed/not_run statuses, not fakepasses. Source229/457 currentprofiles must be recorded afresh; no historical candidate retagging. Wholebranchreview happens onlyaftercompletehandoff.
+
+Ruling: accept the scoped correction3 review and resume the complete final-recording phase at the reviewed tuple — code fixes are verified and residual evidence obligations are already explicit next-phase or externally unavailable scopes — cost if wrong is a later full-matrix/performance/qualification failure requiring retained diagnosis and an appropriately reviewed correction, never a relaxed gate.

@@ -1,0 +1,297 @@
+# Review package: b647429a993215f5167bd30fa6ea0f30dcde65a0..eef984e
+
+## Commits
+eef984e fix: admit mobile LiDAR references before priming
+
+## Files changed
+ .../mujoco_worker/compile_mobile.py                | 17 ++++++-
+ .../mujoco_worker/mobile_engine.py                 |  6 +--
+ .../simulation-mujoco/mujoco_worker/session.py     |  8 ++--
+ robotics/simulation-mujoco/tests/test_mobile.py    | 53 ++++++++++++++++++++++
+ 4 files changed, 76 insertions(+), 8 deletions(-)
+
+## Diff
+diff --git a/robotics/simulation-mujoco/mujoco_worker/compile_mobile.py b/robotics/simulation-mujoco/mujoco_worker/compile_mobile.py
+index 891b7f7..269cf95 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/compile_mobile.py
++++ b/robotics/simulation-mujoco/mujoco_worker/compile_mobile.py
+@@ -97,36 +97,51 @@ def _check_load(profile):
+ 
+ 
+ def _convex_ccw(poly):
+     if len(set(map(tuple, poly))) != len(poly):
+         return False
+     edges = [np.subtract(poly[(i+1)%len(poly)], p) for i,p in enumerate(poly)]
+     area = sum(p[0]*poly[(i+1)%len(poly)][1] - p[1]*poly[(i+1)%len(poly)][0] for i,p in enumerate(poly))
+     return area > 0 and all(np.linalg.norm(e) > 1e-12 and all(e[0]*(v[1]-p[1]) - e[1]*(v[0]-p[0]) >= -1e-12 for v in poly) for p,e in zip(poly,edges))
+ 
+ 
++def resolve_lidar(navigation_model, physical_model):
++    """Resolve the one admitted LiDAR before any model construction or engine step."""
++    sensors = navigation_model["sensors"]
++    if len(sensors) != 1 or sensors[0]["type"] != "lidar_2d" or sensors[0]["noise"]["distribution"] != "none":
++        raise CompileError("MODEL_UNSUPPORTED", "one noiseless independent LiDAR is admitted")
++    sensor = sensors[0]
++    matches = [s for s in physical_model["sensors"] if s["sensorId"] == sensor["id"]]
++    if not matches:
++        raise CompileError("SENSOR_REFERENCE_UNKNOWN", f"projected LiDAR {sensor['id']!r} is absent from the physical model")
++    if len(matches) != 1:
++        raise CompileError("SENSOR_REFERENCE_AMBIGUOUS", f"projected LiDAR {sensor['id']!r} matches multiple physical sensors")
++    return sensor, matches[0]
++
++
+ def compile_mobile(scene, physical_models, load_profile, physics):
+     if len(scene["robots"]) != 1 or len(load_profile["props"]) > 8:
+         raise CompileError("WORLD_CAPACITY_EXCEEDED")
+     _check_load(load_profile)
+     if (load_profile["id"], load_profile["revision"]) != (scene["engine"]["loadProfileRef"]["id"], scene["engine"]["loadProfileRef"]["revision"]) or (physics["id"], physics["revision"]) != (scene["engine"]["physicsProfileRef"]["id"], scene["engine"]["physicsProfileRef"]["revision"]):
+         raise CompileError("PROFILE_ID_MISMATCH")
+     if physics.get("numerics", NUMERICS) != NUMERICS:
+         raise CompileError("PHYSICS_PROFILE_INVALID", "numerical assumptions do not match compiler v1")
+     eng = scene["engine"]
+     if (eng["id"], eng["version"]) != ("mujoco_3d", "3.17.0"):
+         raise CompileError("ENGINE_VERSION_MISMATCH")
+     if eng["timestepMs"] != 2 or eng["substeps"] != 10 or scene["clock"]["tickMs"] != 20 or any(physics[k] != v for k, v in (("timestepMs", 2), ("substeps", 10), ("tickMs", 20))):
+         raise CompileError("PHYSICS_CLOCK_MISMATCH")
+     entry = scene["robots"][0]
+     rid = entry["robotId"]
+     model = physical_models[rid]
++    resolve_lidar(entry["model"], model)
+     links = {l["id"]: l for l in model["links"]}
+     joints = {j["child"]: j for j in model["joints"]}
+     root = model["baseFrameId"]
+     drive = model["drive"]
+     wheel_ids = [drive[k] for k in ("leftJointId", "rightJointId")]
+     continuous = [j for j in model["joints"] if j["kind"] != "fixed"]
+     if len(links) != len(model["links"]) or len(joints) != len(model["joints"]) or len({j["id"] for j in model["joints"]}) != len(joints) or set(joints) != set(links) - {root} or any(j["parent"] not in links for j in joints.values()):
+         raise CompileError("MODEL_LINK_INVALID")
+     world_ids = [o["id"] for o in scene["world"]["obstacles"] + scene["world"]["boundaries"]]
+     if len(set(world_ids)) != len(world_ids):
+@@ -166,22 +181,20 @@ def compile_mobile(scene, physical_models, load_profile, physics):
+         if len(shapes) != 1 or shapes[0]["geometry"]["kind"] != "cylinder" or abs(shapes[0]["geometry"]["radiusM"] - radius) > 1e-9:
+             raise CompileError("MODEL_WHEEL_GEOMETRY_UNSUPPORTED")
+     if abs(np.linalg.norm(transforms[wheels[0]["child"]][:3,3] - transforms[wheels[1]["child"]][:3,3]) - drive["wheelSeparationM"]["value"]) > 1e-9:
+         raise CompileError("MODEL_PROJECTION_MISMATCH")
+     if physics["brakeTorqueNm"] > min(j["limits"]["effort"]["value"] for j in wheels) or max(p["torqueNm"] for p in physics["driveCurve"]) > min(j["limits"]["effort"]["value"] for j in wheels):
+         raise CompileError("PHYSICS_PROFILE_INVALID", "torque exceeds canonical effort limit")
+     if physics["driveCurve"][-1]["speedRadS"] > min(j["limits"]["velocity"]["value"] for j in wheels):
+         raise CompileError("PHYSICS_PROFILE_INVALID", "drive curve exceeds canonical speed limit")
+     if any(nav["kinematics"]["maxWheelRadps"][side] != j["limits"]["velocity"]["value"] for side,j in zip(("left", "right"), wheels)):
+         raise CompileError("MODEL_PROJECTION_MISMATCH")
+-    if any(s["type"] != "lidar_2d" or s["noise"]["distribution"] != "none" for s in nav["sensors"]):
+-        raise CompileError("MODEL_UNSUPPORTED", "only noiseless engine LiDAR is admitted")
+     heights = [radius - transforms[j["child"]][2, 3] for j in wheels]
+     if abs(heights[0] - heights[1]) > 1e-9:
+         raise CompileError("MODEL_WHEEL_HEIGHT_INVALID")
+     base_map[2, 3] = heights[0]
+     for c in casters:
+         s = links[c]["collision"][0]
+         at = transform(c) @ pose(s["pose"]["xyzM"], s["pose"]["quaternionXyzw"])
+         if abs(heights[0] + at[2, 3] - s["geometry"]["radiusM"]) > 1e-6:
+             raise CompileError("CASTER_SUPPORT_INVALID")
+     doc = ET.Element("mujoco", model="mobile-v1")
+diff --git a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+index cafc90c..e44875b 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
++++ b/robotics/simulation-mujoco/mujoco_worker/mobile_engine.py
+@@ -3,21 +3,21 @@
+ No truth correction, no chassis constraint, no free-payload pose rewrite. Wheel
+ odometry integrates joint-angle increments independently of the engine base pose.
+ Contact forces use the engine's contact frame and are force ON canonical side b.
+ """
+ import math
+ 
+ import mujoco
+ import numpy as np
+ 
+ from .compile import CompileError
+-from .compile_mobile import compile_mobile, matrix_pose, pose
++from .compile_mobile import compile_mobile, matrix_pose, pose, resolve_lidar
+ from .drive import wheel_targets, torque_limits
+ from .engine import BAD_STATE
+ from .protocol import WorkerError
+ 
+ 
+ def _transform(data, bid):
+     t = np.eye(4)
+     t[:3, :3], t[:3, 3] = data.xmat[bid].reshape(3, 3), data.xpos[bid]
+     return t
+ 
+@@ -28,20 +28,21 @@ def _euler(r):
+ 
+ class MobileEngine:
+     def __init__(self, scene, physical_models, load_profile, physics):
+         if mujoco.__version__ != "3.17.0":
+             raise CompileError("ENGINE_VERSION_MISMATCH")
+         xml, self.names = compile_mobile(scene, physical_models, load_profile, physics)
+         self.scene, self.profile, self.physics = scene, load_profile, physics
+         self.entry = scene["robots"][0]
+         self.rid = self.entry["robotId"]
+         self.physical = physical_models[self.rid]
++        self.sensor, self.sensor_physical = resolve_lidar(self.entry["model"], self.physical)
+         self.model = m = mujoco.MjModel.from_xml_string(xml)
+         self.data = d = mujoco.MjData(m)
+         mujoco.mj_forward(m, d)
+         self.base = m.body(self.names["base"]).id
+         self.wj = [m.joint(n).id for n in self.names["wheelJoints"]]
+         self.wq, self.wv = m.jnt_qposadr[self.wj], m.jnt_dofadr[self.wj]
+         self.acts = [m.actuator(n).id for n in self.names["actuators"]]
+         self.tags = {m.geom(n).id: tag for n, tag in self.names["tags"].items()}
+         self.prop = {pid: m.body(n).id for pid, n in self.names["props"].items()}
+         self.dt, self.substeps = m.opt.timestep, scene["engine"]["substeps"]
+@@ -137,22 +138,21 @@ class MobileEngine:
+                 if normal > a["peakNormalN"]:
+                     a["peakNormalN"], a["pointAtPeakMapM"] = normal, point.tolist()
+         self.contacts = [{**aggregate[p], "netImpulseMapNs": aggregate[p]["netImpulseMapNs"].tolist()} for p in sorted(aggregate)]
+         self.tick += 1
+         mujoco.mj_forward(m, d)  # read transforms/velocities at the final integrated pose
+         if self.tick % self.entry["model"]["sensors"][0]["publishEveryTicks"] == 0:
+             self.scans = [self.scan(self.tick)]
+         return self.read()
+ 
+     def scan(self, tick):
+-        sensor = self.entry["model"]["sensors"][0]
+-        physical = next(s for s in self.physical["sensors"] if s["sensorId"] == sensor["id"])
++        sensor, physical = self.sensor, self.sensor_physical
+         at = physical["poseInBase"]
+         transform = _transform(self.data, self.base) @ pose(at["xyzM"], at["quaternionXyzw"])
+         n, fov = sensor["beamCount"], sensor["fieldOfViewRad"]
+         delta = fov / n
+         start = -fov / 2 + delta / 2
+         ranges, states = [], []
+         # Group 1 excludes the entire robot (all its fixed and hinged bodies), rather
+         # than bodyexclude which excludes just one body. Props/world remain visible.
+         groups = np.array([1, 0, 1, 1, 1, 1], dtype=np.uint8)
+         gid = np.zeros(1, dtype=np.int32)
+diff --git a/robotics/simulation-mujoco/mujoco_worker/session.py b/robotics/simulation-mujoco/mujoco_worker/session.py
+index 44dde24..a5e5316 100644
+--- a/robotics/simulation-mujoco/mujoco_worker/session.py
++++ b/robotics/simulation-mujoco/mujoco_worker/session.py
+@@ -222,23 +222,25 @@ class WorkerSession:
+         self._check_physics_profile(physics)
+         ref = load["modelRef"]
+         confined(self.bundle_root, ref["path"])
+         if ref["path"] not in files or files[ref["path"]][0] != ref["sha256"]:
+             raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+         model = json.loads(files[ref["path"]][1])
+         self._validate_document(model, "robot-physical-model-v1.schema.json")
+         actual = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
+         if actual != model["modelDigest"] or actual != scene["robots"][0]["model"]["physicalModelDigest"] or model["robotId"] != rid:
+             raise WorkerError("MODEL_DIGEST_MISMATCH", "physical model does not match navigation projection")
+-        sensors = scene["robots"][0]["model"]["sensors"]
+-        if len(sensors) != 1 or sensors[0]["noise"]["distribution"] != "none":
+-            raise WorkerError("MODEL_UNSUPPORTED", "one noiseless independent LiDAR is admitted")
++        from .compile_mobile import resolve_lidar
++        try:
++            resolve_lidar(scene["robots"][0]["model"], model)
++        except CompileError as e:
++            raise WorkerError(e.code, e.detail or e.code)
+         factory = self._factory
+         if factory is None:
+             from .mobile_engine import MobileEngine
+             factory = MobileEngine
+         try:
+             engine = factory(scene, {rid: model}, load, physics)
+         except CompileError as e:
+             raise WorkerError(e.code, e.detail or e.code)
+         self.engine, self.scene, self.mobile = engine, scene, True
+         self.state = "created"
+diff --git a/robotics/simulation-mujoco/tests/test_mobile.py b/robotics/simulation-mujoco/tests/test_mobile.py
+index fb15333..9a45ad2 100644
+--- a/robotics/simulation-mujoco/tests/test_mobile.py
++++ b/robotics/simulation-mujoco/tests/test_mobile.py
+@@ -8,20 +8,21 @@ import shutil
+ import subprocess
+ import sys
+ import os
+ from pathlib import Path
+ 
+ import mujoco
+ import numpy as np
+ import pytest
+ 
+ from mujoco_worker.drive import wheel_targets, torque_limits
++from mujoco_worker.compile import CompileError
+ from mujoco_worker.compile_mobile import compile_mobile
+ from mujoco_worker.mobile_engine import MobileEngine
+ from mujoco_worker.session import WorkerSession, scene_digest_of
+ from mujoco_worker.protocol import load_validators, PROTOCOL, parse_line, WorkerError
+ 
+ SCHEMAS = Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
+ 
+ FX = Path(__file__).resolve().parents[1] / "fixtures" / "serve-payload-v1"
+ 
+ 
+@@ -287,20 +288,72 @@ def test_body_joint_and_world_namespaces_are_unique():
+         compile_mobile(*args)
+ 
+ 
+ def test_geometry_quaternion_is_refused_instead_of_normalized_by_engine():
+     args = inputs()
+     next(l for l in args[1]["amr-1"]["links"] if l["id"] == "chassis/base")["collision"][0]["pose"]["quaternionXyzw"] = [0,0,0,2]
+     with pytest.raises(Exception, match="QUATERNION_NOT_NORMALIZED"):
+         compile_mobile(*args)
+ 
+ 
++@pytest.mark.parametrize("change,code", [("missing", "SENSOR_REFERENCE_UNKNOWN"), ("ambiguous", "SENSOR_REFERENCE_AMBIGUOUS")])
++def test_direct_compiler_resolves_lidar_before_engine_model_creation(change, code):
++    args = inputs()
++    if change == "missing":
++        args[0]["robots"][0]["model"]["sensors"][0]["id"] = "unknown-lidar"
++    else:
++        args[1]["amr-1"]["sensors"].append(copy.deepcopy(args[1]["amr-1"]["sensors"][0]))
++    with pytest.raises(CompileError, match=code) as error:
++        compile_mobile(*args)
++    assert error.value.code == code
++
++
++@pytest.mark.parametrize("change,code", [("missing", "SENSOR_REFERENCE_UNKNOWN"), ("ambiguous", "SENSOR_REFERENCE_AMBIGUOUS")])
++def test_invalid_lidar_reference_never_reaches_factory_or_priming(tmp_path, change, code):
++    import rfc8785
++
++    session = bundle(tmp_path)
++    scene = json.loads((tmp_path/"navigation-scene.json").read_text())
++    if change == "missing":
++        scene["robots"][0]["model"]["sensors"][0]["id"] = "unknown-lidar"
++    else:
++        path = tmp_path / "physical-model-amr-1.json"
++        model = json.loads(path.read_text())
++        model["sensors"].append(copy.deepcopy(model["sensors"][0]))
++        model["modelDigest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in model.items() if k != "modelDigest"})).hexdigest()
++        path.write_text(json.dumps(model))
++        scene["robots"][0]["model"]["physicalModelDigest"] = model["modelDigest"]
++        # Reseal load modelRef and both byte identities so semantic admission is tested.
++        load_path = tmp_path / "cup-center.json"
++        load = json.loads(load_path.read_text())
++        load["modelRef"]["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
++        load["digest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in load.items() if k != "digest"})).hexdigest()
++        load_path.write_text(json.dumps(load))
++        scene["engine"]["loadProfileRef"]["sha256"] = hashlib.sha256(load_path.read_bytes()).hexdigest()
++        for ref in scene["files"]:
++            if ref["path"] in (path.name, load_path.name):
++                raw = (tmp_path/ref["path"]).read_bytes()
++                ref.update(sha256=hashlib.sha256(raw).hexdigest(), bytes=len(raw))
++    nav = scene["robots"][0]["model"]
++    nav["modelDigest"] = hashlib.sha256(rfc8785.dumps({k:v for k,v in nav.items() if k != "modelDigest"})).hexdigest()
++    scene["sceneDigest"] = scene_digest_of(scene)
++    session._validate_document(scene, "navigation-scene-v1.schema.json")
++    (tmp_path/"navigation-scene.json").write_text(json.dumps(scene))
++    calls = []
++    session._factory = lambda *args: calls.append(args)
++    response = session.handle(create_request())
++    assert response.get("error", {}).get("code") == code, response
++    assert calls == []  # neither engine construction nor its priming step is reached
++    assert (session.state, session.tick, session.seq, session.substeps) == ("new", 0, 0, 0)
++    assert session.engine is session.scene is session.snapshot is None
++
++
+ def test_resting_on_measures_contact_and_relative_velocity():
+     engine = MobileEngine(*inputs())
+     for _ in range(100): reading = engine.step(.15, 0)
+     assert reading["resting"]["cup-1"] == "amr-1/tray-1"
+     bid = engine.prop["cup-1"]
+     qa = engine.model.jnt_qposadr[engine.model.body_jntadr[bid]]
+     engine.data.qpos[qa + 2] += .1
+     mujoco.mj_forward(engine.model, engine.data)
+     assert engine.read()["resting"]["cup-1"] is None
+ 

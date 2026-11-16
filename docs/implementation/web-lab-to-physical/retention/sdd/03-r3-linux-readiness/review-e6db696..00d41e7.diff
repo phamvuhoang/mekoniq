@@ -1,0 +1,379 @@
+# Review package: e6db696b2ac1266fdeede8c2a64521cd4064481a..00d41e7f25ec1294b9bc8e8c81de3d8e1a869316
+
+## Commits
+00d41e7 fix: expire cached engineering transform feedback
+
+## Files changed
+ docs/operations/engineering-native-navigation.md   |   2 +
+ robotics/simulation/bridge/engineering_session.py  |  51 +++++++-
+ .../tests/test_engineering_native_parity.py        | 142 +++++++++++++++++++++
+ tests/integration/engineering-native-cli.test.ts   |  27 ++++
+ tests/support/engineering-cli-probes.mjs           |  24 ++++
+ 5 files changed, 245 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/docs/operations/engineering-native-navigation.md b/docs/operations/engineering-native-navigation.md
+index 6dbb9de..5748f62 100644
+--- a/docs/operations/engineering-native-navigation.md
++++ b/docs/operations/engineering-native-navigation.md
+@@ -36,20 +36,22 @@ node scripts/lab-sil.mjs verify --input "$native_evidence_dir"
+ The engineering repeats use seeds 17, 18, 19. These seeds drive Source scripted timing, not a claim of deterministic ROS/Gazebo physics. The native factory consumes the compiled bundle and server-selected engineering environment profile. No topic, action, executable, or launch option is accepted from a project.
+ 
+ Run upstream/legacy smoke separately before these cases. Native nominal, obstacle/no-path, cancellation and worker-loss cases remain `not_run` here. Protocol tests exercise their command outcomes; they are not plant evidence. Use `--engineering-case obstacle`, `no-path`, `cancel`, or `worker-loss` with a unique output directory per case. The server fixes each case: a blocker on the first kitchen route, four barriers around the kitchen target, cancel after the first accepted goal, or abrupt loss of the owned worker. Negative cases require explicit attention, zero served/completed outcomes and no command replay. Native campaign evidence remains required before DEP-NAV-01–04/SEC-01 or G-NATIVE-AMR is proposed.
+ 
+ ## Ownership, time and evidence
+ 
+ Each run owns a worker process group, a ROS domain lease in 101–200, a run-specific GZ partition and localhost-only ROS transport. It refuses a nonempty ROS graph and an existing worker state directory. A worker exit triggers cleanup of its owned group. Normal shutdown stops the owned launch, flushes the bag, and writes shutdown blockers. Source issues business commands and confirmations; Gazebo produces observations only. A lost acknowledgement stays unknown with its original durable command receipt. The worker is never restarted to continue the run.
+ 
+ The world starts paused; startup enables simulation integration for controllers, TF, sensors and localization to initialize. Business dispatch waits for live prerequisites. `clockMapping` records provider nanoseconds, source logical tick (20 ms), and monotonic receipt time. A reset or stale clock latches failure; TF, scan and joint freshness checks refuse commands/results when observation quality is insufficient. The fixed-step portable runners are unchanged.
+ 
++The TF observer records each required edge when TransformListener writes it into the buffer. Both dynamic edges (`map` → `odom`, `odom` → `chassis/base`) require a receipt within 500 ms and a provider timestamp no more than 500 ms behind `/clock`. AMCL's owned configuration postdates `map` → `odom` by up to one second; the odometry edge permits at most 500 ms ahead. Future dating never extends the receipt deadline. Unrelated wheel TF cannot refresh these deadlines. The fixed `chassis/base` → `lidar/head` edge must arrive through the static listener and does not expire. Missing, stale or wrong-kind edges block readiness; a failure after readiness latches, makes results unknown and rejects new commands. Existing command receipts still prevent resends. These checks are covered with portable ROS transport doubles; their timing on an assigned native host remains unqualified.
++
+ `native-events.jsonl` contains normalized trajectory, contact, joint, LiDAR and clock observations; nonfinite LiDAR no-return values become null with an explicit policy. `native-commands.json` retains the durable Nav2 goal receipts. Source `journal.json`, `effects.json`, assertions and telemetry remain authoritative for business outcomes. Inventory, shutdown, event/command files and finalized rosbag copies have artifact hashes. A rosbag is recorded with simulation timestamps and an explicit topic allowlist. The recorder’s original files stay in `.native/raw-bag`; `rosbag2/` is a byte-verified finalized copy for retention/replay. After the deliberate worker-loss case, the parent uses a read-only SQLite backup and checks the message-content digest before retaining the recovered copy; it never treats missing recovery data as a pass.
+ 
+ Offline verification rereads actual SQLite topic timestamps rather than accepting `metadata.yaml`. Every expected topic must contain messages; continuous clock/TF/odom/joints/scan/pose/contact topics must cover the run with no gap over 500 ms. Static TF and event-driven command/action/AMCL topics require presence. Missing/partial bags produce `not_run`. Full decoding/independent physical trajectory assertions on an assigned native host remain required for qualification; this portable verifier does not attest host authenticity.
+ 
+ ## API references used
+ 
+ - [Jazzy gz_ros2_control](https://control.ros.org/jazzy/doc/gz_ros2_control/doc/index.html): Harmonic pairing, system plugin, controller manager and ROS namespace/remapping.
+ - [Jazzy diff_drive_controller](https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html): TwistStamped input, wheel interfaces and timeout.
+ - [Jazzy rosbag2 record implementation](https://github.com/ros2/rosbag2/blob/jazzy/ros2bag/ros2bag/verb/record.py): explicit topics, hidden topics, SQLite storage and simulation timestamps.
+ - [Jazzy TF listener implementation](https://github.com/ros2/geometry2/blob/jazzy/tf2_ros_py/tf2_ros/transform_listener.py): TF topic remapping is on the node; the constructor has no `tf_topic` keyword.
+diff --git a/robotics/simulation/bridge/engineering_session.py b/robotics/simulation/bridge/engineering_session.py
+index 900ce3e..190124b 100644
+--- a/robotics/simulation/bridge/engineering_session.py
++++ b/robotics/simulation/bridge/engineering_session.py
+@@ -12,20 +12,68 @@ import signal
+ import subprocess
+ import sys
+ import threading
+ import time
+ from .engineering_launch import plan_engineering_launch
+ from .engineering_worker import NativeClockMapping
+ from .nav2_session import RosPorts, Nav2Session, _SceneNode, _emit, serve
+ from .native_profile import inspect_profile
+ 
+ 
++class _ObservedTfBuffer:
++    """Observe the exact writes made by Jazzy TransformListener, not cache lookups.
++
++    The canonical chain has two dynamic edges and one fixed sensor edge. Other
++    joint TF traffic must never refresh these edges' monotonic receipt ages.
++    """
++    DYNAMIC = {('map','odom'):1_000_000_000, ('odom','chassis/base'):500_000_000}
++    SENSOR = ('chassis/base','lidar/head')
++
++    def __init__(self, buffer):
++        self.buffer=buffer;self._samples={};self._lock=threading.Lock()
++
++    def _record(self, transform, static):
++        edge=(transform.header.frame_id,transform.child_frame_id)
++        if edge in self.DYNAMIC or edge==self.SENSOR:
++            stamp=transform.header.stamp
++            self._samples[edge]=(stamp.sec*1_000_000_000+stamp.nanosec,time.monotonic_ns(),static)
++
++    def set_transform(self, transform, authority):
++        with self._lock:
++            self.buffer.set_transform(transform,authority);self._record(transform,False)
++
++    def set_transform_static(self, transform, authority):
++        with self._lock:
++            self.buffer.set_transform_static(transform,authority);self._record(transform,True)
++
++    def can_transform(self, *args):
++        return self.buffer.can_transform(*args)
++
++    def freshness_reasons(self, clock):
++        reasons=[]
++        with self._lock:
++            now=time.monotonic_ns()
++            for edge,future_ns in self.DYNAMIC.items():
++                label=':'.join(edge);sample=self._samples.get(edge)
++                if sample is None:reasons.append('TF_MISSING:'+label);continue
++                stamp,receipt,static=sample
++                if static:reasons.append('TF_EXPECTED_DYNAMIC:'+label)
++                # AMCL postdates map->odom by transform_tolerance=1.0 in the
++                # owned navigation config. Receipt expiry still applies at 500 ms.
++                elif clock is None or not 0<=now-receipt<=500_000_000 or not -future_ns<=clock-stamp<=500_000_000:
++                    reasons.append('TF_FEEDBACK_STALE:'+label)
++            sensor=self._samples.get(self.SENSOR)
++            if sensor is None:reasons.append('TF_MISSING:'+':'.join(self.SENSOR))
++            elif not sensor[2]:reasons.append('TF_EXPECTED_STATIC:'+':'.join(self.SENSOR))
++        return reasons
++
++
+ class EngineeringRosPorts(RosPorts):
+     def __init__(self,bundle,log,emit):
+         self.plan=plan_engineering_launch(bundle); self.robots=['amr_1'];self.bundle=Path(bundle);self.log_path=log
+         self._proc=self._log=self._scene=None;self._scene_lock=threading.Lock();self._clients={}
+         self.mapping=NativeClockMapping();self.emit=emit;self.fatal=None;self._bag=None;self._closed=False;self._leases=[]
+         self._scan=None;self._joints=None;self._tf=None;self._ready=False;self._health_lock=threading.RLock();self._startup=time.monotonic()
+ 
+     def launch(self):
+         if self._proc:return
+         # Exclusive domain lease prevents hash collisions with another owned engineering run.
+@@ -46,21 +94,21 @@ class EngineeringRosPorts(RosPorts):
+                 from geometry_msgs.msg import Twist,TwistStamped
+                 from sensor_msgs.msg import LaserScan,JointState
+                 from rclpy.parameter import Parameter
+                 from rclpy.qos import qos_profile_sensor_data
+                 from tf2_ros import Buffer,TransformListener
+                 self._scene=_SceneNode(self.plan,['amr_1']); node=self._scene.node
+                 node.set_parameters([Parameter('use_sim_time',value=True)])
+                 import rclpy
+                 self._tf_node=rclpy.create_node('engineering_tf_observer',cli_args=['--ros-args','-r','/tf:=/amr_1/tf','-r','/tf_static:=/amr_1/tf_static'])
+                 self._scene.executor.add_node(self._tf_node)
+-                self._tf=Buffer();self._listener=TransformListener(self._tf,self._tf_node,spin_thread=False)
++                self._tf=_ObservedTfBuffer(Buffer());self._listener=TransformListener(self._tf,self._tf_node,spin_thread=False)
+                 def scan(msg):
+                     receipt=time.monotonic_ns();self._scan=(msg,receipt)
+                     self.emit('native-sensor',{'sensor':'lidar-2d','frame':msg.header.frame_id,'providerSimNs':str(msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec),'receiveMonotonicNs':str(receipt),'rangesM':[float(x) if math.isfinite(x) else None for x in msg.ranges],'nonfinitePolicy':'null_no_return'})
+                 node.create_subscription(LaserScan,'/amr_1/scan',scan,qos_profile_sensor_data)
+                 def joints(msg):
+                     receipt=time.monotonic_ns();self._joints=(msg,receipt)
+                     self.emit('native-joints',{'names':list(msg.name),'positionRad':list(msg.position),'velocityRadS':list(msg.velocity),'providerSimNs':str(msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec),'receiveMonotonicNs':str(receipt)})
+                 node.create_subscription(JointState,'/amr_1/joint_states',joints,10)
+                 pub=node.create_publisher(TwistStamped,'/amr_1/diff_drive_controller/cmd_vel',10)
+                 def forward(msg):
+@@ -82,20 +130,21 @@ class EngineeringRosPorts(RosPorts):
+         if self._bag and self._bag.poll() is not None:reasons.append('BAG_PROCESS_DOWN')
+         if clock is not None:
+             try:
+                 mapped=self.mapping.observe(clock,now);self.emit('clock-mapping',mapped)
+                 if self._ready:self.mapping.check_fresh(now)
+             except RuntimeError as error:reasons.append(str(error));self.fatal=str(error)
+         for name,sample in [('SCAN',self._scan),('JOINTS',self._joints)]:
+             if sample is None or now-sample[1]>500_000_000 or clock is not None and sample is not None and abs(clock-(sample[0].header.stamp.sec*1_000_000_000+sample[0].header.stamp.nanosec))>500_000_000:reasons.append(name+'_FEEDBACK_STALE')
+         if self._joints and not {'wheel-left/axle','wheel-right/axle'} <= set(self._joints[0].name):reasons.append('JOINT_IDENTITY_MISMATCH')
+         if self._tf:
++            reasons.extend(self._tf.freshness_reasons(clock))
+             for target,source in [('map','chassis/base'),('chassis/base','lidar/head')]:
+                 if not self._tf.can_transform(target,source,Time()):reasons.append('TF_MISSING:'+target+':'+source)
+         else:reasons.append('TF_MISSING')
+         # Startup advances only the spawned simulation world; no navigation command is sent before all prerequisites are observed.
+         if not self._ready and (clock is None or clock==0) and time.monotonic()-self._startup>1:
+             self.pause(False)
+         if not reasons:self._ready=True
+         if self._ready and reasons:self.fatal=self.fatal or reasons[0]
+         if self.fatal:
+             reasons.append(self.fatal);self.emit('fatal',{'reason':self.fatal})
+diff --git a/robotics/simulation/tests/test_engineering_native_parity.py b/robotics/simulation/tests/test_engineering_native_parity.py
+index 4080758..09e33a6 100644
+--- a/robotics/simulation/tests/test_engineering_native_parity.py
++++ b/robotics/simulation/tests/test_engineering_native_parity.py
+@@ -143,10 +143,152 @@ def test_recovered_bag_is_a_verified_copy_and_original_is_unchanged(tmp_path):
+     assert hashlib.sha256(file.read_bytes()).hexdigest()==before
+     assert inspect_bag(raw)==inspect_bag(tmp_path/'copy')
+     assert json.loads((tmp_path/'copy/retention.json').read_text())[0]['method']=='sqlite-readonly-backup-after-owned-worker-loss'
+ 
+ 
+ def test_frozen_native_manifest_matches_current_compiler(tmp_path):
+     from compiler.engineering_native import compile_native
+     compile_native(*inputs(),tmp_path)
+     for name in ('compiler-manifest.json','native-mapping.json'):
+         assert (tmp_path/name).read_bytes()==(ROOT/'robotics/simulation/fixtures/engineering-navigation-v1'/name).read_bytes()
++
++
++@pytest.fixture
++def live_engineering_ports(tmp_path, monkeypatch):
++    """Actual observer wiring/health; only ROS transport and action server are portable doubles."""
++    import sys
++    from types import SimpleNamespace as NS
++    from bridge import engineering_session as module
++    from compiler.engineering_native import compile_native
++    from test_nav2_session import FakePorts
++
++    class Buffer:
++        def __init__(self): self.edges = set()
++        def set_transform(self, msg, authority): self.edges.add((msg.header.frame_id, msg.child_frame_id))
++        set_transform_static = set_transform
++        def can_transform(self, target, source, at):
++            if (target, source) == ('map', 'chassis/base'):
++                return {('map', 'odom'), ('odom', 'chassis/base')} <= self.edges
++            return (target, source) in self.edges
++
++    class Node:
++        def __init__(self): self.callbacks = {}
++        def set_parameters(self, _): pass
++        def create_subscription(self, kind, topic, callback, qos): self.callbacks[topic] = callback
++        def create_publisher(self, *args): return NS(publish=lambda _: None)
++
++    node = Node()
++    scene = NS(node=node, executor=NS(add_node=lambda _: None), clock=2_000_000_000)
++    monkeypatch.setattr(module, '_SceneNode', lambda *args: scene)
++    for name, value in {
++        'geometry_msgs.msg': NS(Twist=object, TwistStamped=object),
++        'sensor_msgs.msg': NS(LaserScan=object, JointState=object),
++        'rclpy.parameter': NS(Parameter=lambda *args, **kw: None),
++        'rclpy.qos': NS(qos_profile_sensor_data=object()),
++        'rclpy.time': NS(Time=lambda: 0),
++        'rclpy': NS(create_node=lambda *args, **kw: Node()),
++        'tf2_ros': NS(Buffer=Buffer, TransformListener=lambda buffer, *args, **kw: NS(buffer=buffer)),
++    }.items(): monkeypatch.setitem(sys.modules, name, value)
++    now = [10_000_000_000]
++    monkeypatch.setattr(module.time, 'monotonic_ns', lambda: now[0])
++    compile_native(*inputs(), tmp_path/'bundle')
++    ports = module.EngineeringRosPorts(tmp_path/'bundle', None, lambda *args: None)
++    ports._node()  # Exercise the real wiring that gives TransformListener its observed buffer.
++    fake = FakePorts(['amr_1'])
++    ports.navigation_for = fake.navigation_for
++    ports.launch = fake.launch
++    ports.pause = fake.pause
++    ports._proc = ports._bag = NS(poll=lambda: None)
++
++    def stamp(ns): return NS(sec=ns//1_000_000_000, nanosec=ns%1_000_000_000)
++    def publish_tf(edge, ns=None, static=False):
++        msg = NS(header=NS(frame_id=edge[0], stamp=stamp(scene.clock if ns is None else ns)), child_frame_id=edge[1])
++        setter = ports._listener.buffer.set_transform_static if static else ports._listener.buffer.set_transform
++        setter(msg, 'portable-transport')
++    def fresh_streams():
++        header = NS(frame_id='lidar/head', stamp=stamp(scene.clock))
++        node.callbacks['/amr_1/scan'](NS(header=header, ranges=[1.0]))
++        node.callbacks['/amr_1/joint_states'](NS(header=header, name=['wheel-left/axle', 'wheel-right/axle'], position=[0., 0.], velocity=[0., 0.]))
++    def advance(ns, provider_ns=None):
++        now[0] += ns; scene.clock += ns if provider_ns is None else provider_ns; fresh_streams()
++    fresh_streams()
++    return NS(ports=ports, fake=fake, scene=scene, now=now, publish=publish_tf, advance=advance)
++
++
++def ready_tf(h):
++    # AMCL deliberately postdates map->odom by its configured transform tolerance (1 s).
++    h.publish(('map', 'odom'), h.scene.clock+1_000_000_000)
++    h.publish(('odom', 'chassis/base'))
++    h.publish(('chassis/base', 'lidar/head'), 0, static=True)
++    assert h.ports.health() == {'alive': True, 'reasons': []}
++
++
++@pytest.mark.parametrize('stopped', [('map', 'odom'), ('odom', 'chassis/base')])
++def test_actual_health_expires_each_cached_dynamic_edge_and_latches(live_engineering_ports, stopped):
++    h = live_engineering_ports; ready_tf(h)
++    # Clock, scans, joints and unrelated wheel TF continue, as does the other dynamic edge.
++    h.advance(500_000_001, 100_000_000)  # provider stamps still valid; receipt watchdog alone expires
++    h.publish(('chassis/base', 'wheel-left'))
++    other = ('odom', 'chassis/base') if stopped == ('map', 'odom') else ('map', 'odom')
++    h.publish(other)
++    reason = 'TF_FEEDBACK_STALE:'+':'.join(stopped)
++    assert reason in h.ports.health()['reasons']
++    h.publish(stopped)
++    assert reason in h.ports.health()['reasons']  # no automatic recovery after readiness loss
++
++
++@pytest.mark.parametrize('edge', [('map', 'odom'), ('odom', 'chassis/base')])
++def test_actual_health_refuses_old_provider_tf_even_with_new_receipt(live_engineering_ports, edge):
++    h = live_engineering_ports; ready_tf(h)
++    h.publish(edge, h.scene.clock-500_000_001)
++    assert 'TF_FEEDBACK_STALE:'+':'.join(edge) in h.ports.health()['reasons']
++
++
++def test_actual_health_distinguishes_static_sensor_tf_from_dynamic_chain(live_engineering_ports):
++    h = live_engineering_ports; ready_tf(h)
++    h.advance(2_000_000_000)
++    h.publish(('map', 'odom'), h.scene.clock+1_000_000_000)
++    h.publish(('odom', 'chassis/base'))
++    assert h.ports.health()['alive']  # zero-stamped fixed sensor TF is valid indefinitely
++    h.publish(('map', 'odom'), 0, static=True)
++    assert not h.ports.health()['alive']  # a static publisher cannot replace localization
++
++
++def test_actual_health_requires_missing_tf_and_latches_clock_reset(live_engineering_ports):
++    h = live_engineering_ports
++    assert any(r.startswith('TF_MISSING') for r in h.ports.health()['reasons'])
++    ready_tf(h)
++    h.scene.clock -= 1
++    assert 'CLOCK_RESET' in h.ports.health()['reasons']
++
++
++@pytest.mark.parametrize('lost_ack', [False, True])
++def test_actual_tf_expiry_refuses_new_goals_and_results_without_resending(live_engineering_ports, tmp_path, lost_ack):
++    from bridge.engineering_session import EngineeringNav2Session
++    from test_nav2_session import execute_args
++    h = live_engineering_ports; ready_tf(h)
++    session = EngineeringNav2Session(h.ports, 'run-freshness', ['amr_1'], tmp_path/'commands')
++    args = execute_args('lost', robot='amr_1')
++    h.fake.clients['amr_1'].unreachable = lost_ack
++    answer = session.execute(args)
++    assert answer['status'] == ('unknown' if lost_ack else 'accepted')
++    if not lost_ack:
++        h.fake.clients['amr_1'].settle(answer['nativeGoalId'], 'SUCCEEDED', 0)
++    h.fake.clients['amr_1'].unreachable = False
++    h.advance(500_000_001)
++    assert session.execute(execute_args('new', robot='amr_1'))['status'] == 'rejected'
++    assert session.query({'commandId':'lost','robotId':'amr_1'})['status'] == 'unknown'
++    assert session.execute(args) == answer
++    assert len(h.fake.clients['amr_1'].sent) == (0 if lost_ack else 1)
++
++
++@pytest.mark.parametrize('edge,future_ns', [(('map','odom'), 1_000_000_001), (('odom','chassis/base'), 500_000_001)])
++def test_actual_health_refuses_tf_beyond_bounded_future_tolerance(live_engineering_ports, edge, future_ns):
++    h = live_engineering_ports; ready_tf(h)
++    h.publish(edge, h.scene.clock+future_ns)
++    assert 'TF_FEEDBACK_STALE:'+':'.join(edge) in h.ports.health()['reasons']
++
++
++def test_actual_health_requires_sensor_on_static_transport(live_engineering_ports):
++    h = live_engineering_ports; ready_tf(h)
++    h.publish(('chassis/base','lidar/head'))
++    assert 'TF_EXPECTED_STATIC:chassis/base:lidar/head' in h.ports.health()['reasons']
+diff --git a/tests/integration/engineering-native-cli.test.ts b/tests/integration/engineering-native-cli.test.ts
+new file mode 100644
+index 0000000..419a6c4
+--- /dev/null
++++ b/tests/integration/engineering-native-cli.test.ts
+@@ -0,0 +1,27 @@
++import {expect,test} from 'vitest';
++import {spawnSync} from 'node:child_process';
++import {existsSync,mkdtempSync,readFileSync,rmSync} from 'node:fs';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++
++const python=process.env.ENGINEERING_PYTHON??(existsSync('.venv/bin/python')?resolve('.venv/bin/python'):'python3');
++const compilerAvailable=spawnSync(python,['-c','import yaml,rfc8785,jsonschema'],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:5000,stdio:'ignore'}).status===0;
++// Missing portable compiler dependencies make this check not_run, never native evidence.
++test.skipIf(!compilerAvailable)('public engineering CLI keeps relative and absolute project identity through the real compiler and runtime argv',()=>{
++ const directory=mkdtempSync(join(tmpdir(),'engineering-cli-')),relative='robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json',absolute=resolve(relative);
++ const manifests:string[]=[];
++ try{
++  for(const [index,project] of [relative,absolute].entries()){
++   const out=join(directory,String(index)),trace=join(directory,`trace-${index}.json`);
++   const result=spawnSync(process.execPath,['--import',resolve('tests/support/engineering-cli-probes.mjs'),'scripts/lab-sil.mjs','run','--scenario','FD01','--seed','17','--repeat','1','--out',out,'--backend-set','engineering-rigid-v1','--environment-profile','engineering-amd64','--engineering-project',project],{env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',ENGINEERING_PYTHON:python,ENGINEERING_CLI_TRACE:trace},encoding:'utf8',timeout:30000});
++   expect(result.status,result.stdout+result.stderr).toBe(0);
++   const calls=JSON.parse(readFileSync(trace,'utf8')) as {kind:string;args:string[];cwd?:string}[];
++   expect(calls.map(c=>c.kind)).toEqual(['compiler','runtime']);
++   expect(calls[0].args[calls[0].args.indexOf('--project')+1]).toBe(absolute);
++   expect(calls[0].cwd).toBe(resolve('robotics/simulation'));
++   expect(calls[1].args[calls[1].args.indexOf('--fixture')+1]).toBe(absolute);
++   manifests.push(readFileSync(join(out,'run-1/bundle/compiler-manifest.json'),'utf8'));
++  }
++  expect(manifests[0]).toBe(manifests[1]);
++ }finally{rmSync(directory,{recursive:true,force:true});}
++},70000);
+diff --git a/tests/support/engineering-cli-probes.mjs b/tests/support/engineering-cli-probes.mjs
+new file mode 100644
+index 0000000..e2aebef
+--- /dev/null
++++ b/tests/support/engineering-cli-probes.mjs
+@@ -0,0 +1,24 @@
++// Test-process-only transport/probe doubles. The public CLI parser, admission and
++// orchestration run unchanged; the canonical Python compiler executes for real.
++import childProcess from 'node:child_process';
++import {writeFileSync} from 'node:fs';
++import {syncBuiltinESMExports} from 'node:module';
++const original=childProcess.spawnSync,calls=[];
++const result=stdout=>({status:0,stdout,stderr:'',signal:null});
++const digest='a'.repeat(64);
++const inventory={id:'engineering-amd64',available:true,reasonCodes:[],installation:'native_apt',image:null,headless:true,profileSha256:digest,inventorySha256:digest,actual:{platform:'linux',arch:'amd64',os:'ubuntu24.04',packages:{'portable-probe-double':'1'},digests:{'/portable-double/plugin':digest},aptProvenance:{sources:{'/portable-double/source':digest}},runtime:{rosDistro:'jazzy',amentPrefixes:[],overlayManifests:{},pythonPath:'',libraryPath:'',gazeboPluginPath:'',executables:Object.fromEntries(['ros2','gz','python3'].map(k=>[k,{path:'/portable-double/'+k,sha256:digest}]))}}};
++Object.defineProperty(process,'platform',{value:'linux'});
++childProcess.spawnSync=(command,args,options)=>{
++ if(command==='git'||args[1]==='preflight')return original(command,args,options);
++ if(command==='python3'&&args[1]==='compiler.engineering_native'){
++  calls.push({kind:'compiler',command,args,cwd:options.cwd});
++  return original(process.env.ENGINEERING_PYTHON,args,options);
++ }
++ if(args[1]==='run'){
++  calls.push({kind:'runtime',command,args});writeFileSync(process.env.ENGINEERING_CLI_TRACE,JSON.stringify(calls));return result('');
++ }
++ if(command==='python3'&&args[1]==='bridge.native_profile')return result(JSON.stringify(inventory));
++ if(command==='python3'&&(args[0]==='-c'||args[0]==='--version')||command==='ros2'||command==='gz')return result('portable probe double');
++ throw Error('Unexpected subprocess: '+JSON.stringify([command,args]));
++};
++syncBuiltinESMExports();

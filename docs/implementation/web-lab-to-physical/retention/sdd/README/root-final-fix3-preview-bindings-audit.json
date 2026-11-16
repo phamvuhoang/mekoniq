@@ -1,0 +1,11 @@
+{
+  "observed": {
+    "ownedCases": 3,
+    "externalCases": 3,
+    "externalOwnExit": 0,
+    "externalInvocationId": "c083b0cf-7843-4cc4-8126-0d1a7d3b3230",
+    "beforeAfterBuildIdentityEqual": true
+  },
+  "rootRead": "Production fixture diff, actual external caller driver and verification script, complete six bindings and own log outcomes. No preview started or ports probed by root; cleanup evidence comes from retained invocation.",
+  "limit": "These pre-brand-change build observations retain their original source bytes/tuple; current final broad/production checks have their own identities."
+}

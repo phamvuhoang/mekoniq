@@ -1,0 +1,1970 @@
+{
+  "schema": "root-read-only-mock-audit/1",
+  "auditedAt": "2026-11-15T23:56:03.088138+00:00",
+  "manifest": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/manifest.json",
+    "bytes": 55333,
+    "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d"
+  },
+  "ownReceipt": {
+    "file": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/mock-regression.receipt.json",
+      "bytes": 4946,
+      "sha256": "bd58476b2a04892267ba0fc7347aec1a05aacf69ce73efb45025c22af48aaa23"
+    },
+    "argv": [
+      "env",
+      "LAB_PYTHON=/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-commissioning/bin/python",
+      "caffeinate",
+      "-dims",
+      "perl",
+      "-e",
+      "alarm 14400; exec @ARGV",
+      "node",
+      "../lab/scripts/record-regression.mjs",
+      "--suite",
+      "physical-robot-lab",
+      "--out",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "startedAt": "2026-11-15T23:35:07.430Z",
+    "finishedAt": "2026-11-15T23:52:03.771Z",
+    "exitCode": 0,
+    "signal": null,
+    "logSha256": "7c967a5d38ee79edca119d5aba2460280a664f07e1dded8165b659b36d6acfda"
+  },
+  "identity": {
+    "source": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "codeHash": "d6269bc21acdd3fe8b1fe9cd004f58d864a64d4c8d32525284d74c50e7e166ac",
+      "dirtyCodePaths": []
+    },
+    "lab": {
+      "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "codeHash": "36a62cf41afee9b88efdff3befa72806287be3c677da7ae47c871cbf693440f6",
+      "dirtyCodePaths": []
+    }
+  },
+  "identityPolicy": "Identity is sampled at start, before and after every command, and at end; this is not continuous filesystem monitoring.",
+  "identityCheckpointsVerified": 36,
+  "commands": 18,
+  "runs": 20,
+  "artifacts": 77,
+  "verifiedRecords": [
+    {
+      "role": "command-log:source-typecheck",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-typecheck.log",
+      "bytes": 59,
+      "sha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a"
+    },
+    {
+      "role": "command-log:source-lint",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-lint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "role": "command-log:source-contracts-check",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-contracts-check.log",
+      "bytes": 36,
+      "sha256": "3e8bf9225a03bd72709aba63c895580240a4737d43068ce350b8c0ed5e6b18cd"
+    },
+    {
+      "role": "command-log:source-referenced",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-referenced.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "role": "command-log:source-unit",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-unit.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "role": "command-log:source-contracts",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-contracts.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "role": "command-log:source-engineering",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-engineering.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "role": "command-log:source-pytest-simulation",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-pytest-simulation.log",
+      "bytes": 271,
+      "sha256": "5da851ab4c53f0a96b2b234c0f60400e0fc91a2a10d5087c3d303527f3b86d92"
+    },
+    {
+      "role": "command-log:lab-check-source",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-check-source.log",
+      "bytes": 153,
+      "sha256": "e9789a19cef69e259c8c2924eeaa13fff319ec18a847efe63cd7d94cc12bccec"
+    },
+    {
+      "role": "command-log:lab-typecheck",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "role": "command-log:lab-vitest",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-vitest.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "role": "command-log:lab-build",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-build.log",
+      "bytes": 1294,
+      "sha256": "fbe9730cb44233e874bbe30ae9d6b2e006c5a7137d611dbe8d358c60a18c8525"
+    },
+    {
+      "role": "command-log:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-e2e-browser.log",
+      "bytes": 39536,
+      "sha256": "3fab0a4167d89a138bc3f7518d0baf40a9aa836087a056bd61193ee6682420bb"
+    },
+    {
+      "role": "command-log:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-mock-e2e.log",
+      "bytes": 8036,
+      "sha256": "dc6fc0f8cce3fb79b2ad07fdadc981d24911b44d5addf67864a358f316285d14"
+    },
+    {
+      "role": "command-log:lab-runtime-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-runtime-e2e.log",
+      "bytes": 780,
+      "sha256": "bd9be945d8ab6c962a7dc59da8f316481a91ccb2cc1e09804a556b820ffb9517"
+    },
+    {
+      "role": "command-log:lab-ui-performance",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-ui-performance.log",
+      "bytes": 274,
+      "sha256": "4faf5e97b9386ea8568d78b84e4607d083989e5ea1142ffb509aedfbf47abe1b"
+    },
+    {
+      "role": "command-log:lab-offline-build",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-offline-build.log",
+      "bytes": 48,
+      "sha256": "42973bfdcfa85ac8fcdbde482c0cb6b0aeefa817d778dd110b60702c543d85b5"
+    },
+    {
+      "role": "command-log:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-offline-e2e.log",
+      "bytes": 1907,
+      "sha256": "4b6ca78359b548225bb69fd0e9f9956b1932c37d119aa56f9f9c479e5cb5f542"
+    },
+    {
+      "role": "run:source-referenced:source-referenced.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-referenced.json",
+      "bytes": 95178,
+      "sha256": "c3a8a0e283ee1ae6dbe3fd67f0d4ba668808d4c3a1765996e02ca881ec63206c"
+    },
+    {
+      "role": "run:source-unit:source-unit.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-unit.json",
+      "bytes": 365101,
+      "sha256": "33decfc3144f5de28c19fff33c2e46042fbbe8e424b326c6f7d35c71fe5ac83d"
+    },
+    {
+      "role": "run:source-contracts:source-contracts.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-contracts.json",
+      "bytes": 32181,
+      "sha256": "e5e064f1cdaa32d25b8cf4a095eea32865d653834171d4d3aaf84b27ac10e0de"
+    },
+    {
+      "role": "run:source-engineering:source-engineering.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-engineering.json",
+      "bytes": 231453,
+      "sha256": "5829e8340eaa77050bf0fd0a3b6a2db964a995a608af5a51c79fa74af4982722"
+    },
+    {
+      "role": "run:source-pytest-simulation:source-pytest-simulation.xml",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/source-pytest-simulation.xml",
+      "bytes": 35277,
+      "sha256": "6a1c843b41788e78a4bb65b86fdd137531a6e30393170af7b5ebd0aee040af06"
+    },
+    {
+      "role": "run:lab-vitest:lab-vitest.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-vitest.json",
+      "bytes": 211266,
+      "sha256": "e85beb51c7728e70618c80d8a1409f05485d54c0b113d1a1638fcdbd013d3bf6"
+    },
+    {
+      "role": "run:lab-e2e-browser:lab-pw-browser.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-browser.json",
+      "bytes": 236192,
+      "sha256": "fd573423ba75040fb253f8f9f7dfaa364a7947a25bbf40e69e48a1d2722dc85c"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-twin-workspace.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-twin-workspace.json",
+      "bytes": 11741,
+      "sha256": "fa8518475e90ce59f6a25db304a9c5a03b4430959ce4183f4d7f783d8d8ed713"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-coffee-journey.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-coffee-journey.json",
+      "bytes": 4068,
+      "sha256": "9053cd03ec1f3ef32e9bbe44df6b7cb8f1d747ffa5e564d2f91c5124939b376a"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-twin-recovery.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-twin-recovery.json",
+      "bytes": 4084,
+      "sha256": "0608c8147866ea0ee97b7b6b2d9ed7aced595d779afc00e0f6b504b7b5c95dd7"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-twin-inputs.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-twin-inputs.json",
+      "bytes": 4067,
+      "sha256": "a9245fab4bd62836c9b26d1adac6de2abdbba0ce2e1d99d78c895c98eccfa9d6"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-fault-schedule.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-fault-schedule.json",
+      "bytes": 4070,
+      "sha256": "afaf5623cd66781fdc772717503f1f2661583a561e2b5bda5c6fecfc5a5eac4a"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-arm-simulation.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-arm-simulation.json",
+      "bytes": 4087,
+      "sha256": "e6a606829e38d3525ac7c5f97d331f7294d00d6acac38dbbb4d7683895e14952"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-twin-plan01.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-twin-plan01.json",
+      "bytes": 4084,
+      "sha256": "3d10e1ae668344992416e4bf8fe6a66721ee4ffd9375c0ebd682fdb39434484b"
+    },
+    {
+      "role": "run:lab-mock-e2e:lab-pw-mock-legacy-campaign.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-mock-legacy-campaign.json",
+      "bytes": 8055,
+      "sha256": "6eb7febed9354090cfbeee578e10ce941d89bc98d33a55e7778a77a02e677010"
+    },
+    {
+      "role": "run:lab-runtime-e2e:lab-pw-runtime.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-runtime.json",
+      "bytes": 4060,
+      "sha256": "8664e2a773913e2d8cf43763e97a6d2dab54b0d2d3a98e98d21541177bb252fc"
+    },
+    {
+      "role": "run:lab-ui-performance:lab-ui-performance.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-ui-performance.json",
+      "bytes": 2681,
+      "sha256": "0ee8d160de86c026b8b640608bf9a318168ceb11e1561a9b7dea65224cc029a5"
+    },
+    {
+      "role": "run:lab-offline-e2e:lab-pw-offline-twin-recovery.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-offline-twin-recovery.json",
+      "bytes": 4084,
+      "sha256": "211a7f043cccca03fd7d6d92f1aad021a7dcb608025dcb5ad2a11b426633f86c"
+    },
+    {
+      "role": "run:lab-offline-e2e:lab-pw-offline-coffee-journey.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-offline-coffee-journey.json",
+      "bytes": 4068,
+      "sha256": "369bfab0dee98853f772aa6cf97a466d0272766cfa4d2e24a56adf1695c48fe1"
+    },
+    {
+      "role": "run:lab-offline-e2e:lab-pw-offline-offline-bv01.json",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/lab-pw-offline-offline-bv01.json",
+      "bytes": 4062,
+      "sha256": "6f73432146aeb745e321538335dd75373eb5d6c9257f51b291617c43dd7bd1ad"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-deployment-1024.png",
+      "bytes": 147857,
+      "sha256": "4965d392613c55efd7a3b9f9e8cff4ca730185423c25be6f81bc13ddc061dcc3"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-deployment-1512.png",
+      "bytes": 155957,
+      "sha256": "6b376cbdf24b5a96845266f0b8cbc8211b09053b0b5bf91b14a286ab8fc051c4"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-deployment-390.png",
+      "bytes": 118506,
+      "sha256": "fcf3b629e64051d223dc0707858d191a211efbecfc73a0a45a10eed00d2fba17"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-design-1024.png",
+      "bytes": 463410,
+      "sha256": "42d06c479b9bd412fc7d38d4bc9c8f36314df1df919444182eb05b58937e5795"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-design-1512.png",
+      "bytes": 502353,
+      "sha256": "f03fea08a218f48e9ea4424ae448fad2786dfd762395f7bc4dc8d315c7af8b78"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-design-390.png",
+      "bytes": 287920,
+      "sha256": "dd84cf54b62ec5ac880a7eea39613ce2d2ef982235a20e45504774ed91895b0f"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-restaurant-1024.png",
+      "bytes": 118949,
+      "sha256": "13ef3ccee7a449019d963da288d4cef8f4be2c84b56eb829bc65578a8e3397ae"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-restaurant-1512.png",
+      "bytes": 137822,
+      "sha256": "e149fb7c8ef57901d87c53140f28359b8762fa915acf6cd4551e5e50b8baba7e"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-restaurant-390.png",
+      "bytes": 91038,
+      "sha256": "adc9ba210fdb955ac1f7d76ca4ce64be3454945f019089c155e10233ec4d3c91"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-results-1024.png",
+      "bytes": 77178,
+      "sha256": "dbea5a95ecfb99aea432a5befc58d55e153549196aa189eceb61b70758054573"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-results-1512.png",
+      "bytes": 87466,
+      "sha256": "e1dfa3c2ecd704fc0511730647918341a45bb652e0e22cb363a406846e69d1c0"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-results-390.png",
+      "bytes": 53547,
+      "sha256": "ee2bb192c38f31d9ac0e4fbadebaf9318bfefe84c6db2fd1f3a1386b9f258124"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-scenarios-1024.png",
+      "bytes": 165198,
+      "sha256": "4ebf9cc771f5f4a6a7324eac582343ddf310e54a3762d5d63b9aff7fd3f1475a"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-scenarios-1512.png",
+      "bytes": 169293,
+      "sha256": "045ac1e57b06d48ba355b5c71b0aa133363de26084b311e7e8201da3c405cc19"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-scenarios-390.png",
+      "bytes": 131744,
+      "sha256": "e0fc3cfb9305f7a633e64efd1303630e6ffffed1bf02356a821b34bff73039c1"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-twin-1024.png",
+      "bytes": 127219,
+      "sha256": "a884124ecea6a848812c66ec09545fe8ed7b088e259f2cae5f7e900f872051ea"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-twin-1512.png",
+      "bytes": 164485,
+      "sha256": "bf764771d790a53866024fb42d2e32f95640231a9c26d58ab3d4068bd95a6049"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/brand-ui/lab-twin-390.png",
+      "bytes": 66740,
+      "sha256": "a63addcfa33b6891b7be92ad53d21d48b3c85cfeb02a02f73e87363277636546"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147950,
+      "sha256": "5aa1f18c73a4d9f2f27cdf52152d4544773bb34d65b43248b06214acea080027"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-fallback-problems.png",
+      "bytes": 92828,
+      "sha256": "0881ab1894343ce941b19209887e5d39f0c8a6242c3af20287b3a0843db2003c"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-mesh-home.png",
+      "bytes": 97842,
+      "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-mesh-pick-closed.png",
+      "bytes": 92877,
+      "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-runbar-notes-only.png",
+      "bytes": 16450,
+      "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-runbar-notes-panel.png",
+      "bytes": 45630,
+      "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-runbar-problem-and-note-panel.png",
+      "bytes": 52341,
+      "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/U05-runbar-problem-and-note.png",
+      "bytes": 16514,
+      "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/study-final-1440.png",
+      "bytes": 189512,
+      "sha256": "310e80bba0d5dca98d606cd3caf4cf3417fc5876dee58c7f728c0e966f14f7c5"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/study-final-390-table-rows.png",
+      "bytes": 50022,
+      "sha256": "ed161b1498b758ac7cdf2c5400c086f9f6dd9a5da85ec1ce00492f22f4fdedf0"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-e2e-browser/study-final-390.png",
+      "bytes": 43580,
+      "sha256": "e4150b12f78dd877c13f0279a62b5f520bd6a31f38c57eb307f5d06b66c4d912"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-coffee-completed-desktop-vi.png",
+      "bytes": 157468,
+      "sha256": "e5af31b656d86f31929114b6d8dfb463eef53bf2cc60c72b06b97907e97b3b8c"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-coffee-run-desktop-vi.png",
+      "bytes": 143130,
+      "sha256": "397c038c5fa5905e83cf6577ce971269497567741b53405030265273c051d945"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-coffee-run-mobile-en.png",
+      "bytes": 74876,
+      "sha256": "1efc08aa65e5c62b7a2c35411c6d02f214478bf93940829c76f58e720a401627"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-coffee-run-mobile-ja.png",
+      "bytes": 71069,
+      "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-coffee-run-mobile-vi.png",
+      "bytes": 74253,
+      "sha256": "071a17ee12970a784d518d306c62eb02d8cbbbff3d669fa3e258fb9abccdd2d0"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-engineering-desktop-en.png",
+      "bytes": 170185,
+      "sha256": "42ae4aecd495c1010602f36b11ce526a9b317f87037c55e7528a53f79e3f0365"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-engineering-desktop-ja.png",
+      "bytes": 168699,
+      "sha256": "b7f77349db7f7ab1aa42e62ef1d4467781b1290abb3ff5d1e986fe74eeada860"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-engineering-desktop-vi.png",
+      "bytes": 174319,
+      "sha256": "3b51d36d6d3602d03e00bb86f562b3939d98875c332751be7b676f3a6afbeed7"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-missing-cup-desktop-vi.png",
+      "bytes": 148498,
+      "sha256": "5f58e93138166544aa16eb43f07f53d5718b95f55e7f6b5f2cdd49b830255a42"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147452,
+      "sha256": "f44c2ae219a127562e28c71d3fd6a90e0d4c95ec617db4b5e9e87be068a997e5"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-browser-memory.json",
+      "bytes": 461,
+      "sha256": "9ed986d9dd231e0fdc6dc0d53331b9e2df68aec431ea48d38f54003e482a0060"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-compare-desktop-vi.png",
+      "bytes": 159313,
+      "sha256": "af848a9428ed5d99815e4619d2c4aeaae670a7671bcb5d0eebf00b958bca663a"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-replay-trace-desktop-vi.png",
+      "bytes": 179210,
+      "sha256": "7a095ee834e27888d9b01f6fc2836b6d813d74f4ceaab34522fa769106725c15"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-session-lost-desktop-vi.png",
+      "bytes": 155553,
+      "sha256": "9e2f2548307f717c9f1c65b00e410e5057f29de65ba600e364515edfb2cff648"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-telemetry-disconnected-desktop-vi.png",
+      "bytes": 127000,
+      "sha256": "cffb0c14e51e47987255b8c64db385c704e8045c2a0551ef999dc1eab0c55198"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+      "bytes": 126282,
+      "sha256": "33acdb8b8a52f6e65036e956eb2932fea44e5cb51189a14821ad826ec361d586"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+      "bytes": 124823,
+      "sha256": "303bb312b4138a5520c1d20f6eb82ca67d5ff76fa9ccc615c2fee60881437867"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/V06-scheduled-cup-mock.png",
+      "bytes": 155939,
+      "sha256": "794e4371a21fcdfff4a052a51aadbb38613844904c4e4b729eba9a849b31faca"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-mock-e2e/plan01-render-independence.json",
+      "bytes": 15194,
+      "sha256": "09b062086ff4f5b5873c4eb172397dd971f6cf943f4a663df278410a8ea5256e"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F05-coffee-completed-desktop-vi.png",
+      "bytes": 157468,
+      "sha256": "e5af31b656d86f31929114b6d8dfb463eef53bf2cc60c72b06b97907e97b3b8c"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F05-missing-cup-desktop-vi.png",
+      "bytes": 148498,
+      "sha256": "5f58e93138166544aa16eb43f07f53d5718b95f55e7f6b5f2cdd49b830255a42"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-browser-memory.json",
+      "bytes": 461,
+      "sha256": "b484781cdfef2f28905408c50aeaae26bda9defda2cb229297b6ca58c13e71bf"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-compare-desktop-vi.png",
+      "bytes": 159292,
+      "sha256": "2e751dc255c59679a6bc6847cb1eebdded1b568255fcb3c497ee5fd551d4b112"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-replay-trace-desktop-vi.png",
+      "bytes": 179210,
+      "sha256": "7a095ee834e27888d9b01f6fc2836b6d813d74f4ceaab34522fa769106725c15"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-session-lost-desktop-vi.png",
+      "bytes": 155273,
+      "sha256": "0277d327f199f620cbf6da7a0b26e92b46562e9de82d4629cdea7f4716497ebe"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-telemetry-disconnected-desktop-vi.png",
+      "bytes": 126896,
+      "sha256": "46caf5bb09653f8724f6ebf742eadb95bd83ba7518886aee08f88240a9d50794"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+      "bytes": 126182,
+      "sha256": "8fc8d7b5595710bbb3ba6ec18add1b4ebc7997a391d8bbe57a43e4906da7f6ec"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+      "bytes": 124718,
+      "sha256": "511c67de1bac11879f620def73ba101464ea690c5f680fd122e1d6b902b2a4d7"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/screens/lab-offline-e2e/R02-offline-bv01.png",
+      "bytes": 169823,
+      "sha256": "a80483b2a24f61fc8453edc138068d90b1219c16e3aeae6d55a93518c0a8dba7"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/captures/mekoniq-lab-desktop.png",
+      "bytes": 512027,
+      "sha256": "8b99924de4a4bd8f61473c4a72879da08caf72d68a1b8955c35bb83e8399ed8b"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/captures/mekoniq-lab-en.png",
+      "bytes": 463411,
+      "sha256": "d6977b494c707aef9abdf9c560c8abe1732de730e8aa926868b7a20571bd6d17"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/captures/mekoniq-lab-ja.png",
+      "bytes": 452200,
+      "sha256": "d2d41740e0e62e298f9f7f941201c577e52b025f951f952938981ff739160ca0"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/captures/mekoniq-lab-mobile.png",
+      "bytes": 133352,
+      "sha256": "ee0d2695f573aff08c61d4aab1d920ffbd1a00d6c68eb5ea7047039a39981d3c"
+    },
+    {
+      "role": "artifact:lab-e2e-browser",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-e2e-browser/captures/mekoniq-lab-vi.png",
+      "bytes": 466346,
+      "sha256": "f596cc982ea51ea873c72c8e345532508b0768620d09a94b5865f1a4f6c5b1a8"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/arm-simulation/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/coffee-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/fault-schedule/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/legacy-campaign/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/twin-inputs/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/twin-plan01/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/twin-recovery/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-mock-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-mock-e2e/twin-workspace/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-offline-e2e/coffee-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-offline-e2e/offline-bv01/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-offline-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-offline-e2e/twin-recovery/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-runtime-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-runtime-e2e/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "role": "artifact:lab-runtime-e2e",
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/mock-regression/playwright/lab-runtime-e2e/captures/mekoniq-lab-source-run.png",
+      "bytes": 128740,
+      "sha256": "e36d4dc6891bd7e49faf7b918d83240487c2ae1b6e57f0b47681a83346bbf9dc"
+    }
+  ],
+  "derivedResults": [
+    {
+      "id": "source-referenced:source-referenced.json",
+      "kind": "vitest",
+      "file": "source-referenced.json",
+      "derived": {
+        "passed": 286,
+        "failed": 0,
+        "skipped": 1,
+        "total": 287
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "source-unit:source-unit.json",
+      "kind": "vitest",
+      "file": "source-unit.json",
+      "derived": {
+        "passed": 1057,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1057
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "source-contracts:source-contracts.json",
+      "kind": "vitest",
+      "file": "source-contracts.json",
+      "derived": {
+        "passed": 105,
+        "failed": 0,
+        "skipped": 0,
+        "total": 105
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "source-engineering:source-engineering.json",
+      "kind": "vitest",
+      "file": "source-engineering.json",
+      "derived": {
+        "passed": 716,
+        "failed": 0,
+        "skipped": 5,
+        "total": 721
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "source-pytest-simulation:source-pytest-simulation.xml",
+      "kind": "junit",
+      "file": "source-pytest-simulation.xml",
+      "derived": {
+        "tests": 217,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-vitest:lab-vitest.json",
+      "kind": "vitest",
+      "file": "lab-vitest.json",
+      "derived": {
+        "passed": 606,
+        "failed": 0,
+        "skipped": 1,
+        "total": 607
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-e2e-browser:lab-pw-browser.json",
+      "kind": "playwright",
+      "file": "lab-pw-browser.json",
+      "derived": {
+        "expected": 70,
+        "unexpected": 0,
+        "skipped": 42,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-twin-workspace.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-twin-workspace.json",
+      "derived": {
+        "expected": 5,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-coffee-journey.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-coffee-journey.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-twin-recovery.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-twin-recovery.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-twin-inputs.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-twin-inputs.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-fault-schedule.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-fault-schedule.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-arm-simulation.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-arm-simulation.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-twin-plan01.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-twin-plan01.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-mock-e2e:lab-pw-mock-legacy-campaign.json",
+      "kind": "playwright",
+      "file": "lab-pw-mock-legacy-campaign.json",
+      "derived": {
+        "expected": 3,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-runtime-e2e:lab-pw-runtime.json",
+      "kind": "playwright",
+      "file": "lab-pw-runtime.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-ui-performance:lab-ui-performance.json",
+      "kind": "measurement",
+      "file": "lab-ui-performance.json",
+      "derived": {
+        "durationMs": 60000,
+        "minimumDurationMet": true,
+        "profiles": [
+          {
+            "id": "desktop-3d",
+            "p95Ms": 16.700000000004366,
+            "paintP95Ms": 2.5,
+            "meetsTarget": true
+          },
+          {
+            "id": "tablet-2d-emulated",
+            "p95Ms": 16.700000000004366,
+            "paintP95Ms": 3.0999999046325684,
+            "meetsTarget": true
+          }
+        ]
+      },
+      "scope": "synthetic renderer harness, not actual shared-cell production performance"
+    },
+    {
+      "id": "lab-offline-e2e:lab-pw-offline-twin-recovery.json",
+      "kind": "playwright",
+      "file": "lab-pw-offline-twin-recovery.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-offline-e2e:lab-pw-offline-coffee-journey.json",
+      "kind": "playwright",
+      "file": "lab-pw-offline-coffee-journey.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    },
+    {
+      "id": "lab-offline-e2e:lab-pw-offline-offline-bv01.json",
+      "kind": "playwright",
+      "file": "lab-pw-offline-offline-bv01.json",
+      "derived": {
+        "expected": 1,
+        "unexpected": 0,
+        "skipped": 0,
+        "flaky": 0
+      },
+      "scope": "actual recorded complete selected scope; no overlap aggregation"
+    }
+  ],
+  "notRunTestOccurrences": [
+    {
+      "run": "source-referenced:source-referenced.json",
+      "name": "measure telemetry latency (gateway ingress -> SSE client receipt, one process clock) and memory",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-engineering:source-engineering.json",
+      "name": "--clean-checkout exports committed HEAD: dirty false and sourceCommit equal to HEAD",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-engineering:source-engineering.json",
+      "name": "lab runtime container pairs with the access key and runs MJ-BV01 to completion inside the image",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-engineering:source-engineering.json",
+      "name": "persistent mobile/cell image compiles mobile, excludes a competing container, recovers committed active chunks and replays a finished cell",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-engineering:source-engineering.json",
+      "name": "real unbundled native composition cannot label dirty checkout bytes with HEAD",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-engineering:source-engineering.json",
+      "name": "measure telemetry latency (gateway ingress -> SSE client receipt, one process clock) and memory",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "source-pytest-simulation:source-pytest-simulation.xml",
+      "name": "::robotics.simulation.tests.test_restaurant",
+      "rawStatus": "skipped",
+      "reason": "collection skipped"
+    },
+    {
+      "run": "lab-vitest:lab-vitest.json",
+      "name": "measure TwinStore apply latency and memory on the verification workload",
+      "rawStatus": "skipped"
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "arm-simulation.spec.ts: arm telemetry and ARM03 rows are honest in the mock run; the simulation set is unavailable with a reason",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs arm-simulation.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/arm-simulation.spec.ts",
+            "line": 8,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "coffee-journey.spec.ts: missing cup: visible reason and entity, confirmed reconcile, corrected run completes",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/coffee-journey.spec.ts",
+            "line": 9,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "fault-schedule.spec.ts: scheduled missing cup holds the real pinned mock workflow and offers explicit reconcile",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Requires test-mock-e2e launcher and current source pin",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/fault-schedule.spec.ts",
+            "line": 5,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "legacy-campaign.spec.ts: mixed preset: food and its identified cup on one mission, both served, cup ends with the table",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 28,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "legacy-campaign.spec.ts: two-robot campaign: both AMRs act, nothing is served twice, and the campaign id is the legacy one",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 38,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "legacy-campaign.spec.ts: cancelling a run keeps the cup with its owner instead of deleting custody",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 0,
+            "column": 0
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/legacy-campaign.spec.ts",
+            "line": 56,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "offline-bv01.spec.ts: offline package completes BV01 and exports its pinned report with only loopback requests",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run the offline package through scripts/test-mock-e2e.mjs.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/offline-bv01.spec.ts",
+            "line": 8,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "remote-origin.spec.ts: a Lab on another origin sends nothing to the runtime before the click, then pairs with a bearer and runs BV01 to completed",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs remote-origin.spec.ts: it starts the pinned runtime for this origin and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/remote-origin.spec.ts",
+            "line": 12,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "service-journey.spec.ts: paired source runtime drives arrival then human load and handoff",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Start pinned source runtime and supply its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/service-journey.spec.ts",
+            "line": 8,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-inputs.spec.ts: UX05/UX18/QA09b: reset, speed-limit draft, saved report reopening and replay remain independent",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Requires the real exported runtime launcher.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-inputs.spec.ts",
+            "line": 30,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: first open: level 1 only, the inspector closed, no vertical scroll and a dominant viewport",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: every relocated item is reachable from its container during a run",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: 3D (U04): the scene is kept while samples play; camera home and fit; a layer from the Display menu; reduced motion has no animation loop",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: a re-render keeps the scroll position of an inspector tab",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: a completed run still fits the window with the inspector closed and on every tab",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: a fault: the problem count grows, the row leads to its object, the strip shows in the viewport; the label explains itself",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: the chosen tab survives a reload",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: phone: the transport stays in view and the inspector sheet never covers it",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-layout.spec.ts: low screen: the page scrolls and the transport sticks to the bottom",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 34,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-layout.spec.ts",
+            "line": 35,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-plan01.spec.ts: SYS01: normalized journal/effects are identical at 15/60 FPS and while the browser renderer is debugger-paused",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Requires the real exported runtime launcher.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-plan01.spec.ts",
+            "line": 11,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: Engineering tab with the arm selected: one block per quantity, nothing wider than the panel",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: Objects tab: the current cup line keeps its distance from the job cards",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: the runtime box repeats the telemetry detail, repainted live",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: scenario picker: a preset that cannot run gives one reason per backend",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-polish.spec.ts: 1024 \u00d7 700: no vertical scroll and the run bar keeps its one row",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 19,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-polish.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-polish.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-recovery.spec.ts: telemetry stream, stale/frozen states, reconnect, read-only replay, compare, export and a lost session",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-recovery.spec.ts",
+            "line": 18,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-replay-inplace.spec.ts: replay of a finished run: the run bar updates in place, playing and not playing",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-replay-inplace.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-replay-inplace.spec.ts",
+            "line": 18,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-runbar-layout.spec.ts: run bar layout in every state at three widths; the transport at phone width; the runtime chip's words",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-runbar-layout.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-runbar-layout.spec.ts",
+            "line": 20,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-transport.spec.ts: no run: keys typed in the pairing code stay there; disabled buttons look disabled",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 39,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 40,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-transport.spec.ts: live run: \u2192 steps, Space starts and stops auto-run, ? lists the keys",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 39,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 40,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-transport.spec.ts: watch mode: only the viewport, three labels and the transport; Escape gives everything back one step at a time",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 39,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 40,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-transport.spec.ts: replay: the transport turns into a scrubber with marks; dragging moves the time, Space plays and stops",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 39,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 40,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-transport.spec.ts: Escape closes the modal confirm dialog (its native cancel), and the dialog opens again",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 39,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs twin-transport.spec.ts: it starts the pinned source runtime and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-transport.spec.ts",
+            "line": 40,
+            "column": 7
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-workspace.spec.ts: coffee preset runs on the mock backend with a locked, visible identity",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 36,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 37,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-workspace.spec.ts: layers, legend and one shared selection survive a 3D to 2D switch",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 36,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 37,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-workspace.spec.ts: engineering panel shows units, observed versus commanded and data age",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 36,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 37,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "run": "lab-e2e-browser:lab-pw-browser.json",
+      "name": "twin-workspace.spec.ts: mobile layout is operable with the keyboard only",
+      "rawStatus": "skipped",
+      "annotations": [
+        {
+          "type": "serial",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 36,
+            "column": 15
+          }
+        },
+        {
+          "type": "skip",
+          "description": "Run scripts/test-mock-e2e.mjs: it starts the pinned source runtime via the launcher and supplies its one-time token.",
+          "location": {
+            "file": "<workspace>/lab/tests/e2e/twin-workspace.spec.ts",
+            "line": 37,
+            "column": 8
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "50 individual skipped occurrences remain not_run despite empty manifest.notRun.",
+    "Selected suites overlap; counts are not a unique test total or full service-dependent CI.",
+    "Synthetic renderer scheduling/paint does not replace actual production-cell draw, rate, pause or worker observations.",
+    "Local software evidence grants no native/physical/calibration or human acceptance."
+  ],
+  "priorRootAttempt": "root-final-981-d4-mock-audit-attempt1.json preserves initial parser-key mistake; unchanged producer inputs, no rerun or outcome editing."
+}

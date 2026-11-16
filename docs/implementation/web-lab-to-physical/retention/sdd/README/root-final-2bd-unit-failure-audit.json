@@ -1,0 +1,34 @@
+{
+  "kind": "Read-only failure/metadata audit, no code/test/native execution",
+  "checkedInputs": 8,
+  "sourceResult": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/source-unit.json",
+    "bytes": 367174,
+    "sha256": "fb3e62a9071dffbb0ef852fbe10addb297c982368ece54ac0bdd63df476b7797"
+  },
+  "summary": {
+    "startTime": 1794749025592,
+    "numPassedTests": 1055,
+    "numFailedTests": 2,
+    "numPendingTests": 0,
+    "numTotalTests": 1057
+  },
+  "failures": [
+    {
+      "file": "<workspace>/source/tests/unit/r3-native-readback.test.ts",
+      "test": "I3 xArm refuses wrong hash run inventory after valid X2 admission",
+      "duration": 906081.431292
+    },
+    {
+      "file": "<workspace>/source/tests/unit/web-replay-capture.test.ts",
+      "test": "actual retained reopen captures both exports without a world spawn and leaves original bytes unchanged",
+      "duration": 30070.299625
+    }
+  ],
+  "sleepLogSha256": "bcf62091aa3699a8904632b408380e48dd994e7f797505edca8658cd6e68a69b",
+  "limits": [
+    "Sleep overlaps the engineering fixture; original child error/signal was not serialized.",
+    "Replay timeout precedes observed sleep; cause unresolved.",
+    "Full mock still active; no final outer exit or passing qualification inferred."
+  ]
+}

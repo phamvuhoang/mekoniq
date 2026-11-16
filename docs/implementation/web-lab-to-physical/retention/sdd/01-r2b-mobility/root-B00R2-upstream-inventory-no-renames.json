@@ -1,0 +1,117 @@
+{
+  "scope": "deterministic no-rename frozen upstream inventory, not execution evidence",
+  "base": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+  "head": "11d25b47a18adafb88ac21adc249499109996bc5",
+  "changedFiles": 8841,
+  "docsFiles": 8820,
+  "artifactGuideChanges": [
+    {
+      "path": "artifacts/README.md",
+      "added": "8",
+      "deleted": "1"
+    },
+    {
+      "path": "artifacts/mekoniq-r2a-demo-guide.html",
+      "added": "97",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/README.md",
+      "added": "39",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/app.js",
+      "added": "79",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/build-manifest.json",
+      "added": "59",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/build.py",
+      "added": "125",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/desktop-preview.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/facts.json",
+      "added": "119",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/images/arm.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/images/joints.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/images/replay.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/images/watch.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/mobile-preview.png",
+      "added": "-",
+      "deleted": "-"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/style.css",
+      "added": "10",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/verification.json",
+      "added": "67",
+      "deleted": "0"
+    },
+    {
+      "path": "artifacts/src/r2a-demo-guide/verify.cjs",
+      "added": "198",
+      "deleted": "0"
+    }
+  ],
+  "platformChanges": [
+    {
+      "path": "deploy/lab-runtime/mekoniq.env.example",
+      "added": "8",
+      "deleted": "0"
+    },
+    {
+      "path": "scripts/cloud-run-qualification.mjs",
+      "added": "74",
+      "deleted": "0"
+    },
+    {
+      "path": "scripts/test-runner.mjs",
+      "added": "1",
+      "deleted": "0"
+    },
+    {
+      "path": "tests/acceptance/cloud-run.acceptance.test.ts",
+      "added": "18",
+      "deleted": "0"
+    },
+    {
+      "path": "tests/unit/cloud-run-qualification.test.ts",
+      "added": "81",
+      "deleted": "0"
+    }
+  ],
+  "runtimeDirectoryChanges": []
+}

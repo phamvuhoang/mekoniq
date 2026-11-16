@@ -1,0 +1,28 @@
+{
+  "completion": {
+    "path": ".superpowers/sdd/README/evidence-final-recording/fix4/handoff-completion.json",
+    "bytes": 1300,
+    "sha256": "9c32eb7563182623b08212ae2ea57e9d3d782310035bb9b7921315b2b28c8247"
+  },
+  "indices": [
+    {
+      "kind": "metadata",
+      "index": ".superpowers/sdd/README/evidence-final-recording/fix4/metadata-retention-index.json",
+      "bytes": 25827,
+      "sha256": "f1894bad935df6b6ead114717434cad994da9628294b4f01c6b969fa4baa8892",
+      "files": 150,
+      "contentBytes": 6071531,
+      "symlinks": 0
+    },
+    {
+      "kind": "external",
+      "index": ".superpowers/sdd/README/evidence-final-recording/fix4/external-retention-index.json",
+      "bytes": 23014,
+      "sha256": "da4652744af21bdca022cc47ecdecd540a540239f80d9c4f5f8923b2207d6e7d",
+      "files": 135,
+      "contentBytes": 3584594,
+      "symlinks": 0
+    }
+  ],
+  "scope": "Read-only full indexed byte and path-set verification; no engines/services/suites. No host authenticity claim."
+}

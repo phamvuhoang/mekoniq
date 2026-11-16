@@ -1,0 +1,234 @@
+{
+  "scope": "Read-only current prepared qualification tuple/gate hashes and36ownreceipt/log checks,12acceptance tests per profile. Full artifact retention inventory remains later; no native/physical/host qualification.",
+  "summarySha256": "e09cff8abdc66453b3355158c340a2310b1226ce4fd72cbed166529a871ed870",
+  "profiles": [
+    {
+      "profile": "engineering-amd64",
+      "candidate": "r3-engineering-amd64-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-engineering-amd64-prepared/qualification.json",
+      "sha256": "d495ddbd51e3462d21c591989e94aaf092dc8c1979e5f87c0645a53fcd3be9a4",
+      "receipts": [
+        {
+          "name": "prepare-engineering-amd64.receipt.json",
+          "sha256": "0dbc8706bd1541e013a26f1088b14c766163fa352b0a150031f35f5d35cef782",
+          "logSha256": "caea57fc84ecc9ac34e300c7d72f38e92d3fb73f347f5e8ade563406b39f975f"
+        },
+        {
+          "name": "export-handoff-engineering-amd64.receipt.json",
+          "sha256": "594aa597f1974cae96f7d608dcbbce6029df7343734421a2f10d9e9dacdaa72c",
+          "logSha256": "4bde218a5d262cacaf9c53de59d431289ca86af9d372a28b3afd3699652e28ad"
+        },
+        {
+          "name": "handoff-engineering-amd64.receipt.json",
+          "sha256": "6f15824eb97fcf214e0e446f6d078d2e76abd86e698aec585a877d942e60f78e",
+          "logSha256": "4bde218a5d262cacaf9c53de59d431289ca86af9d372a28b3afd3699652e28ad"
+        },
+        {
+          "name": "record-r3-engineering-amd64.receipt.json",
+          "sha256": "5901b468e4f082dae1108e88b2d93233d2e62ad798c6998cb71866be0c585c06",
+          "logSha256": "86993bbb5ed6ff4041b484a25b99f3eb85a0963b681a30a4508ca0d6de612a18"
+        },
+        {
+          "name": "readback-r3-engineering-amd64.receipt.json",
+          "sha256": "50d634675cedc3a2136bf770e7efd4029c8ee015d73c01834af313a2fa666d8c",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-engineering-amd64.receipt.json",
+          "sha256": "db2dd5f558823a8237be979b1ae3c0f421fa4c659cbfd2793140219369f701ad",
+          "logSha256": "d34fd3e0a07b60dbbf815dd94e7fd8dc0716512260f56b23ac1537b17278850a"
+        }
+      ]
+    },
+    {
+      "profile": "engineering-arm64",
+      "candidate": "r3-engineering-arm64-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-engineering-arm64-prepared/qualification.json",
+      "sha256": "37dbf6714b63f4992d3f80ecaa20fab750b6d9e4556722872f1894782d98853c",
+      "receipts": [
+        {
+          "name": "prepare-engineering-arm64.receipt.json",
+          "sha256": "0aa55094d93305751d99db3d90d4cb2e0c29b04562f32ffb67cd2aeb4e640969",
+          "logSha256": "8c3f3eebaa947fbc1cccc1d95d2ec24a5bba5884422e9236205cfbcfb09bfc09"
+        },
+        {
+          "name": "export-handoff-engineering-arm64.receipt.json",
+          "sha256": "50e8f763e92b6b3ce78cab4885daf538ab81f879c647287ca0bca84d305f72f3",
+          "logSha256": "5dafd838250fa7952c445ba525fa1f004ff0fda5eeaf279aa8356901b69482f4"
+        },
+        {
+          "name": "handoff-engineering-arm64.receipt.json",
+          "sha256": "2307f0af6a970a7664767f258b439c56e3352c00b2b09ab3aacc305609e15875",
+          "logSha256": "5dafd838250fa7952c445ba525fa1f004ff0fda5eeaf279aa8356901b69482f4"
+        },
+        {
+          "name": "record-r3-engineering-arm64.receipt.json",
+          "sha256": "f981d6493c29d2dcaebe0025c64680a1a4ebb0113d76be5edf2645d4320f18fd",
+          "logSha256": "c5212210814c8ac46361be04cbdc68077b18bc2f1877a3877a1c3e5b47914543"
+        },
+        {
+          "name": "readback-r3-engineering-arm64.receipt.json",
+          "sha256": "9da08857517e92a091e5699d111581cae636d3ee9bd849e3a5b3515dd1aa2d3b",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-engineering-arm64.receipt.json",
+          "sha256": "f18fbbbf18fcbbe9ee3297259b03054ff6fff3c0b37afb7e3df36225b31c2cfd",
+          "logSha256": "5457ac6311d2bbc2eb5ca64292787ed2a087be304495b21fe01ee4be24738f11"
+        }
+      ]
+    },
+    {
+      "profile": "mujoco-linux-amd64",
+      "candidate": "r3-mujoco-linux-amd64-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-mujoco-linux-amd64-prepared/qualification.json",
+      "sha256": "b129fc6bf08c2970d343e605177492af26c549e69d3d0139569191b641b8c3a8",
+      "receipts": [
+        {
+          "name": "prepare-mujoco-linux-amd64.receipt.json",
+          "sha256": "f80c9d1524bab329000bfe79b976d5405a77392ea5da47e7531cab7a1db97a0c",
+          "logSha256": "f5149566f44b01fd160a7c550834d6f8043d1557db76ca5546dc237ca4391330"
+        },
+        {
+          "name": "export-handoff-mujoco-linux-amd64.receipt.json",
+          "sha256": "460075d509818089bdefc7b0168e3796bcb3f24152ecec0f3b02339d3f8db4e8",
+          "logSha256": "e81ab612970ea9833e1df6a52071585c3b791a282f8b77b00034fa3687c3da69"
+        },
+        {
+          "name": "handoff-mujoco-linux-amd64.receipt.json",
+          "sha256": "8fb05acb1c137f2a05657c5212c221db3d5cfacb8a4afee229d855853d70093f",
+          "logSha256": "e81ab612970ea9833e1df6a52071585c3b791a282f8b77b00034fa3687c3da69"
+        },
+        {
+          "name": "record-r3-mujoco-linux-amd64.receipt.json",
+          "sha256": "98944996dc0b12ba5e3b6e0771b66d27ba62600b1de8128d0ca51474ae4fe5f7",
+          "logSha256": "2a981371d80ebd8653f5967d6b8ddeddf3a6ea01ec0f3982ba2410a3df369468"
+        },
+        {
+          "name": "readback-r3-mujoco-linux-amd64.receipt.json",
+          "sha256": "ad78c3cd1f38bf089ed06580a6d780ffb7a798485e72fed57c34fce68ad7cd8d",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-mujoco-linux-amd64.receipt.json",
+          "sha256": "af8a29f22b0ae403f9f99d9ce0c5d7b9089629901a84b1aa193cdb617a67a545",
+          "logSha256": "2fa0ef9299a19c1d20d5dc552c9a2eae81a6dc3cfc2be07a1b60066c2d34f33f"
+        }
+      ]
+    },
+    {
+      "profile": "mujoco-linux-arm64",
+      "candidate": "r3-mujoco-linux-arm64-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-mujoco-linux-arm64-prepared/qualification.json",
+      "sha256": "1d51198514c7a2c8b7d5a9f7bf6660f595504afabf6b54cf80a23f1697b0cdf8",
+      "receipts": [
+        {
+          "name": "prepare-mujoco-linux-arm64.receipt.json",
+          "sha256": "526dd5e6adaa3019164c960247aa3367b4aad7903763a7f091d6729e6a1d434f",
+          "logSha256": "2de0a516ce86c891574c68101f6ed16ad9dd6418d5c1df97f049223c5e548352"
+        },
+        {
+          "name": "export-handoff-mujoco-linux-arm64.receipt.json",
+          "sha256": "75c51f59ed66228228fbfc378a0dff412da6473a70b5a1126c34b4d495bde008",
+          "logSha256": "18057f6e161f26786e5d4784b1c25bdfa441f6ecfb56899a52565dd95130dece"
+        },
+        {
+          "name": "handoff-mujoco-linux-arm64.receipt.json",
+          "sha256": "70455f772fb17e198ddb4e07c231d9c2a59632d3eff8d5adc8554a87e0973edb",
+          "logSha256": "18057f6e161f26786e5d4784b1c25bdfa441f6ecfb56899a52565dd95130dece"
+        },
+        {
+          "name": "record-r3-mujoco-linux-arm64.receipt.json",
+          "sha256": "e7203b8cafded012889735c08002f0a14cde1bd3f604e36beb07173532e4ae79",
+          "logSha256": "d93b5f60af1b2b36c1ee118eca70370fe30b20eb77faceea07a4e9a1a596c9a6"
+        },
+        {
+          "name": "readback-r3-mujoco-linux-arm64.receipt.json",
+          "sha256": "a56ea7d541cdd9a02ee79e138199aa0a1d7e03471b100f2bbb527aed6842d848",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-mujoco-linux-arm64.receipt.json",
+          "sha256": "6e1280eddef772f4c098e5e28ef9a70eee5f7a32aae732596b4852e568b21a23",
+          "logSha256": "2cdf6fd12bf17d9a34b1adc7d8233dc713d866da77b9581dd47f349f1a37f864"
+        }
+      ]
+    },
+    {
+      "profile": "puma560-linuxcnc-sim",
+      "candidate": "r3-puma560-linuxcnc-sim-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-puma560-linuxcnc-sim-prepared/qualification.json",
+      "sha256": "265ceac4275fc0a2d6a36c098879b609da344c5abaae52a52d3c8489cdf5ba7f",
+      "receipts": [
+        {
+          "name": "prepare-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "d14d64de401a72883c37c1b68209a071b01b44fbece44b5234b46a62deb09f35",
+          "logSha256": "6c10e3638a783b2a8ce9a893e8a43c7ce8673650287e4042d01bee7b860c8970"
+        },
+        {
+          "name": "export-handoff-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "55e86d2b1d8485f0b751964449a28e604f8c10d1ef84a9d09380f4b83f131999",
+          "logSha256": "7d317bda2641801b0a72491c680f23de023d29c27ad221af0259d996224fed23"
+        },
+        {
+          "name": "handoff-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "49cb29f9d2c3c9419d1da78e0ca8f1c79a9ccc786aaf89b0de17ec705f017575",
+          "logSha256": "7d317bda2641801b0a72491c680f23de023d29c27ad221af0259d996224fed23"
+        },
+        {
+          "name": "record-r3-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "d1afba58c3ed35eb58ecbe815fef5c4f334dca4eb3077a86941c45ec900b661b",
+          "logSha256": "3ce8f6d4e832c940c5a583d54d40dba6a779f5f5cecda3df002b0f61d60fb203"
+        },
+        {
+          "name": "readback-r3-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "ddf299a6ee9b181e8cedbf5145b563291af0efafa58053c0c1f4b0e75923c6e7",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-puma560-linuxcnc-sim.receipt.json",
+          "sha256": "e7e8b7e3602a88a56979bf199a56ee6ac7cdb97e1dccd6deeacb07c0a30e7497",
+          "logSha256": "1f0cc7d1fd232fb65d51614bcfec9650947b1cd13862fdf85d0c0d5b036e620f"
+        }
+      ]
+    },
+    {
+      "profile": "xarm6-jazzy-sim",
+      "candidate": "r3-xarm6-jazzy-sim-final-981e234",
+      "qualification": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-xarm6-jazzy-sim-prepared/qualification.json",
+      "sha256": "1d9f90add2b0eef6b21245cacec802306ae8c22b8cdfb8fa79b0006b0abd0ed0",
+      "receipts": [
+        {
+          "name": "prepare-xarm6-jazzy-sim.receipt.json",
+          "sha256": "38a5f9a5a487c64e236bfbf61c9e459ee820bcfa499bb54f9c9e69b0e1499cf9",
+          "logSha256": "0f0c9693ad5e7a2185bebcd4f2616a199a11df3c9e74a68821882816db179934"
+        },
+        {
+          "name": "export-handoff-xarm6-jazzy-sim.receipt.json",
+          "sha256": "a5c770a21ad271e78b0174a3b27e56deca794118cd888dcd62f131d9ba5aadab",
+          "logSha256": "a442ac85b339da7c68f186d37ae82df1c883a9560d462f20f52e38efdf75d795"
+        },
+        {
+          "name": "handoff-xarm6-jazzy-sim.receipt.json",
+          "sha256": "8685d721516ba79981bbc3ab2bb6fae8e4e5e45bbc4f6f1de787bdfd540ec06c",
+          "logSha256": "a442ac85b339da7c68f186d37ae82df1c883a9560d462f20f52e38efdf75d795"
+        },
+        {
+          "name": "record-r3-xarm6-jazzy-sim.receipt.json",
+          "sha256": "9fa1d0e57f016e6588023ba0c3c0022ecb04950f55435a7ddccf4bf410915bdf",
+          "logSha256": "6ec97e6ea7db885593b21c5264905e59466ff14977bd1269d3e002a23a8126d1"
+        },
+        {
+          "name": "readback-r3-xarm6-jazzy-sim.receipt.json",
+          "sha256": "895480b544528308f1ddf25479e0d61ece25b25afc8ff9997d48299d3b7ba267",
+          "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f"
+        },
+        {
+          "name": "acceptance-r3-xarm6-jazzy-sim.receipt.json",
+          "sha256": "054641f52d87510a1eb5a2b4db321bd0297c58aefe2d36f64a61b2e4a8a763a7",
+          "logSha256": "24e0ed816c7f1d2edeb9cf9e60a899996c6a3606a6cfd9a26066344baae16be7"
+        }
+      ]
+    }
+  ]
+}

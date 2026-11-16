@@ -1,0 +1,6 @@
+{
+  "ownExit": 1,
+  "reason": "Root audit incorrectly assumed all failed receipts have exit1; retained tsc typecheck-initial actualexit2 is legitimate. Corrected audit admits actual integer exits and independently asserts final required checks own0.",
+  "beforeAuditWritten": true,
+  "evidenceOrProductChanged": false
+}

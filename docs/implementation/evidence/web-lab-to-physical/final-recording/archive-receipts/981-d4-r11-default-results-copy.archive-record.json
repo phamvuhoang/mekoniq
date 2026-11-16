@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-r11-default-results-copy",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11-default-results-copy",
+  "archive": "981-d4-r11-default-results-copy.tar.gz",
+  "archiveBytes": 153,
+  "archiveSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+  "memberIndex": "981-d4-r11-default-results-copy.members.json",
+  "memberIndexSha256": "d37cda0b138f7e750ecc03e2ba3b497404d82abebf8e35346178755ad6c4a5d8",
+  "memberCount": 1,
+  "memberBytes": 45,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-r11-default-results-copy.extract.json",
+  "safeExtractionReceiptSha256": "e4e456194c043336c224866bab2370041600842d11883ca7e7e9560b5e399e96",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r11-default-results-copy",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

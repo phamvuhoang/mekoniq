@@ -1,0 +1,27 @@
+source
+commit 2bd66e679aba431a84736eb10e04717dc4d32ce7
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 20:03:49 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 20:03:49 2026 +0700
+
+    fix: admit pinned vendor metadata in native handoffs
+ .../schemas/native-handoff-v1.schema.json          |  4 +-
+ packages/lab-runtime/src/v2/sil/native-handoff.ts  |  3 +-
+ tests/unit/capabilities-mujoco-arm.test.ts         | 12 ++++--
+ tests/unit/lab-sil-cli.test.ts                     |  8 +++-
+ tests/unit/native-handoff-current-puma.test.ts     | 43 ++++++++++++++++++++++
+ 5 files changed, 61 insertions(+), 9 deletions(-)
+
+lab
+commit 111ed9a763a5fea24ab3180834c83c1db97417dd
+Author:     Henry <phamvuhoang@gmail.com>
+AuthorDate: Sun Nov 15 20:05:27 2026 +0700
+Commit:     Henry <phamvuhoang@gmail.com>
+CommitDate: Sun Nov 15 20:05:27 2026 +0700
+
+    chore: pin source runtime 2bd66e6
+ config/source-runtime.lock.json | 8 ++++----
+ src/shared/engineering.ts       | 2 +-
+ src/shared/navigation2d.ts      | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)

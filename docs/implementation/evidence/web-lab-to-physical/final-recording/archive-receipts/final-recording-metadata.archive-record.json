@@ -1,0 +1,15 @@
+{
+  "id": "final-recording-metadata",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/safe-final-recording-metadata",
+  "archive": "final-recording-metadata.tar.gz",
+  "archiveBytes": 20446286,
+  "archiveSha256": "e2b2605b75b39403406e1ab44f43fca9396a7a945c4d1e0aa8c7dfdb25c66860",
+  "memberIndex": "final-recording-metadata.members.json",
+  "memberIndexSha256": "21d7539b8519374b379fc611871a93fdd3568f1f14b741205eadae1467928bab",
+  "memberCount": 1791,
+  "memberBytes": 103557662,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/final-recording-metadata.extract.json",
+  "safeExtractionReceiptSha256": "8e90a7f1d959f2c9bdc91ac9df67548a5bc92feeec672597077af32220fe9a31",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/final-recording-metadata",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

@@ -1,0 +1,195 @@
+# Review package: b631928b6707ce9c6fd39db7bd5ced2100e353c7..f0fb70f9733bc6eb103fe8e8972cd45926af918d
+
+## Commits
+f0fb70f fix: reserve physics metadata within byte quotas
+
+## Files changed
+ docs/research/2026-11-physics-evidence-v1.md       |  6 ++++-
+ .../src/v2/simulation3d/physics-evidence.ts        | 22 +++++++++++-------
+ tests/integration/mujoco-mobile-lifecycle.test.ts  | 11 +++++++--
+ tests/integration/physics-evidence.test.ts         | 27 ++++++++++++++++++++++
+ 4 files changed, 55 insertions(+), 11 deletions(-)
+
+## Diff
+diff --git a/docs/research/2026-11-physics-evidence-v1.md b/docs/research/2026-11-physics-evidence-v1.md
+index 4622d88..e2f953a 100644
+--- a/docs/research/2026-11-physics-evidence-v1.md
++++ b/docs/research/2026-11-physics-evidence-v1.md
+@@ -19,21 +19,25 @@ robot, prop, support and geometry IDs, 20 ms clock / ten 2 ms substeps, unit
+ quaternions and consistent orientation fields. It is appended to a fsynced WAL
+ before the logical tick commits. Immutable gzip chunks are sealed at bounded
+ intervals, then the manifest is atomically published. A WAL tail/write intent is
+ not published evidence. An unacknowledged, malformed or unpersistable advanced
+ tick is an explicit gap and terminal unknown, never retried or respawned. The
+ stateful experimental stop monitor runs once after validation and durable append,
+ before source outcome observations. Startup uncertainty remains latched.
+ 
+ The physics and navigation quotas are each at most 100 MiB, including writer
+ metadata and orphan accounting, so configuring either above its cap is refused
+-on this provider. Physics caps include 30,000 ticks, 2,000 chunks, 256 KiB lines,
++on this provider. Initialization and each atomic metadata publication are checked
++using UTF-8 byte lengths, including simultaneous old-target and temporary-file
++bytes. Healthy writes reserve a worst-case terminal reason and one gap manifest;
++impossible budgets refuse before publication. Terminal/reopen writes obey the
++same cap, even when the terminal can only remain in memory/checkpoint. Physics caps include 30,000 ticks, 2,000 chunks, 256 KiB lines,
+ 16 MiB compressed / 64 MiB inflated chunks and 400 MiB total inflation. The reader
+ checks sizes before reading, confines regular files, verifies hashes before
+ bounded inflation, and checks every record and contiguous coverage. A report's
+ `complete:true` is a claim until that verification succeeds.
+ 
+ MuJoCo primes one real 20 ms interval before logical tick zero. Its raw tick-zero
+ contacts are retained unchanged. Aggregate contact peak/impulse use the logical
+ interval **(0, lastTick]**, excluding that priming interval. A tick-zero-only
+ report has unavailable interval metrics. Maximum tilt and load displacement
+ include the initial pose/reference; threshold duration counts only positive-tick
+diff --git a/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+index 67cefe1..f2aa111 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/physics-evidence.ts
+@@ -48,39 +48,45 @@ export async function readPhysicsManifest(root:string):Promise<PhysicsEvidenceV1
+  const m:unknown=JSON.parse((await boundedFile(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validatePhysicsEvidenceShape(m))throw new Error('PHYSICS_MANIFEST_INVALID');return m as PhysicsEvidenceV1;
+ }
+ export async function openPhysicsRecorder(o:PhysicsRecorderOptions):Promise<PhysicsRecorder>{
+  const maxBytes=o.maxBytes??EVIDENCE_LIMITS.maxBytes,maxTicks=o.maxTicks??EVIDENCE_LIMITS.maxTicks,chunkTicks=o.chunkTicks??250;
+  if(!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>EVIDENCE_LIMITS.maxBytes||!Number.isSafeInteger(maxTicks)||maxTicks<0||maxTicks>EVIDENCE_LIMITS.maxTicks||!Number.isSafeInteger(chunkTicks)||chunkTicks<1||chunkTicks>30000)throw new Error('PHYSICS_LIMIT_INVALID');
+  await mkdir(o.directory,{recursive:true,mode:0o700});
+  let m:PhysicsEvidenceV1={schemaVersion:1,documentType:'physics-evidence',identity:structuredClone(o.identity),streams:[{stream:'physics',chunks:[]}],coverage:{firstTick:0,lastTick:0,complete:false},gaps:[],terminalReason:null,metricsPolicyDigest:o.metricsPolicyDigest,assumptions:o.assumptions};
+  let queue:Promise<void>=Promise.resolve();
+  const serial=(fn:()=>Promise<void>)=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
+  let last=-1,lines:string[]=[],inflated=0,totalInflated=0,closed=false;
+- const save=()=>writeDurable(o.directory,MANIFEST,JSON.stringify(m));
++ // Every atomic publication temporarily coexists with all existing bytes, including its old
++ // target and any orphan/tmp file. Reserve one worst-case terminal + gap document before
++ // healthy writes: JSON control-character escapes cost six bytes per UTF-16 code unit.
++ const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
++ const intentBytes=Buffer.byteLength(JSON.stringify({lastTick:Number.MAX_SAFE_INTEGER}));
++ const reserve=(manifest:PhysicsEvidenceV1)=>manifest.terminalReason?0:Buffer.byteLength(JSON.stringify({...manifest,coverage:{...manifest.coverage,complete:false},terminalReason:'\u0000'.repeat(200),gaps:[...manifest.gaps,{firstTick:Number.MAX_SAFE_INTEGER,lastTick:Number.MAX_SAFE_INTEGER,reason:'\u0000'.repeat(200)}]}))+intentBytes;
++ const publish=async(name:string,bytes:Uint8Array|string,extra=0)=>{await quota(Buffer.byteLength(bytes)+extra);await writeDurable(o.directory,name,bytes);};
++ const save=()=>publish(MANIFEST,JSON.stringify(m),reserve(m));
+  if((await readdir(o.directory)).length){const old=await readPhysicsManifest(o.directory);if(!validatePhysicsEvidenceShape(old)||hashJson(old.identity)!==hashJson(o.identity))throw new Error('PHYSICS_IDENTITY_MISMATCH');m=old as PhysicsEvidenceV1;m.coverage.complete=false;m.terminalReason??='PHYSICS_RESTART';closed=true;await save();}
+  else await save();
+  const end=async(reason:string)=>{m.terminalReason??=reason.slice(0,200);m.coverage.complete=false;closed=true;await save().catch(()=>{});};
+- const quota=async(extra:number)=>{if(await sizeOf(o.directory)+extra>maxBytes)throw new Error('PHYSICS_QUOTA_EXCEEDED');};
+  const flush=async()=>{
+   if(!lines.length)return;
+   const bytes=gzipSync(lines.join('')),chunks=m.streams[0]!.chunks;
+   if(chunks.length>=READ_LIMITS.chunksPerStream||bytes.length>READ_LIMITS.chunkBytes||totalInflated+inflated>READ_LIMITS.totalInflated)throw new Error('PHYSICS_READ_LIMIT');
+-  await quota(bytes.length+JSON.stringify(m).length+512);
+-  await writeDurable(o.directory,INTENT,JSON.stringify({lastTick:last}));
+-  const path=`physics-${String(chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
+-  await writeDurable(o.directory,path,bytes);chunks.push({path,sha256:sha(bytes),bytes:bytes.length});m.coverage.lastTick=last;m.coverage.complete=!m.terminalReason&&!m.gaps.length;
+-  await save();await writeDurable(o.directory,WAL,'');await unlink(join(o.directory,INTENT));totalInflated+=inflated;inflated=0;lines=[];
++  const path=`physics-${String(chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`,next=structuredClone(m),intent=JSON.stringify({lastTick:last});
++  next.streams[0]!.chunks.push({path,sha256:sha(bytes),bytes:bytes.length});next.coverage.lastTick=last;next.coverage.complete=!next.terminalReason&&!next.gaps.length;
++  await quota(bytes.length+Buffer.byteLength(intent)+Buffer.byteLength(JSON.stringify(next))+reserve(next));
++  await publish(INTENT,intent);await publish(path,bytes);m=next;
++  await save();await publish(WAL,'');await unlink(join(o.directory,INTENT));totalInflated+=inflated;inflated=0;lines=[];
+  };
+  return {directory:o.directory,manifest:()=>structuredClone(m),append(record){return serial(async()=>{
+   if(closed||m.terminalReason)throw new Error('PHYSICS_RECORDER_TERMINAL');
+   const attempted=last+1;
+-  try{validatePhysicsRecord(record,o.admission,last+1);if(record.tick>maxTicks)throw new Error('PHYSICS_TICK_LIMIT');const line=JSON.stringify(record)+'\n',n=Buffer.byteLength(line);if(n>READ_LIMITS.lineBytes)throw new Error('PHYSICS_READ_LIMIT');if(inflated+n>12*1024*1024)await flush();await quota(n+512);
++  try{validatePhysicsRecord(record,o.admission,last+1);if(record.tick>maxTicks)throw new Error('PHYSICS_TICK_LIMIT');const line=JSON.stringify(record)+'\n',n=Buffer.byteLength(line);if(n>READ_LIMITS.lineBytes)throw new Error('PHYSICS_READ_LIMIT');if(inflated+n>12*1024*1024)await flush();await quota(n+reserve(m));
+    const h=await open(join(o.directory,WAL),'a',0o600);try{await h.writeFile(line);await h.sync();}finally{await h.close();}const d=await open(o.directory,'r');try{await d.sync();}finally{await d.close();}
+    lines.push(line);inflated+=n;last=record.tick;if(lines.length>=chunkTicks)await flush();
+   }catch(e){const reason=(e as Error).message;m.gaps.push({firstTick:attempted,lastTick:Math.max(attempted,Number.isSafeInteger(record?.tick)?record.tick:attempted),reason:reason.slice(0,200)});await end(reason);throw e;}
+  });},flush(){return serial(async()=>{try{await flush();}catch(e){await end((e as Error).message);throw e;}});},finish(reason){return serial(async()=>{if(reason)await end(reason);try{await flush();if(!reason)closed=true;}catch(e){await end((e as Error).message);throw e;}await save();});},gap(firstTick,lastTick,reason){return serial(async()=>{m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);});}};
+ }
+ export async function readPhysicsEvidence(root:string,manifest:unknown,options?:{admission:PhysicsAdmission;identity?:PhysicsEvidenceV1['identity'];metricsPolicyDigest?:string;runTick?:number}):Promise<PhysicsRead>{
+  const records:PhysicsTickRecord[]=[],issues:string[]=[],result=():PhysicsRead=>({complete:!issues.length,records,gaps:validatePhysicsEvidenceShape(manifest)?(manifest as PhysicsEvidenceV1).gaps:[],issues});
+  if(!validatePhysicsEvidenceShape(manifest)||Buffer.byteLength(JSON.stringify(manifest))>READ_LIMITS.manifestBytes){issues.push('PHYSICS_MANIFEST_INVALID');return result();}
+  const m=manifest as PhysicsEvidenceV1,refs=m.streams[0]?.chunks??[];
+  if(!options?.admission){issues.push('PHYSICS_ADMISSION_REQUIRED');return result();}
+diff --git a/tests/integration/mujoco-mobile-lifecycle.test.ts b/tests/integration/mujoco-mobile-lifecycle.test.ts
+index ae2b512..c166cbd 100644
+--- a/tests/integration/mujoco-mobile-lifecycle.test.ts
++++ b/tests/integration/mujoco-mobile-lifecycle.test.ts
+@@ -9,26 +9,26 @@ import {mujocoMobilePlant} from '../../packages/lab-runtime/src/v2/simulation3d/
+ import {createFixedStepScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+ import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {WorkerLostError} from '../../packages/lab-runtime/src/v2/navigation2d/plant';
+ import type {PlantPort} from '../../packages/lab-runtime/src/v2/navigation2d/plant';
+ import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {navigationFixture} from '../support/navigation2d';
+ import {testCompiler,writeFixtureCatalog} from '../support/engineering';
+ const dirs:string[]=[],runs:ScenarioRun[]=[],root=resolve('robotics/simulation-mujoco');
+ const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'mj-lifecycle-'));dirs.push(d);return d;};
+ afterEach(async()=>{for(const r of runs.splice(0))await r.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
+-async function setup(wrap:(plant:PlantPort)=>void){
++async function setup(wrap:(plant:PlantPort)=>void,evidence?:{maxBytes:number}){
+  const f=navigationFixture('serve-3d').fixture;f.project={...f.project,requestedProfile:'engineering-mujoco-3d-v1'};
+  const catalogRoot=await temp();await writeFixtureCatalog(catalogRoot,f);
+  const service=createEngineeringService({directory:await temp(),catalogRoot,compiler:testCompiler,compilers:{'engineering-mujoco-3d-v1':createMujocoCompiler({workerRoot:root})}});
+  const receipt=await service.compileEngineeringProject(f.project,'owner'),locked=await service.admitRun('owner',{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},'engineering-mujoco-3d-v1',undefined);
+- const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1};
++ const runtime={python:resolve('.venv-mujoco/bin/python'),workerRoot:root,schemaDir:resolve('packages/contracts/schemas'),lockDigest:await lockDigestOf(join(root,'requirements.lock')),engineVersion:'3.17.0',maxActiveRuns:1,...evidence?{evidence}:{}};
+  const plant=mujocoMobilePlant(runtime);wrap(plant);
+  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)},directory=await temp();
+  const open=async()=>{const r=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'lifecycle-test',engineering:locked},{directory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(r);return r;};
+  return {open,directory};
+ }
+ let ordinal=0;
+ async function act(run:ScenarioRun,kind:string,payload={}){const v=await run.snapshot();return run.action({actionId:`act-${++ordinal}`,expectedRevision:v.run.runRevision,kind,payload});}
+ 
+ test.each(['missing','clock','contacts','pose'])('mobile runner rejects %s physics before confirming a pending cancellation',async mode=>{
+  let fault=false;
+@@ -108,10 +108,17 @@ test('a report flush failure terminates the plant before another engine step',as
+ },30_000);
+ 
+ test('restart after an in-flight step joins the explicit unknown horizon into physics coverage',async()=>{
+  const {open,directory}=await setup(()=>{}),run=await open();await run.start();await act(run,'step',{ticks:100});await run.report();
+  const checkpoint=JSON.parse(await readFile(join(directory,'run.json'),'utf8'));checkpoint.inFlight=true;
+  const physics=await readFile(join(directory,'physics','manifest.json')),navigation=await readFile(join(directory,'evidence','manifest.json'));
+  await act(run,'step',{ticks:1});await run.close();
+  await writeFile(join(directory,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'physics','manifest.json'),physics);await writeFile(join(directory,'evidence','manifest.json'),navigation);
+  const restored=await open(),report=await restored.report();expect(report.outcome.tick).toBe(100);expect(report.physicsEvidence?.complete).toBe(false);expect(report.physicsEvidence?.manifest.gaps).toContainEqual(expect.objectContaining({firstTick:101,lastTick:101,reason:'STEP_ACK_LOST'}));
+ },30_000);
++
++test('impossible physics initialization quota after create retains startup unknown without exceeding the budget',async()=>{
++ let spawns=0,created=0;const {open,directory}=await setup(plant=>{const spawn=plant.spawn;plant.spawn=async o=>{spawns++;const w=await spawn(o);return {...w,async request(req){const r=await w.request(req);if(req.op==='create'&&r.ok)created++;return r;}};};},{maxBytes:1});
++ const run=await open();await expect(run.start()).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(created).toBe(1);expect((await run.snapshot()).tick).toBe(0);expect((await run.snapshot()).run.status).toBe('needs_attention');
++ const {readdir}=await import('node:fs/promises');expect(await readdir(join(directory,'physics'))).toEqual([]);
++ await expect(act(run,'start')).rejects.toThrow('STARTUP_UNKNOWN');await run.close();const restored=await open();await expect(act(restored,'start')).rejects.toThrow('STARTUP_UNKNOWN');expect(spawns).toBe(1);
++},30_000);
+diff --git a/tests/integration/physics-evidence.test.ts b/tests/integration/physics-evidence.test.ts
+index b04d0de..5b84571 100644
+--- a/tests/integration/physics-evidence.test.ts
++++ b/tests/integration/physics-evidence.test.ts
+@@ -41,10 +41,37 @@ test('a killed writer between chunk publication and manifest rename cannot publi
+ },15000);
+ test('reader binds supplied identity and admitted metrics policy rather than trusting a complete claim',async()=>{
+  const {directory,rec}=await setup();await rec.append(tick());await rec.finish(null);
+  expect((await readPhysicsEvidence(directory,rec.manifest(),{admission,identity:{...identity,bootId:'other'}})).complete).toBe(false);
+  expect((await readPhysicsEvidence(directory,rec.manifest(),{admission,metricsPolicyDigest:'0'.repeat(64)})).complete).toBe(false);
+  const m=rec.manifest();m.streams[0]!.chunks=Array(2001).fill(m.streams[0]!.chunks[0]);expect((await readPhysicsEvidence(directory,m,{admission})).complete).toBe(false);
+ });
+ test('queued appends preserve one durable tick order for concurrent callers',async()=>{
+  const {directory,rec}=await setup();await Promise.all([rec.append(tick()),rec.append(tick(1))]);await rec.flush();expect((await readPhysicsEvidence(directory,rec.manifest(),{admission})).records.map(r=>r.tick)).toEqual([0,1]);
+ });
++
++const storedBytes=async(directory:string)=>{const {readdir,stat}=await import('node:fs/promises');let n=0;for(const f of await readdir(directory))n+=(await stat(join(directory,f))).size;return n;};
++test('impossible initial metadata budgets refuse before publishing any file',async()=>{
++ for(const maxBytes of [1,749,750,1000]){const directory=await mkdtemp(join(tmpdir(),'physics-small-quota-'));dirs.push(directory);
++  await expect(openPhysicsRecorder({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(0);
++ }
++});
++test('initial metadata reserves use UTF-8 bytes and preserve space for a terminal gap',async()=>{
++ const ascii=await setup({identity:{...identity,runId:'a'.repeat(200),bootId:'a'.repeat(200)},maxBytes:5000});expect(ascii.rec.manifest().terminalReason).toBeNull();
++ // Same character count, different byte cost; this reserve cannot fit the same budget.
++ const directory=await mkdtemp(join(tmpdir(),'physics-unicode-quota-'));dirs.push(directory);
++ const unicodeIdentity={...identity,runId:'界'.repeat(200),bootId:'界'.repeat(200)};
++ await expect(openPhysicsRecorder({directory,identity:unicodeIdentity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes:5000})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(0);
++ await ascii.rec.gap(1,1,'\u0000'.repeat(200));expect(await storedBytes(ascii.directory)).toBeLessThanOrEqual(5000);expect(JSON.parse(await readFile(join(ascii.directory,'manifest.json'),'utf8')).terminalReason).toBeTruthy();
++});
++test('reopen and repeated terminal metadata never spend beyond the configured cap',async()=>{
++ const {directory,rec}=await setup();await rec.append(tick());await rec.finish(null);
++ const before=await storedBytes(directory),manifest=await readFile(join(directory,'manifest.json'));
++ await expect(openPhysicsRecorder({directory,identity,admission,assumptions,metricsPolicyDigest:'e'.repeat(64),maxBytes:before})).rejects.toThrow('PHYSICS_QUOTA_EXCEEDED');expect(await storedBytes(directory)).toBe(before);expect(await readFile(join(directory,'manifest.json'))).toEqual(manifest);
++ const bounded=await setup({maxBytes:4200});for(let i=0;i<8;i++)await bounded.rec.gap(i,i,'\u0000'.repeat(200));expect(await storedBytes(bounded.directory)).toBeLessThanOrEqual(4200);expect(bounded.rec.manifest().terminalReason).toBeTruthy();
++});
++test('accepted appends retain enough metadata headroom to publish quota termination',async()=>{
++ const {directory,rec}=await setup({maxBytes:6000});let accepted=0;
++ for(let n=0;n<20;n++){try{await rec.append(tick(n));accepted++;}catch(e){expect((e as Error).message).toBe('PHYSICS_QUOTA_EXCEEDED');break;}}
++ expect(accepted).toBeGreaterThan(0);expect(accepted).toBeLessThan(20);expect(await storedBytes(directory)).toBeLessThanOrEqual(6000);
++ const persisted=JSON.parse(await readFile(join(directory,'manifest.json'),'utf8'));expect(persisted.terminalReason).toBe('PHYSICS_QUOTA_EXCEEDED');expect(persisted.gaps).toContainEqual(expect.objectContaining({firstTick:accepted,lastTick:accepted}));
++});

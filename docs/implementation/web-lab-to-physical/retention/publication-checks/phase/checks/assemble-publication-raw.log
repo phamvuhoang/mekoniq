@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/assemble-publication-raw.py", line 12, in <module>
+    if r['id'] in records:assert records[r['id']]['archiveSha256']==r['archiveSha256']
+       ~^^^^^^
+KeyError: 'id'

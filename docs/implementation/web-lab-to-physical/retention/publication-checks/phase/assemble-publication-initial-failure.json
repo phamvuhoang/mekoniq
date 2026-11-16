@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-16T01:54:25.076100+00:00",
+  "originalHelper": "assemble-publication-raw.py",
+  "sha256": "a1d979ac036f3fd26e85c4d0923bdf0ed11d75ffafc6723c8a912d3bf4f79723",
+  "ownReceipt": "checks/assemble-publication-raw.receipt.json",
+  "failure": "KeyError id: an extraction receipt also has archive/source fields; selection was too broad. Failed before file-copy stage. No archive/source/evidence change.",
+  "correction": "New metadata-only v2 helper admits actual archive records with id; original helper/output/receipt retained."
+}

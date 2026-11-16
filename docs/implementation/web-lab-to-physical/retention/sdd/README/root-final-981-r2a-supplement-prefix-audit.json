@@ -1,0 +1,639 @@
+{
+  "at": "2026-11-15T21:48:56.943241+00:00",
+  "scope": "Original settled supplemental prefix only; no rerun or qualification merge",
+  "tableRows": 28,
+  "prefixRows": 19,
+  "successfulInvocations": 17,
+  "failedInvocations": 1,
+  "notRunRows": 1,
+  "remainingRowIds": [
+    "lab-e2e-twin-transport",
+    "lab-e2e-twin-workspace",
+    "lab-e2e-brand-accessibility",
+    "lab-e2e-arm-mesh",
+    "lab-e2e-arm-cell",
+    "lab-e2e-mujoco-coffee",
+    "lab-e2e-mujoco-mesh-fallback",
+    "lab-e2e-irsim-journey",
+    "lab-e2e-webots-coffee"
+  ],
+  "results": [
+    {
+      "id": "ma-static",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:27.748Z",
+      "finishedAt": "2026-11-15T21:10:31.021Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-static.json",
+          "counts": {
+            "passed": 38
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-rtb",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:31.328Z",
+      "finishedAt": "2026-11-15T21:10:34.723Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-rtb.json",
+          "counts": {
+            "passed": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-py",
+      "repo": "source",
+      "kind": "pytest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:35.041Z",
+      "finishedAt": "2026-11-15T21:10:46.621Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-py.xml",
+          "xmlWellFormed": true,
+          "counts": {
+            "passed": 125,
+            "failed": 0,
+            "errors": 0,
+            "skipped": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-worker",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:46.951Z",
+      "finishedAt": "2026-11-15T21:10:49.415Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-worker.json",
+          "counts": {
+            "passed": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-ports",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:49.718Z",
+      "finishedAt": "2026-11-15T21:10:55.639Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-ports.json",
+          "counts": {
+            "passed": 16
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-programs",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:55.960Z",
+      "finishedAt": "2026-11-15T21:10:58.933Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-programs.json",
+          "counts": {
+            "passed": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-contact",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:10:59.250Z",
+      "finishedAt": "2026-11-15T21:11:00.831Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-contact.json",
+          "counts": {
+            "passed": 48
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-bv01",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:11:01.141Z",
+      "finishedAt": "2026-11-15T21:12:05.624Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-bv01.json",
+          "counts": {
+            "passed": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "ma-faults",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:12:06.017Z",
+      "finishedAt": "2026-11-15T21:14:33.696Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-faults.json",
+          "counts": {
+            "passed": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": "rt-remote",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:14:34.117Z",
+      "finishedAt": "2026-11-15T21:14:41.956Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/rt-remote.json",
+          "counts": {
+            "passed": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": "rt-paced",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:14:42.279Z",
+      "finishedAt": "2026-11-15T21:16:22.255Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/rt-paced.json",
+          "counts": {
+            "passed": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "rt-container",
+      "status": "not_run",
+      "reason": "Latest owned Docker inventory failed; no repeated probe or image build allowed absent state change"
+    },
+    {
+      "id": "regress",
+      "repo": "source",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:16:22.653Z",
+      "finishedAt": "2026-11-15T21:16:52.712Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/regress.json",
+          "counts": {
+            "passed": 59
+          }
+        }
+      ]
+    },
+    {
+      "id": "lab-rt-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:16:53.009Z",
+      "finishedAt": "2026-11-15T21:16:59.168Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-rt-unit.json",
+          "counts": {
+            "passed": 52
+          }
+        }
+      ]
+    },
+    {
+      "id": "lab-ui-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:16:59.410Z",
+      "finishedAt": "2026-11-15T21:17:00.570Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-ui-unit.json",
+          "counts": {
+            "passed": 75
+          }
+        }
+      ]
+    },
+    {
+      "id": "lab-arm-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:17:00.793Z",
+      "finishedAt": "2026-11-15T21:17:01.836Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-arm-unit.json",
+          "counts": {
+            "passed": 51
+          }
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-remote-origin",
+      "repo": "lab",
+      "kind": "playwright",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:17:02.061Z",
+      "finishedAt": "2026-11-15T21:17:28.044Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-remote-origin-remote-origin.json",
+          "counts": {
+            "passed": 1
+          },
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-twin-layout",
+      "repo": "lab",
+      "kind": "playwright",
+      "ownExitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T21:17:28.306Z",
+      "finishedAt": "2026-11-15T21:17:50.368Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-layout-twin-layout.json",
+          "counts": {
+            "passed": 9
+          },
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "id": "lab-e2e-twin-polish",
+      "repo": "lab",
+      "kind": "playwright",
+      "ownExitCode": 1,
+      "signal": null,
+      "startedAt": "2026-11-15T21:17:50.621Z",
+      "finishedAt": "2026-11-15T21:17:57.051Z",
+      "rawResults": [
+        {
+          "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-polish-twin-polish.json",
+          "counts": {
+            "passed": 9,
+            "failed": 1
+          },
+          "flaky": 0
+        }
+      ]
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/table.json",
+      "bytes": 7315,
+      "sha256": "52e3b29088fcffebf8397cf12943f5c821f917e1926c9851de541a5bd1b366e2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/execution-index.json",
+      "bytes": 24790,
+      "sha256": "5aee418115d10aac0a11ae18d10a8673666cfd62c4fc5473d1d217f7dd95f903"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-static.receipt.json",
+      "bytes": 5474,
+      "sha256": "f92e6d36cc3e251f5727a3675004d39c0ad4a5cadc582acc0959758051c6ae20"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-static.log",
+      "bytes": 701,
+      "sha256": "27faad3a7c167bb40f8820ed374afa8e92fbeae2707d2fa96d34a8992273af34"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-static.json",
+      "bytes": 14280,
+      "sha256": "5c2d6b8183347cba839111277239d371e86d22df016e355dea2eb887a3ad89e8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-rtb.receipt.json",
+      "bytes": 5290,
+      "sha256": "5e29e6934ac6a5e24995a83af40a58376ce6a5e8c54fbf0dd2f61a6c574b72f0"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-rtb.log",
+      "bytes": 575,
+      "sha256": "3ae1bcd0cb901f5487921e9b29dc1809eca19cb07160004f956cafde0f0eef6c"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-rtb.json",
+      "bytes": 1091,
+      "sha256": "838233827eb16c50ea0a4945f044520bad369f6d4e1b244c15657056c58b7f54"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-py.receipt.json",
+      "bytes": 5511,
+      "sha256": "bf79c3eb1e52a820dec20adb657b83b6f16ec6756c60cba585cc5072fbd1b659"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-py.log",
+      "bytes": 181,
+      "sha256": "bdcbe89558483300018fd1825488b6e95dbdc77c223507129e09d9b7c3e58e5d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-py.xml",
+      "bytes": 16344,
+      "sha256": "a06b7f126f75b77695ddf266e5adddd57a9ff32938fa87d3b289f70d18a9edad"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-worker.receipt.json",
+      "bytes": 5301,
+      "sha256": "a9c1d37ecfa6c3e3e6d2020c60c536c8db3ba7d86e266e931818ba2d3d3f28a8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-worker.log",
+      "bytes": 850,
+      "sha256": "bafd0bfe76ae731baa4a78673eb5a4099b8f094cea74b965e58bcbb1698f9f51"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-worker.json",
+      "bytes": 1876,
+      "sha256": "eb9685c7d1fd4269419a3ae02c103a842f29955332197068eae7d558fec1d731"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-ports.receipt.json",
+      "bytes": 5292,
+      "sha256": "626030649b04f52dd82be9a5f3c3bf4b1dac3beeb18b0f79d43e3c21852da503"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-ports.log",
+      "bytes": 1050,
+      "sha256": "f62c19f205c6d8958af3b7e1f5478ea3c4c82079e5e9e5f5df0dbcf7fb54fbf1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-ports.json",
+      "bytes": 7445,
+      "sha256": "67428b14d6a824c62dcefd65efd2dc7f2218a0f3bf2711e466fac176b3961e47"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-programs.receipt.json",
+      "bytes": 5305,
+      "sha256": "55a5f0ba8e869e7c519e818875c1f216c81f14366896847b772838bc62fffa8f"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-programs.log",
+      "bytes": 6843,
+      "sha256": "c651d17b31516c7c75d2b661b4f528210a93adcae3be8bd40617069708505653"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-programs.json",
+      "bytes": 1543,
+      "sha256": "c24236e3ea5ba89b589b80d5c5b95bbde53885b32f697f59a9a090797433c1b9"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-contact.receipt.json",
+      "bytes": 5423,
+      "sha256": "0a10d2ab6d3ef635967acb301826af91cd980a47457d785dd3f80b77f817d929"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-contact.log",
+      "bytes": 635,
+      "sha256": "5cba06be842a472ac2a06d8965bc6568a66d60982bce63d883f81316bc05e3f2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-contact.json",
+      "bytes": 17958,
+      "sha256": "7d5958478ed6cb7fb439ff7f60051aea76813f13ff43852a68579b6878865da8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-bv01.receipt.json",
+      "bytes": 5349,
+      "sha256": "1f73c8e27be7f2df5e8f83364b8e41e804dcd54f9c96992d4d716f0867c279fc"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-bv01.log",
+      "bytes": 5921,
+      "sha256": "75f42063556f71686df8c62a55b1bc288881b5d9a33e812f6334882e78441475"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-bv01.json",
+      "bytes": 7344,
+      "sha256": "ca78ea303c799592f4e097b29374aa8b8eeb84f67dc176d6c6dc86c5af8f1155"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-faults.receipt.json",
+      "bytes": 5355,
+      "sha256": "afaa14b0df9d74baae08626668ac53952c4dc73ac304b79ac494f6718e27fc8d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-ma-faults.log",
+      "bytes": 6832,
+      "sha256": "4948c049aa3270242f8da398ecb05c441a521ef8ae4059176d4e6a2a079f8f81"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/ma-faults.json",
+      "bytes": 8577,
+      "sha256": "4e16d565c3fe5a7f374a635f6b3b4095f0e1d175714e0adebc3718f9e198505d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-rt-remote.receipt.json",
+      "bytes": 5302,
+      "sha256": "f885dafea91ced9d665e40127ab4444815bde9289ab0fa4998268461f34c8e84"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-rt-remote.log",
+      "bytes": 753,
+      "sha256": "31d669949d57de9fd4f85e55bf8dea024d2b5d5d043adcb36c9feb255d438fbc"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/rt-remote.json",
+      "bytes": 5986,
+      "sha256": "f16ca31d041f69b2c8ffb93662307e8bacf2956fc392d8673ec731d261b6220b"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-rt-paced.receipt.json",
+      "bytes": 5387,
+      "sha256": "49f5c67d4473674e8febd2bc4eb7c43dfb95ffe5698967592397b45f41e16f4b"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-rt-paced.log",
+      "bytes": 1930,
+      "sha256": "23df6b62d821e7e8e9b1b458759d8b361baf0a5aeb0ad5789b599877899b47e2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/rt-paced.json",
+      "bytes": 5750,
+      "sha256": "45dffea0e7c6a2dc6ca51416801ba82449a84309b37752ba01ced7e93599ae84"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-regress.receipt.json",
+      "bytes": 5454,
+      "sha256": "174e5519b0b50d9240667b2813304d053e2f988bc9094cf7ae36f3d6ad75fbf4"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-regress.log",
+      "bytes": 4021,
+      "sha256": "4cb4e2224d5923352d8f5d589210bc2bf93f7bd907c458989165681dce35b77d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/regress.json",
+      "bytes": 22481,
+      "sha256": "2725ace8c725440ae39875a1cbdea7d65134f7c4732f282174a5e81066811543"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-rt-unit.receipt.json",
+      "bytes": 5467,
+      "sha256": "2348f8c1204c43b85fd740257f7948a411a1da5f8d93679eb9fbb2475fb08f7c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-rt-unit.log",
+      "bytes": 1515,
+      "sha256": "e696edcc13379454057441c8983b73e9eadd49d0d5ac9ced32036701b1c24889"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-rt-unit.json",
+      "bytes": 19115,
+      "sha256": "a82f9e37928ebcd3418a4ee33ba3dafea8fe896c908c8856adddce8b338f285a"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-ui-unit.receipt.json",
+      "bytes": 5658,
+      "sha256": "34fb0e6ade36a0b02ef51bb98567cfd25e81b25e65e57d71e4c0cf9357a3a21e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-ui-unit.log",
+      "bytes": 949,
+      "sha256": "b3cd5f36382cb8fa7e861d2d544ff730e8a357892711f70bf759175dda0aedff"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-ui-unit.json",
+      "bytes": 25625,
+      "sha256": "c6e23eb5c0d2f09481bdadb4dc0ffa84375d240adb517d45e578ff37eb2171bf"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-arm-unit.receipt.json",
+      "bytes": 5463,
+      "sha256": "0ef2d178f4e016208cb6eca6de99b3a75afb10bdfeee83a406c8e5dbbc415693"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-arm-unit.log",
+      "bytes": 923,
+      "sha256": "bba8ca076d30aca0c0924fc6036811cede937a2af01b59b8f4226d8f8c8ca3b0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-arm-unit.json",
+      "bytes": 18845,
+      "sha256": "f55521eb721dd52f9c913ffe3ef03a556b6f0ec2f30cb3e3c296446665f19197"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-remote-origin.receipt.json",
+      "bytes": 5515,
+      "sha256": "638241c05c558d72c1e23d599f642f68b70ad3e0904e9e146f6f546d138c474c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-remote-origin.log",
+      "bytes": 1165,
+      "sha256": "a2aab8702be0c792548ab3ed28d26dc0715fe06cde9f21aceae2c0f315192129"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-remote-origin-remote-origin.json",
+      "bytes": 4771,
+      "sha256": "fff8d0ab5786491b5fecebf7692fb18359935257dbab0ca7299af64ddcebb799"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-layout.receipt.json",
+      "bytes": 5507,
+      "sha256": "b70673f51acef055b28971b8417fa3ce386e6c692edb2f15b613c01fc71d79fd"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-layout.log",
+      "bytes": 2349,
+      "sha256": "72b1d28e406c78ef12d447c67857a0a842d8c772b6b6aea74592f161bbdda2b8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-layout-twin-layout.json",
+      "bytes": 21689,
+      "sha256": "c2f41d9c2fb4763e1eafba629d851968e0bceb657839749e75b983cb810f8a00"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.receipt.json",
+      "bytes": 5507,
+      "sha256": "313904075c4c73acc396d8751519f6c2e1201b02cfa3de59d06bd8307d3dd539"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.log",
+      "bytes": 4563,
+      "sha256": "1f76dac64e13844796050eb90b3980f9a01fa0a34df028bc68cf501fc6e5883d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-polish-twin-polish.json",
+      "bytes": 28262,
+      "sha256": "2f475c2adc771bfde037b8eb34a763f2833e7eb9ec6f1c10a40b5dbbb4820567"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplemental-driver.receipt.json",
+      "bytes": 4702,
+      "sha256": "e77381581234639436f6f2391cb6de5fd99f5ccaeced24961842beb40bdea813"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplemental-driver.log",
+      "bytes": 42199,
+      "sha256": "e08d2dfebd073e99581565f3b1dd20a88257aa687173856e2a84741eadf8006d"
+    }
+  ],
+  "limitations": [
+    "Actual paired1024 layout failure retained for final triage.",
+    "rt-container not_run; later Webots prerequisite remains open.",
+    "Raw supplemental Python125case XML is well-formed, distinct from inherited scrubbed official IR/R1 outputs.",
+    "Per-file test scopes overlap other suites and are not a unique test total."
+  ]
+}

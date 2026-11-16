@@ -1,0 +1,91 @@
+# lab original task BASE 538ba452c81005010a479f337aab0edbad6e5159 HEAD 176bf348b6a839037473cc6d87413093ed17ff54
+# Explicit paths; generated image/HTML bytes bound in full inventory.
+
+diff --git a/README.md b/README.md
+index 3afafd31fa8a366412d1b7dc2cadecde4d67c1b3..aced292e394370ecf5a2328f5fe2094f7683b4e0 100644
+--- a/README.md
++++ b/README.md
+@@ -1,18 +1,24 @@
+ # MEKONIQ Robot Lab
+ 
+ Lab thiết kế và mô phỏng nghiệp vụ robot giao món, giữ nhận diện navy/lime và ba ngôn ngữ Việt/Nhật/Anh của MEKONIQ. [Kế hoạch kinh doanh gốc](public/business-plan.html) được lưu nguyên bản.
+ 
+ Bản hiện tại có cấu hình robot, mô hình 3D/2D và lắp ráp, sơ đồ kết nối chức năng, BOM, ước tính năng lượng, trình sửa mặt bằng, báo cáo/replay và xuất candidate dự thảo. Digital Twin v2 chạy giao món, cà phê và chiến dịch hai AMR qua **domain, SQLite journal và dispatcher trong source**, với backend mock AMR/arm/coffee. S01 v1 vẫn có luồng xác nhận tải và giao món riêng. Mô hình web không chứng minh robot thật, động lực học hay an toàn vật lý.
+ 
+ Bản ghi lịch sử Plan 01: đã hoàn thiện R01–R12 và 18 mục phần mềm còn thiếu. Vòng kiểm chứng của đợt đó trên source/runtime `c1d1ea7` đã qua toàn bộ lệnh CI tương đương, browser, offline và 41 acceptance tests: 96/106 dòng có bằng chứng pass, không còn `NOT_IMPLEMENTED`. Mười dòng còn lại thuộc gate người dùng/Linux hoặc fidelity vật lý. Xem [bản ghi remediation](docs/reviews/2026-11-05-plan-01-remediation.md) và [bằng chứng](docs/implementation/evidence/digital-twin-v2/mock-report.md); **R-MOCK chưa accepted**.
+ 
++## Nhánh R2b và bản ghi R2a lịch sử
++
++Nhánh `codex/web-lab-to-physical` giữ UI và runtime pin của B00–B09. B00R2 nhập chứng cứ lịch sử từ source `11d25b47a18adafb88ac21adc249499109996bc5` / Lab `a7449541e118d01f65af0ad1466e0c963a173f3c`; các bản ghi R2a đó vẫn gắn runtime source `4f893ac6fb75dff414a3ee42a726defb7935c734`. Revision đang dùng lấy từ [`config/source-runtime.lock.json`](config/source-runtime.lock.json), không lấy từ metadata cloud/production hoặc compatibility record lịch sử.
++
++Image R2b vẫn `null` (chưa build), WEB05 `not_run` theo R76 vì Docker không phản hồi; B00R2 chỉ kiểm bản ghi đã lưu và không triển khai hay chạy lại cloud/native/browser/Docker. Kết quả R2a không thay cho qualification R2b hoặc nghiệm thu con người (`accepted:false`, `not_calibrated`). Source giữ mission/journal/custody; Lab chỉ mô phỏng/replay, không có đường Lab → phần cứng.
++
+ ## Chạy giao diện
+ 
+ Dùng **Node.js 24** và **pnpm 10.32.1**; phiên bản Node nằm trong `.node-version`/`.nvmrc`.
+ 
+ ```sh
+ pnpm install --frozen-lockfile
+ pnpm dev
+ ```
+ 
+ Mở **http://127.0.0.1:4175**. Thiết kế, mặt bằng, lưu IndexedDB và xuất dự thảo dùng được khi chưa mở runtime. `pnpm build` tạo website tĩnh trong `dist/`. Trình xem 3D tải khi cần; điện thoại mặc định dùng 2D. Catalog là giả định thiết kế, giá còn thiếu hiển thị rõ; preset Valetudo không tự nhận thông số cơ khí chưa đo.
+diff --git a/config/source-runtime.lock.json b/config/source-runtime.lock.json
+index 933ff48e2b1ddf927220712665c096faa9447152..6528ccd7806dbeaeb78c3327f276e457bdbc6b40 100644
+--- a/config/source-runtime.lock.json
++++ b/config/source-runtime.lock.json
+@@ -1,18 +1,18 @@
+ {
+   "dirty": false,
+   "packageVersion": "0.1.0",
+   "toolchain": {
+     "node": "v24.22.2"
+   },
+-  "sourceCommit": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
++  "sourceCommit": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+   "schemaHash": "53af7456cbdfec26685f902484865f8a43d64edcf63624f41f37701db2ccb8a9",
+   "protocolMajor": 2,
+   "protocolMajors": [
+     1,
+     2
+   ],
+   "nodeMajor": 24,
+-  "artifactSha256": "18967bcf397be1e1d43ca86fae2cdae3558be90772981c9c112b071ff54aabae",
++  "artifactSha256": "dd30b291d0211de31dcee2a5a3e659b355e6501677d9fce08abed3788eb857b7",
+   "entrypoint": "runtime.mjs",
+   "portableToolsDigest": "a9887059ec3cb0ccbb88e2082ef5132625678fdf622ea0d6bd615162a14017f9"
+ }
+diff --git a/src/shared/engineering.ts b/src/shared/engineering.ts
+index 862836905c2d96229e8f1e8caf496b72ac7d3c7c..b663dcfe7ebe153ff3c9c49b17da8cefdf0fd474 100644
+--- a/src/shared/engineering.ts
++++ b/src/shared/engineering.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/engineering.ts @ 3c917ceee6a92c6b087f0bd37baaa4e0740d44a8 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/engineering.ts @ d0f30749c0ddb474f0844c68be63a6f0fa4b1933 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
+ import type {LabProjectV2,AssetRevision} from './types';
+ export type CoffeeRecipe=Record<string,unknown>;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Digest".
+  */
+ export type Digest = string;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+diff --git a/src/shared/navigation2d.ts b/src/shared/navigation2d.ts
+index 32addf5faadd3f64ddec8bc3c873868f293d275e..ffa1345b3d0e6db90ebc1611a19c89506e8c8761 100644
+--- a/src/shared/navigation2d.ts
++++ b/src/shared/navigation2d.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/navigation2d.ts @ 3c917ceee6a92c6b087f0bd37baaa4e0740d44a8 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/navigation2d.ts @ d0f30749c0ddb474f0844c68be63a6f0fa4b1933 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
+ import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+ /**
+  * @minItems 2
+  * @maxItems 2
+  *
+  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+  * via the `definition` "Vec2".
+  */
+ export type Vec2 = number[];

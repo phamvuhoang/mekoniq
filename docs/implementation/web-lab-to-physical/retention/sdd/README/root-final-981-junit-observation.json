@@ -1,0 +1,75 @@
+{
+  "schema": "root-legacy-junit-observation/1",
+  "at": "2026-11-15T17:51:56.934902+00:00",
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "frozenUpstream": "11d25b47a18adafb88ac21adc249499109996bc5",
+  "sourceProof": [
+    {
+      "path": "scripts/record-irsim.mjs",
+      "frozenUpstreamSha256": "7bf6bcb89dc5e2d6f98cd917f49ca0f05f83d2558f9e81424515c01d95f57fac",
+      "currentSha256": "7bf6bcb89dc5e2d6f98cd917f49ca0f05f83d2558f9e81424515c01d95f57fac",
+      "wholeFileIdentical": true,
+      "relevantLineUnchanged": true,
+      "line": "const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>').replaceAll(hostname(),'<host>');// pytest's JUnit carries hostname="
+    },
+    {
+      "path": "scripts/record-sim-extension.mjs",
+      "frozenUpstreamSha256": "92e848f3b99887b4c09d4041e1f36c4291be4ca6f52590088c1f06920cdf76f4",
+      "currentSha256": "d8987d60b4827781265578ac429f9fb3b3e299e17651ad69d118d65c4ba6d7be",
+      "wholeFileIdentical": false,
+      "relevantLineUnchanged": true,
+      "line": "const scrub=(t)=>t.replaceAll(resolve(root,'..'),'<workspace>').replaceAll(homedir(),'<home>').replaceAll(tmpdir(),'<tmp>').replaceAll(hostname(),'<host>');"
+    },
+    {
+      "path": "scripts/irsim-qualification.mjs",
+      "frozenUpstreamSha256": "57d300a17cd4df6c2c508dce8ace9d12433d7306392f61a41b5f03c3a7c96a46",
+      "currentSha256": "57d300a17cd4df6c2c508dce8ace9d12433d7306392f61a41b5f03c3a7c96a46",
+      "wholeFileIdentical": true,
+      "relevantLineUnchanged": true,
+      "line": " if(kind==='pytest'){const n=(k)=>Number(new RegExp(`\\\\b${k}=\"(\\\\d+)\"`).exec(text)?.[1]??0);return {passed:n('tests')-n('failures')-n('errors')-n('skipped'),failed:n('failures')+n('errors'),skipped:n('skipped'),total:n('tests')};}"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim/suites/lf-py.xml",
+      "bytes": 4429,
+      "sha256": "5e053329cc1d521dc85aafca33814ce4ba8897f61faf113da2e8cd2a8e787b83",
+      "standardXmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "rawHeaderCounters": {
+        "tests": 34,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "interpretation": "Header counters are retained observations, not XML validity or independent assertion enumeration."
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim/suites/cmp-py.xml",
+      "bytes": 5291,
+      "sha256": "7c71e17b42a4f3f16ec5b3b9d4e776a22ea35ba2a2a334fef2f6f0c09ffd850e",
+      "standardXmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "rawHeaderCounters": {
+        "tests": 40,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "interpretation": "Header counters are retained observations, not XML validity or independent assertion enumeration."
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim/suites/parity-py.xml",
+      "bytes": 1736,
+      "sha256": "19c9e2225778fdfc2bfb84cefc36baec06a29b2e1baf375e31679a2f8ab8ba96",
+      "standardXmlParseError": "not well-formed (invalid token): line 1, column 209",
+      "rawHeaderCounters": {
+        "tests": 9,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "interpretation": "Header counters are retained observations, not XML validity or independent assertion enumeration."
+    }
+  ],
+  "readerScope": "scripts/irsim-qualification.mjs:48–51 derives pytest counts with regex; :135–140 checks recorded exit/status/result hash and re-derived counts. It does not validate well-formed XML.",
+  "ruling": "Ruling: continue unchanged current981 engine recording after the bounded scrubber investigation, with the malformed legacy JUnit artifacts retained and explicitly disclosed; defer format/interoperability repair to concrete whole-branch triage. Reason: record-irsim.mjs is byte-identical to frozen upstream11d25b and both recorder scrub lines plus the regex pytest summary are unchanged; actual pytest own exits/logs/counters and public byte/hash/counter readback remain separately observable, with no new unsafe admission or changed assertion demonstrated. Cost if wrong: consumers needing valid JUnit cannot ingest these artifacts and a final confirmed blocking contract defect may require recorder repair plus fresh appropriately attributed evidence. This is not a declaration of valid XML, a gate waiver, or permission to rewrite recorded outputs."
+}

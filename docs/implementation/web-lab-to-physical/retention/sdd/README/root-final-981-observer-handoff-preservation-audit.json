@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-15T22:28:35.353057+00:00",
+  "indexPath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/observer-layout-handoff/index.json",
+  "indexBytes": 889,
+  "indexSha256": "956d1307262437eb88db3309a214dd0b6d40067b6521e6d91f86c66be105619c",
+  "preservationIndexSha256": "5ddf0f82776f7366f81a402ae758d9c05cdb786da624d18c481844fcc251f5b6",
+  "entriesVerified": 11995,
+  "bytesAcrossEntries": 862372293,
+  "referenceEntriesVerified": 34,
+  "report": {
+    "bytes": 139117,
+    "sha256": "92f2bd2eba4e06d81fde7413b5d9b912ed13bc856a5364807bc6019d36c6cb2b",
+    "preservedPrefixBytes": 130693,
+    "preservedPrefixSha256": "46d12d81d350298296977e38679533ff3f24ae13ee1b4c86a8e20c7fadd2a91e"
+  },
+  "scope": "Read-only byte/length/symlink/prefix audit at actual handoff; overlapping copied entries are not unique tests or independent executions. Root read full report through139117B separately; no native/physical/acceptance implication."
+}

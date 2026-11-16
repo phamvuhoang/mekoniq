@@ -1,0 +1,467 @@
+{
+  "scope": "Root has read these interim check outputs and matched receipts; not final code review, coverage or host authentication. Counts overlap and apply to recorded snapshots.",
+  "checks": [
+    {
+      "id": "i1-red",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-red.receipt.json",
+      "receiptSha256": "5a97d40e9330b89ba852af91bd6cb0988e2c4f727cabf53cc6338c6a4663b5b1",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-red.log",
+      "bytes": 1759,
+      "outputSha256": "2ff37fcc032a145fb86bc942602df6eb9241177c6954de46193b6bc1b3d6d5ef",
+      "exitCode": 1,
+      "command": "node",
+      "args": [
+        "/tmp/b10-fix1-missing-export.mjs"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i1-missing-green",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-missing-green.receipt.json",
+      "receiptSha256": "28ddc59ab198cd7efbe5e48662f1c24c73d7f1cd1802174601f628176130dd54",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-missing-green.log",
+      "bytes": 1263,
+      "outputSha256": "53af2876d3d3bd96e8ad6b6e082ca33c87364dd1309917e269516a68816fc189",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "/tmp/b10-fix1-missing-export.mjs"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i1-prepare",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-prepare.receipt.json",
+      "receiptSha256": "913ac0a610fc95aa7ba8a8343a6592121ff2b1dce2cfc9771bc86951d0880230",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-prepare.log",
+      "bytes": 163,
+      "outputSha256": "bf347bdaca25283228efa0c8582078632b6f3f3761c51e6fd0a9d35d86fb8aab",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "scripts/prepare-retained-inputs.mjs",
+        "/tmp/b10-fix1-input-catalog.json",
+        "86f905eee94c022acaafa0c8800c57eb290e4b64628a024b300669ca215c7a15",
+        "/tmp/b10-fix1-inputs"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i1-retained-green",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-retained-green.receipt.json",
+      "receiptSha256": "55cc3fc67a69a8e4b7f3927cd56ef91011ce591a57fc1ce5872f59fda53f40d0",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-retained-green.log",
+      "bytes": 1695,
+      "outputSha256": "9f68361bc7f2f2dd84ccafa1f2060a9df25dcfcbef5372a7dba7d0057e7942ef",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/security/web-replay-export.test.ts",
+        "tests/security/web-replay-gateway.test.ts",
+        "tests/unit/web-replay-capture.test.ts",
+        "tests/unit/web-replay-reader.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i1-wrong-green",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-wrong-green.receipt.json",
+      "receiptSha256": "680ab2792ae7f0a3d11880f9a0cb29b4a9cf1a35ffcdd861d9e31b91748677f9",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i1-wrong-green.log",
+      "bytes": 1092,
+      "outputSha256": "56a0fcc8940dfceb572a853036bcca17721d7bd5a2e6ca05bb0d625155f3cfcf",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "/tmp/b10-fix1-i1-wrong.mjs"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i2-red",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i2-red.receipt.json",
+      "receiptSha256": "122b7204abfe08091b4c78ce510d6f2a56d3983d31b1771445db8fab1eae490a",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i2-red.log",
+      "bytes": 3943,
+      "outputSha256": "2e997eb13a1285ddf3eda2b1efe327e8f7e78176657d31903eae332c4dd69348",
+      "exitCode": 1,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/browser-capture-clock.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i2-green1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i2-green1.receipt.json",
+      "receiptSha256": "1d774b65a4780b2e135bd402741b4213e018321742653c829358403f1236bad6",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i2-green1.log",
+      "bytes": 319,
+      "outputSha256": "1b07c8e706f260e14d1ba391a61825edb1c6df8483e3c32787c59044bcedf270",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/browser-capture-clock.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i3-red",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i3-red.receipt.json",
+      "receiptSha256": "4ffb62cf47345488330b7bd758a285264994de1ccd7a33d9622bafd18df57a49",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i3-red.log",
+      "bytes": 2987,
+      "outputSha256": "1e1fd9ba47a634b1e65a88849bfe18d2b6dc151b021e7e60776a04be1830b1da",
+      "exitCode": 1,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-web05-readback.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i3-green1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i3-green1.receipt.json",
+      "receiptSha256": "6d7c7181634ec1f0014bc05e51a7cf0d4e972d1a52ed433036190c2658f589dd",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i3-green1.log",
+      "bytes": 317,
+      "outputSha256": "c606b090174dc2a795ee814a795cf610b534d65b06dc99ba9bc0454be778112a",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-web05-readback.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i4-red",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i4-red.receipt.json",
+      "receiptSha256": "823e892d8b329b77abc84b7cdb783c3e3e718f38259bcc0099c38e85ebaf4091",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i4-red.log",
+      "bytes": 2326,
+      "outputSha256": "ad41fa2d9ce04e6a900cda27659779a9338a67f7779fbd6fba4e6b7f3c79e618",
+      "exitCode": 1,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-browser-readback.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "i4-green1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i4-green1.receipt.json",
+      "receiptSha256": "0a86f46df1abf1f0ceabba1cedfa83cb259b52f5b87de3e7c24d85923ff45394",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/i4-green1.log",
+      "bytes": 319,
+      "outputSha256": "014b7f2b861cb8bb77f2055962bdd38e36507358b771833527318a82eefde04a",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-browser-readback.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "focused-green2",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/focused-green2.receipt.json",
+      "receiptSha256": "d9099eb4bf685cdd77b8ed7e8f9ae8e4faace6aa547bd69e56392a0feaaebfb7",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/focused-green2.log",
+      "bytes": 545,
+      "outputSha256": "eb2c22077848816a9cf931a3f780ef58951c22c0dd409b82cda3d43ebb68bfad",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/browser-capture-clock.test.ts",
+        "tests/unit/r2b-web05-readback.test.ts",
+        "tests/unit/r2b-browser-readback.test.ts",
+        "tests/unit/r2b-readback.test.ts",
+        "tests/unit/sim-extension-r2b.test.ts",
+        "tests/unit/retained-inputs.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "source-lint1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint1.receipt.json",
+      "receiptSha256": "53223bb20e9d23bd4cea7bc3e15c7dea474f3dae038f919a0a8e0bcff3752df3",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint1.log",
+      "bytes": 113764,
+      "outputSha256": "6dfac1bbb2246cd67a297c24743bad7c8a1c49e7fc86f9eceea1becd993ba1c7",
+      "exitCode": 1,
+      "command": "pnpm",
+      "args": [
+        "lint"
+      ],
+      "contentReadScope": "All diagnostic path/count classification and new fixture failure; repeated generated bundle diagnostics summarized"
+    },
+    {
+      "id": "source-type1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-type1.receipt.json",
+      "receiptSha256": "0e7d3d2544566d7faabd6cff432b726ec0c45c8c5db72cce4ddb0b757e92dfc1",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-type1.log",
+      "bytes": 232,
+      "outputSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "typecheck"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "lab-type1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-type1.receipt.json",
+      "receiptSha256": "e38ca0322fb8899a160d78cdd5f219979369e7b4549ac6e16f6ed6668ab135de",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-type1.log",
+      "bytes": 122,
+      "outputSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "typecheck"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "lab-observer-type1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-observer-type1.receipt.json",
+      "receiptSha256": "1d6fe12277eea6f8509350222a3ec1df4935c475d0989f655cc440595c9bd66f",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-observer-type1.log",
+      "bytes": 305,
+      "outputSha256": "b72bbd9c67325a6331933cf8675400190c936bb58ee8bc1133ae3ca465eb8ed6",
+      "exitCode": 2,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "tsc",
+        "--noEmit",
+        "-p",
+        "/tmp/b10-scriptcheck.json"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "export-clean",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/export-clean.receipt.json",
+      "receiptSha256": "582fb4788657b0dbf26a443566702d052ec7ab268c5e1fda49b697973b8f9751",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/export-clean.log",
+      "bytes": 103353,
+      "outputSha256": "c29e5676c820e72904bde2971df975a567a86284ef66b16a4b6ca7004c1de94a",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "scripts/export-lab-runtime.mjs",
+        ".superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/export-clean"
+      ],
+      "contentReadScope": "Identity metadata plus bounded excerpts; complete manifest rows await final byte audit"
+    },
+    {
+      "id": "lab-build1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-build1.receipt.json",
+      "receiptSha256": "34dbff6ba3fa7b235cdbecb4bcde13329a8d76e8f53da9b6ac78a9317fb5ddfe",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-build1.log",
+      "bytes": 1605,
+      "outputSha256": "83fac833e410a61c9de89199c98893618053bc2a4e38eeb1bf1e1a1f753c156f",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "build"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "lab-import",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-import.receipt.json",
+      "receiptSha256": "4edf51f99282f6a4a5c2351d3e078524cc0b2c6559e2d936d205bdb7c8ed9fea",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-import.log",
+      "bytes": 198,
+      "outputSha256": "31b9e3faa78a3856225e1a09e38b9b578841403e0707682ba94afc73409d8259",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "scripts/import-runtime.mjs",
+        "../source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/export-clean"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "lab-observer-type2",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-observer-type2.receipt.json",
+      "receiptSha256": "ba4e5c337debaf477dd3e488e3ed84411e68ed884faa58111f7c1696e21e6b73",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-observer-type2.log",
+      "bytes": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "tsc",
+        "--noEmit",
+        "-p",
+        "/tmp/b10-scriptcheck.json"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "lab-sync",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-sync.receipt.json",
+      "receiptSha256": "5355eaeeb0120add7f221a2ddfd2d80db1a4d749cba05347c8b55594a9d44d4d",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/lab-sync.log",
+      "bytes": 220,
+      "outputSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "scripts/sync-engineering-contracts.mjs"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "package-clean",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/package-clean.receipt.json",
+      "receiptSha256": "36026e19e5276eb0710b84eab9a519c570ae4dc07c8aeeb4578672f5f6171a84",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/package-clean.log",
+      "bytes": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exitCode": 0,
+      "command": "node",
+      "args": [
+        "scripts/build-r2b-campaign.mjs",
+        ".superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/package-clean",
+        ".superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/export-clean"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "public-green1",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/public-green1.receipt.json",
+      "receiptSha256": "69d7926eb865d56a696a1474091504e22a931e618b7c54ce2bd8c150f4190698",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/public-green1.log",
+      "bytes": 1581,
+      "outputSha256": "55657152eb5b48ec5f5fc36da3be7779514ed7f0a77a78df8d35e2cec7d3cc77",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-web05-readback.test.ts",
+        "tests/unit/r2b-browser-readback.test.ts",
+        "tests/unit/sim-extension-qualification.test.ts",
+        "tests/unit/r2b-dispositions.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "semantic-final",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/semantic-final.receipt.json",
+      "receiptSha256": "81017239e5723d04d4869d54c294a1bd42999be6659e447cd6a18c148dfbb746",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/semantic-final.log",
+      "bytes": 546,
+      "outputSha256": "18ebf0f00c5c28d1edc53f35d9f591cf83f36873101031d5e4bfd7a92937d935",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "vitest",
+        "run",
+        "tests/unit/r2b-web05-readback.test.ts",
+        "tests/unit/r2b-browser-readback.test.ts",
+        "tests/unit/browser-capture-clock.test.ts",
+        "tests/unit/r2b-readback.test.ts",
+        "tests/unit/retained-inputs.test.ts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "source-commit",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-commit.receipt.json",
+      "receiptSha256": "855f6ade7aad15fa31304d5f74e56b448c6f3a6924fbe3277619e8b1d9793c1e",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-commit.log",
+      "bytes": 519,
+      "outputSha256": "417c766a5c8829f9d084ac9aff917ac2bd8daeea3a4f64ae3650bec05e3e9af6",
+      "exitCode": 0,
+      "command": "git",
+      "args": [
+        "commit",
+        "-m",
+        "fix: bind R2b qualification to complete observed artifacts"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "source-lint2",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint2.receipt.json",
+      "receiptSha256": "b110e0d852aafc45f0a5d7cb4e505ae91783a9d2f5cd5293fde807204f6981c0",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint2.log",
+      "bytes": 227,
+      "outputSha256": "01f17c93a3f8e84173c4ca4b2621a2245bd9745e8da4e9d91775cdc7a6bc3671",
+      "exitCode": 1,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "eslint",
+        ".",
+        "--ignore-pattern",
+        ".superpowers/**"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "source-lint3",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint3.receipt.json",
+      "receiptSha256": "076a889f99f3b1ccc75072f9c97a70a5db6640704068d59d14cef5e8d1729e7b",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-lint3.log",
+      "bytes": 0,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "eslint",
+        ".",
+        "--ignore-pattern",
+        ".superpowers/**"
+      ],
+      "contentReadScope": "Full check output"
+    },
+    {
+      "id": "source-type2",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-type2.receipt.json",
+      "receiptSha256": "0df67b4ed83ad0f416d0c1d217b215b2a0c622db160f56990b6305e298cb5bce",
+      "log": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/evidence-B10/fix1/checks/source-type2.log",
+      "bytes": 232,
+      "outputSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "exitCode": 0,
+      "command": "pnpm",
+      "args": [
+        "typecheck"
+      ],
+      "contentReadScope": "Full check output"
+    }
+  ]
+}

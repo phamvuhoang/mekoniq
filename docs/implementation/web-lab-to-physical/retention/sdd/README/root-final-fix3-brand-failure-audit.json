@@ -1,0 +1,14 @@
+{
+  "verifiedInputCount": 6,
+  "labHead": "7d38565f91acbb3060dbee7d4d3560f61fa4b64c",
+  "labTree": "f420fc891aaceebc875db7576036c59ffca48912",
+  "broadBrowser": {
+    "passed": 61,
+    "failed": 1,
+    "skipped": 42,
+    "total": 104,
+    "globalErrors": 0
+  },
+  "rootRead": "Complete handoff, unchanged brand spec and actual failure; original screenshot visually inspected. No focus-event chronology in original artifact.",
+  "diagnosticAuthorized": "One controlled actual owned health-response release after normal Tab focus, read-only observers; no product fix yet."
+}

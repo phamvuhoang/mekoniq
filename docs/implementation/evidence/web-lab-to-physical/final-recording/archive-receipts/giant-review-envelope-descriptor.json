@@ -1,0 +1,28 @@
+{
+  "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/review-3c917ce..d0f3074.diff",
+  "bytes": 154315121,
+  "sha256": "82d40cf2cfa108b09d695df43c6f2405ee01851e421b7ed66dc458c951f2151f",
+  "reason": "Giant generated historical review envelope retained locally with exact source/ref and helper provenance, rather than duplicating154MB of imported history. Full code netdiff remains final-review input.",
+  "frozenHead": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+  "base": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+  "generator": {
+    "source": "/Users/hoangpham/.codex-personal/skills/subagent-driven-development/scripts/review-package",
+    "retained": "docs/implementation/web-lab-to-physical/retention/tools/review-package",
+    "sha256": "fac3d4bd7f94369e8037b9ead2a8a502dca6ab333902b560b9455dbb3c450ebe",
+    "argv": [
+      "bash",
+      "/path/to/review-package",
+      "/path/to/existing-plan.md",
+      "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "HEAD",
+      "/new/owned/review.diff"
+    ],
+    "cwd": "isolated exactSource d0f30749c0ddb474f0844c68be63a6f0fa4b1933 checkout; HEAD literal matches original envelope",
+    "components": [
+      "git log --oneline BASE..HEAD",
+      "git diff --stat BASE..HEAD",
+      "git diff -U10 BASE..HEAD"
+    ],
+    "status": "Unexecuted at publication. Original exact bytes/hash remain authoritative; output formatting can also depend on recorded Git environment."
+  }
+}

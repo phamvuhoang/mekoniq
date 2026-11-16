@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:09.459569+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/handoff-export-mujoco-linux-amd64",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-handoff-export-mujoco-linux-amd64.tar.gz",
+  "archiveSha256": "17ee89b92d115b642f42535fd2f527a5ed1d08c2d8d2f30414d09ad6873a8196",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-handoff-export-mujoco-linux-amd64.members.json",
+  "memberIndexSha256": "172885a1536436bcf2110633fbc398d5b4cd139ba4b2f733b24324fae5eae495",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-handoff-export-mujoco-linux-amd64",
+  "verifiedFiles": 243,
+  "verifiedBytes": 10881322,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

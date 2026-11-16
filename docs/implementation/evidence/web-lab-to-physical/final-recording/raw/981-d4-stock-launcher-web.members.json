@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:28:22.417398+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/stock-launcher-web",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-stock-launcher-web.tar.gz",
+  "archiveBytes": 1437,
+  "archiveSha256": "3d2f6e42cfc5e882af1193ecc6bdabccfd5e123bc99c152cac4547d1f7782115",
+  "memberCount": 3,
+  "memberBytes": 2746,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "cleanup.json",
+      "bytes": 474,
+      "sha256": "0ea7e7cd148418746f6a8c1536c0732702fdf2af1b3ab4a35e5552c9dc2d23e1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787954982991745
+    },
+    {
+      "path": "error.txt",
+      "bytes": 365,
+      "sha256": "2d1680c301aa24464be35a442b49a3eb670719971d9af220d3ccc3c6482f9855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787954982649915
+    },
+    {
+      "path": "invocation.json",
+      "bytes": 1907,
+      "sha256": "1449d77d10ab3ece99773f6475c8dd6e2ecb24a637e3affddc60300a8e65b52b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794787954930972116
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

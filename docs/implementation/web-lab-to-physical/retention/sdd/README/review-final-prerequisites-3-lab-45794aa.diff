@@ -1,0 +1,394 @@
+diff --git a/config/source-runtime.lock.json b/config/source-runtime.lock.json
+index f2a48a436d6d3699f42ca278c59ddbb3ef74650e..ea6b6360383ea831052b60be2f3f4b1dac2d4a85 100644
+--- a/config/source-runtime.lock.json
++++ b/config/source-runtime.lock.json
+@@ -1,18 +1,18 @@
+ {
+   "dirty": false,
+   "packageVersion": "0.1.0",
+   "toolchain": {
+     "node": "v24.22.2"
+   },
+-  "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
++  "sourceCommit": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+   "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+   "protocolMajor": 2,
+   "protocolMajors": [
+     1,
+     2
+   ],
+   "nodeMajor": 24,
+-  "artifactSha256": "5678c2f0cc62713b61790cd2b1847b38219c1b1d1882f6a33463bcb36ad2d2d9",
++  "artifactSha256": "2b7ab594467fcbcb0a68fc370ee839cedacd9ea977d26859761b341cc77e613c",
+   "entrypoint": "runtime.mjs",
+   "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+ }
+diff --git a/playwright.b07b.config.ts b/playwright.b07b.config.ts
+index e9d610fd490082c4315e609175b43a290e979167..05ce308ab025dd3301c57275373395092a1579ba 100644
+--- a/playwright.b07b.config.ts
++++ b/playwright.b07b.config.ts
+@@ -1,3 +1,4 @@
+ import {defineConfig} from '@playwright/test';
++import type {ReplayPreviewOptions} from './tests/support/replay-preview';
+ /** A separately started production preview/runtime is required. Never silently starts the dev server. */
+-export default defineConfig({metadata:{invocationId:process.env.LAB_BROWSER_INVOCATION??null},testDir:'tests/e2e',testMatch:['replay-offline.spec.ts','payload-story.spec.ts','mujoco-cell.spec.ts'],fullyParallel:false,workers:1,timeout:90000,reporter:process.env.LAB_PW_JSON?[['list'],['json',{outputFile:process.env.LAB_PW_JSON}]]:'list',use:{baseURL:'http://127.0.0.1:4175',headless:true,launchOptions:{executablePath:process.env.CHROME_PATH??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'},screenshot:'only-on-failure'}});
++export default defineConfig<{},ReplayPreviewOptions>({metadata:{invocationId:process.env.LAB_BROWSER_INVOCATION??null},testDir:'tests/e2e',testMatch:['replay-offline.spec.ts','payload-story.spec.ts','mujoco-cell.spec.ts'],fullyParallel:false,workers:1,timeout:90000,reporter:process.env.LAB_PW_JSON?[['list'],['json',{outputFile:process.env.LAB_PW_JSON}]]:'list',use:{replayPreviewMode:'external',baseURL:'http://127.0.0.1:4175',headless:true,launchOptions:{executablePath:process.env.CHROME_PATH??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'},screenshot:'only-on-failure'}});
+diff --git a/src/app.ts b/src/app.ts
+index 87e28f65267738e974a5cde220a1e202052d0b2a..2d11a59fe2ab8b20140b10f16a64d34c58aff01b 100644
+--- a/src/app.ts
++++ b/src/app.ts
+@@ -168,23 +168,23 @@ export class LabApp {
+     this.future = [];
+     edit(this.project);
+     this.project.revision++;
+     this.project.updatedAt = new Date().toISOString();
+     this.selectProject(this.project);
+     this.saveProject();
+     this.render();
+   }
+   private header() {
+     const ns = names();
+-    return `<a class="skip-link" href="#workspace">${tr("Đến vùng làm việc", "ワークスペースへ", "Skip to workspace")}</a>
++    return `<a id="app-skip-link" class="skip-link" href="#workspace">${tr("Đến vùng làm việc", "ワークスペースへ", "Skip to workspace")}</a>
+ <header class="topbar">
+-<a class="brand mq-brand" href="#design" aria-label="MEKONIQ Robot Lab">
++<a id="app-brand-link" class="brand mq-brand" href="#design" aria-label="MEKONIQ Robot Lab">
+ <img class="brand-horizontal" src="/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png" width="1420" height="300" alt="">
+ <img class="brand-compact" src="/brand/assets/MEKONIQ_Icon_Transparent.svg" width="40" height="40" alt="">
+ <span class="brand-lab">ROBOT LAB</span>
+ </a>
+ <span class="top-project">${icon("cube", 15)} ${tr("Dự án nhà hàng", "レストランプロジェクト", "Restaurant project")} <span class="revision">R${String(this.project.revision).padStart(2, "0")}</span>
+ </span>
+ <div class="top-right">
+ <span class="mode-badge">
+ <i>
+ </i> ${this.run ? "BUSINESS SIM" : "PREVIEW"}</span>
+diff --git a/src/project/engineering-archive.ts b/src/project/engineering-archive.ts
+index e07fe5565ac398f2eb77eddae5bb8f6c827abd64..9f8b81f8d2f9206f5127d9d198e112051016c403 100644
+--- a/src/project/engineering-archive.ts
++++ b/src/project/engineering-archive.ts
+@@ -1,13 +1,13 @@
+ import Ajv from 'ajv';
+ import type {ErrorObject} from 'ajv';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
+ import projectSchema from '../shared/engineering-schemas/engineering-project.schema.json';
+ import archiveSchema from '../shared/engineering-schemas/engineering-project-archive.schema.json';
+ import assetSchema from '../shared/engineering-schemas/asset-revision.schema.json';
+ import recipeSchema from '../shared/engineering-schemas/coffee-recipe.schema.json';
+ import addFormats from 'ajv-formats';
+ import type {ComponentRevision,EngineeringArchive,EngineeringProject} from '../shared/engineering';
+ import {validateProjectV2} from './schema';
+ import {canonicalJson,hashJson,sha256Hex} from '../twin/hash';
+ import {verifyAssetHash} from '../twin/model';
+ import type {AssetRevision} from '../shared/types';
+diff --git a/src/reports/compare.ts b/src/reports/compare.ts
+index 101cf30c760ef2187eae2c889718ed19da6a00b1..59a85f6bb1c5995c31f8626905dd3548c4f122a5 100644
+--- a/src/reports/compare.ts
++++ b/src/reports/compare.ts
+@@ -96,21 +96,21 @@ export function compareRuns(a:RunReport,b:RunReport){
+  const kpis=ka.map((x,i)=>{const y=kb[i]!,available=x.available&&y.available;
+   return {id:x.id,unit:x.unit,definition:x.definition,a:x.value,b:y.value,available,reasons:[x.reason,y.reason].filter(Boolean) as string[],
+    delta:comparable&&available?y.value!-x.value!:null,population:{runs:1,samplesA:x.samples,samplesB:y.samples},percentiles:null as null};});
+  const coverage=[...new Set([...Object.keys(a.coverage),...Object.keys(b.coverage)])].map(k=>({key:k,a:!!a.coverage[k],b:!!b.coverage[k]}));
+  const pop=(r:RunReport)=>({runs:1,businessEvents:r.businessEvents.length,telemetrySamples:r.telemetry?.samples.length??0,telemetryDropped:r.telemetry?.dropped??0});
+  return {comparable,reasons,inputs,kpis,coverage,population:{a:pop(a),b:pop(b)},note:'One run per side: no p50/p95. Repeat with seeds for a distribution.'};
+ }
+ 
+ // Cross-engine studies are immutable downstream views. Validation establishes shape, never a physics authority.
+ import Ajv from 'ajv';
+-import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json';
++import studySchema from '../shared/engineering-schemas/semantic-study-v1.schema.json' with {type:'json'};
+ import {tr} from '../i18n';
+ import {esc} from '../ui/icons';
+ interface StudyRun {runId:string;engine:string;reportRef:{path:string;sha256:string;bytes:number};artifactRefs:{path:string;sha256:string;bytes:number}[];sceneDigest:string;modelDigest:string;firstTick:number;lastTick:number;replay:{runId:string;tick:number}}
+ export interface SemanticStudyView {schemaVersion:1;documentType:'semantic-study';accepted:false;status:'complete'|'failed'|'incomparable';reasonCodes:string[];equivalence:Record<string,{id:string;sha256:string}>;invariantPolicy:{id:string;revision:number};runs:StudyRun[];invariants:{runId:string;id:string;status:string;reasonCodes:string[];tick:number|null}[];differences:{runId:string;dimension:string;value:number|null;unit:string;status:string;reason:string|null}[];unsupportedDimensions:{engine:string;dimension:string;status:'unsupported';reason:string}[];percentiles:null;limitations:string[]}
+ const validateStudy=new Ajv({strict:true,allErrors:true}).compile(studySchema);
+ export function parseSemanticStudy(text:string):SemanticStudyView{
+  if(text.length>8*1024*1024)throw Error('SEMANTIC_STUDY_LIMIT');
+  let value:unknown;try{value=JSON.parse(text);}catch{throw Error('SEMANTIC_STUDY_INVALID');}
+  if(!validateStudy(value))throw Error('SEMANTIC_STUDY_INVALID');return value as unknown as SemanticStudyView;
+ }
+diff --git a/src/reports/navigation2d.ts b/src/reports/navigation2d.ts
+index 32c03f1304c801d6195710e6933d163fb3252537..3334e4d21650e8470d6374c10cc67916e838807d 100644
+--- a/src/reports/navigation2d.ts
++++ b/src/reports/navigation2d.ts
+@@ -1,20 +1,20 @@
+ import {readPayloadBundle,payloadMatches,payloadState,type PayloadBundle} from '../twin/payload';
+ import {sha256Hex} from '../twin/hash';
+ // Navigation evidence (navigation-run-evidence-v1) for the providers this Lab renders. The document is validated against the synced source
+ // schema; anything unknown is unsupported, and "complete" needs every signal to agree (server completeness, end record, gaps, listing, sensor publications).
+ // Imported folders are a trust boundary: every listed chunk that is present must match its size and SHA-256 (else refused); one that is absent makes the
+ // imported copy incomplete. The Lab never reads chunk contents to upgrade a verdict.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+ import evidenceSchema from '../shared/engineering-schemas/navigation-run-evidence-v1.schema.json' with {type:'json'};
+ import type {NavigationRunEvidenceV1,NavigationSceneV1} from '../shared/navigation2d';
+ import type {RunReport} from '../scenarios/controls';
+ import type {LabProjectV2} from '../shared/types';
+ import {validReportShape} from './report-shape';
+ import {MAX_EVIDENCE_BYTES,safeArtifactPath} from './verification';
+ import {validateProjectV2} from '../project/schema';
+ import {hashJson} from '../twin/hash';
+ import {worldHash} from '../twin/model';
+ const ajv=new Ajv({strict:false,allErrors:true});addFormats(ajv);
+diff --git a/src/reports/report-shape.ts b/src/reports/report-shape.ts
+index 34fc9fc55c330749c5ae54b0a94e159f83eb6028..a5834c9cbd8cc90256aac8d5c3a3d896b1668a51 100644
+--- a/src/reports/report-shape.ts
++++ b/src/reports/report-shape.ts
+@@ -1,13 +1,13 @@
+ import {validMobileSample} from '../twin/payload';
+-import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
++import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json' with {type:'json'};
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
+ // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
+ // Domain state remains extensible, but known display fields cannot override these types.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+ import type {RunReport} from '../scenarios/controls';
+ type S=Record<string,unknown>;
+ const str:S={type:'string',maxLength:65536},num:S={type:'number'},bool:S={type:'boolean'},integer:S={type:'integer',minimum:0,maximum:Number.MAX_SAFE_INTEGER};
+ const decimal:S={type:'string',pattern:'^[0-9]+$',maxLength:40},date:S={type:'string',format:'date-time'};
+ const arr=(items:S):S=>({type:'array',items});
+ const obj=(properties:Record<string,S>,required=Object.keys(properties)):S=>({type:'object',properties,required});
+diff --git a/src/scenarios/model-validation.ts b/src/scenarios/model-validation.ts
+index 6c9d95f55ecca8edbf80682550bd9840909d0ac3..5c32414b52ea1956a253dc239e8c49fbae0b341e 100644
+--- a/src/scenarios/model-validation.ts
++++ b/src/scenarios/model-validation.ts
+@@ -1,9 +1,9 @@
+ // ModelValidationReportV1 (LinkForge shadow validation) as the runtime returns it: validated against the synced source schema before the Lab shows it.
+ import Ajv from 'ajv';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
+ import reportSchema from '../shared/engineering-schemas/model-validation-report-v1.schema.json' with {type:'json'};
+ import type {ModelValidationReportV1} from '../shared/navigation2d';
+ const ajv=new Ajv({strict:false,allErrors:true});
+ ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');
+ export const validModelValidationReport=ajv.compile<ModelValidationReportV1>(reportSchema);
+diff --git a/src/shared/engineering.ts b/src/shared/engineering.ts
+index 5308afc803e6adca340e943de59cf1b5bfe63d23..a220b06d80227a9b61b3557f482c6138c8298cd4 100644
+--- a/src/shared/engineering.ts
++++ b/src/shared/engineering.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/engineering.ts @ 2bd66e679aba431a84736eb10e04717dc4d32ce7 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/engineering.ts @ 229efa7f565876f8f9d69634f8fbc24b9196ed3f (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
+ import type {LabProjectV2,AssetRevision} from './types';
+ export type CoffeeRecipe=Record<string,unknown>;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Digest".
+  */
+ export type Digest = string;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+diff --git a/src/shared/navigation2d.ts b/src/shared/navigation2d.ts
+index 65ba10261667b0c1203485a13aa9cce679910c72..732e2ad71af67f0a8493e5701c564a43aa50ccab 100644
+--- a/src/shared/navigation2d.ts
++++ b/src/shared/navigation2d.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/navigation2d.ts @ 2bd66e679aba431a84736eb10e04717dc4d32ce7 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/navigation2d.ts @ 229efa7f565876f8f9d69634f8fbc24b9196ed3f (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
+ import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+ /**
+  * @minItems 2
+  * @maxItems 2
+  *
+  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+  * via the `definition` "Vec2".
+  */
+ export type Vec2 = number[];
+diff --git a/src/twin/payload.ts b/src/twin/payload.ts
+index cf576c2561ff289780306aee709991a13ca1b39e..8a1512ac2a4395e44cd07a84d835157c6af8354c 100644
+--- a/src/twin/payload.ts
++++ b/src/twin/payload.ts
+@@ -1,24 +1,24 @@
+ // MuJoCo mobile view: admitted geometry and committed free-load poses only. No client dynamics or custody.
+ import Ajv from 'ajv';
+ import addFormats from 'ajv-formats';
+-import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json';
+-import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json';
+-import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json';
+-import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json';
+-import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json';
+-import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json';
+-import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json';
+-import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json';
+-import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json';
+-import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json';
+-import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json';
++import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
++import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v1.schema.json' with {type:'json'};
++import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json' with {type:'json'};
++import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json' with {type:'json'};
++import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json' with {type:'json'};
++import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json' with {type:'json'};
++import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json' with {type:'json'};
++import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json' with {type:'json'};
++import offsetLoad from '../../fixtures/engineering/serve-payload-v1/cup-offset.json' with {type:'json'};
++import emptyLoad from '../../fixtures/engineering/serve-payload-v1/empty.json' with {type:'json'};
++import canonical from '../../fixtures/engineering/serve-payload-v1/physical-model-amr-1.json' with {type:'json'};
+ import type {EngineeringProject} from '../shared/engineering';
+ import type {RobotPhysicalModelV1,LoadProfileV1,NavigationSceneV1} from '../shared/navigation2d';
+ import type {TwinSample} from './store';
+ import type {TwinPreset} from '../scenarios/catalog';
+ import type {TwinRuntime} from '../scenarios/controls';
+ import {buildFrameGraph,composePose,checkQuaternion} from './frames';
+ import {hashJson,sha256Hex} from './hash';
+ import {tr} from '../i18n';
+ const ajv=new Ajv({strict:false});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');ajv.addSchema(navModelSchema,'navigation-model-2d-v1.schema.json');
+ const validPhysical=ajv.getSchema<RobotPhysicalModelV1>('robot-physical-model-v1.schema.json')!,validLoad=ajv.compile<LoadProfileV1>(loadSchema),validNav=ajv.compile<NavigationSceneV1>(navSchema),validSample=ajv.compile<TwinSample>(sampleSchema);
+diff --git a/tests/e2e/brand-ui.spec.ts b/tests/e2e/brand-ui.spec.ts
+index 36dcdab2286cde96ea6bf85808942a718a20d12e..9d47f323620a28d20e3f73173cdaca9369c8ec98 100644
+--- a/tests/e2e/brand-ui.spec.ts
++++ b/tests/e2e/brand-ui.spec.ts
+@@ -8,20 +8,47 @@ test('canonical theme, original artwork and keyboard focus', async ({ page }) =>
+   await expect(brand).toBeVisible();
+   await expect(brand.locator('.brand-horizontal')).toHaveAttribute('src', '/brand/assets/MEKONIQ_Horizontal_White_Transparent_v2.png');
+   await expect(brand.locator('.brand-horizontal')).toHaveCSS('width', '180px');
+   await page.keyboard.press('Tab');
+   await expect(page.locator('.skip-link')).toBeFocused();
+   await page.keyboard.press('Tab');
+   await expect(brand).toBeFocused();
+   await expect(brand).toHaveCSS('outline-color', 'rgb(99, 220, 197)');
+ });
+ 
++for (const control of ['skip', 'brand'] as const) test(`startup health rendering preserves ${control} keyboard position and native activation`, async ({page}, info) => {
++  let release!:()=>void, captured!:()=>void, first=true;
++  const gate=new Promise<void>(done=>release=done), responseReady=new Promise<void>(done=>captured=done);
++  await page.route('**/lab/v1/health',async route=>{
++    if(!first||route.request().method()!=='GET'){await route.continue();return;}
++    first=false;const response=await route.fetch();
++    info.annotations.push({type:'test-response-scheduling-input',description:`Actual loopback startup health HTTP ${response.status()}, held until ordinary keyboard focus; not qualification evidence.`});
++    captured();await gate;await route.fulfill({response});
++  });
++  try {
++    await page.goto(control==='skip'?'/#design':'/#restaurant');
++    const skip=page.locator('.skip-link'),brand=page.getByRole('link',{name:'MEKONIQ Robot Lab',exact:true}),target=control==='skip'?skip:brand;
++    await expect(brand).toBeVisible();await responseReady;
++    await page.keyboard.press('Tab');await expect(skip).toBeFocused();
++    if(control==='brand'){await page.keyboard.press('Tab');await expect(brand).toBeFocused();}
++    const original=await target.elementHandle();expect(original).not.toBeNull();release();
++    await expect.poll(()=>original!.evaluate(node=>node.isConnected)).toBe(false);
++    await expect(target).toBeFocused();
++    await expect(target).toHaveAttribute('href',control==='skip'?'#workspace':'#design');
++    await page.keyboard.press('Tab');await expect(control==='skip'?brand:page.getByRole('button',{name:'VI',exact:true})).toBeFocused();
++    await page.keyboard.press('Shift+Tab');await expect(target).toBeFocused();
++    if(control==='brand')await expect(brand).toHaveCSS('outline-color','rgb(99, 220, 197)');
++    await page.keyboard.press('Enter');await expect(page).toHaveURL(control==='skip'?/#workspace$/:/#design$/);
++    await expect(control==='skip'?page.locator('#workspace'):brand).toBeFocused();
++  } finally {release();}
++});
++
+ for (const width of [390, 1024, 1512]) test(`six workspaces and three locales at ${width}px`, async ({ page }, testInfo) => {
+   await page.setViewportSize({ width, height: 1000 });
+   await page.emulateMedia({ reducedMotion: 'reduce' });
+   const failures: string[] = [];
+   page.on('pageerror', error => failures.push(error.message));
+   page.on('response', response => { if (response.url().includes('/brand/') && !response.ok()) failures.push(response.url()); });
+   await page.goto('/');
+   for (const language of ['VI', 'JA', 'EN']) {
+     await page.getByRole('button', { name: language, exact: true }).click();
+     for (const route of routes) {
+diff --git a/tests/e2e/replay-offline.spec.ts b/tests/e2e/replay-offline.spec.ts
+index 184449b94aa7ec7d625cbfaeb9755256c0fdbaae..707a88217f18592f7854d6740945ff5b3d567069 100644
+--- a/tests/e2e/replay-offline.spec.ts
++++ b/tests/e2e/replay-offline.spec.ts
+@@ -1,11 +1,11 @@
+-import {test,expect} from '@playwright/test';
++import {test,expect} from '../support/replay-preview';
+ import {readFileSync} from 'node:fs';
+ import {join} from 'node:path';
+ const out=process.env.LAB_B07B_EVIDENCE;
+ const seek=async(page:import('@playwright/test').Page,tick:number)=>{await page.locator('#replay-cursor').evaluate((el:HTMLInputElement,t)=>{el.value=String(t);el.dispatchEvent(new Event('input',{bubbles:true}));},tick);await expect(page.locator('#replay-time')).toContainText(`tick ${tick}/`);};
+ test('offline first initialization sends no runtime transport; fixed aliases preserve stored package bytes',async({page})=>{
+  test.setTimeout(120000);await page.addInitScript(()=>{const denied:string[]=[];(window as unknown as {__runtimeTransports:string[]}).__runtimeTransports=denied;for(const name of ['EventSource','WebSocket'])Object.defineProperty(window,name,{configurable:true,value:class{constructor(url:string){denied.push(name+':'+url);throw Error('OFFLINE_TRANSPORT_DENIED');}}});});const attempts:string[]=[],errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/lab/**',r=>{attempts.push(r.request().url());return r.abort();});await page.goto('/#replay/external-impact');await expect(page.locator('#replay-cursor')).toBeVisible({timeout:60000});await page.getByRole('button',{name:'EN',exact:true}).click();await expect(page.locator('#replay-cursor')).toHaveAttribute('step','1');const range=await page.locator('#replay-cursor').elementHandle();await page.locator('#replay-cursor').focus();await seek(page,2375);expect(await range!.evaluate(e=>e===document.activeElement)).toBe(true);await expect(page.locator('#replay-issues')).toContainText('LOAD_FELL');await expect(page.locator('#replay-facts')).toContainText('Applied worker disturbance receipt');await seek(page,0);await expect(page.locator('#replay-issues')).not.toContainText('LOAD_FELL');await expect(page.locator('#replay-facts')).toContainText('CAPTURE_HORIZON_ONLY');
+  const checked=await page.evaluate(async()=>{const m=await(await fetch('/replays/external-impact/manifest.json')).json(),a=m.assets.find((a:{encoding:string})=>a.encoding==='gzip'),r=await fetch('/replays/external-impact/'+a.path+'.bin'),b=await r.arrayBuffer(),hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',b))].map(n=>n.toString(16).padStart(2,'0')).join('');return {actual:b.byteLength,expected:a.bytes,hash,expectedHash:a.sha256,encoding:r.headers.get('Content-Encoding')};});expect(checked.actual).toBe(checked.expected);expect(checked.hash).toBe(checked.expectedHash);expect(checked.encoding).not.toBe('gzip');
+  const download=page.waitForEvent('download');await page.locator('.replay-files>summary').click();await page.locator('[data-replay="export"]').click();const zip=await download;if(out)await zip.saveAs(join(out,'offline-roundtrip.zip'));expect(zip.suggestedFilename()).toMatch(/\.zip$/);expect(attempts).toEqual([]);expect(await page.evaluate(()=>(window as unknown as {__runtimeTransports:string[]}).__runtimeTransports)).toEqual([]);expect(errors).toEqual([]);
+ });
+ test('replace and cancel own loads; folder import works with runtime requests denied',async({page})=>{
+diff --git a/tests/e2e/twin-transport.spec.ts b/tests/e2e/twin-transport.spec.ts
+index 2e1090afae874d7f9c1211a92a4bd046a23f2291..94846cc993e674b835d9525f160238b483e2a6d6 100644
+--- a/tests/e2e/twin-transport.spec.ts
++++ b/tests/e2e/twin-transport.spec.ts
+@@ -13,21 +13,23 @@ async function dimmed(page:Page){
+  const styles=await page.locator('#twin-transport button:disabled').evaluateAll(bs=>bs.map(b=>{const s=getComputedStyle(b);return {opacity:Number(s.opacity),cursor:s.cursor};}));
+  expect(styles.length).toBeGreaterThan(0);
+  for(const s of styles){expect(s.opacity).toBeLessThan(1);expect(s.cursor).not.toBe('pointer');}
+ }
+ const noVerticalScroll=(page:Page)=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight);
+ 
+ for(const viewport of [{width:390,height:844},{width:1024,height:768}])test(`watch mode can be exited by touch at ${viewport.width}px without a keyboard`,async({browser})=>{
+  const context=await browser.newContext({viewport,hasTouch:true}),page=await context.newPage();
+  try{
+   await page.goto('/#twin');
+-  if(await page.getByTestId('runtime-popover').isVisible())await page.getByTestId('runtime-chip').tap();
++  await expect(page.getByTestId('runtime-popover')).toBeVisible();
++  await page.getByTestId('runtime-chip').tap();
++  await expect(page.getByTestId('runtime-popover')).toBeHidden();
+   await page.getByRole('button',{name:'Chế độ xem',exact:true}).tap();
+   await expect(page.locator('.twin-shell')).toHaveClass(/watch/);
+   const exit=page.getByRole('button',{name:'Thoát chế độ xem',exact:true});
+   await expect(exit).toBeVisible();await expect(exit).toHaveAttribute('aria-pressed','true');
+   await expect.poll(()=>exit.evaluate(e=>{const r=e.getBoundingClientRect();return Math.min(r.width,r.height);})).toBeGreaterThanOrEqual(44);
+   await exit.tap();
+   await expect(page.locator('.twin-shell')).not.toHaveClass(/watch/);
+   await expect(page.locator('.topbar')).toBeVisible();
+   await expect(page.getByTestId('scenario-picker')).toBeVisible();
+   await expect(page.getByRole('button',{name:'Chế độ xem',exact:true})).toHaveAttribute('aria-pressed','false');
+diff --git a/tests/support/replay-preview.ts b/tests/support/replay-preview.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6e9c20b4494a382b28f454b7f3c4f979b3550640
+--- /dev/null
++++ b/tests/support/replay-preview.ts
+@@ -0,0 +1,42 @@
++import {test as base} from '@playwright/test';
++import {build,preview,type PreviewServer} from 'vite';
++import {mkdtemp,readFile,rm} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import {createHash} from 'node:crypto';
++
++export interface ReplayPreviewOptions {replayPreviewMode:'owned'|'external'}
++interface PreviewBinding {url:string;mode:ReplayPreviewOptions['replayPreviewMode'];directory:string;indexSha256:string;pinSha256:string;entryAssets:{path:string;sha256:string}[];invocationId:string|null}
++const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex');
++async function servedBuild(url:string,directory:string):Promise<Omit<PreviewBinding,'mode'|'directory'>>{
++ const origin=new URL(url);if(origin.protocol!=='http:'||origin.hostname!=='127.0.0.1'||origin.pathname!=='/')throw Error('REPLAY_PREVIEW_LOOPBACK_REQUIRED');
++ const fetchBytes=async(path:string)=>{const response=await fetch(new URL(path,origin),{signal:AbortSignal.timeout(10000),redirect:'error'});if(!response.ok)throw Error('REPLAY_PREVIEW_HTTP_'+response.status);return Buffer.from(await response.arrayBuffer());};
++ const index=await readFile(join(directory,'index.html')),served=await fetchBytes('/');if(!index.equals(served)||served.includes(Buffer.from('/@vite/client')))throw Error('REPLAY_PRODUCTION_INDEX_MISMATCH');
++ const pin=await readFile(join(directory,'source-runtime.lock.json')),current=JSON.parse(await readFile(resolve('config/source-runtime.lock.json'),'utf8'));
++ if(!pin.equals(await fetchBytes('/source-runtime.lock.json'))||JSON.stringify(JSON.parse(pin.toString()))!==JSON.stringify(current))throw Error('REPLAY_PRODUCTION_PIN_MISMATCH');
++ const paths=[...index.toString().matchAll(/(?:src|href)="(\/assets\/[A-Za-z0-9_.-]+\.(?:js|css))"/g)].map(match=>match[1]!);if(!paths.some(path=>path.endsWith('.js')))throw Error('REPLAY_PRODUCTION_ENTRY_MISSING');
++ const entryAssets=[];for(const path of [...new Set(paths)]){const bytes=await readFile(join(directory,path.slice(1)));if(!bytes.equals(await fetchBytes(path)))throw Error('REPLAY_PRODUCTION_ASSET_MISMATCH');entryAssets.push({path,sha256:sha(bytes)});}
++ const invocationId=process.env.LAB_BROWSER_INVOCATION??null;
++ if(invocationId){const evidence=process.env.LAB_B07B_EVIDENCE;if(!evidence)throw Error('REPLAY_PRODUCTION_INVOCATION_MISSING');const invocation=JSON.parse(await readFile(join(evidence,'browser-invocation.json'),'utf8'));if(invocation.invocationId!==invocationId||invocation.before?.sourceCommit!==current.sourceCommit||invocation.before?.runtimeArtifact!==current.artifactSha256)throw Error('REPLAY_PRODUCTION_INVOCATION_MISMATCH');
++  for(const [path,bytes] of [['index.html',index],['source-runtime.lock.json',pin]] as const){const ref=invocation.before.files?.find((file:{path:string})=>file.path===path);if(ref?.sha256!==sha(bytes)||ref?.bytes!==bytes.length)throw Error('REPLAY_PRODUCTION_INVOCATION_BUILD_MISMATCH');}}
++ return {url:origin.href,indexSha256:sha(index),pinSha256:sha(pin),entryAssets,invocationId};
++}
++async function closePreview(server:PreviewServer){if('closeAllConnections' in server.httpServer)server.httpServer.closeAllConnections();await new Promise<void>((done,reject)=>{const timer=setTimeout(()=>reject(Error('REPLAY_PREVIEW_CLOSE_TIMEOUT')),5000);server.httpServer.close(error=>{clearTimeout(timer);if(error)reject(error);else done();});});}
++export const test=base.extend<{replayPreviewEvidence:void},ReplayPreviewOptions&{replayPreview:PreviewBinding}>({
++ replayPreviewMode:['owned',{option:true,scope:'worker'}],
++ replayPreview:[async({replayPreviewMode},use,info)=>{
++  if(replayPreviewMode==='external'){
++   // B07 already owns the production preview and full build/invocation binding. Never replace or close it.
++   const url=info.project.use.baseURL;if(!url)throw Error('REPLAY_EXTERNAL_PREVIEW_REQUIRED');const directory=resolve('dist');await use({mode:'external',directory,...await servedBuild(url,directory)});return;
++  }
++  const root=resolve('.'),owned=await mkdtemp(join(tmpdir(),'mekoniq-replay-preview-')),directory=join(owned,'dist');let server:PreviewServer|undefined;
++  try{
++   await build({root,configFile:join(root,'vite.config.ts'),logLevel:'error',build:{outDir:directory,emptyOutDir:false}});
++   server=await preview({root,configFile:join(root,'vite.config.ts'),logLevel:'error',build:{outDir:directory},preview:{host:'127.0.0.1',port:0,strictPort:true}});
++   const address=server.httpServer.address();if(!address||typeof address==='string')throw Error('REPLAY_PREVIEW_ADDRESS_MISSING');await use({mode:'owned',directory,...await servedBuild(`http://127.0.0.1:${address.port}/`,directory)});
++  }finally{try{if(server)await closePreview(server);}finally{await rm(owned,{recursive:true,force:true});}}
++ },{scope:'worker'}],
++ baseURL:async({replayPreview},use)=>{await use(replayPreview.url);},
++ replayPreviewEvidence:[async({replayPreview},use,info)=>{await info.attach('replay-production-preview',{body:Buffer.from(JSON.stringify(replayPreview,null,2)),contentType:'application/json'});await use();},{auto:true}],
++});
++export {expect} from '@playwright/test';

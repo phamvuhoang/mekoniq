@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:27:42.298905+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/handoff-engineering-amd64",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-handoff-engineering-amd64.tar.gz",
+  "archiveSha256": "9a528f1a846eeb4c78b89cbf085fc00081c73e1a45eb997a6e1858e29bf57c53",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-handoff-engineering-amd64.members.json",
+  "memberIndexSha256": "ec3f5817b403eff23fe9d8f6dff3593e965181935c5ba0d2d46c766a3bb5b30b",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-handoff-engineering-amd64",
+  "verifiedFiles": 243,
+  "verifiedBytes": 10867057,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

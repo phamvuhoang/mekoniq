@@ -1,0 +1,409 @@
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index 16a65a7ac985e8bcf99c1457d129466794a0c3fa..af9cc4211dea14b047edd2c39fed5418353d2cdc 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -61,20 +61,24 @@ export function createV2Gateway(deps:V2Deps){
+  let replayAdmission=Promise.resolve();const replaySerial=<T>(work:()=>Promise<T>)=>{const pending=replayAdmission.then(work);replayAdmission=pending.then(()=>undefined,()=>undefined);return pending;};
+  /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
+  const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
+  const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
+  type Entry={owner:string;readers:Set<string>;controlEpoch:number;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput};
+  const runs=new Map<string,Entry>();let creating=0;
+  const readable=(e:Entry,id:string)=>e.owner===id||e.readers.has(id);
+  // Reserve the logical run before selecting an entry: cold reclaim and existing-entry work share one queue.
+  const runQueues=new Map<string,Promise<void>>();
+  const serialRun=<T>(id:string,work:()=>Promise<T>)=>{const pending=(runQueues.get(id)??Promise.resolve()).then(work),settled=pending.then(()=>undefined,()=>undefined);runQueues.set(id,settled);void settled.then(()=>{if(runQueues.get(id)===settled)runQueues.delete(id);});return pending;};
++ // Register steps before their queue microtask, but lend ownership only after that exact
++ // reservation executes. Lifecycle work still waits for the complete action and its controls.
++ type StepReservation={entry:Entry;ready:Promise<void>;begin():void;active:boolean};
++ const steps=new Map<string,StepReservation[]>();
+  const serial=<T>(e:Entry,work:()=>Promise<T>)=>serialRun(e.run.id,work);
+  const writerView=(e:Entry)=>({runId:e.run.id,sessionId:e.readOnly?null:sessions.get(e.owner)?.publicId??null,controlEpoch:e.controlEpoch});
+  const authority=(e:Entry,id:string,epoch:string|undefined,allowReconcile=false)=>{
+   const session=sessions.get(id);if(!session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');
+   if(runs.get(e.run.id)!==e||!readable(e,id))throw Error('RUN_NOT_FOUND');
+   if(e.archiving||reclaiming.has(e.run.id))throw Error('RUN_ARCHIVE_CONFLICT');
+   if(epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+   if(e.readOnly&&e.owner===id&&allowReconcile)return;
+   if(e.readOnly&&e.owner===id)throw Error('RECLAIM_READ_ONLY');
+   if(e.owner!==id||epoch===undefined&&e.controlEpoch!==0||epoch!==undefined&&epoch!==String(e.controlEpoch))throw Error('RUN_WRITER_CONFLICT');
+@@ -341,21 +345,41 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+    if(entry.readOnly&&action.value.kind!=='reconcile')return deny(response,403,'RECLAIM_READ_ONLY',['VIEW_RECONCILE_ONLY']);
+    const checkAuthority=()=>authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,action.value.kind==='reconcile');
+    const beforeExecute=async()=>{
+     checkAuthority();if(action.value.kind!=='start'&&action.value.kind!=='resume')return;
+     // the bundle a run was created from must still be whole before any motion is started or resumed
+     if(entry.input.engineering&&deps.engineering&&(await deps.engineering.verifyClosure(entry.input.engineering.ref.bundleDigest)).length)throw new Error('ENGINEERING_CLOSURE_MISSING');
+     const readiness=await collectReadiness({scenarioId:entry.input.scenarioId,backendSetId:entry.input.backendSetId,project:entry.input.project,...entry.input.engineering?{engineering:entry.input.engineering.ref}:{},runId:entry.run.id},readinessOptions());
+     if(!readiness.canStart)throw new Error(`BACKEND_UNAVAILABLE:${readiness.checks.flatMap(c=>c.reasonCodes).join(',')}`);
+     checkAuthority();
+    };
+-   try{return await serial(entry,async()=>{checkAuthority();return send(response,200,{...await entry.run.action(action.value,beforeExecute),writer:writerView(entry)});});}catch(e){return failed(response,e);}
++   let step:StepReservation|undefined;
++   if(action.value.kind==='step'&&entry.run.controlDuringStep){
++    let begin!:()=>void;step={entry,ready:new Promise<void>(resolve=>begin=resolve),begin:()=>begin(),active:false};
++    const pending=steps.get(entry.run.id)??[];pending.push(step);steps.set(entry.run.id,pending);
++   }
++   try{
++    const reservation=steps.get(entry.run.id)?.[0];
++    if((action.value.kind==='pause'||action.value.kind==='cancel')&&reservation?.entry===entry){
++     checkAuthority();await reservation.ready;checkAuthority();
++     // No await between the active reservation check and the runner's atomic step check/enqueue.
++     // A late arrival after the runner drained its step falls back to the ordinary reservation.
++     const control=reservation.active&&steps.get(entry.run.id)?.[0]===reservation?entry.run.controlDuringStep?.(action.value,beforeExecute):undefined;
++     if(control)return send(response,200,{...await control,writer:writerView(entry)});
++    }
++    return await serial(entry,async()=>{
++     checkAuthority();if(step)step.active=true;
++     const pending=entry.run.action(action.value,beforeExecute);step?.begin();
++     return send(response,200,{...await pending,writer:writerView(entry)});
++    });
++   }catch(e){return failed(response,e);}
++   finally{if(step){step.active=false;step.begin();const pending=steps.get(entry.run.id)!.filter(s=>s!==step);if(pending.length)steps.set(entry.run.id,pending);else steps.delete(entry.run.id);}}
+   }
+   if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+   if(kind==='archive'){
+    if(entry.owner!==sessionId)return deny(response,409,'RUN_WRITER_CONFLICT',[]);
+    const body=await deps.readBody(request);if(Object.keys(body).length)return deny(response,422,'INVALID_ARCHIVE',[]);
+    if(entry.archiving||reclaiming.has(runRoute![1]!))return deny(response,409,'RUN_ARCHIVE_CONFLICT',[]);
+    return serial(entry,async()=>{try{authority(entry,sessionId,request.headers['x-lab-control-epoch'] as string|undefined,entry.readOnly); }catch(e){return failed(response,e);}
+    entry.archiving=true;
+    try{
+     const report=await entry.run.report(),view=await entry.run.snapshot();
+diff --git a/packages/lab-runtime/src/v2/navigation2d/runner.ts b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+index bc1e2f83547d4ae5516f20d2128aacf9e90579e4..d7c69a436217648ad58566cc7ae8e82fb6b71ede 100644
+--- a/packages/lab-runtime/src/v2/navigation2d/runner.ts
++++ b/packages/lab-runtime/src/v2/navigation2d/runner.ts
+@@ -205,21 +205,21 @@ class FixedStepRun implements ScenarioRun {
+  readonly telemetry:TelemetryRecorder;
+  private controller:NavigationController;
+  private adapters=new Map<string,IRSimNavigationAdapter>();
+  private observations:RobotEvent[]=[];
+  private holds:Record<string,string|null>={};
+  private worker?:PlantWorker;
+  private queue:Promise<unknown>=Promise.resolve();
+  private closed=false;
+  /** step actions queued or running: a pause/cancel arriving meanwhile is taken at that batch's next tick boundary (or after its refusal), never behind it */
+  private steps=0;
+- private controls:{raw:unknown;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
++ private controls:{raw:unknown;beforeExecute?:()=>Promise<void>;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
+  private engineSeed:number;
+  private physicsRec?:PhysicsRecorder;
+  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
+  private anchor:PaceAnchor|null=null;
+  constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>){
+   this.clock=createClock(EPOCH,cp.tick,cp.paused);
+   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
+   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
+   this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,plant.identity.controller?.options);
+   const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
+@@ -511,32 +511,41 @@ class FixedStepRun implements ScenarioRun {
+       c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',robotId,subjectId:missionId,tick:c.tick,...typeof mission.state.commandId==='string'?{commandId:mission.state.commandId}:{}});targets++;
+      }
+      if(!targets)c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',tick:c.tick});
+     }
+     c.reclaimed=true;c.revision++;this.record();await this.persist();
+    }
+    return this.view();
+   });this.queue=p.catch(()=>{});return p;
+  }
+  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
++ controlDuringStep(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined{
++  const kind=(a as {kind?:unknown}|null)?.kind;
++  if(!this.steps||(kind!=='pause'&&kind!=='cancel'))return undefined;
++  // Bound pending controls as well as durable action receipts; refusal never joins the batch.
++  if(this.controls.length>=10000)return Promise.reject(new Error('ACTION_LIMIT'));
++  return new Promise((resolve,reject)=>this.controls.push({raw:a,beforeExecute,resolve,reject}));
++ }
+  action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+-  const kind=(a as {kind?:unknown}|null)?.kind,step=kind==='step';
+-  // from the moment a step is queued (synchronously, before any await of its admission) a pause/cancel waits for its next tick boundary instead of queueing behind it
+-  if(this.steps&&(kind==='pause'||kind==='cancel'))return new Promise((resolve,reject)=>this.controls.push({raw:a,resolve,reject}));
++  // Synchronous admission closes the gap before a queued step's first await.
++  const control=this.controlDuringStep(a,beforeExecute);if(control)return control;
++  const step=(a as {kind?:unknown}|null)?.kind==='step';
+   if(step)this.steps++;
+   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;}
+- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
++ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
+   if(this.closed)throw new Error('RUN_CLOSED');
+   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
+   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
+   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
+-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
++  // A priority receipt waited inside a step, so it still needs current writer/session authority.
++  // Ordinary cached actions keep their existing readiness-independent replay semantics.
++  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
+   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
+   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
+   const view=await this.view(),status=view.run.status;
+   if(a.kind==='start'&&this.plant.startupPolicy&&c.plant.startupAttempt)throw new Error('INVALID_STATE:STARTUP_UNKNOWN');
+   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
+   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
+   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
+   // no plant, no motion: a lost worker is never replaced and its steps are never replayed
+   if(a.kind==='step'&&c.plant.status!=='live')throw new Error(c.plant.status==='stopped'?'INVALID_STATE:RUN_FINISHED':'INVALID_STATE:PLANT_LOST');
+   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
+@@ -552,21 +561,21 @@ class FixedStepRun implements ScenarioRun {
+   try{await beforeExecute?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
+   try{
+    if(a.kind==='start'){await this.startPlant();c.started=true;}
+    else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;if(this.worker)await this.ask('pause',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));}
+    else if(a.kind==='resume'){this.anchor=null;if(this.worker)await this.ask('resume',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));c.paused=false;this.clock.resume();}
+    else if(a.kind==='step'){
+     // pause/cancel sent during the batch are taken at the next tick boundary (workers-runtime §2), and the batch ends there
+     // a batch ends at the tick the run finishes or first needs attention (IR09): the horizon is the same whatever the pacing (1 tick or 500 per request)
+     // a paced step (D57) waits for each tick's wall-clock slot first; a control that arrived during the wait is taken before the tick
+     const seen=c.attention.length,pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;
+-    try{for(let i=0;i<Number(p.ticks)&&!this.controls.length;i++){if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(this.controls.length)break;}if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
++    try{for(let i=0;i<Number(p.ticks);i++){if(await this.takeControls())break;if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(await this.takeControls())break;}if(!await this.tick()||c.attention.length>seen||await this.finished())break;}}finally{await this.takeControls();}
+    }
+    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
+    else if(a.kind==='cancel'){
+     c.cancelled=true;this.suspend();this.anchor=null;
+     // every open mission of the run's robots, the return-to-parking standby included
+     for(const id of await this.runMissions()){const m=await this.source.read('mission',id);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
+     c.confirmations={};await this.scanArrivals();
+    }
+    else if(a.kind==='reconcile'){
+     // reconciliation queries the adapter by command id and audits the answer; it never resends and never releases on its own
+@@ -605,21 +614,27 @@ class FixedStepRun implements ScenarioRun {
+   c.completionTail??={firstTick:c.tick,lastTick:c.tick+this.plant.identity.completionObservation.extraTicks};
+   return c.tick>=c.completionTail.lastTick;
+  }
+  /** Business cancellation can precede physical completion; reads must never start or shorten the registered observation tail. */
+  private async cancellationFinished(){
+   return await this.cancelDone()&&(!this.plant.identity.completionObservation||!!this.cp.completionTail&&this.cp.tick>=this.cp.completionTail.lastTick);
+  }
+  /** Pause/cancel received while a step was queued or ran: each is executed as its own action (own admission, revision check and receipt) at a tick boundary,
+   * or right after a batch refused at admission. Once no step is pending, new controls take the ordinary queue (nothing is left behind: the last empty check and
+   * the steps decrement happen before any await). */
+- private async takeControls(){for(let x=this.controls.shift();x;x=this.controls.shift())await this.execute(x.raw).then(x.resolve,x.reject);}
++ private async takeControls(){
++  let admitted=false;
++  while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}
++  // Admission refusals do not stop the batch. Once admitted, even a failed checkpoint or
++  // worker operation ends it here; an uncertain mutation must never be followed by more ticks.
++  return admitted;
++ }
+  private async missionsDone(){
+   const c=this.cp;
+   if(this.scenario.rig)return this.scenario.rig.goals.every(g=>c.rig?.[c.roles.robots[g.robot]!.id]?.state==='arrived');
+   if(c.workload.some(w=>w.status!=='placed'))return false;
+   for(const w of c.workload)if((await this.source.read('mission',w.missionId!)).state.status!=='completed')return false;
+   if(!this.scenario.park)return true;
+   for(const r of c.roles.robots){const s=(await this.source.read('robot',r.id)).state;if(s.missionId||s.availability!=='idle'||s.position!==r.parkingId)return false;}
+   return true;
+  }
+  private async view():Promise<RunView>{
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index 359410d21123f8a9987735da02fd7a4f1e651e80..91b367692a44c314e9913fcc4af6882365f344a5 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -42,20 +42,24 @@ import {projectSamples} from './twin-projection';
+ import type {JournalEvents} from './event-stream';
+ import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
+ /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
+ export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
+ export interface RunManifestInput {worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
+ export interface RunProviders {directory:string;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
+  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
+ export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'}
+ export interface ScenarioRun {worldDisplay?():Promise<import('./simulation3d/world-display').WorldDisplay>;worldDisplayScene?():Promise<import('./simulation3d/world-display').WorldDisplayScene>;captureReplay?(options?:{signal?:AbortSignal}):Promise<import('./replay/export').CapturedReplay>;readonly id:string;start():Promise<RunView>;action(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>;snapshot():Promise<RunView>;report():Promise<RunReport>;close():Promise<void>;holdForReclaim():Promise<RunView>;
++ /** Atomically attach pause/cancel to a pending step, or return undefined without enqueueing.
++  * The step owns completion of attached controls; callers must retain its lifecycle reservation.
++  * Runners without tick-boundary controls omit this method and keep ordinary action ordering. */
++ controlDuringStep?(action:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined;
+  /** Cheap, synchronous liveness for stream heartbeats: never reads the journal. `paused` is the acknowledged pause of the virtual clock. */
+  pulse():{tick:number;paused:boolean;runRevision:number};
+  /** Durable business events in journal order (queued behind actions, so a reader sees committed state). */
+  journal():Promise<JournalEvents[]>;
+  /** Lossy, coalesced telemetry of this process (bounded, in memory). */
+  readonly telemetry:TelemetryRecorder}
+ const EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'];
+ const FINAL=['completed','cancelled','failed'];
+ interface Confirmation {due:number|null;type:string;robotId:string}
+ interface Checkpoint {
+diff --git a/tests/security/lab-run-controls.test.ts b/tests/security/lab-run-controls.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..f9bcaef5e107bcbaf28532b869ba15913935b863
+--- /dev/null
++++ b/tests/security/lab-run-controls.test.ts
+@@ -0,0 +1,176 @@
++// Handler/request objects and wall-clock barriers control scheduling; the fixed-step runner,
++// Source journal and IR-SIM worker are real. This is authority/lifecycle coverage, not qualification.
++import {afterAll,afterEach,beforeAll,expect,test} from 'vitest';
++import {rm} from 'node:fs/promises';
++import {startLabGateway} from '../../packages/lab-runtime/src/gateway';
++import type {IncomingMessage,ServerResponse} from 'node:http';
++import {createV2Gateway} from '../../packages/lab-runtime/src/v2/gateway';
++import {createIRSimScenarioRun} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
++import {portableCatalog} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
++import type {ScenarioRun,RunView} from '../../packages/lab-runtime/src/v2/scenario-runner';
++import {findReclaim} from '../../packages/lab-runtime/src/v2/reclaim-store';
++import {irsimAvailable,irsimBundle,irsimProviders,removeBundles,temp} from '../support/irsim-mission';
++const gate=()=>{let release!:()=>void;return {promise:new Promise<void>(r=>release=r),release:()=>release()};};
++const turn=()=>new Promise<void>(r=>setImmediate(r));
++const origin='http://127.0.0.1:4175',schemaHash='a'.repeat(64),IR='engineering-irsim-2d-v1';
++let bundle:Awaited<ReturnType<typeof irsimBundle>>;
++const cleanup:(()=>Promise<void>)[]=[];
++beforeAll(async()=>{if(irsimAvailable)bundle=await irsimBundle();},120_000);
++afterEach(async()=>{for(const close of cleanup.splice(0))await close();});
++afterAll(removeBundles);
++interface Reply {status:number;body:RunView&{sessionToken:string;sessionId:string;csrfToken:string;reclaimToken:string;error:string;writer:{controlEpoch:number;sessionId:string}}}
++async function fixture(holdResult=false){
++ const directory=await temp('priority-control-'),boundary=gate(),release=gate(),resultReady=gate(),resultRelease=gate();let now=1000,wall=0,run!:ScenarioRun,closes=0;
++ const requests=new WeakMap<IncomingMessage,Record<string,unknown>>(),responses=new WeakMap<ServerResponse,Reply>();
++ const g=createV2Gateway({directory,sourceCommit:'test-commit',schemaHash,now:()=>now,pairingValid:()=>true,spendPairing(){},same:(a,b)=>a===b,catalog:portableCatalog(true),enabledBackends:['irsim_2d'],engineering:bundle.service,
++  portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'test-owned-worker'})),
++  readBody:async r=>requests.get(r)!,send:(r,status,body)=>{responses.set(r,{status,body:body as Reply['body']});},
++  simulationFactory:async(input,p)=>{run=await createIRSimScenarioRun(input,{...await irsimProviders(p.directory,bundle.service),wall:{now:()=>wall,sleep:async ms=>{boundary.release();await release.promise;wall+=ms;}}});const close=run.close.bind(run);run.close=async()=>{closes++;await close();};if(holdResult){const action=run.action.bind(run);run.action=async(a,before)=>{const v=await action(a,before);if((a as {kind:string}).kind==='step'){resultReady.release();await resultRelease.promise;}return v;};}return run;}});
++ const pending:Promise<unknown>[]=[];
++ const call=(path:string,body:Record<string,unknown>,token?:string,headers:Record<string,string>={},requestOrigin:string|null=origin)=>{
++  const req={method:'POST',headers:{...token?{authorization:`Bearer ${token}`}:{},...headers}} as IncomingMessage,res={setHeader(){}} as unknown as ServerResponse;requests.set(req,body);
++  const p=g(req,res,'/lab/v2'+path,requestOrigin??undefined).then(()=>responses.get(res)!);pending.push(p);return p;
++ };
++ cleanup.push(async()=>{release.release();resultRelease.release();await Promise.allSettled(pending);await g.close();await rm(directory,{recursive:true,force:true});});
++ const pair=async()=>(await call('/sessions',{token:'pair'})).body,a=await pair(),b=await pair(),c=await pair();
++ const compiled=await call('/engineering/compile',{project:bundle.locked.project},a.sessionToken);
++ const ref=compiled.body as unknown as {bundleDigest:string;projectDigest:string};
++ const made=await call('/runs',{scenarioId:'IR-FD01',scenarioRevision:1,seed:5,mode:'simulation',access:'simulated',backendSetId:IR,runtimeIdentity:{sourceCommit:'test-commit',schemaHash},engineeringRef:{bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest}},a.sessionToken);
++ expect(made.status,JSON.stringify(made.body)).toBe(201);const path=`/runs/${made.body.run.id}`;
++ const act=(kind:string,revision:number,who=a,extra:Record<string,string>={},actionId=kind,payload:Record<string,unknown>={})=>call(path+'/actions',{actionId,expectedRevision:revision,kind,payload},who.sessionToken,extra);
++ const started=await act('start',made.body.run.runRevision);expect(started.status).toBe(200);const rev=started.body.run.runRevision;
++ const writer=(operation:string,who=a,recipient=b,epoch=0)=>call(path+'/writer',{operation,recipientSessionId:recipient.sessionId,controlEpoch:epoch},who.sessionToken);
++ const batch=()=>act('step',rev,a,{},'batch',{ticks:20,pace:{factor:1}});
++ return {g,run,call,act,a,b,c,pair,writer,batch,path,made,rev,boundary,release,resultReady,resultRelease,advance:(ms:number)=>{now+=ms;},directory,closes:()=>closes};
++}
++for(const kind of ['pause','cancel'])test.skipIf(!irsimAvailable)(`priority ${kind} crosses a held batch boundary while transfer keeps the reservation`,async()=>{
++ const f=await fixture();expect((await f.writer('grant_read')).status).toBe(200);
++ const batch=f.batch();await f.boundary.promise;expect(f.run.pulse().tick).toBe(1);
++ let transferred=false;const transfer=f.writer('transfer').then(r=>{transferred=true;return r;});
++ const control=f.act(kind,f.rev);await turn();expect(transferred).toBe(false);expect((await findReclaim(f.directory,f.run.id))!.record.controlEpoch??0).toBe(0);
++ f.release.release();const [s,c,t]=await Promise.all([batch,control,transfer]);expect(c.status,JSON.stringify(c.body)).toBe(200);expect(s.status).toBe(200);
++ expect(c.body.tick).toBe(1);expect(s.body.tick).toBe(c.body.tick);expect([c.body.run.runRevision,s.body.run.runRevision]).toEqual([f.rev+1,f.rev+2]);
++ expect(t.status).toBe(200);expect(t.body.writer).toMatchObject({sessionId:f.b.sessionId,controlEpoch:1});expect((await findReclaim(f.directory,f.run.id))!.record.controlEpoch).toBe(1);
++ expect((await f.act(kind,f.rev)).body.error).toBe('RUN_WRITER_CONFLICT');
++ // Receipt replay remains available to the current writer, with no second mutation; changed payload/id remains a conflict.
++ const retry=await f.act(kind,f.rev,f.b,{'x-lab-control-epoch':'1'});expect(retry.status).toBe(200);expect(retry.body.tick).toBe(c.body.tick);expect(retry.body.run).toEqual(c.body.run);
++ expect((await f.act(kind,f.rev+2,f.b,{'x-lab-control-epoch':'1'})).body.error).toBe('ACTION_CONFLICT');
++},120_000);
++
++test.skipIf(!irsimAvailable)('priority admission refuses reader, stranger, stale epoch, CSRF and Origin before reaching the step queue',async()=>{
++ const f=await fixture();await f.writer('grant_read');const batch=f.batch();await f.boundary.promise;
++ const refusals=Promise.all([f.act('pause',f.rev,f.b),f.act('cancel',f.rev,f.c),f.act('pause',f.rev,f.a,{'x-lab-control-epoch':'1'}),
++  f.call(f.path+'/actions',{actionId:'csrf',expectedRevision:f.rev,kind:'pause',payload:{}},undefined,{cookie:`mekoniq_lab_session_v2=${f.a.sessionToken}`}),
++  f.call(f.path+'/actions',{actionId:'origin',expectedRevision:f.rev,kind:'pause',payload:{}},f.a.sessionToken,{},null)]);
++ await turn();f.release.release();const rejected=await refusals;
++ expect(rejected.map(r=>r.status)).toEqual([409,404,409,403,403]);expect(rejected.map(r=>r.body.error)).toEqual(['RUN_WRITER_CONFLICT','RUN_NOT_FOUND','RUN_WRITER_CONFLICT','CSRF_INVALID','ORIGIN_REQUIRED']);
++ f.release.release();expect((await batch).body.tick).toBe(20);expect(f.run.pulse().paused).toBe(false);
++},120_000);
++
++test.skipIf(!irsimAvailable)('priority control rechecks session expiry at execution and expiry cleanup waits for the batch',async()=>{
++ const f=await fixture(),batch=f.batch();await f.boundary.promise;const pause=f.act('pause',f.rev);await turn();f.advance(3600001);const fresh=await f.pair();
++ const compiled=await f.call('/engineering/compile',{project:bundle.locked.project},fresh.sessionToken),ref=compiled.body as unknown as {bundleDigest:string;projectDigest:string};
++ const expiry=f.call('/readiness',{scenarioId:'IR-FD01',backendSetId:IR,engineeringRef:{bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest}},fresh.sessionToken);
++ await turn();expect(f.closes()).toBe(0);f.release.release();const [s,p]=await Promise.all([batch,pause]);expect(s.status).toBe(200);expect(p.status).toBe(401);expect(p.body.error).toBe('SESSION_REQUIRED');expect(f.run.pulse().paused).toBe(false);expect(s.body.tick).toBe(20);await expiry;expect(f.closes()).toBe(1);
++},120_000);
++
++test.skipIf(!irsimAvailable)('direct fixed-step queue forwards the control execution callback and does not cache a refused pause',async()=>{
++ const f=await fixture(),batch=f.batch();await f.boundary.promise;let allowed=true;
++ const raw={actionId:'guarded-pause',expectedRevision:f.rev,kind:'pause',payload:{}};
++ const control=f.run.action(raw,async()=>{if(!allowed)throw Error('SESSION_REQUIRED');}).then(v=>({view:v,error:null}),e=>({view:null,error:(e as Error).message}));
++ allowed=false;f.release.release();const [s,c]=await Promise.all([batch,control]);expect(c.error).toBe('SESSION_REQUIRED');expect(f.run.pulse().paused).toBe(false);expect(s.body.tick).toBe(20);
++ const retry=await f.run.action({...raw,expectedRevision:s.body.run.runRevision},async()=>{});expect(retry.run.status).toBe('paused');
++},120_000);
++
++for(const operation of ['reclaim','archive'])test.skipIf(!irsimAvailable)(`priority pause settles before ${operation} changes or closes the entry`,async()=>{
++ const f=await fixture(),batch=f.batch();await f.boundary.promise;let finished=false;
++ const lifecycle=f.call(f.path+'/'+operation,operation==='reclaim'?{proof:f.made.body.reclaimToken}:{},operation==='reclaim'?f.b.sessionToken:f.a.sessionToken).then(r=>{finished=true;return r;});
++ const pause=f.act('pause',f.rev);await turn();expect(finished).toBe(false);expect(f.closes()).toBe(0);f.release.release();const [s,p,l]=await Promise.all([batch,pause,lifecycle]);
++ expect(p.status,JSON.stringify(p.body)).toBe(200);expect(s.body.tick).toBe(p.body.tick);expect(l.status).toBe(200);
++ if(operation==='reclaim'){expect(l.body.writer.controlEpoch).toBe(1);expect((await f.act('cancel',s.body.run.runRevision)).status).toBe(404);}else expect(f.closes()).toBe(1);
++},120_000);
++
++test.skipIf(!irsimAvailable)('a control arriving after runner batch completion waits for reservation release and keeps exact revision checks',async()=>{
++ const f=await fixture(true),batch=f.batch();await f.boundary.promise;f.release.release();await f.resultReady.promise;
++ let done=false;const pause=f.act('pause',f.rev+1).then(r=>{done=true;return r;});await turn();expect(done).toBe(false);expect(f.run.pulse().paused).toBe(false);
++ f.resultRelease.release();expect((await batch).body.tick).toBe(20);expect((await pause).body.run.status).toBe('paused');
++ expect((await f.act('cancel',f.rev)).body.error).toBe('REVISION_CONFLICT');
++},120_000);
++
++test.skipIf(!irsimAvailable)('a cached control queued inside a later step still needs current execution authority',async()=>{
++ const f=await fixture(),paused=await f.act('pause',f.rev),resumed=await f.act('resume',paused.body.run.runRevision);
++ const batch=f.run.action({actionId:'later-batch',expectedRevision:resumed.body.run.runRevision,kind:'step',payload:{ticks:2}});
++ const retry=f.run.action({actionId:'pause',expectedRevision:f.rev,kind:'pause',payload:{}},async()=>{throw Error('SESSION_REQUIRED');}).then(()=>null,e=>(e as Error).message);
++ expect(await retry).toBe('SESSION_REQUIRED');expect((await batch).tick).toBe(2);expect(f.run.pulse().paused).toBe(false);
++},120_000);
++
++test.skipIf(!irsimAvailable)('a stale revision control has no pause effect and does not truncate the admitted batch',async()=>{
++ const f=await fixture(),batch=f.batch();await f.boundary.promise;const pause=f.act('pause',f.rev-1);await turn();f.release.release();
++ expect((await pause).body.error).toBe('REVISION_CONFLICT');expect((await batch).body.tick).toBe(20);expect(f.run.pulse().paused).toBe(false);
++},120_000);
++
++test.skipIf(!irsimAvailable)('public close drains an admitted priority control and batch before closing the worker or releasing the data root',async()=>{
++ const directory=await temp('priority-public-close-'),boundary=gate(),release=gate(),admitted=gate();let wall=0,workerClosed=false,run!:ScenarioRun;
++ const g=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash,v2:{catalog:portableCatalog(true),enabledBackends:['irsim_2d'],engineering:bundle.service,
++  portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'test-owned-worker'})),
++  simulationFactory:async(input,p)=>{run=await createIRSimScenarioRun(input,{...await irsimProviders(p.directory,bundle.service),wall:{now:()=>wall,sleep:async ms=>{boundary.release();await release.promise;wall+=ms;}}});
++   const control=run.controlDuringStep!.bind(run),close=run.close.bind(run);run.controlDuringStep=(a,before)=>{const p=control(a,before);if(p&&(a as {kind:string}).kind==='pause')admitted.release();return p;};run.close=async()=>{await close();workerClosed=true;};return run;}}});
++ const requests:Promise<unknown>[]=[];
++ cleanup.push(async()=>{release.release();await Promise.allSettled(requests);await g.close();await rm(directory,{recursive:true,force:true});});
++ const post=(path:string,body:unknown,token?:string)=>{const p=fetch(g.url+'/lab/v2'+path,{method:'POST',headers:{origin,'content-type':'application/json',...token?{authorization:`Bearer ${token}`} :{}},body:JSON.stringify(body)}).then(async r=>({status:r.status,body:await r.json()}));requests.push(p);return p;};
++ const paired=await post('/sessions',{token:g.issuePairingToken()}),token=paired.body.sessionToken;
++ const compiled=await post('/engineering/compile',{project:bundle.locked.project},token),ref={bundleDigest:compiled.body.bundleDigest,projectDigest:compiled.body.projectDigest};
++ const made=await post('/runs',{scenarioId:'IR-FD01',scenarioRevision:1,seed:5,mode:'simulation',access:'simulated',backendSetId:IR,runtimeIdentity:{sourceCommit:'test-commit',schemaHash},engineeringRef:ref},token);expect(made.status).toBe(201);
++ const path=`/runs/${made.body.run.id}/actions`,started=await post(path,{actionId:'start',expectedRevision:made.body.run.runRevision,kind:'start',payload:{}},token);expect(started.status).toBe(200);
++ const batch=post(path,{actionId:'batch',expectedRevision:started.body.run.runRevision,kind:'step',payload:{ticks:20,pace:{factor:1}}},token).catch(()=>null);await boundary.promise;
++ const pause=post(path,{actionId:'pause',expectedRevision:started.body.run.runRevision,kind:'pause',payload:{}},token).catch(()=>null);await admitted.promise;
++ let closed=false;const closing=g.close().then(()=>{closed=true;});await turn();expect(closed).toBe(false);expect(workerClosed).toBe(false);
++ await expect(startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash})).rejects.toThrow('LAB_DATA_DIR_BUSY');
++ release.release();await Promise.all([batch,pause,closing]);expect(workerClosed).toBe(true);expect(run.pulse()).toMatchObject({tick:1,paused:true,runRevision:started.body.run.runRevision+2});
++ const replacement=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash});await replacement.close();
++},120_000);
++
++test.skipIf(!irsimAvailable)('a control failing checkpoint persistence after admission still ends the batch at its boundary',async()=>{
++ const f=await fixture(),batch=f.batch();await f.boundary.promise;
++ // Inject one owned checkpoint IO failure after the real control admission callback.
++ const target=f.run as ScenarioRun&{persist():Promise<void>},persist=target.persist.bind(target);let fail=false;
++ target.persist=async()=>{if(fail){fail=false;throw Error('CHECKPOINT_IO_FAILURE');}return persist();};
++ const pause=f.run.action({actionId:'failed-pause',expectedRevision:f.rev,kind:'pause',payload:{}},async()=>{fail=true;}).then(()=>null,e=>(e as Error).message);
++ f.release.release();expect(await pause).toBe('CHECKPOINT_IO_FAILURE');expect((await batch).body.tick).toBe(1);expect(f.run.pulse().paused).toBe(false);
++},120_000);
++
++test.skipIf(!irsimAvailable)('an authorized cached control yields the batch without reapplying the control or creating another control revision',async()=>{
++ const f=await fixture(),paused=await f.act('pause',f.rev),resumed=await f.act('resume',paused.body.run.runRevision);let checks=0;
++ const batch=f.run.action({actionId:'later-batch',expectedRevision:resumed.body.run.runRevision,kind:'step',payload:{ticks:2}});
++ const retry=f.run.action({actionId:'pause',expectedRevision:f.rev,kind:'pause',payload:{}},async()=>{checks++;});
++ const [receipt,stepped]=await Promise.all([retry,batch]);expect(receipt.run).toEqual(paused.body.run);expect(checks).toBe(1);
++ expect(stepped.tick).toBe(0);expect(stepped.run.runRevision).toBe(resumed.body.run.runRevision+1);expect(f.run.pulse().paused).toBe(false);
++},120_000);
++
++test.skipIf(!irsimAvailable)('same-turn handler step and pause reach the first boundary without an admission microtask gap',async()=>{
++ const f=await fixture(),batch=f.batch(),pause=f.act('pause',f.rev);f.release.release();const [s,p]=await Promise.all([batch,pause]);
++ expect(p.status,JSON.stringify(p.body)).toBe(200);expect(p.body.tick).toBeLessThanOrEqual(1);expect(s.body.tick).toBe(p.body.tick);
++},120_000);
++
++test.skipIf(!irsimAvailable)('a refused queued step still settles readiness and drains its valid control',async()=>{
++ const f=await fixture();const batch=f.act('step',f.rev-1,f.a,{},'stale-batch',{ticks:20}),pause=f.act('pause',f.rev);
++ const [s,p]=await Promise.all([batch,pause]);expect(s.body.error).toBe('REVISION_CONFLICT');expect(p.status).toBe(200);expect(p.body.tick).toBe(0);expect(p.body.run.status).toBe('paused');
++},120_000);
++
++test.skipIf(!irsimAvailable)('transfer before a queued step wakes waiting controls without admitting the former writer',async()=>{
++ const f=await fixture(),paused=await f.act('pause',f.rev),entered=gate(),release=gate(),action=f.run.action.bind(f.run);
++ f.run.action=async(a,before)=>{if((a as {kind:string}).kind==='resume'){entered.release();await release.promise;}return action(a,before);};
++ try{
++  const resume=f.act('resume',paused.body.run.runRevision);await entered.promise;
++  const transfer=f.writer('transfer'),batch=f.act('step',paused.body.run.runRevision+1,f.a,{},'after-transfer',{ticks:2}),pause=f.act('pause',paused.body.run.runRevision+1,f.a,{},'waiting-pause');
++  await turn();release.release();const [r,t,s,p]=await Promise.all([resume,transfer,batch,pause]);expect(r.status).toBe(200);expect(t.status).toBe(200);
++  expect([s.body.error,p.body.error]).toEqual(['RUN_WRITER_CONFLICT','RUN_WRITER_CONFLICT']);expect(f.run.pulse()).toMatchObject({tick:0,paused:false});
++  expect((await f.act('pause',r.body.run.runRevision,f.b,{'x-lab-control-epoch':'1'},'new-owner')).status).toBe(200);
++ }finally{release.release();}
++},120_000);
++
++test.skipIf(!irsimAvailable)('a later queued step cannot replace the oldest step control reservation',async()=>{
++ const f=await fixture(),first=f.batch();await f.boundary.promise;
++ const second=f.act('step',f.rev+2,f.a,{},'second-batch',{ticks:2}),pause=f.act('pause',f.rev);await turn();f.release.release();
++ const [a,b,p]=await Promise.all([first,second,pause]);expect(p.status).toBe(200);expect(a.body.tick).toBe(1);expect(p.body.tick).toBe(1);expect(b.body.error).toBe('RUN_PAUSED');expect(f.run.pulse().tick).toBe(1);
++},120_000);

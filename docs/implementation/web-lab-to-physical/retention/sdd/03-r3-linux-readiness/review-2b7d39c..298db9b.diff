@@ -1,0 +1,346 @@
+# Review package: 2b7d39cdeab06b499e9037aef1a24f1babe03a4f..298db9bdbc207b14bdbef78ec8d70adf4e901c71
+
+## Commits
+298db9b fix: bind native handoff image records and checker identity
+
+## Files changed
+ docs/operations/native-simulation-handoff.md      | 14 +++++++++++---
+ packages/lab-runtime/src/v2/sil/native-handoff.ts | 16 +++++++++++++++-
+ scripts/native-handoff.mjs                        | 23 ++++++++++++++++++++---
+ tests/fixtures/native-handoff-checker.ts          | 14 ++++++++++++++
+ tests/fixtures/native-handoff.ts                  |  2 +-
+ tests/security/native-handoff-checker.test.ts     | 14 ++++++++++++++
+ tests/security/native-handoff.test.ts             |  4 ++++
+ tests/unit/native-handoff.test.ts                 |  3 +--
+ 8 files changed, 80 insertions(+), 10 deletions(-)
+
+## Diff
+diff --git a/docs/operations/native-simulation-handoff.md b/docs/operations/native-simulation-handoff.md
+index 25f6fe4..682a988 100644
+--- a/docs/operations/native-simulation-handoff.md
++++ b/docs/operations/native-simulation-handoff.md
+@@ -2,21 +2,21 @@
+ 
+ L00 prepares a bounded, verifiable directory for transfer. `prepared:true` means the declared files, Source/Lab receipts, schema set, declared closures and profile agree, and the actual project/world/model documents pass an explicitly supported static adapter. `nativeReady:true` means supplied inventory/provenance records satisfy the exact profile prerequisites. Neither result authenticates a host, runs a case, accepts qualification, calibrates dynamics or authorizes motion. Candidate records remain `accepted:false`, dynamics `not_calibrated`.
+ 
+ No Linux host is assigned to this preparation. Native doctor/smoke/cases are `not_run` / `blocked_external`. Synthetic inventories in `tests/fixtures/native-handoff.ts` exercise protocol checks only. They are never execution evidence. A Linux container on a Mac, an emulated ISA or unknown origin cannot establish native readiness.
+ 
+ ## Package and identity
+ 
+ Use one new directory and one subject per handoff. `manifest.json` follows `packages/contracts/schemas/native-handoff-v1.schema.json`; generated types are in `packages/contracts/generated/native-handoff.ts`.
+ 
+ - `subject` identifies the software under test: exact Source commit, recorded Lab commit, schema aggregate, portable closure digest, optional native closure digest (`nativeClosureHash:null` unless selected), runtime artifact hash, `profileSha256`, execution kind and resolved platform image identity (or `null` while unbuilt).
+-- `checker` records the preparation checker build separately. CLI output records the currently executing checker's Git commit and a digest over its CLI, transport validator, static document adapter, inventory helper, schema and dependency lock (ordered filename + newline + bytes). The adapter’s imported validators/reference corpus are additionally pinned by the checker Source commit. Changing the checker never substitutes for subject identity. Git commit alone is not the checker byte identity, especially in a dirty checkout.
++- `checker` records the preparation checker build separately. CLI output records the currently executing checker's Git commit and a digest over its CLI, transport validator, static document adapter, inventory helper, schema and dependency lock (ordered filename + newline + bytes). The CLI verifies that its imported validator/reference trees actually match the reported clean checker Source commit before importing them and again before reporting success. Changing the checker never substitutes for subject identity. The short digest remains distinct from the verified Git binding; a dirty or unbound checker cannot successfully assess a handoff.
+ - `refs` has only these roles: `runtimeManifest`, `labLock`, `runtime`, `project`, `world`, `model`, `profile`, `schema`, `engine`, `tool`, optional `archive`. Every ref declares its relative package path, SHA-256, exact byte length, original `sourcePath`, and producing `sourceCommit`. For `labLock` the producer is the **Lab commit**; other refs use the subject Source commit. The manifest records source provenance claims; it is not a signed attestation of Git history.
+ - Exported runtime manifest and Lab lock must both match the subject tuple and be clean. The runtime file must match `runtimeArtifactSha256`. The canonical model must match `profile.modelSha256`. Profile bytes must decode to the declared `profile` exactly.
+ - `schema` refs use original schema basenames as `sourcePath`. Their sorted name + newline + raw-byte aggregate must match `schemaHash`. All entries of the runtime manifest's portable closure must be supplied with their exact hashes and sizes. Schema entries map to `packages/contracts/schemas/<basename>`; other refs use their original source path. Engine and tool refs must belong to that subject portable closure or the explicitly selected `runtime.nativeTools` closure. When `nativeClosureHash` is selected, its digest and every file must also match; PUMA requires this native closure. Do not combine an old image with newer worker/profile files.
+ - The subject `executionKind` is `mujoco_image`, `ros2_native` or `linuxcnc_native`. `mujoco_image` requires `profile.installation:{kind:"oci"}`. The two native execution kinds require `installation:{kind:"native_apt",sources,packageSources}` and `subject.image:null`; they are not a fallback for an unresolved image. Each native source locks `id`, `kind` (`apt_repository` or `source_archive`), `uri` and SHA-256 of its retained Release/repository record or source archive. Each required package maps by name to exactly one source ID. Source hashes may be `null` only during preparation.
+ - Profile locks list required packages with exact version and artifact hash, forbidden package names, OS version, ISA, model and clock domains. `null` package versions/hashes are valid preparation inputs; unresolved locks never satisfy native readiness. Installed engine/compiler/plugin behavior still requires doctor and cases; document compatibility is checked during preparation.
+ - Frames name the world, robot base and tool frame (explicit `null` for the supported mobile-only model), with right-handed coordinates. Units are metres, radians, kilograms and seconds. Seeds and required case IDs are explicit. Case policy preserves Source authority and lost ACK → unknown/no resend.
+ 
+ Ref paths must be relative portable paths, without traversal, symlinks or case-folded collisions. Each file is at most 64 MiB, metadata/manifest/inventory/provenance JSON at most 1 MiB, at most 768 refs and 256 MiB total declared artifact bytes. Reads use bounded file descriptors and reject changed files. Archives are opaque bytes: they are never extracted or executed, and their interior is not semantically validated. Export copies only declared refs and writes the manifest last. It refuses existing output directories and leaves an interrupted output for inspection; use a different new path for retry. No recursive source-directory copy occurs.
+ 
+ Secret filenames and PEM/OpenSSH private-key content are rejected. This is defense in depth, not a general secret detector: select only reviewed non-secret artifacts, never encrypted/compressed credential backups, tunnel private keys, service credentials or runtime databases. A required SQLite record must first be a separately verified copy, never the original. No manifest launch string or path is treated as a command, module or shell.
+@@ -36,58 +36,66 @@ Support is deliberately bounded to these exact reference bodies. JSON formatting
+ | `puma_controller_reference_v1` | `integrations/arm-controller/models/puma560-reference/{modified-dh,manifest,frames,reference-poses}.json`, vendored origin HAL, exact `configs/sim/puma560/profile.json`, project/world extracted from `tests/fixtures/digital-twin/sil/bv01.json` | Native_apt LinuxCNC preparation requires the selected native closure. Exact pinned controller DH/manifest/file hashes, inch/degree/radian conversion, JOINT_0–5 order/sign/offsets/limits, TCP/frame tree and simulation placement are checked. Inertia and physical cell calibration remain unknown; L04 owns actual controller traces/runtime/ALG04. |
+ 
+ Shared-world validation reuses the typed project/component/world/arm-cell/model/load validators and checks connected link trees, normalized joint axes, positive mass and valid inertia tensors, arm collision profile, base/flange/TCP, mobile drive, tray/support and sensor frames. Every canonical joint/limit/unit and the entire pinned component is compared. `xx_xy_xz_yy_yz_zz` names the existing engineering inertia storage order. PUMA has no guessed inertia: its `inertiaOrder` is `unknown`, and its measured cell placement remains null; the separate existing simulated placement is explicitly illustrative.
+ 
+ The B05 generator intentionally adapts a navigation scene copied from `simulation-mujoco/fixtures/serve-payload-v1`: it changes the outer project/map, navigation world geometry and hash, navigation `inputs.project`, initial pose, engine/load/physics refs and files, and removes the stop-policy ref. It preserves the original navigation `inputs.world` and the physical/navigation-model projection inputs. The adapter therefore validates the original physical/model input identity and exact reprojection separately, then compares the **entire** outer scene to the supported B05 or B06 document. It never overwrites input identity or suppresses selected standalone validation errors. B06 adds the explicit cell/controller context and policy to B05; that variant is independently pinned and tested. B05’s producer is `scripts/generate-coffee-delivery-world-fixture.mjs`; B06’s reviewed adaptation is the committed `coffee-delivery-cell-v1/lab-world-scene.json` and its adjacent README (there is no standalone cell generator). B06 changes only `id`, `sceneDigest`, `controlContextVersion` and `controllerPolicy` relative to B05. The standalone navigation validator is unchanged.
+ 
+ Installed executable/library/plugin availability, live TF and clock correspondence, controller traces, numerical/dynamic parity, smoke and campaigns remain external. Consistent static data and supplied inventory do not authenticate a host or qualify a native run.
+ 
+ ## Recipient procedure
+ 
+-1. **Verify the transfer.** Use Node 24.22.2 / pnpm 10.32.1 and this checker checkout with its pinned dependencies. Retain the received manifest hash and checker output in a separate evidence directory.
++1. **Verify the transfer.** Use Node 24.22.2 / pnpm 10.32.1 and a clean Git checker checkout with dependencies installed from its pinned lock. The CLI refuses no-Git/copied-without-Git, dirty, mismatched or changing checker inputs before reporting an assessment. Keep input/output/evidence outside the tracked checker tree (or in its designated ignored evidence location). Retain the received manifest hash and checker output in a separate evidence directory.
+ 
+    ```sh
+    perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$handoff_dir"
+    ```
+ 
+    Without a host, expect `prepared:true`, `nativeReady:false`, `HOST_INVENTORY_MISSING`, `qualification:not_run`. Unbuilt images and unresolved locks add prerequisites. CLI exit 0 means preparation integrity passed; it does **not** mean native readiness. Exit 1 means invalid input, integrity failure or export failure. Automated consumers must read `nativeReady` separately.
+ 
+ 2. **Resolve the assigned host profile.** Only after a host/profile is assigned, collect actual OS/kernel, ISA, CPU, image, origin/virtualization/emulation, software artifacts and clock domains. The read-only `collectNativeInventory()` helper in `scripts/native-sim/host-preflight.mjs` records local facts but deliberately leaves origin, image, model, subject and exact software locks unknown. It never installs packages or infers origin from `process.platform`.
+ 
+    Preserve the first unresolved profile. Resolve exact package artifact hashes/versions from the assigned host's package/source provenance into a **new handoff**; do not edit the received artifact or overwrite an unsuccessful attempt. Do not install/upgrade an engine merely to clear a gate. Portable workers retain Python 3.11; ROS uses the target distro Python. Run pytest with `PYTHONDONTWRITEBYTECODE=1 PYTEST_ADDOPTS='-p no:cacheprovider'`.
+ 
+    Inventory v1 fields are `schemaVersion`, `profileId`, `modelId`, `modelSha256`, `subject`, `os:{platform,id,version,kernel}`, `architecture` (`amd64` or `arm64`), `cpu:{model,cores}`, `image`, `installation` (matching the locked profile), `software:[{name,version,sha256}]`, `clockDomains`, and `provenance:{origin,hostOs,hostArchitecture,virtualization,emulation,evidencePath,evidenceSha256}`. Native origin is `linux_native`, host OS `linux`, same ISA, known virtualization (`bare_metal`, `vm` or `container`) and `emulation:none`. This is a supplied record, not independent proof of host authenticity. The responsible operator must retain trusted collection context.
+ 
+    `evidencePath` is relative to the handoff root; its bytes must match `evidenceSha256`. Provenance JSON v1 records `kind` (`oci` or `native_apt`) and `inventorySha256`. OCI records also supply `platformManifestPath` and `imageConfigPath`; native_apt records supply `sources:[{id,path}]`, exactly one retained artifact for every locked source ID. Compute `inventorySha256` as SHA-256 of canonical JSON (`json-canonicalize`) of the complete inventory with only `provenance.evidencePath` and `provenance.evidenceSha256` removed. This avoids a circular digest while binding all inventory facts. The two image paths also resolve beneath the root, with the same symlink/size rules. Keep these recipient-side evidence files separately from the immutable subject refs; export does not copy undeclared recipient evidence.
+ 
+    For native_apt, every source artifact must hash to the exact locked source digest, all package-to-source mappings must be complete and all actual package hashes/versions must match. Source records bind consistency; signature/trust verification and collection provenance remain the assigned host operator’s responsibility. Distro/version, ISA, model, profile ID and subject tuple must also match. Merely changing an image handoff’s installation label fails its locked execution-kind/profile checks.
+ 
+-   For OCI, platform manifest bytes must hash to the subject's `manifestDigest`; config bytes must hash to `configDigest`. Accept only OCI image manifest v1 / Docker distribution manifest v2 (schemaVersion 2), with the same config digest and Linux/same-ISA config. A multiarch base index is not a target platform manifest. The subject image and inventory image must match exactly.
++   For OCI, platform manifest bytes must hash to the subject's `manifestDigest`; config bytes must hash to `configDigest`. Accept only OCI image manifest v1 / Docker distribution manifest v2 (schemaVersion 2), with the same config digest and Linux/same-ISA config. The verifier also requires valid config/layer descriptors (media type, SHA-256 digest and nonnegative safe byte size), config-descriptor size equal to retained config bytes, required config OS/ISA/rootfs fields, valid SHA-256 diff IDs and matching layer/diff-ID counts. If history is supplied, its nonempty-layer count must agree. Supported records have at least one layer and use OCI image config plus OCI tar/gzip/zstd layers (including nondistributable variants), or Docker image config plus Docker gzip/foreign layers. Unsupported algorithms/media types, empty-layer images and generic artifact records are not admitted by this bounded profile. A multiarch base index is not a target platform manifest. The subject image and inventory image must match exactly. Layer blobs are neither fetched nor executed: their descriptors and rootfs relationships are checked, not their actual contents or host authenticity. Required shapes follow the [OCI image manifest](https://raw.githubusercontent.com/opencontainers/image-spec/v1.1.1/schema/image-manifest-schema.json), [OCI image configuration](https://raw.githubusercontent.com/opencontainers/image-spec/v1.1.1/schema/config-schema.json) and [Docker manifest v2](https://distribution.github.io/distribution/spec/manifest-v2-2/) specifications.
+ 
+    ```sh
+    perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$handoff_dir" --inventory "$inventory_file"
+    ```
+ 
+ 3. **Doctor.** Select the exact locked native profile from the subject checkout, independently verify its executable/library/package provenance, and run its read-only doctor. For existing ROS preparation:
+ 
+    ```sh
+    perl -e 'alarm 120; exec @ARGV' node scripts/lab-sil.mjs doctor --backend gazebo_nav2 --environment-profile engineering-amd64 --json
+    ```
+ 
+    This can still report `ENGINEERING_LIFECYCLE_UNAVAILABLE` or unresolved inventory before L02. Do not treat L00 as implementation of L01–L04. Preserve the legacy `hostPreflight(vmRoot)` macOS UTM feasibility report (`ready_to_provision` is not `nativeReady`) and the strict two-argument native_apt Ubuntu 24.04/Jazzy arm64 profile validator. The optional third argument `{profile,subject}` checks the explicit new inventory expectations in memory; disk provenance checking belongs to `validateNativeHandoff`.
+ 
+ 4. **Smoke, then cases.** On the assigned host, use the subject's fixed runner/profile commands. Never execute a manifest-supplied launch command. Preserve smoke stdout/stderr and failed attempts. Run the profile-specific nominal seeds and fault cases; lost ACK remains unknown with no resend or continuation by respawning. Source owns mission/journal/custody. One active world/runtime and one ACK in flight remain unchanged. Lab never routes to physical hardware. A doctor-only pass is not a campaign pass; an xArm run cannot close PUMA, nor arm64 close amd64. Motion, contact and hardware gates remain separate.
+ 
+ 5. **Archive and verify.** Save raw controller/engine observations, timing/clock mapping, inputs, hashes, assertions and inventory in a new evidence directory. Verify with the matching subject reader. Copy/verify any retained SQLite; preserve every failed/incomplete attempt. Stop only processes owned by that run. No general Docker reset, host provisioning, cloud operation, commissioning signature or device motion is part of this handoff.
+ 
+ 6. **Reviewer.** Submit immutable evidence and its exact subject/checker/profile/scope identities. Automatic records stay `accepted:false`. A human reviewer signs a separate hash/profile/scope-bound sidecar. No software-only record closes native or hardware/calibration gates.
+ 
++## Checker checkout policy
++
++The CLI requires a SHA-1 Git Source checkout whose top-level directory is the checker root, with a valid HEAD and clean tracked/index/untracked status. It compares actual regular-file bytes to HEAD Git blobs across `scripts/`, `packages/`, `robotics/`, `integrations/`, `tests/fixtures/`, `package.json`, `pnpm-lock.yaml`, `tsconfig.json` and `.gitignore`. This includes all fixed validator/schema/reference imports, not only the six short-digest files. Raw comparisons catch index `assume-unchanged`/`skip-worktree` concealment; symlinked files/parents and excessive corpus size are refused. Checks occur before importing the validator/reference corpus and again before output, with unchanged HEAD required. The corpus bounds are 20,000 files, 64 MiB per file and 256 MiB total.
++
++Errors are explicit (`CHECKER_GIT_REQUIRED`, `CHECKER_CHECKOUT_DIRTY`, `CHECKER_INPUT_MISMATCH` or `CHECKER_CHANGED_DURING_ASSESSMENT`), exit1 and no successful `prepared` assessment. A copied checker without its verifiable Git context is unsupported; there is no bypass flag. Commit/review intended checker changes and use its new identity, while preserving the subject’s independent tuple. A committed checker snapshot in protocol tests is synthetic test infrastructure, not evidence for that snapshot’s subject.
++
++This binding covers repository-owned checker code/data. The operator must provision the trusted Node/pnpm runtime and dependencies from the lock; it is not an attestation of `node_modules`, the OS or a defense against a malicious local process replacing trusted executables. The in-process validator API remains a pure supplied-data assessment; callers using it directly are responsible for recording/binding their checker environment. Use the CLI for retained recipient checker identities.
++
+ ## Producing a transfer
+ 
+ Assemble reviewed refs from one clean Source export and its matching committed Lab pin into `INPUT_DIR`, then:
+ 
+ ```sh
+ perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs export --input "$input_dir" --out "$new_handoff_dir"
+ perl -e 'alarm 180; exec @ARGV' node scripts/native-handoff.mjs verify --input "$new_handoff_dir"
+ ```
+ 
+ This is a selected-file transfer, not a provisioning or archive extraction tool. Provision the subject checkout and engine from the locked sources under a separately assigned task. When runtime/schema/tool inputs change, first commit Source, export cleanly, import/sync/check/typecheck Lab and commit its pin; then assemble a new handoff with the new tuple. Keep the checker and subject commits independent.
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff.ts b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+index 27ee3b0..087b002 100644
+--- a/packages/lab-runtime/src/v2/sil/native-handoff.ts
++++ b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+@@ -6,20 +6,34 @@ import {lstat,realpath,open,mkdir,writeFile} from 'node:fs/promises';
+ import {resolve,join,dirname,basename} from 'node:path';
+ import {createHash} from 'node:crypto';
+ import {isDeepStrictEqual} from 'node:util';
+ import schema from '../../../../contracts/schemas/native-handoff-v1.schema.json';
+ import type {NativeHandoffV1,HandoffRef} from '../../../../contracts/generated/native-handoff';
+ import {nativeInventoryIssues} from '../../../../../scripts/native-sim/native-inventory.mjs';
+ import {validateNativeDocuments} from './native-handoff-documents';
+ export type Issue={code:string;path:string;severity:'error'|'prerequisite'};
+ export type HandoffAssessment={prepared:boolean;nativeReady:boolean;issues:Issue[]};
+ const shape=new Ajv({strict:true,allErrors:true}).compile<NativeHandoffV1>(schema);
++// Supported image records only: SHA-256 OCI image v1 / Docker image manifest v2, not indexes or artifacts.
++// Layer bytes are not fetched/executed; descriptors and uncompressed rootfs identities are structurally bound.
++type ImageDescriptor={mediaType:string;digest:string;size:number};
++type ImageManifest={mediaType:string;schemaVersion:2;config:ImageDescriptor;layers:ImageDescriptor[]};
++type ImageConfig={os:string;architecture:string;rootfs:{type:'layers';diff_ids:string[]};history?:{empty_layer?:boolean}[]};
++const digestShape={type:'string',pattern:'^sha256:[a-f0-9]{64}$'},stringArray={type:'array',items:{type:'string'}};
++const descriptorShape={type:'object',required:['mediaType','digest','size'],properties:{mediaType:{type:'string'},digest:digestShape,size:{type:'integer',minimum:0,maximum:Number.MAX_SAFE_INTEGER},urls:stringArray,annotations:{type:'object',additionalProperties:{type:'string'}}}};
++const imageManifestShape=new Ajv({strict:true}).compile<ImageManifest>({type:'object',required:['schemaVersion','mediaType','config','layers'],properties:{schemaVersion:{const:2},mediaType:{enum:['application/vnd.oci.image.manifest.v1+json','application/vnd.docker.distribution.manifest.v2+json']},config:descriptorShape,layers:{type:'array',minItems:1,items:descriptorShape},annotations:{type:'object',additionalProperties:{type:'string'}}}});
++const imageConfigShape=new Ajv({strict:true}).compile<ImageConfig>({type:'object',required:['os','architecture','rootfs'],properties:{os:{type:'string',minLength:1},architecture:{type:'string',minLength:1},variant:{type:'string'},'os.version':{type:'string'},'os.features':stringArray,created:{type:'string'},author:{type:'string'},rootfs:{type:'object',required:['type','diff_ids'],properties:{type:{const:'layers'},diff_ids:{type:'array',items:digestShape}}},config:{type:'object',properties:{User:{type:'string'},Env:stringArray,Entrypoint:{anyOf:[stringArray,{type:'null'}]},Cmd:{anyOf:[stringArray,{type:'null'}]},WorkingDir:{type:'string'},StopSignal:{type:'string'},ArgsEscaped:{type:'boolean'},Labels:{anyOf:[{type:'object',additionalProperties:{type:'string'}},{type:'null'}]},Volumes:{anyOf:[{type:'object',additionalProperties:{type:'object'}},{type:'null'}]},ExposedPorts:{type:'object',additionalProperties:{type:'object'}}}},history:{type:'array',items:{type:'object',properties:{created:{type:'string'},author:{type:'string'},created_by:{type:'string'},comment:{type:'string'},empty_layer:{type:'boolean'}}}}}});
++function validImageRecords(manifest:unknown,config:unknown,configBytes:number){
++ if(!imageManifestShape(manifest)||!imageConfigShape(config))return false;
++ const oci=manifest.mediaType==='application/vnd.oci.image.manifest.v1+json',types=oci?['application/vnd.oci.image.layer.v1.tar','application/vnd.oci.image.layer.v1.tar+gzip','application/vnd.oci.image.layer.v1.tar+zstd','application/vnd.oci.image.layer.nondistributable.v1.tar','application/vnd.oci.image.layer.nondistributable.v1.tar+gzip','application/vnd.oci.image.layer.nondistributable.v1.tar+zstd']:['application/vnd.docker.image.rootfs.diff.tar.gzip','application/vnd.docker.image.rootfs.foreign.diff.tar.gzip'];
++ return manifest.config.mediaType===(oci?'application/vnd.oci.image.config.v1+json':'application/vnd.docker.container.image.v1+json')&&manifest.config.size===configBytes&&manifest.layers.every((layer:{mediaType:string})=>types.includes(layer.mediaType))&&config.rootfs.diff_ids.length===manifest.layers.length&&(!config.history||config.history.filter((entry:{empty_layer?:boolean})=>!entry.empty_layer).length===manifest.layers.length);
++}
+ const FILE_LIMIT=64*1024*1024,JSON_LIMIT=1024*1024,TOTAL_LIMIT=256*1024*1024,REF_LIMIT=768;
+ const hash=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');
+ const safePath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_.-]*(\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
+ const secretPath=(p:string)=>p.split('/').some(x=>/^(\.env(?:\..*)?|id_(rsa|ed25519|ecdsa)|credentials(?:\..*)?)$|(?:private|secret|tunnel).*key|\.(?:key|pem|p12|pfx)$/i.test(x));
+ const secretContent=(b:Buffer)=>/-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/.test(b.toString('utf8'));
+ async function checkedRoot(root:string){const s=await lstat(root);if(!s.isDirectory()||s.isSymbolicLink())throw new Error('ROOT_NOT_DIRECTORY');return realpath(root);}
+ export async function readHandoffFile(root:string,path:string,limit=JSON_LIMIT):Promise<Buffer>{
+  if(!safePath(path)||secretPath(path))throw new Error('REF_PATH_FORBIDDEN');
+  const base=await checkedRoot(root);let full=base;
+  for(const part of path.split('/')){full=join(full,part);const s=await lstat(full);if(s.isSymbolicLink())throw new Error('REF_SYMLINK');}
+@@ -89,21 +103,21 @@ export async function validateNativeHandoff(root:string,value:unknown,inventory?
+  if(inventory&&typeof inventory==='object'){
+   const provenance=(inventory as {provenance?:{evidencePath?:unknown;evidenceSha256?:unknown}}).provenance;
+   try{
+    if(typeof provenance?.evidencePath!=='string')throw new Error('missing');
+    const bytes=await readHandoffFile(root,provenance.evidencePath),record=json(bytes),origin={...provenance};delete origin.evidencePath;delete origin.evidenceSha256;
+    if(hash(bytes)!==provenance.evidenceSha256||record.schemaVersion!==1||record.inventorySha256!==hash(canonicalize({...inventory,provenance:origin})))throw new Error('mismatch');
+    if(record.kind!==m.profile.installation.kind)throw new Error('provenance mode mismatch');
+    if(m.profile.installation.kind==='oci'){
+     const image=m.subject.image;if(!image)throw new Error('unbuilt');
+     const imageBytes=await readHandoffFile(root,record.platformManifestPath),configBytes=await readHandoffFile(root,record.imageConfigPath),platformManifest=json(imageBytes),config=json(configBytes);
+-    if('sha256:'+hash(imageBytes)!==image.manifestDigest||'sha256:'+hash(configBytes)!==image.configDigest||platformManifest.schemaVersion!==2||!['application/vnd.oci.image.manifest.v1+json','application/vnd.docker.distribution.manifest.v2+json'].includes(platformManifest.mediaType)||platformManifest.config?.digest!==image.configDigest||config.os!=='linux'||config.architecture!==m.profile.architecture)throw new Error('platform identity mismatch');
++    if('sha256:'+hash(imageBytes)!==image.manifestDigest||'sha256:'+hash(configBytes)!==image.configDigest||!validImageRecords(platformManifest,config,configBytes.length)||platformManifest.config?.digest!==image.configDigest||config.os!=='linux'||config.architecture!==m.profile.architecture)throw new Error('platform identity mismatch');
+    }else{
+     if(!Array.isArray(record.sources)||record.sources.length!==m.profile.installation.sources.length)throw new Error('source evidence missing');
+     let provenanceBytes=0;
+     for(const source of m.profile.installation.sources){
+      const matches=record.sources.filter((x:{id:string})=>x?.id===source.id);if(matches.length!==1)throw new Error('source provenance mismatch');
+      const bytes=await readHandoffFile(root,matches[0].path,Math.min(FILE_LIMIT,TOTAL_LIMIT-provenanceBytes));provenanceBytes+=bytes.length;if(hash(bytes)!==source.sha256)throw new Error('source provenance mismatch');
+     }
+    }
+   }
+   catch{add('HOST_PROVENANCE_ARTIFACT_INVALID','/inventory/provenance','prerequisite');}
+diff --git a/scripts/native-handoff.mjs b/scripts/native-handoff.mjs
+index 3e4c67a..8060a4e 100644
+--- a/scripts/native-handoff.mjs
++++ b/scripts/native-handoff.mjs
+@@ -1,24 +1,41 @@
+ #!/usr/bin/env node
+ // Only fixed verifier code is imported. Manifest content is data, never argv/shell/module input.
+ import {tsImport} from 'tsx/esm/api';
+-import {readFile} from 'node:fs/promises';
++import {readFile,lstat,realpath} from 'node:fs/promises';
+ import {createHash} from 'node:crypto';
+ import {execFileSync} from 'node:child_process';
+ import {dirname,resolve,basename} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+-const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
++// Require a complete clean Git checker; this is independent of the received subject identity.
++// Raw Git-blob comparisons cover fixed imports/reference trees even when index flags hide edits.
++async function checkedCheckerCommit(){
++ const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
++ let sourceCommit,tree;
++ try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
++ if(git('status','--porcelain','--untracked-files=all'))throw Error('CHECKER_CHECKOUT_DIRTY');
++ let total=0;const entries=tree.split('\0').filter(Boolean);if(!entries.length||entries.length>20000)throw Error('CHECKER_INPUT_MISMATCH');
++ for(const entry of entries){
++  const match=/^(100644|100755) blob ([a-f0-9]{40})\t(.+)$/.exec(entry);if(!match)throw Error('CHECKER_INPUT_MISMATCH');
++  const [,mode,expected,path]=match;void mode;const file=resolve(root,path),stat=await lstat(file);
++  if(!stat.isFile()||stat.isSymbolicLink()||await realpath(file)!==file||stat.size>64*1024*1024||(total+=stat.size)>256*1024*1024)throw Error('CHECKER_INPUT_MISMATCH');
++  const bytes=await readFile(file),actual=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');if(actual!==expected)throw Error('CHECKER_INPUT_MISMATCH');
++ }
++ return sourceCommit;
++}
+ try{
++ const sourceCommit=await checkedCheckerCommit();
++ const {validateNativeHandoff,readNativeHandoff,readHandoffFile,exportNativeHandoff}=await tsImport('../packages/lab-runtime/src/v2/sil/native-handoff.ts',import.meta.url);
+  const [command,...args]=process.argv.slice(2),allowed=command==='export'?['--input','--out']:command==='verify'?['--input','--inventory']:[];
+  if(!allowed.length)throw new Error('USAGE: native-handoff.mjs export --input DIR --out NEW_DIR | verify --input DIR [--inventory FILE]');
+  const options={};for(let i=0;i<args.length;i+=2){const key=args[i],value=args[i+1];if(!allowed.includes(key)||key in options||!value||value.startsWith('--'))throw new Error('INVALID_ARGUMENT');options[key]=value;}
+  if(!options['--input']||command==='export'&&!options['--out'])throw new Error('MISSING_ARGUMENT');
+  const input=resolve(options['--input']),manifest=await readNativeHandoff(input),inventoryPath=options['--inventory']&&resolve(options['--inventory']);
+  const inventory=inventoryPath?JSON.parse((await readHandoffFile(dirname(inventoryPath),basename(inventoryPath))).toString('utf8')):undefined;
+  const result=command==='export'?await exportNativeHandoff(input,options['--out']):await validateNativeHandoff(input,manifest,inventory);
+  const files=['scripts/native-handoff.mjs','packages/lab-runtime/src/v2/sil/native-handoff.ts','packages/lab-runtime/src/v2/sil/native-handoff-documents.ts','scripts/native-sim/native-inventory.mjs','packages/contracts/schemas/native-handoff-v1.schema.json','pnpm-lock.yaml'],hash=createHash('sha256');
+  for(const file of files)hash.update(file+'\n').update(await readFile(resolve(root,file)));
+- let sourceCommit=null;try{sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8',timeout:5000}).trim();}catch{/* copied checker has only its byte identity */}
++ if(await checkedCheckerCommit()!==sourceCommit)throw Error('CHECKER_CHANGED_DURING_ASSESSMENT');
+  console.log(JSON.stringify({...result,subject:manifest.subject,checker:{sourceCommit,toolSha256:hash.digest('hex')},inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false,dynamics:'not_calibrated'},null,2));
+  process.exitCode=result.prepared?0:1;
+ }catch(error){console.error(JSON.stringify({code:'NATIVE_HANDOFF_FAILED',message:error.message,accepted:false,qualification:'not_run'}));process.exitCode=1;}
+diff --git a/tests/fixtures/native-handoff-checker.ts b/tests/fixtures/native-handoff-checker.ts
+new file mode 100644
+index 0000000..1234064
+--- /dev/null
++++ b/tests/fixtures/native-handoff-checker.ts
+@@ -0,0 +1,14 @@
++// Isolated committed checker snapshot: test edits never touch the real checkout or retained evidence.
++import {mkdtemp,mkdir,readFile,writeFile,symlink} from 'node:fs/promises';
++import {join,dirname,resolve} from 'node:path';
++import {tmpdir} from 'node:os';
++import {execFileSync} from 'node:child_process';
++export async function checkerFixture(){
++ const root=await mkdtemp(join(tmpdir(),'native-checker-test-')),source=process.cwd();
++ const git=(...args:string[])=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:15000});
++ const paths=execFileSync('git',['ls-files','--cached','--others','--exclude-standard','-z','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore'],{cwd:source,encoding:'utf8',timeout:15000}).split('\0').filter(Boolean);
++ for(const path of new Set(paths)){await mkdir(dirname(join(root,path)),{recursive:true});await writeFile(join(root,path),await readFile(resolve(source,path)));}
++ await symlink(join(source,'node_modules'),join(root,'node_modules'));
++ git('init','--quiet');git('add','.');git('-c','user.name=Protocol test','-c','user.email=protocol@example.invalid','-c','commit.gpgsign=false','-c','core.hooksPath=/dev/null','commit','--quiet','-m','Synthetic checker snapshot');
++ return {root,git};
++}
+diff --git a/tests/fixtures/native-handoff.ts b/tests/fixtures/native-handoff.ts
+index 5540fbd..f10dfac 100644
+--- a/tests/fixtures/native-handoff.ts
++++ b/tests/fixtures/native-handoff.ts
+@@ -3,21 +3,21 @@ import {mkdtemp,writeFile,mkdir,readFile,readdir} from 'node:fs/promises';
+ import {join,dirname} from 'node:path';
+ import {tmpdir} from 'node:os';
+ import {canonicalize} from 'json-canonicalize';
+ import {nativeDocumentBinding} from '../../packages/lab-runtime/src/v2/sil/native-handoff-documents';
+ import {createHash} from 'node:crypto';
+ export const digest=(data:string|Buffer)=>createHash('sha256').update(data).digest('hex');
+ const worldRoot='robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1',pumaRoot='integrations/arm-controller/models/puma560-reference';
+ const cache=new Map<string,Buffer>();async function source(path:string){let b=cache.get(path);if(!b){b=await readFile(path);cache.set(path,b);}return b;}
+ export async function nativeHandoffFixture(mode:'oci'|'native_apt'|'ros_navigation'|'ros_xarm'='oci'){
+  const root=await mkdtemp(join(tmpdir(),'native-handoff-test-')),sha='a'.repeat(64),commit='1'.repeat(40);
+- const configBytes=JSON.stringify({os:'linux',architecture:'amd64'}),manifestBytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.manifest.v1+json',config:{digest:'sha256:'+digest(configBytes)}});
++ const configBytes=JSON.stringify({os:'linux',architecture:'amd64',rootfs:{type:'layers',diff_ids:['sha256:'+'b'.repeat(64)]}}),manifestBytes=JSON.stringify({schemaVersion:2,mediaType:'application/vnd.oci.image.manifest.v1+json',config:{mediaType:'application/vnd.oci.image.config.v1+json',size:Buffer.byteLength(configBytes),digest:'sha256:'+digest(configBytes)},layers:[{mediaType:'application/vnd.oci.image.layer.v1.tar+gzip',size:123,digest:'sha256:'+'c'.repeat(64)}]});
+  const image={platform:'linux/amd64',manifestDigest:'sha256:'+digest(manifestBytes),configDigest:'sha256:'+digest(configBytes)};
+  await writeFile(join(root,'image-config.json'),configBytes);await writeFile(join(root,'image-manifest.json'),manifestBytes);
+  const subject={nativeClosureHash:mode==='native_apt'?sha:null as string|null,executionKind:mode==='oci'?'mujoco_image':mode==='native_apt'?'linuxcnc_native':'ros2_native',profileSha256:sha,id:'synthetic-'+mode,sourceCommit:commit,labCommit:'2'.repeat(40),schemaHash:sha,portableClosureHash:sha,runtimeArtifactSha256:digest('runtime'),image:mode==='oci'?image:null};
+  const sourceBytes='synthetic signed apt Release';await writeFile(join(root,'apt-release.txt'),sourceBytes);
+  const packageName=mode==='oci'?'mujoco':mode==='native_apt'?'linuxcnc':'ros-jazzy-ros-base';
+  const installation=mode==='oci'?{kind:'oci'}:{kind:'native_apt',sources:[{id:'debian',kind:'apt_repository',uri:'https://deb.debian.org/debian',sha256:digest(sourceBytes)}],packageSources:[{name:packageName,sourceId:'debian'}]};
+  const profile={documents:nativeDocumentBinding(mode==='oci'?'mujoco_cell_v1':mode==='native_apt'?'puma_controller_reference_v1':mode==='ros_xarm'?'xarm_ros_canonical_v1':'engineering_navigation_ros_canonical_v1'),installation,id:'synthetic-'+mode+'-amd64',modelId:mode==='native_apt'?'puma560-reference':mode==='ros_navigation'?'amr-1':'xarm6-g2-v1',modelSha256:sha,architecture:'amd64',os:{id:'debian',version:'12'},requiredPackages:[{name:packageName,version:mode==='oci'?'3.17.0':'2.9.3',sha256:sha}],forbiddenPackages:['ros-noetic'],clockDomains:['controller','source_monotonic']};
+  const refs:Record<string,{path:string;sha256:string;bytes:number;sourcePath:string;sourceCommit:string}[]>={};
+  const put=async(role:string,path:string,value:string|Buffer,sourcePath=path)=>{const bytes=Buffer.from(value);await mkdir(dirname(join(root,path)),{recursive:true});await writeFile(join(root,path),bytes);const ref={path,sha256:digest(bytes),bytes:bytes.length,sourcePath,sourceCommit:commit};(refs[role]??=[]).push(ref);return ref;};
+  for(const name of (await readdir('packages/contracts/schemas')).filter(n=>n.endsWith('.json')).sort())await put('schema','schemas/'+name,await source('packages/contracts/schemas/'+name),name);
+diff --git a/tests/security/native-handoff-checker.test.ts b/tests/security/native-handoff-checker.test.ts
+new file mode 100644
+index 0000000..b0efb84
+--- /dev/null
++++ b/tests/security/native-handoff-checker.test.ts
+@@ -0,0 +1,14 @@
++import {beforeAll,afterAll,expect,test} from 'vitest';
++import {readFile,writeFile,rename,rm} from 'node:fs/promises';
++import {join} from 'node:path';
++import {spawnSync} from 'node:child_process';
++import {checkerFixture} from '../fixtures/native-handoff-checker';
++import {nativeHandoffFixture} from '../fixtures/native-handoff';
++let checker:Awaited<ReturnType<typeof checkerFixture>>,input:Awaited<ReturnType<typeof nativeHandoffFixture>>;
++beforeAll(async()=>{checker=await checkerFixture();input=await nativeHandoffFixture();},30000);
++afterAll(async()=>{if(checker)await rm(checker.root,{recursive:true,force:true});if(input)await rm(input.root,{recursive:true,force:true});});
++function run(){const r=spawnSync(process.execPath,['scripts/native-handoff.mjs','verify','--input',input.root],{cwd:checker.root,encoding:'utf8',timeout:20000});return {status:r.status,result:JSON.parse(r.stdout||r.stderr)};}
++test('clean committed checker may verify an independently identified subject',()=>{const r=run();expect(r.status).toBe(0);expect(r.result).toMatchObject({prepared:true,nativeReady:false,qualification:'not_run',inventoryAssessment:'supplied_records_only'});expect(r.result.checker.sourceCommit).toBe(checker.git('rev-parse','HEAD').trim());expect(r.result.checker.sourceCommit).not.toBe(r.result.subject.sourceCommit);expect(r.result.checker.toolSha256).toMatch(/^[a-f0-9]{64}$/);});
++test.each(['robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/arm-component.json','packages/lab-runtime/src/v2/simulation3d/world-scene.ts'])('uncommitted checker input %s cannot retain a successful old checker identity',async path=>{const original=await readFile(join(checker.root,path));try{await writeFile(join(checker.root,path),Buffer.concat([original,Buffer.from('\n')]));const r=run();expect(r.status).toBe(1);expect(r.result).toMatchObject({code:'NATIVE_HANDOFF_FAILED',message:'CHECKER_CHECKOUT_DIRTY',qualification:'not_run',accepted:false});expect(r.result.prepared).toBeUndefined();}finally{await writeFile(join(checker.root,path),original);}});
++test('copied checker without Git fails before reporting a successful unbound identity',async()=>{await rename(join(checker.root,'.git'),join(checker.root,'.git-hidden'));try{const r=run();expect(r.status).toBe(1);expect(r.result).toMatchObject({code:'NATIVE_HANDOFF_FAILED',message:'CHECKER_GIT_REQUIRED'});expect(r.result.prepared).toBeUndefined();}finally{await rename(join(checker.root,'.git-hidden'),join(checker.root,'.git'));}});
++test('index assume-unchanged cannot hide modified imported reference bytes',async()=>{const path='robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/arm-component.json',original=await readFile(join(checker.root,path));checker.git('update-index','--assume-unchanged',path);try{await writeFile(join(checker.root,path),Buffer.concat([original,Buffer.from('\n')]));const r=run();expect(r.status).toBe(1);expect(r.result.message).toBe('CHECKER_INPUT_MISMATCH');}finally{await writeFile(join(checker.root,path),original);checker.git('update-index','--no-assume-unchanged',path);}});
+diff --git a/tests/security/native-handoff.test.ts b/tests/security/native-handoff.test.ts
+index a9df574..fe0867f 100644
+--- a/tests/security/native-handoff.test.ts
++++ b/tests/security/native-handoff.test.ts
+@@ -36,10 +36,14 @@ test('resealed coherent outer project/world geometry is rejected outside the pin
+ test.each(['sign','zeroOffsetRad','frame','inertiaOrder'])('resealed %s declaration cannot reinterpret unchanged input bytes',async field=>{const f=await fixture();if(field==='sign')f.manifest.profile.documents.jointMap[0].sign=-1;if(field==='zeroOffsetRad')f.manifest.profile.documents.jointMap[0].zeroOffsetRad=0.2;if(field==='frame')f.manifest.profile.documents.frameMap.flange='link5';if(field==='inertiaOrder')f.manifest.profile.documents.inertiaOrder='unknown';await assertSemanticRefusal(f,'DOCUMENT_MAPPING_MISMATCH');});
+ test.each(['engineering-component.schema.json','load-profile-v1.schema.json'])('coherently replaced subject schema %s cannot redefine the supported model units',async name=>{const f=await fixture(),ref=f.manifest.refs.schema.find(r=>r.sourcePath===name)!,s=JSON.parse(await readFile(join(f.root,ref.path),'utf8'));s.description='different subject schema';await writeFile(join(f.root,ref.path),JSON.stringify(s));await assertSemanticRefusal(f,'DOCUMENT_SCHEMA_UNSUPPORTED');});
+ test('unknown document/profile kind fails explicitly after resealing',async()=>{const f=await fixture();f.manifest.profile.documents.kind='unimplemented_native_world_v1';await assertSemanticRefusal(f,'DOCUMENT_PROFILE_UNSUPPORTED');});
+ async function resealPuma(f:Awaited<ReturnType<typeof fixture>>){const ref=(name:string)=>f.manifest.refs.tool.find(r=>r.sourcePath.endsWith('/'+name))!,manifestRef=ref('manifest.json'),m=JSON.parse(await readFile(join(f.root,manifestRef.path),'utf8'));m.hashes['modified-dh.json']=digest(await readFile(join(f.root,'inputs/model.json')));m.hashes['frames.json']=digest(await readFile(join(f.root,ref('frames.json').path)));const bytes=JSON.stringify(m);await writeFile(join(f.root,manifestRef.path),bytes);const engine=JSON.parse(await readFile(join(f.root,'tools/engine.lock'),'utf8'));engine.model.manifestSha256=digest(bytes);for(const program of Object.values(engine.programs) as {model:{manifestSha256:string}}[])program.model.manifestSha256=digest(bytes);await writeFile(join(f.root,'tools/engine.lock'),JSON.stringify(engine));}
+ test.each(['units','jointOrder','offset','illustrative'])('coherently resealed PUMA %s cannot replace the controller reference',async field=>{const f=await fixture('native_apt'),path=join(f.root,'inputs/model.json'),m=JSON.parse(await readFile(path,'utf8'));if(field==='units')m.units.length='m';if(field==='jointOrder')m.joints.reverse();if(field==='offset')m.joints[0].thetaOffset=1;if(field==='illustrative')m.joints[0].d=0;await writeFile(path,JSON.stringify(m));await resealPuma(f);await assertSemanticRefusal(f,'PUMA_CANONICAL_MODEL_MISMATCH');});
+ test('coherently resealed PUMA TCP cannot acquire an invented calibrated transform',async()=>{const f=await fixture('native_apt'),ref=f.manifest.refs.tool.find(r=>r.sourcePath.endsWith('/frames.json'))!,frames=JSON.parse(await readFile(join(f.root,ref.path),'utf8'));frames.frames.find((x:{id:string})=>x.id==='tcp').translationM=[0,0,0.172];await writeFile(join(f.root,ref.path),JSON.stringify(frames));await resealPuma(f);await assertSemanticRefusal(f,'PUMA_CANONICAL_MODEL_MISMATCH');});
+ test('coherently resealed standalone AMR inputs cannot borrow a different project/world',async()=>{const f=await fixture('ros_navigation'),p=JSON.parse(await readFile(join(f.root,'inputs/project.json'),'utf8')),w=JSON.parse(await readFile(join(f.root,'inputs/world.json'),'utf8')),m=JSON.parse(await readFile(join(f.root,'inputs/model.json'),'utf8'));p.runtimeProject.world.width+=1;const inputs={...m.inputs,project:{...m.inputs.project,digest:digest(canonicalize(p))},world:{...m.inputs.world,hash:digest(canonicalize(p.runtimeProject.world))}};m.inputs=inputs;seal(m,'modelDigest');w.inputs=inputs;w.world.hash=inputs.world.hash;w.world.widthM=p.runtimeProject.world.width;w.robots[0].model.inputs=inputs;w.robots[0].model.physicalModelDigest=m.modelDigest;seal(w.robots[0].model,'modelDigest');seal(w,'sceneDigest');await writeFile(join(f.root,'inputs/project.json'),JSON.stringify(p));await writeFile(join(f.root,'inputs/world.json'),JSON.stringify(w));await writeFile(join(f.root,'inputs/model.json'),JSON.stringify(m));await assertSemanticRefusal(f,'NAVIGATION_PROJECT_MODEL_MISMATCH');});
+ test('resealed standalone AMR sensor parent is not a valid frame mapping',async()=>{const f=await fixture('ros_navigation'),path=join(f.root,'inputs/model.json'),m=JSON.parse(await readFile(path,'utf8'));m.sensors[0].parentLinkId='unknown-link';seal(m,'modelDigest');await writeFile(path,JSON.stringify(m));await assertSemanticRefusal(f,'NAVIGATION_PROJECT_MODEL_MISMATCH');});
+ 
+ test('resealed shared-world source physical model retains the original navigation projection identity',async()=>{const f=await fixture(),w=JSON.parse(await readFile(join(f.root,'inputs/world.json'),'utf8')),ref=f.manifest.refs.tool.find(r=>r.sourcePath.endsWith('/mobile-physical.json'))!,mobile=JSON.parse(await readFile(join(f.root,ref.path),'utf8'));mobile.inputs.project.digest='f'.repeat(64);seal(mobile,'modelDigest');const bytes=JSON.stringify(mobile);w.inputs.mobileModelDigest=mobile.modelDigest;w.navigation.robots[0].model.physicalModelDigest=mobile.modelDigest;seal(w.navigation.robots[0].model,'modelDigest');seal(w.navigation,'sceneDigest');Object.assign(w.files.find((r:{path:string})=>r.path==='mobile-physical.json'),{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});Object.assign(w.models.mobilePhysical,{sha256:digest(bytes)});seal(w,'sceneDigest');await writeFile(join(f.root,ref.path),bytes);await writeFile(join(f.root,'inputs/world.json'),JSON.stringify(w));await assertSemanticRefusal(f,'MOBILE_PROJECTION_MISMATCH');});
++
++async function resealImage(f:Awaited<ReturnType<typeof fixture>>,manifest:Record<string,unknown>,config:Record<string,unknown>,fixSize=true){const cb=JSON.stringify(config),descriptor=manifest.config as Record<string,unknown>|null;if(descriptor&&typeof descriptor==='object'){descriptor.digest='sha256:'+digest(cb);if(fixSize)descriptor.size=Buffer.byteLength(cb);}const mb=JSON.stringify(manifest);await writeFile(join(f.root,'image-config.json'),cb);await writeFile(join(f.root,'image-manifest.json'),mb);f.manifest.subject.image!.configDigest='sha256:'+digest(cb);f.manifest.subject.image!.manifestDigest='sha256:'+digest(mb);await f.reseal();}
++test.each(['layers_missing','layers_object','layer_null','layer_digest','layer_size','layer_media','config_descriptor_missing','config_media','config_size','rootfs_missing','rootfs_type','diff_ids_missing','diff_id_invalid','diff_count'])('coherently resealed OCI %s cannot satisfy native prerequisites',async field=>{const f=await fixture(),m=JSON.parse(await readFile(join(f.root,'image-manifest.json'),'utf8')),c=JSON.parse(await readFile(join(f.root,'image-config.json'),'utf8'));if(field==='layers_missing')delete m.layers;if(field==='layers_object')m.layers={};if(field==='layer_null')m.layers=[null];if(field==='layer_digest')m.layers[0].digest='not-a-digest';if(field==='layer_size')m.layers[0].size=-1;if(field==='layer_media')m.layers[0].mediaType='text/plain';if(field==='config_descriptor_missing')delete m.config;if(field==='config_media')m.config.mediaType='text/plain';if(field==='config_size')m.config.size=1;if(field==='rootfs_missing')delete c.rootfs;if(field==='rootfs_type')c.rootfs.type='other';if(field==='diff_ids_missing')delete c.rootfs.diff_ids;if(field==='diff_id_invalid')c.rootfs.diff_ids=['no'];if(field==='diff_count')c.rootfs.diff_ids=[];await resealImage(f,m,c,field!=='config_size');const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.prepared).toBe(true);expect(r.nativeReady).toBe(false);expect(r.issues.map(i=>i.code)).toEqual(['HOST_PROVENANCE_ARTIFACT_INVALID']);});
++test('structurally valid Docker v2 manifest/config records satisfy only supplied native prerequisites',async()=>{const f=await fixture(),m=JSON.parse(await readFile(join(f.root,'image-manifest.json'),'utf8')),c=JSON.parse(await readFile(join(f.root,'image-config.json'),'utf8'));m.mediaType='application/vnd.docker.distribution.manifest.v2+json';m.config.mediaType='application/vnd.docker.container.image.v1+json';m.layers[0].mediaType='application/vnd.docker.image.rootfs.diff.tar.gzip';await resealImage(f,m,c);expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:true,issues:[]});});
+diff --git a/tests/unit/native-handoff.test.ts b/tests/unit/native-handoff.test.ts
+index d6b4547..ae29396 100644
+--- a/tests/unit/native-handoff.test.ts
++++ b/tests/unit/native-handoff.test.ts
+@@ -1,30 +1,29 @@
+ import {afterEach,expect,test} from 'vitest';
+ import {rm,writeFile,readFile} from 'node:fs/promises';
+ import {join} from 'node:path';
+-import {execFileSync} from 'node:child_process';
+ import {nativeHandoffFixture} from '../fixtures/native-handoff';
+ import {validateNativeHandoff,exportNativeHandoff} from '../../packages/lab-runtime/src/v2/sil/native-handoff';
+ import {collectNativeInventory} from '../../scripts/native-sim/host-preflight.mjs';
+ import {validNativeProfileReport} from '../../scripts/native-sim/profile-report.mjs';
+ const dirs:string[]=[];afterEach(async()=>{await Promise.all(dirs.splice(0).map(d=>rm(d,{recursive:true,force:true})));});
+ async function fixture(mode:'oci'|'native_apt'='oci'){const f=await nativeHandoffFixture(mode);dirs.push(f.root);return f;}
+ test('valid package is prepared without claiming native execution or host readiness',async()=>{const f=await fixture(),r=await validateNativeHandoff(f.root,f.manifest);expect(r).toMatchObject({prepared:true,nativeReady:false});expect(r.issues).toContainEqual(expect.objectContaining({code:'HOST_INVENTORY_MISSING',path:'/inventory',severity:'prerequisite'}));});
+ test.each(['schemaVersion','frames','units'])('missing %s cannot be prepared',async key=>{const f=await fixture();delete (f.manifest as Record<string,unknown>)[key];expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
+ test.each(['model','schema','engine','tool'])('missing %s ref cannot be prepared',async key=>{const f=await fixture();delete f.manifest.refs[key];expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
+ test('complete matching synthetic inventory validates prerequisites only',async()=>{const f=await fixture();expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:true,issues:[]});});
+ test.each(['architecture','profileId','modelId','modelSha256'])('inventory %s cannot be borrowed from another profile',async key=>{const f=await fixture();(f.inventory as Record<string,unknown>)[key]='other';expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
+ test.each(['origin','hostOs','hostArchitecture','virtualization','emulation'])('unknown/wrong provenance %s never becomes native',async key=>{const f=await fixture();(f.inventory.provenance as Record<string,unknown>)[key]='unknown';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);});
+ test('unresolved exact locks remain prepared but cannot be native ready',async()=>{const f=await fixture();Object.assign(f.manifest.profile.requiredPackages[0],{version:null,sha256:null});await writeFile(join(f.root,'profile.json'),JSON.stringify(f.manifest.profile));const {digest}=await import('../fixtures/native-handoff');f.manifest.refs.profile[0].sha256=digest(JSON.stringify(f.manifest.profile));f.manifest.refs.profile[0].bytes=Buffer.byteLength(JSON.stringify(f.manifest.profile));f.manifest.subject.profileSha256=f.manifest.refs.profile[0].sha256;expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
+ test('unbuilt current image remains distinct from runtime export',async()=>{const f=await fixture();Object.assign(f.manifest.subject,{image:null});Object.assign(f.inventory.subject,{image:null});expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
+ test('checker commit may differ while subject receipt cannot',async()=>{const f=await fixture();f.manifest.checker.sourceCommit='9'.repeat(40);expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(true);f.manifest.subject.sourceCommit='8'.repeat(40);expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(false);});
+-test('export copies allowed refs only and CLI verifies the result without a host',async()=>{const f=await fixture(),out=f.root+'-out';dirs.push(out);await writeFile(join(f.root,'private-key'),'must not copy');expect(await exportNativeHandoff(f.root,out)).toMatchObject({prepared:true,nativeReady:false});expect(JSON.parse(await readFile(join(out,'inputs/model.json'),'utf8')).id).toBe('xarm6-g2-v1');await expect(readFile(join(out,'private-key'))).rejects.toThrow();const result=JSON.parse(execFileSync(process.execPath,['scripts/native-handoff.mjs','verify','--input',out],{encoding:'utf8',timeout:15000}));expect(result).toMatchObject({prepared:true,nativeReady:false,inventoryAssessment:'supplied_records_only',qualification:'not_run',accepted:false});expect(result.checker.toolSha256).toMatch(/^[a-f0-9]{64}$/);});
++test('export copies allowed refs only without a host',async()=>{const f=await fixture(),out=f.root+'-out';dirs.push(out);await writeFile(join(f.root,'private-key'),'must not copy');expect(await exportNativeHandoff(f.root,out)).toMatchObject({prepared:true,nativeReady:false});expect(JSON.parse(await readFile(join(out,'inputs/model.json'),'utf8')).id).toBe('xarm6-g2-v1');await expect(readFile(join(out,'private-key'))).rejects.toThrow();});
+ test('local inventory collection never infers origin from process.platform',async()=>{const inventory=await collectNativeInventory();expect(inventory.provenance).toMatchObject({origin:'unknown',emulation:'unknown',hostOs:'unknown'});expect(inventory).toMatchObject({schemaVersion:1});});
+ test('legacy profile validation stays strict while an explicit locked handoff profile is checked',async()=>{const f=await fixture();expect(validNativeProfileReport(f.inventory,f.manifest.profile.id)).toBe(false);expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile:f.manifest.profile,subject:f.manifest.subject})).toBe(true);f.inventory.modelId='xarm6';expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile:f.manifest.profile,subject:f.manifest.subject})).toBe(false);});
+ test.each([null,{}, {requiredPackages:[null]}, {forbiddenPackages:[null]}, {clockDomains:[null]}])('malformed explicit profile expectations are refused without throwing (%j)',async patch=>{const f=await fixture();const profile=patch===null?null:{...f.manifest.profile,...patch};expect(()=>validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).not.toThrow();if(patch!==null&&Object.keys(patch).length===0)expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).toBe(true);else expect(validNativeProfileReport(f.inventory,f.manifest.profile.id,{profile,subject:f.manifest.subject})).toBe(false);});
+ test('Mac-hosted Linux and emulated amd64 cannot substitute for native amd64',async()=>{const f=await fixture();f.inventory.provenance.hostOs='darwin';f.inventory.provenance.virtualization='container';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);f.inventory.provenance.hostOs='linux';f.inventory.provenance.hostArchitecture='arm64';f.inventory.provenance.emulation='qemu';expect((await validateNativeHandoff(f.root,f.manifest,f.inventory)).nativeReady).toBe(false);});
+ test('native_apt uses matching exact package/source locks without inventing an OCI image',async()=>{const f=await fixture('native_apt');expect(f.manifest.subject.image).toBeNull();expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:true,issues:[]});});
+ test('native_apt unresolved repository digest is prepared but unready',async()=>{const f=await fixture('native_apt');Object.assign(f.manifest.profile.installation.sources![0],{sha256:null});const bytes=JSON.stringify(f.manifest.profile);const {digest}=await import('../fixtures/native-handoff');Object.assign(f.manifest.refs.profile[0],{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});f.manifest.subject.profileSha256=digest(bytes);await writeFile(join(f.root,'profile.json'),bytes);expect(await validateNativeHandoff(f.root,f.manifest,f.inventory)).toMatchObject({prepared:true,nativeReady:false});});
+ test('native_apt actual repository bytes must match its locked provenance',async()=>{const f=await fixture('native_apt');await writeFile(join(f.root,'apt-release.txt'),'different repository');const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.prepared).toBe(true);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('HOST_PROVENANCE_ARTIFACT_INVALID');});
+ test('image-bound subject cannot borrow native_apt profile or relabel away its missing image',async()=>{const f=await fixture(),native=await fixture('native_apt');Object.assign(f.manifest.subject,{image:null});Object.assign(f.manifest.profile,{installation:native.manifest.profile.installation});const bytes=JSON.stringify(f.manifest.profile),{digest}=await import('../fixtures/native-handoff');Object.assign(f.manifest.refs.profile[0],{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});f.manifest.subject.profileSha256=digest(bytes);await writeFile(join(f.root,'profile.json'),bytes);const r=await validateNativeHandoff(f.root,f.manifest,native.inventory);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('INSTALLATION_PROFILE_MISMATCH');});
+ test('standalone canonical navigation prepares ROS inputs while retaining the missing native engine mapping',async()=>{const f=await nativeHandoffFixture('ros_navigation');dirs.push(f.root);const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.prepared).toBe(true);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('NATIVE_ENGINE_MAPPING_UNRESOLVED');});
+ test('canonical xArm preparation cannot claim expanded native ROS model parity',async()=>{const f=await nativeHandoffFixture('ros_xarm');dirs.push(f.root);const r=await validateNativeHandoff(f.root,f.manifest,f.inventory);expect(r.prepared).toBe(true);expect(r.nativeReady).toBe(false);expect(r.issues.map(x=>x.code)).toContain('NATIVE_MODEL_MAPPING_UNRESOLVED');});

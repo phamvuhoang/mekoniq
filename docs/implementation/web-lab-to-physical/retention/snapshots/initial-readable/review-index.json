@@ -1,0 +1,336 @@
+{
+  "scope": "All complete task review files retained at this snapshot, including nonnumbered B02b Lab review. Final wholebranch review has not run and is not invented.",
+  "records": [
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R-review-1.md",
+      "bytes": 10843,
+      "sha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R-review-2.md",
+      "bytes": 7197,
+      "sha256": "4b1c3dcc260d60fcdfee9ff61df2441475e38b51e3350497366447ecc79d90e7",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B00R2-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B00R2-review-1.md",
+      "bytes": 10739,
+      "sha256": "b5587267be817eb8a23df61fc43252f814117887a20286f8879d177283ea5375",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02a-review-1.md",
+      "bytes": 1132,
+      "sha256": "afb3e3d1e0d4b052d3cc51802e4ecd85c8f678eb0d33c0cc639f77dff314c9c4",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02a-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02a-review-2.md",
+      "bytes": 645,
+      "sha256": "66bb2f00f0f14c1d896fa6c605dc701d0c51532405e4c484194324ba511060e6",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-review-1.md",
+      "bytes": 2322,
+      "sha256": "d2b9277dd029e48987140586eb7da0ab26cf9dbf7c1a993756353e756c999804",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-review-2.md",
+      "bytes": 3470,
+      "sha256": "c35347ccc1e4356f71b2d4a4d15bcafd4c7220e0687fb1a15b92dc58d28aaaff",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B02b-review-lab.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B02b-review-lab.md",
+      "bytes": 2056,
+      "sha256": "4086a0a940b3cf019b03284ee8a0ec2e87a10c8c6f366fdbea2fa0393ad1823e",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B03-review-1.md",
+      "bytes": 10837,
+      "sha256": "38d9fe47e4495affcedcf7e266b7c149649f5c3a449e074969b4ea5a2809043c",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B03-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B03-review-2.md",
+      "bytes": 4902,
+      "sha256": "7c4dadd3a82b83825eca8a0df1150b52f208c698da3b5c5e3eade958bc550748",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04a-review-1.md",
+      "bytes": 10515,
+      "sha256": "bad2f6521ef6fcd94150b91554fe2f2b778fd266a8854b8d4ff56308e229a73b",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04b-review-1.md",
+      "bytes": 11412,
+      "sha256": "46544b159f4868662bd6b33e65bf639e99c75f82064a404058544e6eb1ef2ff4",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/task-B04b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/01-r2b-mobility/task-B04b-review-2.md",
+      "bytes": 5297,
+      "sha256": "fd32ce57926abf3379308290c1e226d6f3ce0f1aa3defa164cb29ff447d8bf16",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B05-review-1.md",
+      "bytes": 9477,
+      "sha256": "af7852ff3ea350ed2f8f72a6d2cc19ad9099b5c0a3ce5944ef4c17ac4725685b",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B05-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B05-review-2.md",
+      "bytes": 5403,
+      "sha256": "b7f4b2b2cb4e7bc40796d9540f60e3b572f7a0b76848213b255e21f711b7bab3",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-review-1.md",
+      "bytes": 14030,
+      "sha256": "e197e05d88fdea5b8870bfaa043f33e061a79bad615ee1faf740d1aa3469375c",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B06-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B06-review-2.md",
+      "bytes": 3606,
+      "sha256": "2d0b1d0929185dcb46d31a4cecccb27e83397d357ba076cac63b81a5305bc9a5",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-review-1.md",
+      "bytes": 11779,
+      "sha256": "e3c73e299b7b53566f2474d9fbe2ca3a9be4326bebdd819245f66d6548ddeed1",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07a-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07a-review-2.md",
+      "bytes": 5814,
+      "sha256": "05076a828ecf9d2e549d4ca068c5239c22f2a33dd2c164666743cd48fb5c34a6",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-review-1.md",
+      "bytes": 10176,
+      "sha256": "8ee9dd4163dc446ab08de2c215bd787f27ee7dd70fa43965bde242a5cad32dd0",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B07b-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B07b-review-2.md",
+      "bytes": 9670,
+      "sha256": "49af2aa5b313632af1237ca7011fda08440da65b1d4e999884b311fffee72989",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-1.md",
+      "bytes": 12641,
+      "sha256": "8e51009f734aa29829c5899e58c79426d8e0d5a61880751bd76b8d5e31dd895d",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-2.md",
+      "bytes": 7650,
+      "sha256": "8f2a4fbbd90f98dc651df9ca862f888d3946bb34ee430ff4728f1a84b64c2703",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B08-review-3.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B08-review-3.md",
+      "bytes": 7260,
+      "sha256": "2e27e5e988c9b41876b45bf9163dc28b64ac13dbfc8d572cfadfe56541366c89",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-review-1.md",
+      "bytes": 17210,
+      "sha256": "2cb65c9dad7b51e94a91263fa0375cf2833113b1badd231b11212e76be31e1d1",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B09-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B09-review-2.md",
+      "bytes": 9105,
+      "sha256": "177c5964fd795a38a681000e771cfd6b18782cab2c2b660942d9734d3337404d",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B10-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B10-review-1.md",
+      "bytes": 20947,
+      "sha256": "ec17f999ce8a2585dc0d6b4a0bb67051d81bb6ef373fcf23521f91e2a494c74a",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/02-r2b-cell-and-web/task-B10-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/02-r2b-cell-and-web/task-B10-review-2.md",
+      "bytes": 13590,
+      "sha256": "926f0d5266b3ab39ac020f6fed29510f85748ce5356f52eba56e665db43aed04",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L00-review-1.md",
+      "bytes": 12681,
+      "sha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L00-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L00-review-2.md",
+      "bytes": 7236,
+      "sha256": "364448fff77aa6b74e8cc55ab77776caa2f800a82102abe3d16a77cbe521b803",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-1.md",
+      "bytes": 13641,
+      "sha256": "c2d428e85abb52abfaef80affa4a379e6e15695eb7147bddfc2e7c03ad4a9dc9",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-2.md",
+      "bytes": 11315,
+      "sha256": "48ef13cf300a5b035305f976a1005b63f0626b84247b269d8ebfbcd79944e4f7",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L01-review-3.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L01-review-3.md",
+      "bytes": 8875,
+      "sha256": "e69cd99c9bc3c362b0cafbf18c2887af19dbcf89b8ae6f91210e7daa6f51139a",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L02-review-1.md",
+      "bytes": 12436,
+      "sha256": "2574b15728973924d9db9c4a6a624a271ff6759e34a388712be414befe6b6870",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L02-review-2.md",
+      "bytes": 12724,
+      "sha256": "20a52669beb91ef67b7ed82ffec31aecba11783b309d682aed1f4d006477bbb9",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L03-review-1.md",
+      "bytes": 21339,
+      "sha256": "c62550631934d95ee758df78fbbd7192e263e83cb27f927457947f2387a025f7",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L03-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L03-review-2.md",
+      "bytes": 10954,
+      "sha256": "a581e8c427b8f098fa2ca44c13513345c9da7906dc50bcc7aee740b0233e6b16",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L04-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L04-review-1.md",
+      "bytes": 11425,
+      "sha256": "1796e6c77d6e908a741bb6530562957421b44dac3a2da32edb7da19f7d63e077",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L04-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L04-review-2.md",
+      "bytes": 7206,
+      "sha256": "23334b917f5f11949795c46a2756827633827296d933fc56124d5038d3481b4a",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L05-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L05-review-1.md",
+      "bytes": 10936,
+      "sha256": "02c2edd2608e4ea0806066517f7ca81383f0902422a6cb059f098137c496c898",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L06-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L06-review-1.md",
+      "bytes": 18482,
+      "sha256": "4035e927b721a4633da24f2a950e7e5eb644e4daab47affb68f1038e844c04ff",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/03-r3-linux-readiness/task-L06-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/03-r3-linux-readiness/task-L06-review-2.md",
+      "bytes": 17684,
+      "sha256": "40fcd0970d258904247756f0ba9141f0ab9a83b91b0b7f9f9ebb098cea58d7d8",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-prerequisites-review-1.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-prerequisites-review-1.md",
+      "bytes": 19633,
+      "sha256": "311d2b2eb53a7989e3ad3d714e8c260a79137e589a623f04c442d84d67682022",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-prerequisites-review-2.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-prerequisites-review-2.md",
+      "bytes": 21423,
+      "sha256": "b115bd0c7acbb9100d5096bce67372da74ac84377e67f43eedef20bc7657350e",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-prerequisites-review-3.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-prerequisites-review-3.md",
+      "bytes": 15349,
+      "sha256": "e2a831f6c95a22e1bdeb4b241382bf7fc8e6276e2643aad62219e16db4da799f",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-prerequisites-review-4.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-prerequisites-review-4.md",
+      "bytes": 14954,
+      "sha256": "6af047b47c884b7be95b77c53afa50f4ef03fff2cc329e05eb1ceb47abd0abe8",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-prerequisites-review-5.md",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-prerequisites-review-5.md",
+      "bytes": 19487,
+      "sha256": "d0365596a7a891b0ac18c965e17aae78bcbdf6de8e46f5debee45ba733697d7f",
+      "role": "Exact readable original report/review/brief/ruling/rootaudit snapshot; no rebase or text edit"
+    }
+  ],
+  "count": 47,
+  "bytes": 507505
+}

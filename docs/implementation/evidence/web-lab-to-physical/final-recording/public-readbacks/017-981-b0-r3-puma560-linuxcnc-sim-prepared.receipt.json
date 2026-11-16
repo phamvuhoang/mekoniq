@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/verify-r3.mjs",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-r3-puma560-linuxcnc-sim-prepared"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/exact-reader-checkouts/981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T00:31:51.472623+00:00",
+  "finishedAt": "2026-11-16T00:31:52.682400+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "017-981-b0-r3-puma560-linuxcnc-sim-prepared.log",
+  "logBytes": 183,
+  "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+  "expectedHistoricalDisposition": "Original subject/status preserved; malformed/negative or partial candidates may correctly refuse",
+  "scope": "Public retained-data readback only, extracted copies; no campaign/native/engine execution or status rewriting"
+}

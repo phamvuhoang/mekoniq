@@ -1,0 +1,96 @@
+[
+  {
+    "repo": "source",
+    "base": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+    "head": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+    "tree": "9e603c2766f2f468203a8a722fc23f54fef4c49f",
+    "diffPath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-3-source.diff",
+    "diffBytes": 18776,
+    "diffSha256": "984e82073c351fc413fcf1f63a7941ca0f1048146bf95ba84cfe4f000be9079f",
+    "files": [
+      {
+        "path": "tests/integration/lab-v2-bv01-sil.test.ts",
+        "bytes": 29847,
+        "sha256": "69b4e93a58ef1d54d8b14c2beaaff8529b2ca3569002d86e452c9b023ac08071",
+        "blob": "b53e00dd6da381cb47c80281b2ee5bbe7485aaab"
+      },
+      {
+        "path": "tests/integration/lab-v2-native-gateway.test.ts",
+        "bytes": 6034,
+        "sha256": "8e41286eb5c23a5192971c96fbd7558ad836efa9c3033759cdc1b4af3bd92be3",
+        "blob": "189d86b99ae6b475905bf4b753aec807aedc713c"
+      },
+      {
+        "path": "tests/integration/lab-v2-readiness.test.ts",
+        "bytes": 14262,
+        "sha256": "d67140f28979b16b5eb71581ecbd5b78c988c523893cc5558b8c562efdac132c",
+        "blob": "c659200fdc91ec55be6a5cddd6a765881c5de5b0"
+      }
+    ]
+  },
+  {
+    "repo": "lab",
+    "base": "111ed9a763a5fea24ab3180834c83c1db97417dd",
+    "head": "ba1d0e01b9542dbefe8e21a95a561ea2d0b83f59",
+    "tree": "ca7b80ffa988d378a239efc1b9dedae5fd4e36f0",
+    "diffPath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-3-lab.diff",
+    "diffBytes": 15795,
+    "diffSha256": "dd8f9b7632fd248de66ab40030a661e2fe357dc5d0a936f18da549e96c495abf",
+    "files": [
+      {
+        "path": "config/source-runtime.lock.json",
+        "bytes": 534,
+        "sha256": "ea55a97e45b615dd07a514c4f5f0139b4b7ee0309d4ae62105b8da6c31e6aebe",
+        "blob": "ea6b6360383ea831052b60be2f3f4b1dac2d4a85"
+      },
+      {
+        "path": "src/project/engineering-archive.ts",
+        "bytes": 7403,
+        "sha256": "33d4050a0665364f8bf23bbefd62d7e6763c491c0af955447e55e9fbb8b5b1cd",
+        "blob": "9f8b81f8d2f9206f5127d9d198e112051016c403"
+      },
+      {
+        "path": "src/reports/compare.ts",
+        "bytes": 18627,
+        "sha256": "4b07648831a64867e3ba02bda2c8d2d26523cddbd9f3fbd6da43c264d8797d09",
+        "blob": "59a85f6bb1c5995c31f8626905dd3548c4f122a5"
+      },
+      {
+        "path": "src/reports/navigation2d.ts",
+        "bytes": 14305,
+        "sha256": "04e803f9c40fcbbd35d1f255ec7a16e332e2dc1722e82c38f318459d5ae9ce24",
+        "blob": "3334e4d21650e8470d6374c10cc67916e838807d"
+      },
+      {
+        "path": "src/reports/report-shape.ts",
+        "bytes": 10160,
+        "sha256": "9bcfad6841aaeb6029cb0144f4ea78c9d9487157c3433d49903f3cab2cbf738c",
+        "blob": "a5834c9cbd8cc90256aac8d5c3a3d896b1668a51"
+      },
+      {
+        "path": "src/scenarios/model-validation.ts",
+        "bytes": 867,
+        "sha256": "82613c5fec3aff4fa4634782cfc54e3b429f5199cb2be73cd72a8aa9316b3452",
+        "blob": "5c32414b52ea1956a253dc239e8c49fbae0b341e"
+      },
+      {
+        "path": "src/shared/engineering.ts",
+        "bytes": 46638,
+        "sha256": "e11cb053ad6d2157c91fa7403ed19dab720251f4fb297ae0f255994618fd203e",
+        "blob": "a220b06d80227a9b61b3557f482c6138c8298cd4"
+      },
+      {
+        "path": "src/shared/navigation2d.ts",
+        "bytes": 48892,
+        "sha256": "c280131d9412901bf2af85da459736c926f420053646c1e7dc9b0ed922404979",
+        "blob": "732e2ad71af67f0a8493e5701c564a43aa50ccab"
+      },
+      {
+        "path": "src/twin/payload.ts",
+        "bytes": 9201,
+        "sha256": "95635c576b250c870fc2c00dccdda34ad15c2898c90dcd3300c0591cd97e44d6",
+        "blob": "8a1512ac2a4395e44cd07a84d835157c6af8354c"
+      }
+    ]
+  }
+]

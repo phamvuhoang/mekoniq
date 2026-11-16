@@ -1,0 +1,173 @@
+{
+  "schema": "root-r1-acceptance-layout-handoff-audit/1",
+  "at": "2026-11-15T20:29:10.325242+00:00",
+  "index": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/r1-acceptance-layout-handoff/input-hashes.json",
+    "bytes": 5536,
+    "sha256": "851214995d66d7d080390d132ca9722b60e34805f0753cfa076e8624c507d75d"
+  },
+  "verifiedIndexedFiles": 16,
+  "bothOriginalAndSnapshotChecked": true,
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "labCommit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+  "unchangedLegacySegments": [
+    {
+      "segment": "const SIMEXT=",
+      "unchanged": true,
+      "sha256": "1905069688e083a02cc1b3cab34102396a73e260b3c99e9525b9cd15076c55f8"
+    },
+    {
+      "segment": "test('R1.1:",
+      "unchanged": true,
+      "sha256": "2523696b0ac80fe89e05f43b20d5703da69efcf8963221933d8f31303bb25441"
+    },
+    {
+      "segment": "test('R2a:",
+      "unchanged": true,
+      "sha256": "96631b66cf67f81b0b506ce58386a41bbf16aad00dc29dcbc288903008cece04"
+    },
+    {
+      "segment": "test('the IR-SIM record it builds on",
+      "unchanged": true,
+      "sha256": "213e7a0a28738538f0a7d6c9b691b814079668ac9b1bd4720c97fa6677716e96"
+    }
+  ],
+  "expectedPathsAbsentInHeadAndActiveTree": [
+    "docs/implementation/evidence/linkforge-irsim/irsim",
+    "docs/implementation/evidence/sim-extension/r1",
+    "docs/implementation/evidence/sim-extension/r11"
+  ],
+  "actualOriginalResult": {
+    "r1QualificationSha256": "4dede52285ed09b5e23b189c7b1ca125eafa4c38e7ad2f5d0877b18330f62fff",
+    "candidate": "r1-final-981e234",
+    "source": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "lab": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+    "identityStable": true,
+    "accepted": false,
+    "gates": {
+      "G-ALG1": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "ALG01",
+          "ALG02",
+          "ALG03",
+          "ALG05"
+        ]
+      },
+      "G-ALG2": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "PID01",
+          "PID02",
+          "PID03"
+        ]
+      },
+      "G-WB1": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "WB01",
+          "WB02",
+          "WB08"
+        ]
+      },
+      "G-WB2": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "WB03",
+          "WB04",
+          "WB05",
+          "WB06",
+          "WB07"
+        ]
+      },
+      "G-INT2": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "INT11",
+          "INT12"
+        ]
+      },
+      "G-REG1": {
+        "status": "tested",
+        "accepted": false,
+        "cases": [
+          "REG01"
+        ]
+      }
+    },
+    "notRun": [
+      {
+        "id": "ALG04",
+        "reason": "R3: the joint trace needs a running LinuxCNC bridge"
+      }
+    ],
+    "recorderOwn": {
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:58:47.310Z",
+      "finishedAt": "2026-11-15T18:25:30.384Z",
+      "before": {
+        "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      },
+      "after": {
+        "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+        "status": "",
+        "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "changed": []
+      }
+    },
+    "guardOwn": {
+      "exitCode": 1,
+      "signal": null,
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "env",
+        "LAB_SIMEXT_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r1",
+        "pnpm",
+        "test:acceptance",
+        "--",
+        "sim-extension"
+      ],
+      "startedAt": "2026-11-15T18:25:30.722Z",
+      "finishedAt": "2026-11-15T18:25:32.030Z",
+      "logSha256": "4e166daefb486d4cc94c876d30c0cd041c0ab3c873dc4209ed92b30e43c6ff35"
+    },
+    "actualGuardSummary": {
+      "passed": 11,
+      "failed": 1,
+      "skipped": 0,
+      "source": "Complete retained own log, not an original machine JSON result"
+    },
+    "actualFailedAssertion": {
+      "title": "the IR-SIM record it builds on is the one in the tree (byte for byte) and is of the same commit",
+      "testLine": 64,
+      "expected": true,
+      "actual": false,
+      "message": "docs/implementation/evidence/linkforge-irsim/irsim/qualification.json is not in the tree (the candidate this record builds on)"
+    },
+    "realUpstreamPresent": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim/qualification.json",
+    "carriedUpstreamByteIdentical": true,
+    "expectedActiveTreeLegacyPathExists": false,
+    "failingConstantRoots": {
+      "IRSIM": "docs/implementation/evidence/linkforge-irsim",
+      "SIMEXT": "docs/implementation/evidence/sim-extension"
+    },
+    "externalRootSelectorInTest": false,
+    "r11Started": false,
+    "r2aStarted": false,
+    "productOrArtifactOrTestEdits": false
+  },
+  "ruling": "Ruling: execute unchanged complete R1/R1.1 public acceptance from a new paired isolated checkout at exact Source981e234/Lab b0fcede, after staging byte-verified actual upstream evidence directories only into absent legacy paths expected by the inherited guard. Keep the active producer clean and all original failed/successful artifacts immutable; capture actual staged cwd, checked code/blob identities, dependency resolution, staged data-only dirtiness and new own receipts/logs. Reason: the unchanged legacy guard fixes its IRSIM/SIMEXT roots while the recorder legitimately accepts fresh external inputs; the observed R1 failure is only missing in-tree lookup despite byte-identical carried upstream and all primary readback assertions passing. Cost if wrong: the staging layout may expose another dependency/integrity failure, which must remain a real failure; a passing staged check establishes that exact fixture layout, not clean production execution or portable arbitrary-layout support. Continue R1.1 recording in the original clean producer only after the staged R1 guard actually passes. Use the same input staging for partial R2a lineage, preserving its real failed gate/screenshot assertions and the existing R93 incomplete-qualification boundary. No producer rerun, artifact/status/hash rewrite, test/table/threshold change, service operation or gate waiver is authorized by this ruling."
+}

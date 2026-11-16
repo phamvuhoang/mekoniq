@@ -1,0 +1,23 @@
+{
+  "expectedRuns": 19,
+  "completedCases": 19,
+  "missingArtifacts": [],
+  "faultCases": [
+    {
+      "id": "worker-kill",
+      "detected": true,
+      "falseServed": false
+    },
+    {
+      "id": "ack-loss",
+      "detected": true,
+      "falseServed": false
+    },
+    {
+      "id": "cup-fall",
+      "detected": true,
+      "falseServed": false
+    }
+  ],
+  "issues": []
+}

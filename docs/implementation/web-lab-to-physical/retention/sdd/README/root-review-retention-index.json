@@ -10,6 +10,60 @@
   "retentionRequirement": "Version all applicable full review reports, implementer reports, decisions and deferred dispositions before SDD cleanup. Regenerate after subsequent tasks. Preserve old evidence identities and exact Git range/argv/hash for large reproducible diff packages.",
   "reviews": [
     {
+      "path": "README/task-final-prerequisites-review-1.md",
+      "bytes": 19633,
+      "sha256": "311d2b2eb53a7989e3ad3d714e8c260a79137e589a623f04c442d84d67682022",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# Final prerequisite correction 1 \u2014 independent scoped review"
+        },
+        {
+          "line": 9,
+          "text": "## Scope, method and exact identity"
+        },
+        {
+          "line": 116,
+          "text": "## Cannot verify and retained limits"
+        }
+      ]
+    },
+    {
+      "path": "README/task-final-prerequisites-review-2.md",
+      "bytes": 21423,
+      "sha256": "b115bd0c7acbb9100d5096bce67372da74ac84377e67f43eedef20bc7657350e",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Scoped verdicts"
+        },
+        {
+          "line": 17,
+          "text": "## Scope and identities checked"
+        },
+        {
+          "line": 30,
+          "text": "## Finding 1: actual PUMA admission"
+        },
+        {
+          "line": 48,
+          "text": "## Finding 2: two stale catalog assertions"
+        },
+        {
+          "line": 58,
+          "text": "## Finding 3: doctor scratch fixture import failure"
+        },
+        {
+          "line": 108,
+          "text": "## Out-of-scope observations"
+        },
+        {
+          "line": 112,
+          "text": "## Cannot verify and review boundaries"
+        }
+      ]
+    },
+    {
       "path": "01-r2b-mobility/task-B00R-review-1.md",
       "bytes": 10843,
       "sha256": "2a9fdffd610f0affe944fc91f620e94faff5355b1b8e610e481213225f8778f9",
@@ -507,6 +561,60 @@
       ]
     },
     {
+      "path": "02-r2b-cell-and-web/task-B10-review-1.md",
+      "bytes": 20947,
+      "sha256": "ec17f999ce8a2585dc0d6b4a0bb67051d81bb6ef373fcf23521f91e2a494c74a",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Review scope and method"
+        },
+        {
+          "line": 19,
+          "text": "## Important findings"
+        },
+        {
+          "line": 88,
+          "text": "## Minor finding"
+        },
+        {
+          "line": 98,
+          "text": "## Strengths and requirement assessment"
+        },
+        {
+          "line": 108,
+          "text": "## Tests, claims and deferred findings"
+        },
+        {
+          "line": 126,
+          "text": "## Cannot verify from this diff/review"
+        }
+      ]
+    },
+    {
+      "path": "02-r2b-cell-and-web/task-B10-review-2.md",
+      "bytes": 13590,
+      "sha256": "926f0d5266b3ab39ac020f6fed29510f85748ce5356f52eba56e665db43aed04",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# B10 fix1 \u2014 independent scoped review 2"
+        },
+        {
+          "line": 9,
+          "text": "## Scope and method"
+        },
+        {
+          "line": 19,
+          "text": "## Finding dispositions"
+        },
+        {
+          "line": 63,
+          "text": "## Deferred disposition and Cannot verify"
+        }
+      ]
+    },
+    {
       "path": "03-r3-linux-readiness/task-L00-review-1.md",
       "bytes": 12681,
       "sha256": "d189cffddb4e6c5d3d29c5e61d425a401d4122dccc9d3321b2c2d392abbbe5b9",
@@ -795,6 +903,60 @@
         {
           "line": 52,
           "text": "## Findings"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L06-review-1.md",
+      "bytes": 18482,
+      "sha256": "4035e927b721a4633da24f2a950e7e5eb644e4daab47affb68f1038e844c04ff",
+      "findingNavigation": [
+        {
+          "line": 9,
+          "text": "## Scope and evidence"
+        },
+        {
+          "line": 19,
+          "text": "## Important findings"
+        },
+        {
+          "line": 55,
+          "text": "## Minor finding"
+        },
+        {
+          "line": 65,
+          "text": "## Strengths and requirement assessment"
+        },
+        {
+          "line": 92,
+          "text": "## Cannot verify from this diff/review"
+        }
+      ]
+    },
+    {
+      "path": "03-r3-linux-readiness/task-L06-review-2.md",
+      "bytes": 17684,
+      "sha256": "40fcd0970d258904247756f0ba9141f0ab9a83b91b0b7f9f9ebb098cea58d7d8",
+      "findingNavigation": [
+        {
+          "line": 1,
+          "text": "# L06 fix round 1 \u2014 independent scoped review 2"
+        },
+        {
+          "line": 9,
+          "text": "## Reviewed scope and identity"
+        },
+        {
+          "line": 28,
+          "text": "## Finding dispositions"
+        },
+        {
+          "line": 70,
+          "text": "## Immediate regression assessment"
+        },
+        {
+          "line": 98,
+          "text": "## Cannot verify \u2014 inherited limits retained"
         }
       ]
     }

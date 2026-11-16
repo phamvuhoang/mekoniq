@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-15T23:10:40.100904+00:00",
+  "receipt": {
+    "argv": [
+      "pmset",
+      "-g",
+      "log"
+    ],
+    "scope": "Read-only system power event evidence; no settings changed",
+    "startedAt": "2026-11-15T23:09:32.978179+00:00",
+    "finishedAt": "2026-11-15T23:09:34.494365+00:00",
+    "elapsedSeconds": 1.51596499979496,
+    "exitCode": 0,
+    "stderr": "",
+    "selection": "All timestamped rows in local2026-11-16 05:40:00..06:10:00 (+0700); full stdout SHA retained, not full system log",
+    "fullStdoutSha256": "1255b91c1409bc24aa255536e2630c8c138a49641b49e278b0c799b73be4e986",
+    "fullStdoutBytes": 8124439,
+    "selectedLines": 140,
+    "selectedSha256": "d9a4eeaa6dbf55ad6390c308220f1b35aa2b33dd05c7708cd000124c0a1d924f"
+  },
+  "selectedFile": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-fix5-pqfmcrch/sleep-wake-audit/relevant-pmset.log",
+    "bytes": 32001,
+    "sha256": "d9a4eeaa6dbf55ad6390c308220f1b35aa2b33dd05c7708cd000124c0a1d924f"
+  },
+  "specificEventsRead": [
+    "2026-11-16 05:47:00 +0700 Sleep               \tEntering Sleep state due to 'Sleep Service Back to Sleep':TCPKeepAlive=active Using AC (Charge:100%) 992 secs  ",
+    "2026-11-16 06:03:32 +0700 DarkWake            \tDarkWake from Deep Idle [CDNPB] : due to NUB.SPMI0Sw3IRQ nub-spmi0.0x02 rtc/Maintenance Using AC (Charge:100%)           "
+  ],
+  "conclusion": "Recorded992s host sleep overlaps actual1005s failing invocation; supports wall-time inflation, does not turn timeout into a pass. Root read receipt+these event rows; all140selected rows are byte-bound, not all described semantically. Full8MB OSlog retained by digest only, not reconstructed.",
+  "retryAuthorization": "ONE unchanged complete release-file invocation under caffeinate -dims and original Perl120 bound, fresh output; no code/threshold changes for this environmental check."
+}

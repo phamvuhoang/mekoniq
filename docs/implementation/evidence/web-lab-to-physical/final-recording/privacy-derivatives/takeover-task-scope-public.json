@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-16T00:21:50.952100+00:00",
+  "lexicalLauncher": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/start-irsim.mjs",
+  "realLauncher": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/start-irsim.mjs",
+  "matches": false,
+  "sourceCanonical": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source",
+  "labCanonical": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+  "guard": "resolve(process.argv[1])===fileURLToPath(import.meta.url)",
+  "reportPrefix": {
+    "bytes": 150008,
+    "sha256": "78babeca1335cb43410a002b42d8df369ff52754a4853702cea715354f3a97f2"
+  },
+  "privateProcessSnapshot": {
+    "rawFileBytes": 173796,
+    "rawFileSha256": "082c68fe5ab67681933caba1ca6238b298d5381124a72d5fc34d4ce7f9189b8b",
+    "excludedField": "processes",
+    "snapshotStringBytes": 172392,
+    "snapshotStringSha256": "1fdfdf6d928d0c2dd68f3fc9fad4245d3a3833c34fd689e3b038d5a4b526e13b",
+    "policy": "Entire unfiltered host-process string excluded from public derivative and archive. Original ignored local record remains unchanged; no unrelated application/credential context is published. This derivative is not byte-identical to raw."
+  }
+}

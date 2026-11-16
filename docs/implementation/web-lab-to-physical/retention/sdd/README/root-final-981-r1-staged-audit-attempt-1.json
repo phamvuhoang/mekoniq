@@ -1,0 +1,6 @@
+{
+  "ownExitCode": 1,
+  "commandChunk": "ce246b",
+  "cause": "Root compared preparation trimmed git status with receipt raw git status. Receipt has exactly one terminal newline; all4191file pairs, code and tree checks had already passed.",
+  "disposition": "Correct exact serialization comparison; preserve original metadata. No product/test/evidence change or test rerun."
+}

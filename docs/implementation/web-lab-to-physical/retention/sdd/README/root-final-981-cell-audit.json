@@ -1,0 +1,526 @@
+{
+  "at": "2026-11-15T21:10:48.862814+00:00",
+  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+  "scope": "Root independent original-file hashes and case/source outcome/custody readback; no engine or suite rerun",
+  "campaignSummary": {
+    "accepted": false,
+    "expectedRuns": 8,
+    "completedCases": 8,
+    "missingArtifacts": [],
+    "issues": []
+  },
+  "caseArtifactEntriesVerified": 462,
+  "caseArtifactBytesVerified": 189893198,
+  "cases": [
+    {
+      "id": "nominal-7",
+      "runId": "d81138e7-037a-40a5-af16-3ce567a2b9fc",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 10850,
+        "simTimeNs": "217000000000"
+      },
+      "attention": [],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:d81138e7-037a-40a5-af16-3ce567a2b9fc:cup-1:table:table-1"
+        },
+        {
+          "cupId": "cup-2",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:d81138e7-037a-40a5-af16-3ce567a2b9fc:cup-2:table:table-1"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 403140.775083,
+      "artifactsVerified": 80
+    },
+    {
+      "id": "nominal-42",
+      "runId": "0a0d8c53-4b2d-4fa7-9ac1-ca3f4929dd0b",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 10850,
+        "simTimeNs": "217000000000"
+      },
+      "attention": [],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:0a0d8c53-4b2d-4fa7-9ac1-ca3f4929dd0b:cup-1:table:table-1"
+        },
+        {
+          "cupId": "cup-2",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:0a0d8c53-4b2d-4fa7-9ac1-ca3f4929dd0b:cup-2:table:table-1"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 376404.55824999994,
+      "artifactsVerified": 80
+    },
+    {
+      "id": "nominal-99",
+      "runId": "45807329-0033-4dcf-bf02-744d451308e1",
+      "outcome": {
+        "status": "completed",
+        "served": "2",
+        "tick": 10850,
+        "simTimeNs": "217000000000"
+      },
+      "attention": [],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:45807329-0033-4dcf-bf02-744d451308e1:cup-1:table:table-1"
+        },
+        {
+          "cupId": "cup-2",
+          "parent": "table:table-1",
+          "status": "known",
+          "lastObservationId": "domain-delivery:45807329-0033-4dcf-bf02-744d451308e1:cup-2:table:table-1"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 390298.733792,
+      "artifactsVerified": 80
+    },
+    {
+      "id": "dock-drift",
+      "runId": "b459a344-6d7a-4242-822d-32e2af58549f",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 1700,
+        "simTimeNs": "34000000000"
+      },
+      "attention": [
+        {
+          "reason": "DOCK_OUT_OF_TOLERANCE",
+          "commandId": "cell-cmd-cee2743a0ceda91c9596ce25247d676c",
+          "tick": 1679
+        },
+        {
+          "reason": "TRANSFER_UNKNOWN",
+          "subjectId": "coffee-job-1",
+          "tick": 1679
+        }
+      ],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": "arm:arm-1/tcp",
+          "status": "known",
+          "lastObservationId": "world:4d39ed15-1a9d-4198-a4b7-5e9b8495ae99:coffee-job-1:pick:grasp:1678"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 58568.45849999995,
+      "artifactsVerified": 43
+    },
+    {
+      "id": "cup-fall",
+      "runId": "13cfda71-4cbb-465e-93e3-9b5f860360b1",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 2375,
+        "simTimeNs": "47500000000"
+      },
+      "attention": [
+        {
+          "reason": "LOAD_FELL",
+          "robotId": "amr-1",
+          "subjectId": "mission-01f6b017b87a89968be1a749dae7a7d5",
+          "commandId": "robot-command-96d1f212baff68c9ddb394ecb4093e0a",
+          "tick": 2370
+        },
+        {
+          "reason": "CUP_RECONCILE_REQUIRED:PHYSICAL_UNKNOWN",
+          "tick": 2370
+        }
+      ],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": null,
+          "status": "lost",
+          "lastObservationId": "world:8bd8e7ed-bc37-420d-b1a0-435883f2804d:coffee-job-1:place:lost:2370"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 84945.371667,
+      "artifactsVerified": 46
+    },
+    {
+      "id": "cancel-held",
+      "runId": "ca1cc2a5-2e17-4867-9056-b793239848a9",
+      "outcome": {
+        "status": "cancelled",
+        "served": "0",
+        "tick": 1700,
+        "simTimeNs": "34000000000"
+      },
+      "attention": [],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": "arm:arm-1/tcp",
+          "status": "known",
+          "lastObservationId": "world:3211b9e4-4040-404c-bc9f-3e009d08c7f7:coffee-job-1:pick:grasp:1678"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 60717.20991700003,
+      "artifactsVerified": 44
+    },
+    {
+      "id": "worker-loss",
+      "runId": "43f6ef60-0c87-4c4f-b57f-f77ff6cc8b9c",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 1700,
+        "simTimeNs": "34000000000"
+      },
+      "attention": [
+        {
+          "reason": "WORLD_UNKNOWN",
+          "tick": 1700
+        },
+        {
+          "reason": "ACTION_INTERRUPTED",
+          "tick": 1700
+        }
+      ],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": null,
+          "status": "unknown",
+          "lastObservationId": "world:4388acb5-45f2-4702-b175-ec582d32ab9d:coffee-job-1:pick:grasp:1678"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 60517.928209000034,
+      "artifactsVerified": 44
+    },
+    {
+      "id": "lost-ack",
+      "runId": "ed3deef6-3b90-41af-839b-0ed344364a90",
+      "outcome": {
+        "status": "needs_attention",
+        "served": "0",
+        "tick": 1700,
+        "simTimeNs": "34000000000"
+      },
+      "attention": [
+        {
+          "reason": "WORLD_UNKNOWN",
+          "tick": 1700
+        },
+        {
+          "reason": "ACTION_INTERRUPTED",
+          "tick": 1700
+        }
+      ],
+      "physicalCustody": [
+        {
+          "cupId": "cup-1",
+          "parent": null,
+          "status": "unknown",
+          "lastObservationId": "world:047bfe9d-c93a-428c-b137-bf13fafc4168:coffee-job-1:pick:grasp:1678"
+        }
+      ],
+      "opens": 1,
+      "recordedTraceElapsedMs": 59907.91991699999,
+      "artifactsVerified": 45
+    }
+  ],
+  "ownInvocations": [
+    {
+      "schemaVersion": 1,
+      "startedAt": "2026-11-15T20:42:55.440Z",
+      "finishedAt": "2026-11-15T21:08:26.924Z",
+      "status": "completed",
+      "reason": null,
+      "exitCode": 0,
+      "exitSignal": null,
+      "spawnError": null,
+      "writeError": null,
+      "command": "node",
+      "args": [
+        "scripts/lab-mujoco.mjs",
+        "run",
+        "--campaign",
+        "mj-cell-bv01-v1",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign"
+      ],
+      "stdout": "stdout.log",
+      "stderr": "stderr.log"
+    },
+    {
+      "schemaVersion": 1,
+      "startedAt": "2026-11-15T21:08:27.407Z",
+      "finishedAt": "2026-11-15T21:09:03.034Z",
+      "status": "completed",
+      "reason": null,
+      "exitCode": 0,
+      "exitSignal": null,
+      "spawnError": null,
+      "writeError": null,
+      "command": "node",
+      "args": [
+        "scripts/lab-mujoco.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign"
+      ],
+      "stdout": "stdout.log",
+      "stderr": "stderr.log"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/campaign.json",
+      "bytes": 2636,
+      "sha256": "8beea7cff26d3ff8a8d9440a1a363931fb8195d6c0723e404490c5dcbd7a738e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/summary.json",
+      "bytes": 110,
+      "sha256": "3dda3382a494ab8904a8fe87ebe50ecbee7ac00e2bcbfb5b0b467c8f964ba5c3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-7/case.json",
+      "bytes": 15526,
+      "sha256": "517ce8fbbfe881efc5b97ffef8d8fb98f83b0ea0f53ef4d6b77ed082c679bcc5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-7/report.json",
+      "bytes": 10342109,
+      "sha256": "c45e5bf2e458f7d8b2811e360f50966041304f07d6ac4a052fc6a9d10cd1425e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-7/trace.json",
+      "bytes": 2256809,
+      "sha256": "a1069666e0ef5660c3f10b1ca27af371e5213b17f20e1339ac1d44fea2718087"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-7/physical-custody.json",
+      "bytes": 373,
+      "sha256": "89855b56829039193a031f62e1a75e9d24a408421f7fca9b55c0b756d2821abf"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-42/case.json",
+      "bytes": 15528,
+      "sha256": "f46c1f16262fb99ace6c0656ac01f66c13962259e9680c732c40592ddb48f6b0"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-42/report.json",
+      "bytes": 10342110,
+      "sha256": "05f74849b6f085e1a1216826e841dea1fdcb141c4d10169651f3bfb5ce82d891"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-42/trace.json",
+      "bytes": 2256814,
+      "sha256": "ce6b08f2ede7c36ffb6f9c7e4d800c1831d004310aaca237be16e51d45e3c18a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-42/physical-custody.json",
+      "bytes": 373,
+      "sha256": "e7e8c98681ddabd0efd3b25ead2c752420607d63905b1bca3578d83c83d1e3dc"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-99/case.json",
+      "bytes": 15528,
+      "sha256": "c2e8c994c91353a02c644b23c915f34c9061fa8f075290aaefd8ab0ce9f84cdb"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-99/report.json",
+      "bytes": 10342110,
+      "sha256": "ad093e53a9fdf15d774630824459978b96071a6ab944486f7f20d7150ba2388a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-99/trace.json",
+      "bytes": 2256809,
+      "sha256": "3f9e0188378c0fa4defa6062d62699c7fcb6a31323d33a2b4f4885b9840568a5"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/nominal-99/physical-custody.json",
+      "bytes": 373,
+      "sha256": "daff3d5cc09dcbdaf3c0e9b0da886ee6eabb83c2cffcba442c0516eb81fe3dee"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/dock-drift/case.json",
+      "bytes": 8606,
+      "sha256": "2df5720336b066c5a344265c4d0ec8cbb56e013616e3a1ff2279fc213e3d0e21"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/dock-drift/report.json",
+      "bytes": 1871101,
+      "sha256": "1c223bd9ba81a5eb4d5ef9ce0c85aa8d7969fcf3f02001e1dac37f085d2f1a0f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/dock-drift/trace.json",
+      "bytes": 351909,
+      "sha256": "038b5d4a65de6bf2ec21923cc70528d7fc352c88776ae653198510911c690497"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/dock-drift/physical-custody.json",
+      "bytes": 187,
+      "sha256": "887332d17f338b6c4153d8cca77492b38f4618a4b4d7d0739ac17fd191af7d7b"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cup-fall/case.json",
+      "bytes": 9164,
+      "sha256": "d9ec7ca152f81b82eeea2187b9250febc7bfb6f0829e46943476113721ebfa47"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cup-fall/report.json",
+      "bytes": 2725366,
+      "sha256": "9b44db710f0753f8e5960eb74e9e099d0899a859066d4868823cb1b89ab88d2e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cup-fall/trace.json",
+      "bytes": 492304,
+      "sha256": "40d61a6241fadbba5ea01c67f1c7dfdbc618205f52356adf4e9fe6ca8d74b04f"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cup-fall/physical-custody.json",
+      "bytes": 175,
+      "sha256": "f895f3132c33996d5fee2b2e43faa0bfb67c3922bc13df8b9f3665652507e6ad"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cancel-held/case.json",
+      "bytes": 8761,
+      "sha256": "808b44dce3a3140e86c619d559df53c2ea53efb0db4941402fc256656120d965"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cancel-held/report.json",
+      "bytes": 1888559,
+      "sha256": "b913502bb81aa71ba53d559d1d339a0cf9e880ce35e7587e9e4cd354e191faff"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cancel-held/trace.json",
+      "bytes": 351909,
+      "sha256": "2dc3796ebd5964d8b753c4edd2fe4587d560624035269c619b033950dea638b8"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/cancel-held/physical-custody.json",
+      "bytes": 187,
+      "sha256": "c6111e9ab54293c3fa8ef0175f660206871b554d5255630410a0d040aa1c90e2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/worker-loss/case.json",
+      "bytes": 8761,
+      "sha256": "47210a41166717f405dfe17e98c399eb612868d7094e5a972db07634827410b2"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/worker-loss/report.json",
+      "bytes": 1872411,
+      "sha256": "124a23110c78d68685b18ef36d2d18355434de64bf4e2e89901f6e681bd2249d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/worker-loss/trace.json",
+      "bytes": 352027,
+      "sha256": "bf69036c3d8ddc86329c7156cc2716463830afc60768a5039a07fab8bfc30c95"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/worker-loss/physical-custody.json",
+      "bytes": 178,
+      "sha256": "2a24629d961fde38a2bfed325645c75a69a48bad8cdc2829e4e6c4b7a9239d76"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/lost-ack/case.json",
+      "bytes": 8920,
+      "sha256": "75242cabb2c1633dfd5d79965333425336bd661b856115185a2207eabe00c0fe"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/lost-ack/report.json",
+      "bytes": 1872375,
+      "sha256": "78c98d8aa1e2b0bf33bb5c211b1eb42addcd53626bdfcf62bd2d95d823f96e07"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/lost-ack/trace.json",
+      "bytes": 352118,
+      "sha256": "f035acc40e4a6b030ba842db4dd8a35815414bfe5ede60d439014278c117b1fa"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign/lost-ack/physical-custody.json",
+      "bytes": 178,
+      "sha256": "59d190ab2ec7b9b9855e2bb8c4d665001d3caea98cf8d33f5f94d681d5631311"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/cell-campaign.receipt.json",
+      "bytes": 5096,
+      "sha256": "ae11e86c857fa66161c05a070df54ea3e39f3c14b2553721c70ec465b80bd1ea"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/cell-campaign.log",
+      "bytes": 437,
+      "sha256": "ff51c9f5eff906980861c09430a19b93fdcd440965e25913750adbcd57238f99"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign-process/process.json",
+      "bytes": 523,
+      "sha256": "5b6fe7035b70239f7b4e5a41e5eb9fe96471f2351d0c4cb46ec6ca852da75bca"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/cell-campaign-process/stdout.log",
+      "bytes": 89,
+      "sha256": "feb1d6c24cc371a6b0435bea3ae55dba063016480d002e9d9cc4b45085c2d63b"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-cell-campaign.receipt.json",
+      "bytes": 5065,
+      "sha256": "bfd75da15fc4b12f54466e90b01baf7981c2c32bca41c91fa7bcfc8106a2f23d"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/verify-cell-campaign.log",
+      "bytes": 411,
+      "sha256": "4f2dff0221ec896649d98ff98a868a71dcdc3a059c8a1beeca4f56a605c7bcc3"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-cell-campaign-process/process.json",
+      "bytes": 487,
+      "sha256": "31b0d9491117617239c4ba7208fc219ac3584aa938c28a15209aab1dd5d656e9"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-cell-campaign-process/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/verify-cell-campaign-process/stdout.log",
+      "bytes": 89,
+      "sha256": "feb1d6c24cc371a6b0435bea3ae55dba063016480d002e9d9cc4b45085c2d63b"
+    }
+  ],
+  "limitations": [
+    "software simulation only",
+    "modeled logical observers share one engine",
+    "registered disturbances are not natural slip",
+    "native Linux/ROS/LinuxCNC/hardware gates remain open",
+    "one-tick Source disturbance response latency is observed and reported",
+    "No browser or live production performance claim from campaign completion.",
+    "accepted:false and not_calibrated remain."
+  ]
+}

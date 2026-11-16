@@ -1,0 +1,2603 @@
+# Review package: 2a7ec9c89935649835fc08eee4ebe81fc6190cf0..7b5b3a17e501f125efac18749ad5b8123940ce7c
+
+## Commits
+7b5b3a1 fix: reject coerced xarm mapping numbers
+97af81b fix: close xarm mapping and preserve uncertain attempts
+
+## Files changed
+ docs/operations/xarm-native-sim.md                 |  12 +-
+ packages/lab-runtime/src/v2/sil/xarm-cli.ts        |  20 +-
+ packages/lab-runtime/src/v2/sil/xarm-mapping.ts    |  42 ++-
+ robotics/manipulation/native-vendor.lock.json      |  60 ++++
+ robotics/manipulation/native_xarm/mapping.py       |  59 +++-
+ robotics/manipulation/native_xarm/worker.py        |   2 +-
+ .../profiles/xarm6-native-mapping.json             | 307 ++++++++++++++++++-
+ .../profiles/xarm6-sim-extensions.json             |   4 +
+ robotics/manipulation/tests/test_native_xarm.py    |  34 ++-
+ .../uf_ros_lib/uf_ros_lib/uf_robot_utils.py        | 258 ++++++++++++++++
+ .../urdf/common/common.gazebo.xacro                |  56 ++++
+ .../urdf/gripper/xarm_gripper.transmission.xacro   |  18 ++
+ .../urdf/gripper/xarm_gripper.urdf.xacro           | 235 +++++++++++++++
+ .../xarm_description/urdf/xarm6/xarm6.gazebo.xacro |  36 +++
+ .../urdf/xarm6/xarm6.ros2_control.xacro            | 119 ++++++++
+ .../urdf/xarm6/xarm6.transmission.xacro            |  75 +++++
+ .../urdf/xarm6/xarm6_robot_macro.xacro             |  76 +++++
+ .../xarm_description/urdf/xarm_device.urdf.xacro   |  73 +++++
+ .../xarm_description/urdf/xarm_device_macro.xacro  | 335 +++++++++++++++++++++
+ tests/fixtures/xarm-native-protocol.urdf           |  40 ++-
+ tests/integration/xarm-native-cli.test.ts          |  36 +++
+ tests/integration/xarm-native-contract.test.ts     |  27 ++
+ 22 files changed, 1880 insertions(+), 44 deletions(-)
+
+## Diff
+diff --git a/docs/operations/xarm-native-sim.md b/docs/operations/xarm-native-sim.md
+index 40e7cb8..dd83335 100644
+--- a/docs/operations/xarm-native-sim.md
++++ b/docs/operations/xarm-native-sim.md
+@@ -1,24 +1,24 @@
+ # xArm native simulation preparation
+ 
+-This provider prepares arm motion on Ubuntu 24.04 / ROS 2 Jazzy. **Native X1, X2 and X3 have not run.** Installed apt/plugin/runtime provenance is unresolved. It does not enable `engineering-contact-v1`, a physical xArm provider, or any Lab-to-hardware route. Source owns commands and their durable receipts. Dynamics remain `not_calibrated`; automatic records always have `accepted:false`.
++This provider prepares arm motion on Ubuntu 24.04 / ROS 2 Jazzy. **Native X1, X2 and X3 have not run. Prepared-code review and required native qualification are separate gates (R88); the native task remains incomplete.** Installed apt/plugin/runtime provenance is unresolved. It does not enable `engineering-contact-v1`, a physical xArm provider, or any Lab-to-hardware route. Source owns commands and their durable receipts. Dynamics remain `not_calibrated`; automatic records always have `accepted:false`.
+ 
+ ## Fixed profiles and source identity
+ 
+ `robotics/manipulation/profiles/xarm6-jazzy-sim.json` is server configuration. `native-vendor.lock.json` pins xarm_ros2 Jazzy `d837f2e17f7f36043103b367fca3af8172626245` and SDK submodule `f36794320a285c0b4bf1cd8ef181cbff6e3b794a`. The inspected source bytes, Git object identities, SHA-256 digests, BSD license and NOTICE are retained under `vendor-source/`. These are inspection inputs; installed packages are not loaded from those snapshots. The old Humble R2a `vendor.lock.json` is unchanged. Its 21 imported source files match the Jazzy candidate byte for byte; that does not establish expanded URDF or controller parity.
+ 
+ | Item | Requested R2a model | Explicit native target |
+ | --- | --- | --- |
+ | Model | xarm6-g2-v1, 1305 nominal geometry | xArm 6, `model1300:=false`, fixed synthetic selector `XI13050520BB00`, `limited:=false` |
+ | Joints | J1…J6, radians | joint1…joint6, positive signs, zero offsets |
+ | Base | base, placed in the Source cell | link_base, standalone native world; no assertion of cell placement parity |
+-| Tool | tcp, 0.172 m from link6 | gripper_fix + joint_tcp → link_tcp; `add_gripper:=true`, `gripper_version:=G2` |
++| Tool | tcp, 0.172 m from link6 | joint_eef (identity) → link_eef → gripper_fix + joint_tcp → link_tcp; `add_gripper:=true`, `gripper_version:=G2` |
+ | Geometry | manufacturer meshes, assumed dynamics | explicit 1305/G2 mesh URIs and installed source SHA-256; contact behavior unqualified |
+ | X1 | no native execution | UFRobotFakeSystemHardware, ros2_control FollowJointTrajectory, `ros2_fake_system` |
+ | X2 | no native execution | `gz_type:=gz`, `gz_ros2_control/GazeboSimSystem`, Harmonic, `gazebo_actual` |
+ | Tests | portable protocol doubles | always `protocol_double`; never native motion/contact evidence |
+ 
+ The fixed `syntheticSimModelSelector` is passed as the vendor `robot_sn` launch argument only to select a simulation model. It is **not a hardware serial, robot identity or commissioning datum**. The pinned `common.link.xacro` decoder selects model 6/1305, dateCode 2005, HD B, mass type 11 and HT_BR2 inertia. `model1300:=false` alone would select model number -1. Older/wrong selectors and substituted expanded inertia are negative test cases; browser substitution is impossible.
+ 
+ The upstream controller YAML specifies a 150 Hz manager, 25 Hz state publisher and 10 Hz action monitor; the Gazebo launch builder overrides the manager to 1000 Hz. None is a qualified project timing bound. Observations retain controller/provider clock timestamps; the observer polls every 20 ms without inventing duplicate samples. The prepared freshness bound is 500 ms, subject to actual-host qualification. X1 uses the ROS system clock, X2 the Gazebo clock. No claim of MuJoCo fixed-step parity is made.
+ 
+ ## Run the prepared path
+@@ -33,27 +33,29 @@ From a clean Source worktree, with Node 24.22.2 on PATH and the qualified ROS en
+ perl -e 'alarm 250; exec @ARGV' node scripts/lab-xarm.mjs --mode X1 --environment-profile engineering-amd64 --case nominal --out /tmp/xarm-X1-nominal-unique
+ perl -e 'alarm 250; exec @ARGV' node scripts/lab-xarm.mjs --mode X2 --environment-profile engineering-amd64 --case nominal --out /tmp/xarm-X2-nominal-unique
+ ```
+ 
+ Repeat with `--case cancel` and `--case restart`, each in a new directory. `restart` first requires an observed canceled terminal result, then proves reopening the same durable run is refused. It never restarts a controller to continue an old run. Actual external controller-restart and lost-result qualification require an assigned Linux host and operator fault observation; portable tests cover the protocol refusals, not those native experiments. Use `engineering-arm64` only on its matching qualified native host. There is no browser input for IP, action, joint map, trajectory, shell, launch options or gripper mode.
+ 
+ The entrypoint reaches `createXarmSimProvider(serverConfig)` and its typed `CellAdapter`. The sole approved program, `motion-probe`, reaches [0,0,-1,0,0,0] rad over ten seconds, then moves joint1 by 0.01 rad over one second. Motion is constrained to finite points, position limits, at most 60 seconds, and 0.25 rad/s segment speed. MoveIt is loaded by the fixed vendor launch, but this probe uses direct FollowJointTrajectory; **it is not a collision-planned production trajectory**. Controller joint/interface parameters, SRDF collision exclusions and planner parameters are read back and retained before motion. These remain simulation-only trajectories.
+ 
+ One provider run has one command in flight. Source persists intent before transport and the worker persists intent before the ROS action. Repeated command IDs reuse their original receipt; conflicts are refused. Unknown ACK/result/cancel, expired actual feedback, stopped/reset clock, changed ROS controller publisher identity or epoch/boot mismatch latch the run unknown. Completion needs a successful action result and fresh actual joints observed after dispatch at the final target. A cancel ACK is not a stopped observation. Same-directory restart is refused, including after interrupted startup. New runs require external reconciliation; no automatic resend or continuation exists.
+ 
+-The worker owns an exclusive ROS domain lease, rejects a nonempty graph, uses a private Gazebo partition, and launches only fixed simulation commands. It closes only its children; the Node supervisor owns the worker process group. Host admission failures occur before ROS imports or native process creation. Exit 2 is `not_run`/`blocked_external`; exit 1 is a failed executed case; exit 0 requires the selected motion result. Contact stays separately `not_run`.
++The worker owns an exclusive ROS domain lease, rejects a nonempty graph, uses a private Gazebo partition, and launches only fixed simulation commands. It closes only its children; the Node supervisor owns the worker process group. Host admission failures occur before ROS imports or native process creation. An explicit preflight refusal gives exit 2 (`not_run`/`blocked_external`). Startup uncertainty, action rejection, lost ACK and other attempted-case failures give exit 1 (`executed`/`fail`); `executed` here means the case was attempted, not that motion was proved. The durable `source-lifecycle.json` distinguishes provider start, readiness and command attempt from ACK acceptance. `source-command.json` is synced with a null ACK before dispatch, then updated with the received ACK; unknown attempts retain their command receipt and shutdown errors without losing the original failure. Exit 0 requires the selected motion result. Contact stays separately `not_run`.
+ 
+ ## Native mapping artifact producer and L00 reader
+ 
+-After launch, `native_xarm.ros.RosPort.readback()` obtains `robot_description` from the actual robot_state_publisher parameter service and controller/MoveIt parameters from their fixed services. `native_xarm.mapping.produce_mapping()` validates and writes **expanded.urdf** and **mapping.json**, without overwriting either. The fixed target projection is `profiles/xarm6-native-mapping.json`. It includes all arm/gripper joint origins/axes/limits, 1305/G2 visual mesh URIs, nominal masses/COM/inertia tensors, explicit Source/native aliases, the fixed synthetic selector and tool offset. The producer checks that projection against raw expansion; it does not manufacture a native URDF from R2a.
++After launch, `native_xarm.ros.RosPort.readback()` obtains `robot_description` from the actual robot_state_publisher parameter service and controller/MoveIt parameters from their fixed services. `native_xarm.mapping.produce_mapping()` validates and writes **expanded.urdf** and **mapping.json**, without overwriting either. The fixed target projection is `profiles/xarm6-native-mapping.json`. It includes all arm/gripper joint origins/axes/limits, 1305/G2 visual mesh URIs with identity origins and unit scale (including URDF defaults), nominal masses/COM/inertia tensors, explicit Source/native aliases, the fixed synthetic selector and tool offset. The producer checks that projection against raw expansion; it does not manufacture a native URDF from R2a.
+ 
+-L00's additive optional `refs.nativeMapping` contains exactly those two generated artifacts, with source paths `native-xarm/expanded.urdf` and `native-xarm/mapping.json`. Generic handoff checks bind their bytes, lengths, source commit and safe paths. The independent TypeScript XML reader rechecks raw joint/tool/mesh/nominal-inertia/plugin semantics and binds the mapping metadata to the subject commit/profile/model hash, architecture, target profile, vendor pin and evidence kind. DTD/entity declarations, malformed XML, duplicate joints/children/links and unexpected simulation plugins fail closed. This scope is nominal arm/tool model mapping, including static inertia identity; it does not calibrate physical dynamics or certify expanded collision geometry, controller behavior or cell world placement. Native records also include controller joint/interface readback and raw SRDF; these are required separately from protocol-double mapping records.
++L00's additive optional `refs.nativeMapping` contains exactly those two generated artifacts, with source paths `native-xarm/expanded.urdf` and `native-xarm/mapping.json`. Generic handoff checks bind their bytes, lengths, source commit and safe paths. The independent TypeScript XML reader rechecks raw joint/tool/mesh/nominal-inertia/plugin semantics and binds the mapping metadata to the subject commit/profile/model hash, architecture, target profile, vendor pin and evidence kind. DTD/entity declarations, malformed XML, missing/dangling/extra/cyclic links or joints, altered fixed world/end-effector attachments, duplicate joints/children/links and unexpected simulation plugins fail closed. Both modes require the complete pinned graph, including world/world_joint and link_eef/joint_eef; the canonical R2a model is unchanged. `xarm6-sim-extensions.json` is a static expectation projected from the retained vendor macros, not generated native evidence. Both readers require the two exact mode-specific ros2_control blocks (six arm joints and drive_joint), position/velocity command and state interfaces, their limits, seven transmissions and five bound G2 mimic plugins and URDF mimic relations. X2 additionally requires the Harmonic control plugin; X1 forbids it. Gazebo self-collision declarations are checked against upstream, but that does not prove collision physics. This scope is nominal arm/tool model mapping, including static inertia identity; it does not calibrate physical dynamics or certify expanded collision geometry, controller behavior or cell world placement. Native records also include controller joint/interface readback and raw SRDF; these are required separately from protocol-double mapping records.
++
++The X2 plugin parameter declaration must name the upstream-generated `/tmp/launch_params_<suffix>` file. The worker fixes TMPDIR to `/tmp`. The parameter file contents, installed plugin identities and actual controller behavior remain **unresolved separately from raw declaration mapping**; XML validation does not read or authenticate that file. Matching declarations never demonstrate that the old mimic plugin works in Harmonic.
+ 
+ A protocol-double artifact adds `NATIVE_MAPPING_PROTOCOL_DOUBLE`. Missing artifacts retain `NATIVE_MODEL_MAPPING_UNRESOLVED`; malformed or cross-profile artifacts are errors. Passing static mapping never authenticates a host. The two generated artifacts cannot satisfy any missing immutable portable/native-tool closure entry and cannot be used as canonical model/tool input. Host/package/execution prerequisites remain separate. Existing manifests without the optional role remain readable with their original missing-mapping prerequisite.
+ 
+ ## Evidence and contact gate
+ 
+ Each CLI run writes a source identity snapshot, separate motion/contact outcomes, inventory, command and outcome receipts, observations, raw URDF/mapping and controller readback, where those phases actually ran. The worker records a rosbag2 SQLite directory. After stopping owned children, the worker uses the L02 read-only SQLite backup helper to retain a separate `verified-bag/`, checks copied message contents and SQLite integrity, and derives `bag-coverage.json` from the copy. Original `raw-bag/` files remain untouched and are not artifact references. Missing/corrupt copy evidence blocks a successful probe close. Native qualification still needs independent replay and continuous-coverage assessment. The current CLI records preparation/probe outcomes; it does not claim an effective Git graph audit or independent qualification checker. Run L01's audited public checker process for any later qualification claim.
+ 
+ X3 requires ten distinct grip/release trials with separate support and receiver observations, raw-observation SHA-256, mapping SHA-256 and collision-exclusion provenance. `assess_contact()` checks this structural contract but always retains the current `G2_MIMIC_CONTACT_NOT_OBSERVED` blocker. The five upstream mimic declarations and README concern are source evidence of a risk, **not a demonstrated native unsupported result**. No G2 contact spike ran here. Do not replace G2 with a different gripper under this profile. Resolve installed Harmonic mimic/plugin behavior, actual collision exclusions and the ten-trial native evidence before DEP-XARM-03 can pass. Motion gates DEP-XARM-01/02/SEC-01 never imply contact readiness.
+ 
+ Portable checks:
+diff --git a/packages/lab-runtime/src/v2/sil/xarm-cli.ts b/packages/lab-runtime/src/v2/sil/xarm-cli.ts
+index 3eaf96c..6e7fe62 100644
+--- a/packages/lab-runtime/src/v2/sil/xarm-cli.ts
++++ b/packages/lab-runtime/src/v2/sil/xarm-cli.ts
+@@ -1,46 +1,52 @@
+ // Server-owned native motion probe. This is separate from the AMR/coffee scenario admission surface.
+ import {execFile} from 'node:child_process';
+ import {promisify} from 'node:util';
+-import {mkdir,writeFile,readFile,readdir} from 'node:fs/promises';
++import {mkdir,writeFile,readFile,readdir,open,rename} from 'node:fs/promises';
+ import {join,resolve} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+ import {createHash} from 'node:crypto';
+ import {createXarmSimProvider,xarmProgramHash,type XarmServerConfig} from './xarm-provider';
+ import profile from '../../../../../robotics/manipulation/profiles/xarm6-jazzy-sim.json';
+ import {hashJson} from '../hash';
+ interface CaseConfig {sourceRoot:string;out:string;mode:'X1'|'X2';environmentProfile:XarmServerConfig['environmentProfile'];nativeCase:'nominal'|'cancel'|'restart';python?:string}
+ export async function runXarmCase(c:CaseConfig){
+  if(!['X1','X2'].includes(c.mode)||!['nominal','cancel','restart'].includes(c.nativeCase))throw Error('XARM_CASE_INVALID');
+  await mkdir(c.out,{recursive:false});
+  const git=async(...args:string[])=>(await promisify(execFile)('git',args,{cwd:c.sourceRoot,timeout:10000})).stdout.trim();
+  const sourceCommit=await git('rev-parse','HEAD'),dirty=Boolean(await git('status','--porcelain','--untracked-files=all'));
+  const config:XarmServerConfig={sourceRoot:c.sourceRoot,runDirectory:c.out,runId:'xarm-'+c.mode+'-'+c.nativeCase,cellId:'native-motion-cell',deviceId:'xarm6-sim',mode:c.mode,environmentProfile:c.environmentProfile,...c.python?{python:c.python}:{}};
+  const manifest={schemaVersion:1,sourceCommit,dirty,subjectProfileId:c.environmentProfile,targetProfileId:profile.id,requestedProfile:profile.requestedProfile,profileHash:hashJson(profile),mode:c.mode,nativeCase:c.nativeCase,evidenceKind:profile.modes[c.mode].evidenceKind,checkerScope:'source_snapshot_not_git_graph_attestation',motion:{status:'not_run',result:'blocked_external',reason:''},contact:{status:'not_run',result:'blocked_external',reason:profile.contact.reason,trialsExecuted:0,trialsRequired:10},accepted:false,dynamics:'not_calibrated',artifacts:[] as {path:string;sha256:string}[]};
+- let provider:Awaited<ReturnType<typeof createXarmSimProvider>>|undefined,accepted=false;
++ let provider:Awaited<ReturnType<typeof createXarmSimProvider>>|undefined;
++ const lifecycle={phase:'provider_start_requested',startup:'unknown',command:'not_attempted',shutdownErrors:[] as string[]};
++ const durable=async(name:string,value:unknown)=>{const path=join(c.out,name),tmp=path+'.tmp';const fd=await open(tmp,'w');try{await fd.writeFile(JSON.stringify(value,null,2)+'\n');await fd.sync();}finally{await fd.close();}await rename(tmp,path);const dir=await open(c.out,'r');try{await dir.sync();}finally{await dir.close();}};
++ const persistLifecycle=()=>durable('source-lifecycle.json',lifecycle);
++ const failure=(e:unknown)=>{const reason=(e as Error).message;const preflight=lifecycle.phase==='provider_start_requested'&&reason.startsWith('XARM_NATIVE_NOT_QUALIFIED:');if(preflight){lifecycle.startup='preflight_refused';lifecycle.phase='preflight_refused';}return {status:preflight?'not_run':'executed',result:preflight?'blocked_external':'fail',reason};};
++ await persistLifecycle();
+  try{
+-  provider=await createXarmSimProvider(config);
++  provider=await createXarmSimProvider(config);manifest.evidenceKind=provider.evidenceKind;lifecycle.startup='ready';lifecycle.phase='provider_ready';await persistLifecycle();
+   const command={commandId:'motion-probe-1',runId:config.runId,deviceId:config.deviceId,controlEpoch:1,expiresAt:new Date(Date.now()+60000).toISOString(),recipeRevision:null,programRef:{id:'motion-probe',hash:xarmProgramHash('motion-probe')},capability:'start_job' as const,payloadHash:hashJson({jobId:'native-motion-probe'}),payload:{jobId:'native-motion-probe'}};
+-  const ack=await provider.adapter.execute(command);accepted=ack.accepted;await writeFile(join(c.out,'source-command.json'),JSON.stringify({command,ack},null,2));
+-  if(!accepted)throw Error(ack.reason??'MOTION_NOT_ACCEPTED');
++  await durable('source-command.json',{command,ack:null});lifecycle.phase='command_attempted';lifecycle.command='unknown';await persistLifecycle();
++  const ack=await provider.adapter.execute(command);await durable('source-command.json',{command,ack});lifecycle.command=ack.unknown?'unknown':ack.accepted?'accepted':'rejected';await persistLifecycle();
++  if(!ack.accepted)throw Error(ack.reason??'MOTION_NOT_ACCEPTED');
+   if(c.nativeCase!=='nominal'){await new Promise(r=>setTimeout(r,200));const cancel=await provider.adapter.cancel(command.commandId);await writeFile(join(c.out,'source-cancel.json'),JSON.stringify(cancel));if(!cancel.acknowledged||cancel.unknown)throw Error('CANCEL_UNKNOWN');}
+   const end=Date.now()+65000;let state=await provider.adapter.reconcile(command.commandId);
+   while(['accepted','running'].includes(state.status)&&Date.now()<end){await new Promise(r=>setTimeout(r,100));state=await provider.adapter.reconcile(command.commandId);}
+   await writeFile(join(c.out,'source-outcome.json'),JSON.stringify(state,null,2));
+   if(c.nativeCase==='nominal'&&state.status!=='completed')throw Error('MOTION_OUTCOME_'+state.status);
+   if(c.nativeCase!=='nominal'&&(state.status!=='failed'||state.evidence.terminalReason!=='canceled'))throw Error('STOP_OUTCOME_'+state.status);
+   if(c.nativeCase==='restart'){
+    await provider.close();provider=undefined;let refused=false;try{await createXarmSimProvider(config);}catch(e){refused=(e as Error).message==='XARM_RESTART_RECONCILE_REQUIRED';}if(!refused)throw Error('RESTART_NOT_REFUSED');
+   }
+   manifest.motion={status:'executed',result:'pass',reason:c.nativeCase==='nominal'?'ACTUAL_TARGET_AND_RESULT_OBSERVED':'TERMINAL_STOP_OBSERVED_NO_RESEND'};
+- }catch(e){manifest.motion={status:accepted?'executed':'not_run',result:accepted?'fail':'blocked_external',reason:(e as Error).message};}
+- finally{try{await provider?.close();}catch(e){manifest.motion={status:accepted?'executed':'not_run',result:accepted?'fail':'blocked_external',reason:(e as Error).message};}}
++ }catch(e){manifest.motion=failure(e);}
++ finally{try{await provider?.close();}catch(e){lifecycle.shutdownErrors.push((e as Error).message);if(manifest.motion.result==='pass')manifest.motion=failure(e);}await persistLifecycle();}
+  for(const name of await readdir(c.out)){if(!/\.(json|jsonl|urdf|log)$/.test(name))continue;const bytes=await readFile(join(c.out,name));manifest.artifacts.push({path:name,sha256:createHash('sha256').update(bytes).digest('hex')});}
+  for(const name of await readdir(join(c.out,'verified-bag')).catch(()=>[])){const path='verified-bag/'+name;manifest.artifacts.push({path,sha256:createHash('sha256').update(await readFile(join(c.out,path))).digest('hex')});}
+  await writeFile(join(c.out,'run-manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});return manifest;
+ }
+ export async function xarmMain(argv:string[]){
+  const options:Record<string,string>={};for(let i=0;i<argv.length;i+=2){const key=argv[i]!,value=argv[i+1];if(!['--out','--mode','--environment-profile','--case'].includes(key)||!value||value.startsWith('--')||options[key])throw Error('XARM_CLI_INVALID');options[key]=value;}
+  if(!options['--out']||!['X1','X2'].includes(options['--mode']??'')||!['engineering-amd64','engineering-arm64'].includes(options['--environment-profile']??''))throw Error('XARM_CLI_INVALID');
+  const root=fileURLToPath(new URL('../../../../../',import.meta.url));const result=await runXarmCase({sourceRoot:root,out:resolve(options['--out']),mode:options['--mode'] as 'X1'|'X2',environmentProfile:options['--environment-profile'] as XarmServerConfig['environmentProfile'],nativeCase:(options['--case']??'nominal') as CaseConfig['nativeCase']});
+  console.log(JSON.stringify(result));return result.motion.result==='pass'?0:result.motion.status==='not_run'?2:1;
+ }
+diff --git a/packages/lab-runtime/src/v2/sil/xarm-mapping.ts b/packages/lab-runtime/src/v2/sil/xarm-mapping.ts
+index d0a15a0..2578e9c 100644
+--- a/packages/lab-runtime/src/v2/sil/xarm-mapping.ts
++++ b/packages/lab-runtime/src/v2/sil/xarm-mapping.ts
+@@ -1,43 +1,77 @@
+ // Independent raw readback checker. Static kinematic parity is not host/controller/contact qualification.
+ import {createHash} from 'node:crypto';
+ import target from '../../../../../robotics/manipulation/profiles/xarm6-native-mapping.json';
++import extensions from '../../../../../robotics/manipulation/profiles/xarm6-sim-extensions.json';
+ import profile from '../../../../../robotics/manipulation/profiles/xarm6-jazzy-sim.json';
+ interface Node {name:string;attrs:Record<string,string>;children:Node[];text:string}
+ /** Strict, bounded XML subset: no DTD, entity expansion, namespaces, duplicate attributes or unbalanced markup. */
+ function xmlTree(xml:string):Node{
+  if(xml.length>4_000_000||/<!DOCTYPE|<!ENTITY|<!\[CDATA\[/i.test(xml))throw Error('XARM_XML_INVALID');
+  const clean=xml.replace(/<\?xml[^?]*\?>/g,'').replace(/<!--[\s\S]*?-->/g,'');const root:Node={name:'document',attrs:{},children:[],text:''},stack=[root];
+  const tokens=clean.match(/<[^>]*>|[^<]+/g)??[];if(tokens.join('')!==clean)throw Error('XARM_XML_INVALID');
+  for(const token of tokens){const parent=stack.at(-1)!;if(!token.startsWith('<')){parent.text+=token;continue;}
+   if(token.startsWith('</')){if(stack.length<2||token!==`</${parent.name}>`)throw Error('XARM_XML_INVALID');stack.pop();continue;}
+   const m=/^<([A-Za-z_][\w.-]*)([\s\S]*?)(\/?)>$/.exec(token);if(!m||stack.length>100)throw Error('XARM_XML_INVALID');
+   const attrs:Record<string,string>={};let rest=m[2]!.trim();while(rest){const a=/^([A-Za-z_][\w.-]*)\s*=\s*(["'])(.*?)\2\s*/.exec(rest);if(!a||Object.hasOwn(attrs,a[1]!)||/[<&]/.test(a[3]!))throw Error('XARM_XML_INVALID');attrs[a[1]!]=a[3]!;rest=rest.slice(a[0].length);}
+   const node={name:m[1]!,attrs,children:[],text:''};parent.children.push(node);if(!m[3])stack.push(node);
+  }
+  if(stack.length!==1||root.children.length!==1||root.children[0]!.name!=='robot'||root.text.trim())throw Error('XARM_XML_INVALID');return root.children[0]!;
+ }
+ const one=(n:Node,name:string)=>{const xs=n.children.filter(x=>x.name===name);if(xs.length!==1)throw Error('XARM_MAPPING_INVALID:'+name);return xs[0]!;};
+-function numbers(s:string|undefined,n:number){const v=s?.trim().split(/\s+/).map(Number);if(!v||v.length!==n||!v.every(Number.isFinite))throw Error('XARM_MAPPING_NUMERIC');return v;}
++function numbers(s:string|undefined,n:number){const tokens=s?.trim().split(/\s+/);if(!tokens||tokens.length!==n||tokens.some(t=>!/^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?$/.test(t)))throw Error('XARM_MAPPING_NUMERIC');const v=tokens.map(Number);if(!v.every(Number.isFinite))throw Error('XARM_MAPPING_NUMERIC');return v;}
+ function near(a:number[],b:number[]){if(a.length!==b.length||a.some((v,i)=>Math.abs(v-b[i]!)>1e-9))throw Error('XARM_MAPPING_MISMATCH');}
++// Compare closed extension trees independent of ordering and numeric lexical spelling.
++function semantic(n:Node):string{
++ const attrs=Object.entries(n.attrs).sort(([a],[b])=>a.localeCompare(b));let text=n.text.trim();
++ if(['param','mechanicalReduction','multiplier','offset','sensitiveness','maxEffort'].includes(n.name)){
++  const v=numbers(text,1)[0]!;text=String(Math.round(v*1e9)/1e9);
++ }
++ return JSON.stringify([n.name,attrs,text,n.children.map(semantic).sort()]);
++}
++function checkExtensions(robot:Node,mode:'X1'|'X2'){
++ const expected=xmlTree(extensions.xml.replaceAll('{hardwarePlugin}',profile.modes[mode].plugin));
++ const actual=robot.children.filter(n=>['ros2_control','transmission','gazebo'].includes(n.name));
++ if(mode==='X2'){
++  const control=actual.filter(n=>n.name==='gazebo'&&n.children.some(c=>c.name==='plugin'&&c.attrs.name==='gz_ros2_control::GazeboSimROS2ControlPlugin'));
++  if(control.length!==1)throw Error('XARM_GAZEBO_CONTROL_INVALID');
++  const parameter=one(one(control[0]!,'plugin'),'parameters');
++  // Upstream generates this temporary YAML. Only its declaration is checked here; contents and installed behavior remain unresolved.
++  if(!/^\/tmp\/launch_params_[A-Za-z0-9_]{1,80}$/.test(parameter.text.trim()))throw Error('XARM_CONTROL_PARAMETERS_INVALID');
++  expected.children.push(xmlTree('<robot><gazebo><plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin"><parameters>'+parameter.text.trim()+'</parameters></plugin></gazebo></robot>').children[0]!);
++ }
++ if(JSON.stringify(actual.map(semantic).sort())!==JSON.stringify(expected.children.map(semantic).sort()))throw Error('XARM_CONTROL_DECLARATION_MISMATCH');
++ // Prevent shadow/nested declarations in otherwise unexamined material/collision data.
++ const counts=(nodes:Node[]):string[]=>nodes.flatMap(n=>[...(['plugin','ros2_control','gazebo','transmission'].includes(n.name)?[n.name]:[]),...counts(n.children)]).sort();
++ if(JSON.stringify(counts(robot.children))!==JSON.stringify(counts(actual)))throw Error('XARM_PLUGIN_PLACEMENT_INVALID');
++}
+ export function validateXarmUrdf(xml:string,mode:'X1'|'X2'){
+  if(!['X1','X2'].includes(mode))throw Error('XARM_MODE_INVALID');const robot=xmlTree(xml),joints=robot.children.filter(n=>n.name==='joint'),names=joints.map(j=>j.attrs.name),children=joints.map(j=>one(j,'child').attrs.link);
+  if(new Set(names).size!==names.length||new Set(children).size!==children.length)throw Error('XARM_MAPPING_DUPLICATE');
++ if(names.length!==target.joints.length||robot.children.some(n=>!['link','joint','material','ros2_control','transmission','gazebo'].includes(n.name)))throw Error('XARM_MODEL_GRAPH_INVALID');
+  for(const expected of target.joints){const joint=joints.find(j=>j.attrs.name===expected.name);if(!joint||joint.attrs.type!==expected.type||one(joint,'parent').attrs.link!==expected.parent||one(joint,'child').attrs.link!==expected.child)throw Error('XARM_MAPPING_MISMATCH');
++  const mimic=joint.children.filter(n=>n.name==='mimic');
++  if('mimic' in expected&&expected.mimic){if(mimic.length!==1||mimic[0]!.attrs.joint!==expected.mimic.joint)throw Error('XARM_MIMIC_INVALID');near(numbers(mimic[0]!.attrs.multiplier??'1',1),[expected.mimic.multiplier]);near(numbers(mimic[0]!.attrs.offset??'0',1),[expected.mimic.offset]);if(Object.keys(mimic[0]!.attrs).some(k=>!['joint','multiplier','offset'].includes(k))||mimic[0]!.children.length)throw Error('XARM_MIMIC_INVALID');}else if(mimic.length)throw Error('XARM_MIMIC_INVALID');
+   const origin=one(joint,'origin');near(numbers(origin.attrs.xyz,3),expected.xyz);near(numbers(origin.attrs.rpy,3),expected.rpy);
+   if(expected.axis){near(numbers(one(joint,'axis').attrs.xyz,3),expected.axis);const limit=one(joint,'limit');for(const [key,value]of Object.entries(expected.limits!))near(numbers(limit.attrs[key],1),[value]);}
+  }
+  const links=robot.children.filter(n=>n.name==='link');if(new Set(links.map(l=>l.attrs.name)).size!==links.length)throw Error('XARM_MAPPING_DUPLICATE');
+- for(const expected of target.visualMeshes){const link=links.find(l=>l.attrs.name===expected.link);if(!link||one(one(one(link,'visual'),'geometry'),'mesh').attrs.filename!==(mode==='X2'?expected.uri.replace('package://xarm_description','file://'+profile.descriptionShare):expected.uri))throw Error('XARM_G2_1305_MAPPING_MISMATCH');}
++ const expectedLinks=new Set(target.joints.flatMap(j=>[j.parent,j.child]));
++ if(links.length!==expectedLinks.size||links.some(l=>!expectedLinks.has(l.attrs.name!))||joints.some(j=>![one(j,'parent').attrs.link,one(j,'child').attrs.link].every(n=>links.some(l=>l.attrs.name===n))))throw Error('XARM_MODEL_GRAPH_INVALID');
++ const visited=new Set<string>();const visit=(name:string)=>{if(visited.has(name))throw Error('XARM_MODEL_GRAPH_INVALID');visited.add(name);for(const j of joints.filter(j=>one(j,'parent').attrs.link===name))visit(one(j,'child').attrs.link!);};visit(target.nativeAttachment.root);if(visited.size!==links.length)throw Error('XARM_MODEL_GRAPH_INVALID');
++ for(const l of links)if(!target.visualMeshes.some(v=>v.link===l.attrs.name)&&l.children.some(n=>n.name==='visual'))throw Error('XARM_VISUAL_INVALID');
++ for(const expected of target.visualMeshes){const link=links.find(l=>l.attrs.name===expected.link)!;const visual=one(link,'visual'),geometry=one(visual,'geometry'),mesh=one(geometry,'mesh');
++  if(geometry.children.length!==1||mesh.children.length||Object.keys(mesh.attrs).some(k=>!['filename','scale'].includes(k))||mesh.attrs.filename!==(mode==='X2'?expected.uri.replace('package://xarm_description','file://'+profile.descriptionShare):expected.uri))throw Error('XARM_G2_1305_MAPPING_MISMATCH');
++  const origins=visual.children.filter(n=>n.name==='origin');if(origins.length>1)throw Error('XARM_VISUAL_INVALID');near(numbers(origins[0]?.attrs.xyz??'0 0 0',3),expected.xyz);near(numbers(origins[0]?.attrs.rpy??'0 0 0',3),expected.rpy);near(numbers(mesh.attrs.scale??'1 1 1',3),expected.scale);
++ }
+  for(const expected of target.nominalInertials){const link=links.find(l=>l.attrs.name===expected.link)!;const inertial=one(link,'inertial'),origin=one(inertial,'origin');near(numbers(origin.attrs.xyz,3),expected.comM);near(numbers(origin.attrs.rpy,3),[0,0,0]);near(numbers(one(inertial,'mass').attrs.value,1),[expected.massKg]);const tensor=one(inertial,'inertia');for(const [i,key]of ['ixx','ixy','ixz','iyy','iyz','izz'].entries())near(numbers(tensor.attrs[key],1),[expected.inertiaKgM2[i]!]);}
+- const controls=robot.children.filter(n=>n.name==='ros2_control');if(!controls.length)throw Error('XARM_PLUGIN_MISSING');
+- for(const control of controls)if(one(one(control,'hardware'),'plugin').text.trim()!==profile.modes[mode].plugin)throw Error('XARM_HARDWARE_PLUGIN_FORBIDDEN');
++ checkExtensions(robot,mode);
+  return {schemaVersion:1,mode,scope:target.scope,profileId:profile.id,urdfSha256:createHash('sha256').update(xml).digest('hex')};
+ }
+ 
+ export interface XarmMappingSubject {sourceCommit:string;profileId:string;architecture:string;modelSha256:string}
+ export function validateXarmMappingRecord(xml:string,record:Record<string,unknown>,subject:XarmMappingSubject){
+  const mode=record.mode as 'X1'|'X2',mapping=validateXarmUrdf(xml,mode);
+  const expected={...mapping,producer:'native_xarm.robot_description.v1',sourceCommit:subject.sourceCommit,subjectProfileId:subject.profileId,environmentProfile:'engineering-'+subject.architecture,sourceModelSha256:subject.modelSha256,vendorCommit:profile.vendorCommit,syntheticSimModelSelector:profile.syntheticSimModelSelector};
+  if(Object.keys(record).some(k=>![...Object.keys(expected),'evidenceKind','controller'].includes(k)))throw Error('XARM_MAPPING_FIELD_INVALID');
+  if(subject.modelSha256!==target.sourceModelSha256||Object.entries(expected).some(([k,v])=>record[k]!==v)||!['protocol_double',profile.modes[mode].evidenceKind].includes(String(record.evidenceKind)))throw Error('XARM_MAPPING_PROVENANCE_MISMATCH');
+  if(record.evidenceKind!=='protocol_double'){
+diff --git a/robotics/manipulation/native-vendor.lock.json b/robotics/manipulation/native-vendor.lock.json
+index edfcf10..e3228e3 100644
+--- a/robotics/manipulation/native-vendor.lock.json
++++ b/robotics/manipulation/native-vendor.lock.json
+@@ -65,20 +65,80 @@
+       "path": "xarm_controller/config/xarm6_controllers.yaml",
+       "contentSha256": "a3106b9c0518aa380ded12a840b85ebf21f98272c95045bcab877aeb69fdae3d",
+       "gitBlobSha": "8ec0e4bd3c1b751665c1a495d1583172314030b5",
+       "url": "https://github.com/xArm-Developer/xarm_ros2/blob/d837f2e17f7f36043103b367fca3af8172626245/xarm_controller/config/xarm6_controllers.yaml"
+     },
+     {
+       "path": "xarm_description/urdf/common/common.link.xacro",
+       "contentSha256": "bcdb75c2d56195d93e4637b790f9804782eacf5cb5d37a77ce31bf8bba9bc55d",
+       "gitBlobSha": "d07fcf47b163718db84ffaca54f8e85ab363ff3d",
+       "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.link.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm6/xarm6.ros2_control.xacro",
++      "contentSha256": "8bd4f1708880c7eb384bcc8dd3b979f6550257881b332741b726ddbc4408ef48",
++      "gitBlobSha": "0d41e443b8431c301e29d9f08df44ea5d347158e",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm6/xarm6_robot_macro.xacro",
++      "contentSha256": "754c352b96c09c4150508d69a0d0547a3b410efce79eb78c187c5d090e60da9a",
++      "gitBlobSha": "f3b2623511e229811d51e68d476952d215830473",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm6/xarm6.gazebo.xacro",
++      "contentSha256": "45502e8d9dbfdc50a23fd7174e14ec71aa9cdc07e9981240551a1e3c8ac3d137",
++      "gitBlobSha": "99ed6c0d9c4325426871f07951017b9ee3876b15",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.gazebo.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm6/xarm6.transmission.xacro",
++      "contentSha256": "536f1bcdf87ac6f08c6511dd89235a322803007628caf6beed7ed652dcfd7d6d",
++      "gitBlobSha": "d0bde66fe4530983d0cdfbccc7292e091dd95bde",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm6/xarm6.transmission.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/common/common.gazebo.xacro",
++      "contentSha256": "a59da43657e269866019aa5693fcecc9daee150828719e7194cb464f186eae00",
++      "gitBlobSha": "c5ada1a78bdfbf8f3266f1857966330a386c9298",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/common/common.gazebo.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm_device_macro.xacro",
++      "contentSha256": "571dd90dd5ae4d8aa549686a253050e0576d0ef29755121cd2d7a95b24649eda",
++      "gitBlobSha": "b8f87c8540ee1ff3c516d7a2c125e4e1e4b29efd",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm_device_macro.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/xarm_device.urdf.xacro",
++      "contentSha256": "effbda7f945fcee8347c8e1f3bec59bbeea38f60a6e9a5b75aea221b3ed4e81a",
++      "gitBlobSha": "2e34d8870a44a0582cc0c9dea48451a05c9746bb",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/xarm_device.urdf.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
++      "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
++      "gitBlobSha": "dd1731764327674f4eb882e5a66ab89694741e11",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro"
++    },
++    {
++      "path": "xarm_description/urdf/gripper/xarm_gripper.transmission.xacro",
++      "contentSha256": "83a1298210243871e0039cf58b2a09a9c24e0848432e02a4da960ec8efbdf771",
++      "gitBlobSha": "4c8e4170608f899b3d5ad790d6bb6359b483e77e",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro"
++    },
++    {
++      "path": "uf_ros_lib/uf_ros_lib/uf_robot_utils.py",
++      "contentSha256": "91f99f87d6c5467b02d3da4d9778e7db13b7d95bacc528329c35e22a0d7abd63",
++      "gitBlobSha": "9deef8d48ab6b4e466ea58101efc1082861daba5",
++      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/d837f2e17f7f36043103b367fca3af8172626245/uf_ros_lib/uf_ros_lib/uf_robot_utils.py"
+     }
+   ],
+   "descriptionParity": {
+     "checkedOn": "2026-11-14",
+     "sourcePin": "ac736c92b02de7ca7e0be6f737d77d46707464d8",
+     "nativeCandidatePin": "d837f2e17f7f36043103b367fca3af8172626245",
+     "method": "Verified local SHA-256 against R2a vendor manifest, then computed Git blob SHA-1 including header and compared with native candidate's official recursive Git tree. Source file byte identity only; no expanded-URDF/native/readback qualification.",
+     "files": [
+       {
+         "path": "LICENSE",
+diff --git a/robotics/manipulation/native_xarm/mapping.py b/robotics/manipulation/native_xarm/mapping.py
+index 309c9d7..6ad7f63 100644
+--- a/robotics/manipulation/native_xarm/mapping.py
++++ b/robotics/manipulation/native_xarm/mapping.py
+@@ -1,56 +1,99 @@
+ """Capture/validate actual expanded URDF. Expected projection is static data, never a generated native observation."""
+ import hashlib
+ import json
+ import math
++import re
+ import xml.etree.ElementTree as ET
+ from .policy import ROOT,load_profile
+ 
+ def validate_urdf(xml,mode):
+     if mode not in ('X1','X2') or len(xml)>4_000_000 or any(t in xml.upper() for t in ['<!DOCTYPE','<!ENTITY','<![CDATA[']):raise ValueError('XARM_XML_INVALID')
+     try:robot=ET.fromstring(xml)
+     except ET.ParseError:raise ValueError('XARM_XML_INVALID') from None
+     if robot.tag!='robot':raise ValueError('XARM_XML_INVALID')
+     target=json.loads((ROOT/'profiles/xarm6-native-mapping.json').read_text())
+     def one(node,key):
+         children=node.findall(key)
+         if len(children)!=1:raise ValueError('XARM_MAPPING_INVALID:'+key)
+         return children[0]
++    def numbers(raw):
++        if not isinstance(raw,str):raise ValueError('XARM_MAPPING_NUMERIC')
++        tokens=raw.split()
++        if not tokens or any(not re.fullmatch(r'[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][-+]?[0-9]+)?',t) for t in tokens):raise ValueError('XARM_MAPPING_NUMERIC')
++        values=[float(t) for t in tokens]
++        if not all(math.isfinite(v) for v in values):raise ValueError('XARM_MAPPING_NUMERIC')
++        return values
+     def near(raw,expected):
+-        try:values=[float(x) for x in raw.split()]
+-        except (AttributeError,ValueError):raise ValueError('XARM_MAPPING_NUMERIC') from None
++        values=numbers(raw)
+         if len(values)!=len(expected) or any(not math.isfinite(a) or abs(a-b)>1e-9 for a,b in zip(values,expected)):raise ValueError('XARM_MAPPING_MISMATCH')
+     joints=robot.findall('joint');names=[j.get('name') for j in joints];children=[one(j,'child').get('link') for j in joints]
+     if len(set(names))!=len(names) or len(set(children))!=len(children):raise ValueError('XARM_MAPPING_DUPLICATE')
++    if len(joints)!=len(target['joints']) or any(n.tag not in ('link','joint','material','ros2_control','transmission','gazebo') for n in robot):raise ValueError('XARM_MODEL_GRAPH_INVALID')
+     for expected in target['joints']:
+         matches=[j for j in joints if j.get('name')==expected['name']]
+         if len(matches)!=1:raise ValueError('XARM_MAPPING_MISMATCH')
+         joint=matches[0]
+         if joint.get('type')!=expected['type'] or one(joint,'parent').get('link')!=expected['parent'] or one(joint,'child').get('link')!=expected['child']:raise ValueError('XARM_MAPPING_MISMATCH')
++        mimics=joint.findall('mimic')
++        if 'mimic' in expected:
++            if len(mimics)!=1 or mimics[0].get('joint')!=expected['mimic']['joint'] or set(mimics[0].attrib)-{'joint','multiplier','offset'} or len(mimics[0]):raise ValueError('XARM_MIMIC_INVALID')
++            near(mimics[0].get('multiplier','1'),[expected['mimic']['multiplier']]);near(mimics[0].get('offset','0'),[expected['mimic']['offset']])
++        elif mimics:raise ValueError('XARM_MIMIC_INVALID')
+         origin=one(joint,'origin');near(origin.get('xyz'),expected['xyz']);near(origin.get('rpy'),expected['rpy'])
+         if 'axis' in expected:
+             near(one(joint,'axis').get('xyz'),expected['axis']);limit=one(joint,'limit')
+             for key,value in expected['limits'].items():near(limit.get(key),[value])
+     links=robot.findall('link')
+     if len({l.get('name') for l in links})!=len(links):raise ValueError('XARM_MAPPING_DUPLICATE')
++    expected_links={n for j in target['joints'] for n in (j['parent'],j['child'])}
++    if {l.get('name') for l in links}!=expected_links or any(one(j,k).get('link') not in expected_links for j in joints for k in ('parent','child')):raise ValueError('XARM_MODEL_GRAPH_INVALID')
++    visited=set()
++    def visit(name):
++        if name in visited:raise ValueError('XARM_MODEL_GRAPH_INVALID')
++        visited.add(name)
++        for j in joints:
++            if one(j,'parent').get('link')==name:visit(one(j,'child').get('link'))
++    visit(target['nativeAttachment']['root'])
++    if len(visited)!=len(links):raise ValueError('XARM_MODEL_GRAPH_INVALID')
++    for link in links:
++        if not any(v['link']==link.get('name') for v in target['visualMeshes']) and link.findall('visual'):raise ValueError('XARM_VISUAL_INVALID')
+     for expected in target['visualMeshes']:
+-        matches=[l for l in links if l.get('name')==expected['link']]
++        link=next(l for l in links if l.get('name')==expected['link']);visual=one(link,'visual');geometry=one(visual,'geometry');mesh=one(geometry,'mesh')
+         uri=expected['uri'].replace('package://xarm_description','file://'+load_profile()['descriptionShare']) if mode=='X2' else expected['uri']
+-        if len(matches)!=1 or one(one(one(matches[0],'visual'),'geometry'),'mesh').get('filename')!=uri:raise ValueError('XARM_G2_1305_MAPPING_MISMATCH')
++        if len(geometry)!=1 or len(mesh) or set(mesh.attrib)-{'filename','scale'} or mesh.get('filename')!=uri:raise ValueError('XARM_G2_1305_MAPPING_MISMATCH')
++        origins=visual.findall('origin')
++        if len(origins)>1:raise ValueError('XARM_VISUAL_INVALID')
++        near(origins[0].get('xyz','0 0 0') if origins else '0 0 0',expected['xyz']);near(origins[0].get('rpy','0 0 0') if origins else '0 0 0',expected['rpy']);near(mesh.get('scale','1 1 1'),expected['scale'])
+     for expected in target['nominalInertials']:
+         link=next(l for l in links if l.get('name')==expected['link']);inertial=one(link,'inertial');origin=one(inertial,'origin')
+         near(origin.get('xyz'),expected['comM']);near(origin.get('rpy'),[0,0,0]);near(one(inertial,'mass').get('value'),[expected['massKg']]);tensor=one(inertial,'inertia')
+         for key,value in zip(['ixx','ixy','ixz','iyy','iyz','izz'],expected['inertiaKgM2']):near(tensor.get(key),[value])
+-    controls=robot.findall('ros2_control')
+-    if not controls:raise ValueError('XARM_PLUGIN_MISSING')
+-    for control in controls:
+-        if one(one(control,'hardware'),'plugin').text.strip()!=load_profile()['modes'][mode]['plugin']:raise ValueError('XARM_HARDWARE_PLUGIN_FORBIDDEN')
++    extension_xml=json.loads((ROOT/'profiles/xarm6-sim-extensions.json').read_text())['xml'].replace('{hardwarePlugin}',load_profile()['modes'][mode]['plugin'])
++    expected_extensions=ET.fromstring(extension_xml)
++    actual=[n for n in robot if n.tag in ('ros2_control','transmission','gazebo')]
++    if mode=='X2':
++        controls=[n for n in actual if n.tag=='gazebo' and any(c.tag=='plugin' and c.get('name')=='gz_ros2_control::GazeboSimROS2ControlPlugin' for c in n)]
++        if len(controls)!=1:raise ValueError('XARM_GAZEBO_CONTROL_INVALID')
++        parameter=one(one(controls[0],'plugin'),'parameters').text or ''
++        if not re.fullmatch(r'/tmp/launch_params_[A-Za-z0-9_]{1,80}',parameter.strip()):raise ValueError('XARM_CONTROL_PARAMETERS_INVALID')
++        expected_extensions.append(ET.fromstring('<gazebo><plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin"><parameters>'+parameter.strip()+'</parameters></plugin></gazebo>'))
++    def semantic(n):
++        text=(n.text or '').strip()
++        if n.tag in ('param','mechanicalReduction','multiplier','offset','sensitiveness','maxEffort'):
++            values=numbers(text)
++            if len(values)!=1:raise ValueError('XARM_MAPPING_NUMERIC')
++            text=round(values[0],9)
++        return json.dumps([n.tag,sorted(n.attrib.items()),text,sorted(semantic(c) for c in n)])
++    if sorted(map(semantic,actual))!=sorted(map(semantic,expected_extensions)):raise ValueError('XARM_CONTROL_DECLARATION_MISMATCH')
++    tags={'plugin','ros2_control','gazebo','transmission'}
++    if sorted(n.tag for n in robot.iter() if n.tag in tags)!=sorted(n.tag for a in actual for n in a.iter() if n.tag in tags):raise ValueError('XARM_PLUGIN_PLACEMENT_INVALID')
+     return {'schemaVersion':1,'mode':mode,'scope':target['scope'],'profileId':load_profile()['id'],'urdfSha256':hashlib.sha256(xml.encode()).hexdigest()}
+ 
+ def produce_mapping(xml,mode,directory,subject=None,evidence_kind="protocol_double",controller=None):
+     subject=subject or {}
+     report=validate_urdf(xml,mode)
+     report.update(producer="native_xarm.robot_description.v1",sourceCommit=subject.get("sourceCommit"),subjectProfileId=subject.get("profileId"),environmentProfile=subject.get("environmentProfile"),sourceModelSha256=json.loads((ROOT/"profiles/xarm6-native-mapping.json").read_text())["sourceModelSha256"],vendorCommit=load_profile()["vendorCommit"],evidenceKind=evidence_kind,syntheticSimModelSelector=load_profile()["syntheticSimModelSelector"])
+     if controller is not None:report["controller"]=controller
+     with (directory/'expanded.urdf').open('x') as f:f.write(xml)
+     with (directory/'mapping.json').open('x') as f:json.dump(report,f,indent=2)
+     return report
+diff --git a/robotics/manipulation/native_xarm/worker.py b/robotics/manipulation/native_xarm/worker.py
+index c81e237..876a5bb 100644
+--- a/robotics/manipulation/native_xarm/worker.py
++++ b/robotics/manipulation/native_xarm/worker.py
+@@ -54,21 +54,21 @@ def finish_bag(directory):
+ def main():
+     parser=argparse.ArgumentParser();parser.add_argument('--directory',type=Path,required=True);parser.add_argument('--run-id',required=True);parser.add_argument('--mode',choices=['X1','X2'],required=True);parser.add_argument('--environment-profile',choices=['engineering-amd64','engineering-arm64'],required=True);args=parser.parse_args()
+     args.directory.mkdir(parents=True,exist_ok=True)
+     with (args.directory/'worker-attempt.json').open('x') as f:json.dump({'runId':args.run_id,'mode':args.mode},f);f.flush();os.fsync(f.fileno())
+     inventory,reasons=preflight(args.environment_profile)
+     (args.directory/'native-inventory.json').write_text(json.dumps(inventory,indent=2))
+     if reasons:
+         print(json.dumps({'kind':'refusal','reasons':reasons,'status':'not_run','result':'blocked_external','accepted':False,'dynamics':'not_calibrated'}),flush=True);return 2
+     import fcntl
+     domain=40+int(hashlib.sha256(args.run_id.encode()).hexdigest()[:6],16)%160
+-    os.environ.update(ROS_DOMAIN_ID=str(domain),ROS_LOCALHOST_ONLY='1',GZ_PARTITION='mekoniq-xarm-'+args.run_id)
++    os.environ.update(ROS_DOMAIN_ID=str(domain),ROS_LOCALHOST_ONLY='1',GZ_PARTITION='mekoniq-xarm-'+args.run_id,TMPDIR='/tmp')
+     lease=open('/tmp/mekoniq-ros-domain-'+str(domain)+'.lock','a');fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
+     graph=subprocess.run(['ros2','node','list','--no-daemon'],capture_output=True,text=True,timeout=15,check=False)
+     if graph.returncode or graph.stdout.strip():raise RuntimeError('ROS_DOMAIN_NOT_EMPTY')
+     # Marker is durable and created before launch; an interrupted run must use a new directory/id after reconciliation.
+     with (args.directory/'native-started.json').open('x') as f:json.dump({'runId':args.run_id,'domain':domain,'mode':args.mode},f);f.flush();os.fsync(f.fileno())
+     lock=threading.Lock();event_file=(args.directory/'observations.jsonl').open('x');stop=threading.Event();process=None;bag=None;port=None;poller=None
+     def emit(value):
+         with lock:event_file.write(json.dumps(value,allow_nan=False)+'\n');event_file.flush();print(json.dumps(value,allow_nan=False),flush=True)
+     def shutdown(_sig,_frame):stop.set();raise KeyboardInterrupt()
+     signal.signal(signal.SIGINT,shutdown);signal.signal(signal.SIGTERM,shutdown)
+diff --git a/robotics/manipulation/profiles/xarm6-native-mapping.json b/robotics/manipulation/profiles/xarm6-native-mapping.json
+index 918a7c9..e7801fd 100644
+--- a/robotics/manipulation/profiles/xarm6-native-mapping.json
++++ b/robotics/manipulation/profiles/xarm6-native-mapping.json
+@@ -166,21 +166,21 @@
+       "limits": {
+         "effort": 30.6,
+         "lower": -6.28318530718,
+         "upper": 6.28318530718,
+         "velocity": 3.14
+       }
+     },
+     {
+       "name": "gripper_fix",
+       "type": "fixed",
+-      "parent": "link6",
++      "parent": "link_eef",
+       "child": "xarm_gripper_base_link",
+       "xyz": [
+         0,
+         0,
+         0
+       ],
+       "rpy": [
+         0.0,
+         0,
+         0
+@@ -231,20 +231,25 @@
+       "axis": [
+         -1,
+         0,
+         0
+       ],
+       "limits": {
+         "effort": 50,
+         "lower": 0,
+         "upper": 0.85,
+         "velocity": 2
++      },
++      "mimic": {
++        "joint": "drive_joint",
++        "multiplier": 1,
++        "offset": 0
+       }
+     },
+     {
+       "name": "left_inner_knuckle_joint",
+       "type": "revolute",
+       "parent": "xarm_gripper_base_link",
+       "child": "left_inner_knuckle",
+       "xyz": [
+         0,
+         0.02,
+@@ -258,20 +263,25 @@
+       "axis": [
+         1,
+         0,
+         0
+       ],
+       "limits": {
+         "effort": 50,
+         "lower": 0,
+         "upper": 0.85,
+         "velocity": 2
++      },
++      "mimic": {
++        "joint": "drive_joint",
++        "multiplier": 1,
++        "offset": 0
+       }
+     },
+     {
+       "name": "right_outer_knuckle_joint",
+       "type": "revolute",
+       "parent": "xarm_gripper_base_link",
+       "child": "right_outer_knuckle",
+       "xyz": [
+         0,
+         -0.035,
+@@ -285,20 +295,25 @@
+       "axis": [
+         -1,
+         0,
+         0
+       ],
+       "limits": {
+         "effort": 50,
+         "lower": 0,
+         "upper": 0.85,
+         "velocity": 2
++      },
++      "mimic": {
++        "joint": "drive_joint",
++        "multiplier": 1,
++        "offset": 0
+       }
+     },
+     {
+       "name": "right_finger_joint",
+       "type": "revolute",
+       "parent": "right_outer_knuckle",
+       "child": "right_finger",
+       "xyz": [
+         0,
+         -0.035465,
+@@ -312,20 +327,25 @@
+       "axis": [
+         1,
+         0,
+         0
+       ],
+       "limits": {
+         "effort": 50,
+         "lower": 0,
+         "upper": 0.85,
+         "velocity": 2
++      },
++      "mimic": {
++        "joint": "drive_joint",
++        "multiplier": 1,
++        "offset": 0
+       }
+     },
+     {
+       "name": "right_inner_knuckle_joint",
+       "type": "revolute",
+       "parent": "xarm_gripper_base_link",
+       "child": "right_inner_knuckle",
+       "xyz": [
+         0,
+         -0.02,
+@@ -339,110 +359,357 @@
+       "axis": [
+         -1,
+         0,
+         0
+       ],
+       "limits": {
+         "effort": 50,
+         "lower": 0,
+         "upper": 0.85,
+         "velocity": 2
++      },
++      "mimic": {
++        "joint": "drive_joint",
++        "multiplier": 1,
++        "offset": 0
+       }
+     },
+     {
+       "name": "joint_tcp",
+       "type": "fixed",
+       "parent": "xarm_gripper_base_link",
+       "child": "link_tcp",
+       "xyz": [
+         0,
+         0,
+         0.172
+       ],
+       "rpy": [
+         0,
+         0,
+         0
+       ]
++    },
++    {
++      "name": "world_joint",
++      "type": "fixed",
++      "parent": "world",
++      "child": "link_base",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ]
++    },
++    {
++      "name": "joint_eef",
++      "type": "fixed",
++      "parent": "link6",
++      "child": "link_eef",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ]
+     }
+   ],
+   "sourceModelSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+   "visualMeshes": [
+     {
+       "link": "link_base",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+-      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28"
++      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link1",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link1.stl",
+-      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9"
++      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link2",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link2.stl",
+-      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82"
++      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link3",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link3.stl",
+-      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81"
++      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link4",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link4.stl",
+-      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943"
++      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link5",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link5.stl",
+-      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771"
++      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "link6",
+       "uri": "package://xarm_description/meshes/xarm6_1305/visual/link6.stl",
+-      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f"
++      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "xarm_gripper_base_link",
+       "uri": "package://xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+-      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575"
++      "sha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "left_outer_knuckle",
+       "uri": "package://xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+-      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b"
++      "sha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "left_finger",
+       "uri": "package://xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+-      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b"
++      "sha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "left_inner_knuckle",
+       "uri": "package://xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+-      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86"
++      "sha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "right_outer_knuckle",
+       "uri": "package://xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+-      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55"
++      "sha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "right_finger",
+       "uri": "package://xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+-      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36"
++      "sha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     },
+     {
+       "link": "right_inner_knuckle",
+       "uri": "package://xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+-      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3"
++      "sha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
++      "xyz": [
++        0,
++        0,
++        0
++      ],
++      "rpy": [
++        0,
++        0,
++        0
++      ],
++      "scale": [
++        1,
++        1,
++        1
++      ]
+     }
+   ],
+   "syntheticSimModelSelector": "XI13050520BB00",
+   "nominalInertials": [
+     {
+       "link": "link_base",
+       "massKg": 2.7,
+       "comM": [
+         0,
+         0,
+@@ -671,12 +938,20 @@
+       ],
+       "inertiaKgM2": [
+         6.0949e-06,
+         -6.0665e-11,
+         7.191e-11,
+         6.0197e-06,
+         2.7531e-06,
+         5.0784e-06
+       ]
+     }
+-  ]
++  ],
++  "nativeAttachment": {
++    "root": "world",
++    "canonicalFlange": "link6",
++    "nativeFlangeAlias": "link_eef",
++    "aliasTransform": "identity",
++    "canonicalModelUnchanged": true
++  },
++  "controlParameterFiles": "unresolved_separate_from_raw_declaration_mapping"
+ }
+diff --git a/robotics/manipulation/profiles/xarm6-sim-extensions.json b/robotics/manipulation/profiles/xarm6-sim-extensions.json
+new file mode 100644
+index 0000000..6f175cb
+--- /dev/null
++++ b/robotics/manipulation/profiles/xarm6-sim-extensions.json
+@@ -0,0 +1,4 @@
++{
++  "scope": "static_expectation_not_native_readback",
++  "xml": "<!-- Static expectation from pinned vendor macros, not native readback. -->\n<robot>\n<ros2_control name=\"{hardwarePlugin}\" type=\"system\"><hardware><plugin>{hardwarePlugin}</plugin></hardware><joint name=\"joint1\"><command_interface name=\"position\"><param name=\"min\">-6.28318530718</param><param name=\"max\">6.28318530718</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint><joint name=\"joint2\"><command_interface name=\"position\"><param name=\"min\">-2.059</param><param name=\"max\">2.0944</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint><joint name=\"joint3\"><command_interface name=\"position\"><param name=\"min\">-3.927</param><param name=\"max\">0.19198</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint><joint name=\"joint4\"><command_interface name=\"position\"><param name=\"min\">-6.28318530718</param><param name=\"max\">6.28318530718</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint><joint name=\"joint5\"><command_interface name=\"position\"><param name=\"min\">-1.69297</param><param name=\"max\">3.14159265359</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint><joint name=\"joint6\"><command_interface name=\"position\"><param name=\"min\">-6.28318530718</param><param name=\"max\">6.28318530718</param></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint></ros2_control>\n<ros2_control name=\"XArmGripperSystem\" type=\"system\"><hardware><plugin>{hardwarePlugin}</plugin></hardware><joint name=\"drive_joint\"><command_interface name=\"position\"></command_interface><command_interface name=\"velocity\"><param name=\"min\">-3.14</param><param name=\"max\">3.14</param></command_interface><state_interface name=\"position\"/><state_interface name=\"velocity\"/></joint></ros2_control>\n<transmission name=\"tran1\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint1\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor1\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"tran2\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint2\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor2\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"tran3\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint3\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor3\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"tran4\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint4\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor4\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"tran5\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint5\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor5\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"tran6\"><type>transmission_interface/SimpleTransmission</type><joint name=\"joint6\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"motor6\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>\n<transmission name=\"drive_joint_trans\"><type>transmission_interface/SimpleTransmission</type><joint name=\"drive_joint\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name=\"drive_joint_motor\"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>1</mechanicalReduction></actuator></transmission>\n<gazebo reference=\"link_base\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link1\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link2\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link3\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link4\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link5\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"link6\"><selfCollide>true</selfCollide></gazebo>\n<gazebo reference=\"xarm_gripper_base_link\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"left_outer_knuckle\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"left_finger\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"left_inner_knuckle\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"right_outer_knuckle\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"right_finger\"><selfCollide>false</selfCollide></gazebo>\n<gazebo reference=\"right_inner_knuckle\"><selfCollide>false</selfCollide></gazebo>\n<gazebo><plugin name=\"gz::sim::systems::GazeboMimicJointPlugin\" filename=\"libgazebo_mimic_joint_plugin.so\"><joint>drive_joint</joint><mimicJoint>left_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>\n<gazebo><plugin name=\"gz::sim::systems::GazeboMimicJointPlugin\" filename=\"libgazebo_mimic_joint_plugin.so\"><joint>drive_joint</joint><mimicJoint>left_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>\n<gazebo><plugin name=\"gz::sim::systems::GazeboMimicJointPlugin\" filename=\"libgazebo_mimic_joint_plugin.so\"><joint>drive_joint</joint><mimicJoint>right_outer_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>\n<gazebo><plugin name=\"gz::sim::systems::GazeboMimicJointPlugin\" filename=\"libgazebo_mimic_joint_plugin.so\"><joint>drive_joint</joint><mimicJoint>right_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>\n<gazebo><plugin name=\"gz::sim::systems::GazeboMimicJointPlugin\" filename=\"libgazebo_mimic_joint_plugin.so\"><joint>drive_joint</joint><mimicJoint>right_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>\n</robot>\n"
++}
+diff --git a/robotics/manipulation/tests/test_native_xarm.py b/robotics/manipulation/tests/test_native_xarm.py
+index ea2772c..817b926 100644
+--- a/robotics/manipulation/tests/test_native_xarm.py
++++ b/robotics/manipulation/tests/test_native_xarm.py
+@@ -147,21 +147,24 @@ def test_prepared_worker_lifecycle_uses_fixed_launch_and_owned_shutdown(tmp_path
+     class Child:
+         def __init__(self,argv,**kwargs):calls.append(argv);self.stopped=False;children.append(self)
+         def poll(self):return 0 if self.stopped else None
+         def send_signal(self,sig):self.stopped=True
+         def wait(self,timeout):return 0
+     class Ros:
+         def __init__(self,mode,boot,emit):self.boot=boot;self.evidence_kind='protocol_double';self.closed=False
+         def sample(self):return {'bootId':self.boot,'epoch':1,'seq':1,'clockNs':1000000000,'stampNs':1000000000,'actualRad':Q,'commandedRad':Q,'tcpM':[0,0,.172]}
+         def readback(self):
+             xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
+-            if mode=='X1':xml=xml.replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
++            if mode=='X1':
++                import re
++                xml=re.sub(r'<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?</gazebo>','',xml)
++                xml=xml.replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
+             return {'/robot_state_publisher':{'robot_description':{'string':xml}}}
+         def close(self):self.closed=True
+     monkeypatch.setattr(worker,'preflight',lambda profile:({'reasonCodes':[]},[]))
+     monkeypatch.setattr(worker.subprocess,'Popen',Child)
+     monkeypatch.setattr(worker.subprocess,'run',lambda argv,**kwargs:N(returncode=0,stdout='1'*40 if argv[:2]==['git','rev-parse'] else ''))
+     monkeypatch.setattr(ros,'RosPort',Ros)
+     monkeypatch.setattr(sys,'argv',['worker','--directory',str(tmp_path),'--run-id','protocol-case-'+mode,'--mode',mode,'--environment-profile','engineering-arm64'])
+     monkeypatch.setattr(sys,'stdin',io.StringIO(''))
+     assert worker.main()==0
+     assert calls[0]==launch_argv(mode);assert len(children)==2 and all(c.stopped for c in children)
+@@ -218,10 +221,39 @@ def test_raw_mapping_rejects_nominal_inertia_substitution():
+ def test_gazebo_mesh_readback_uses_only_fixed_installed_share():
+     from native_xarm.mapping import validate_urdf
+     xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
+     # The initial fixture used package://; pinned Gazebo xacro emits file:// instead.
+     with pytest.raises(ValueError):validate_urdf(xml.replace('file:///opt/mekoniq/xarm_ws/install/xarm_description/share/xarm_description/','package://xarm_description/'),'X2')
+ 
+ def test_delayed_callback_keeps_original_receipt_age(session):
+     s,p=session
+     s.observe({'bootId':'boot-1','epoch':1,'seq':2,'clockNs':1020000000,'stampNs':1020000000,'actualRad':Q,'commandedRad':Q,'tcpM':[0,0,.172],'receivedMs':-1000})
+     assert s.execute('a','h',points())['unknown'];assert p.sends==0
++
++@pytest.mark.parametrize('case',['scale','visual_origin','missing_tcp','orphan','cycle','gazebo_plugin','empty_control'])
++def test_fix1_mapping_closed_semantics(case):
++    from native_xarm.mapping import validate_urdf
++    import re
++    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
++    bad={'scale':xml.replace('<mesh ','<mesh scale="1000 1000 1000" ',1),'visual_origin':xml.replace('<visual>','<visual><origin xyz="100 0 0" rpy="0 0 0"/>',1),'missing_tcp':xml.replace('<link name="link_tcp"/>',''),'orphan':xml.replace('</robot>','<link name="orphan"/></robot>'),'cycle':xml.replace('</robot>','<joint name="cycle" type="fixed"><parent link="link_tcp"/><child link="link_base"/></joint></robot>'),'gazebo_plugin':xml.replace('</robot>','<gazebo><plugin name="unapproved" filename="libunapproved.so"/></gazebo></robot>'),'empty_control':re.sub(r'<ros2_control[\s\S]*?</ros2_control>','<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>',xml)}[case]
++    with pytest.raises(ValueError):validate_urdf(bad,'X2')
++
++@pytest.mark.parametrize('mode',['X1','X2'])
++def test_fix1_mode_graph_control_and_visual_defaults(mode):
++    from native_xarm.mapping import validate_urdf
++    import re
++    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
++    if mode=='X1':xml=re.sub(r'<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?</gazebo>','',xml).replace('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replace('file://'+load_profile()['descriptionShare'],'package://xarm_description')
++    validate_urdf(xml,mode)
++    validate_urdf(xml.replace('<visual>','<visual><origin xyz="0 0 0" rpy="0 0 0"/>').replace('<mesh ','<mesh scale="1 1 1" '),mode)
++    validate_urdf(xml.replace('xyz="0 0 0"','xyz="+0e0 0.0 -.0"').replace('<offset>0</offset>','<offset>0e+0</offset>'),mode)
++    mutations=[('<link name="world"/>',''),('<link name="link_eef"/>',''),('parent link="world"','parent link="missing"'),('parent link="world"','parent link="link_tcp"'),('parent link="link_eef"','parent link="link6"'),('<visual>','<visual><origin rpy="0 0 1"/>'),('<state_interface name="velocity"/>','<state_interface name="effort"/>'),('<joint name="joint1"><command_interface','<joint name="joint6"><command_interface'),('<mimicJoint>left_finger_joint</mimicJoint>','<mimicJoint>joint1</mimicJoint>'),('<mimic joint="drive_joint"','<mimic joint="joint1"'),('</hardware>','<param name="robot_ip">192.0.2.1</param></hardware>'),('<visual>','<visual><plugin name="evil"/>')]
++    if mode=='X2':mutations.append(('/tmp/launch_params_protocolfixture','/tmp/../evil'))
++    for old,new in mutations:
++        bad=xml.replace(old,new,1);assert bad!=xml
++        with pytest.raises(ValueError):validate_urdf(bad,mode)
++
++def test_fix1_rejects_non_urdf_numeric_spelling():
++    from native_xarm.mapping import validate_urdf
++    xml=(ROOT/'tests/fixtures/xarm-native-protocol.urdf').read_text()
++    for bad in [xml.replace('<offset>0</offset>','<offset> </offset>'),xml.replace('<offset>0</offset>','<offset/>'),xml.replace('<offset>0</offset>','<offset>0x0</offset>'),xml.replace('<offset>0</offset>','<offset>0_0</offset>'),xml.replace('xyz="0 0 0"','xyz="0_0 0 0"',1)]:
++        with pytest.raises(ValueError):validate_urdf(bad,'X2')
+diff --git a/robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib/uf_robot_utils.py b/robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib/uf_robot_utils.py
+new file mode 100644
+index 0000000..9deef8d
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/uf_ros_lib/uf_ros_lib/uf_robot_utils.py
+@@ -0,0 +1,258 @@
++#!/usr/bin/env python3
++# Software License Agreement (BSD License)
++#
++# Copyright (c) 2024, UFACTORY, Inc.
++# All rights reserved.
++#
++# Author: Vinman <vinman.wen@ufactory.cc> <vinman.cub@gmail.com>
++
++import os
++import yaml
++from pathlib import Path
++from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
++from launch_ros.substitutions import FindPackageShare
++from tempfile import NamedTemporaryFile
++from ament_index_python import get_package_share_directory
++from launch.substitutions import LaunchConfiguration
++from launch_param_builder import load_xacro
++
++
++def get_xacro_command(
++    xacro_file=PathJoinSubstitution([FindPackageShare('xarm_description'), 'urdf', 'xarm_device.urdf.xacro']), 
++    mappings={}):
++    command = [
++        PathJoinSubstitution([FindExecutable(name='xacro')]),
++        ' ',
++        str(xacro_file) if isinstance(xacro_file, Path) else xacro_file,
++        ' '
++    ]
++    if mappings and isinstance(mappings, dict):
++        for key, val in mappings.items():
++            command.extend([
++                '{}:='.format(key),
++                val,
++                ' '
++            ])
++    return Command(command)
++
++
++def get_xacro_content(context,
++    xacro_file=Path(get_package_share_directory('xarm_description')) / 'urdf' / 'xarm_device.urdf.xacro', 
++    **kwargs):
++    xacro_file = Path(xacro_file.perform(context)) if isinstance(xacro_file, LaunchConfiguration) else Path(xacro_file) if isinstance(xacro_file, str) else xacro_file
++    
++    def get_param_str(param):
++        val = param if isinstance(param, str) else 'false' if param == False else 'true' if param == True else (param.perform(context) if context is not None else param) if isinstance(param, LaunchConfiguration) else str(param)
++        return val if not val else val[1:-1] if isinstance(val, str) and val[0] in ['"', '\''] and val[-1] in ['"', '\''] else val
++
++    mappings = {}
++    for k, v in kwargs.items():
++        mappings[k] = get_param_str(v)
++    return load_xacro(xacro_file, mappings=mappings)
++
++
++def merge_dict(dict1, dict2):
++    for k, v in dict1.items():
++        try:
++            if k not in dict2:
++                continue
++            if isinstance(v, dict):
++                merge_dict(v, dict2[k])
++            else:
++                dict1[k] = dict2[k]
++        except Exception as e:
++            pass
++
++
++def load_abspath_yaml(path):
++    if path and os.path.exists(path):
++        try:
++            with open(path, 'r') as file:
++                return yaml.safe_load(file)
++        except Exception as e:
++            print('load {} error, {}'.format(path, e))
++    return {}
++
++
++def generate_robot_api_params(default_robot_api_params_path, user_robot_api_params_path=None, ros_namespace='', node_name='ufactory_driver', extra_robot_api_params_path=None):
++    if not user_robot_api_params_path or not os.path.exists(user_robot_api_params_path):
++        user_robot_api_params_path = None
++    if not extra_robot_api_params_path or not os.path.exists(extra_robot_api_params_path):
++        extra_robot_api_params_path = None
++    if ros_namespace or (user_robot_api_params_path is not None and user_robot_api_params_path != default_robot_api_params_path) or (extra_robot_api_params_path is not None and extra_robot_api_params_path != default_robot_api_params_path):
++        ronbot_api_params_yaml = load_abspath_yaml(default_robot_api_params_path)
++        user_params_yaml = load_abspath_yaml(user_robot_api_params_path)
++        extra_params_yaml = load_abspath_yaml(extra_robot_api_params_path)
++        # change xarm_driver to ufactory_driver
++        if 'xarm_driver' in ronbot_api_params_yaml and node_name not in ronbot_api_params_yaml:
++            ronbot_api_params_yaml[node_name] = ronbot_api_params_yaml.pop('xarm_driver')
++        if 'xarm_driver' in user_params_yaml and node_name not in user_params_yaml:
++            user_params_yaml[node_name] = user_params_yaml.pop('xarm_driver')
++        if 'xarm_driver' in extra_params_yaml and node_name not in extra_params_yaml:
++            extra_params_yaml[node_name] = extra_params_yaml.pop('xarm_driver')
++        if user_params_yaml:
++            merge_dict(ronbot_api_params_yaml, user_params_yaml)
++        if extra_params_yaml:
++            merge_dict(ronbot_api_params_yaml, extra_params_yaml)
++        if ros_namespace:
++            robot_params_yaml = {
++                ros_namespace: ronbot_api_params_yaml
++            }
++        else:
++            robot_params_yaml = ronbot_api_params_yaml
++        with NamedTemporaryFile(mode='w', prefix='launch_params_', delete=False) as h:
++            yaml.dump(robot_params_yaml, h, default_flow_style=False)
++            return h.name
++    return default_robot_api_params_path
++
++
++def load_yaml(package_name, *file_path):
++    package_path = get_package_share_directory(package_name)
++    absolute_file_path = os.path.join(package_path, *file_path)
++    if not os.path.exists(absolute_file_path):
++        return {}
++    try:
++        with open(absolute_file_path, 'r') as file:
++            return yaml.safe_load(file)
++    except EnvironmentError:  # parent of IOError, OSError *and* WindowsError where available
++        return {}
++    except:
++        return {}
++
++
++def add_prefix_to_ros2_control_params(prefix, ros2_control_params):
++    if not prefix:
++        return
++    for name in list(ros2_control_params.keys()):
++        if name == 'controller_manager':
++            continue
++        ros__parameters = ros2_control_params[name].get('ros__parameters', {})
++        joints = ros__parameters.get('joints', [])
++        constraints = ros__parameters.get('constraints', {})
++        for i, joint in enumerate(joints):
++            for j, key in enumerate(constraints.keys()):
++                if key == joint:
++                    constraints['{}{}'.format(prefix, key)] = constraints.pop(key)
++                    break
++            joints[i] = '{}{}'.format(prefix, joint)
++        new_name = '{}{}'.format(prefix, name)
++        ros2_control_params[new_name] = ros2_control_params.pop(name)
++        controller_manager_ros__parameters = ros2_control_params.get('controller_manager', {}).get('ros__parameters', {})
++        if name in controller_manager_ros__parameters:
++            controller_manager_ros__parameters[new_name] = controller_manager_ros__parameters.pop(name)
++
++
++def generate_ros2_control_params_temp_file(ros2_control_params_path, prefix='', add_gripper=False, add_bio_gripper=False, ros_namespace='', update_rate=None, robot_type='xarm', use_sim_time=False):
++    if ros_namespace or prefix or add_gripper or add_bio_gripper or update_rate:
++        with open(ros2_control_params_path, 'r') as f:
++            ros2_control_params_yaml = yaml.safe_load(f)
++        if update_rate is not None:
++            ros2_control_params_yaml['controller_manager']['ros__parameters']['update_rate'] = update_rate
++        if use_sim_time:
++            ros2_control_params_yaml['controller_manager']['ros__parameters']['use_sim_time'] = True
++        if add_gripper:
++            gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', '{}_gripper_controllers.yaml'.format(robot_type))
++            # check file is exists or not
++            if os.path.exists(gripper_control_params_path):
++                with open(gripper_control_params_path, 'r') as f:
++                    gripper_control_params_yaml = yaml.safe_load(f)
++                for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                    ros2_control_params_yaml['controller_manager']['ros__parameters'][name] = value
++                    if name in gripper_control_params_yaml:
++                        ros2_control_params_yaml[name] = gripper_control_params_yaml[name]
++        elif add_bio_gripper:
++            gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', 'bio_gripper_controllers.yaml')
++            # check file is exists or not
++            if os.path.exists(gripper_control_params_path):
++                with open(gripper_control_params_path, 'r') as f:
++                    gripper_control_params_yaml = yaml.safe_load(f)
++                for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                    ros2_control_params_yaml['controller_manager']['ros__parameters'][name] = value
++                    if name in gripper_control_params_yaml:
++                        ros2_control_params_yaml[name] = gripper_control_params_yaml[name]
++                
++        add_prefix_to_ros2_control_params(prefix, ros2_control_params_yaml)
++        if ros_namespace:
++            ros2_control_params_yaml = {
++                ros_namespace: ros2_control_params_yaml
++            }
++        with NamedTemporaryFile(mode='w', prefix='launch_params_', delete=False) as h:
++            yaml.dump(ros2_control_params_yaml, h, default_flow_style=False)
++            return h.name
++    return ros2_control_params_path
++
++
++def generate_dual_ros2_control_params_temp_file(
++    ros2_control_params_path_1, ros2_control_params_path_2, 
++    prefix_1='L_', prefix_2='R_', 
++    add_gripper_1=False, add_gripper_2=False, 
++    add_bio_gripper_1=False, add_bio_gripper_2=False, 
++    ros_namespace='', update_rate=None, use_sim_time=False,
++    robot_type_1='xarm', robot_type_2='xarm'):
++    with open(ros2_control_params_path_1, 'r') as f:
++        ros2_control_params_yaml_1 = yaml.safe_load(f)
++    with open(ros2_control_params_path_2, 'r') as f:
++        ros2_control_params_yaml_2 = yaml.safe_load(f)
++    if update_rate is not None:
++        ros2_control_params_yaml_1['controller_manager']['ros__parameters']['update_rate'] = update_rate
++        ros2_control_params_yaml_2['controller_manager']['ros__parameters']['update_rate'] = update_rate
++    if use_sim_time:
++        ros2_control_params_yaml_1['controller_manager']['ros__parameters']['use_sim_time'] = True
++        ros2_control_params_yaml_2['controller_manager']['ros__parameters']['use_sim_time'] = True
++
++    if add_gripper_1:
++        gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', '{}_gripper_controllers.yaml'.format(robot_type_1))
++        # check file is exists or not
++        if os.path.exists(gripper_control_params_path):
++            with open(gripper_control_params_path, 'r') as f:
++                gripper_control_params_yaml = yaml.safe_load(f)
++            for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                ros2_control_params_yaml_1['controller_manager']['ros__parameters'][name] = value
++                if name in gripper_control_params_yaml:
++                    ros2_control_params_yaml_1[name] = gripper_control_params_yaml[name]
++    elif add_bio_gripper_1:
++        gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', 'bio_gripper_controllers.yaml')
++        # check file is exists or not
++        if os.path.exists(gripper_control_params_path):
++            with open(gripper_control_params_path, 'r') as f:
++                gripper_control_params_yaml = yaml.safe_load(f)
++            for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                ros2_control_params_yaml_1['controller_manager']['ros__parameters'][name] = value
++                if name in gripper_control_params_yaml:
++                    ros2_control_params_yaml_1[name] = gripper_control_params_yaml[name]
++        
++    if add_gripper_2:
++        gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', '{}_gripper_controllers.yaml'.format(robot_type_2))
++        # check file is exists or not
++        if os.path.exists(gripper_control_params_path):
++            with open(gripper_control_params_path, 'r') as f:
++                gripper_control_params_yaml = yaml.safe_load(f)
++            for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                ros2_control_params_yaml_2['controller_manager']['ros__parameters'][name] = value
++                if name in gripper_control_params_yaml:
++                    ros2_control_params_yaml_2[name] = gripper_control_params_yaml[name]
++    elif add_bio_gripper_2:
++        gripper_control_params_path = os.path.join(get_package_share_directory('xarm_controller'), 'config', 'bio_gripper_controllers.yaml')
++        # check file is exists or not
++        if os.path.exists(gripper_control_params_path):
++            with open(gripper_control_params_path, 'r') as f:
++                gripper_control_params_yaml = yaml.safe_load(f)
++            for name, value in gripper_control_params_yaml['controller_manager']['ros__parameters'].items():
++                ros2_control_params_yaml_2['controller_manager']['ros__parameters'][name] = value
++                if name in gripper_control_params_yaml:
++                    ros2_control_params_yaml_2[name] = gripper_control_params_yaml[name]
++        
++    add_prefix_to_ros2_control_params(prefix_1, ros2_control_params_yaml_1)
++    add_prefix_to_ros2_control_params(prefix_2, ros2_control_params_yaml_2)
++    ros2_control_params_yaml = {}
++    ros2_control_params_yaml.update(ros2_control_params_yaml_1)
++    ros2_control_params_yaml.update(ros2_control_params_yaml_2)
++    ros2_control_params_yaml['controller_manager']['ros__parameters'].update(ros2_control_params_yaml_1['controller_manager']['ros__parameters'])
++    ros2_control_params_yaml['controller_manager']['ros__parameters'].update(ros2_control_params_yaml_2['controller_manager']['ros__parameters'])
++    if ros_namespace:
++        ros2_control_params_yaml = {
++            ros_namespace: ros2_control_params_yaml
++        }
++    with NamedTemporaryFile(mode='w', prefix='launch_params_', delete=False) as h:
++        yaml.dump(ros2_control_params_yaml, h, default_flow_style=False)
++        return h.name
+\ No newline at end of file
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/common/common.gazebo.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/common/common.gazebo.xacro
+new file mode 100644
+index 0000000..c5ada1a
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/common/common.gazebo.xacro
+@@ -0,0 +1,56 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro">
++
++  <xacro:macro name="gz_ros2_control_plugin" params="ros2_control_params:=''">
++
++    <gazebo>
++      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
++        <xacro:if value="${ros2_control_params != ''}">
++          <parameters>${ros2_control_params}</parameters>
++        </xacro:if>
++      </plugin>
++    </gazebo>
++
++  </xacro:macro>
++
++  <xacro:macro name="ignition_ros2_control_plugin" params="prefix:='' ros2_control_params:=''">
++
++    <gazebo>
++      <plugin filename="libign_ros2_control-system.so" name="ign_ros2_control::IgnitionROS2ControlPlugin">
++        <xacro:if value="${ros2_control_params != ''}">
++          <parameters>${ros2_control_params}</parameters>
++        </xacro:if>
++        <!-- <controller_manager_node_name>${prefix}controller_manager</controller_manager_node_name> -->
++      </plugin>
++    </gazebo>
++
++  </xacro:macro>
++
++  <xacro:macro name="gazebo_ros2_control_plugin" params="ros2_control_params:=''">
++
++    <gazebo>
++      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
++        <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
++        <xacro:if value="${ros2_control_params != ''}">
++          <parameters>${ros2_control_params}</parameters>
++        </xacro:if>
++      </plugin>
++    </gazebo>
++
++  </xacro:macro>
++
++  <xacro:macro name="gazebo_ros1_control_plugin" params="namespace:=''">
++
++    <gazebo>
++      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
++        <robotNamespace>/${namespace}</robotNamespace>
++        <!-- <controlPeriod>0.0001</controlPeriod> -->
++        <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
++		    <legacyModeNS>true</legacyModeNS>
++        <!-- <preserveWorldVelocity>true</preserveWorldVelocity> -->
++      </plugin>
++    </gazebo>
++
++  </xacro:macro>
++
++</robot>
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro
+new file mode 100644
+index 0000000..4c8e417
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.transmission.xacro
+@@ -0,0 +1,18 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro">
++  <xacro:macro name="xarm_gripper_transmission"
++    params="prefix hard_interface:=PositionJointInterface reduction:=1">
++
++    <transmission name="${prefix}drive_joint_trans">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}drive_joint">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}drive_joint_motor">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++  </xacro:macro>
++</robot>
+\ No newline at end of file
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro
+new file mode 100644
+index 0000000..dd17317
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro
+@@ -0,0 +1,235 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro" name="xarm_gripper">
++
++  <xacro:macro name="xarm_gripper_urdf" params="prefix:='' attach_to:='' attach_xyz:='0 0 0' attach_rpy:='0 0 0' gripper_version:='G1' ">
++
++    <xacro:property name="add_mesh_suffix" value="true"/>
++    <xacro:property name="other_mesh_suffix" value=""/>
++    <xacro:property name="name_suffix" value=""/>
++    <xacro:if value="${gripper_version == 'G2' or gripper_version == 'g2'}">
++      <xacro:property name="name_suffix" value="_g2"/>
++      <xacro:property name="other_mesh_suffix" value="dae"/>
++      <xacro:property name="add_mesh_suffix" value="false"/>
++    </xacro:if>
++
++    <xacro:unless value="${attach_to == ''}">
++      <joint name="${prefix}gripper_fix" type="fixed">
++        <parent link="${attach_to}"/>
++        <child link="${prefix}xarm_gripper_base_link"/>
++        <origin xyz="${attach_xyz}" rpy="${attach_rpy}"/>
++      </joint>
++    </xacro:unless>
++
++    <link name="${prefix}xarm_gripper_base_link">
++      <inertial>
++        <origin xyz="-0.00065489 -0.0018497 0.048028" rpy="0 0 0" />
++        <mass value="0.54156" />
++        <inertia
++          ixx="0.00047106" ixy="3.9292E-07" ixz="2.6537E-06"
++          iyy="0.00033072" iyz="-1.0975E-05" izz="0.00025642" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/base_link${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}White" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/base_link${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <link name="${prefix}left_outer_knuckle">
++      <inertial>
++        <origin xyz="2.9948E-14 0.021559 0.015181" rpy="0 0 0" />
++        <mass value="0.033618" />
++        <inertia
++          ixx="1.9111E-05" ixy="-1.8803E-17" ixz="-1.1002E-17"
++          iyy="6.6256E-06" iyz="-7.3008E-06" izz="1.3185E-05" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/left_outer_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/left_outer_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}drive_joint" type="revolute">
++      <origin xyz="0 0.035 0.059098" rpy="0 0 0" />
++      <parent link="${prefix}xarm_gripper_base_link" />
++      <child link="${prefix}left_outer_knuckle" />
++      <axis xyz="1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++    </joint>
++    <link name="${prefix}left_finger">
++      <inertial>
++        <origin xyz="-2.4536E-14 -0.016413 0.029258" rpy="0 0 0" />
++        <mass value="0.048304" />
++        <inertia
++          ixx="1.7493E-05" ixy="-4.2156E-19" ixz="6.9164E-18"
++          iyy="1.7225E-05" iyz="4.6433E-06" izz="5.1466E-06" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/left_finger${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/left_finger${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}left_finger_joint" type="revolute">
++      <origin xyz="0 0.035465 0.042039" rpy="0 0 0" />
++      <parent link="${prefix}left_outer_knuckle" />
++      <child link="${prefix}left_finger" />
++      <axis xyz="-1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++      <mimic joint="${prefix}drive_joint" multiplier="1" offset="0" />
++    </joint>
++    <link name="${prefix}left_inner_knuckle">
++      <inertial>
++        <origin xyz="1.86600784687907E-06 0.0220467847633621 0.0261334672830885" rpy="0 0 0" />
++        <mass value="0.0230125781256706" />
++        <inertia
++          ixx="6.09490024271906E-06" ixy="6.06651326160071E-11" ixz="7.19102670500635E-11"
++          iyy="6.01955084375188E-06" iyz="-2.75316812991721E-06" izz="5.07862004479903E-06" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/left_inner_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/left_inner_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}left_inner_knuckle_joint" type="revolute">
++      <origin xyz="0 0.02 0.074098" rpy="0 0 0" />
++      <parent link="${prefix}xarm_gripper_base_link" />
++      <child link="${prefix}left_inner_knuckle" />
++      <axis xyz="1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++      <mimic joint="${prefix}drive_joint" multiplier="1" offset="0" />
++    </joint>
++    <link name="${prefix}right_outer_knuckle">
++      <inertial>
++        <origin xyz="-3.1669E-14 -0.021559 0.015181" rpy="0 0 0" />
++        <mass value="0.033618" />
++        <inertia
++          ixx="1.9111E-05" ixy="-1.8789E-17" ixz="1.0986E-17"
++          iyy="6.6256E-06" iyz="7.3008E-06" izz="1.3185E-05" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/right_outer_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/right_outer_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}right_outer_knuckle_joint" type="revolute">
++      <origin xyz="0 -0.035 0.059098" rpy="0 0 0" />
++      <parent link="${prefix}xarm_gripper_base_link" />
++      <child link="${prefix}right_outer_knuckle" />
++      <axis xyz="-1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++      <mimic joint="${prefix}drive_joint" multiplier="1" offset="0" />
++    </joint>
++    <link name="${prefix}right_finger">
++      <inertial>
++        <origin xyz="2.5618E-14 0.016413 0.029258" rpy="0 0 0" />
++        <mass value="0.048304" />
++        <inertia
++          ixx="1.7493E-05" ixy="-5.0014E-19" ixz="-7.5079E-18"
++          iyy="1.7225E-05" iyz="-4.6435E-06" izz="5.1466E-06" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/right_finger${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/right_finger${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}right_finger_joint" type="revolute">
++      <origin xyz="0 -0.035465 0.042039" rpy="0 0 0" />
++      <parent link="${prefix}right_outer_knuckle" />
++      <child link="${prefix}right_finger" />
++      <axis xyz="1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++      <mimic joint="${prefix}drive_joint" multiplier="1" offset="0" />
++    </joint>
++    <link name="${prefix}right_inner_knuckle">
++      <inertial>
++        <origin xyz="1.866E-06 -0.022047 0.026133" rpy="0 0 0" />
++        <mass value="0.023013" />
++        <inertia
++          ixx="6.0949E-06" ixy="-6.0665E-11" ixz="7.191E-11"
++          iyy="6.0197E-06" iyz="2.7531E-06" izz="5.0784E-06" />
++      </inertial>
++      <xacro:common_link_visual 
++        mesh_filename="gripper/xarm/right_inner_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0"
++        material_name="${prefix}Silver" />
++      <xacro:common_link_collision 
++        mesh_filename="gripper/xarm/right_inner_knuckle${name_suffix}" 
++        add_mesh_suffix="${add_mesh_suffix}" 
++        other_mesh_suffix="${other_mesh_suffix}" 
++        origin_xyz="0 0 0" 
++        origin_rpy="0 0 0" />
++    </link>
++    <joint name="${prefix}right_inner_knuckle_joint" type="revolute">
++      <origin xyz="0 -0.02 0.074098" rpy="0 0 0" />
++      <parent link="${prefix}xarm_gripper_base_link" />
++      <child link="${prefix}right_inner_knuckle" />
++      <axis xyz="-1 0 0" />
++      <limit lower="0" upper="0.85" effort="50" velocity="2" />
++      <mimic joint="${prefix}drive_joint" multiplier="1" offset="0" />
++    </joint>
++
++    <link name="${prefix}link_tcp" />
++
++    <joint name="${prefix}joint_tcp" type="fixed">
++      <origin xyz="0 0 0.172" rpy="0 0 0" />
++      <parent link="${prefix}xarm_gripper_base_link" />
++      <child link="${prefix}link_tcp" />
++    </joint>
++
++  </xacro:macro>
++
++</robot>
+\ No newline at end of file
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.gazebo.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.gazebo.xacro
+new file mode 100644
+index 0000000..99ed6c0
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.gazebo.xacro
+@@ -0,0 +1,36 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro">
++
++  <xacro:macro name="xarm6_gazebo" params="prefix">
++
++    <gazebo reference="${prefix}link_base">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link1">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link2">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link3">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link4">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link5">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++    <gazebo reference="${prefix}link6">
++      <selfCollide>true</selfCollide>
++    </gazebo>
++
++  </xacro:macro>
++
++</robot>
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro
+new file mode 100644
+index 0000000..0d41e44
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.ros2_control.xacro
+@@ -0,0 +1,119 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro">
++  <xacro:macro name="xarm6_ros2_control" params="prefix
++    velocity_control:='false'
++    ros2_control_plugin:='uf_robot_hardware/UFRobotSystemHardware'
++    hw_ns:='xarm' add_gripper:='false' add_bio_gripper:='false'
++    robot_ip:='' report_type:='normal' baud_checkset:='true' default_gripper_baud:=2000000
++    joint1_lower_limit:=${-2.0*pi}  joint1_upper_limit:=${2.0*pi}
++    joint2_lower_limit:=${-2.059}  joint2_upper_limit:=${2.0944}
++    joint3_lower_limit:=${-3.927}  joint3_upper_limit:=${0.19198}
++    joint4_lower_limit:=${-2.0*pi}  joint4_upper_limit:=${2.0*pi}
++    joint5_lower_limit:=${-1.69297}  joint5_upper_limit:=${pi}
++    joint6_lower_limit:=${-2.0*pi}  joint6_upper_limit:=${2.0*pi}">
++    <ros2_control name="${prefix}${ros2_control_plugin}" type="system">
++      <hardware>
++        <plugin>${ros2_control_plugin}</plugin>
++        <xacro:if value="${ros2_control_plugin == 'uf_robot_hardware/UFRobotSystemHardware'}">
++          <param name="hw_ns">${prefix}${hw_ns}</param>
++          <param name="velocity_control">${velocity_control}</param>
++          <param name="prefix">P${prefix}</param>
++          <param name="robot_ip">R${robot_ip}</param>
++          <param name="report_type">${report_type}</param>
++          <param name="dof">6</param>
++          <param name="baud_checkset">${baud_checkset}</param>
++          <param name="default_gripper_baud">${default_gripper_baud}</param>
++          <param name="robot_type">xarm</param>
++          <param name="add_gripper">${add_gripper}</param>
++          <param name="add_bio_gripper">${add_bio_gripper}</param>
++        </xacro:if>
++        <!-- fake -->
++        <!-- <plugin>fake_components/GenericSystem</plugin> -->
++
++        <!-- gazebo -->
++        <!-- <plugin>gazebo_ros2_control/GazeboSystem</plugin> -->
++
++        <!-- real xarm -->
++        <!-- <plugin>uf_robot_hardware/UFRobotSystemHardware</plugin> -->
++      </hardware>
++      <joint name="${prefix}joint1">
++        <command_interface name="position">
++          <param name="min">${joint1_lower_limit}</param>
++          <param name="max">${joint1_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++      <joint name="${prefix}joint2">
++        <command_interface name="position">
++          <param name="min">${joint2_lower_limit}</param>
++          <param name="max">${joint2_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++      <joint name="${prefix}joint3">
++        <command_interface name="position">
++          <param name="min">${joint3_lower_limit}</param>
++          <param name="max">${joint3_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++      <joint name="${prefix}joint4">
++        <command_interface name="position">
++          <param name="min">${joint4_lower_limit}</param>
++          <param name="max">${joint4_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++      <joint name="${prefix}joint5">
++        <command_interface name="position">
++          <param name="min">${joint5_lower_limit}</param>
++          <param name="max">${joint5_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++      <joint name="${prefix}joint6">
++        <command_interface name="position">
++          <param name="min">${joint6_lower_limit}</param>
++          <param name="max">${joint6_upper_limit}</param>
++        </command_interface>
++        <command_interface name="velocity">
++          <param name="min">-3.14</param>
++          <param name="max">3.14</param>
++        </command_interface>
++        <state_interface name="position"/>
++        <state_interface name="velocity"/>
++        <!-- <state_interface name="effort"/> -->
++      </joint>
++    </ros2_control>
++  </xacro:macro>
++</robot>
+\ No newline at end of file
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.transmission.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.transmission.xacro
+new file mode 100644
+index 0000000..d0bde66
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6.transmission.xacro
+@@ -0,0 +1,75 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro">
++
++  <xacro:macro name="xarm6_transmission"
++    params="prefix hard_interface:=EffortJointInterface reduction:=100">
++
++    <transmission name="${prefix}tran1">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint1">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor1">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++    <transmission name="${prefix}tran2">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint2">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor2">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++    <transmission name="${prefix}tran3">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint3">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor3">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++    <transmission name="${prefix}tran4">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint4">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor4">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++    <transmission name="${prefix}tran5">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint5">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor5">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++    <transmission name="${prefix}tran6">
++      <type>transmission_interface/SimpleTransmission</type>
++      <joint name="${prefix}joint6">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++      </joint>
++      <actuator name="${prefix}motor6">
++        <hardwareInterface>hardware_interface/${hard_interface}</hardwareInterface>
++        <mechanicalReduction>${reduction}</mechanicalReduction>
++      </actuator>
++    </transmission>
++
++  </xacro:macro>
++
++</robot>
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro
+new file mode 100644
+index 0000000..f3b2623
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm6/xarm6_robot_macro.xacro
+@@ -0,0 +1,76 @@
++<?xml version="1.0"?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro" name="xarm6" >
++  <xacro:macro name="xarm6_robot" params="
++    prefix:=''
++    hw_ns:='xarm'
++    limited:=false
++    velocity_control:=false
++    add_gripper:=false
++    add_bio_gripper:=false
++    ros2_control_plugin:='uf_robot_hardware/UFRobotSystemHardware' 
++    robot_ip:=''
++    report_type:='normal'
++    baud_checkset:='true'
++    default_gripper_baud:=2000000 
++    model_num:=0
++    inertial_params_filename:=''
++    kinematics_params_filename:=''
++    hard_interface:='PositionJointInterface' "
++    >
++
++    <!-- include xarm6 relative macros: -->
++    <xacro:if value="${is_ros2}">
++      <xacro:include filename="$(find xarm_description)/urdf/xarm6/xarm6.ros2_control.xacro" />
++    </xacro:if>
++    <xacro:include filename="$(find xarm_description)/urdf/xarm6/xarm6.urdf.xacro" />
++    <xacro:include filename="$(find xarm_description)/urdf/xarm6/xarm6.transmission.xacro" />
++    <xacro:include filename="$(find xarm_description)/urdf/xarm6/xarm6.gazebo.xacro" />
++
++    <xacro:if value="${limited}">
++      <xacro:if value="${is_ros2}">
++        <xacro:xarm6_ros2_control prefix="${prefix}"
++          velocity_control="${velocity_control}"
++          ros2_control_plugin="${ros2_control_plugin}"
++          hw_ns="${hw_ns}" add_gripper="${add_gripper}" add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}" report_type="${report_type}"
++          baud_checkset="${baud_checkset}" default_gripper_baud="${default_gripper_baud}"
++          joint1_lower_limit="${-pi*0.99}" joint1_upper_limit="${pi*0.99}"
++          joint2_lower_limit="${-2.059}" joint2_upper_limit="${2.0944}"
++          joint3_lower_limit="${-pi*0.99}" joint3_upper_limit="${0.19198}"
++          joint4_lower_limit="${-pi*0.99}" joint4_upper_limit="${pi*0.99}"
++          joint5_lower_limit="${-1.69297}" joint5_upper_limit="${pi*0.99}"
++          joint6_lower_limit="${-pi*0.99}" joint6_upper_limit="${pi*0.99}"/>
++      </xacro:if>
++      <xacro:xarm6_urdf prefix="${prefix}"
++        joint1_lower_limit="${-pi*0.99}" joint1_upper_limit="${pi*0.99}"
++        joint2_lower_limit="${-2.059}" joint2_upper_limit="${2.0944}"
++        joint3_lower_limit="${-pi*0.99}" joint3_upper_limit="${0.19198}"
++        joint4_lower_limit="${-pi*0.99}" joint4_upper_limit="${pi*0.99}"
++        joint5_lower_limit="${-1.69297}" joint5_upper_limit="${pi*0.99}"
++        joint6_lower_limit="${-pi*0.99}" joint6_upper_limit="${pi*0.99}"
++        model_num="${model_num}"
++        inertial_params_filename="${inertial_params_filename}"
++        kinematics_params_filename="${kinematics_params_filename}"
++        />
++    </xacro:if>
++    <xacro:unless value="${limited}">
++      <xacro:if value="${is_ros2}">
++        <xacro:xarm6_ros2_control prefix="${prefix}" velocity_control="${velocity_control}"
++          ros2_control_plugin="${ros2_control_plugin}"
++          hw_ns="${hw_ns}" add_gripper="${add_gripper}" add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}" report_type="${report_type}"
++          baud_checkset="${baud_checkset}" default_gripper_baud="${default_gripper_baud}" />
++      </xacro:if>
++      <xacro:xarm6_urdf prefix="${prefix}" model_num="${model_num}"
++        inertial_params_filename="${inertial_params_filename}"
++        kinematics_params_filename="${kinematics_params_filename}"
++        />
++    </xacro:unless>
++
++    <xacro:xarm6_transmission prefix="${prefix}" hard_interface="${hard_interface}" />
++    
++    <xacro:xarm6_gazebo prefix="${prefix}" />
++
++  </xacro:macro>
++
++</robot>
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device.urdf.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device.urdf.xacro
+new file mode 100644
+index 0000000..2e34d88
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device.urdf.xacro
+@@ -0,0 +1,73 @@
++<?xml version='1.0' encoding='utf-8'?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro" name="UF_ROBOT">
++  <xacro:arg name="prefix" default=""/>
++  <xacro:arg name="hw_ns" default="xarm"/>
++  <xacro:arg name="limited" default="false"/>
++  <xacro:arg name="effort_control" default="false"/>
++  <xacro:arg name="velocity_control" default="false"/>
++  <xacro:arg name="add_gripper" default="false"/>
++  <xacro:arg name="add_vacuum_gripper" default="false"/>
++  <xacro:arg name="add_bio_gripper" default="false"/>
++  <xacro:arg name="model1300" default="false"/>
++  
++  <xacro:arg name="dof" default="7"/>
++  <xacro:arg name="robot_ip" default=""/>
++  <xacro:arg name="robot_type" default="xarm"/>
++  <xacro:arg name="robot_sn" default=""/>
++  <xacro:arg name="report_type" default="normal"/>
++
++  <xacro:arg name="ros2_control_plugin" default="uf_robot_hardware/UFRobotSystemHardware"/>
++  <xacro:arg name="ros2_control_params" default=""/>
++
++  <xacro:arg name="add_realsense_d435i" default="false"/>
++  <xacro:arg name="add_d435i_links" default="true"/>
++  <xacro:arg name="use_gazebo_camera" default="false"/>
++
++  <xacro:arg name="add_other_geometry" default="false"/>
++  <xacro:arg name="geometry_type" default="box"/>
++  <xacro:arg name="geometry_mass" default="0.1"/>
++  <xacro:arg name="geometry_height" default="0.1"/>
++  <xacro:arg name="geometry_radius" default="0.1"/>
++  <xacro:arg name="geometry_length" default="0.1"/>
++  <xacro:arg name="geometry_width" default="0.1"/>
++  <xacro:arg name="geometry_mesh_filename" default=""/>
++  <xacro:arg name="geometry_mesh_origin_xyz" default="0 0 0"/>
++  <xacro:arg name="geometry_mesh_origin_rpy" default="0 0 0"/>
++  <xacro:arg name="geometry_mesh_tcp_xyz" default="0 0 0"/>
++  <xacro:arg name="geometry_mesh_tcp_rpy" default="0 0 0"/>
++
++  <xacro:arg name="baud_checkset" default="true"/>
++  <xacro:arg name="default_gripper_baud" default="2000000"/>
++  
++  <xacro:arg name="attach_to" default="world"/>
++  <xacro:arg name="attach_xyz" default="0 0 0"/>
++  <xacro:arg name="attach_rpy" default="0 0 0"/>
++  <xacro:arg name="mesh_suffix" default="stl"/>
++
++  <xacro:arg name="kinematics_suffix" default=""/>
++  <xacro:arg name="gripper_version" default="G1"/>
++
++  <!-- load xarm device -->
++  <xacro:include filename="$(find xarm_description)/urdf/xarm_device_macro.xacro" />
++  <xacro:xarm_device prefix="$(arg prefix)" hw_ns="$(arg hw_ns)" limited="$(arg limited)" 
++    effort_control="$(arg effort_control)" velocity_control="$(arg velocity_control)"
++    add_gripper="$(arg add_gripper)" add_vacuum_gripper="$(arg add_vacuum_gripper)" 
++    add_bio_gripper="$(arg add_bio_gripper)" dof="$(arg dof)" 
++    ros2_control_plugin="$(arg ros2_control_plugin)" robot_type="$(arg robot_type)" 
++    load_gazebo_plugin="true" ros2_control_params="$(arg ros2_control_params)"
++    add_realsense_d435i="$(arg add_realsense_d435i)" 
++    add_d435i_links="$(arg add_d435i_links)" 
++    add_other_geometry="$(arg add_other_geometry)" 
++    geometry_type="$(arg geometry_type)" geometry_mass="$(arg geometry_mass)"
++    geometry_height="$(arg geometry_height)" geometry_radius="$(arg geometry_radius)"
++    geometry_length="$(arg geometry_length)" geometry_width="$(arg geometry_width)"
++    geometry_mesh_filename="$(arg geometry_mesh_filename)"
++    geometry_mesh_origin_xyz="$(arg geometry_mesh_origin_xyz)" geometry_mesh_origin_rpy="$(arg geometry_mesh_origin_rpy)"
++    geometry_mesh_tcp_xyz="$(arg geometry_mesh_tcp_xyz)" geometry_mesh_tcp_rpy="$(arg geometry_mesh_tcp_rpy)"
++    robot_ip="$(arg robot_ip)" report_type="$(arg report_type)"
++    baud_checkset="$(arg baud_checkset)" default_gripper_baud="$(arg default_gripper_baud)"
++    model1300="$(arg model1300)" attach_to="$(arg attach_to)" attach_xyz="$(arg attach_xyz)" attach_rpy="$(arg attach_rpy)"
++    robot_sn="$(arg robot_sn)" use_gazebo_camera="$(arg use_gazebo_camera)" mesh_suffix="$(arg mesh_suffix)" kinematics_suffix="$(arg kinematics_suffix)"
++    gripper_version="$(arg gripper_version)" />
++
++</robot>
+diff --git a/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device_macro.xacro b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device_macro.xacro
+new file mode 100644
+index 0000000..b8f87c8
+--- /dev/null
++++ b/robotics/manipulation/vendor-source/xarm_description/urdf/xarm_device_macro.xacro
+@@ -0,0 +1,335 @@
++<?xml version='1.0' encoding='utf-8'?>
++<robot xmlns:xacro="http://ros.org/wiki/xacro" name="xarm_device">
++  <xacro:macro name="xarm_device" params="
++    prefix:=''
++    hw_ns:='xarm'
++    limited:=false
++    effort_control:=false 
++    velocity_control:=false
++    add_gripper:=false
++    add_vacuum_gripper:=false
++    add_bio_gripper:=false
++    dof:=7
++    robot_type:='xarm'
++    ros2_control_plugin:='uf_robot_hardware/UFRobotSystemHardware'
++    attach_to:='world'
++    attach_xyz:='0 0 0'
++    attach_rpy:='0 0 0'
++    create_attach_link:=true
++    ros2_control_params:=''
++    load_gazebo_plugin:=false 
++    add_realsense_d435i:=false
++    add_d435i_links:=true
++    use_gazebo_camera:=false
++    add_other_geometry:=false 
++    geometry_type:='box'
++    geometry_mass:='0.1'
++    geometry_radius:='0.1'
++    geometry_height:='0.1' 
++    geometry_length:='0.1'
++    geometry_width:='0.1'
++    geometry_mesh_filename:=''
++    geometry_mesh_origin_xyz:='0 0 0'
++    geometry_mesh_origin_rpy:='0 0 0'
++    geometry_mesh_tcp_xyz:='0 0 0'
++    geometry_mesh_tcp_rpy:='0 0 0' 
++    robot_ip:=''
++    report_type:='normal'
++    baud_checkset:=true
++    default_gripper_baud:=2000000 
++    model1300:=false
++    robot_sn:='' 
++    mesh_suffix:='stl' 
++    kinematics_suffix:=''
++    gripper_version:='G1'
++    "
++    > 
++
++    <!-- Load Common Material -->
++    <xacro:include filename="$(find xarm_description)/urdf/_private_macro.xacro" />
++    <xacro:device_macro_begin />
++
++    <!-- Load Common Material -->
++    <xacro:include filename="$(find xarm_description)/urdf/common/common.material.xacro" />
++    <xacro:common_material prefix="${prefix}"/>
++
++    <!-- Specify Mesh file path -->
++    <xacro:property name="mesh_suffix" value="${mesh_suffix}" scope="parent"/>
++    <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem' or ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
++      <!-- gazebo use -->
++      <xacro:property name="mesh_path" value="file://$(find xarm_description)/meshes" scope="parent"/>
++    </xacro:if>
++    <xacro:unless value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem' or ros2_control_plugin == 'ign_ros2_control/IgnitionSystem' or ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
++      <xacro:property name="mesh_path" value="package://xarm_description/meshes" scope="parent"/>
++    </xacro:unless> 
++
++    <!-- include common.link.xacro -->
++    <xacro:include filename="$(find xarm_description)/urdf/common/common.link.xacro" />
++    <xacro:parse_link_inertial_filename dof="${dof}" robot_type="${robot_type}" robot_sn="${robot_sn}" model1300="${model1300}" />
++    <xacro:property name="inertial_params_filename" value="${scope_parent_inertial_params_filename}"/>
++    <xacro:property name="model_num" value="${scope_parent_model_num}"/>
++
++    <!-- add one world link if no 'attach_to' specified  -->
++    <xacro:if value="${attach_to == 'world' and create_attach_link}">
++      <link name="world" />
++    </xacro:if>
++
++    <joint name="${prefix}world_joint" type="fixed">
++      <parent link="${attach_to}" />
++      <child link="${prefix}link_base" />
++      <origin xyz="${attach_xyz}" rpy="${attach_rpy}" />
++    </joint>
++
++    <xacro:if value="${effort_control}"> 
++      <xacro:property name="hard_interface" value="EffortJointInterface" />
++    </xacro:if>
++    <xacro:unless value="${effort_control}"> 
++      <xacro:if value="${velocity_control}"> 
++        <xacro:property name="hard_interface" value="VelocityJointInterface" />
++      </xacro:if>
++      <xacro:unless value="${velocity_control}"> 
++        <xacro:property name="hard_interface" value="PositionJointInterface" />
++      </xacro:unless>
++    </xacro:unless>
++
++    <xacro:if value="${robot_type == 'uf850' or robot_type == 'xarm7_mirror'}"> 
++      <xacro:property name="robot_name" value="${robot_type}" />
++    </xacro:if>
++    <xacro:unless value="${robot_type == 'uf850' or robot_type == 'xarm7_mirror'}"> 
++      <xacro:property name="robot_name" value="${robot_type}${dof}" />
++    </xacro:unless>
++
++    <xacro:if value="${kinematics_suffix != ''}">
++      <xacro:property name="kinematics_params_filename" value="$(find xarm_description)/config/kinematics/user/${robot_name}_kinematics_${kinematics_suffix}.yaml"/>
++    </xacro:if>
++    <xacro:unless value="${kinematics_suffix != ''}">
++      <xacro:property name="kinematics_params_filename" value="$(find xarm_description)/config/kinematics/default/${robot_name}_default_kinematics.yaml"/>
++    </xacro:unless>
++    
++    <xacro:if value="${dof == 5}">
++      <!-- Load XArm5 Robot Model URDF -->
++      <xacro:include filename="$(find xarm_description)/urdf/xarm5/xarm5_robot_macro.xacro" />
++      <xacro:xarm5_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++        velocity_control="${velocity_control}" 
++        ros2_control_plugin="${ros2_control_plugin}" 
++        add_gripper="${add_gripper}"
++        add_bio_gripper="${add_bio_gripper}"
++        robot_ip="${robot_ip}"
++        report_type="${report_type}"
++        baud_checkset="${baud_checkset}"
++        default_gripper_baud="${default_gripper_baud}" 
++        model_num="${model_num}"
++        inertial_params_filename="${inertial_params_filename}"
++        kinematics_params_filename="${kinematics_params_filename}"
++        hard_interface="${hard_interface}" />
++    </xacro:if>
++    <xacro:if value="${dof == 6}">
++      <xacro:if value="${robot_type == 'uf850'}">
++        <!-- Load UFACTORY 850 Robot Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/uf850/uf850_robot_macro.xacro" />
++        <xacro:uf850_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++          velocity_control="${velocity_control}" 
++          ros2_control_plugin="${ros2_control_plugin}" 
++          add_gripper="${add_gripper}"
++          add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}"
++          report_type="${report_type}"
++          baud_checkset="${baud_checkset}"
++          default_gripper_baud="${default_gripper_baud}"
++          model_num="${model_num}"
++          inertial_params_filename="${inertial_params_filename}"
++          kinematics_params_filename="${kinematics_params_filename}"
++          hard_interface="${hard_interface}" />
++      </xacro:if>
++      <xacro:if value="${robot_type == 'lite'}">
++        <!-- Load Lite6 Robot Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/lite6/lite6_robot_macro.xacro" />
++        <xacro:lite6_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++          velocity_control="${velocity_control}" 
++          ros2_control_plugin="${ros2_control_plugin}" 
++          add_gripper="${add_gripper}"
++          robot_ip="${robot_ip}"
++          report_type="${report_type}"
++          baud_checkset="${baud_checkset}"
++          default_gripper_baud="${default_gripper_baud}"
++          model_num="${model_num}"
++          inertial_params_filename="${inertial_params_filename}"
++          kinematics_params_filename="${kinematics_params_filename}"
++          hard_interface="${hard_interface}" />
++      </xacro:if>
++      <xacro:unless value="${robot_type == 'lite' or robot_type == 'uf850'}">
++        <!-- Load XArm6 Robot Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/xarm6/xarm6_robot_macro.xacro" />
++        <xacro:xarm6_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++          velocity_control="${velocity_control}" 
++          ros2_control_plugin="${ros2_control_plugin}" 
++          add_gripper="${add_gripper}"
++          add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}"
++          report_type="${report_type}"
++          baud_checkset="${baud_checkset}"
++          default_gripper_baud="${default_gripper_baud}"
++          model_num="${model_num}"
++          inertial_params_filename="${inertial_params_filename}"
++          kinematics_params_filename="${kinematics_params_filename}"
++          hard_interface="${hard_interface}" />
++      </xacro:unless>
++    </xacro:if>
++    <xacro:unless value="${dof == 5 or dof == 6}">
++      <xacro:if value="${robot_type == 'xarm7_mirror'}">
++        <!-- Load xArm7 Mirror Robot Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/xarm7_mirror/xarm7_mirror_robot_macro.xacro" />
++        <xacro:xarm7_mirror_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++          velocity_control="${velocity_control}" 
++          ros2_control_plugin="${ros2_control_plugin}"
++          add_gripper="${add_gripper}"
++          add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}"
++          report_type="${report_type}"
++          baud_checkset="${baud_checkset}"
++          default_gripper_baud="${default_gripper_baud}" 
++          model_num="${model_num}"
++          inertial_params_filename="${inertial_params_filename}"
++          kinematics_params_filename="${kinematics_params_filename}"
++          hard_interface="${hard_interface}" />
++      </xacro:if>
++      <xacro:unless value="${robot_type == 'xarm7_mirror'}">
++        <!-- Load XArm7 Robot Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/xarm7/xarm7_robot_macro.xacro" />
++        <xacro:xarm7_robot prefix="${prefix}" hw_ns="${hw_ns}" limited="${limited}" 
++          velocity_control="${velocity_control}" 
++          ros2_control_plugin="${ros2_control_plugin}"
++          add_gripper="${add_gripper}"
++          add_bio_gripper="${add_bio_gripper}"
++          robot_ip="${robot_ip}"
++          report_type="${report_type}"
++          baud_checkset="${baud_checkset}"
++          default_gripper_baud="${default_gripper_baud}" 
++          model_num="${model_num}"
++          inertial_params_filename="${inertial_params_filename}"
++          kinematics_params_filename="${kinematics_params_filename}"
++          hard_interface="${hard_interface}" />
++      </xacro:unless>
++    </xacro:unless>
++
++    <xacro:if value="${add_realsense_d435i}">
++      <!-- (xarm) Load RealSense D435i URDF -->
++      <xacro:include filename="$(find xarm_description)/urdf/camera/realsense_d435i.urdf.xacro" />
++      <xacro:d435i_urdf prefix="${prefix}" add_d435i_links="${add_d435i_links}" />
++      <xacro:if value="${add_d435i_links}">
++        <xacro:include filename="$(find xarm_description)/urdf/camera/realsense.gazebo.xacro" />
++        <xacro:if value="${is_ros2}">
++          <xacro:if value="${ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
++            <xacro:realsense_gz prefix="${prefix}" />
++          </xacro:if>
++          <xacro:if value="${ros2_control_plugin == 'ign_ros2_control/IgnitionSystem'}">
++            <xacro:realsense_ignition prefix="${prefix}" />
++          </xacro:if>
++          <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem'}">
++            <xacro:realsense_gazebo prefix="${prefix}" />
++          </xacro:if>
++        </xacro:if>
++        <xacro:unless value="${is_ros2}">
++          <xacro:realsense_gazebo prefix="${prefix}" />
++        </xacro:unless>
++      </xacro:if>
++    </xacro:if>
++    <xacro:unless value="${add_realsense_d435i}">
++      <link name="${prefix}link_eef"/>
++    </xacro:unless>
++    <joint name="${prefix}joint_eef" type="fixed">
++      <origin xyz="0 0 0" rpy="0 0 0" />
++      <parent link="${prefix}link${dof}" />
++      <child link="${prefix}link_eef" />
++    </joint>
++    
++    <xacro:if value="${add_gripper}">
++      <xacro:if value="${robot_type == 'lite'}">
++        <!-- Load Lite Gripper Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/gripper/uflite_gripper_macro.xacro" />
++        <xacro:uflite_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
++          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
++          gripper_version="${gripper_version}" />
++      </xacro:if>
++      <xacro:unless value="${robot_type == 'lite'}">
++        <!-- Load XArm Gripper Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/gripper/xarm_gripper_macro.xacro" />
++        <xacro:xarm_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
++          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
++          gripper_version="${gripper_version}" />
++      </xacro:unless>
++    </xacro:if>
++
++    <xacro:if value="${not add_gripper and add_bio_gripper}">
++      <xacro:unless value="${robot_type == 'lite'}">
++        <!-- Load BIO Gripper Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/gripper/bio_gripper_macro.xacro" />
++        <xacro:bio_gripper_macro prefix="${prefix}" attach_to="${prefix}link_eef" 
++          ros2_control_plugin="${ros2_control_plugin}" dof="${dof}" hard_interface="${hard_interface}" 
++          gripper_version="${gripper_version}" />
++      </xacro:unless>
++    </xacro:if>
++
++    <xacro:if value="${not add_gripper and not add_bio_gripper and add_vacuum_gripper}">
++      <xacro:if value="${robot_type == 'lite'}">
++        <!-- Load Lite Vacuum Gripper Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/vacuum_gripper/lite_vacuum_gripper.urdf.xacro" />
++        <xacro:uflite_vacuum_gripper_urdf prefix="${prefix}" attach_to="${prefix}link_eef" />
++      </xacro:if>
++      <xacro:unless value="${robot_type == 'lite'}">
++        <!-- Load XArm Vacuum Gripper Model URDF -->
++        <xacro:include filename="$(find xarm_description)/urdf/vacuum_gripper/xarm_vacuum_gripper.urdf.xacro" />
++        <xacro:xarm_vacuum_gripper_urdf prefix="${prefix}" attach_to="${prefix}link_eef" />
++      </xacro:unless>
++    </xacro:if>
++
++    <xacro:if value="${not add_gripper and not add_vacuum_gripper and add_other_geometry}">
++      <!-- Load Other Model URDF -->
++      <xacro:include filename="$(find xarm_description)/urdf/other/other_geometry.urdf.xacro" />
++      <xacro:other_geometry prefix="${prefix}" attach_to="${prefix}link_eef"
++        geometry_type="${geometry_type}" geometry_mass="${geometry_mass}" 
++        geometry_height="${geometry_height}" geometry_radius="${geometry_radius}"
++        geometry_length="${geometry_length}" geometry_width="${geometry_width}"
++        geometry_mesh_filename="${geometry_mesh_filename}" 
++        geometry_mesh_origin_xyz="${geometry_mesh_origin_xyz}" geometry_mesh_origin_rpy="${geometry_mesh_origin_rpy}"
++        geometry_mesh_tcp_xyz="${geometry_mesh_tcp_xyz}" geometry_mesh_tcp_rpy="${geometry_mesh_tcp_rpy}"
++      />
++    </xacro:if>
++
++    <!-- gazebo_plugin -->
++    <xacro:if value="${load_gazebo_plugin}">
++      <xacro:include filename="$(find xarm_description)/urdf/common/common.gazebo.xacro" />
++      <xacro:if value="${is_ros2}">
++        <xacro:if value="${robot_type == 'uf850' or robot_type == 'xarm7_mirror'}">
++          <xacro:property name="new_ros2_control_params" value="$(find xarm_controller)/config/${robot_type}_controllers.yaml"/>
++        </xacro:if>
++        <xacro:unless value="${robot_type == 'uf850' or robot_type == 'xarm7_mirror'}">
++          <xacro:property name="new_ros2_control_params" value="$(find xarm_controller)/config/${robot_type}${dof}_controllers.yaml"/>
++        </xacro:unless>
++        <xacro:if value="${ros2_control_params != ''}">
++          <xacro:property name="new_ros2_control_params" value="${ros2_control_params}"/>
++        </xacro:if>
++        <xacro:if value="${ros2_control_plugin == 'gz_ros2_control/GazeboSimSystem'}">
++          <xacro:gz_ros2_control_plugin ros2_control_params="${new_ros2_control_params}"/>
++        </xacro:if>
++        <xacro:if value="${ros2_control_plugin == 'ign_ros2_control/IgnitionSystem'}">
++          <xacro:ignition_ros2_control_plugin prefix="${prefix}" ros2_control_params="${new_ros2_control_params}"/>
++        </xacro:if>
++        <xacro:if value="${ros2_control_plugin == 'gazebo_ros2_control/GazeboSystem'}">
++          <xacro:gazebo_ros2_control_plugin ros2_control_params="${new_ros2_control_params}"/>
++        </xacro:if>
++      </xacro:if>
++      <xacro:unless value="${is_ros2}">
++        <xacro:gazebo_ros1_control_plugin namespace="${hw_ns}"/>
++      </xacro:unless>    
++    </xacro:if>
++
++    <xacro:if value="${use_gazebo_camera}">
++      <xacro:include filename="$(find xarm_description)/urdf/camera/camera.gazebo.xacro" />
++      <xacro:camera_gazebo prefix="${prefix}" />
++    </xacro:if>
++
++    <xacro:device_macro_end />
++
++  </xacro:macro>
++</robot>
+\ No newline at end of file
+diff --git a/tests/fixtures/xarm-native-protocol.urdf b/tests/fixtures/xarm-native-protocol.urdf
+index d772bb2..c2d77ba 100644
+--- a/tests/fixtures/xarm-native-protocol.urdf
++++ b/tests/fixtures/xarm-native-protocol.urdf
+@@ -44,55 +44,91 @@
+ <axis xyz="0 0 1"/>
+ <limit effort="30.6" lower="-1.69297" upper="3.14159265359" velocity="3.14"/>
+ </joint>
+ <joint name="joint6" type="revolute">
+ <parent link="link5"/><child link="link6"/>
+ <origin xyz="0.076 0.097 0" rpy="-1.5707999999996645 0 0"/>
+ <axis xyz="0 0 1"/>
+ <limit effort="30.6" lower="-6.28318530718" upper="6.28318530718" velocity="3.14"/>
+ </joint>
+ <joint name="gripper_fix" type="fixed">
+-<parent link="link6"/><child link="xarm_gripper_base_link"/>
++<parent link="link_eef"/><child link="xarm_gripper_base_link"/>
+ <origin xyz="0 0 0" rpy="0.0 0 0"/>
+ </joint>
+ <joint name="drive_joint" type="revolute">
+ <parent link="xarm_gripper_base_link"/><child link="left_outer_knuckle"/>
+ <origin xyz="0 0.035 0.059098" rpy="0.0 0 0"/>
+ <axis xyz="1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
+ </joint>
+ <joint name="left_finger_joint" type="revolute">
+ <parent link="left_outer_knuckle"/><child link="left_finger"/>
+ <origin xyz="0 0.035465 0.042039" rpy="0.0 0 0"/>
+ <axis xyz="-1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
++<mimic joint="drive_joint" multiplier="1" offset="0"/>
+ </joint>
+ <joint name="left_inner_knuckle_joint" type="revolute">
+ <parent link="xarm_gripper_base_link"/><child link="left_inner_knuckle"/>
+ <origin xyz="0 0.02 0.074098" rpy="0.0 0 0"/>
+ <axis xyz="1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
++<mimic joint="drive_joint" multiplier="1" offset="0"/>
+ </joint>
+ <joint name="right_outer_knuckle_joint" type="revolute">
+ <parent link="xarm_gripper_base_link"/><child link="right_outer_knuckle"/>
+ <origin xyz="0 -0.035 0.059098" rpy="0.0 0 0"/>
+ <axis xyz="-1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
++<mimic joint="drive_joint" multiplier="1" offset="0"/>
+ </joint>
+ <joint name="right_finger_joint" type="revolute">
+ <parent link="right_outer_knuckle"/><child link="right_finger"/>
+ <origin xyz="0 -0.035465 0.042039" rpy="0.0 0 0"/>
+ <axis xyz="1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
++<mimic joint="drive_joint" multiplier="1" offset="0"/>
+ </joint>
+ <joint name="right_inner_knuckle_joint" type="revolute">
+ <parent link="xarm_gripper_base_link"/><child link="right_inner_knuckle"/>
+ <origin xyz="0 -0.02 0.074098" rpy="0.0 0 0"/>
+ <axis xyz="-1 0 0"/>
+ <limit effort="50" lower="0" upper="0.85" velocity="2"/>
++<mimic joint="drive_joint" multiplier="1" offset="0"/>
+ </joint>
+ <joint name="joint_tcp" type="fixed">
+ <parent link="xarm_gripper_base_link"/><child link="link_tcp"/>
+ <origin xyz="0 0 0.172" rpy="0 0 0"/>
+ </joint>
+-<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>
++<link name="link_tcp"/><link name="link_eef"/><link name="world"/>
++<joint name="world_joint" type="fixed"><parent link="world"/><child link="link_base"/><origin xyz="0 0 0" rpy="0 0 0"/></joint>
++<joint name="joint_eef" type="fixed"><parent link="link6"/><child link="link_eef"/><origin xyz="0 0 0" rpy="0 0 0"/></joint>
++<ros2_control name="gz_ros2_control/GazeboSimSystem" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware><joint name="joint1"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint2"><command_interface name="position"><param name="min">-2.059</param><param name="max">2.0944</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint3"><command_interface name="position"><param name="min">-3.927</param><param name="max">0.19198</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint4"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint5"><command_interface name="position"><param name="min">-1.69297</param><param name="max">3.14159265359</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint><joint name="joint6"><command_interface name="position"><param name="min">-6.28318530718</param><param name="max">6.28318530718</param></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint></ros2_control>
++<ros2_control name="XArmGripperSystem" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware><joint name="drive_joint"><command_interface name="position"></command_interface><command_interface name="velocity"><param name="min">-3.14</param><param name="max">3.14</param></command_interface><state_interface name="position"/><state_interface name="velocity"/></joint></ros2_control>
++<transmission name="tran1"><type>transmission_interface/SimpleTransmission</type><joint name="joint1"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor1"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="tran2"><type>transmission_interface/SimpleTransmission</type><joint name="joint2"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor2"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="tran3"><type>transmission_interface/SimpleTransmission</type><joint name="joint3"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor3"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="tran4"><type>transmission_interface/SimpleTransmission</type><joint name="joint4"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor4"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="tran5"><type>transmission_interface/SimpleTransmission</type><joint name="joint5"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor5"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="tran6"><type>transmission_interface/SimpleTransmission</type><joint name="joint6"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="motor6"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>100</mechanicalReduction></actuator></transmission>
++<transmission name="drive_joint_trans"><type>transmission_interface/SimpleTransmission</type><joint name="drive_joint"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface></joint><actuator name="drive_joint_motor"><hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface><mechanicalReduction>1</mechanicalReduction></actuator></transmission>
++<gazebo reference="link_base"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link1"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link2"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link3"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link4"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link5"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="link6"><selfCollide>true</selfCollide></gazebo>
++<gazebo reference="xarm_gripper_base_link"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="left_outer_knuckle"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="left_finger"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="left_inner_knuckle"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="right_outer_knuckle"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="right_finger"><selfCollide>false</selfCollide></gazebo>
++<gazebo reference="right_inner_knuckle"><selfCollide>false</selfCollide></gazebo>
++<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>left_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
++<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>left_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
++<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_outer_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
++<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_finger_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
++<gazebo><plugin name="gz::sim::systems::GazeboMimicJointPlugin" filename="libgazebo_mimic_joint_plugin.so"><joint>drive_joint</joint><mimicJoint>right_inner_knuckle_joint</mimicJoint><hasPID/><multiplier>1</multiplier><offset>0</offset><sensitiveness>0</sensitiveness><maxEffort>10</maxEffort></plugin></gazebo>
++<gazebo><plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin"><parameters>/tmp/launch_params_protocolfixture</parameters></plugin></gazebo>
+ </robot>
+diff --git a/tests/integration/xarm-native-cli.test.ts b/tests/integration/xarm-native-cli.test.ts
+new file mode 100644
+index 0000000..0fd7dfe
+--- /dev/null
++++ b/tests/integration/xarm-native-cli.test.ts
+@@ -0,0 +1,36 @@
++// Lifecycle protocol doubles. These test evidence classification, not native startup/execution.
++import {test,expect,vi,afterEach} from 'vitest';
++import {mkdtemp,readFile} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join,resolve} from 'node:path';
++import * as factory from '../../packages/lab-runtime/src/v2/sil/xarm-provider';
++import {runXarmCase} from '../../packages/lab-runtime/src/v2/sil/xarm-cli';
++afterEach(()=>vi.restoreAllMocks());
++for(const [name,ack]of Object.entries({lostAck:{accepted:false,unknown:true,reason:'ACK_UNKNOWN'},rejected:{accepted:false,unknown:false,reason:'ACTION_REJECTED'}})){
++ test('CLI '+name+' remains attempted and retains command receipt',async()=>{
++  const out=join(await mkdtemp(join(tmpdir(),'xarm-cli-')),'run');let attempts=0;
++  vi.spyOn(factory,'createXarmSimProvider').mockResolvedValue({evidenceKind:'protocol_double',adapter:{execute:async()=>{attempts++;return ack;}},close:async()=>{}} as never);
++  const r=await runXarmCase({sourceRoot:resolve('.'),out,mode:'X2',environmentProfile:'engineering-arm64',nativeCase:'nominal'});
++  expect(r.motion).toMatchObject({status:'executed',result:'fail'});expect(attempts).toBe(1);expect(JSON.parse(await readFile(join(out,'source-command.json'),'utf8')).ack).toEqual(ack);
++  expect(r.evidenceKind).toBe('protocol_double');
++  expect(JSON.parse(await readFile(join(out,'source-lifecycle.json'),'utf8'))).toMatchObject({phase:'command_attempted',startup:'ready',command:ack.unknown?'unknown':'rejected'});
++ });
++}
++for(const [name,error,status]of [['preflight','XARM_NATIVE_NOT_QUALIFIED:OS_MISMATCH','not_run'],['startup','XARM_STARTUP_TIMEOUT','executed']] as const){
++ test('CLI '+name+' phase is distinct',async()=>{
++  vi.spyOn(factory,'createXarmSimProvider').mockRejectedValue(Error(error));
++  const out=join(await mkdtemp(join(tmpdir(),'xarm-cli-')),'run');const r=await runXarmCase({sourceRoot:resolve('.'),out,mode:'X2',environmentProfile:'engineering-arm64',nativeCase:'nominal'});
++  expect(r.motion.status).toBe(status);expect(r.motion.result).toBe(status==='not_run'?'blocked_external':'fail');
++ });
++}
++
++test('CLI durably records dispatch intent before transport and preserves unknown on thrown ACK and failed close',async()=>{
++ const out=join(await mkdtemp(join(tmpdir(),'xarm-cli-')),'run');
++ vi.spyOn(factory,'createXarmSimProvider').mockResolvedValue({evidenceKind:'protocol_double',adapter:{execute:async()=>{
++  expect(JSON.parse(await readFile(join(out,'source-lifecycle.json'),'utf8'))).toMatchObject({phase:'command_attempted',command:'unknown'});
++  expect(JSON.parse(await readFile(join(out,'source-command.json'),'utf8')).ack).toBeNull();throw Error('TRANSPORT_LOST');
++ }},close:async()=>{throw Error('CLOSE_UNKNOWN');}} as never);
++ const r=await runXarmCase({sourceRoot:resolve('.'),out,mode:'X2',environmentProfile:'engineering-arm64',nativeCase:'nominal'});
++ expect(r.motion).toEqual({status:'executed',result:'fail',reason:'TRANSPORT_LOST'});
++ expect(JSON.parse(await readFile(join(out,'source-lifecycle.json'),'utf8'))).toMatchObject({command:'unknown',shutdownErrors:['CLOSE_UNKNOWN']});
++});
+diff --git a/tests/integration/xarm-native-contract.test.ts b/tests/integration/xarm-native-contract.test.ts
+index a0d29f8..4eb4477 100644
+--- a/tests/integration/xarm-native-contract.test.ts
++++ b/tests/integration/xarm-native-contract.test.ts
+@@ -88,10 +88,37 @@ test('native mapping requires explicit G2/1305 mesh readback',async()=>{
+  const {validateXarmUrdf}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
+  expect(()=>validateXarmUrdf(xml.replace(/<link [\s\S]*?<\/link>/g,''),'X2')).toThrow();
+ });
+ 
+ test('a late result cannot revive Source completion after close',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'xarm-late-'));let reply:((value:unknown)=>void)|undefined;
+  const port:XarmPort={request:async(method)=>method==='execute'?{accepted:true,unknown:false}:new Promise(r=>{reply=r;}),close:async()=>{},onSample:()=>()=>{}};
+  const p=await createXarmSimProvider({sourceRoot:resolve('.'),runDirectory:directory,runId:'run-1',deviceId:'arm-1',cellId:'cell-1',mode:'X1',environmentProfile:'engineering-arm64'},port);
+  await p.adapter.execute(command());const query=p.adapter.reconcile('a');await p.close();reply!({status:'completed',evidence:{}});expect((await query).status).toBe('unknown');
+ });
++
++// Native-kind metadata below is an in-memory adversarial record, never native evidence.
++test('fix1 closes geometry graph and plugin semantics even with a coherently resealed native record',async()=>{
++ const {createHash}=await import('node:crypto');const {validateXarmUrdf,validateXarmMappingRecord}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');
++ const xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
++ const subject={sourceCommit:'1'.repeat(40),profileId:'engineering-amd64',architecture:'amd64',modelSha256:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a'};
++ const record={...validateXarmUrdf(xml,'X2'),producer:'native_xarm.robot_description.v1',sourceCommit:subject.sourceCommit,subjectProfileId:subject.profileId,environmentProfile:'engineering-amd64',sourceModelSha256:subject.modelSha256,vendorCommit:'d837f2e17f7f36043103b367fca3af8172626245',evidenceKind:'gazebo_actual',syntheticSimModelSelector:'XI13050520BB00',controller:{joints:['joint1','joint2','joint3','joint4','joint5','joint6'],commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot/>'}};
++ const cases={whitespaceOffset:xml.replace('<offset>0</offset>','<offset>  </offset>'),underscoredVector:xml.replace('xyz="0 0 0"','xyz="0_0 0 0"'),emptyOffset:xml.replace('<offset>0</offset>','<offset/>'),hexOffset:xml.replace('<offset>0</offset>','<offset>0x0</offset>'),scale:xml.replace('<mesh ','<mesh scale="1000 1000 1000" '),visualOrigin:xml.replace('<visual>','<visual><origin xyz="100 0 0" rpy="0 0 0"/>'),missingTcp:xml.replace('<link name="link_tcp"/>',''),extraLink:xml.replace('</robot>','<link name="orphan"/></robot>'),extraJoint:xml.replace('</robot>','<joint name="cycle" type="fixed"><parent link="link_tcp"/><child link="link_base"/></joint></robot>'),dangling:xml.replace('parent link="world"','parent link="missing"'),attachment:xml.replace('parent link="world"','parent link="link_tcp"'),wrongInterface:xml.replace('<state_interface name="velocity"/>','<state_interface name="effort"/>'),wrongControlJoint:xml.replace('<joint name="joint1"><command_interface','<joint name="joint6"><command_interface'),wrongMimic:xml.replace('<mimicJoint>left_finger_joint</mimicJoint>','<mimicJoint>joint1</mimicJoint>'),wrongMimicRelation:xml.replace('<mimic joint="drive_joint"','<mimic joint="joint1"'),extraHardware:xml.replace('</hardware>','<param name="robot_ip">192.0.2.1</param></hardware>'),wrongParameters:xml.replace('/tmp/launch_params_protocolfixture','/tmp/../evil'),nestedPlugin:xml.replace('<visual>','<visual><plugin name="evil"/>'),gazeboPlugin:xml.replace('</robot>','<gazebo><plugin name="unapproved" filename="libunapproved.so"/></gazebo></robot>'),emptyControl:xml.replace(/<ros2_control[\s\S]*?<\/ros2_control>/g,'<ros2_control name="xarm6" type="system"><hardware><plugin>gz_ros2_control/GazeboSimSystem</plugin></hardware></ros2_control>')};
++ for(const [name,bad]of Object.entries(cases)){
++  expect(()=>validateXarmUrdf(bad,'X2'),name).toThrow();
++  expect(()=>validateXarmMappingRecord(bad,{...record,urdfSha256:createHash('sha256').update(bad).digest('hex')},subject),name+' resealed').toThrow();
++ }
++});
++
++test('both pinned mode graphs accept URDF visual defaults and explicit equivalents',async()=>{
++ const {validateXarmUrdf,validateXarmMappingRecord}=await import('../../packages/lab-runtime/src/v2/sil/xarm-mapping');let xml=await readFile('tests/fixtures/xarm-native-protocol.urdf','utf8');
++ for(const mode of ['X2','X1'] as const){
++  if(mode==='X1')xml=xml.replaceAll('gz_ros2_control/GazeboSimSystem','uf_robot_hardware/UFRobotFakeSystemHardware').replaceAll('file:///opt/mekoniq/xarm_ws/install/xarm_description/share/xarm_description','package://xarm_description').replace(/<gazebo><plugin filename="gz_ros2_control-system"[\s\S]*?<\/gazebo>/,'');
++  const explicit=xml.replaceAll('<visual>','<visual><origin xyz="0 0 0" rpy="0 0 0"/>').replaceAll('<mesh ','<mesh scale="1 1 1" ');
++  expect(()=>validateXarmUrdf(explicit,mode)).not.toThrow();
++  expect(()=>validateXarmUrdf(explicit.replaceAll('xyz="0 0 0"','xyz="+0e0 0.0 -.0"').replaceAll('<offset>0</offset>','<offset>0e+0</offset>'),mode)).not.toThrow();
++  const subject={sourceCommit:'1'.repeat(40),profileId:'engineering-amd64',architecture:'amd64',modelSha256:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a'};
++  const record={...validateXarmUrdf(xml,mode),producer:'native_xarm.robot_description.v1',sourceCommit:subject.sourceCommit,subjectProfileId:subject.profileId,environmentProfile:'engineering-amd64',sourceModelSha256:subject.modelSha256,vendorCommit:'d837f2e17f7f36043103b367fca3af8172626245',syntheticSimModelSelector:'XI13050520BB00',evidenceKind:mode==='X1'?'ros2_fake_system':'gazebo_actual',controller:{joints:['joint1','joint2','joint3','joint4','joint5','joint6'],commandInterfaces:['position'],stateInterfaces:['position'],srdf:'<robot/>'}};
++  expect(()=>validateXarmMappingRecord(xml,record,subject)).not.toThrow();
++  for(const bad of [xml.replace('<link name="link_tcp"/>',''),xml.replace('<link name="world"/>',''),xml.replace('<link name="link_eef"/>',''),xml.replace('parent link="link_eef"','parent link="link6"'),xml.replace('<visual>','<visual><origin rpy="0 0 1"/>')])expect(()=>validateXarmUrdf(bad,mode)).toThrow();
++ }
++});

@@ -1,0 +1,6 @@
+{
+  "ownExitCode": 1,
+  "commandChunk": "98272c",
+  "failedAssertion": "stream-measurement-tests.json raw statuses {'skipped':14,'passed':1} versus root expected {'passed':1,'pending':14}",
+  "cause": "Root audit assumed Vitest pending spelling; this raw reporter uses skipped. Both mean not_run. No product or test failure and no rerun. Corrected audit compares actual skipped spelling."
+}

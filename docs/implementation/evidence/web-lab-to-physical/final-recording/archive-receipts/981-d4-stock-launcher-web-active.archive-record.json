@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-stock-launcher-web-active",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/stock-launcher-web-active",
+  "archive": "981-d4-stock-launcher-web-active.tar.gz",
+  "archiveBytes": 5345408,
+  "archiveSha256": "ed762bc040dccd2479e29a9cb4350cf143cc7a0e2887c4d418d974d9eb4bff5a",
+  "memberIndex": "981-d4-stock-launcher-web-active.members.json",
+  "memberIndexSha256": "467e66c4b870218034539e269a1f7344428553d8f69f3d81a0779eba2c620d19",
+  "memberCount": 62,
+  "memberBytes": 14439829,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-stock-launcher-web-active.extract.json",
+  "safeExtractionReceiptSha256": "d5598bcbdd7555188cecabc737bcfe9c8de7c46a7ecb8ccd571c9464e68d8ba0",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-stock-launcher-web-active",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

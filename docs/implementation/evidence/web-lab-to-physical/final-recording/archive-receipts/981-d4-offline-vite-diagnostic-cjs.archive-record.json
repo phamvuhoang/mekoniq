@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-offline-vite-diagnostic-cjs",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/offline-vite-diagnostic-cjs",
+  "archive": "981-d4-offline-vite-diagnostic-cjs.tar.gz",
+  "archiveBytes": 38404,
+  "archiveSha256": "a105c1c3e7788e1550a34b886afcabd0fa2a0b1b1bf370864402898b996261ab",
+  "memberIndex": "981-d4-offline-vite-diagnostic-cjs.members.json",
+  "memberIndexSha256": "76cd91a4d264d29f8196998a32cfd5aea8488a60a0af1612c59a6edba01a8589",
+  "memberCount": 10,
+  "memberBytes": 175674,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-offline-vite-diagnostic-cjs.extract.json",
+  "safeExtractionReceiptSha256": "df7d874b0277cecb3533020a2c8d3ea225ff90dab4f665fc6c95decf239d63a1",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-offline-vite-diagnostic-cjs",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

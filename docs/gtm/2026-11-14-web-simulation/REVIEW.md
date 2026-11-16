@@ -1,5 +1,8 @@
 # Kiểm tra bộ tài liệu và bàn giao
 
+**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+
+
 Ngày: 14/11/2026. Trạng thái: **bộ kế hoạch nội bộ đã soạn đầy đủ; chưa phát hành hoặc thực thi chiến dịch**. Phạm vi ghi file chỉ trong `docs/2026-11-14-web-simulation-gtm/`, ngoài bốn Git repository. Không đổi code, Git, deploy, ngân sách, tài khoản bên ngoài hoặc liên hệ người khác.
 
 ## Kiểm tra deliverables

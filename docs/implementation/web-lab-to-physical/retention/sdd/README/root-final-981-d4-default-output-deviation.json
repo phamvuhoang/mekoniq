@@ -1,0 +1,104 @@
+{
+  "at": "2026-11-16T00:30:04.834311+00:00",
+  "scope": "Observed current active default-output deviation from prior preserved failure metadata; direct file reads only, no restoration or source edits.",
+  "observed": [
+    {
+      "originalExpected": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/.last-run.json",
+        "bytes": 96,
+        "sha256": "44f0f57038f72e1a032b135edd3485fd8e8b1b9ae6a8dccbe0c8fd22c1257e6e"
+      },
+      "current": {
+        "bytes": 45,
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+        "mtimeNs": 1794787870342498963
+      },
+      "preservedExactCopies": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/.last-run.json",
+          "bytes": 96,
+          "sha256": "44f0f57038f72e1a032b135edd3485fd8e8b1b9ae6a8dccbe0c8fd22c1257e6e"
+        }
+      ]
+    },
+    {
+      "originalExpected": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/error-context.md",
+        "bytes": 13132,
+        "sha256": "ea515720d6abcc7ce137d8e95e5406e0c98279d753ffe6b68657e4a645283b07"
+      },
+      "current": null,
+      "preservedExactCopies": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/error-context.md",
+          "bytes": 13132,
+          "sha256": "ea515720d6abcc7ce137d8e95e5406e0c98279d753ffe6b68657e4a645283b07"
+        }
+      ]
+    },
+    {
+      "originalExpected": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/test-failed-1.png",
+        "bytes": 107357,
+        "sha256": "3a647523e41a348803778ad0fb65e69055c0d89b9e9375747c651913bd035c7a"
+      },
+      "current": null,
+      "preservedExactCopies": [
+        {
+          "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/test-failed-1.png",
+          "bytes": 107357,
+          "sha256": "3a647523e41a348803778ad0fb65e69055c0d89b9e9375747c651913bd035c7a"
+        }
+      ]
+    }
+  ],
+  "otherOriginalEvidenceVerified": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/twin-polish-default-artifact-preservation.json",
+      "bytes": 5098,
+      "sha256": "a07f72e282d47a74f7bd03de3cfd1e216887dfeac7c05acab9bedca7ad3bdce1"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/.last-run.json",
+      "bytes": 96,
+      "sha256": "44f0f57038f72e1a032b135edd3485fd8e8b1b9ae6a8dccbe0c8fd22c1257e6e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/error-context.md",
+      "bytes": 13132,
+      "sha256": "ea515720d6abcc7ce137d8e95e5406e0c98279d753ffe6b68657e4a645283b07"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/test-failed-1.png",
+      "bytes": 107357,
+      "sha256": "3a647523e41a348803778ad0fb65e69055c0d89b9e9375747c651913bd035c7a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-polish-twin-polish.json",
+      "bytes": 28262,
+      "sha256": "2f475c2adc771bfde037b8eb34a763f2833e7eb9ec6f1c10a40b5dbbb4820567"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.receipt.json",
+      "bytes": 5507,
+      "sha256": "313904075c4c73acc396d8751519f6c2e1201b02cfa3de59d06bd8307d3dd539"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.log",
+      "bytes": 4563,
+      "sha256": "1f76dac64e13844796050eb90b3980f9a01fa0a34df028bc68cf501fc6e5883d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-regression/lab-pw-browser.json",
+      "bytes": 188846,
+      "sha256": "32d31512d44ffbc4dd2266c9119cc0921a11e6092a53315c533513339e5951f6"
+    }
+  ],
+  "knownWriterConfiguration": [
+    "lab/scripts/test-irsim-e2e.mjs:35 invokes playwright.irsim.config.ts without --output",
+    "lab/playwright.irsim.config.ts has no outputDir override for LAB_PW_OUTPUT_DIR",
+    "Fresh IR official suites ran against active Lab and completed by00:11:10UTC. Exact deletion operation was not observed."
+  ],
+  "disposition": "The prior promise that active old test-results remained untouched is no longer true. All three indexed original default artifacts remain byte-identical in their pre-existing external copies, and all eight other triage records still match. Preserve originals/copies and this deviation; do not restore/retag history or claim loss-free coverage beyond indexed artifacts. Use fresh isolated default outputs for subsequent closed-argv producer stages.",
+  "productOrQualificationOutcomeEdited": false
+}

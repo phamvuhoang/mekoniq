@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-semantic-study",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/semantic-study",
+  "archive": "981-d4-semantic-study.tar.gz",
+  "archiveBytes": 13208903,
+  "archiveSha256": "9af04ffb72d16495813dd6be79682979c809d15895f582476ea442d9fba64b3c",
+  "memberIndex": "981-d4-semantic-study.members.json",
+  "memberIndexSha256": "1bd98a143e9eaf4b858b3ce901ef2a28e2b19dccfc660a543349c927fa40c826",
+  "memberCount": 210,
+  "memberBytes": 22299269,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-semantic-study.extract.json",
+  "safeExtractionReceiptSha256": "49695e8c5053faaf56170a4c97b41b03ee772402b0d7183db3a5fa3c5fa418ba",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-semantic-study",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

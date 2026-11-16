@@ -1,0 +1,18 @@
+{
+  "diagnosticDocumentSha256": "73ffbd42c34fa2156435b5cc3a15b24d27b633b30913a9958e9b453a9683bbeb",
+  "receiptSha256": "a733f30959d19ece1e578cba745c7bf32a97745a889558ece524857ae669c762",
+  "ownExit": 1,
+  "stats": {
+    "startTime": "2026-11-15T14:27:59.391Z",
+    "duration": 43220.458,
+    "expected": 3,
+    "skipped": 5,
+    "unexpected": 2,
+    "flaky": 0
+  },
+  "filesVerified": 24,
+  "symlinksVerified": 2,
+  "touch390FinalJsonPresent": false,
+  "touch390TracePresent": false,
+  "note": "Root read observer/config/copy diff, exact unfinished step and HMR protocol/stack. No original code edited; diagnostic is not unchanged test success."
+}

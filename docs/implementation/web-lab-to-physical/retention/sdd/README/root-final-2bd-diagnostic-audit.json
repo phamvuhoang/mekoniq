@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "name": "replay-timing-diagnostic",
+      "receiptSha256": "f1843b86e84915c9dd9aecac4141d208963c454679361669e00a239af102b778",
+      "exitCode": 0,
+      "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "beforeClean": true,
+      "afterClean": true
+    },
+    {
+      "name": "focused-two-unit-files",
+      "receiptSha256": "289223bf093f3f7bf00cdc9575206ea45028cba2e28e23b4fc381c6f95f4e457",
+      "exitCode": 0,
+      "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "beforeClean": true,
+      "afterClean": true
+    },
+    {
+      "name": "prepare-legacy-python",
+      "receiptSha256": "035988cf3c6ffb19baee17ee015d5c1c388817faf020b0935a7f6037132f1401",
+      "exitCode": 0,
+      "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "beforeClean": true,
+      "afterClean": true
+    },
+    {
+      "name": "unchanged-python-dependent-engineering",
+      "receiptSha256": "47dbcd705e797a2e948c65bf70ffba2ee0f4a56b9c925797a7eaa513c075cf06",
+      "exitCode": 1,
+      "sourceCommit": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+      "beforeClean": true,
+      "afterClean": true
+    }
+  ],
+  "originalInventoryEqual": true,
+  "replayResult": {
+    "opens": 0,
+    "recordsA": 10851,
+    "recordsB": 10851,
+    "horizon": 10850,
+    "reportTick": 10850,
+    "accepted": false
+  },
+  "note": "Verified diagnostic receipts/raw counts; no original database opened, no rerun, original failed fullmock remains failed. Exact original timeout cause unresolved."
+}

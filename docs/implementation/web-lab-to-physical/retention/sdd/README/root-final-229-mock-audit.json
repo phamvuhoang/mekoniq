@@ -1,0 +1,13 @@
+{
+  "manifestSha256": "8714cff00be17c89f6c8747724f751109524f44be0cc1aec90ff8a95f7c8fa9c",
+  "revisions": {
+    "source": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+    "sourceDirty": false,
+    "lab": "45794aa8ec7eb8a19214a6e16786455f7c948bb1",
+    "labDirty": false
+  },
+  "commandsVerified": 18,
+  "rawResultsVerified": 20,
+  "ownExit": 0,
+  "scope": "Root independently hashed full current mock manifest, all raw results and command logs, and own receipt/log. Individual skipped cases remain not_run; empty manifest notRun does not replace individual outcomes. No new execution."
+}

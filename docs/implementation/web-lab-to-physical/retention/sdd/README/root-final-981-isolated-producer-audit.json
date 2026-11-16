@@ -1,0 +1,264 @@
+{
+  "at": "2026-11-15T21:55:15.557686+00:00",
+  "scope": "Root read-only isolated producer byte/Git/environment evidence audit; no browser, physics, module import or suite rerun",
+  "pair": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi",
+  "heads": {
+    "source": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "tree": "0f00b40f4cdff7ea8acb08db7901b119beee9216",
+      "status": ""
+    },
+    "lab": {
+      "commit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+      "tree": "2ac16ff1c956f6b57210778c88e29812121583c2",
+      "status": ""
+    }
+  },
+  "copies": [
+    {
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/dist",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab/dist",
+      "files": 200,
+      "bytesPerSide": 36169617
+    },
+    {
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.runtime/8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/lab/.runtime/8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "files": 60,
+      "bytesPerSide": 3192856
+    }
+  ],
+  "closureFiles": {
+    "native": {
+      "files": 226,
+      "digest": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+    },
+    "portable": {
+      "files": 238,
+      "digest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+    }
+  },
+  "checkerGitBlobs": 1115,
+  "checker": {
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "toolSha256": "2d911a9d0028b12d0b6360b49170d77bbbe95b8ca2feed7cf5771ac3bef07ffe"
+  },
+  "buildSha256": "0c1f3d0ff3e4df6a2590269a5e0e47ca65f0a2936529b18c5c7c5b26c38e2b5b",
+  "pythonReuse": [
+    {
+      "name": "irsim",
+      "lockPinsCompared": 28,
+      "interpreter": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-irsim/bin/python",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pthSha256": "5bc82a0001109822c6c95e8b53a40ec799be797b8ccae9905dfe039c635509b3",
+      "imports": {
+        "irsim": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/irsim/__init__.py",
+        "yaml": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/yaml/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/jsonschema/__init__.py"
+      }
+    },
+    {
+      "name": "mujoco",
+      "lockPinsCompared": 21,
+      "interpreter": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-mujoco/bin/python",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pthSha256": "d34f42d20aa8781b14a9ecfc82222e58945249a2dd231dd97c1431f14174f6f0",
+      "imports": {
+        "mujoco": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/mujoco/__init__.py",
+        "numpy": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/numpy/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/jsonschema/__init__.py"
+      }
+    },
+    {
+      "name": "linkforge",
+      "lockPinsCompared": 14,
+      "interpreter": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-linkforge/bin/python",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pthSha256": "f3b81065590324157a2e83be8bb493466f5e409e6cbf9154cf6d8da62b27330a",
+      "imports": {
+        "yaml": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/lib/python3.11/site-packages/yaml/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/lib/python3.11/site-packages/jsonschema/__init__.py"
+      }
+    }
+  ],
+  "nodeDependencyLinks": [
+    {
+      "path": "node_modules/.bin",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.bin"
+    },
+    {
+      "path": "node_modules/.modules.yaml",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.modules.yaml"
+    },
+    {
+      "path": "node_modules/.pnpm",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm"
+    },
+    {
+      "path": "node_modules/.pnpm-workspace-state-v1.json",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm-workspace-state-v1.json"
+    },
+    {
+      "path": "node_modules/.vite",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.vite"
+    },
+    {
+      "path": "node_modules/.vite-temp",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.vite-temp"
+    },
+    {
+      "path": "node_modules/@playwright",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/@playwright"
+    },
+    {
+      "path": "node_modules/@types",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/@types"
+    },
+    {
+      "path": "node_modules/ajv",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/ajv@8.20.0/node_modules/ajv"
+    },
+    {
+      "path": "node_modules/ajv-formats",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/ajv-formats@3.0.1_ajv@8.20.0/node_modules/ajv-formats"
+    },
+    {
+      "path": "node_modules/axe-core",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/axe-core@4.14.0/node_modules/axe-core"
+    },
+    {
+      "path": "node_modules/fake-indexeddb",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/fake-indexeddb@6.2.4/node_modules/fake-indexeddb"
+    },
+    {
+      "path": "node_modules/three",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/three@0.180.0/node_modules/three"
+    },
+    {
+      "path": "node_modules/typescript",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/typescript@5.9.3/node_modules/typescript"
+    },
+    {
+      "path": "node_modules/vite",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/vite@7.3.1_@types+node@24.19.2/node_modules/vite"
+    },
+    {
+      "path": "node_modules/vitest",
+      "target": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/.pnpm/vitest@4.1.12_@types+node@24.19.2_vite@7.3.1_@types+node@24.19.2_/node_modules/vitest"
+    }
+  ],
+  "node": "v24.22.2",
+  "pnpm": "10.32.1",
+  "ownChecks": [
+    {
+      "name": "prepare-isolated-producer",
+      "exitCode": 1,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T21:47:07.354Z",
+      "finishedAt": "2026-11-15T21:47:15.151Z"
+    },
+    {
+      "name": "prepare-isolated-producer-attempt2",
+      "exitCode": 0,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T21:49:00.770Z",
+      "finishedAt": "2026-11-15T21:49:08.596Z"
+    },
+    {
+      "name": "check-isolated-producer",
+      "exitCode": 0,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T21:50:21.100Z",
+      "finishedAt": "2026-11-15T21:50:22.440Z"
+    },
+    {
+      "name": "final-lab-build",
+      "exitCode": 0,
+      "signal": null,
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+      "startedAt": "2026-11-15T21:45:28.253Z",
+      "finishedAt": "2026-11-15T21:45:32.891Z"
+    }
+  ],
+  "primaryFiles": [
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-irsim/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+      "bytes": 113,
+      "sha256": "5bc82a0001109822c6c95e8b53a40ec799be797b8ccae9905dfe039c635509b3"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-mujoco/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+      "bytes": 114,
+      "sha256": "d34f42d20aa8781b14a9ecfc82222e58945249a2dd231dd97c1431f14174f6f0"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-d35aetgi/source/.venv-linkforge/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+      "bytes": 117,
+      "sha256": "f3b81065590324157a2e83be8bb493466f5e409e6cbf9154cf6d8da62b27330a"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/prepare-isolated-producer.receipt.json",
+      "bytes": 4704,
+      "sha256": "0f1b628ff49c6dc0839d73cd4b326c2277f2266bd7954bf610190d30e95d9cfc"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/prepare-isolated-producer.log",
+      "bytes": 584,
+      "sha256": "135b1627e18d46af214b9d9f987aaf50ec29e29df00b6fdf56714850e84b5342"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/prepare-isolated-producer-attempt2.receipt.json",
+      "bytes": 4713,
+      "sha256": "720f83cfe055526079649c07f74e143c302ea14b712c27925b919872869992e1"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/prepare-isolated-producer-attempt2.log",
+      "bytes": 1169,
+      "sha256": "1d4d2cbf4f837559d48f8478e0c96859f1e1a630b241aa3a9c1edac979cfb180"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/check-isolated-producer.receipt.json",
+      "bytes": 4668,
+      "sha256": "6ce41b60a0f47853900b489400e4c3526abdbea8393c75daaf24c9b26e653292"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/check-isolated-producer.log",
+      "bytes": 815,
+      "sha256": "0c3fa2093750be7ccb37b7c2991463c06c5c92197758e930667c735e5719b5b8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/final-lab-build.receipt.json",
+      "bytes": 4618,
+      "sha256": "c86a0830dd36a837938afb718e26b70c7acb3bcf26cdca15fa4f7960e0464207"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/final-lab-build.log",
+      "bytes": 1605,
+      "sha256": "7a8e19c4081191f8e41fdeb0d675000965113031a30141b2c18b170c9f7177d9"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/isolated-producer-boundary.json",
+      "bytes": 322144,
+      "sha256": "94a0ac7b81c5e2809c474112235fe0102dfa8a2a81a95414b04a6331e56e9673"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/isolated-producer-check.json",
+      "bytes": 87249,
+      "sha256": "c4e24f75abeffce6dc428746d73086132ff81bb214b7403f1a482690fb22c4a8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/isolated-producer-attempt1-disposition.json",
+      "bytes": 649,
+      "sha256": "de29995f0408dbac2511aa52ee1e713fa17dc0eebe9e7622d2d5bf2ce15d2456"
+    }
+  ],
+  "limits": [
+    "Dependencies explicitly reused on the same Mac, not an independent install/host qualification.",
+    "Initial root dependency symlink preparation failure is preserved; replacement uses a real ignored directory and per-entry links.",
+    "Root first audit incorrectly compared two file list orderings; retained failed attempt and corrected complete map comparison, preserving independent original-order build digest validation.",
+    "Default-result retention is per subsequent invocation; this preparation audit is not their completion or performance evidence."
+  ]
+}

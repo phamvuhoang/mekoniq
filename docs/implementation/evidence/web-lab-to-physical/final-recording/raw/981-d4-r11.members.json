@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T01:09:50.825291+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r11",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-r11.tar.gz",
+  "archiveBytes": 432678,
+  "archiveSha256": "5171117882cd91d41fb49ecdd1fb5fd2b44686502db719074e43309a9e9cdabf",
+  "memberCount": 24,
+  "memberBytes": 1273965,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "irsim-record.json",
+      "bytes": 357969,
+      "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699907931769
+    },
+    {
+      "path": "mock-regression.json",
+      "bytes": 55333,
+      "sha256": "18a91703f8e0252c0d3c9cdb058482398a914400a1e8a32ca730edf3b672671d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699910013998
+    },
+    {
+      "path": "qualification.json",
+      "bytes": 18371,
+      "sha256": "4f6617faaab699a211b78c9dfc4d1a730b806bc0962ab4d11ec5c891e357e62c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790700389494627
+    },
+    {
+      "path": "r1-record.json",
+      "bytes": 578091,
+      "sha256": "f0e491403c41c89dd09cd61b2fbc0cb9cbf29067ae2955ebfad7d1cda24df56e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699906576532
+    },
+    {
+      "path": "screens/webots-coffee.png",
+      "bytes": 196525,
+      "sha256": "f39ae9158a2da502dff8f73b1a2f2fa5527a77da2fb6d42a23bad494fc70d23c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790698861250260
+    },
+    {
+      "path": "suites/arm-bv01.json",
+      "bytes": 3556,
+      "sha256": "d3ca3749317809172e3a3d284a4e28725c7848dd5120226826e1d461fa43f904",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790465972294128
+    },
+    {
+      "path": "suites/arm-bv01.log",
+      "bytes": 1240,
+      "sha256": "16a85ea910f81344545e8004a5fc9d17591888585dfb47e15920207d93685de8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790465971388637
+    },
+    {
+      "path": "suites/arm-faults.json",
+      "bytes": 5139,
+      "sha256": "affb8b076c7b885d29158aa579bb39190d8cd567b57bebac316b226cc8784e2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790658241326121
+    },
+    {
+      "path": "suites/arm-faults.log",
+      "bytes": 2169,
+      "sha256": "481d3a4b2b3b520aab6757ae56f5df26852243ec64c2802e428a27644436de81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790658240427463
+    },
+    {
+      "path": "suites/arm-programs.json",
+      "bytes": 9906,
+      "sha256": "f19e1aee4123f69def5e48fa777ea49eb3fbf650172d16c8185e846061a0d9f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790383135747621
+    },
+    {
+      "path": "suites/arm-programs.log",
+      "bytes": 1095,
+      "sha256": "f5cdea45737af4f861b3db95e5b1399ad37abafbb1321b80dc81155426aa8e57",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790383135016545
+    },
+    {
+      "path": "suites/arm-py.log",
+      "bytes": 179,
+      "sha256": "683f65fd151eee5d65ad3297ce4b39e6215373af95afe8096ed29daeeb06ec73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790362724241065
+    },
+    {
+      "path": "suites/arm-py.xml",
+      "bytes": 9524,
+      "sha256": "b22f634424a1d681172ac4429241119894556c58ca965b89da105c2c2248ce01",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790362724788268
+    },
+    {
+      "path": "suites/arm-regress.json",
+      "bytes": 6475,
+      "sha256": "30f41fc34c61a009c2950755114eb9eaf6653e41f8d04da6cefc6e2211b99b96",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790671340080808
+    },
+    {
+      "path": "suites/arm-regress.log",
+      "bytes": 856,
+      "sha256": "3e92096f08291246bea536f424f1c12ffc93d63aa6922bcb93c6386be3d7dabd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790671339230025
+    },
+    {
+      "path": "suites/arm-static.json",
+      "bytes": 7025,
+      "sha256": "1482359a3ae9cbc9ce1c773dbd7eda43f41a6008b018345efb859be369ef66df",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790360054662966
+    },
+    {
+      "path": "suites/arm-static.log",
+      "bytes": 479,
+      "sha256": "eca327fa15b4aee9bf5ad45eec6c681be24e1da8fee7c2425371cbd142e30c2c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790360054048847
+    },
+    {
+      "path": "suites/arm-worker.json",
+      "bytes": 2440,
+      "sha256": "a3e18e20ff615cd570abcceec06e4646f91992b44b9966a580afed26bc27ef07",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790372968646790
+    },
+    {
+      "path": "suites/arm-worker.log",
+      "bytes": 915,
+      "sha256": "2df9d7f2e886b29b9f642b9ca103b78060c559311c4a27152acbf53c37816de8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790372968061754
+    },
+    {
+      "path": "suites/lab-arm-unit.json",
+      "bytes": 10403,
+      "sha256": "4681b1864b1e26067f4518dffc5d504b610f46348d2d666bb9b5aa6926a5afa2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790673311696208
+    },
+    {
+      "path": "suites/lab-arm-unit.log",
+      "bytes": 834,
+      "sha256": "f824af5f550f667878e45b5cb349fbc460a62b57b913b8612e58c2e0243a5a0d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790673311221379
+    },
+    {
+      "path": "suites/lab-e2e-webots-coffee.json",
+      "bytes": 4346,
+      "sha256": "b63ad30e8f9342490c7fae455b713f883e2cb8fd491aa7301b6e1e0233bf70dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699515421021
+    },
+    {
+      "path": "suites/lab-e2e-webots-coffee.log",
+      "bytes": 1095,
+      "sha256": "704c40fc5fb85c104b13c8b5465a93c1f1e8cf80d6f7b157377133b066b5c8f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699514378614
+    },
+    {
+      "path": "suites/licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790699904619343
+    }
+  ],
+  "directories": [
+    "screens",
+    "suites"
+  ],
+  "declaredDependencySymlinks": []
+}

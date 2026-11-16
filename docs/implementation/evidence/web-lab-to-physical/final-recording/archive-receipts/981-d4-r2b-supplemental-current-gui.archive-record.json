@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-r2b-supplemental-current-gui",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui",
+  "archive": "981-d4-r2b-supplemental-current-gui.tar.gz",
+  "archiveBytes": 16919,
+  "archiveSha256": "ca63414157c75a33f4a6ddcd511ccdfa3433363e50e742dadcf68def078bf141",
+  "memberIndex": "981-d4-r2b-supplemental-current-gui.members.json",
+  "memberIndexSha256": "430e11d39f30cc894268f2c12ca739c2b87a0a6bf9c98413e78fe1ae8e9edf5c",
+  "memberCount": 12,
+  "memberBytes": 108078,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-r2b-supplemental-current-gui.extract.json",
+  "safeExtractionReceiptSha256": "43a512a298aafe27a734a8540a1641faf4f552460efbaf01004fdc6860f4221d",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r2b-supplemental-current-gui",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

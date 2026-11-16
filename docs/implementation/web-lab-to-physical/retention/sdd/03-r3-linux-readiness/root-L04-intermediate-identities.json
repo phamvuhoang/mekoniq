@@ -1,0 +1,297 @@
+{
+  "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+  "sourceTree": "82cb9600bb4f70acb3419197848d13d28f5d16aa",
+  "labCommit": "7564d489722d81e5ff5f31bea5d61439b91ea7cf",
+  "labTree": "f34edd7df0ef338e69033efeb7727932059841c0",
+  "export": "/tmp/l04-runtime-962e925-20261115",
+  "artifactSha256": "0abee6f3bb8e04535149a885bb69c2e4593bf93bd794fae455017614a733315f",
+  "manifestSha256": "29c25906442f03eef06f3601582ba10d4fa943c13947d704074ef1c31ff220f1",
+  "cacheManifestSha256": "d1d6ea517e309cdf69095c7001b9d839ff3dfca0b95ec09fa098a1d510926a86",
+  "labPinSha256": "1fba3916493923e642e2ac24b95b01bfbb7b59c2e0874bb7494bedbb2b8cfd74",
+  "schemaHash": "9e869f41bd7dbbbae1f26f81b75449b727e7160fdfb1a3b32cf3b23a5cb034e4",
+  "nativeToolsDigest": "e16987678e2622ecb762baa1d1aabe4921f6bf136bbf0a07424ef8df8100d481",
+  "nativeToolsFiles": 225,
+  "portableToolsDigest": "1fb6f053d4903a109a41f862556a02c2fd71c60d5011d94d27463165ad697d82",
+  "portableToolsFiles": 237,
+  "finalChangedSourceFiles": {
+    "docs/operations/linuxcnc-native-sim-handoff.md": "c62363d55ffa9a7b973155fefe1a9f49bd3c182c477dc753475da51f65c64c4e",
+    "integrations/arm-controller/packaging/dependencies.lock.json": "3e661b818225e4d97d0e4666c59bd90cba325519e53e424390a3a2bce9db95ca",
+    "integrations/arm-controller/scripts/prepare_smoke.py": "39c4090ca6d439f17148dfde76b083c840e564d2abae84547afc60e5f7419a55",
+    "integrations/arm-controller/scripts/runtime-inventory.py": "3301b7d8c15537860cc77222d75cad7f176cd69bcc7e3aad0277e014ae48f6be",
+    "integrations/arm-controller/scripts/smoke-sim.sh": "384bd43ce4375158445b1d4a9ab6abffc10a84412cfa122c54c01185003fd8eb",
+    "integrations/arm-controller/scripts/smoke_driver.py": "cab6d563428ff0a7e757310e72e3025f8dc06a0b33251d51deec4d7083b4dea3",
+    "integrations/arm-controller/tests/test_actual_trace.py": "3b26885eed5f223d3c74af6e7f7feb452e1ed0d5e518bf44dfcc9ad4c75f1e0a",
+    "integrations/arm-controller/tests/test_smoke_launch.py": "26d9b4e07d4eccd1c7178a1c8b5af077165ee66b814c7ea339612156fb5e8ee9",
+    "packages/lab-runtime/src/v2/algorithm/linuxcnc-trace.ts": "02bd064931f47af3568450654ca8ac96ad9969f6a3286c7f172093ea357fd167",
+    "scripts/lab-algorithm.mjs": "cfb579e46c51fa42f3c5bedde54faa13a8145bc5925a0754d7da55f102dd790a",
+    "scripts/native-sim/tool-identity.mjs": "2e886a762242242d31aa9fb4d8fddb1bcc1e3cb1ee8d57ae20632ebf468c9fdf",
+    "tests/integration/linuxcnc-alg04-evidence.test.ts": "0856386bad2a9263e9b6c3b755ec67ad65fe99a884da5a459702a6fda9f52295",
+    "tests/unit/native-tool-identity.test.ts": "2b27b5d1f830bda438f3d7d71e2e3bb140f2336993643424952af74195007c2c"
+  },
+  "preflights": {
+    "terminal": {
+      "runtime-inventory.json": "cfab9b52bddeffbab490e3df883bd196fbba937fd994b4332c708fadbd1370e7",
+      "smoke-sim.json": "5fa85f74857e5ddb9f7490fe077c861619fa5620c3a36b456d532b9a77f2f8de"
+    },
+    "gui": {
+      "runtime-inventory.json": "cfab9b52bddeffbab490e3df883bd196fbba937fd994b4332c708fadbd1370e7",
+      "smoke-sim.json": "d040eb3accbfb04ba670608bf762df6c6c7db7672224317125714c506d1a86fc"
+    }
+  },
+  "checks": [
+    {
+      "name": "changed-lint-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "changed-lint.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clean-export.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "e48f6ef354d8f840332c87ec7fc9b4ee60d95830275dde7cf8e9458bef221786"
+    },
+    {
+      "name": "combined-python-final-02.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "3bdbc938ea80c9684eeaa9ec3b8513ab791ed5b48a2bfc05f48cfbaf492346f2"
+    },
+    {
+      "name": "combined-python-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "369a3990d3fcf1ca7719cebd1b3abd0093769d1bd7bd9c8fb8fc4a154d934b62"
+    },
+    {
+      "name": "combined-python.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "c7ee404fce3d86987ffd44081dc1734199400963e921daae097475e2cba5158d"
+    },
+    {
+      "name": "combined-ts-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "6a1b2ba506cfbd6ac80a835645e6c53c5724103234db56151db8f6544a0d2eca"
+    },
+    {
+      "name": "combined-ts.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "bdcc6a6583cf3fcfd3be61325e73a04dca3a6d94787abd88d131719b8247271a"
+    },
+    {
+      "name": "contracts-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c"
+    },
+    {
+      "name": "diff-check-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "green-python-01.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "55de7ddc8682c39137fb766aed1a61b1ea0b983fadfcc10b2a93ad509abc04e5"
+    },
+    {
+      "name": "green-python-02.receipt",
+      "exit": 2,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "b407a0243078270638f8eab4ecfa178cb4a675ed9360af30a9eda59338f7a8dd"
+    },
+    {
+      "name": "green-ts-01.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "5a95704819fe040dd19a3eaecd29059267fea788dcf72e543fea21026d9220ac"
+    },
+    {
+      "name": "green-wiring.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "ee3aadf1922cc892a364ba850c5d29ec58dd305d8fee6e39053ef99e490a57dc"
+    },
+    {
+      "name": "gui-preflight.receipt",
+      "exit": 2,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "a8489828dd2a0f43ae2a73b09e8843c9f2158d9ea0c81fb10a365fdef2e4a44f"
+    },
+    {
+      "name": "lab-check-source.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "d920052064ac6ba77849f145a3e5ee779c3924dea5765977f242a7264bdd29b9"
+    },
+    {
+      "name": "lab-import.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "d74d5f91aa09dcb997de65d828d7585b48e45d41af3e4f7c20cbb866ec526add"
+    },
+    {
+      "name": "lab-staged-check.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lab-sync.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+    },
+    {
+      "name": "lab-typecheck.receipt",
+      "exit": 0,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+    },
+    {
+      "name": "red-cli-02.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "f2f89fe92b8d23e80a04920f9bea7644f4819b8de8c06395ef99d0420f8c5db7"
+    },
+    {
+      "name": "red-cli.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "55a56bce90fe770b49f47a995bdfc4c142ec2323a9d40d78480a44a2d6162c59"
+    },
+    {
+      "name": "red-closure.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "753ae51222174d88d285841cf867533e29d7fe4e0d1f2635a79a48637d83824b"
+    },
+    {
+      "name": "red-epoch-02.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "8bbb1d39ac488106748626b31f1d655b73884f9b290d80e25fe216a8198fd02b"
+    },
+    {
+      "name": "red-epoch-failure.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "c2dc7332906595ee2d0980778f2a0493d5cd8c142bb5ed72ee04e92177d7b5eb"
+    },
+    {
+      "name": "red-init-reason.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "902f3712c5cefedbe53c9a39ac56608f522196e3b483aacc98a8b20eee192c3b"
+    },
+    {
+      "name": "red-inventory.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "a1d7120cc757ec1db8ffd5564855b6b760b778529278c871d8d248668fdf8e96"
+    },
+    {
+      "name": "red-python-02.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "c5c8c01e2ecdfee0352834e076e8dff3daff0b2fc1fb5a7bb5312635405bb508"
+    },
+    {
+      "name": "red-python.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "38e18e997ed547bea8818527a8d7126ba0c6ab88b8a51d60a12734676cadc161"
+    },
+    {
+      "name": "red-ts.receipt",
+      "exit": 1,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "c0a19d4c3818b9ee1775475da8682779b686a3b9d96809eb4eec8fd831cd590b"
+    },
+    {
+      "name": "source-final-diff.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "source-staged-check.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "terminal-preflight.receipt",
+      "exit": 2,
+      "sourceCommit": "962e925a9b5f1adadbc5c881be43f7f170034264",
+      "dirty": false,
+      "outputSha256": "e358e2d8b27cf1ced7646eddd6329adcf8a2cc05435bad952ee6ecf2bc974c0d"
+    },
+    {
+      "name": "typecheck-01.receipt",
+      "exit": 2,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "b7c917e4c7b3cbb8c43d6a3b35b3b1b57880e87f7a715c1405e4b77d6d50b194"
+    },
+    {
+      "name": "typecheck-02.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+    },
+    {
+      "name": "typecheck-final.receipt",
+      "exit": 0,
+      "sourceCommit": "7b5b3a17e501f125efac18749ad5b8123940ce7c",
+      "dirty": true,
+      "outputSha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+    }
+  ],
+  "historicalL03FinalExportAndCacheUnchanged": true,
+  "claims": "local byte/receipt consistency only; no effective Git-graph attestation or host authentication"
+}

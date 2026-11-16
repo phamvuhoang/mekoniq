@@ -1,0 +1,31 @@
+{
+  "observations": [
+    {
+      "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix3-n4t809l_/brand-health-red.json",
+      "bytes": 17021,
+      "sha256": "3be51f33c9ca5120ea8d395700654008cb8b38facd1f2712346ad6a2ccff19e8",
+      "stats": {
+        "startTime": "2026-11-15T15:19:29.360Z",
+        "duration": 14227.988,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix3-n4t809l_/brand-health-green.json",
+      "bytes": 6842,
+      "sha256": "8ed134709163c95d40bd657adfbc786c42b20b292033e4e8e4b4981633bb0da5",
+      "stats": {
+        "startTime": "2026-11-15T15:20:11.488Z",
+        "duration": 3253.779,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "scope": "Root read both complete result cases including exact failing boundary and actual default proxy HTTP500 annotations. Controlled pre-fix diagnostic separately used owned runtime HTTP200; no conflation."
+}

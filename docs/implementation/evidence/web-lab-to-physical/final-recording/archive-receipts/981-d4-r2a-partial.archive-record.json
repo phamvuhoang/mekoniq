@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-r2a-partial",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-partial",
+  "archive": "981-d4-r2a-partial.tar.gz",
+  "archiveBytes": 228996,
+  "archiveSha256": "d538c8686b76308cc7288a92144290d7b46f34a297041e8c880cf838ba6c58fa",
+  "memberIndex": "981-d4-r2a-partial.members.json",
+  "memberIndexSha256": "a2aa4092cadb805b11b06bc4f337a38aef016a279955a5cbdff8871ee06f1736",
+  "memberCount": 6,
+  "memberBytes": 1023579,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-r2a-partial.extract.json",
+  "safeExtractionReceiptSha256": "834b853b1413d6d3d7f5c3552f1889c5ecf4ce700f4c5c4ff936efa4a6021944",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r2a-partial",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

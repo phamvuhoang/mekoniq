@@ -1,0 +1,36 @@
+{
+  "prepared": false,
+  "nativeReady": false,
+  "issues": [
+    {
+      "code": "HANDOFF_SCHEMA_INVALID",
+      "path": "/refs/tool/232/path",
+      "severity": "error"
+    },
+    {
+      "code": "HANDOFF_SCHEMA_INVALID",
+      "path": "/refs/tool/232/sourcePath",
+      "severity": "error"
+    }
+  ],
+  "subject": {
+    "id": "final-prepared-puma560-linuxcnc-sim",
+    "executionKind": "linuxcnc_native",
+    "sourceCommit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+    "labCommit": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d",
+    "schemaHash": "c2bdaca0b5ce9b03ee52a8c497719f4ea83b2cbb0e23c4e18365099fd163fa12",
+    "portableClosureHash": "778c336cd3bcffa975cbea2967915f27fd5f94124ec986e75f2dac031d55df93",
+    "nativeClosureHash": "35aebff4ba065eae48c088a91c94fd7a08af6fd723560e0fdb68cbdc112cce0b",
+    "runtimeArtifactSha256": "e280572231e51db029dc3db7a9c67dfd1b63a1417d0527ccbd20786683a45ba0",
+    "profileSha256": "1cece2cd5ae154713bc7e8493cae8e6b9e90777db3d0a44d30bd5ae0b239f702",
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+    "toolSha256": "29dad7f60d74f99e09b3acd370e759ebcd5a4956e2a18293c8920296a023c865"
+  },
+  "inventoryAssessment": "supplied_records_only",
+  "qualification": "not_run",
+  "accepted": false,
+  "dynamics": "not_calibrated"
+}

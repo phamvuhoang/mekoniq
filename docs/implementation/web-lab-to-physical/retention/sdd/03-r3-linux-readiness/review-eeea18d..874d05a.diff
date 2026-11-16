@@ -1,0 +1,193 @@
+# Review package: eeea18db88485e113aafe1cc15edd7f75ced2b66..874d05aedfbf573496994fd73016f19ef19e6932
+
+## Commits
+874d05a fix: persist completed native probe action receipts
+
+## Files changed
+ scripts/native-sim/mujoco-probe-actions.d.mts |  3 +++
+ scripts/native-sim/mujoco-probe-actions.mjs   | 14 +++++++++++++
+ scripts/native-sim/mujoco-probe-container.mjs |  6 +++---
+ scripts/native-sim/mujoco-probe-core.mjs      |  2 +-
+ tests/unit/mujoco-native-probe.test.ts        | 30 ++++++++++++++++++++++++---
+ 5 files changed, 48 insertions(+), 7 deletions(-)
+
+## Diff
+diff --git a/scripts/native-sim/mujoco-probe-actions.d.mts b/scripts/native-sim/mujoco-probe-actions.d.mts
+new file mode 100644
+index 0000000..5a11717
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-actions.d.mts
+@@ -0,0 +1,3 @@
++export interface ProbeAction {actionId:string;kind:string;payload:Record<string,unknown>;received:boolean}
++export interface ProbeActionResult {run:{runRevision:number};[key:string]:unknown}
++export function createActionRecorder(options:{runId:string;revision:number;requests:ProbeAction[];httpMs:number[];save:(name:string,value:unknown)=>Promise<void>;api:(path:string,method:string,body:Record<string,unknown>)=>Promise<ProbeActionResult>;memory:()=>Promise<void>}):(kind:string,payload?:Record<string,unknown>)=>Promise<ProbeActionResult>;
+diff --git a/scripts/native-sim/mujoco-probe-actions.mjs b/scripts/native-sim/mujoco-probe-actions.mjs
+new file mode 100644
+index 0000000..98a4163
+--- /dev/null
++++ b/scripts/native-sim/mujoco-probe-actions.mjs
+@@ -0,0 +1,14 @@
++// HTTP action persistence shared by the container writer and portable writer-to-reader tests.
++import {performance} from 'node:perf_hooks';
++export function createActionRecorder({runId,revision,requests,httpMs,save,api,memory}){
++ let action=0;
++ return async(kind,payload={})=>{
++  const actionId='native-'+(++action),r={actionId,kind,payload,received:false},t=performance.now();
++  requests.push(r);await save('requests.json',requests);
++  const next=await api('/runs/'+runId+'/actions','POST',{actionId,expectedRevision:revision,kind,payload});
++  r.received=true;httpMs.push(performance.now()-t);revision=next.run.runRevision;
++  // Persist attempts before dispatch and successful completion before returning.
++  await save('requests.json',requests);
++  await memory();return next;
++ };
++}
+diff --git a/scripts/native-sim/mujoco-probe-container.mjs b/scripts/native-sim/mujoco-probe-container.mjs
+index a9c1712..b1aca2b 100644
+--- a/scripts/native-sim/mujoco-probe-container.mjs
++++ b/scripts/native-sim/mujoco-probe-container.mjs
+@@ -1,12 +1,12 @@
+ // Observer entrypoint inside the already-installed exact image. No network except private loopback.
+-import {performance} from 'node:perf_hooks';
++import {createActionRecorder} from './mujoco-probe-actions.mjs';
+ import {spawn} from 'node:child_process';
+ import {readFile,writeFile,mkdir,readdir,lstat,copyFile,open} from 'node:fs/promises';
+ import {join} from 'node:path';
+ import {once} from 'node:events';
+ import {randomBytes} from 'node:crypto';
+ import {runProbeCommand} from './mujoco-probe-process.mjs';
+ import {sha256,probeFile,analyseWire,mujocoCases,assessCase} from './mujoco-probe-evidence.mjs';
+ const [id,out]=process.argv.slice(2),handoff=JSON.parse(await readFile('/probe/handoff.json','utf8')),python='/opt/venv-mujoco/bin/python';
+ const save=(name,value)=>writeFile(join(out,name),JSON.stringify(value)+'\n',{mode:0o600}),read=async p=>JSON.parse(await readFile(p,'utf8'));
+ const abort=new globalThis.AbortController();for(const s of ['SIGTERM','SIGINT'])process.once(s,()=>abort.abort());
+@@ -24,34 +24,34 @@ async function imageInventory(){
+  await walk('robotics/simulation-mujoco');await walk('packages/contracts/schemas');
+  if(observed.some(p=>!checked.some(r=>r.path===p)))throw Error('IMAGE_EXTRA_TOOL_FILE');
+  const r=await engine('inventory');if(r.status!=='completed')throw Error('ENGINE_INVENTORY_FAILED');
+  return {subject:handoff.subject,checked,osRelease:await readFile('/etc/os-release','utf8'),architecture:process.arch,node:process.version,engine:await read(join(out,'engine/engine.json'))};
+ }
+ async function business(spec){
+  const data='/tmp/L01-'+id,key=randomBytes(24).toString('hex'),wirePath=join(out,'wire.jsonl'),base='http://127.0.0.1:39176/lab/v2';await mkdir(data);
+  const stdout=await open(join(out,'runtime.stdout.log'),'wx'),stderr=await open(join(out,'runtime.stderr.log'),'wx');let logs=Promise.resolve(),runtimeClosed=false;
+  const runtime=spawn(process.execPath,['--import','/probe/mujoco-probe-observer.mjs','/app/runtime.mjs','--bind','127.0.0.1','--port','39176','--data-dir',data,'--mujoco-python',python,'--mujoco-worker','/app/robotics/simulation-mujoco','--mujoco-lock','/app/robotics/simulation-mujoco/requirements.lock'],{env:{...process.env,MEKONIQ_LAB_ACCESS_KEY:key,L01_OBSERVER_FILE:wirePath,L01_OWNED_ROOT:data},stdio:['ignore','pipe','pipe']});
+  runtime.stdout.on('data',b=>{logs=logs.then(()=>stdout.write(b));});runtime.stderr.on('data',b=>{logs=logs.then(()=>stderr.write(b));});runtime.once('close',()=>{runtimeClosed=true;});
+- const closed=once(runtime,'close');let token,runDir,runId,raw,view,revision=0,action=0,injection=null,afterLossSteps=0,maxRssKiB=0;
++ const closed=once(runtime,'close');let token,runDir,runId,raw,view,revision=0,injection=null,afterLossSteps=0,maxRssKiB=0;
+  const requests=[],httpMs=[];
+  const api=async(path,method='GET',body)=>{const r=await fetch(base+path,{method,headers:{origin:'http://127.0.0.1:4175','content-type':'application/json',...token?{authorization:'Bearer '+token}:{}},...body!==undefined?{body:JSON.stringify(body)}:{},signal:AbortSignal.any([abort.signal,AbortSignal.timeout(20000)])});const value=await r.json();if(!r.ok)throw Error(`HTTP_${r.status}:${JSON.stringify(value).slice(0,300)}`);return value;};
+  const wire=async()=>{try{return (await readFile(wirePath,'utf8')).split('\n').filter(Boolean).map(s=>JSON.parse(s));}catch{return [];}};
+  const memory=async()=>{let sum=0;for(const name of await readdir('/proc'))if(/^\d+$/.test(name))try{const status=await readFile('/proc/'+name+'/status','utf8');sum+=Number(status.match(/^VmRSS:\s+(\d+)/m)?.[1]??0);}catch{/* exited */}maxRssKiB=Math.max(maxRssKiB,sum);};
+  try{
+   let health;for(const deadline=Date.now()+60000;Date.now()<deadline;){try{health=await api('/health');break;}catch{abort.signal.throwIfAborted();if(runtimeClosed)throw Error('RUNTIME_EXITED');await new Promise(r=>setTimeout(r,200));}}
+   if(!health||health.sourceCommit!==handoff.subject.sourceCommit||health.schemaHash!==handoff.subject.schemaHash)throw Error('RUNTIME_IDENTITY_MISMATCH');await save('health.json',health);
+   token=(await api('/sessions','POST',{token:key})).sessionToken;if(!token)throw Error('PAIRING_FAILED');
+   const project=await read('/app/robotics/simulation-mujoco/fixtures/xarm6-g2-v1/coffee-cell-project.json');
+   view=await api('/runs','POST',{project,scenarioId:'MJ-BV01',scenarioRevision:1,seed:spec.seed,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}});runId=view.run.id;revision=view.run.runRevision;
+   for(const d of await readdir(data)){try{const cp=await read(join(data,d,'run.json'));if(cp.runId===runId){runDir=join(data,d);break;}}catch{/* readiness dir */}}
+   if(!runDir)throw Error('RUN_DIRECTORY_MISSING');
+-  const act=async(kind,payload={})=>{const actionId='native-'+(++action),r={actionId,kind,payload,received:false},t=performance.now();requests.push(r);await save('requests.json',requests);const next=await api('/runs/'+runId+'/actions','POST',{actionId,expectedRevision:revision,kind,payload});r.received=true;httpMs.push(performance.now()-t);revision=next.run.runRevision;await memory();return next;};
++  const act=createActionRecorder({runId,revision,requests,httpMs,save,api,memory});
+   view=await act('start');
+   while(view.tick<10000&&['running','created','paused'].includes(view.run.status)){
+    if(spec.kind==='worker_loss'&&!injection&&view.coffee?.jobs?.some(j=>j.status==='transferring')){
+     const spawned=(await wire()).filter(e=>e.event==='spawn'&&e.runId===runId);if(spawned.length!==1||!Number.isInteger(spawned[0].pid))throw Error('OWNED_WORKER_UNOBSERVED');
+     const pid=spawned[0].pid,cmd=(await readFile('/proc/'+pid+'/cmdline')).toString();
+     if(!cmd.includes('mujoco_worker')||!cmd.includes(runDir))throw Error('WORKER_OWNERSHIP_MISMATCH');
+     injection={kind:'owned_pid_sigkill',pid,atTick:view.tick,atMs:Number(process.hrtime.bigint())/1e6};await save('injection.json',injection);process.kill(pid,'SIGKILL');
+    }
+    abort.signal.throwIfAborted();view=await act('step',{ticks:spec.kind==='worker_loss'?5:50});
+   }
+diff --git a/scripts/native-sim/mujoco-probe-core.mjs b/scripts/native-sim/mujoco-probe-core.mjs
+index c95b6fe..2cbe379 100644
+--- a/scripts/native-sim/mujoco-probe-core.mjs
++++ b/scripts/native-sim/mujoco-probe-core.mjs
+@@ -7,21 +7,21 @@ import {fileURLToPath} from 'node:url';
+ import {randomUUID} from 'node:crypto';
+ import {isDeepStrictEqual as same} from 'node:util';
+ import {platform,arch} from 'node:os';
+ import {tsImport} from 'tsx/esm/api';
+ import {collectNativeInventory} from './native-inventory.mjs';
+ import {runProbeCommand} from './mujoco-probe-process.mjs';
+ import {probeFile,probeArtifacts,sha256,mujocoCases,assessCase,probePrerequisites,imagePrerequisites,timingSummary} from './mujoco-probe-evidence.mjs';
+ import {verifyBusinessRaw,verifyBadStateRaw} from './mujoco-probe-raw.mjs';
+ import baseline from './r2a-arm-baseline.json' with {type:'json'};
+ const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../..'),json=v=>JSON.stringify(v,null,2)+'\n';
+-const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-engine.py','mujoco-probe-retention.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
++const OBSERVER=['mujoco-probe-container.mjs','mujoco-probe-actions.mjs','mujoco-probe-engine.py','mujoco-probe-retention.py','mujoco-probe-observer.mjs','mujoco-probe-process.mjs','mujoco-probe-evidence.mjs'];
+ const read=async(root,path,max)=>JSON.parse((await probeFile(root,path,max??1024*1024)).toString());
+ async function stageObserver(out,handoff,manifest){
+  const dest=join(out,'observer');await mkdir(dest,{mode:0o700});
+  for(const name of OBSERVER)await writeFile(join(dest,name),await probeFile(ROOT,'scripts/native-sim/'+name),{flag:'wx',mode:0o600});
+  await writeFile(join(dest,'handoff.json'),json(manifest),{flag:'wx'});
+  const doc=execFileSync('git',['show',baseline.m00.sourceCommit+':'+baseline.m00.sourcePath],{cwd:ROOT,timeout:10000,maxBuffer:1024*1024});
+  if(sha256(doc)!==baseline.m00.documentSha256)throw Error('M00_DOCUMENT_CHANGED');await mkdir(join(dest,'m00'));await writeFile(join(dest,'m00-source.md'),doc);
+  const blocks=[...doc.toString().matchAll(/```python\n([\s\S]*?)```/g)].map(m=>m[1]);
+  for(const f of baseline.m00.files){const b=blocks.find(b=>sha256(b)===f.sha256);if(!b)throw Error('M00_RECIPE_CHANGED');await writeFile(join(dest,'m00',f.path),b,{flag:'wx'});}
+  const bundle=join(dest,'bad-state-bundle');await mkdir(join(bundle,'blobs'),{recursive:true});await writeFile(join(bundle,'arm-cell-scene.json'),JSON.stringify(baseline.world));
+diff --git a/tests/unit/mujoco-native-probe.test.ts b/tests/unit/mujoco-native-probe.test.ts
+index f12e579..5e93415 100644
+--- a/tests/unit/mujoco-native-probe.test.ts
++++ b/tests/unit/mujoco-native-probe.test.ts
+@@ -177,36 +177,60 @@ test('reader binds the complete checker tuple before accepting summaries',async(
+ test('execution and reader share exact historical image and measured package admission',async()=>{
+  const {imagePrerequisites}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  const digest='sha256:'+'a'.repeat(64),lib='b'.repeat(64),manifest={subject:{image:{manifestDigest:digest}},profile:{forbiddenPackages:['mujoco-core'],requiredPackages:[{name:'mujoco',version:'3.17.0',sha256:lib}]}},engine={version:'3.17.0',packages:[['mujoco','3.17.0']],artifacts:[{path:'/libmujoco.so',digest:'sha256:'+lib}]};
+  expect(imagePrerequisites(manifest,engine,digest)).toEqual([]);
+  expect(imagePrerequisites({...manifest,subject:{image:{manifestDigest:'sha256:'+'c'.repeat(64)}}},engine,digest)).toContain('HISTORICAL_IMAGE_RESOLUTION_REQUIRED');
+  expect(imagePrerequisites(manifest,{...engine,packages:[...engine.packages,['MuJoCo_Core','1']]},digest)).toContain('IMAGE_FORBIDDEN_PACKAGE');
+  expect(imagePrerequisites({...manifest,profile:{...manifest.profile,requiredPackages:[...manifest.profile.requiredPackages,{name:'other'}]}},engine,digest)).toContain('UNMEASURED_PACKAGE_LOCK');
+ });
+ 
+ // These exercise the actual reader's raw-source subvalidator, not full native admission.
+-test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
++test.each(['none','truncated','resend','byte-count','incomplete','checkpoint','injection','requests','writer-final-success','writer-failed','writer-in-flight'])('binds business reader claims to sealed raw sources: %s',async mutation=>{
+  const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const {verifyBusinessRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{sha256}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');
+  const root=await mkdtemp(join(tmpdir(),'L01-raw-reader-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),JSON.stringify(v)+'\n');};
+  const runId='portable-double',wire=[{event:'spawn',runId,pid:42,atMs:1},{event:'request',runId,pid:42,atMs:2,value:{requestId:'a',op:'step'}},{event:'exit',runId,pid:42,atMs:4,signal:'SIGKILL'}],trace={samples:[]},props={samples:[]};
+  const traceBytes=JSON.stringify(trace)+'\n',propsBytes=JSON.stringify(props)+'\n',subject={sourceCommit:'1'.repeat(40),schemaHash:'2'.repeat(64)},report={manifest:{runId,sourceCommit:subject.sourceCommit},schemaHash:subject.schemaHash,arm:{trace:{path:'trace.json',sha256:sha256(traceBytes)},props:{path:'props.json',sha256:sha256(propsBytes)}}};
+- const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x'}]};
++ const raw={report,wire,trace,props,checkpoint:{runId,coffee:{arm:{programs:[{state:'unknown'}]}}},injection:{kind:'owned_pid_sigkill',pid:42,atMs:3},requests:[{actionId:'x',kind:'step',payload:{},received:true}]};
+  await put('report.json',report);await put('run-wire.json',wire);await put('requests.json',mutation==='requests'?[]:raw.requests);await put('injection.json',mutation==='injection'?{...raw.injection,pid:43}:raw.injection);
+  const copies=[];for(const [path,value] of Object.entries({'runtime/r/run.json':mutation==='checkpoint'?{runId,coffee:{arm:{programs:[]}}}:raw.checkpoint,'runtime/r/trace.json':trace,'runtime/r/props.json':props,'runtime/r/journal.db':{fixture:true}})){await put(path,value);const b=await readFile(join(root,path));copies.push({path,bytes:b.length,sha256:sha256(b)});}
+  await put('runtime-copies.json',{afterRuntimeClose:true,copies});
++ if(mutation.startsWith('writer-')){
++  // Drive the production writer, retaining its real filesystem writes, before the strict reader.
++  const {createActionRecorder}=await import('../../scripts/native-sim/mujoco-probe-actions.mjs');
++  raw.requests.length=0;const httpMs:number[]=[];let enter!:()=>void,release!:()=>void;
++  const entered=new Promise<void>(resolve=>{enter=resolve;}),waiting=new Promise<void>(resolve=>{release=resolve;});
++  const response={run:{runRevision:8}},payload={ticks:5};
++  const act=createActionRecorder({runId,revision:7,requests:raw.requests,httpMs,save:put,memory:async()=>{},api:async(path,method,body)=>{
++   expect(path).toBe('/runs/'+runId+'/actions');expect(method).toBe('POST');
++   expect(body).toEqual({actionId:'native-1',expectedRevision:7,kind:'step',payload});
++   expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))).toEqual([{actionId:'native-1',kind:'step',payload,received:false}]);
++   enter();if(mutation==='writer-in-flight')await waiting;
++   if(mutation!=='writer-final-success')throw Error('portable HTTP failure');return response;
++  }});
++  const action=act('step',payload);const settled=action.catch(error=>error);
++  if(mutation==='writer-in-flight'){
++   await entered;
++   expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))[0].received).toBe(false);
++   expect(raw.requests[0].received).toBe(false);expect(httpMs).toEqual([]);release();
++  }
++  if(mutation==='writer-final-success'){expect(await settled).toBe(response);expect(httpMs).toHaveLength(1);}
++  else{expect(await settled).toEqual(Error('portable HTTP failure'));expect(raw.requests[0].received).toBe(false);expect(httpMs).toEqual([]);}
++ }
+  const events=mutation==='truncated'?wire.slice(0,-1):mutation==='resend'?[...wire.slice(0,2),{...wire[1],atMs:2.5},wire[2]]:wire;
+  const stream=events.map(e=>JSON.stringify(e)+'\n').join('');await writeFile(join(root,'wire.jsonl'),stream);await put('wire.jsonl.seal',{complete:true,totalBytes:Buffer.byteLength(stream)+(mutation==='byte-count'?1:0)});if(mutation==='incomplete')await writeFile(join(root,'wire.jsonl.incomplete'),'overflow\n');
+  // Every retained file is newly hashed, so negatives reach raw semantics rather than stale artifact hashes.
+  const {probeArtifacts}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');const artifacts=await probeArtifacts(root);expect(artifacts.length).toBeGreaterThan(5);
+  const issues=await verifyBusinessRaw(root,{kind:'worker_loss'},raw,subject);
+- if(mutation==='none')expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
++ if(mutation==='none'||mutation.startsWith('writer-'))expect(issues).toEqual([]);else expect(issues.length).toBeGreaterThan(0);
++ if(mutation.startsWith('writer-'))expect(JSON.parse(await readFile(join(root,'requests.json'),'utf8'))).toEqual(raw.requests);
++ if(['writer-failed','writer-in-flight'].includes(mutation)){const {assessCase}=await import('../../scripts/native-sim/mujoco-probe-evidence.mjs');expect(assessCase({id:'portable',kind:'worker_loss',seed:42,scope:'unchanged_runtime'},{...raw,workerObservation:{maxActive:1}}).issues).toContain('SERIAL_NO_RESEND');}
+ });
+ 
+ test.each(['none','request','scene','compiled','before','injected','warning','snapshot','dimensions','npz-crc'])('binds bad-state reader to actual request/scene/state bytes: %s',async mutation=>{
+  const {mkdtemp,mkdir,writeFile}=await import('node:fs/promises'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const {verifyBadStateRaw}=await import('../../scripts/native-sim/mujoco-probe-raw.mjs'),{stateNpz}=await import('../fixtures/native-probe-state');
+  const baseline=JSON.parse(await readFile('scripts/native-sim/r2a-arm-baseline.json','utf8'));
+  const root=await mkdtemp(join(tmpdir(),'L01-state-reader-'));await mkdir(join(root,'engine'));
+  const put=(p:string,v:unknown)=>writeFile(join(root,'engine',p),JSON.stringify(v)+'\n');
+  const injection={kind:'qvel_nan',atTick:1,index:0,joint:'J1'},before={tick:0,state:'running'},after={tick:0,state:'failed'},warnings={BADQPOS:0,BADQVEL:1,BADQACC:0};
+  const sizes=baseline.badStateCompiled.stateSizes,state={qpos:Array(sizes.qpos).fill(0),qvel:Array(sizes.qvel).fill(0),qacc:Array(sizes.qacc).fill(0),ctrl:Array(mutation==='dimensions'?1:sizes.ctrl).fill(0)},injected={...state,qvel:[NaN,...state.qvel.slice(1)]};

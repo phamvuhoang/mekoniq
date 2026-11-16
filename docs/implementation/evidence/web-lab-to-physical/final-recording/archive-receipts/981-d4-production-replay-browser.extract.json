@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:18.918367+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/production-replay-browser",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-production-replay-browser.tar.gz",
+  "archiveSha256": "c780ee46ccda441b916901e9c5d958ee2fcffe6131c15381abb2d7de4a499662",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-production-replay-browser.members.json",
+  "memberIndexSha256": "96cd43a01789608e1783a8b264729cbc271c75beb378f2f57479752ac2ecc93f",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-production-replay-browser",
+  "verifiedFiles": 20,
+  "verifiedBytes": 10133813,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

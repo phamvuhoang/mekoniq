@@ -1,0 +1,459 @@
+# Review package: b0fcedec2bc826c4501972f424f3c9798b6b7449..d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6
+
+## Commits
+d4c3032 fix: consume and validate replay release acknowledgements
+1256cdb fix: bound production HTTP observations and compact the run bar
+
+## Files changed
+ scripts/measure-cell-production.ts                 | 33 ++++++++---
+ scripts/production-http-observer.ts                | 64 ++++++++++++++++++++++
+ src/scenarios/controls.ts                          | 10 +++-
+ src/styles/main.css                                |  9 +++
+ tests/e2e/replay-release.spec.ts                   | 36 ++++++++++++
+ tests/e2e/run-bar-compact.spec.ts                  | 29 ++++++++++
+ tests/integration/production-http-observer.test.ts | 58 ++++++++++++++++++++
+ tests/unit/production-http-observer.test.ts        | 31 +++++++++++
+ tests/unit/twin-runtime-remote.test.ts             |  2 +-
+ 9 files changed, 261 insertions(+), 11 deletions(-)
+
+## Diff
+diff --git a/scripts/measure-cell-production.ts b/scripts/measure-cell-production.ts
+index 4b2d37e..569ed8c 100644
+--- a/scripts/measure-cell-production.ts
++++ b/scripts/measure-cell-production.ts
+@@ -1,75 +1,90 @@
+ // @ts-expect-error Source-owned standalone qualification observer
+ import {checkCaptureClock} from '../../source/scripts/browser-capture-clock.mjs';
+ /** Actual production UI + Source shared MuJoCo world; never the synthetic renderer harness. Run with Source's pnpm exec tsx. */
+ import {mkdir,readFile,writeFile,mkdtemp,stat,readdir} from 'node:fs/promises';
+ import {resolve,join} from 'node:path';
+ import os from 'node:os';
+ import {spawn,execFileSync} from 'node:child_process';
+ import {productionBuildIdentity} from './production-build-identity';
++import {observeProductionHTTP} from './production-http-observer';
+ import {createHash,randomUUID} from 'node:crypto';
+ import {performance,monitorEventLoopDelay} from 'node:perf_hooks';
+ import {preview} from 'vite';
+ import {chromium,expect} from '@playwright/test';
+ import {mujocoFromOptions} from '../../source/packages/lab-runtime/src/v2/simulation3d/mujoco';
+ import {portableSimulationFromOptions} from '../../source/packages/lab-runtime/src/v2/navigation2d/readiness';
+ import {engineeringFromOptions} from '../../source/packages/lab-runtime/src/engineering/runtime-options';
+ import {startLabGateway} from '../../source/packages/lab-runtime/src/gateway';
+ import {OwnedProcesses} from '../../source/tests/support/owned-processes';
+ const arg=(key:string)=>{const i=process.argv.indexOf(key);return i<0?undefined:process.argv[i+1];};
+ const exported=process.argv.includes('--exported-runtime');
+ const lab=resolve(import.meta.dirname,'..'),source=resolve(lab,'../source'),output=resolve(arg('--out')??'/tmp/b07b-production'),duration=Number(arg('--duration-ms')??185000),warmup=Number(arg('--warmup-ms')??5000);
+ if(duration<180000&&!process.argv.includes('--diagnostic'))throw Error('ACTIVE_CAPTURE_REQUIRES_180000MS');
+-await mkdir(output,{recursive:true});const directory=await mkdtemp('/tmp/b07b-native-production-'),owned=new OwnedProcesses(),workerSamples:unknown[]=[],stageSamples:{runId:string;stage:string;tick:number;elapsedMs:number;wallMs:number}[]=[],runDirectories=new Map<string,string>(),actions:Record<string,unknown>[]=[],responses:Record<string,unknown>[]=[],exports:Record<string,unknown>[]=[],errors:string[]=[],pendingHTTP=new Set<Promise<void>>();owned.addDirectory(directory);
++await mkdir(output,{recursive:true});const directory=await mkdtemp('/tmp/b07b-native-production-'),owned=new OwnedProcesses(),workerSamples:unknown[]=[],stageSamples:{runId:string;stage:string;tick:number;elapsedMs:number;wallMs:number}[]=[],runDirectories=new Map<string,string>(),actions:Record<string,unknown>[]=[],responses:Record<string,unknown>[]=[],exports:Record<string,unknown>[]=[],errors:string[]=[];owned.addDirectory(directory);
+ const lock=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),loop=monitorEventLoopDelay({resolution:10});loop.enable();
++let stopExportedRuntime:(()=>Promise<void>)|undefined;
++let httpObserver:ReturnType<typeof observeProductionHTTP>|undefined;
+ let activePage:import('@playwright/test').Page|undefined;let gateway:Pick<Awaited<ReturnType<typeof startLabGateway>>,'url'|'pairingToken'|'close'>|undefined,web:Awaited<ReturnType<typeof preview>>|undefined,browser:Awaited<ReturnType<typeof chromium.launch>>|undefined;
++const bounded=async<T>(promise:Promise<T>,ms:number,label:string):Promise<T>=>{let timer:ReturnType<typeof setTimeout>|undefined;try{return await Promise.race([promise,new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(Error(label)),ms);})]);}finally{clearTimeout(timer);}};
+ const summary=(v:number[])=>{const a=[...v].sort((a,b)=>a-b);return {samples:a.length,p50:a[Math.ceil(a.length*.5)-1]??null,p95:a[Math.ceil(a.length*.95)-1]??null,max:a.at(-1)??null};};
+ try{
+  const buildIdentity=await productionBuildIdentity(lab,source,lock);await writeFile(join(output,'build-identity.json'),JSON.stringify(buildIdentity,null,2));
+  const root=join(source,'robotics/simulation-mujoco'),catalog=join(directory,'catalog'),fixture=JSON.parse(await readFile(join(root,'fixtures/serve-payload-v1/serve-3d-components.json'),'utf8'));for(const d of ['components','models','documents'])await mkdir(join(catalog,d),{recursive:true});const entries=[];for(const [digest,c]of Object.entries(fixture.components)){const file=`components/${digest}.json`;await writeFile(join(catalog,file),JSON.stringify(c));entries.push({file,digest});}for(const [digest,m]of Object.entries(fixture.models??{}))await writeFile(join(catalog,'models',`${digest}.json`),JSON.stringify(m));await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id:'serve-payload-v1',components:entries,quotes:[]}));if(!exported){const engineering=await engineeringFromOptions({directory,catalogRoot:catalog,simulationRoot:join(source,'robotics/simulation'),python:join(source,'.venv-irsim/bin/python'),mujoco:{workerRoot:root}});const provider=await owned.observe(()=>mujocoFromOptions({enabled:true,python:join(source,'.venv-mujoco/bin/python'),workerRoot:root,lockPath:join(root,'requirements.lock'),directory,bundleFile:(d,p)=>engineering!.bundleFile(d,p),onRequestTiming:s=>workerSamples.push({...s,wallMs:performance.now()})}));
+  if(provider.world){const factory=provider.world.factory;provider.world.factory=async input=>{const bindings=await factory(input),prepare=bindings.world.prepareTick,commit=bindings.world.commit,append=bindings.evidence.append;bindings.world.prepareTick=tick=>{const start=performance.now();try{return prepare(tick);}finally{stageSamples.push({runId:input.runId,stage:'prepare',tick,elapsedMs:performance.now()-start,wallMs:performance.now()});}};bindings.world.commit=async snapshot=>{const start=performance.now();try{await commit(snapshot);}finally{stageSamples.push({runId:input.runId,stage:'commit',tick:snapshot.tick,elapsedMs:performance.now()-start,wallMs:performance.now()});}};bindings.evidence.append=async snapshot=>{const start=performance.now();try{await append(snapshot);}finally{stageSamples.push({runId:input.runId,stage:'evidence_append',tick:snapshot.tick,elapsedMs:performance.now()-start,wallMs:performance.now()});}};return bindings;};}
+  const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'unused',lockPath:'unused',directory,mujoco:provider});
+  gateway=await startLabGateway({port:4176,directory,sourceCommit:lock.sourceCommit,schemaHash:lock.schemaHash,v2:{engineering,worldExperiments:sim.worldExperiments,catalog:sim.catalog,enabledBackends:['mock_amr','mock_arm','mock_coffee',...sim.enabledBackends],portableChecks:sim.readinessChecks,simulationFactory:async(i,p)=>{const run=await owned.observe(()=>sim.simulationFactory(i,p));runDirectories.set(run.id,p.directory);return run;}}});
+  }else{
+   const runtime=join(lab,'.runtime',lock.artifactSha256,'runtime.mjs'),preload=join(lab,'scripts/performance-runtime-observer.mjs');
+   if(createHash('sha256').update(await readFile(runtime)).digest('hex')!==lock.artifactSha256)throw Error('EXPORTED_RUNTIME_HASH_MISMATCH');
+   const child=spawn(process.execPath,['--import',preload,runtime,'--port','4176','--data-dir',directory,'--engineering-catalog',catalog,'--engineering-simulation',join(source,'robotics/simulation'),'--engineering-python',join(source,'.venv-irsim/bin/python'),'--mujoco-python',join(source,'.venv-mujoco/bin/python'),'--mujoco-worker',root,'--mujoco-lock',join(root,'requirements.lock')],{cwd:lab,env:{...process.env,MEKONIQ_LAB_MUJOCO:'1',MEKONIQ_PERFORMANCE_ROOT:directory,MEKONIQ_PERFORMANCE_TIMINGS:join(output,'runtime-observer.ndjson')},stdio:['ignore','pipe','pipe']});
+-  let stdout='',stderr='';child.stderr.on('data',b=>stderr=(stderr+b).slice(-32768));const exited=new Promise<number|null>(r=>child.once('exit',r));
+-  const token=await new Promise<string>((ok,fail)=>{const timer=setTimeout(()=>fail(Error('EXPORTED_RUNTIME_BOOT_TIMEOUT')),45000);child.stdout.on('data',b=>{stdout+=b;const token=/Pairing token \(expires in 5 minutes; one use\): (\S+)/.exec(stdout);if(token){clearTimeout(timer);ok(token[1]!);}});void exited.then(c=>{clearTimeout(timer);fail(Error(`EXPORTED_RUNTIME_EXIT_${c}: ${stderr}`));});});
+-  gateway={url:'http://127.0.0.1:4176',pairingToken:token,async close(){child.kill('SIGINT');const code=await exited;await writeFile(join(output,'runtime-stderr.log'),stderr);if(code!==0)throw Error('EXPORTED_RUNTIME_CLOSE_'+code);}};
++  let stdout='',stderr='';child.stderr.on('data',b=>stderr=(stderr+b).slice(-32768));const exited=new Promise<{code:number|null;signal:NodeJS.Signals|null}>((r,reject)=>{child.once('exit',(code,signal)=>r({code,signal}));child.once('error',reject);});
++  stopExportedRuntime=async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGINT');let exit;try{exit=await bounded(exited,10000,'EXPORTED_RUNTIME_CLOSE_TIMEOUT');}catch(error){if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');await bounded(exited,10000,'EXPORTED_RUNTIME_KILL_TIMEOUT');throw error;}finally{await writeFile(join(output,'runtime-stderr.log'),stderr);}if(exit.code!==0||exit.signal)throw Error(`EXPORTED_RUNTIME_CLOSE_${exit.code}_${exit.signal}`);};
++  let onData:((b:Buffer)=>void)|undefined;
++  const ready=new Promise<string>((ok,fail)=>{onData=b=>{stdout+=b;const token=/Pairing token \(expires in 5 minutes; one use\): (\S+)/.exec(stdout);if(token)ok(token[1]!);};child.stdout.on('data',onData);void exited.then(exit=>fail(Error(`EXPORTED_RUNTIME_EXIT_${exit.code}_${exit.signal}: ${stderr}`)),fail);});
++  let token:string;try{token=await bounded(ready,45000,'EXPORTED_RUNTIME_BOOT_TIMEOUT');}finally{if(onData)child.stdout.off('data',onData);child.stdout.resume();}
++  gateway={url:'http://127.0.0.1:4176',pairingToken:token,close:stopExportedRuntime};
+  }
+  web=await preview({root:lab,configFile:join(lab,'vite.config.ts'),logLevel:'error',preview:{host:'127.0.0.1',port:4175,strictPort:true,proxy:{'/lab':{target:gateway.url,changeOrigin:false}}}});
+  if(process.argv.includes('--verify-browser')){
+   const invocationId=randomUUID(),args=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'],startedAtEpochMs=Date.now();
+   await writeFile(join(output,'browser-invocation.json'),JSON.stringify({version:2,invocationId,before:buildIdentity,startedAtEpochMs}));
+   const child=spawn('pnpm',args,{cwd:lab,stdio:'inherit',env:{...process.env,LAB_TEST_PAIRING_TOKEN:gateway!.pairingToken,LAB_B07B_EVIDENCE:output,LAB_BROWSER_INVOCATION:invocationId,LAB_PW_JSON:join(output,'browser-result.json')}});
+   const exit=await new Promise<{code:number|null;signal:NodeJS.Signals|null}>((r,reject)=>{child.once('error',reject);child.once('exit',(code,signal)=>r({code,signal}));});
+   const after=await productionBuildIdentity(lab,source,lock),resultBytes=await readFile(join(output,'browser-result.json'));
+   await writeFile(join(output,'browser-runtime-identity.json'),JSON.stringify({version:2,invocationId,startedAtEpochMs,finishedAtEpochMs:Date.now(),before:buildIdentity,after,command:'pnpm',args,exitCode:exit.code,signal:exit.signal,exported,resultSha256:createHash('sha256').update(resultBytes).digest('hex')},null,2));
+   if(exit.code!==0||exit.signal)throw Error('NATIVE_BROWSER_FAILED_'+exit.code);if(JSON.stringify(after)!==JSON.stringify(buildIdentity))throw Error('PRODUCTION_BUILD_CHANGED');
+  }else{
+  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,reducedMotion:'no-preference'}),page=await context.newPage();activePage=page;page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
+- page.on('response',r=>{const observation=(async()=>{if(!r.url().includes('/lab/v2/')||/\/(events|telemetry)(\?|$)/.test(r.url()))return;const request=r.request();await r.finished();const timing=request.timing();const responseObservation={path:new URL(r.url()).pathname,status:r.status(),startTime:timing.startTime,responseEnd:timing.responseEnd,method:request.method()};responses.push(responseObservation);if(request.method()==='POST'&&r.url().endsWith('/replay')){const publication=await r.json().catch(()=>null);exports.push({status:r.status(),startEpochMs:timing.startTime,responseMs:timing.responseEnd,receivedAt:performance.now(),...publication?{exportId:publication.exportId,manifest:publication.manifest}:{}});}if(request.method()==='POST'&&r.url().endsWith('/actions')){const body=request.postDataJSON(),receipt=await r.json().catch(()=>null);const correlation={runId:new URL(r.url()).pathname.split('/').at(-2),actionId:body.actionId,tick:receipt?.tick,requestStartEpochMs:timing.startTime,responseEndEpochMs:timing.startTime+timing.responseEnd};Object.assign(responseObservation,correlation);actions.push({...correlation,kind:body.kind,payload:body.payload,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt?.run?.runRevision,status:receipt?.run?.status});}})();pendingHTTP.add(observation);void observation.catch(e=>{if(!page.isClosed())errors.push('observer:'+String(e));}).finally(()=>pendingHTTP.delete(observation));});
++ httpObserver=observeProductionHTTP(page,{responses,actions,exports,errors});
+  await page.addInitScript(()=>{(window as unknown as {__name:(target:unknown)=>unknown}).__name=target=>target;});console.log('BROWSER_BOOT');await page.goto('http://127.0.0.1:4175/#twin');await page.getByRole('button',{name:'EN',exact:true}).click();await page.locator('#twin-pair-token').fill(gateway.pairingToken);await page.locator('#twin-pair-form button[type="submit"]').click();await page.getByTestId('scenario-picker').click();await page.locator('[data-action="twin-preset"][data-value="mujoco-cell"]').click();
+- console.log('CELL_SELECTED');await page.locator('[data-action="twin-run"]').first().waitFor();await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled();const created=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/lab/v2/runs'));await page.locator('[data-action="twin-run"]').first().click();const creationResponse=await created,creationRequest=creationResponse.request().postDataJSON(),creation=await creationResponse.json(),runId=creation.run.id;
++ console.log('CELL_SELECTED');await page.locator('[data-action="twin-run"]').first().waitFor();await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled();const created=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/lab/v2/runs'));await page.locator('[data-action="twin-run"]').first().click();const creationResponse=await created,creationRequest=creationResponse.request().postDataJSON(),creation=await bounded(creationResponse.json(),30000,'CREATION_BODY_TIMEOUT'),runId=creation.run.id;if(creationResponse.status()!==201||typeof runId!=='string'||!runId)throw Error('CREATION_RESPONSE_INVALID');
+  console.log('RUN_CREATED',runId);await expect(page.locator('[data-action="twin-play"]').first()).toBeEnabled();await expect(page.locator('#twin-transport-time')).toContainText('tick 0');await expect(page.locator('#twin-run-speed')).toHaveValue('1');await expect(page.locator('#twin-stage canvas')).toBeVisible();await page.locator('[data-action="twin-play"]').first().click();await page.waitForTimeout(warmup);await expect(page.locator('#twin-stage canvas')).toHaveAttribute('data-arm-supports','1');await expect(page.locator('#twin-stage canvas')).toHaveAttribute('data-world-quality','valid');
+  const admission=await page.evaluate(async id=>{const [observation,scene]=await Promise.all([fetch(`/lab/v2/runs/${id}/world-display`).then(r=>r.json()),fetch(`/lab/v2/runs/${id}/world-display/scene`).then(r=>r.json())]);return {observation,scene};},runId);if(admission.observation.availability!=='valid'||admission.scene.availability!=='available')throw Error('ACTUAL_WORLD_PREFLIGHT_UNAVAILABLE');console.log(`CAPTURE_START ${runId} ${duration}ms active production UI`);const startActions=actions.length;
+  const capture=await page.evaluate(async({duration,runId})=>{
+   const samples:{at:number;interval:number;drawn:boolean;tick:number;worldTick:number|null;fullCell:boolean;drawCalls:number}[]=[],renders:number[]=[],renderEvents:{runId:string;atMs:number;durationMs:number;count:number;drawCalls:number;worldTick:number|null}[]=[],drawPoseSamples:unknown[]=[],tasks:number[]=[],canvas=document.querySelector('#twin-stage canvas') as HTMLCanvasElement,gl=canvas.getContext('webgl2')!,originals:Record<string,unknown>={};let draws=0,lastDraw=0,active=true,last=performance.now(),start=last;
+   for(const key of ['drawElements','drawArrays','drawElementsInstanced','drawArraysInstanced']){originals[key]=(gl as unknown as Record<string,unknown>)[key];(gl as unknown as Record<string,unknown>)[key]=function(this:WebGL2RenderingContext,...args:unknown[]){draws++;return (originals[key] as (...a:unknown[])=>unknown).apply(this,args);};}
+   canvas.dataset.measureRender='1';const onRender=(event:Event)=>{if(renderEvents.length>=25000)throw Error('RENDER_SAMPLE_LIMIT');renderEvents.push({...((event as CustomEvent).detail),runId});};canvas.addEventListener('twin-render',onRender);const observer=new PerformanceObserver(list=>tasks.push(...list.getEntries().map(e=>e.duration)));observer.observe({entryTypes:['longtask']});
+   const raf=(now:number)=>{if(!active)return;const text=document.querySelector('#twin-transport-time')?.textContent??'',tick=Number(/tick\s+(\d+)/.exec(text)?.[1]??0),drawn=draws>lastDraw;const fullCell=canvas.dataset.armSupports==='1'&&canvas.dataset.worldQuality==='valid'&&canvas.dataset.bodyPoses!=='{}',worldTick=canvas.dataset.worldTick?Number(canvas.dataset.worldTick):null;samples.push({at:now-start,interval:now-last,drawn,tick,worldTick,fullCell,drawCalls:draws-lastDraw});if(drawn){renders.push(now-last);drawPoseSamples.push({at:now-start,worldTick,bodies:JSON.parse(canvas.dataset.bodyPoses??'{}'),arms:JSON.parse(canvas.dataset.armPoses??'{}'),cups:JSON.parse(canvas.dataset.payloadPoses??'{}')});}lastDraw=draws;last=now;requestAnimationFrame(raf);};requestAnimationFrame(raf);
+   await new Promise(r=>setTimeout(r,duration));active=false;observer.disconnect();canvas.removeEventListener('twin-render',onRender);delete canvas.dataset.measureRender;for(const [key,fn]of Object.entries(originals))(gl as unknown as Record<string,unknown>)[key]=fn;
+   const ext=gl.getExtension('WEBGL_debug_renderer_info');const end=performance.now();return {clock:{browserTimeOriginEpochMs:performance.timeOrigin,browserStartMs:start,browserEndMs:end,startEpochMs:performance.timeOrigin+start,endEpochMs:performance.timeOrigin+end},elapsedMs:end-start,renderEvents,activeCellMs:samples.filter(s=>s.fullCell).reduce((n,s)=>n+s.interval,0),drawPoseSamples,samples,longTasks:tasks,drawCalls:draws,activeFrames:samples.filter(s=>s.drawn).length,fullCellFrames:samples.filter(s=>s.fullCell).length,fullCellDrawingFrames:samples.filter(s=>s.fullCell&&s.drawn).length,droppedFrames:samples.filter(s=>s.interval>33.34).length,startTick:samples[0]?.tick,endTick:samples.at(-1)?.tick,canvasGeometry:canvas.dataset.geometries,bodyPoses:canvas.dataset.bodyPoses,worldSupports:canvas.dataset.armSupports,browser:{userAgent:navigator.userAgent,dpr:devicePixelRatio,visibility:document.visibilityState,webglRenderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null}};
+  },{duration,runId});
+  const endEpoch=capture.clock.endEpochMs,endWall=endEpoch-performance.timeOrigin,activeStartWall=capture.clock.startEpochMs-performance.timeOrigin;await writeFile(join(output,'capture-raw.json'),JSON.stringify({capture,workerSamples,stageSamples,actions,responses},null,2));await page.screenshot({path:join(output,'production-active-cell.png')});
+  // Actual full-prefix export and Pause overlap: no held protocol doubles. User controls remain operable while materialization runs.
+  const completedDownload=page.waitForEvent('download',{timeout:90000}),exportStarted=page.waitForRequest(r=>r.method()==='POST'&&r.url().endsWith('/replay'));await page.locator('[data-action="twin-world-export"]').click();await exportStarted;await page.evaluate(()=>{document.addEventListener('click',event=>{if((event.target as Element).closest('[data-action="twin-pause"]'))(window as unknown as {__pauseClickEpochMs:number}).__pauseClickEpochMs=performance.timeOrigin+performance.now();},{capture:true,once:true});});const pauseStart=performance.now();await page.locator('[data-action="twin-pause"]').first().click();await expect(page.locator('[data-action="twin-resume"]').first()).toBeEnabled();const pauseEnd=performance.now(),pauseClickEpochMs=await page.evaluate(()=>(window as unknown as {__pauseClickEpochMs?:number}).__pauseClickEpochMs),final=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);await page.screenshot({path:join(output,'production-paused-during-export.png')});
+- await page.waitForTimeout(500);const stable=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(stable.tick!==final.tick)throw Error('PAUSE_DID_NOT_FREEZE_COMMITTED_TICK');const download=await completedDownload,downloadPath=join(output,'live-complete-prefix.zip');await download.saveAs(downloadPath);await expect(page.locator('[data-action="twin-world-export"]').first()).toBeEnabled({timeout:30000});const afterExportView=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(afterExportView.tick!==final.tick||afterExportView.run.status!=='paused')throw Error('EXPORT_CHANGED_PAUSED_HORIZON');const downloadBytes=await readFile(downloadPath),completeExport={completed:true,postExportCommittedH:afterExportView.tick,path:downloadPath,bytes:downloadBytes.length,sha256:createHash('sha256').update(downloadBytes).digest('hex'),suggestedFilename:download.suggestedFilename(),finishedEpochMs:Date.now(),publications:exports};if(exports.length!==1||exports[0]!.status!==201)throw Error('LIVE_EXPORT_PUBLICATION_NOT_CONFIRMED');
++ await page.waitForTimeout(500);const stable=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(stable.tick!==final.tick)throw Error('PAUSE_DID_NOT_FREEZE_COMMITTED_TICK');const download=await completedDownload,downloadPath=join(output,'live-complete-prefix.zip');await download.saveAs(downloadPath);await expect(page.locator('[data-action="twin-world-export"]').first()).toBeEnabled({timeout:30000});const afterExportView=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(afterExportView.tick!==final.tick||afterExportView.run.status!=='paused')throw Error('EXPORT_CHANGED_PAUSED_HORIZON');const downloadBytes=await readFile(downloadPath),completeExport={completed:true,postExportCommittedH:afterExportView.tick,path:downloadPath,bytes:downloadBytes.length,sha256:createHash('sha256').update(downloadBytes).digest('hex'),suggestedFilename:download.suggestedFilename(),finishedEpochMs:Date.now(),publications:exports};
+  if(exported){const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));for(const row of rows)if(row.observerError)errors.push(row.observerError);workerSamples.push(...rows.filter(s=>s.kind==='worker_wire').map(s=>({...s,wallMs:s.atEpochMs-performance.timeOrigin})));for(const entry of await readdir(directory,{withFileTypes:true})){if(!entry.isDirectory())continue;const path=join(directory,entry.name);try{const checkpoint=JSON.parse(await readFile(join(path,'run.json'),'utf8'));if(checkpoint.runId===runId)runDirectories.set(runId,path);}catch{}}await writeFile(join(output,'post-window-source-event-loop.json'),JSON.stringify(rows.filter(s=>s.kind==='source_event_loop'&&s.atEpochMs>endEpoch),null,2));await writeFile(join(output,'source-event-loop.json'),JSON.stringify(rows.filter(s=>s.kind==='source_event_loop'&&s.atEpochMs>=capture.clock.startEpochMs&&s.atEpochMs<=endEpoch),null,2));await writeFile(join(output,'io-diagnostic.json'),JSON.stringify(rows.filter(s=>s.kind==='fs'&&s.atEpochMs>=capture.clock.startEpochMs&&s.atEpochMs<=endEpoch),null,2));}
+- await Promise.all([...pendingHTTP]);const pauseClickWall=pauseClickEpochMs===undefined?pauseStart:pauseClickEpochMs-performance.timeOrigin,poseEvents=capture.renderEvents.filter((s,i,a)=>i===0||s.worldTick!==a[i-1]!.worldTick);
++ // Freeze HTTP admission after the final paused/export view; drain before closing the target.
++ await httpObserver.finish();await writeFile(join(output,'http-observations.json'),JSON.stringify({responses,actions,exports,errors},null,2));if(errors.length)throw Error('HTTP_OR_PAGE_OBSERVATION_FAILED:'+errors.join(';'));if(exports.length!==1||exports[0]!.status!==201||exports[0]!.runId!==runId)throw Error('LIVE_EXPORT_PUBLICATION_NOT_CONFIRMED');if(responses.filter(r=>r.method==='DELETE'&&r.runId===runId&&r.exportId===exports[0]!.exportId&&r.outcome==='completed'&&r.status===200).length!==1)throw Error('LIVE_EXPORT_RELEASE_NOT_CONFIRMED');const pauseClickWall=pauseClickEpochMs===undefined?pauseStart:pauseClickEpochMs-performance.timeOrigin,poseEvents=capture.renderEvents.filter((s,i,a)=>i===0||s.worldTick!==a[i-1]!.worldTick);
+  const allWorkers=(workerSamples as {op:string;elapsedMs:number;runId:string;targetTick:number;wallMs:number}[]).filter(s=>s.runId===runId&&s.op==='step'),used=allWorkers.filter(s=>s.wallMs>=activeStartWall&&s.wallMs<=endWall),steps=actions.slice(startActions).filter(a=>a.kind==='step'&&Number(a.observedAtEpochMs)>=capture.clock.startEpochMs&&Number(a.observedAtEpochMs)<=capture.clock.endEpochMs),intervals=capture.samples.map(s=>s.interval),drawing=capture.samples.filter(s=>s.drawn).map(s=>s.interval),simSeconds=((capture.endTick??0)-(capture.startTick??0))*.02;
+  const clock={nodeTimeOriginEpochMs:performance.timeOrigin,...capture.clock};const correlationProblems=checkCaptureClock({runId,clock,actions,responses});if(correlationProblems.length)throw Error(correlationProblems.join(';'));
+  const result={version:2,clock,workload:'production Vite build; real Source gateway, shared MuJoCo worker, Source durability and world display polling; active live cell only',sourceCommit:lock.sourceCommit,runtimeArtifact:lock.artifactSha256,buildIdentity,creationRequest,admissionIdentity:{runId,bootId:admission.observation.snapshot.bootId,sceneDigest:admission.observation.snapshot.sceneDigest,initialCommittedH:admission.observation.tick,initialRevision:admission.observation.revision,worldStep:admission.observation.snapshot.worldStep,scene:admission.scene.scene},sourceExecution:exported?'unchanged hash-verified exported runtime CLI with external owned-child wire/IO observer; production-built browser assets':'tsx same committed Source modules with operator timing observer and pass-through world stage timers; production-built browser assets',runId,directory,selectedRate:1,warmupMs:warmup,requestedDurationMs:duration,wallMs:capture.elapsedMs,activeSourceStepWindowMs:Math.max(0,...steps.map(s=>Number(s.receivedAt)-activeStartWall)),sourceReceiptTailGapMs:endWall-Math.max(activeStartWall,...steps.map(s=>Number(s.receivedAt))),simSeconds,achievedRate:simSeconds/(capture.elapsedMs/1000),network:'Chrome -> Vite production preview 127.0.0.1:4175 /lab proxy -> Source HTTP 127.0.0.1:4176 -> stdio worker',host:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,memoryGiB:os.totalmem()/2**30},browserVersion:browser.version(),capture,displayRAFIntervals:summary(intervals),drawingRAFIntervals:summary(drawing),actualRenderIntervals:summary(capture.renderEvents.slice(1).map((s,i)=>s.atMs-capture.renderEvents[i]!.atMs)),actualRenderDuration:summary(capture.renderEvents.map(s=>s.durationMs)),worldPoseUpdateIntervals:summary(poseEvents.slice(1).map((s,i)=>s.atMs-poseEvents[i]!.atMs)),distinctWorldH: new Set(capture.renderEvents.map(s=>s.worldTick).filter(t=>t!==null)).size,workerIPC:summary(used.map(s=>s.elapsedMs)),sourceStepHTTP:summary(steps.map(s=>Number(s.responseMs))),pause:{actionId:actions.find(a=>a.kind==='pause')?.actionId,finalView:final,stableView:stable,afterExportView,wallMs:pauseEnd-pauseStart,ackUILatencyFromClickMs:pauseEnd-pauseClickWall,clickEpochMs:pauseClickEpochMs,uiObservedAtEpochMs:performance.timeOrigin+pauseEnd,conservativeRequestStartEpochMs:performance.timeOrigin+pauseStart,lastCommittedBoundary:'browser-observed Source step receipt upper bound; wire ACK is not commit',toLastCommittedMs:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall)),stableAfterTick:stable.tick,lastCommittedTick:final.tick,status:final.run.status,exportConcurrent:true},wireTimingBoundary:exported?'complete matching JSON wire ACK receipt before Source validation; Source committed horizon separate':'Source accepted worker ACK validation boundary',observerSha256:createHash('sha256').update(await readFile(join(lab,'scripts/performance-runtime-observer.mjs'))).digest('hex'),workerRaw:used,workerOutsideWindow:{before:allWorkers.filter(s=>s.wallMs<activeStartWall),after:allWorkers.filter(s=>s.wallMs>endWall)},stageRaw:stageSamples.filter(s=>s.runId===runId&&s.wallMs>=activeStartWall&&s.wallMs<=endWall),stageCosts:Object.fromEntries(['prepare','commit','evidence_append'].map(stage=>[stage,summary(stageSamples.filter(s=>s.runId===runId&&s.stage===stage&&s.wallMs>=activeStartWall&&s.wallMs<=endWall).map(s=>s.elapsedMs))])),actions,responses,errors,harnessEventLoop:{p95Ms:loop.percentile(95)/1e6,maxMs:loop.max/1e6,scope:exported?'benchmark/Vite host, not Source CLI':'module-composed Source and benchmark same process'},completeExport,postWindowHTTP:responses.filter(r=>Number(r.startTime)>endEpoch),checkpointBytes:(await stat(join(runDirectories.get(runId)!,'run.json'))).size,accepted:false,targets:{durationMet:capture.elapsedMs>=180000&&capture.activeCellMs>=180000,displayMet:(summary(capture.renderEvents.slice(1).map((s,i)=>s.atMs-capture.renderEvents[i]!.atMs)).p95??Infinity)<=33,workerMet:(summary(used.map(s=>s.elapsedMs)).p95??Infinity)<=15,pauseMet:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall))<=500}};
+  await writeFile(join(output,'actual-cell-production.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({runId,achievedRate:result.achievedRate,raf:result.displayRAFIntervals,renderIntervals:result.actualRenderIntervals,renderCPU:result.actualRenderDuration,worker:result.workerIPC,sourceHTTP:result.sourceStepHTTP,pause:result.pause,targets:result.targets,errors}));await context.close();
+ }
+-}catch(e){await writeFile(join(output,'error.txt'),String((e as Error).stack??e));await activePage?.screenshot({path:join(output,'failure.png')}).catch(()=>{});if(activePage)await writeFile(join(output,'failure-body.txt'),await activePage.locator('body').innerText().catch(()=>''));throw e;}finally{loop.disable();await browser?.close();if(web){if('closeAllConnections' in web.httpServer)web.httpServer.closeAllConnections();await new Promise<void>(r=>web!.httpServer.close(()=>r()));}await gateway?.close();if(exported){const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line)),end=rows.at(-1);await writeFile(join(output,'observer-summary.json'),JSON.stringify(end,null,2));if(end?.kind!=='observer_end'||end.overflow||end.observerFailure)throw Error('OBSERVER_INCOMPLETE');}if(owned.processes().length)throw Error('OWNED_WORKERS_REMAIN');console.log('OWNED_CLEANUP_DONE');}
++}catch(e){httpObserver?.dispose();await writeFile(join(output,'http-observations.json'),JSON.stringify({responses,actions,exports,errors},null,2));await writeFile(join(output,'error.txt'),String((e as Error).stack??e));await activePage?.screenshot({path:join(output,'failure.png')}).catch(()=>{});if(activePage)await writeFile(join(output,'failure-body.txt'),await activePage.locator('body').innerText().catch(()=>''));throw e;}finally{
++ httpObserver?.dispose();loop.disable();const cleanupErrors:unknown[]=[];
++ // Attempt every owned cleanup even if an earlier close fails; boot failure still owns the exported child.
++ for(const close of [async()=>{await browser?.close();},async()=>{if(web){if('closeAllConnections' in web.httpServer)web.httpServer.closeAllConnections();await new Promise<void>(r=>web!.httpServer.close(()=>r()));}},async()=>{if(gateway)await gateway.close();else await stopExportedRuntime?.();}]){try{await bounded(close(),30000,'OWNED_CLOSE_TIMEOUT');}catch(error){cleanupErrors.push(error);}}
++ if(exported){try{const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line)),end=rows.at(-1);await writeFile(join(output,'observer-summary.json'),JSON.stringify(end,null,2));if(end?.kind!=='observer_end'||end.overflow||end.observerFailure)throw Error('OBSERVER_INCOMPLETE');}catch(error){cleanupErrors.push(error);}}
++ try{if(owned.processes().length)throw Error('OWNED_WORKERS_REMAIN');}catch(error){cleanupErrors.push(error);}
++ await writeFile(join(output,'cleanup.json'),JSON.stringify({completed:cleanupErrors.length===0,errors:cleanupErrors.map(String)},null,2));if(cleanupErrors.length)throw new AggregateError(cleanupErrors,'PRODUCTION_CLEANUP_FAILED');console.log('OWNED_CLEANUP_DONE');
++}
+diff --git a/scripts/production-http-observer.ts b/scripts/production-http-observer.ts
+new file mode 100644
+index 0000000..95a9b97
+--- /dev/null
++++ b/scripts/production-http-observer.ts
+@@ -0,0 +1,64 @@
++import type {Page,Request,Response} from '@playwright/test';
++import {performance} from 'node:perf_hooks';
++type Row=Record<string,unknown>;
++type Outcome='completed'|'failed'|'timed_out'|'target_closed'|'invalid';
++interface Pending {request:Request;response?:Response;timer:ReturnType<typeof setTimeout>;done:Promise<void>;resolve:()=>void;reading:boolean}
++/** Observe terminal request events, not Response.finished(): Playwright can leave that promise pending after requestfailed.
++ * The request deadline includes required body reads. finish() freezes admission, then drains only that finite set. */
++export function observeProductionHTTP(page:Page,data:{responses:Row[];actions:Row[];exports:Row[];errors:string[]},options:{timeoutMs?:number;drainTimeoutMs?:number}={}){
++ const timeoutMs=options.timeoutMs??90000,drainTimeoutMs=options.drainTimeoutMs??10000;
++ if(!Number.isFinite(timeoutMs)||timeoutMs<=0||!Number.isFinite(drainTimeoutMs)||drainTimeoutMs<=0)throw Error('HTTP_OBSERVER_INVALID_DEADLINE');
++ const pending=new Map<Request,Pending>();let stopped=false,drain:Promise<void>|undefined;
++ const selected=(r:Request)=>{const p=new URL(r.url()).pathname;return p.startsWith('/lab/v2/')&&!/\/(events|telemetry)$/.test(p);};
++ const settle=(entry:Pending,outcome:Outcome,failure?:string,details:Row={})=>{
++  if(!pending.delete(entry.request))return;clearTimeout(entry.timer);
++  const request=entry.request,path=new URL(request.url()).pathname,timing=request.timing();
++  // Only cancellation of disposable display polling is diagnostic. Other failures, all mutations, and replay assets fail capture.
++  const optional=outcome==='failed'&&failure==='net::ERR_ABORTED'&&request.method()==='GET'&&/^\/lab\/v2\/runs\/[^/]+\/world-display(?:\/scene)?$/.test(path);
++  const classification=optional?'optional-read-cancellation':outcome==='completed'?'observed':'required-observation-failure';
++  data.responses.push({path,method:request.method(),status:entry.response?.status()??null,startTime:timing.startTime,responseEnd:timing.responseEnd,timing,outcome,classification,...failure?{failure}:{},...details});
++  if(outcome!=='completed'&&!optional)data.errors.push(`HTTP_OBSERVATION_${outcome.toUpperCase()}:${request.method()} ${path}:${failure}`);
++  entry.resolve();
++ };
++ const onRequest=(request:Request)=>{
++  if(stopped||!selected(request))return;
++  let resolve!:()=>void;const done=new Promise<void>(r=>{resolve=r;});
++  const entry:Pending={request,done,resolve,reading:false,timer:setTimeout(()=>settle(entry,'timed_out','REQUEST_OR_BODY_DEADLINE'),timeoutMs)};pending.set(request,entry);
++ };
++ const onResponse=(response:Response)=>{const entry=pending.get(response.request());if(entry)entry.response=response;};
++ const onFailed=(request:Request)=>{const entry=pending.get(request);if(entry)settle(entry,'failed',request.failure()?.errorText??'REQUEST_FAILED');};
++ const onFinished=(request:Request)=>{
++  const entry=pending.get(request);if(!entry||entry.reading)return;entry.reading=true;
++  void (async()=>{
++   const response=entry.response;if(!response)throw Error('RESPONSE_MISSING');
++   const path=new URL(request.url()).pathname,timing=request.timing(),status=response.status(),runId=path.split('/').at(-2);
++   if(status<200||status>=300)throw Error(`HTTP_STATUS_${status}`);
++   if(!Number.isFinite(timing.startTime)||timing.startTime<0||!Number.isFinite(timing.responseEnd)||timing.responseEnd<0)throw Error('TERMINAL_TIMING_MISSING');
++   if(request.method()==='POST'&&path.endsWith('/actions')){
++    const body=request.postDataJSON(),receipt=await response.json();
++    if(status!==200||typeof body?.actionId!=='string'||!body.actionId||typeof body.kind!=='string'||receipt?.run?.id!==runId||!Number.isSafeInteger(receipt.tick)||receipt.tick<0||!Number.isSafeInteger(receipt.run.runRevision)||typeof receipt.run.status!=='string')throw Error('ACTION_RECEIPT_INVALID');
++    if(!pending.has(request))return;
++    const correlation={runId,actionId:body.actionId,tick:receipt.tick,requestStartEpochMs:timing.startTime,responseEndEpochMs:timing.startTime+timing.responseEnd};
++    data.actions.push({...correlation,kind:body.kind,payload:body.payload,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt.run.runRevision,status:receipt.run.status});settle(entry,'completed',undefined,correlation);
++   }else if(request.method()==='POST'&&path.endsWith('/replay')){
++    const publication=await response.json(),manifest=publication?.manifest;
++    if(status!==201||typeof publication?.exportId!=='string'||!publication.exportId||manifest?.runId!==runId||manifest.documentType!=='web-replay-package'||!Number.isSafeInteger(manifest.horizon?.tick)||manifest.horizon.tick<0)throw Error('REPLAY_PUBLICATION_INVALID');
++    if(!pending.has(request))return;
++    data.exports.push({runId,status,startEpochMs:timing.startTime,responseMs:timing.responseEnd,receivedAt:performance.now(),exportId:publication.exportId,manifest});settle(entry,'completed',undefined,{runId,exportId:publication.exportId,tick:manifest.horizon.tick});
++   }else if(request.method()==='DELETE'&&/^\/lab\/v2\/runs\/[^/]+\/replay\/[^/]+$/.test(path)){
++    const ack=await response.json(),releaseRunId=path.split('/').at(-3),exportId=path.split('/').at(-1);
++    if(status!==200||ack?.deleted!==true)throw Error('REPLAY_RELEASE_INVALID');
++    // The recorder joins release/publication identity after drain; JSON observers may finish out of order.
++    settle(entry,'completed',undefined,{runId:releaseRunId,exportId});
++   }else settle(entry,'completed');
++  })().catch(error=>settle(entry,'invalid',String(error)));
++ };
++ const detach=()=>{page.off('request',onRequest);page.off('response',onResponse);page.off('requestfinished',onFinished);page.off('requestfailed',onFailed);page.off('close',onClose);page.off('crash',onClose);};
++ const dispose=()=>{stopped=true;for(const entry of pending.values())settle(entry,'target_closed','OBSERVER_DISPOSED_OR_TARGET_CLOSED');detach();};
++ const onClose=()=>dispose();
++ page.on('request',onRequest);page.on('response',onResponse);page.on('requestfinished',onFinished);page.on('requestfailed',onFailed);page.on('close',onClose);page.on('crash',onClose);
++ return {finish(){
++  if(drain)return drain;stopped=true;page.off('request',onRequest);
++  drain=(async()=>{const timer=setTimeout(()=>{for(const entry of pending.values())settle(entry,'timed_out','DRAIN_DEADLINE');},drainTimeoutMs);try{await Promise.all([...pending.values()].map(e=>e.done));}finally{clearTimeout(timer);detach();}})();return drain;
++ },dispose};
++}
+diff --git a/src/scenarios/controls.ts b/src/scenarios/controls.ts
+index 0ec4d64..5385d51 100644
+--- a/src/scenarios/controls.ts
++++ b/src/scenarios/controls.ts
+@@ -202,21 +202,29 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
+    if(reclaimToken){const own=t===target?proofs:loadProofs(t);own[view.run.id]=reclaimToken;try{localStorage.setItem(proofKey(t),JSON.stringify(own));}catch{/* current tab retains the proof if storage is unavailable */}}
+    return view;},
+   get recoverableRunIds(){return Object.keys(proofs);},
+   async archive(id){await request(`${run(id)}/archive`,{});},
+   reclaim:id=>{const proof=proofs[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof});},
+   // expectedRevision comes from the last snapshot the UI rendered: a stale view is refused (REVISION_CONFLICT), never applied
+   action:(v,kind,payload={},actionId=crypto.randomUUID(),signal)=>request<RunView>(`${run(v.run.id)}/actions`,{actionId,expectedRevision:v.run.runRevision,kind,payload},signal),
+   get:(id,signal)=>request<RunView>(run(id),undefined,signal),
+   async exportReplay(id,signal){
+    const exportTarget=target,exportAuth=auth(),exportCsrf=csrf;const version=await request<{exportId:string;manifest:unknown}>(`${run(id)}/replay`,{},signal),path=`${run(id)}/replay/${encodeURIComponent(version.exportId)}`;let released=false;
+-   const release=async()=>{if(released)return;released=true;const a=exportAuth;const r=await send(exportTarget.base+path,{...a,method:'DELETE',headers:{...a.headers as Record<string,string>,...exportCsrf&&exportTarget.kind==='same_origin'?{'X-CSRF-Token':exportCsrf}:{}}},exportTarget);if(!r.ok)throw new TwinRuntimeError('REPLAY_DELETE_REFUSED',[],r.status);};
++   const release=async()=>{
++    if(released)return;released=true;
++    // Cleanup still runs after export cancellation. Consume the acknowledgement: header-only fetch can leave the browser request nonterminal.
++    const cleanup=new AbortController(),timer=setTimeout(()=>cleanup.abort(),10000);
++    try{const a=exportAuth,r=await send(exportTarget.base+path,{...a,method:'DELETE',signal:cleanup.signal,headers:{...a.headers as Record<string,string>,...exportCsrf&&exportTarget.kind==='same_origin'?{'X-CSRF-Token':exportCsrf}:{}}},exportTarget),ack=await r.json().catch(()=>null);
++     if(!r.ok)throw new TwinRuntimeError('REPLAY_DELETE_REFUSED',[],r.status);
++     if(r.status!==200||ack?.deleted!==true)throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],r.status);
++    }catch(e){if(cleanup.signal.aborted)throw new TwinRuntimeError('REPLAY_DELETE_TIMEOUT',[],0);throw e;}finally{clearTimeout(timer);}
++   };
+    try{const {openLiveReplay}=await import('../reports/replay-transport'),reader=await openLiveReplay(exportTarget.base+path,new TextEncoder().encode(JSON.stringify(version.manifest)),exportAuth,signal);return {reader,release};}catch(e){await release().catch(()=>{});throw e;}
+   },
+   worldDisplay:(id,signal)=>request<WorldDisplay>(`${run(id)}/world-display`,undefined,signal),
+   worldDisplayScene:(id,signal)=>request(`${run(id)}/world-display/scene`,undefined,signal),
+   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
+  };
+ }
+ /** What the run controls may offer, from the set's execution metadata in health. Mock: Lab step/auto-run. Simulation with a source fixed-step clock:
+  * step and pacing at the set's multipliers (no step while paused unless manualStep). Native or unknown simulation: the engine owns time, no Lab step. */
+ export interface ClockControls {clock:'mock'|'source_fixed_step'|'native';step:boolean;play:boolean;speeds:number[]}
+diff --git a/src/styles/main.css b/src/styles/main.css
+index 06c3819..fc74014 100644
+--- a/src/styles/main.css
++++ b/src/styles/main.css
+@@ -2358,20 +2358,29 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
+  .twin-transport .button{position:relative}
+  .twin-transport .button:not([data-action="twin-step"])>span,.twin-speed>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+ }
+ /* U07: 1024-1279 px (the app sidebar stays): the run bar and the transport keep one row; shortened texts stay in the accessible name */
+ .twin-runbar .twin-runtime-chip{flex:none}
+ @media (max-width:1279px){
+  .twin-narrow-hide,.twin-runbar [data-testid="run-tick"] small,.twin-speed>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .twin-runbar-right{gap:6px 8px}
+  .twin-scenario,.twin-runtime-chip{padding:0 8px}
+ }
++/* At tablet/desktop widths, reserve space for the complete connection/status words, not extra scenario padding. */
++@media (min-width:1024px) and (max-width:1279px){
++ .twin-runbar{column-gap:6px}
++ .twin-runbar-left,.twin-runbar-right{column-gap:4px}
++ .twin-runbar .twin-scenario{min-width:min(100%,calc(12ch + 24px))}
++ .twin-runbar .twin-scenario,.twin-runbar .twin-runtime-chip{padding-inline:4px}
++ .twin-runbar .twin-problems{padding-inline:8px;min-width:44px}
++ .twin-runbar .button.primary{padding-inline:8px}
++}
+ @media (max-height:699px){
+  #app:has(.twin-shell){height:auto}
+  .twin-shell{grid-template-rows:auto minmax(480px,1fr) auto}
+  .twin-transport{position:sticky;bottom:0}
+ }
+ .twin-mode{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:4px 10px;border:1px dashed var(--muted);border-radius:6px;font:700 12px var(--mono);color:var(--muted);letter-spacing:.06em}
+ .twin-mode.live{border-style:solid;border-color:var(--accent);color:var(--accent)}
+ @media (max-width:1279px){.twin-mode{letter-spacing:0;padding:4px 8px}}/* U07: after the base rule, which it tightens */
+ .twin-identity{display:flex;flex-wrap:wrap;gap:4px 10px;margin:0 0 8px;font:12px var(--mono);color:var(--muted);min-width:0}
+ .twin-identity span{overflow-wrap:anywhere}
+diff --git a/tests/e2e/replay-release.spec.ts b/tests/e2e/replay-release.spec.ts
+new file mode 100644
+index 0000000..3977afc
+--- /dev/null
++++ b/tests/e2e/replay-release.spec.ts
+@@ -0,0 +1,36 @@
++import {test,expect} from '@playwright/test';
++import {createServer} from 'node:http';
++import {createHash} from 'node:crypto';
++import {gzipSync} from 'node:zlib';
++import {observeProductionHTTP} from '../../scripts/production-http-observer';
++// Public production httpTwinRuntime -> owned real HTTP -> browser terminal events. Synthetic bytes establish lifecycle, not qualification.
++for(const mode of ['valid','malformed','incomplete','refused','unfinished'] as const)test(`replay release consumes and validates ${mode} cleanup response`,async({page},testInfo)=>{
++ const plain=Buffer.from(JSON.stringify({manifest:{runId:'run-one'},outcome:{tick:7}})),bytes=gzipSync(plain),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
++ const manifest={schemaVersion:1,documentType:'web-replay-package',runId:'run-one',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[{path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'}],streams:[],licensing:[]};
++ const deletes:string[]=[],server=createServer((req,res)=>{
++  res.setHeader('Access-Control-Allow-Origin','http://127.0.0.1:4175');res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization');
++  if(req.method==='OPTIONS'){res.writeHead(204);res.end();return;}
++  if(req.method==='DELETE'){
++   deletes.push(req.url!);res.writeHead(mode==='refused'?403:200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
++   if(mode==='unfinished'){res.flushHeaders();res.write('{"deleted":');return;}
++   res.end(mode==='valid'?'{"deleted":true}':mode==='incomplete'?'{}':mode==='refused'?'{"error":"CAPABILITY_DENIED"}':'{');return;
++  }
++  if(req.url?.endsWith('/assets/0')){res.writeHead(200,{'Content-Type':'application/octet-stream'});res.end(bytes);return;}
++  res.writeHead(201,{'Content-Type':'application/json'});res.end(JSON.stringify({exportId:'owned-version',manifest}));
++ });
++ await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${(server.address() as {port:number}).port}/lab/v2`,rows={responses:[] as Record<string,unknown>[],actions:[],exports:[],errors:[] as string[]};let observer:ReturnType<typeof observeProductionHTTP>|undefined;
++ try{
++  await page.goto('/source-runtime.lock.json');observer=observeProductionHTTP(page,rows,{timeoutMs:15000,drainTimeoutMs:1000});
++  const result=await page.evaluate(async base=>{
++   const module='/src/scenarios/controls.ts',{httpTwinRuntime}=await import(module),rt=httpTwinRuntime({base,kind:'remote'}),exportAbort=new AbortController(),capture=await rt.exportReplay('run-one',exportAbort.signal);
++   capture.reader.close();exportAbort.abort();// cleanup must remain possible after the export's own cancellation
++   const start=performance.now();let error:string|null=null;try{await capture.release();}catch(e){error=(e as Error).message;}await capture.release();return {error,elapsedMs:performance.now()-start};
++  },base);
++  await observer.finish();await testInfo.attach('observations',{body:JSON.stringify({result,rows,deletes},null,2),contentType:'application/json'});
++  expect(deletes).toEqual(['/lab/v2/runs/run-one/replay/owned-version']);
++  if(mode==='valid'){
++   expect(result.error).toBeNull();expect(rows.errors).toEqual([]);expect(rows.responses.find(r=>r.method==='DELETE')).toMatchObject({status:200,outcome:'completed',runId:'run-one',exportId:'owned-version'});
++  }else{expect(result.error).toBe(mode==='refused'?'REPLAY_DELETE_REFUSED':mode==='unfinished'?'REPLAY_DELETE_TIMEOUT':'INVALID_RUNTIME_RESPONSE');expect(rows.errors.length).toBeGreaterThan(0);expect(rows.responses.find(r=>r.method==='DELETE')!.outcome).not.toBe('completed');}
++  if(mode==='unfinished'){expect(result.elapsedMs).toBeLessThan(12000);expect(rows.responses.find(r=>r.method==='DELETE')!.outcome).not.toBe('completed');}
++ }finally{observer?.dispose();server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));}
++});
+diff --git a/tests/e2e/run-bar-compact.spec.ts b/tests/e2e/run-bar-compact.spec.ts
+new file mode 100644
+index 0000000..226ad65
+--- /dev/null
++++ b/tests/e2e/run-bar-compact.spec.ts
+@@ -0,0 +1,29 @@
++import {test,expect} from '@playwright/test';
++import {barLayout} from '../support/twin';
++// Component layout regression: production markup/CSS and real allowed connection words, no runtime/private-state changes.
++test('coffee attention controls and complete runtime words fit one row at 1024px',async({page},testInfo)=>{
++ await page.setViewportSize({width:1024,height:700});await page.goto('/#twin');await page.locator('#twin-run-bar').waitFor();
++ await page.evaluate(async()=>{
++  const module='/src/ui/run-bar.ts',i18n='/src/i18n/index.ts';
++  const {runBar,simLabel}=await import(module),{setLocale}=await import(i18n);setLocale('vi');
++  document.querySelector('#twin-run-bar')!.outerHTML=runBar({scenarioTitle:'Cà phê sữa đá',runtime:{state:'connecting',label:'Đang kết nối',detail:''},mode:simLabel('mock',false),status:'Cần kiểm tra',simTimeS:4.2,served:'0',problems:1,primary:{action:'twin-resume',label:'Tiếp tục',disabled:false},inspectorOpen:false});
++ });
++ const layout=await page.locator('#twin-run-bar').evaluate(bar=>({height:bar.getBoundingClientRect().height,width:bar.getBoundingClientRect().width,items:[...bar.querySelectorAll('.twin-runbar-left,.twin-runbar-right,.twin-runbar-left>*,.twin-runbar-right>*')].map(el=>({text:el.textContent,rect:el.getBoundingClientRect().toJSON(),minWidth:getComputedStyle(el).minWidth,gap:getComputedStyle(el).gap,flex:getComputedStyle(el).flex}))}));
++ await testInfo.attach('layout',{body:JSON.stringify(layout,null,2),contentType:'application/json'});
++ expect(layout.height).toBe(48);
++ expect(await barLayout(page)).toEqual({oneLine:true,twelve:true,label:true,overlaps:[],inside:true,noScroll:true,title:true});
++ await expect(page.locator('[data-action="twin-inspector-toggle"]')).toHaveAccessibleName('Chi tiết');
++ await page.getByTestId('scenario-picker').focus();await page.keyboard.press('Tab');await expect(page.getByTestId('runtime-chip')).toBeFocused();
++ for(const locale of ['vi','ja','en'])for(const state of ['live','connecting','failed','lost']){
++  await page.evaluate(async({locale,state})=>{
++   const module='/src/ui/run-bar.ts',i18n='/src/i18n/index.ts',m=await import(module),{setLocale,tr}=await import(i18n);setLocale(locale);
++   const runtime=m.runtimeWord(state==='connecting'?'connecting':state==='lost'?'runtime_lost':'live','fresh',true,false,false,{attempt:state==='failed'?'failed':'ok',pinMismatch:false});
++   document.querySelector('#twin-run-bar')!.outerHTML=m.runBar({scenarioTitle:tr('Cà phê sữa đá','アイスミルクコーヒー','Iced milk coffee'),runtime:{...runtime,detail:''},mode:m.simLabel('mock',false),status:tr('Cần kiểm tra','要確認','Needs attention'),simTimeS:4.2,served:'0',problems:1,primary:{action:'twin-resume',label:tr('Tiếp tục','再開','Resume'),disabled:false},inspectorOpen:false});
++  },{locale,state});
++  const detail=await page.locator('#twin-run-bar').evaluate(el=>({height:el.getBoundingClientRect().height,chipFits:el.querySelector('#twin-runtime-word')!.scrollWidth<=el.querySelector('#twin-runtime-word')!.clientWidth,buttons:[...el.querySelectorAll('button')].map(b=>({text:b.textContent,width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height}))}));
++  await testInfo.attach(`${locale}-${state}`,{body:JSON.stringify(detail),contentType:'application/json'});
++  expect(detail.height,`${locale} ${state}`).toBe(48);expect(detail.chipFits).toBe(true);for(const b of detail.buttons){expect(b.width).toBeGreaterThanOrEqual(44);expect(b.height).toBeGreaterThanOrEqual(44);}
++  expect(await barLayout(page),`${locale} ${state}`).toEqual({oneLine:true,twelve:true,label:true,overlaps:[],inside:true,noScroll:true,title:true});
++ }
++
++});
+diff --git a/tests/integration/production-http-observer.test.ts b/tests/integration/production-http-observer.test.ts
+new file mode 100644
+index 0000000..250b174
+--- /dev/null
++++ b/tests/integration/production-http-observer.test.ts
+@@ -0,0 +1,58 @@
++import {afterEach,beforeEach,expect,test} from 'vitest';
++import type {EventEmitter} from 'node:events';
++import {createServer,type Server} from 'node:http';
++import {chromium,type Browser,type Page} from '@playwright/test';
++import {observeProductionHTTP} from '../../scripts/production-http-observer';
++let server:Server,browser:Browser,page:Page,url:string,observer:ReturnType<typeof observeProductionHTTP>;
++const data=()=>({responses:[] as Record<string,unknown>[],actions:[] as Record<string,unknown>[],exports:[] as Record<string,unknown>[],errors:[] as string[]});
++const bounded=async(p:Promise<unknown>)=>{let timer:NodeJS.Timeout;try{return await Promise.race([p.then(()=> 'settled'),new Promise(r=>{timer=setTimeout(()=>r('pending'),700);})]);}finally{clearTimeout(timer!);}};
++beforeEach(async()=>{
++ server=createServer((req,res)=>{
++  if(req.url?.includes('unfinished')||req.url?.includes('abort')){res.writeHead(200,{'Content-Type':'application/json','Content-Length':'100000'});res.flushHeaders();res.write('{"started":true,');return;}
++  if(req.url?.startsWith('/lab/v2/')){
++   const path=new URL(req.url,'http://fixture'),action=path.pathname.endsWith('/actions'),publication=path.pathname.endsWith('/replay');
++   const body=action?{run:{id:path.searchParams.has('wrong-run')?'other':'run-1',runRevision:1,status:'paused'},tick:7}:publication?{exportId:'export-1',manifest:{documentType:'web-replay-package',runId:'run-1',horizon:{tick:7,tickMs:20}}}:{ok:true};
++   res.writeHead(path.searchParams.has('error')?500:publication?201:200,{'Content-Type':'application/json'});res.end(path.searchParams.has('invalid')?'{}':JSON.stringify(body));return;
++  }
++  res.writeHead(200,{'Content-Type':'text/html'});res.end('<!doctype html><p>Owned HTTP observer boundary</p>');
++ });await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${(server.address() as {port:number}).port}`;
++ browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});page=await browser.newPage();await page.goto(url);
++});
++afterEach(async()=>{observer?.dispose();await browser?.close();server?.closeAllConnections();if(server)await new Promise<void>(r=>server.close(()=>r()));});
++test('abort after headers settles before target closure and keeps the actual failure',async()=>{
++ const rows=data();observer=observeProductionHTTP(page,rows,{timeoutMs:300,drainTimeoutMs:300});
++ const failed=page.waitForEvent('requestfailed');
++ await page.evaluate(async()=>{const c=new AbortController(),r=await fetch('/lab/v2/runs/run-1/world-display?abort',{signal:c.signal});c.abort();await r.text().catch(()=>{});});await failed;
++ expect(await bounded(observer.finish())).toBe('settled');expect(page.isClosed()).toBe(false);
++ expect(rows.responses).toEqual([expect.objectContaining({path:'/lab/v2/runs/run-1/world-display',method:'GET',outcome:'failed',failure:'net::ERR_ABORTED',classification:'optional-read-cancellation'})]);expect(rows.errors).toEqual([]);
++});
++test('unfinished body hits a finite failure boundary without inventing a response end',async()=>{
++ const rows=data();observer=observeProductionHTTP(page,rows,{timeoutMs:200,drainTimeoutMs:200});
++ await page.evaluate(async()=>{await fetch('/lab/v2/unfinished');});
++ expect(await bounded(observer.finish())).toBe('settled');expect(rows.responses).toEqual([expect.objectContaining({outcome:'timed_out',responseEnd:-1})]);expect(rows.errors.length).toBe(1);expect(page.isClosed()).toBe(false);
++});
++
++test('successful control, action and publication keep exact request/body/timing correlation',async()=>{
++ const rows=data(),events=['request','response','requestfinished','requestfailed','close','crash'] as const,before=events.map(e=>(page as unknown as EventEmitter).listenerCount(e));observer=observeProductionHTTP(page,rows);
++ await page.evaluate(async()=>{await fetch('/lab/v2/control').then(r=>r.json());await fetch('/lab/v2/runs/run-1/actions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actionId:'pause-1',kind:'pause',payload:{}})}).then(r=>r.json());await fetch('/lab/v2/runs/run-1/replay',{method:'POST'}).then(r=>r.json());});
++ await observer.finish();expect(rows.errors).toEqual([]);expect(rows.responses).toHaveLength(3);expect(rows.responses.every(r=>r.outcome==='completed')).toBe(true);
++ expect(rows.actions).toHaveLength(1);const a=rows.actions[0]!;expect(a).toMatchObject({actionId:'pause-1',kind:'pause',runId:'run-1',tick:7,revision:1,status:'paused',payload:{}});
++ const r=rows.responses.find(r=>r.actionId==='pause-1')!;expect(r).toMatchObject({status:200,runId:'run-1',tick:7,requestStartEpochMs:a.requestStartEpochMs,responseEndEpochMs:a.responseEndEpochMs});expect(Number(a.requestStartEpochMs)).toBeLessThanOrEqual(Number(a.responseEndEpochMs));expect(Number(a.responseEndEpochMs)).toBeLessThanOrEqual(Number(a.observedAtEpochMs)+2);
++ expect(rows.exports).toEqual([expect.objectContaining({runId:'run-1',status:201,exportId:'export-1',manifest:{documentType:'web-replay-package',runId:'run-1',horizon:{tick:7,tickMs:20}}})]);
++ expect(events.map(e=>(page as unknown as EventEmitter).listenerCount(e))).toEqual(before);await page.evaluate(()=>fetch('/lab/v2/after-boundary'));expect(rows.responses).toHaveLength(3);
++});
++test.each(['actions?error','actions?invalid','actions?wrong-run','replay?error','replay?invalid'])('required %s cannot become a successful observation',async path=>{
++ const rows=data();observer=observeProductionHTTP(page,rows);
++ await page.evaluate(async path=>{await fetch('/lab/v2/runs/run-1/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({actionId:'pause-1',kind:'pause'})}).then(r=>r.text());},path);
++ await observer.finish();expect(rows.errors).toHaveLength(1);expect(rows.actions).toEqual([]);expect(rows.exports).toEqual([]);expect(rows.responses[0]).toMatchObject({outcome:'invalid',classification:'required-observation-failure'});
++});
++test('failed mutation after headers is required even when its HTTP status was 200',async()=>{
++ const rows=data();observer=observeProductionHTTP(page,rows);const failed=page.waitForEvent('requestfailed');
++ await page.evaluate(async()=>{const c=new AbortController(),r=await fetch('/lab/v2/runs/run-1/actions?abort',{method:'POST',signal:c.signal});c.abort();await r.text().catch(()=>{});});await failed;await observer.finish();
++ expect(rows.responses[0]).toMatchObject({status:200,method:'POST',outcome:'failed',classification:'required-observation-failure',failure:'net::ERR_ABORTED'});expect(rows.errors).toHaveLength(1);expect(rows.actions).toEqual([]);
++});
++test('target closure settles an admitted unfinished request and removes listeners',async()=>{
++ const rows=data(),before=(page as unknown as EventEmitter).listenerCount('request');observer=observeProductionHTTP(page,rows);
++ await page.evaluate(async()=>{await fetch('/lab/v2/unfinished');});await page.close();expect(await bounded(observer.finish())).toBe('settled');
++ expect(rows.responses).toHaveLength(1);expect(rows.responses[0]!.outcome).not.toBe('completed');expect(rows.errors).toHaveLength(1);expect((page as unknown as EventEmitter).listenerCount('request')).toBe(before);
++});
+diff --git a/tests/unit/production-http-observer.test.ts b/tests/unit/production-http-observer.test.ts
+new file mode 100644
+index 0000000..24f817a
+--- /dev/null
++++ b/tests/unit/production-http-observer.test.ts
+@@ -0,0 +1,31 @@
++import {afterEach,expect,test,vi} from 'vitest';
++import {EventEmitter} from 'node:events';
++import type {Page,Request,Response} from '@playwright/test';
++import {observeProductionHTTP} from '../../scripts/production-http-observer';
++afterEach(()=>vi.useRealTimers());
++// The real browser test covers the terminal request boundary. This isolates a stalled protocol body read and timer cleanup.
++test('bounded body read cannot publish late and finish/dispose remove all owned timers/listeners',async()=>{
++ vi.useFakeTimers();const page=new EventEmitter(),rows={responses:[] as Record<string,unknown>[],actions:[],exports:[],errors:[] as string[]};
++ let resolveBody!:(body:unknown)=>void;const body=new Promise(r=>{resolveBody=r;});
++ const request={url:()=> 'http://fixture/lab/v2/runs/run-1/actions',method:()=> 'POST',timing:()=>({startTime:1000,responseEnd:2}),postDataJSON:()=>({actionId:'pause-1',kind:'pause'})} as Request;
++ const response={request:()=>request,status:()=>200,json:()=>body} as Response;
++ const observer=observeProductionHTTP(page as unknown as Page,rows,{timeoutMs:100,drainTimeoutMs:50});page.emit('request',request);page.emit('response',response);page.emit('requestfinished',request);
++ const finished=observer.finish();await vi.advanceTimersByTimeAsync(50);await finished;expect(rows.responses[0]).toMatchObject({outcome:'timed_out',failure:'DRAIN_DEADLINE',responseEnd:2});expect(rows.errors).toHaveLength(1);expect(vi.getTimerCount()).toBe(0);expect(page.eventNames()).toEqual([]);
++ resolveBody({run:{id:'run-1',runRevision:1,status:'paused'},tick:7});await Promise.resolve();expect(rows.actions).toEqual([]);expect(rows.responses).toHaveLength(1);observer.dispose();expect(vi.getTimerCount()).toBe(0);
++});
++test('dispose before deadline records incompleteness and clears the request timer',()=>{
++ vi.useFakeTimers();const page=new EventEmitter(),rows={responses:[] as Record<string,unknown>[],actions:[],exports:[],errors:[] as string[]};const observer=observeProductionHTTP(page as unknown as Page,rows);
++ const request={url:()=> 'http://fixture/lab/v2/runs',method:()=> 'POST',timing:()=>({startTime:1000,responseEnd:-1})} as Request;
++ page.emit('request',request);observer.dispose();expect(rows.responses[0]).toMatchObject({outcome:'target_closed',status:null,responseEnd:-1});expect(rows.errors).toHaveLength(1);expect(vi.getTimerCount()).toBe(0);expect(page.eventNames()).toEqual([]);
++});
++
++test('release and publication correlate after drain even when publication JSON observation completes later',async()=>{
++ const page=new EventEmitter(),rows={responses:[] as Record<string,unknown>[],actions:[],exports:[] as Record<string,unknown>[],errors:[] as string[]};let publication!:(v:unknown)=>void;
++ const body=new Promise(r=>{publication=r;}),observer=observeProductionHTTP(page as unknown as Page,rows,{timeoutMs:1000,drainTimeoutMs:1000});
++ const request=(path:string,method:string)=>({url:()=> 'http://fixture/lab/v2/runs/run-1/'+path,method:()=>method,timing:()=>({startTime:1000,responseEnd:2})}) as Request;
++ const post=request('replay','POST'),remove=request('replay/export-1','DELETE');
++ for(const [r,status,json] of [[post,201,()=>body],[remove,200,async()=>({deleted:true})]] as const){page.emit('request',r);page.emit('response',{request:()=>r,status:()=>status,json} as Response);page.emit('requestfinished',r);}
++ await Promise.resolve();await Promise.resolve();expect(rows.exports).toEqual([]);expect(rows.errors).toEqual([]);expect(rows.responses[0]).toMatchObject({method:'DELETE',outcome:'completed',runId:'run-1',exportId:'export-1'});
++ let drained=false;const finish=observer.finish().then(()=>{drained=true;});await Promise.resolve();expect(drained).toBe(false);
++ publication({exportId:'export-1',manifest:{documentType:'web-replay-package',runId:'run-1',horizon:{tick:7}}});await finish;expect(rows.errors).toEqual([]);expect(rows.exports[0]).toMatchObject({exportId:'export-1',runId:'run-1'});expect(rows.responses).toHaveLength(2);expect(page.eventNames()).toEqual([]);
++});
+diff --git a/tests/unit/twin-runtime-remote.test.ts b/tests/unit/twin-runtime-remote.test.ts
+index d3b7ca3..e5b1746 100644
+--- a/tests/unit/twin-runtime-remote.test.ts
++++ b/tests/unit/twin-runtime-remote.test.ts
+@@ -463,13 +463,13 @@ test('item 6: Assembly asks again on a new connection and on Compile; not reache
+  expect(a.html()).toContain('data-reason="not-connected"');expect(a.html()).not.toContain('has no engineering_bundle_v1');expect(a.html()).not.toMatch(/data-action="asm-compile"[^>]*disabled/);
+  // the runtime comes up; the next press asks again and compiles
+  up=true;calls.length=0;a.click('asm-compile');await vi.waitFor(()=>expect(calls).toEqual(['health','compile']));
+  // another connection: the last answer no longer applies
+  await vi.waitFor(()=>expect(a.busy).toBe(false));paired=false;a.html();expect(a.canCompile).toBeNull();
+ });
+ 
+ test('an export completing after retarget keeps the original run/auth/version through real reader IO and idempotent release',async()=>{
+  const local=memory(),session=memory(),oldBase='https://old.example/lab/v2',newBase='https://new.example/lab/v2';vi.stubGlobal('localStorage',local);vi.stubGlobal('sessionStorage',session);session.m.set('mekoniq-lab-session:'+oldBase,'original-owner');session.m.set('mekoniq-lab-session:'+newBase,'new-owner');
+  const plain=Buffer.from(JSON.stringify({manifest:{runId:'run-one'},outcome:{tick:7}})),bytes=gzipSync(plain),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),manifest={schemaVersion:1,documentType:'web-replay-package',runId:'run-one',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[{path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'}],streams:[],licensing:[]};
+- let complete!:(r:Response)=>void;const calls:{url:string;init:RequestInit}[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init:RequestInit)=>{calls.push({url,init});if(url.endsWith('/replay'))return new Promise<Response>(r=>{complete=r;});if(url.endsWith('/assets/0'))return new Response(bytes);return new Response('{}',{status:200});}));
++ let complete!:(r:Response)=>void;const calls:{url:string;init:RequestInit}[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init:RequestInit)=>{calls.push({url,init});if(url.endsWith('/replay'))return new Promise<Response>(r=>{complete=r;});if(url.endsWith('/assets/0'))return new Response(bytes);return new Response(JSON.stringify(init.method==='DELETE'?{deleted:true}:{}),{status:200});}));
+  const rt=httpTwinRuntime({base:oldBase,kind:'remote'}),pending=rt.exportReplay!('run-one',new AbortController().signal);rt.retarget!({base:newBase,kind:'remote'});complete(new Response(JSON.stringify({exportId:'owned-version',manifest}),{status:200}));const capture=await pending;expect(capture.reader.manifest.runId).toBe('run-one');expect(Buffer.from(await capture.reader.readStoredAsset('report.json.gz'))).toEqual(bytes);capture.reader.close();await capture.release();await capture.release();const originalCalls=[...calls];expect(originalCalls.length).toBe(4);for(const c of originalCalls){expect(c.url).toMatch(/^https:\/\/old.example\/lab\/v2\/runs\/run-one\/replay/);expect(new Headers(c.init.headers).get('Authorization')).toBe('Bearer original-owner');expect(c.init.credentials).toBe('omit');}expect(originalCalls.filter(c=>c.init.method==='DELETE').map(c=>c.url)).toEqual([oldBase+'/runs/run-one/replay/owned-version']);await rt.health();expect(calls.at(-1)!.url).toBe(newBase+'/health');expect(new Headers(calls.at(-1)!.init.headers).get('Authorization')).toBe('Bearer new-owner');
+ });

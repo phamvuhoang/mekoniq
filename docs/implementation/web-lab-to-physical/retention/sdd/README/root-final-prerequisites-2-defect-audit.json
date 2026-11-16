@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "kind": "read-only artifact and fixed-Git byte audit; not new verifier/native execution",
+  "inputIndexSha256": "a9f3fce07241feaa44ff46680267a8b7397327951d8530b356339d5003ffce97",
+  "files": 11,
+  "refs": 386,
+  "manifestSha256": "5f3576c6298cbc5fdab9bd08641e0afe293335658ac2512e68b39519534bdb66",
+  "nativeFiles": 226,
+  "portableFiles": 238,
+  "observedPublicVerifierExit": 1,
+  "actualIssues": [
+    {
+      "code": "HANDOFF_SCHEMA_INVALID",
+      "path": "/refs/tool/232/path",
+      "severity": "error"
+    },
+    {
+      "code": "HANDOFF_SCHEMA_INVALID",
+      "path": "/refs/tool/232/sourcePath",
+      "severity": "error"
+    }
+  ],
+  "source": "bab05a5311a9db3be447519b3b9ac48eb0e4a90d",
+  "lab": "1f9b48d6d2767bdcd623f08cfa45ba0f9af33d1d"
+}

@@ -1,0 +1,591 @@
+{
+  "schema": "root-read-only-irsim-audit/1",
+  "at": "2026-11-15T18:03:53.150668+00:00",
+  "qualification": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/irsim/qualification.json",
+    "bytes": 357894,
+    "sha256": "08bf233a2c1e4c46928b0cbacd36393c2821afaf61db337b5c4ea635d7b44c37"
+  },
+  "identity": {
+    "before": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "at": "2026-11-15T17:40:21.574Z"
+    },
+    "after": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "at": "2026-11-15T17:58:44.892Z"
+    },
+    "identityStable": true
+  },
+  "lab": {
+    "commit": "b0fcedec2bc826c4501972f424f3c9798b6b7449",
+    "dirty": false,
+    "pin": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+    }
+  },
+  "gates": {
+    "G-LF1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "LF01"
+      ]
+    },
+    "G-LF2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "LF02",
+        "LF03",
+        "LF04",
+        "LF05",
+        "LF06"
+      ]
+    },
+    "G-IR1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR01"
+      ]
+    },
+    "G-IR2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR04"
+      ]
+    },
+    "G-IR3": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR02",
+        "IR03",
+        "IR05",
+        "IR06",
+        "IR07",
+        "IR08",
+        "IR09",
+        "IR10"
+      ]
+    },
+    "G-INT1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "INT01",
+        "INT02",
+        "INT03",
+        "INT04"
+      ]
+    }
+  },
+  "accepted": false,
+  "cases": 30,
+  "campaignPasses": 25,
+  "campaignEvidenceComplete": false,
+  "declaredExpectedEvidenceGap": {
+    "id": "024-IR-FD01-workerkill-serve-demo-v1-s34-r1",
+    "scenarioId": "IR-FD01-workerkill",
+    "fixtureId": "serve-demo-v1",
+    "seed": 34,
+    "repeat": 1,
+    "result": "pass",
+    "kind": "operator_fault",
+    "label": "IR10: worker process killed between steps on the table leg; leg unknown, no resend, no second worker, cargo kept, the unknown tick a recorded gap",
+    "stepTicks": 500,
+    "evidenceComplete": false,
+    "evidenceAsExpected": true,
+    "reasons": [],
+    "reasonsTruncated": false,
+    "assertions": [
+      {
+        "id": "IDENTITY_BOUND",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SERVED_BEFORE_HANDOFF",
+        "result": "pass"
+      },
+      {
+        "id": "BUSINESS_OUTCOME",
+        "result": "pass"
+      },
+      {
+        "id": "EVIDENCE_GAP_AS_DECLARED",
+        "result": "pass"
+      },
+      {
+        "id": "CARGO_KEPT",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SECOND_WORKER",
+        "result": "pass"
+      }
+    ],
+    "digests": {
+      "trajectoryDigest": "dfb3a84fd60b0c19084e49d7b67c57774b68be18963dd5dee80352ce9824ee77",
+      "sensorDigest": "3efe754a820ff84a1e3ec4ae784dc4ddb2ea221c489eeede4bc3ebdf24889e29",
+      "assertionDigest": "10244c861f034da356c5e1116601b11d3cd967152f72356447612b0b355fb776",
+      "outcomeDigest": "4263ae77e713074156bcadd40a345cdd23a364d3d3ea414970a435a30358e493"
+    },
+    "outcome": {
+      "status": "needs_attention",
+      "served": "0",
+      "tick": 1250,
+      "simTimeNs": "25000000000"
+    },
+    "wallMs": 6030
+  },
+  "receipts": [
+    {
+      "name": "record-irsim",
+      "sha256": "3b748ffe8bbd7dfd9ab61874fbc969d3f4193c2ef0966629492a71340f3f7bd6",
+      "logSha256": "1c0c27185f230940b536b102fd701d3bfbd1c209c75413c1e49cd5f3dc8aa9a4",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:40:21.318Z",
+      "finishedAt": "2026-11-15T17:58:45.365Z"
+    },
+    {
+      "name": "verify-irsim-campaign",
+      "sha256": "c43ba1a9aa76fbd8ec8fb2d313c53b70d4904cd485188ddfa64903fa73112f60",
+      "logSha256": "2f652be9f920bebcb2c1dcb717cc4617d18ce83a58381ad5c0fdd9523e9e899d",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:58:45.688Z",
+      "finishedAt": "2026-11-15T17:58:45.744Z"
+    },
+    {
+      "name": "acceptance-irsim",
+      "sha256": "ff83853731dcc5e5601e3ce96903bc5ef61039b6d6a477c875de8b6e3caf4451",
+      "logSha256": "a80989993d0cbdc508a69e6bf8a67145f44a1713214ee62f20a473799231a69d",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-11-15T17:58:46.046Z",
+      "finishedAt": "2026-11-15T17:58:46.994Z"
+    }
+  ],
+  "publicAcceptanceTestsPassed": 6,
+  "verifiedFiles": [
+    {
+      "file": "suites/lf.log",
+      "bytes": 1572,
+      "sha256": "24b98457eebb279acfaa5dca071c08507dbb8a2438291753da4f113d7ef61ca5",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/lf.json",
+      "bytes": 11914,
+      "sha256": "31b0deea40fda54e50a6e0d00c44e111538e311569f8c8c1f6b8ceec7eb6c498",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/lf-py.log",
+      "bytes": 99,
+      "sha256": "34bc08268abcd6434435fc7ae7a489e7c2c55123173d970a6155d9b8d70af530",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/lf-py.xml",
+      "bytes": 4429,
+      "sha256": "5e053329cc1d521dc85aafca33814ce4ba8897f61faf113da2e8cd2a8e787b83",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/cmp.log",
+      "bytes": 901,
+      "sha256": "65834a405d78d911a29640a6bed83f76363fb488ff1169df8494c6f3cc909211",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/cmp.json",
+      "bytes": 10881,
+      "sha256": "f1aa9b8bfff53c8ff4a7cdb1898ba79fad6bf0ac6797654ed16afdf47d5b621e",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/cmp-py.log",
+      "bytes": 99,
+      "sha256": "93f6ba0b1a4670d5a250534114e55093d86c48fc66c4df53b9805731d6914759",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/cmp-py.xml",
+      "bytes": 5291,
+      "sha256": "7c71e17b42a4f3f16ec5b3b9d4e776a22ea35ba2a2a334fef2f6f0c09ffd850e",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/parity-py.log",
+      "bytes": 98,
+      "sha256": "5cb1fc00f266cd6a5a55521b731d3e5d8cad8ec6ce30b32f3efe22fc64ab96c8",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/parity-py.xml",
+      "bytes": 1736,
+      "sha256": "19c9e2225778fdfc2bfb84cefc36baec06a29b2e1baf375e31679a2f8ab8ba96",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/ir.log",
+      "bytes": 8400,
+      "sha256": "08d465b25ce820f3f79064ba2ed6009630303ef824c78dd863ea2b2f7c3f3e5e",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/ir.json",
+      "bytes": 31961,
+      "sha256": "622881f85c35d7b0095df7b7ff716a22381b7bd9dfdca6e9e0f5ee08ce2aaf0d",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/evi.log",
+      "bytes": 4132,
+      "sha256": "00228acccc468fc31e8e4d9c0a84fe47ad82be29e071c296bb7cac9bed5a55e6",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/evi.json",
+      "bytes": 20763,
+      "sha256": "d719095e78bcaaed6f1d8dc4341797eebd4dec835de2a19b931e37259ba0d2b8",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/int.log",
+      "bytes": 1990,
+      "sha256": "453c56c5176a21871136a137bd029405fac338fffb6f8bd87039a4aa4887f00c",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/int.json",
+      "bytes": 13042,
+      "sha256": "f9f5a5b176f2c7cda1e7b34a64e4dd1e79a16924fc8715dac5e3caf2921a0721",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/batch.log",
+      "bytes": 2040,
+      "sha256": "fbf76407edb94f1181d8d3ddae6506db798d79242e450cffe5ccff90800e3577",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/batch.json",
+      "bytes": 3155,
+      "sha256": "d919dc89c4699d46c9ff3c508d121580c7d6d2e00ee05aee14f7812dce3c72d7",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/lab-unit.log",
+      "bytes": 2022,
+      "sha256": "8ae565385af7cf80aae40a223824565acd888ac72b6b3318c3b8109399c0f40a",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/lab-unit.json",
+      "bytes": 21238,
+      "sha256": "fa0d3a3fa48e3726fa8650159018e1df4174ee2dd182b3175231f6a7b2d74a8c",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/lab-e2e-journey.log",
+      "bytes": 1037,
+      "sha256": "b8029a1a96f5a1bed8c9e8b98c62fba08f131432916a01a0d0844043121ebe59",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/lab-e2e-journey.json",
+      "bytes": 4019,
+      "sha256": "ad9b30de28933fffdcfae9b055a837b5ed1e0eab20904bc26b6ad2b33c209307",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/lab-e2e-fleet.log",
+      "bytes": 1022,
+      "sha256": "ba7cd9a3cb728552a9c6cf992d157c90312831e9cc7663bf5a7cb8a7c085f74f",
+      "kind": "suite-log"
+    },
+    {
+      "file": "suites/lab-e2e-fleet.json",
+      "bytes": 3989,
+      "sha256": "4224759452d2e2124bfd76ebdae7be66b002585f2eb82c1bdc0f91006b5e7135",
+      "kind": "suite-result"
+    },
+    {
+      "file": "suites/licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "command-log"
+    },
+    {
+      "file": "suites/performance.log",
+      "bytes": 329,
+      "sha256": "f2e3473618a4fa744f07df13589b174c501a78103527622b37f6c263583092fa",
+      "kind": "command-log"
+    },
+    {
+      "file": "campaign/summary.json",
+      "bytes": 36707,
+      "sha256": "8983dd2d3f055ed64ad2f1ff9d4209c367068630f817058f078a57aead3920b9",
+      "kind": "campaign-summary"
+    },
+    {
+      "file": "performance.json",
+      "bytes": 1438,
+      "sha256": "01cb4744161b6e49f134d461d640c14d12a65db29d2b3e682ad4687cca243dc4",
+      "kind": "performance"
+    }
+  ],
+  "results": [
+    {
+      "suite": "lf",
+      "kind": "vitest",
+      "derived": {
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "total": 34
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "lf-py",
+      "kind": "pytest",
+      "derived": {
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "total": 34
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "scope": "Raw header regex counters only; not XML validity or per-assertion enumeration"
+    },
+    {
+      "suite": "cmp",
+      "kind": "vitest",
+      "derived": {
+        "passed": 29,
+        "failed": 0,
+        "skipped": 0,
+        "total": 29
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "cmp-py",
+      "kind": "pytest",
+      "derived": {
+        "passed": 40,
+        "failed": 0,
+        "skipped": 0,
+        "total": 40
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 210",
+      "scope": "Raw header regex counters only; not XML validity or per-assertion enumeration"
+    },
+    {
+      "suite": "parity-py",
+      "kind": "pytest",
+      "derived": {
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "total": 9
+      },
+      "xmlParseError": "not well-formed (invalid token): line 1, column 209",
+      "scope": "Raw header regex counters only; not XML validity or per-assertion enumeration"
+    },
+    {
+      "suite": "ir",
+      "kind": "vitest",
+      "derived": {
+        "passed": 77,
+        "failed": 0,
+        "skipped": 0,
+        "total": 77
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "evi",
+      "kind": "vitest",
+      "derived": {
+        "passed": 50,
+        "failed": 0,
+        "skipped": 0,
+        "total": 50
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "int",
+      "kind": "vitest",
+      "derived": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "batch",
+      "kind": "vitest",
+      "derived": {
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "total": 5
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "lab-unit",
+      "kind": "vitest",
+      "derived": {
+        "passed": 57,
+        "failed": 0,
+        "skipped": 0,
+        "total": 57
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "lab-e2e-journey",
+      "kind": "playwright",
+      "derived": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    },
+    {
+      "suite": "lab-e2e-fleet",
+      "kind": "playwright",
+      "derived": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "xmlParseError": null,
+      "scope": "Counts derived from stored raw case/assertion entries"
+    }
+  ],
+  "performance": {
+    "schemaVersion": 1,
+    "documentType": "irsim-performance-measurement",
+    "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches",
+    "host": {
+      "platform": "darwin",
+      "release": "25.5.0",
+      "arch": "arm64",
+      "cpu": "Apple M2 Pro",
+      "cpus": 10,
+      "memGiB": 16,
+      "node": "v24.22.2",
+      "python": "3.11.15",
+      "irsim": "2.12.0"
+    },
+    "workload": {
+      "scenarioId": "IR-FD07",
+      "fixtureId": "serve-fleet-v1",
+      "robots": [
+        {
+          "robotId": "robot01",
+          "beams": [
+            360
+          ],
+          "publishEveryTicks": [
+            5
+          ]
+        },
+        {
+          "robotId": "robot02",
+          "beams": [
+            180
+          ],
+          "publishEveryTicks": [
+            5
+          ]
+        }
+      ],
+      "ticks": 3000,
+      "simSeconds": 60,
+      "finalStatus": "running",
+      "maxConcurrentMovers": 1
+    },
+    "steadyState": {
+      "batches": 60,
+      "perTickMs": {
+        "p50": 5.2059050000000004,
+        "p95": 9.83007916,
+        "max": 11.718969999999999
+      },
+      "realtimeFactor": 3.191329533638275,
+      "wallSeconds": 18.800941541,
+      "workerRssMiB": {
+        "max": 121.375,
+        "samples": 60
+      },
+      "evidenceBytes": 1522443
+    },
+    "targets": {
+      "realtimeFactorAt1x": ">= 1 (median)",
+      "stepP95Ms": "<= 20",
+      "workerRssMiB": "<= 1024",
+      "source": "specs/2026-11-08-linkforge-irsim/verification.md §4 (Mac arm64 reference, 2 robots, 360 beams each, publish 10 Hz)"
+    },
+    "meetsTargets": {
+      "realtimeFactor": true,
+      "stepP95": true,
+      "workerRss": true
+    }
+  },
+  "fullArtifactInventoryCount": 1602,
+  "fullArtifactInventoryHashWalk": "Pending final retention audit, not performed here",
+  "limits": [
+    "No tests rerun by root; three actual own-exit receipts/logs verified.",
+    "Inherited malformed Python XML remains unchanged and explicitly observed; regex-derived counters are not standard JUnit validity.",
+    "IR performance is batch-mean timing over3000ticks/60simseconds in18.800941541wallseconds; its own note says not a gate. Workload has360/180 beams and maxConcurrentMovers1. It does not qualify full-cell production web performance.",
+    "Campaign complete true is distinct from evidenceComplete false for the expected worker-kill gap. All25evidenceAsExpected true; no gap promoted to complete evidence.",
+    "No human acceptance, native Linux or physical claim."
+  ]
+}

@@ -1,5 +1,8 @@
 # 07 — Lịch 4 tuần đầu và checklist vận hành
 
+**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+
+
 D0 theo gate launch; lịch dùng tuần tương đối để không hứa marketing trước engineering. Nếu D0 là replay release, mọi nội dung nói replay. 12 tuần =84 ngày, ngày 85–90 dùng để đối soát và quyết định. Các asset được soạn tại [05](05-ready-to-use-content.md); URL/ảnh/thời gian buổi thật điền sau duyệt.
 
 ## Calendar chi tiết 4 tuần đầu

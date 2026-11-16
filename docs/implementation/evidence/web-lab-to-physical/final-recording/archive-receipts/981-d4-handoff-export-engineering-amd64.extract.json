@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:08.226878+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/handoff-export-engineering-amd64",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-handoff-export-engineering-amd64.tar.gz",
+  "archiveSha256": "71ac96c8201ab520649a4d7f449384ddf97b67b2a3f0aff3210b343f2a3c0cff",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-handoff-export-engineering-amd64.members.json",
+  "memberIndexSha256": "f494e66fe7c1142c0f2c1c0031a3630e90b74638a485c14843c8811f1013ae2d",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-handoff-export-engineering-amd64",
+  "verifiedFiles": 243,
+  "verifiedBytes": 10867068,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

@@ -1,0 +1,152 @@
+diff --git a/packages/contracts/schemas/native-handoff-v1.schema.json b/packages/contracts/schemas/native-handoff-v1.schema.json
+index 4e51b3d..d1d5ef4 100644
+--- a/packages/contracts/schemas/native-handoff-v1.schema.json
++++ b/packages/contracts/schemas/native-handoff-v1.schema.json
+@@ -515,7 +515,7 @@
+         "path": {
+           "type": "string",
+           "maxLength": 240,
+-          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
++          "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\\.gitattributes)(?![\\s\\S])"
+         },
+         "sha256": {
+           "type": "string",
+@@ -529,7 +529,7 @@
+         "sourcePath": {
+           "type": "string",
+           "maxLength": 240,
+-          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$"
++          "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\\.gitattributes)(?![\\s\\S])"
+         },
+         "sourceCommit": {
+           "type": "string",
+diff --git a/packages/lab-runtime/src/v2/sil/native-handoff.ts b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+index 46cfc35..708e168 100644
+--- a/packages/lab-runtime/src/v2/sil/native-handoff.ts
++++ b/packages/lab-runtime/src/v2/sil/native-handoff.ts
+@@ -29,7 +29,8 @@ function validImageRecords(manifest:unknown,config:unknown,configBytes:number){
+ }
+ const FILE_LIMIT=64*1024*1024,JSON_LIMIT=1024*1024,TOTAL_LIMIT=256*1024*1024,REF_LIMIT=768;
+ const hash=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');
+-const safePath=(p:string)=>/^[A-Za-z0-9_-][A-Za-z0-9_.-]*(\/[A-Za-z0-9_-][A-Za-z0-9_.-]*)*$/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
++// The sole hidden leaf is vendor metadata; the final lookahead requires the actual end of input.
++const safePath=(p:string)=>/^(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*|\.gitattributes)(?![\s\S])/.test(p)&&p.length<=240&&!p.split('/').some(x=>x==='.'||x==='..');
+ const secretPath=(p:string)=>p.split('/').some(x=>/^(\.env(?:\..*)?|id_(rsa|ed25519|ecdsa)|credentials(?:\..*)?)$|(?:private|secret|tunnel).*key|\.(?:key|pem|p12|pfx)$/i.test(x));
+ const secretContent=(b:Buffer)=>/-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY|OPENSSH PRIVATE KEY)-----/.test(b.toString('utf8'));
+ async function checkedRoot(root:string){const s=await lstat(root);if(!s.isDirectory()||s.isSymbolicLink())throw new Error('ROOT_NOT_DIRECTORY');return realpath(root);}
+diff --git a/tests/unit/capabilities-mujoco-arm.test.ts b/tests/unit/capabilities-mujoco-arm.test.ts
+index 22ad9cc..a59973c 100644
+--- a/tests/unit/capabilities-mujoco-arm.test.ts
++++ b/tests/unit/capabilities-mujoco-arm.test.ts
+@@ -1,4 +1,4 @@
+-// M01 (MuJoCo arm): the mujoco_arm provider and its backend set exist in the default catalog, unconfigured, and only MJ-BV01 may use the set. Nothing that existed before changes.
++// M01 arm-only set admits MJ-BV01; the later shared-world cell has its own explicit set. Both remain unconfigured.
+ import { expect, test } from 'vitest';
+ import { defaultCatalog, MUJOCO_ARM, MUJOCO_ARM_UNCONFIGURED, WEBOTS_ARM_UNCONFIGURED } from '../../packages/lab-runtime/src/v2/capabilities';
+ import { resolveBackends } from '../../packages/lab-runtime/src/v2/scenario-matrix';
+@@ -38,14 +38,14 @@ test('engineering-mujoco-arm-v1 runs only MJ-BV01 with an AMR mock, the MuJoCo a
+   expect(set.execution).toEqual(defaultCatalog.sets['engineering-webots-arm-v1']!.execution);
+ });
+ 
+-test('the plain BV01 and WB-BV01 are refused by the new set, and no other set lists mujoco_arm', () => {
++test('the arm-only set refuses plain BV01 and WB-BV01; only it and the explicit cell set list mujoco_arm', () => {
+   for (const id of ['BV01', 'WB-BV01']) expect(resolveBackends(scenarioRegistry.get(id)!, 'simulation', 'engineering-mujoco-arm-v1')).toMatchObject({ ok: false, reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] });
+   expect(resolveBackends(scenarioRegistry.get('BV01')!, 'mock', 'mock-default')).toMatchObject({ ok: true });
+-  expect(Object.entries(defaultCatalog.sets).filter(([, v]) => v.backends.includes('mujoco_arm')).map(([k]) => k)).toEqual(['engineering-mujoco-arm-v1']);
++  expect(Object.entries(defaultCatalog.sets).filter(([, v]) => v.backends.includes('mujoco_arm')).map(([k]) => k)).toEqual(['engineering-mujoco-arm-v1','engineering-mujoco-cell-v1']);
+ });
+ 
+ test('every set and backend that existed before is exactly as it was', () => {
+-  const after = Object.entries(defaultCatalog.sets).filter(([k]) => !['engineering-mujoco-arm-v1', 'engineering-mujoco-3d-v1'].includes(k)).map(([k, v]) => [k, v.mode, v.access, [...v.backends]]);
++  const after = Object.entries(defaultCatalog.sets).filter(([k]) => !['engineering-mujoco-arm-v1', 'engineering-mujoco-3d-v1','engineering-mujoco-cell-v1'].includes(k)).map(([k, v]) => [k, v.mode, v.access, [...v.backends]]);
+   expect(after).toEqual(BEFORE);
+   expect(defaultCatalog.backends.map((b) => b.id)).toEqual([...BACKENDS_BEFORE, 'mujoco_arm', 'mujoco_3d']);
+   expect(defaultCatalog.backends.find((b) => b.id === 'webots_arm')).toEqual(WEBOTS_ARM_UNCONFIGURED);
+@@ -53,6 +53,10 @@ test('every set and backend that existed before is exactly as it was', () => {
+   expect(defaultCatalog.sets['engineering-webots-3d-v1']).toMatchObject({ providers: { amr: 'webots_3d' }, scenarioIds: ['WB-FD01', 'WB-FD07'] });
+ });
+ 
++test('the explicit cell set admits only MJ-CELL-BV01 with one shared simulation world',()=>{
++  expect(defaultCatalog.sets['engineering-mujoco-cell-v1']).toEqual({mode:'simulation',access:'simulated',backends:['mujoco_3d','mujoco_arm','mock_coffee'],providers:{amr:'mujoco_3d',arm:'mujoco_arm',coffee:'mock_coffee'},scenarioIds:['MJ-CELL-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64],composition:'single_world'}});
++});
++
+ test('mobile catalog adds only an unconfigured simulation backend and the MJ-FD01 engineering set', () => {
+   expect(defaultCatalog.backends.find(b => b.id === 'mujoco_3d')).toMatchObject({ installed: false, modes: ['simulation'], accesses: ['simulated'] });
+   expect(defaultCatalog.sets['engineering-mujoco-3d-v1']).toMatchObject({ mode: 'simulation', access: 'simulated', backends: ['mujoco_3d'], providers: { amr: 'mujoco_3d' }, scenarioIds: ['MJ-FD01'] });
+diff --git a/tests/unit/lab-sil-cli.test.ts b/tests/unit/lab-sil-cli.test.ts
+index accfa7c..c5b1abb 100644
+--- a/tests/unit/lab-sil-cli.test.ts
++++ b/tests/unit/lab-sil-cli.test.ts
+@@ -2,10 +2,10 @@
+ // On a host without ROS 2/Gazebo `run` must stop at the doctor gate and write an honest not_run manifest; it never produces a pass.
+ import {expect,test} from 'vitest';
+ import {spawnSync} from 'node:child_process';
+-import {copyFile,mkdtemp,mkdir,readFile,readdir,rm,writeFile} from 'node:fs/promises';
++import {copyFile,mkdtemp,mkdir,readFile,readdir,rm,writeFile,symlink} from 'node:fs/promises';
+ import {createHash} from 'node:crypto';
+ import {tmpdir} from 'node:os';
+-import {join} from 'node:path';
++import {join,resolve} from 'node:path';
+ const cli=(...args:string[])=>{const r=spawnSync(process.execPath,['scripts/lab-sil.mjs',...args],{encoding:'utf8',timeout:120000});return {code:r.status,out:r.stdout,err:r.stderr};};
+ const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
+ 
+@@ -15,6 +15,10 @@ test.skipIf(spawnSync('python3',['--version']).status!==0)('doctor imports Pytho
+   await mkdir(join(root,'scripts/native-sim'),{recursive:true});
+   await copyFile('scripts/lab-sil.mjs',join(root,'scripts/lab-sil.mjs'));
+   await copyFile('scripts/native-sim/profile-report.mjs',join(root,'scripts/native-sim/profile-report.mjs'));
++  await copyFile('scripts/native-sim/native-inventory.mjs',join(root,'scripts/native-sim/native-inventory.mjs'));
++  await mkdir(join(root,'packages/contracts/schemas'),{recursive:true});
++  await copyFile('packages/contracts/schemas/native-handoff-v1.schema.json',join(root,'packages/contracts/schemas/native-handoff-v1.schema.json'));
++  await symlink(resolve('node_modules'),join(root,'node_modules'),'dir'); // Actual pinned Ajv dependency; no doctor double.
+   const simulation=join(root,'robotics/simulation');
+   // Minimal packages isolate the doctor's import side effects from optional ROS/Python dependencies.
+   for(const name of ['compiler','bridge','actors','metrics','collision','beverage_cell','cup_transfer','worlds']){
+diff --git a/tests/unit/native-handoff-current-puma.test.ts b/tests/unit/native-handoff-current-puma.test.ts
+new file mode 100644
+index 0000000..545ecd4
+--- /dev/null
++++ b/tests/unit/native-handoff-current-puma.test.ts
+@@ -0,0 +1,43 @@
++import {expect,test} from 'vitest';
++import {readFile,writeFile,rm,symlink,mkdtemp} from 'node:fs/promises';
++import {join} from 'node:path';
++import {tmpdir} from 'node:os';
++import {nativeHandoffFixture,digest} from '../fixtures/native-handoff';
++import {validateNativeHandoff,exportNativeHandoff,readHandoffFile} from '../../packages/lab-runtime/src/v2/sil/native-handoff';
++// Shared production closure inventory.
++import {nativeToolClosure} from '../../scripts/native-sim/tool-identity.mjs';
++const attr='robotics/manipulation/vendor-source/.gitattributes';
++async function currentPuma(){
++ const f=await nativeHandoffFixture('native_apt'),closure=nativeToolClosure(process.cwd());
++ for(const entry of closure.files as {path:string;bytes:number;sha256:string}[]){
++  const existing=Object.entries(f.manifest.refs).flatMap(([role,refs])=>refs.map(ref=>({role,ref}))).find(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===entry.path);
++  if(existing){expect(existing.ref).toMatchObject({sha256:entry.sha256,bytes:entry.bytes});continue;}
++  await f.put('tool','native-source/'+entry.path,await readFile(entry.path),entry.path);
++ }
++ await f.reseal();const runtimeRef=f.manifest.refs.runtimeManifest[0],runtime=JSON.parse(await readFile(join(f.root,runtimeRef.path),'utf8'));runtime.nativeTools=closure;f.manifest.subject.nativeClosureHash=closure.digest;const bytes=JSON.stringify(runtime);await writeFile(join(f.root,runtimeRef.path),bytes);Object.assign(runtimeRef,{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});await writeFile(join(f.root,'manifest.json'),JSON.stringify(f.manifest));
++ return {...f,closure,attribute:f.manifest.refs.tool.find(r=>r.sourcePath===attr)!};
++}
++test('current PUMA complete native closure prepares and exports every actual member including vendor gitattributes',async()=>{
++ const f=await currentPuma(),out=f.root+'-export';try{
++  expect(f.closure.files).toContainEqual({path:attr,bytes:99,sha256:'37991456045b2f43a9a624e14f2af90c33645175a0a3eabc14b19c4da83359fc'});
++  expect(await validateNativeHandoff(f.root,f.manifest)).toMatchObject({prepared:true,nativeReady:false});expect(await exportNativeHandoff(f.root,out)).toMatchObject({prepared:true,nativeReady:false});
++  for(const entry of f.closure.files as {path:string;bytes:number;sha256:string}[]){const refs=Object.entries(f.manifest.refs).flatMap(([role,rs])=>rs.map(ref=>({role,ref}))),ref=refs.find(({role,ref})=>(role==='schema'?'packages/contracts/schemas/'+ref.sourcePath:ref.sourcePath)===entry.path)!.ref;const bytes=await readFile(join(out,ref.path));expect(bytes.length).toBe(entry.bytes);expect(digest(bytes)).toBe(entry.sha256);}
++ }finally{await rm(f.root,{recursive:true,force:true});await rm(out,{recursive:true,force:true});}
++});
++test('the exact gitattributes leaf is admitted directly while its source identity stays bound',async()=>{
++ const f=await currentPuma();try{const bytes=await readFile(join(f.root,f.attribute.path));await writeFile(join(f.root,'.gitattributes'),bytes);f.attribute.path='.gitattributes';expect(await validateNativeHandoff(f.root,f.manifest)).toMatchObject({prepared:true,nativeReady:false});}finally{await rm(f.root,{recursive:true,force:true});}
++});
++test.each(['remove','corrupt','symlink','secret','collision'])('admitted current PUMA gitattributes still refuses %s',async kind=>{
++ const f=await currentPuma();try{expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(true);const path=join(f.root,f.attribute.path);
++  if(kind==='remove')await rm(path);if(kind==='corrupt')await writeFile(path,'changed');if(kind==='symlink'){await rm(path);await symlink(join(process.cwd(),attr),path);}if(kind==='secret'){const bytes='-----BEGIN PRIVATE KEY-----';await writeFile(path,bytes);Object.assign(f.attribute,{sha256:digest(bytes),bytes:Buffer.byteLength(bytes)});}if(kind==='collision')f.manifest.refs.archive=[{...f.attribute}];
++  const result=await validateNativeHandoff(f.root,f.manifest);expect(result.prepared).toBe(false);if(kind==='secret')expect(result.issues.map(i=>i.code)).toContain('SECRET_CONTENT_FORBIDDEN');if(kind==='collision')expect(result.issues.map(i=>i.code)).toContain('REF_PATH_COLLISION');if(kind==='symlink')expect(result.issues.map(i=>i.code)).toContain('REF_SYMLINK');if(kind==='corrupt')expect(result.issues.map(i=>i.code)).toContain('REF_HASH_MISMATCH');if(kind==='remove')expect(result.issues.some(i=>i.code.startsWith('ENOENT:'))).toBe(true);
++ }finally{await rm(f.root,{recursive:true,force:true});}
++});
++test.each(['path','sourcePath'] as const)('schema %s retains hidden-directory, control and length refusals on coherent current PUMA',async field=>{
++ const f=await currentPuma();try{expect((await validateNativeHandoff(f.root,f.manifest)).prepared).toBe(true);const original=f.attribute[field];
++  for(const bad of ['.git/config','.env','x/.hidden','x/.gitattributes/child','normal\n','x/.gitattributes\n','x'.repeat(241)]){f.attribute[field]=bad;expect((await validateNativeHandoff(f.root,f.manifest)).issues.some(i=>i.code==='HANDOFF_SCHEMA_INVALID'&&i.path.endsWith('/'+field)),bad).toBe(true);}f.attribute[field]=original;
++ }finally{await rm(f.root,{recursive:true,force:true});}
++});
++test.each(['.git/config','.env','normal/.hidden','normal/.gitattributes/child','../normal','/normal','normal/../x','normal//x','normal\\x','normal\u0000x','normal\n','.gitattributes\n','normal/.gitattributes\n'])('handoff paths match the complete safe string and refuse %j',async path=>{
++ const root=await mkdtemp(join(tmpdir(),'handoff-path-'));try{await writeFile(join(root,'normal\n'),'must not read');await expect(readHandoffFile(root,path)).rejects.toThrow('REF_PATH_FORBIDDEN');}finally{await rm(root,{recursive:true,force:true});}
++});

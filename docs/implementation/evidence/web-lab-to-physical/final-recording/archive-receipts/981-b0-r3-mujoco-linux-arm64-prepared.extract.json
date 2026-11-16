@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T00:28:04.359442+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r3-mujoco-linux-arm64-prepared",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-r3-mujoco-linux-arm64-prepared.tar.gz",
+  "archiveSha256": "1cd4b9c2a985e600a32269fbc3ac1517b822f4e637b720c6b6e84a1e4b114e44",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-r3-mujoco-linux-arm64-prepared.members.json",
+  "memberIndexSha256": "107f8131caa598430e943e262925d602194d0024e1cefb89fd4b8f7970b48e9a",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-b0-r3-mujoco-linux-arm64-prepared",
+  "verifiedFiles": 244,
+  "verifiedBytes": 10938084,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

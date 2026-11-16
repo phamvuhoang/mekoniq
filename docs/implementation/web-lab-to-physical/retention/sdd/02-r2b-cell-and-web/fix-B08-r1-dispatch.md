@@ -1,0 +1,36 @@
+You own B08 fix round1/5 as its original implementer. Read task-B08-brief.md and task-B08-report.md in this directory for requirements/context; the full independent review is task-B08-review-1.md. Fix only the open Important I1 below and any direct regression it exposes. M1 is deferred, not a required fix-loop item; new I1 tests themselves must fully reseal all upstream refs so they exercise admission, not merely stale hashes.
+
+Exact FIX BASES (previous reviewed heads): Source709a797fa791727d0a8c830e935e0d80192843b0 / Lab3a904c21bb5805c1f6a4fa3d3bd096873d53ba41. Original task bases stay e07685d/c20108c for historical full-review scope. Work only in the existing feature worktrees. No helpers or reviewers; root provides scoped re-review after final handoff.
+
+## Finding verbatim
+
+### Important I1 — Semantic study accepts a changed baseline physical input under the same name
+
+**Location:** `source/packages/lab-runtime/src/v2/simulation3d/semantic-study.ts:18` (with the common projection assembled at lines 19–21).
+
+The MuJoCo check only requires `loadProfileRef.id === 'empty'` and `physicsProfileRef.id === 'serve-drive-contact-v1'`. It never validates the referenced load's contents/empty population or the locked baseline physics bytes. `verifiedSimulationInput` verifies the declared file bytes and scene references, but does not establish those profile semantics. Neither reference/content participates in the returned common projection. The stricter registered-profile checks in `verifiedPhysicsInputs` are used only by physics A/B, not this path.
+
+**Confirmed reproduction:** a read-only, in-memory probe loaded the retained clean X01 `study-input.json`, changed MuJoCo `drive-contact-profile.json` `contact.sliding` from 0.6 to 0.99, resealed its `digest`, recalculated its stored-byte hash/size, updated its scene file/ref, resealed the scene, and updated the scene/report identity mirrors. The unmodified IR-SIM/Webots inputs and original declared equivalence remained. `buildSemanticStudy` returned:
+
+```json
+{"status":"complete","reasons":[],"accepted":false}
+```
+
+The altered profile SHA256 was `ae053bc32b769d4e6d090286487a5eca5c3f9e5e89bc8d6f476b49a6215b069b`; the accepted common projection remained `58cd652a07fd4592503545ae10834780910c9bcd9e429e9de5670aa7b831d1d2`. An initial version without resealing the profile was also accepted. This is an input-admission defect, not a claim that hashes authenticate a producer or that the original recording used that modified profile.
+
+**Impact:** altered material/actuator/numerical settings, or a nonempty/malformed load retaining the admitted name, can be presented as the registered common empty-load/baseline study. The UI then says inputs are equivalent and differences are engine observations even though the consumer did not enforce its declared experiment scope. This misses the task's verified common-input requirement and the report's explicit claim that empty load and baseline registered physics are required. It is not plan-mandated.
+
+**Suggested fix:** verify the closed admitted MuJoCo profile content and self-digest against the registered baseline, and verify the empty-load document/model binding and empty population (including all derived references), before deriving semantic equivalence. Reuse narrowly applicable existing admission helpers or add a shared closed validator; do not simply add a mutable profile name to the common hash. Add fully resealed adjacent-input regressions that reach semantic admission and return `INPUTS_NOT_EQUIVALENT`, preserving the valid clean X01 readback. No native rerun is needed merely to prove rejection of offline altered inputs; any producer change would need its own appropriately scoped evidence.
+
+
+## Controller scope ruling73
+
+Ruling: B08 fix1 is scoped to offline semantic admission of the registered MuJoCo baseline profile and empty-load content, with fully resealed negative tests and genuine retained clean-X01 readback. Do not repeat native X01 solely for this pure consumer/test fix: the native producer remains Source709a797, while the new validator/export/Lab pin identities are recorded separately and never substituted into old artifacts. Preserve original input/report/recording bytes and write new readback/audit outputs outside that recording. Require focused semantic/physics admission tests, raw actual X01 CLI equality/rejection checks, affected helper tests and clean Source export/Lab pin/type/check/synced-view checks. If producer/compiler/controller/physics/measurement or UI behavior changes, raise the changed boundary for appropriately scoped execution before claiming coverage. Cost if wrong: consumer changes could reject valid old data or affect shared admission semantics; exact actual readback, coherent negative fixtures and independent scoped review guard that risk. Final B10 still records the final all-changes tuple; no new native/performance qualification is claimed in fix1.
+
+Tests covering the amended code: tests/unit/semantic-study.test.ts and tests/unit/physics-comparison.test.ts, plus any existing admission/helper suites actually affected by your fix. Establish RED for coherent fully rehashed baseline friction/numerical/actuator and empty-load/model-binding/population mutations as relevant to the implemented boundary, then GREEN. The expected valid upstream integrity should be demonstrated before semantic rejection; preserve the genuine valid X01 fixture. Do not weaken the exact registered scope or broaden identity normalization. Use existing narrow validated helpers where suitable; preserve legacy defaults and physics A/B behavior.
+
+For actual retained readback, read the original clean /tmp/mekoniq-b08-x01-final-709a797-20261115-0110/study-input.json as immutable JSON (no SQLite); write outputs only to a new task-owned /tmp directory. Keep all original artifacts/identities unchanged, including original final-identities.json. Verify valid output semantics/byte identity and record original producer709a797 versus new validator separately. If you reuse a shared A/B admission helper, exercise appropriate retained B04a verified-copy pairs as well. No native/browser rerun solely for this boundary.
+
+Use Node24.22.2/pnpm10.32.1; bounded commands, no bytecode/cache in portable roots. No temporary runnable TypeScript under .superpowers. Final Source commit/clean export, Lab import/sync/check/type and pin commit; meaningful affected Lab view/schema tests as applicable. Do not change original main, historical evidence, deploy/push/merge or touch hardware. Self-review the complete fix diff. Escalate any producer/schema/UI scope change with evidence/options before treating old execution as coverage.
+
+Write task-B08-fix-1-report.md in this directory with changes, RED/GREEN exact commands/output, retained valid/mutant readback results, all final checks, commit/export/pin/producer/validator identities and limitations. Append a summary to task-B08-report.md, preserving its original prefix (root snapshot at evidence-B08/pre-fix1-report.md +identityJSON). Return DONE/DONE_WITH_CONCERNS/BLOCKED/NEEDS_CONTEXT, commits, one-line checks, concerns/report path under15lines. Root must read commands/output before the scoped re-review.

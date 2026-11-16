@@ -1,0 +1,16 @@
+{
+  "valid": false,
+  "accepted": false,
+  "issues": [
+    "R3_ARTIFACT_INVENTORY",
+    "R3_HANDOFF:ENOENT: no such file or directory, lstat '/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/bab05a5/r3-negatives/missing-runtime/inputs/handoff/runtime/runtime.mjs'",
+    "R3_DERIVED_MISMATCH:cases",
+    "R3_DERIVED_MISMATCH:gates",
+    "R3_DERIVED_MISMATCH:capabilities",
+    "R3_DERIVED_MISMATCH:levels",
+    "R3_DERIVED_MISMATCH:issues",
+    "R3_SCOPE_INCOMPLETE",
+    "R3_ARTIFACT_CHANGED_DURING_READBACK"
+  ],
+  "note": "Supplied artifact consistency only; sidecar authorship/signature and host provenance require independent review."
+}

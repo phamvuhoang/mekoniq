@@ -1,0 +1,10 @@
+{
+  "pid": 64932,
+  "execSession": 67912,
+  "startedAt": "2026-11-15T23:21:26.450662+00:00",
+  "maxSeconds": 1800,
+  "expectedExpiryUTC": "2026-11-15T23:51:26.450662+00:00",
+  "ps": "64932 62911 Mon Nov 16 06:21:26 2026     caffeinate -dims -t 1800\n",
+  "scope": "Owned bounded task coordination/review keep-awake after proven992ssleep interruption; no persistent power/screenlock settings changed. Not a benchmark workload.",
+  "cleanup": "At task handoff/end poll ownsession or stop only thisPID after matching exactlstart/command; never othercaffeinate/OSprocesses."
+}

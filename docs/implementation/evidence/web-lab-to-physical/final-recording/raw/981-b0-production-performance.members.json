@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:27:55.633412+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/production-performance",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-production-performance.tar.gz",
+  "archiveBytes": 9243783,
+  "archiveSha256": "1d06498b504e362b2a4c322acbd17fcf8e7d357dfcfcfb28c2fdb8eb8b951606",
+  "memberCount": 9,
+  "memberBytes": 39115712,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "build-identity.json",
+      "bytes": 39681,
+      "sha256": "3b0bccca2488ce0eab815e0a8181001f8aae16919b346ad4250130aae52b69fb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779706897532627
+    },
+    {
+      "path": "capture-raw.json",
+      "bytes": 4811328,
+      "sha256": "16b3b4f668d7f62d14c50becea15c11eb6d4d725a0e9b391e2ef41c320eedaee",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779902043494802
+    },
+    {
+      "path": "io-diagnostic.json",
+      "bytes": 11268227,
+      "sha256": "1ad5a283880825141be8f6ec3fc42db614bc25c700ad0a776d2863e427db888c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779915355520103
+    },
+    {
+      "path": "live-complete-prefix.zip",
+      "bytes": 11803627,
+      "sha256": "0527871ed129cecbe78ea199ce6f75efe0dda7da32e192e56a02f52d04dbedf0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779915141599799
+    },
+    {
+      "path": "post-window-source-event-loop.json",
+      "bytes": 1862,
+      "sha256": "b4b8350aeb509cf57e674ec2a152c868fbcdbbb86862233effa40c5bc4ccc56c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779915221066758
+    },
+    {
+      "path": "production-active-cell.png",
+      "bytes": 135686,
+      "sha256": "6152fed1067800ff7ca7b81ae13df8d8d365bf34c6906b1b723a5e3d921d2ff1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779902201604800
+    },
+    {
+      "path": "production-paused-during-export.png",
+      "bytes": 140220,
+      "sha256": "216c7dc691f241a68c61cddafe6e33969ba33c37f46421a347559a760a99f5b0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779903124181501
+    },
+    {
+      "path": "runtime-observer.ndjson",
+      "bytes": 10888640,
+      "sha256": "5109421389fc468b93e498e1a4383ae0a7f6d5cfb1cec37a8c305464e8b16bd0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794780939431248396
+    },
+    {
+      "path": "source-event-loop.json",
+      "bytes": 26441,
+      "sha256": "e35a39a633e900e90ede9a935d9813d0c3fc98f09dd124f1fa22260bc63302c4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794779915222295889
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

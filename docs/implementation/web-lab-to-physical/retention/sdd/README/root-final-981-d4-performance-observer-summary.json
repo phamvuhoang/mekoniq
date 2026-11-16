@@ -1,0 +1,116 @@
+{
+  "at": "2026-11-16T01:36:02.135142+00:00",
+  "scope": "Read-only aggregation of an existing settled production observer; no new benchmark or code change.",
+  "source": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/production-performance/runtime-observer.ndjson",
+    "bytes": 10958098,
+    "sha256": "0266a4c1a9a012852041bd4dd71532020976e8cb9008cbc58a592eab0dac591c"
+  },
+  "completionWindowEpochMs": [
+    1794785382396.3,
+    1794785567397.5
+  ],
+  "pauseClickAndUiEpochMs": [
+    1794785568183.5,
+    1794785571506.358
+  ],
+  "fsTopFiveBySumElapsed": [
+    {
+      "op": "sync",
+      "basename": "run.json.tmp",
+      "n": 13104,
+      "sumMs": 37095.437997,
+      "p50Ms": 2.821875,
+      "p95Ms": 3.846791,
+      "maxMs": 53.744917
+    },
+    {
+      "op": "sync",
+      "basename": "52d14e23-cf5a-44d7-9f65-dee5ffd3e40e",
+      "n": 13104,
+      "sumMs": 36421.5722,
+      "p50Ms": 2.670375,
+      "p95Ms": 3.664042,
+      "maxMs": 54.267792
+    },
+    {
+      "op": "sync",
+      "basename": "world-evidence",
+      "n": 4440,
+      "sumMs": 12453.166506,
+      "p50Ms": 2.905292,
+      "p95Ms": 3.32775,
+      "maxMs": 27.114958
+    },
+    {
+      "op": "sync",
+      "basename": "pending.ndjson",
+      "n": 4368,
+      "sumMs": 10399.451303,
+      "p50Ms": 2.500833,
+      "p95Ms": 3.479,
+      "maxMs": 102.521125
+    },
+    {
+      "op": "writeFile",
+      "basename": "run.json.tmp",
+      "n": 16501,
+      "sumMs": 9401.013472,
+      "p50Ms": 0.465667,
+      "p95Ms": 0.941625,
+      "maxMs": 23.534875
+    }
+  ],
+  "activeWindowEventLoopMax": {
+    "n": 184,
+    "sumMs": 3232.12884,
+    "p50Ms": 14.884863,
+    "p95Ms": 31.653887,
+    "maxMs": 128.778239
+  },
+  "pauseWindows": [
+    {
+      "atEpochMs": 1794785567535,
+      "windowMs": 1001,
+      "p95Ms": 13.582335,
+      "maxMs": 23.035903
+    },
+    {
+      "atEpochMs": 1794785568551,
+      "windowMs": 1016,
+      "p95Ms": 43.581439,
+      "maxMs": 55.476223
+    },
+    {
+      "atEpochMs": 1794785569559,
+      "windowMs": 1008,
+      "p95Ms": 27.607039,
+      "maxMs": 54.722559
+    },
+    {
+      "atEpochMs": 1794785570567,
+      "windowMs": 1008,
+      "p95Ms": 29.786111,
+      "maxMs": 58.392575
+    },
+    {
+      "atEpochMs": 1794785571583,
+      "windowMs": 1016,
+      "p95Ms": 48.365567,
+      "maxMs": 252.968959
+    },
+    {
+      "atEpochMs": 1794785572601,
+      "windowMs": 1018,
+      "p95Ms": 23.560191,
+      "maxMs": 29.622271
+    }
+  ],
+  "limitations": [
+    "File calls selected by completion time, not complete interval containment.",
+    "Sums can overlap and are not CPU time or proof of serial critical-path contribution.",
+    "The run-directory basename is an observed output identity; it does not identify a different product run.",
+    "Event-loop delay samples do not establish pause command queue/admission latency or internal ACK timing.",
+    "This suggests areas for the final review to inspect; it does not establish the complete performance cause, a fix or qualification."
+  ]
+}

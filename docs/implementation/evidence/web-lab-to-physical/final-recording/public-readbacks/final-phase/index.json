@@ -1,0 +1,101 @@
+{
+  "at": "2026-11-16T01:51:51.905891+00:00",
+  "invocations": [
+    {
+      "id": "extracted-acceptance-r1",
+      "receipt": "extracted-acceptance-r1.receipt.json",
+      "log": "extracted-acceptance-r1.log",
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "bd24a5569687a50d6c2fdec624e1f0d2e75f97fefae036c046882714db13be8c",
+      "logSha256": "3c0bf0201b69975f4ce8353832337a6c4255bcf5d0b3e8c9380370d829f4b3af",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-acceptance-r11",
+      "receipt": "extracted-acceptance-r11.receipt.json",
+      "log": "extracted-acceptance-r11.log",
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "a3647e12e07ea915cd175c265dcd7560af5d7abb96512d67bd48bb8569e59fdb",
+      "logSha256": "363107c0233c52d2822d296c4ca17b15b9895568209b528c5a738f3088b5670a",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-acceptance-r2a-partial",
+      "receipt": "extracted-acceptance-r2a-partial.receipt.json",
+      "log": "extracted-acceptance-r2a-partial.log",
+      "exitCode": 1,
+      "signal": null,
+      "receiptSha256": "bfd92d147030b3111325e50c7af608229e5a2ac0b59d9ad3e8e48e37872e190e",
+      "logSha256": "654fb8706b419062d51cbf7e7fcdedb2b9546aeb294ab1ede61a56e72811ad3b",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-acceptance-r2b-full",
+      "receipt": "extracted-acceptance-r2b-full.receipt.json",
+      "log": "extracted-acceptance-r2b-full.log",
+      "exitCode": 1,
+      "signal": null,
+      "receiptSha256": "e2a82ece4833af9530709eeea6090fd55027ae90a514e84d9637d9a04ed31de0",
+      "logSha256": "ab9f4baf26f815621eb231140f9a247c4a59b682098ce3677457251fbdbe24f0",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-l01-handoff",
+      "receipt": "extracted-l01-handoff.receipt.json",
+      "log": "extracted-l01-handoff.log",
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "6711c5a8caf108d533c6034aa591fc6add1d4e3296caf0d01d87c09b34fd7819",
+      "logSha256": "c9499f58c65ba340abc93710759d204510097317c1abaa1fce51b87f79ac06fe",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-l01-refusal",
+      "receipt": "extracted-l01-refusal.receipt.json",
+      "log": "extracted-l01-refusal.log",
+      "exitCode": 1,
+      "signal": null,
+      "receiptSha256": "cfba06b8926314a99c1efc558bf030e6237db7ea93514b3d658ac7696b660155",
+      "logSha256": "2d3e3f52694ba2dff8a7d2355d527499dbb4445de53f8e1cfeb7a824beffbdaa",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-readback-r2b-full",
+      "receipt": "extracted-readback-r2b-full.receipt.json",
+      "log": "extracted-readback-r2b-full.log",
+      "exitCode": 1,
+      "signal": null,
+      "receiptSha256": "0f982e2b510dd8f75a0b042ca56c0cf8019b42234f7cf23254bf408e31fd2d1b",
+      "logSha256": "98c78251b9835a1825f7ed2730f341c583c1a11c711b72251076870567b6c39a",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-retained-corpus",
+      "receipt": "extracted-retained-corpus.receipt.json",
+      "log": "extracted-retained-corpus.log",
+      "exitCode": 0,
+      "signal": null,
+      "receiptSha256": "ce82c0aeb1e7fdb49b4cb0c4fc738cb07b47d9b8fbc2165b87275ec1a460c0c3",
+      "logSha256": "77e004f230cf163b36e3e00ca4278f0eefeb44a8fcfe673afd0f64a2b4b73699",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    },
+    {
+      "id": "extracted-web-readback",
+      "receipt": "extracted-web-readback.receipt.json",
+      "log": "extracted-web-readback.log",
+      "exitCode": 1,
+      "signal": null,
+      "receiptSha256": "cc8b2d32b3931766bb42cc4c072ae97d6394a545e0f5bd9e04d810ae0c2144e2",
+      "logSha256": "c5899a358af69a2698b5ab11544de10667b6aca49b99647846642a3dfb8824ca",
+      "scope": "Actual extracted-data public invocation, separate from producer execution; expected nonzero failures retained"
+    }
+  ],
+  "counts": {
+    "invocations": 9,
+    "exit0": 4,
+    "exit1": 5
+  },
+  "specificLimit": "Extracted fullR2b async reader completes with40issues; full acceptance first integrity case timed out at45000ms (about46s), unlike original assertion failure. No retry/threshold change."
+}

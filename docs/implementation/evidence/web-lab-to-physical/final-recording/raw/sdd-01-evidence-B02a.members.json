@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:40:17.269270+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/evidence-B02a",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-01-evidence-B02a.tar.gz",
+  "archiveBytes": 29221,
+  "archiveSha256": "9d4acb13e657517c545f1f4f1653b5635afc13685d87a01ae876e0115972726d",
+  "memberCount": 17,
+  "memberBytes": 150759,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "MUJOCO_LOG-initial-tests.TXT",
+      "bytes": 357,
+      "sha256": "fe17c169be885456988ecacd5850b81fb2b49c788be6906d512c6a97dfc2ecf0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611103518090782
+    },
+    {
+      "path": "contracts-check.log",
+      "bytes": 192,
+      "sha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611773075323188
+    },
+    {
+      "path": "fix-round1-arm-concurrent.log",
+      "bytes": 1460,
+      "sha256": "3c9d9d245ea7d189a9b802c618523c76a2644bed7fa60f5701e16325b4550676",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612586584627004
+    },
+    {
+      "path": "fix-round1-arm-worker.log",
+      "bytes": 699,
+      "sha256": "416f912466f2d1ccd5cfd2ecf3f64a88150096d9f786e1350f6dea04e3910a5a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612612435728119
+    },
+    {
+      "path": "fix-round1-green.log",
+      "bytes": 113,
+      "sha256": "5f5aada012e77dce77436184e3aa4455ce4e1f971f97e5d08c202a0732e7271c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612569543333168
+    },
+    {
+      "path": "fix-round1-python.log",
+      "bytes": 99,
+      "sha256": "f9d790d956d2ea46a13e38c0893059fefbf9e04ae8317e642dda2195b4c4e934",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612636786060303
+    },
+    {
+      "path": "fix-round1-red.log",
+      "bytes": 8427,
+      "sha256": "2cc9f9aee772df892a1fb05acac1e00463f7127d1b3288cb8ec0fdc3a4dcdfa7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612540619792190
+    },
+    {
+      "path": "lint-final.log",
+      "bytes": 110,
+      "sha256": "17170178a2b3abc32dbd25e1070c0587eb0ec51a83f04325ff52e53d0bd31013",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611920682886850
+    },
+    {
+      "path": "lint.log",
+      "bytes": 27629,
+      "sha256": "b7c55f48b2a6abba9bb872d0b4dd1db222ab1abf30d00e7b7145becccf6c07da",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611791617330696
+    },
+    {
+      "path": "mobile-final.log",
+      "bytes": 99,
+      "sha256": "ae1a679916f7a2e4271ffadbfbf2f3bcc00db6c2791d4096cd6281419e0b7e2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612058930305338
+    },
+    {
+      "path": "python-final.log",
+      "bytes": 179,
+      "sha256": "0a4b660d7228467d05d1fe6afd5e1d4b6ca056e271ffd5a90af25234418b8304",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612007371656058
+    },
+    {
+      "path": "python-full.log",
+      "bytes": 179,
+      "sha256": "0e35a82be0cfc261e763c23e27de7237e1231df1a6498f1b396f932a5aee705a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611782613470053
+    },
+    {
+      "path": "python-head.log",
+      "bytes": 179,
+      "sha256": "60a42c3e705b7bfc457f643b6f64835e1b2052a3189053d80b73cfca115d2211",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612109151819789
+    },
+    {
+      "path": "python-support-guard-red.log",
+      "bytes": 28946,
+      "sha256": "78112146a8a9bf57a32aa312cb116c2304d2af51e743bd3687c1c4af27fc714e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611929353214456
+    },
+    {
+      "path": "runtime-export.log",
+      "bytes": 78600,
+      "sha256": "ad7f1dc7b936acf326cd3e709789b9dd789d8458c4104524837db54f5afe2c7a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794612909635691918
+    },
+    {
+      "path": "typecheck.log",
+      "bytes": 232,
+      "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611774074648514
+    },
+    {
+      "path": "typescript-regression.log",
+      "bytes": 3259,
+      "sha256": "83c77fe5433a673f4864172c5d5b10266c611fd8cf07c5c92e1408cace4fdbf2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794611808652772363
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

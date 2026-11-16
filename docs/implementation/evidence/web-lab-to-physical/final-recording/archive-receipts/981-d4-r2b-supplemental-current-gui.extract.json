@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T01:46:19.872067+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2b-supplemental-current-gui",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-r2b-supplemental-current-gui.tar.gz",
+  "archiveSha256": "ca63414157c75a33f4a6ddcd511ccdfa3433363e50e742dadcf68def078bf141",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-r2b-supplemental-current-gui.members.json",
+  "memberIndexSha256": "430e11d39f30cc894268f2c12ca739c2b87a0a6bf9c98413e78fe1ae8e9edf5c",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r2b-supplemental-current-gui",
+  "verifiedFiles": 12,
+  "verifiedBytes": 108078,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

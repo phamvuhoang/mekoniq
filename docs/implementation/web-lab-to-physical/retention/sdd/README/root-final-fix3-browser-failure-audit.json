@@ -1,0 +1,18 @@
+{
+  "source": "229efa7f565876f8f9d69634f8fbc24b9196ed3f",
+  "checkedInputCount": 18,
+  "mockOwnExit": 1,
+  "mockReceiptSha256": "b443856ec6a6f0cdd5454cc54937db865eb6679a5fefbf3dfc4e5108e84568ac",
+  "broadBrowser": {
+    "passed": 60,
+    "failed": 2,
+    "skipped": 42,
+    "globalErrors": 0
+  },
+  "runtimeJourney": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "limits": "Metadata/read-only audit, original screenshots inspected; diagnostic pending, no new test execution."
+}

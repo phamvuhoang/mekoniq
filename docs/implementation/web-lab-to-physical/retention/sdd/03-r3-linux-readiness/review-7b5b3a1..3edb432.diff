@@ -1,0 +1,903 @@
+# Review package: 7b5b3a17e501f125efac18749ad5b8123940ce7c..3edb4320d7146343a4b9df977c65d846472c473b
+
+## Commits
+3edb432 fix: check controller epoch before each smoke action
+962e925 feat: prepare LinuxCNC actual traces and scoped ALG04 checks
+
+## Files changed
+ docs/operations/linuxcnc-native-sim-handoff.md     |  49 ++++++++
+ .../packaging/dependencies.lock.json               |  19 +++-
+ .../arm-controller/scripts/prepare_smoke.py        |   8 ++
+ .../arm-controller/scripts/runtime-inventory.py    |  22 +++-
+ integrations/arm-controller/scripts/smoke-sim.sh   |  10 +-
+ .../arm-controller/scripts/smoke_driver.py         |  97 ++++++++++++++--
+ .../arm-controller/tests/test_actual_trace.py      | 126 +++++++++++++++++++++
+ .../arm-controller/tests/test_smoke_launch.py      |   5 +-
+ .../lab-runtime/src/v2/algorithm/linuxcnc-trace.ts |  88 ++++++++++++++
+ scripts/lab-algorithm.mjs                          |  23 +++-
+ scripts/native-sim/tool-identity.mjs               |   2 +-
+ tests/integration/linuxcnc-alg04-evidence.test.ts  |  78 +++++++++++++
+ tests/unit/native-tool-identity.test.ts            |   8 +-
+ 13 files changed, 512 insertions(+), 23 deletions(-)
+
+## Diff
+diff --git a/docs/operations/linuxcnc-native-sim-handoff.md b/docs/operations/linuxcnc-native-sim-handoff.md
+new file mode 100644
+index 0000000..7d79988
+--- /dev/null
++++ b/docs/operations/linuxcnc-native-sim-handoff.md
+@@ -0,0 +1,49 @@
++# LinuxCNC PUMA native SIM handoff
++
++L04 prepares a LinuxCNC actual-joint recorder and scoped ALG04 consumer. No Debian native host has been assigned. The candidate dependency lock is unresolved; terminal, GUI, package installation/trust/rollback, tunnel and controller restart qualification remain **not_run**. All generated qualification remains `accepted:false`. Protocol doubles and Mac preflight refusals establish portable behavior only.
++
++Use the separate Debian/ISA LinuxCNC profile, never an Ubuntu ROS lock or an amd64 label on an ARM64 host. `packaging/dependencies.lock.json` retains its existing candidate values and adds explicit missing native qualification evidence. Resolve exact installed binary package/version/architecture, source package/version, apt origin, signed repository metadata and retained `.deb`/source artifacts with SHA256 on the assigned host. `scripts/runtime-inventory.py` retains the dpkg command, its exit/output/digest, source-package mapping, executable/module identities, OS-release identity and apt source-file identities. Inventory does not validate archive trust, retained source artifacts or native execution; reconcile it with L00's strict `native_apt` profile and independent source artifacts. There is no fallback OCI image or invented source archive digest.
++
++## Capture on the assigned native host
++
++Start from a clean, audited Source commit, its retained Git graph, and the exact packaged SIM closure. Keep subject Source, recorder/producer, checker, Lab publication and runtime pin identities separate. The supplied `MEKONIQ_SOURCE_COMMIT` is a subject assertion, not authentication. Retain the release manifest and executable/script hashes next to the raw files. Under R89, nativeTools includes the immutable arm-controller/scripts and packaging directories; generated trace and run-inventory files remain evidence outside that closure. Use the existing package install/verify/rollback and trust procedures in `integrations/arm-controller/docs/`; never use this smoke launcher for a hardware profile.
++
++From `source/integrations/arm-controller`, with a fresh evidence directory and the assigned subject commit:
++
++```sh
++export PYTHONDONTWRITEBYTECODE=1
++export PYTEST_ADDOPTS='-p no:cacheprovider'
++export MEKONIQ_SOURCE_COMMIT='<full audited subject commit>'
++perl -e 'alarm 300; exec @ARGV' python3 -m pytest tests/test_model_units.py tests/test_arbiter.py tests/test_bridge_recovery.py tests/test_release_trust.py tests/test_actual_trace.py -q
++perl -e 'alarm 900; exec @ARGV' bash scripts/smoke-sim.sh --profile configs/sim/puma560/mekoniq.ini --evidence-dir "$cnc_evidence_dir"
++```
++
++The launcher refuses any nonempty evidence directory. It stages only byte-matching INI, virtual HAL, DH HAL, profile, tool and cup geometry from the reviewed SIM closure. The controller executes the existing terminal start/home/run/pause/resume/stop/fault/no-auto-resume sequence. Failed actions retain previous terminal steps. A fresh epoch guard runs before each scripted action. An observed epoch change before an action or across a poll aborts the sequence and does not resume or retry a motion command. Process identity checks and NML command writes are not atomic; a restart after the guard but before the write remains an unqualified native race, not a proven controller-side fencing guarantee. Keep the original `linuxcnc.log`, prepared INI, inventory, `smoke-driver.json`, `actual-joint-trace.json` and `smoke-sim.json`; the last binds the trace's bytes and digest when present. A missing prerequisite writes `blocked_external/not_run`, exit 2. Terminal `pass` is only a terminal subset result, not full native qualification.
++
++## Trace v1 and ALG04
++
++The sampler reads documented `linuxcnc.stat.joint_actual_position` and `joint_position` separately. It retains six raw degree values in JOINT_0–5/J1–6 order, checked radians, independent sample IDs, controller process epoch (kernel boot UUID + single milltask PID + process start time), sequence and a host `monotonic_ns` receive bracket. Missing or nonfinite joint data remains null, which the numerical consumer refuses. Cartesian `actual_position` is never reinterpreted as six joint angles. The pinned model remains source inch/degree/alpha-radian with SI conversion, exact modified DH, arm_base→tcp, tool-0-notool, unknown inertia and unmeasured placement.
++
++The documented Python status API does not establish absolute controller sample time or field synchrony. `cycle_time` is a period; `echo_serial_number` acknowledges commands. Neither is a sample clock. This version records `controllerTime:null`, `clock.controller:unavailable`, `synchrony:unavailable`. Receive brackets do not time-align commanded and actual fields, prove motion settling, or provide continuous trajectory coverage. No interpolation is performed, and epoch segments never join. A host-specific clock extension requires a reviewed contract revision with inventory/provenance before it can clear timing gates.
++
++From a clean Source checker checkout, consume the retained trace bytes:
++
++```sh
++perl -e 'alarm 300; exec @ARGV' node scripts/lab-algorithm.mjs linuxcnc --trace "$cnc_evidence_dir/actual-joint-trace.json" --out "$alg04_evidence_dir" --python .venv-algorithm/bin/python
++```
++
++The consumer rejects wrong backend/model, DH/frame/tool hashes, units/conversions, absent vectors, invalid timing, duplicate sample identities and joint limits before calling RTB. RTB receives the independently recorded **actual** joints and exact controller DH; it never creates the input trace. `algorithm-results.json` retains the input byte SHA256, supplied subject commit, actual local checker checkout identity, oracle profile/lock digests, metrics and epoch coverage. Local Git identity is not a replacement for the public native-handoff clean-checker/full-Git-graph audit.
++
++Metrics are separate:
++
++- `maxObservedCommandActualDeltaRad`: within-poll field delta, explicitly **not** synchronized following-error qualification.
++- `maxFkTranslationResidualM` and `maxFkRotationResidualRad`: RTB versus TypeScript FK at those supplied actual joints; numerical model consistency only.
++- Controller Cartesian-versus-DH/TCP residual: `not_run`, `CONTROLLER_CARTESIAN_DH_TCP_ENDPOINT_NOT_ESTABLISHED`. This version does not assume a comparable native Cartesian endpoint, work/tool-offset convention or atomic field sample.
++
++A numeric failure remains `fail` (exit 1); an absent oracle remains `not_run`. Even successful numerical checks yield ALG04 `not_run` (exit 2), because native timing/synchrony, authenticated execution and trajectory coverage are still unresolved. `numericVerdict` distinguishes the completed numerical subset. `protocol_double` fixtures are explicitly marked and cannot qualify a host. Do not turn these receipts into DEP-CNC or ALG04 gate passes.
++
++## Native security, packaging and GUI obligations
++
++On the assigned host retain separate evidence for tunnel host key/known_hosts, HMI–bridge arbiter exclusivity, deadline expiry, controller restart, tunnel loss, unknown/no-resend/no-auto-resume and refusal of arbitrary MDI/HAL/launch requests. Use only SIM-authorized endpoints. Existing portable arbiter, bridge recovery, release trust and native-arm tunnel tests are regressions, not evidence that an SSH tunnel or controller ran.
++
++Run package install/verify/rollback against the exact signed candidate and preserve all failure attempts. Run the GUI in a **new** evidence directory with `--gui`; complete the independent `integrations/arm-controller/docs/hmi-acceptance.md` operator checklist. A GUI process exit or screenshot does not pass that checklist. DEP-CNC-01/02/03, ALG04 and SEC-01 remain open until their actual profile evidence exists; human acceptance remains a separately bound sidecar. No Lab-to-hardware route is added.
+diff --git a/integrations/arm-controller/packaging/dependencies.lock.json b/integrations/arm-controller/packaging/dependencies.lock.json
+index 8ebb898..02f9907 100644
+--- a/integrations/arm-controller/packaging/dependencies.lock.json
++++ b/integrations/arm-controller/packaging/dependencies.lock.json
+@@ -14,12 +14,29 @@
+      "sampleCommit": "135b0ce5220bef8f8a34b6825723108b8b9740f1",
+      "debianPackage": {"name": "linuxcnc-uspace", "suite": "bookworm", "version": "2.9.0~pre1+git20230208.f1270d6ed7-1+deb12u2", "architectures": ["amd64", "arm64", "armel", "armhf", "i386", "mips64el", "mipsel", "ppc64el", "s390x"]},
+      "sha256": null, "sha256Reason": "UNVERIFIED: package/source digest recorded at install on the clean host", "components": ["genserkins", "motmod (sim)", "halui", "qtvcp"]},
+     {"id": "python3", "kind": "runtime", "status": "candidate", "version": "3.11 (bookworm default)", "sha256": null, "sha256Reason": "UNVERIFIED: distribution package"},
+     {"id": "python3-pyqt5", "kind": "hmi", "status": "candidate", "version": "5.15.9+dfsg-1", "suite": "bookworm", "sha256": null, "sha256Reason": "UNVERIFIED: distribution package"},
+     {"id": "python3-pyqt5.qsci", "kind": "hmi", "status": "candidate", "version": "2.13.3+dfsg-3", "suite": "bookworm", "sha256": null, "sha256Reason": "UNVERIFIED: distribution package"},
+     {"id": "qtvcp", "kind": "hmi", "status": "candidate", "version": "bundled with linuxcnc", "sha256": null, "sha256Reason": "UNVERIFIED: ships inside the linuxcnc package", "display": "qtvcp -f mekoniq_arm"},
+     {"id": "virtual-hal", "kind": "config", "status": "candidate", "version": "configs/sim/puma560 (machine.hal loopbacks)", "sha256": null, "sha256Reason": "UNVERIFIED: hashed by the release manifest at export"},
+     {"id": "model", "kind": "model", "status": "candidate", "version": "puma560-reference r1", "manifestSha256": "68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5", "sha256": null, "sha256Reason": "UNVERIFIED: see manifestSha256; the release manifest hashes the model files"}
+   ],
+-  "excluded": {"igh-ethercat-master": "not required for simulation; a hardware profile pins it separately", "lcec": "same", "ros2": "not a dependency of the controller package"}
++  "excluded": {"igh-ethercat-master": "not required for simulation; a hardware profile pins it separately", "lcec": "same", "ros2": "not a dependency of the controller package"},
++  "nativeQualification": {
++    "status": "not_run",
++    "accepted": false,
++    "installationKind": "native_apt",
++    "resolvedHost": null,
++    "resolvedPackages": null,
++    "retainedSourceArtifacts": null,
++    "reason": "NO_ASSIGNED_DEBIAN_HOST; candidate versions above are not resolved package/source locks or ISA attestation",
++    "requiredEvidence": [
++      "exact Debian release and native ISA",
++      "installed package/version/architecture/source mappings",
++      "retained apt package and source artifacts with SHA256 and origin/trust",
++      "matching runtime inventory",
++      "terminal controller trace",
++      "separate operator GUI checklist"
++    ]
++  }
+ }
+diff --git a/integrations/arm-controller/scripts/prepare_smoke.py b/integrations/arm-controller/scripts/prepare_smoke.py
+index 759f5ae..eb4d02a 100644
+--- a/integrations/arm-controller/scripts/prepare_smoke.py
++++ b/integrations/arm-controller/scripts/prepare_smoke.py
+@@ -6,20 +6,28 @@ import shlex
+ from pathlib import Path
+ 
+ 
+ def prepare_profile(root, profile, destination, gui=False):
+     root, profile, destination = Path(root).resolve(), Path(profile).resolve(), Path(destination)
+     config = configparser.ConfigParser()
+     config.optionxform = str
+     config.read(profile)
+     if config.get('MEKONIQ', 'BACKEND', fallback='') != 'linuxcnc_sim':
+         raise ValueError('SIM_PROFILE_REQUIRED')
++    # This entry point launches only the reviewed virtual HAL closure. A backend
++    # label alone cannot authorize a caller-supplied HALFILE, MDI or launch command.
++    canonical = root / 'configs/sim/puma560'
++    for name in ('mekoniq.ini', 'machine.hal', 'puma560-dh.hal', 'profile.json', 'tool.tbl', 'cup-geometry.json'):
++        if (profile.parent / name).read_bytes() != (canonical / name).read_bytes():
++            raise ValueError('SIM_CONFIG_BYTES_MISMATCH:' + name)
++    if profile.name != 'mekoniq.ini':
++        raise ValueError('SIM_CONFIG_BYTES_MISMATCH:ini')
+     shutil.copytree(profile.parent, destination, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+     config['DISPLAY']['PROGRAM_PREFIX'] = str(root / 'programs')
+     config['MEKONIQ']['MODEL_MANIFEST'] = str(root / 'models/puma560-reference/manifest.json')
+     if gui:
+         shutil.copytree(root / 'hmi/mekoniq_arm', destination / 'qtvcp/screens/mekoniq_arm',
+                         ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+     else:
+         config['DISPLAY']['DISPLAY'] = f'python3 {shlex.quote(str(root / "scripts/smoke_driver.py"))}'
+     staged = destination / profile.name
+     with staged.open('w') as stream:
+diff --git a/integrations/arm-controller/scripts/runtime-inventory.py b/integrations/arm-controller/scripts/runtime-inventory.py
+index 18a282b..7e2b1a2 100644
+--- a/integrations/arm-controller/scripts/runtime-inventory.py
++++ b/integrations/arm-controller/scripts/runtime-inventory.py
+@@ -16,27 +16,41 @@ def file_identity(path):
+     file = Path(path).resolve()
+     if not file.is_file():
+         return None
+     digest = hashlib.sha256()
+     with file.open('rb') as stream:
+         for block in iter(lambda: stream.read(1024 * 1024), b''):
+             digest.update(block)
+     return {'path': str(file), 'sha256': digest.hexdigest()}
+ 
+ 
++def parse_packages(output):
++    keys = ('name', 'version', 'architecture', 'status', 'sourcePackage', 'sourceVersion')
++    rows = [row.split('\t') for row in output.splitlines()]
++    return [dict(zip(keys, row)) for row in rows if len(row) == len(keys) and row[3] == 'installed']
++
++
+ def inventory():
+-    packages = None
++    packages, package_query = None, None
+     if platform.system() == 'Linux' and shutil.which('dpkg-query'):
+-        result = subprocess.run(['dpkg-query', '-W', '-f=${binary:Package}\t${Version}\t${Architecture}\t${db:Status-Status}\n'], capture_output=True, text=True, timeout=20, check=True)
+-        packages = [dict(zip(('name', 'version', 'architecture', 'status'), row.split('\t'))) for row in result.stdout.splitlines() if row.endswith('\tinstalled')]
++        argv = ['dpkg-query', '-W', '-f=${binary:Package}\t${Version}\t${Architecture}\t${db:Status-Status}\t${source:Package}\t${source:Version}\n']
++        result = subprocess.run(argv, capture_output=True, text=True, timeout=20, check=False)
++        package_query = {'argv': argv, 'exit': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr,
++                         'stdoutSha256': hashlib.sha256(result.stdout.encode()).hexdigest()}
++        if result.returncode == 0:
++            packages = parse_packages(result.stdout)
++    origins = [Path('/etc/apt/sources.list')]
++    sources_dir = Path('/etc/apt/sources.list.d')
++    if sources_dir.is_dir():
++        origins.extend(sorted(p for p in sources_dir.iterdir() if p.suffix in ('.list', '.sources')))
+     modules = {}
+     for name in ('linuxcnc', 'PyQt5.QtCore', 'PyQt5.Qsci'):
+         try:
+             spec = importlib.util.find_spec(name)
+             modules[name] = file_identity(spec.origin if spec else None)
+         except (ModuleNotFoundError, ValueError):
+             modules[name] = None
+-    return {'schemaVersion': 1, 'platform': platform.system(), 'architecture': platform.machine(), 'kernel': platform.release(), 'python': {'version': platform.python_version(), 'executable': file_identity(sys.executable)}, 'packages': packages, 'executables': {name: file_identity(shutil.which(name)) for name in ('linuxcnc', 'halcmd', 'qtvcp')}, 'modules': modules, 'qualification': 'not_run', 'claims': 'inventory only; no controller, GUI, timing or hardware assertion'}
++    return {'schemaVersion': 1, 'platform': platform.system(), 'architecture': platform.machine(), 'kernel': platform.release(), 'python': {'version': platform.python_version(), 'executable': file_identity(sys.executable)}, 'packages': packages, 'packageQuery': package_query, 'osRelease': file_identity('/etc/os-release'), 'aptSourceFiles': [identity for p in origins if (identity := file_identity(p))], 'installation': {'kind': 'native_apt' if packages is not None else None, 'resolved': False, 'reason': 'INVENTORY_ONLY_PACKAGE_ARCHIVES_SOURCE_ARTIFACTS_AND_TRUST_NOT_VERIFIED'}, 'executables': {name: file_identity(shutil.which(name)) for name in ('linuxcnc', 'halcmd', 'qtvcp')}, 'modules': modules, 'qualification': 'not_run', 'claims': 'inventory only; no controller, GUI, timing or hardware assertion'}
+ 
+ 
+ if __name__ == '__main__':
+     print(json.dumps(inventory(), indent=2))
+diff --git a/integrations/arm-controller/scripts/smoke-sim.sh b/integrations/arm-controller/scripts/smoke-sim.sh
+index 63ebbef..ea4f5b2 100755
+--- a/integrations/arm-controller/scripts/smoke-sim.sh
++++ b/integrations/arm-controller/scripts/smoke-sim.sh
+@@ -11,21 +11,21 @@ while [ $# -gt 0 ]; do
+   case "$1" in
+     --profile) profile="${2:-}"; shift 2 ;;
+     --evidence-dir) evidence="${2:-}"; shift 2 ;;
+     --gui) gui=1; shift ;;
+     --dependencies-lock) lock="${2:-}"; shift 2 ;;
+     *) echo "usage: smoke-sim.sh --profile INI --evidence-dir DIR [--gui] [--dependencies-lock JSON]" >&2; exit 2 ;;
+   esac
+ done
+ if [ -z "$profile" ] || [ -z "$evidence" ] || [ ! -f "$profile" ] || [ ! -f "$lock" ]; then echo "usage: smoke-sim.sh --profile INI --evidence-dir DIR [--gui] [--dependencies-lock JSON]" >&2; exit 2; fi
+ mkdir -p "$evidence"
+-if [ -e "$evidence/smoke-sim.json" ] || [ -e "$evidence/smoke-driver.json" ]; then echo "EVIDENCE_OUTPUT_EXISTS: use a fresh evidence directory" >&2; exit 2; fi
++if [ -n "$(ls -A "$evidence")" ]; then echo "EVIDENCE_OUTPUT_EXISTS: use a fresh evidence directory" >&2; exit 2; fi
+ sha() { python3 - "$1" <<'PY'
+ import hashlib, sys; print(hashlib.sha256(open(sys.argv[1], 'rb').read()).hexdigest())
+ PY
+ }
+ model="$here/models/puma560-reference/manifest.json"
+ python3 "$here/scripts/runtime-inventory.py" > "$evidence/runtime-inventory.json"
+ reasons=()
+ if [ "$(uname -s)" = "Linux" ]; then
+   if ! python3 - "$lock" <<'PYLOCK'
+ import json, platform, sys
+@@ -34,26 +34,32 @@ actual = {'aarch64': 'arm64', 'x86_64': 'amd64'}.get(platform.machine(), platfor
+ sys.exit(0 if expected == actual else 1)
+ PYLOCK
+   then reasons+=("DEPENDENCY_ARCHITECTURE_MISMATCH"); fi
+ fi
+ [ "$(uname -s)" = "Linux" ] || reasons+=("HOST_NOT_LINUX")
+ command -v linuxcnc >/dev/null 2>&1 || reasons+=("LINUXCNC_MISSING")
+ python3 -c 'import linuxcnc' >/dev/null 2>&1 || reasons+=("LINUXCNC_PYTHON_MODULE_MISSING")
+ [ -n "${MEKONIQ_SMOKE_FORCE_MISSING:-}" ] && reasons+=("LINUXCNC_MISSING")
+ record() { # $1 status $2 result $3 reasons-json $4 extra-json
+   python3 - "$evidence/smoke-sim.json" "$1" "$2" "$3" "$4" "$profile" "$(sha "$profile")" "$model" "$(sha "$model")" "$lock" "$(sha "$lock")" <<'PY'
+-import json, platform, sys, datetime
++import json, platform, sys, datetime, hashlib, os
++from pathlib import Path
+ out, status, result, reasons, extra, profile, psha, model, msha, lock, lsha = sys.argv[1:]
+ rec = {"schemaVersion": 1, "backend": "linuxcnc_sim", "status": status, "result": result, "reasons": json.loads(reasons),
+        "host": {"platform": platform.system(), "release": platform.release(), "machine": platform.machine(), "python": platform.python_version()},
+        "profile": {"path": profile, "sha256": psha}, "modelManifest": {"path": model, "sha256": msha}, "dependenciesLock": {"path": lock, "sha256": lsha},
+        "recordedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(), "runtimeInventory": json.load(open(__import__("pathlib").Path(out).parent / "runtime-inventory.json")), "claims": "software sequence on a virtual HAL at most; no drive, timing, load or safety evidence", **json.loads(extra)}
++trace = Path(out).parent / "actual-joint-trace.json"
++rec["accepted"] = False
++rec["subjectSourceCommit"] = os.environ.get("MEKONIQ_SOURCE_COMMIT")
++rec["actualJointTrace"] = {"path": trace.name, "sha256": hashlib.sha256(trace.read_bytes()).hexdigest(), "bytes": trace.stat().st_size} if trace.is_file() else None
++rec["nativeTimingQualification"] = "not_run"
+ json.dump(rec, open(out, "w"), indent=1)
+ PY
+ }
+ if [ ${#reasons[@]} -gt 0 ]; then
+   record blocked_external not_run "$(printf '%s\n' "${reasons[@]}" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().split()))')" '{}'
+   echo "NOT_RUN: ${reasons[*]} (see $evidence/smoke-sim.json)" >&2; exit 2
+ fi
+ tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
+ gui_args=(); [ "$gui" -eq 0 ] || gui_args+=(--gui)
+ set +e
+diff --git a/integrations/arm-controller/scripts/smoke_driver.py b/integrations/arm-controller/scripts/smoke_driver.py
+index de75f23..ec83035 100644
+--- a/integrations/arm-controller/scripts/smoke_driver.py
++++ b/integrations/arm-controller/scripts/smoke_driver.py
+@@ -1,62 +1,132 @@
+ """Terminal smoke for the LinuxCNC simulation profile, run by LinuxCNC as the [DISPLAY] program of a temporary INI copy (scripts/smoke-sim.sh).
+ `run_sequence` is controller-agnostic: start/home/run/pause/resume/stop, then a controller fault and the proof that nothing resumes by itself.
+ Every step records requested vs observed state; a missing state fails the record. The real controller wrapper needs the `linuxcnc` module."""
+ import json
++import math
++import hashlib
+ import os
+ import subprocess
+ import sys
+ import time
+ from pathlib import Path
+ 
+ STEP_TIMEOUT_S = 30.0
+ 
+ 
+-def run_sequence(ctl, program, log, wait):
++def run_sequence(ctl, program, log, wait, before_action=None):
+     """ctl: controller port (estop_reset, machine_on, home_all, program_open, auto_run, auto_pause, auto_resume, abort, inject_fault, clear_fault, state, version).
+     wait(pred, timeout) polls pred until true or timeout and returns the last value. Returns the evidence record."""
+     steps = []
+ 
+     def step(name, act, expect):
+-        act()
+-        ok = bool(wait(lambda: all(ctl.state().get(k) == v for k, v in expect.items()), STEP_TIMEOUT_S))
+-        observed = {k: ctl.state().get(k) for k in expect}
+-        steps.append({"step": name, "requested": expect, "observed": observed, "ok": ok})
+-        log(f"{'ok' if ok else 'FAIL'} {name}: {observed}")
++        observed, error = {}, None
++        try:
++            if before_action is not None:
++                before_action()
++            act()
++            def matches():
++                nonlocal observed
++                state = ctl.state()
++                observed = {k: state.get(k) for k in expect}
++                return all(observed[k] == v for k, v in expect.items())
++            ok = bool(wait(matches, STEP_TIMEOUT_S))
++        except Exception as exc:  # retain prior steps and the failing action, no retries
++            ok, error = False, str(exc)
++        steps.append({"step": name, "requested": expect, "observed": observed, "ok": ok, **({"error": error} if error else {})})
++        log(f"{'ok' if ok else 'FAIL'} {name}: {observed} {error or ''}")
+         return ok
+     sequence = [
+         ("estop_reset", ctl.estop_reset, {"estop": False}), ("machine_on", ctl.machine_on, {"machineOn": True}), ("home_all", ctl.home_all, {"homed": True}),
+         ("program_open", lambda: ctl.program_open(program), {"program": program}), ("auto_run", ctl.auto_run, {"running": True}),
+         ("auto_pause", ctl.auto_pause, {"paused": True}), ("auto_resume", ctl.auto_resume, {"paused": False}), ("abort", ctl.abort, {"running": False}),
+         ("inject_fault", ctl.inject_fault, {"fault": True}), ("observe_fault", lambda: None, {"machineOn": False, "running": False}),
+         ("clear_fault", ctl.clear_fault, {"fault": False}), ("observe_no_auto_resume", lambda: None, {"running": False, "paused": False, "machineOn": False}),
+     ]
+     status = "pass"
+     for name, act, expect in sequence:
+         if not step(name, act, expect):
+             status = "fail"
+             break
+     return {"backend": "linuxcnc_sim", "provenance": "controller_sim", "controller": ctl.version(), "program": program, "status": status, "steps": steps,
+             "claims": "software controller sequence on a virtual HAL; no drive, timing, load or safety evidence"}
+ 
+ 
++def sample_actual_joints(stat, epoch, sequence, clock=time.monotonic_ns):
++    """One non-atomic status poll. Neither cycle_time nor echo_serial is a clock.
++    Actual and desired joint arrays are independent fields, not Cartesian XYZABC.
++    Missing samples remain null; a receive bracket is not controller synchrony.
++    """
++    before = clock()
++    stat.poll()
++    def side(attribute, name):
++        raw = getattr(stat, attribute, None)
++        if not isinstance(raw, (list, tuple)) or len(raw) < 6:
++            return None
++        values = list(raw[:6])
++        if any(isinstance(v, bool) or not isinstance(v, (float, int)) or not math.isfinite(v) for v in values):
++            return None
++        return {"sampleId": f"{epoch}:{sequence}:{name}", "rawDeg": values, "rad": [v * math.pi / 180 for v in values]}
++    actual, commanded = side("joint_actual_position", "actual"), side("joint_position", "commanded")
++    after = clock()
++    return {"sequence": sequence, "epoch": epoch, "receiveMonotonicNs": [str(before), str(after)],
++            "controllerTime": None, "synchrony": "unavailable", "actual": actual, "commanded": commanded}
++
++
++def controller_epoch():
++    """Refuse ambiguous/missing native process identity, never substitute a poll counter."""
++    pids = subprocess.run(["pgrep", "-x", "milltask"], capture_output=True, text=True, timeout=5, check=True).stdout.split()
++    if len(pids) != 1:
++        raise RuntimeError("CONTROLLER_PROCESS_AMBIGUOUS")
++    pid = pids[0]
++    start = Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19]
++    boot = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
++    return f"{boot}:milltask:{pid}:{start}"
++
++
++def trace_record(ctl):
++    root = Path(__file__).resolve().parents[1]
++    digest = lambda path: hashlib.sha256((root / path).read_bytes()).hexdigest()
++    base = "models/puma560-reference/"
++    return {"schemaVersion": 1, "kind": "linuxcnc_actual_joint_trace", "backend": "linuxcnc_sim", "provenance": "controller_sim",
++            "evidenceKind": "native_capture", "sourceCommit": os.environ.get("MEKONIQ_SOURCE_COMMIT"),
++            "controller": {"version": ctl.version(), "identityMethod": "linux-proc-boot-id-pid-starttime"},
++            "model": {"id": "puma560-reference", "manifestSha256": digest(base+"manifest.json"), "dhSha256": digest(base+"modified-dh.json"),
++                      "framesSha256": digest(base+"frames.json"), "profileSha256": digest("configs/sim/puma560/profile.json"),
++                      "baseFrame": "arm_base", "tcpFrame": "tcp", "toolRevision": "tool-0-notool"},
++            "units": {"rawJoint": "deg", "joint": "rad", "receiveTime": "ns"}, "clock": {"receive": "host_monotonic", "controller": "unavailable"},
++            "samples": ctl.samples, "limitations": ["CONTROLLER_SAMPLE_TIME_UNAVAILABLE", "FIELD_SYNCHRONY_UNAVAILABLE", "SIM_LOOPBACK_NOT_PHYSICAL_FEEDBACK"],
++            "accepted": False}
++
++
+ class LinuxcncController:
+     """Thin port over the LinuxCNC Python interface (command/stat channels) plus halcmd for the fault fixture signal."""
+     def __init__(self):
+         import linuxcnc  # noqa: F401  (only on the Linux host)
+         self.lc, self.c, self.s = linuxcnc, linuxcnc.command(), linuxcnc.stat()
++        self.samples, self.epoch = [], controller_epoch()
+ 
+     def version(self):
+         return f"linuxcnc {getattr(self.lc, 'version', 'unknown')}"
+ 
++    def assert_epoch(self):
++        if controller_epoch() != self.epoch:
++            raise RuntimeError("CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME")
++
+     def state(self):
+-        self.s.poll()
++        epoch = controller_epoch()
++        if epoch != self.epoch:
++            raise RuntimeError("CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME")
++        sample = sample_actual_joints(self.s, epoch, len(self.samples))
++        if controller_epoch() != epoch:
++            raise RuntimeError("CONTROLLER_EPOCH_CHANGED_DURING_POLL")
++        self.samples.append(sample)
+         lc = self.lc
+         fault = any(j.get("fault", False) for j in self.s.joint if isinstance(j, dict)) if isinstance(getattr(self.s, "joint", None), (list, tuple)) else False
+         return {"estop": self.s.task_state == lc.STATE_ESTOP, "machineOn": self.s.task_state == lc.STATE_ON, "homed": all(self.s.homed[:6]) if self.s.homed else False,
+                 "program": self.s.file or None, "running": self.s.interp_state in (lc.INTERP_READING, lc.INTERP_WAITING) and not self.s.paused, "paused": bool(self.s.paused), "fault": fault}
+ 
+     def estop_reset(self): self.c.state(self.lc.STATE_ESTOP_RESET); self.c.wait_complete()
+     def machine_on(self): self.c.state(self.lc.STATE_ON); self.c.wait_complete()
+     def home_all(self): self.c.mode(self.lc.MODE_MANUAL); self.c.wait_complete(); self.c.home(-1)
+     def program_open(self, path): self.c.mode(self.lc.MODE_AUTO); self.c.wait_complete(); self.c.program_open(path)
+     def auto_run(self): self.c.auto(self.lc.AUTO_RUN, 0)
+@@ -75,21 +145,28 @@ def _poll(pred, timeout):
+             return v
+         time.sleep(0.1)
+ 
+ 
+ def main():
+     out = os.environ.get("MEKONIQ_SMOKE_EVIDENCE")
+     program = str(Path(os.environ.get("MEKONIQ_SMOKE_PROGRAM", Path(__file__).resolve().parents[1] / "programs/demo-six-axis.ngc")).resolve())
+     try:
+         ctl = LinuxcncController()
+     except Exception as e:  # noqa: BLE001 - the record says why, the wrapper exits 2
+-        rec = {"status": "blocked_external", "result": "not_run", "reasons": [f"LINUXCNC_PYTHON_MODULE_MISSING:{type(e).__name__}"]}
++        reason = f"LINUXCNC_PYTHON_MODULE_MISSING:{e}" if isinstance(e, ImportError) else f"CONTROLLER_INITIALIZATION_FAILED:{e}"
++        rec = {"status": "blocked_external", "result": "not_run", "reasons": [reason]}
+     else:
+-        rec = run_sequence(ctl, program, lambda m: print(m, flush=True), _poll)
++        try:
++            rec = run_sequence(ctl, program, lambda m: print(m, flush=True), _poll, before_action=ctl.assert_epoch)
++        except Exception as e:  # preserve partial independent observations on controller loss
++            rec = {"status": "fail", "reasons": [str(e)], "claims": "interrupted; no automatic resume"}
++        if out:
++            with open(os.path.join(out, "actual-joint-trace.json"), "x") as stream:
++                json.dump(trace_record(ctl), stream, indent=1, allow_nan=False)
+     if out:
+-        with open(os.path.join(out, "smoke-driver.json"), "w") as f:
++        with open(os.path.join(out, "smoke-driver.json"), "x") as f:
+             json.dump(rec, f, indent=1)
+     sys.exit(0 if rec.get("status") == "pass" else 2 if rec.get("status") == "blocked_external" else 1)
+ 
+ 
+ if __name__ == "__main__":
+     main()
+diff --git a/integrations/arm-controller/tests/test_actual_trace.py b/integrations/arm-controller/tests/test_actual_trace.py
+new file mode 100644
+index 0000000..e20f6f0
+--- /dev/null
++++ b/integrations/arm-controller/tests/test_actual_trace.py
+@@ -0,0 +1,126 @@
++"""Protocol doubles test data extraction only, never LinuxCNC execution evidence."""
++import sys
++import math
++from pathlib import Path
++from types import SimpleNamespace
++import pytest
++ROOT=Path(__file__).resolve().parents[1]
++sys.path.insert(0,str(ROOT/'scripts'))
++import smoke_driver
++
++
++def test_trace_api_is_present():
++    assert callable(getattr(smoke_driver,'sample_actual_joints',None)), 'actual joint trace sampler is missing'
++
++
++def test_trace_reads_joint_arrays_not_cartesian_and_never_synthesizes_clock():
++    sample=getattr(smoke_driver,'sample_actual_joints',lambda *a,**k: None)
++    stat=SimpleNamespace(poll=lambda:None,joint_actual_position=[90,0,0,0,0,0],joint_position=[91,0,0,0,0,0],actual_position=[123]*9,cycle_time=.01,echo_serial_number=900)
++    ticks=iter([100,200])
++    row=sample(stat,'boot:task:1',0,clock=lambda:next(ticks))
++    assert row is not None,'actual joint sampling missing'
++    assert row['actual']['rawDeg'][0]==90
++    assert row['actual']['rad'][0]==math.pi/2
++    assert row['commanded']['rad'][0]==91*math.pi/180
++    assert row['receiveMonotonicNs']==['100','200']
++    assert row['controllerTime'] is None
++    assert row['actual']['sampleId'] != row['commanded']['sampleId']
++    assert row['synchrony']=='unavailable'
++
++
++def test_missing_actual_is_retained_as_missing_not_zero():
++    sample=getattr(smoke_driver,'sample_actual_joints',lambda *a,**k: None)
++    row=sample(SimpleNamespace(poll=lambda:None,joint_position=[0]*6),'epoch',0)
++    assert row is not None
++    assert row['actual'] is None
++
++
++def test_modified_sim_profile_cannot_load_device_hal(tmp_path):
++    from prepare_smoke import prepare_profile
++    import shutil
++    cfg=tmp_path/'unsafe';shutil.copytree(ROOT/'configs/sim/puma560',cfg)
++    with (cfg/'machine.hal').open('a') as f:f.write('\nloadrt hm2_eth\n')
++    with pytest.raises(ValueError,match='SIM_CONFIG_BYTES_MISMATCH'):
++        prepare_profile(ROOT,cfg/'mekoniq.ini',tmp_path/'out')
++
++
++def test_inventory_preserves_package_source_and_architecture():
++    import importlib.util
++    spec=importlib.util.spec_from_file_location('runtime_inventory',ROOT/'scripts/runtime-inventory.py')
++    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
++    parse=getattr(module,'parse_packages',None)
++    assert callable(parse),'source package inventory parser missing'
++    rows=parse('linuxcnc-uspace\t2.9-example\tarm64\tinstalled\tlinuxcnc\t2.9-source\nmissing\t0\tamd64\tnot-installed\t\t\n')
++    assert rows==[{'name':'linuxcnc-uspace','version':'2.9-example','architecture':'arm64','status':'installed','sourcePackage':'linuxcnc','sourceVersion':'2.9-source'}]
++
++
++def test_epoch_change_during_poll_discards_uncertain_sample(monkeypatch):
++    ctl=smoke_driver.LinuxcncController.__new__(smoke_driver.LinuxcncController)
++    ctl.epoch='old';ctl.samples=[]
++    ctl.lc=SimpleNamespace(STATE_ESTOP=1,STATE_ON=2,INTERP_READING=3,INTERP_WAITING=4)
++    ctl.s=SimpleNamespace(poll=lambda:None,joint_actual_position=[0]*6,joint_position=[0]*6,joint=[],task_state=2,homed=[1]*6,file='',interp_state=0,paused=False)
++    epochs=iter(['old','new']);monkeypatch.setattr(smoke_driver,'controller_epoch',lambda:next(epochs))
++    with pytest.raises(RuntimeError,match='CONTROLLER_EPOCH_CHANGED'):
++        ctl.state()
++    assert ctl.samples==[]
++
++
++def test_terminal_failure_preserves_prior_steps():
++    class Broken:
++        def __getattr__(self,name):
++            if name=='state':return lambda:{'estop':False,'machineOn':True,'homed':True}
++            if name=='version':return lambda:'protocol_double'
++            if name=='program_open':return lambda path:(_ for _ in ()).throw(RuntimeError('controller lost'))
++            return lambda:None
++    record=smoke_driver.run_sequence(Broken(),'test',lambda x:None,lambda pred,timeout:pred())
++    assert record['status']=='fail'
++    assert [step['step'] for step in record['steps']]==['estop_reset','machine_on','home_all','program_open']
++    assert record['steps'][-1]['error']=='controller lost'
++
++
++def test_native_identity_failure_is_not_misreported_as_missing_python_module(tmp_path,monkeypatch):
++    import json
++    monkeypatch.setenv('MEKONIQ_SMOKE_EVIDENCE',str(tmp_path))
++    def unavailable():raise RuntimeError('CONTROLLER_PROCESS_AMBIGUOUS')
++    monkeypatch.setattr(smoke_driver,'LinuxcncController',unavailable)
++    with pytest.raises(SystemExit) as exit_info:smoke_driver.main()
++    assert exit_info.value.code==2
++    record=json.loads((tmp_path/'smoke-driver.json').read_text())
++    assert record['reasons']==['CONTROLLER_INITIALIZATION_FAILED:CONTROLLER_PROCESS_AMBIGUOUS']
++
++
++def test_epoch_guard_runs_before_next_action_and_retains_failure():
++    import inspect
++    assert 'before_action' in inspect.signature(smoke_driver.run_sequence).parameters,'pre-action epoch guard missing'
++    actions=[]
++    class Controller:
++        def __getattr__(self,name):
++            if name=='state':return lambda:{'estop':False,'machineOn':True,'homed':True}
++            if name=='version':return lambda:'protocol_double'
++            return lambda *args:actions.append(name)
++    calls=0
++    def guard():
++        nonlocal calls
++        calls+=1
++        if calls==4:raise RuntimeError('CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME')
++    record=smoke_driver.run_sequence(Controller(),'test',lambda x:None,lambda pred,timeout:pred(),before_action=guard)
++    assert record['status']=='fail'
++    assert actions==['estop_reset','machine_on','home_all']
++    assert record['steps'][-1]['step']=='program_open'
++    assert record['steps'][-1]['error']=='CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME'
++
++
++def test_native_main_wires_guard_before_any_controller_command(monkeypatch):
++    actions=[]
++    class Controller:
++        def assert_epoch(self):raise RuntimeError('CONTROLLER_EPOCH_CHANGED_NO_AUTO_RESUME')
++        def __getattr__(self,name):
++            if name=='state':return lambda:{'estop':False,'machineOn':True,'homed':True}
++            if name=='version':return lambda:'protocol_double'
++            return lambda *args:actions.append(name)
++    monkeypatch.delenv('MEKONIQ_SMOKE_EVIDENCE',raising=False)
++    monkeypatch.setattr(smoke_driver,'LinuxcncController',Controller)
++    monkeypatch.setattr(smoke_driver,'_poll',lambda pred,timeout:pred())
++    with pytest.raises(SystemExit) as status:smoke_driver.main()
++    assert status.value.code==1
++    assert actions==[], 'command sent before failed epoch admission'
+diff --git a/integrations/arm-controller/tests/test_smoke_launch.py b/integrations/arm-controller/tests/test_smoke_launch.py
+index f31c240..3fb34c8 100644
+--- a/integrations/arm-controller/tests/test_smoke_launch.py
++++ b/integrations/arm-controller/tests/test_smoke_launch.py
+@@ -1,27 +1,30 @@
+ """Portable boundary checks; these do not execute LinuxCNC or qualify its GUI."""
+ import sys
+ import tempfile
+ import unittest
++from unittest.mock import patch
+ import subprocess
+ import json
+ import os
+ import platform
+ from pathlib import Path
+ from types import SimpleNamespace
+ ROOT = Path(__file__).resolve().parents[1]
+ sys.path.insert(0, str(ROOT / 'scripts'))
+ 
+ class SmokeLaunchTest(unittest.TestCase):
+-    def test_real_stat_joint_dictionary_fault_is_observed(self):
++    @patch('smoke_driver.controller_epoch', return_value='protocol-double')
++    def test_real_stat_joint_dictionary_fault_is_observed(self, _epoch):
+         from smoke_driver import LinuxcncController
+         ctl = LinuxcncController.__new__(LinuxcncController)
++        ctl.samples, ctl.epoch = [], 'protocol-double'
+         ctl.lc = SimpleNamespace(STATE_ESTOP=1, STATE_ON=2, INTERP_READING=3, INTERP_WAITING=4)
+         ctl.s = SimpleNamespace(poll=lambda: None, joint=({'fault': 1},), task_state=1, homed=[1]*6, file='', interp_state=0, paused=False)
+         self.assertTrue(ctl.state()['fault'])
+         ctl.s.joint = ({'fault': 0},)
+         self.assertFalse(ctl.state()['fault'])
+ 
+     def test_staged_profile_keeps_program_model_and_custom_hmi_resolvable(self):
+         from prepare_smoke import prepare_profile
+         import configparser
+         with tempfile.TemporaryDirectory() as tmp:
+diff --git a/packages/lab-runtime/src/v2/algorithm/linuxcnc-trace.ts b/packages/lab-runtime/src/v2/algorithm/linuxcnc-trace.ts
+new file mode 100644
+index 0000000..509aed9
+--- /dev/null
++++ b/packages/lab-runtime/src/v2/algorithm/linuxcnc-trace.ts
+@@ -0,0 +1,88 @@
++// ALG04 consumes retained LinuxCNC actual joints; the oracle never supplies input samples.
++// Poll brackets are receive times only. This v1 cannot qualify synchronized following error.
++import {createHash} from 'node:crypto';
++import {readFileSync} from 'node:fs';
++import {join} from 'node:path';
++import {loadArmModel} from '../arm/session';
++import {forwardKinematics} from '../models/arm-kinematics';
++import {hashJson} from '../hash';
++import {REPO_ROOT,loadOracleProfile,type AlgorithmChecker} from './checker';
++import {collectResults} from './results';
++interface Side {sampleId:string;rawDeg:number[];rad:number[]}
++interface Sample {sequence:number;epoch:string;receiveMonotonicNs:[string,string];controllerTime:null;synchrony:'unavailable';actual:Side;commanded:Side}
++export interface LinuxcncTrace {schemaVersion:1;kind:'linuxcnc_actual_joint_trace';backend:'linuxcnc_sim';provenance:'controller_sim';evidenceKind:'native_capture'|'protocol_double';sourceCommit:string;
++ controller:{version:string;identityMethod:'linux-proc-boot-id-pid-starttime'};
++ model:{id:string;manifestSha256:string;dhSha256:string;framesSha256:string;profileSha256:string;baseFrame:string;tcpFrame:string;toolRevision:string};
++ units:{rawJoint:'deg';joint:'rad';receiveTime:'ns'};clock:{receive:'host_monotonic';controller:'unavailable'};samples:Sample[]}
++const dir=join(REPO_ROOT,'integrations/arm-controller/models/puma560-reference');
++const sha=(p:string)=>createHash('sha256').update(readFileSync(p)).digest('hex');
++function requireValue(ok:unknown,reason:string):asserts ok {if(!ok)throw Error(reason);}
++function binding(){
++ const manifestSha256=sha(join(dir,'manifest.json'));
++ requireValue(manifestSha256==='68f416926d1f5f3fab73a900a9c30667b9a8906da78f9cf78320f73aa2148ef5','PUMA_MANIFEST_BYTES_MISMATCH');
++ const manifest=JSON.parse(readFileSync(join(dir,'manifest.json'),'utf8')) as {hashes:Record<string,string>};
++ for(const [name,digest]of Object.entries(manifest.hashes))requireValue(sha(join(dir,name))===digest,'PUMA_MODEL_BYTES_MISMATCH');
++ return {id:'puma560-reference',manifestSha256,dhSha256:manifest.hashes['modified-dh.json']!,framesSha256:manifest.hashes['frames.json']!,
++  profileSha256:sha(join(dir,'../../configs/sim/puma560/profile.json')),baseFrame:'arm_base',tcpFrame:'tcp',toolRevision:'tool-0-notool'};
++}
++/** Validate supplied consistency only; a JSON provenance label is never host authentication. */
++export function validateLinuxcncTrace(input:unknown){
++ const t=input as LinuxcncTrace;
++ requireValue(t&&t.schemaVersion===1&&t.kind==='linuxcnc_actual_joint_trace'&&t.backend==='linuxcnc_sim'&&t.provenance==='controller_sim','LINUXCNC_ACTUAL_TRACE_REQUIRED');
++ requireValue(['native_capture','protocol_double'].includes(t.evidenceKind)&&/^[a-f0-9]{40}$/.test(t.sourceCommit)&&t.controller?.version&&t.controller.identityMethod==='linux-proc-boot-id-pid-starttime','TRACE_IDENTITY_MISSING');
++ requireValue(hashJson(t.model)===hashJson(binding()),'PUMA_MODEL_FRAME_HASH_MISMATCH');
++ requireValue(t.units?.rawJoint==='deg'&&t.units.joint==='rad'&&t.units.receiveTime==='ns','TRACE_UNITS_MISMATCH');
++ requireValue(t.clock?.receive==='host_monotonic'&&t.clock.controller==='unavailable','CONTROLLER_CLOCK_UNSUPPORTED');
++ requireValue(Array.isArray(t.samples)&&t.samples.length>0&&t.samples.length<=100_000,'ACTUAL_SAMPLES_MISSING_OR_TOO_LARGE');
++ const segments:{epoch:string;from:number;to:number}[]=[],ids=new Set<string>();let previous=-1n;
++ const model=loadArmModel(dir);
++ for(const [index,s]of t.samples.entries()){
++  requireValue(s&&s.sequence===index&&typeof s.epoch==='string'&&s.epoch.length>0&&s.epoch.length<256,'TRACE_SEQUENCE_OR_EPOCH_INVALID');
++  requireValue(Array.isArray(s.receiveMonotonicNs)&&s.receiveMonotonicNs.length===2&&s.receiveMonotonicNs.every(v=>typeof v==='string'&&/^\d{1,30}$/.test(v))&&s.controllerTime===null&&s.synchrony==='unavailable','TRACE_TIMING_MISSING');
++  const [a,b]=s.receiveMonotonicNs.map(BigInt) as [bigint,bigint];requireValue(a<=b&&a>previous,'TRACE_RECEIVE_TIME_INVALID');previous=b;
++  for(const side of [s.actual,s.commanded]){
++   requireValue(side&&typeof side.sampleId==='string'&&side.sampleId.length>0&&!ids.has(side.sampleId),'ACTUAL_OR_COMMANDED_SAMPLE_MISSING');ids.add(side.sampleId);
++   requireValue(Array.isArray(side.rawDeg)&&Array.isArray(side.rad)&&side.rawDeg.length===6&&side.rad.length===6,'JOINT_VECTOR_INVALID');
++   for(let j=0;j<6;j++){
++    const d=side.rawDeg[j]!,r=side.rad[j]!,limit=model.limits[j]!;
++    requireValue(typeof d==='number'&&typeof r==='number'&&Number.isFinite(d)&&Number.isFinite(r)&&Math.abs(r-d*Math.PI/180)<=1e-12,'JOINT_DEG_RAD_MISMATCH');
++    requireValue(r>=limit.min-1e-9&&r<=limit.max+1e-9,'JOINT_LIMIT_EXCEEDED');
++   }
++  }
++  const last=segments.at(-1);if(last?.epoch===s.epoch)last.to=index;else segments.push({epoch:s.epoch,from:index,to:index});
++ }
++ return {trace:t,segments};
++}
++export async function runLinuxcncAlg04(checker:AlgorithmChecker,input:unknown){
++ const {trace,segments}=validateLinuxcncTrace(input),model=loadArmModel(dir),{profile}=loadOracleProfile();
++ const results=await collectResults({checker,checkerId:'rtb_kinematics',profile:profile.fk,seed:0,inputs:trace,cases:[['ALG04',async call=>{
++  const q=trace.samples.map(s=>s.actual.rad);
++  const {T}=await call<{T:number[][][]}>('rtb_fk',{dh:model.links.map(l=>({a:l.a,alpha:l.alpha,d:l.d,offset:l.thetaOffset})),q});
++  requireValue(Array.isArray(T)&&T.length===q.length,'ORACLE_FK_COUNT_MISMATCH');
++  let translation=0,rotation=0,delta=0;
++  q.forEach((angles,i)=>{
++   const pose=forwardKinematics(model,angles).tcp,m=T[i]!;
++   requireValue(m.length===4&&m.every(row=>Array.isArray(row)&&row.length===4&&row.every(v=>typeof v==='number'&&Number.isFinite(v))),'ORACLE_FK_INVALID');
++   translation=Math.max(translation,Math.hypot(...pose.position.map((v,j)=>v-m[j]![3]!)));
++   const [x,y,z,w]=pose.quaternionXyzw;
++   const R=[[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]];
++   const D=[0,1,2].map(a=>[0,1,2].map(b=>[0,1,2].reduce((sum,k)=>sum+R[k]![a]!*m[k]![b]!,0)));
++   rotation=Math.max(rotation,Math.atan2(Math.hypot(D[2]![1]!-D[1]![2]!,D[0]![2]!-D[2]![0]!,D[1]![0]!-D[0]![1]!)/2,(D[0]![0]!+D[1]![1]!+D[2]![2]!-1)/2));
++   delta=Math.max(delta,...angles.map((v,j)=>Math.abs(v-trace.samples[i]!.commanded.rad[j]!)));
++  });
++  const pass=translation<=profile.fk.translationM&&rotation<=profile.fk.rotationRad;
++  return {pass,metrics:{actualSamples:q.length,maxObservedCommandActualDeltaRad:delta,maxFkTranslationResidualM:translation,maxFkRotationResidualRad:rotation},reasons:pass?[]:['ACTUAL_INPUT_FK_NUMERIC_RESIDUAL_EXCEEDED']};
++ }]]});
++ const result=results[0]!;
++ // Numerical consistency can pass, but full ALG04 cannot: v1 has no native clock,
++ // sample synchrony, independently authenticated host, or qualified motion coverage.
++ const numericVerdict=result.verdict;
++ if(result.verdict==='pass')result.verdict='not_run';
++ result.reasons.push('CONTROLLER_SAMPLE_TIME_UNAVAILABLE','FIELD_SYNCHRONY_UNAVAILABLE','NATIVE_HOST_EXECUTION_NOT_QUALIFIED');
++ if(trace.evidenceKind==='protocol_double')result.reasons.push('PROTOCOL_DOUBLE_NOT_NATIVE_EVIDENCE');
++ return {schemaVersion:1,accepted:false,result,numericVerdict,traceDigest:hashJson(trace),
++  coverage:{segments,interpolatedSamples:0,continuousTrajectoryQualified:false},
++  followingError:{status:'not_run',reason:'WITHIN_POLL_DELTA_IS_NOT_TIME_ALIGNED_FOLLOWING_ERROR'},
++  controllerCartesianResidual:{status:'not_run',reason:'CONTROLLER_CARTESIAN_DH_TCP_ENDPOINT_NOT_ESTABLISHED'},
++  claims:'RTB versus TypeScript FK at independent supplied actual joints; numerical consistency only; no calibrated dynamics or physical feedback'};
++}
+diff --git a/scripts/lab-algorithm.mjs b/scripts/lab-algorithm.mjs
+index 685e5f8..3fcf3ae 100644
+--- a/scripts/lab-algorithm.mjs
++++ b/scripts/lab-algorithm.mjs
+@@ -1,42 +1,59 @@
+ #!/usr/bin/env node
+ // Headless algorithm oracles: Robotics Toolbox kinematics (ALG01-03, ALG05) and the PID reference (PID01-03). Independent of the Lab UI and of any plant.
+ //   node scripts/lab-algorithm.mjs run --out DIR [--seed N] [--python PATH]
++//   node scripts/lab-algorithm.mjs linuxcnc --trace actual-joint-trace.json --out DIR [--python PATH]
+ // Writes DIR/algorithm-results.json = {results: AlgorithmResultV1[], oracleProfileDigest, lockDigest}. DIR must not exist.
+ // Exit codes: 0 every check passed, 1 a check failed, 2 a prerequisite or the usage is missing (not_run). A missing venv is never a pass.
+ import {mkdir,writeFile} from 'node:fs/promises';
+-import {existsSync} from 'node:fs';
++import {existsSync,readFileSync,statSync} from 'node:fs';
++import {createHash} from 'node:crypto';
++import {execFileSync} from 'node:child_process';
+ import {dirname,join,resolve} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+-const usage=(m)=>{console.error(`${m}\nusage: lab-algorithm.mjs run --out DIR [--seed N] [--python PATH]`);process.exit(2);};
+-const SCHEMA={run:{out:'path',seed:'int',python:'path'}};
++const usage=(m)=>{console.error(`${m}\nusage: lab-algorithm.mjs run --out DIR [--seed N] [--python PATH] | linuxcnc --trace FILE --out DIR [--python PATH]`);process.exit(2);};
++const SCHEMA={run:{out:'path',seed:'int',python:'path'},linuxcnc:{out:'path',trace:'path',python:'path'}};
+ export function parse(command,argv){
+  const schema=SCHEMA[command];if(!schema)usage(`UNKNOWN_COMMAND:${command??''}`);
+  const o={};
+  for(let i=0;i<argv.length;i++){
+   const a=argv[i];if(!a.startsWith('--'))usage(`UNEXPECTED_ARGUMENT:${a}`);
+   const key=a.slice(2),kind=schema[key];if(!kind)usage(`UNKNOWN_OPTION:${a}`);
+   if(Object.hasOwn(o,key))usage(`DUPLICATE_OPTION:${a}`);
+   const v=argv[++i];if(v===undefined||v.startsWith('--'))usage(`MISSING_VALUE:${a}`);
+   if(kind==='int'&&!/^[0-9]{1,9}$/.test(v))usage(`INVALID_INT:${a}`);
+   if(/[\0\n\r]/.test(v)||v.length>1024)usage(`INVALID_VALUE:${a}`);
+   o[key]=kind==='int'?Number(v):resolve(v);
+  }
+  if(!o.out)usage('MISSING_OPTION:--out');
++ if(command==='linuxcnc'&&!o.trace)usage('MISSING_OPTION:--trace');
+  return o;
+ }
+ /** Any fail wins over not_run: a failure is information, an absent prerequisite is not. */
+ export const exitCodeFor=(results)=>results.some(r=>r.verdict==='fail')?1:results.length===0||results.some(r=>r.verdict==='not_run')?2:0;
+ async function main(){
+  const [command,...argv]=process.argv.slice(2),o=parse(command,argv);
+  if(existsSync(o.out))usage(`OUT_EXISTS:${o.out}`);
+  const {tsImport}=await import('tsx/esm/api'),load=(f)=>tsImport(`../packages/lab-runtime/src/${f}`,import.meta.url);
+  const [{createAlgorithmChecker,loadOracleProfile},{runKinematicsCases},{runPidCases},{lockDigestOf}]=await Promise.all([load('v2/algorithm/checker.ts'),load('v2/algorithm/kinematics-cases.ts'),load('v2/algorithm/pid-cases.ts'),load('engineering/linkforge.ts')]);
++ if(command==='linuxcnc'){
++  const {runLinuxcncAlg04}=await load('v2/algorithm/linuxcnc-trace.ts');
++  if(statSync(o.trace).size>32*1024*1024)usage('TRACE_TOO_LARGE');
++  const bytes=readFileSync(o.trace),trace=JSON.parse(bytes.toString()),checker=createAlgorithmChecker({python:o.python??join(root,'.venv-algorithm/bin/python'),root:join(root,'robotics/algorithm')});
++  const report=await runLinuxcncAlg04(checker,trace);
++  const git=(args)=>execFileSync('git',['--no-replace-objects','-C',root,...args],{encoding:'utf8'}).trim();
++  const checkerIdentity={sourceCommit:git(['rev-parse','HEAD']),sourceTree:git(['rev-parse','HEAD^{tree}']),dirty:git(['status','--porcelain']).length>0,
++   claims:'local checkout identity only; public native-handoff audit and retained Git graph still required'};
++  await mkdir(o.out,{recursive:false});
++  await writeFile(join(o.out,'algorithm-results.json'),JSON.stringify({...report,results:[report.result],inputSha256:createHash('sha256').update(bytes).digest('hex'),
++   subjectSourceCommit:trace.sourceCommit,checker:checkerIdentity,oracleProfileDigest:loadOracleProfile().digest,lockDigest:await lockDigestOf(join(root,'robotics/algorithm/requirements.lock'))},null,2)+'\n',{flag:'wx'});
++  console.log(`ALG04 ${report.result.verdict} ${report.result.reasons.join(',')}`);return exitCodeFor([report.result]);
++ }
+  const seed=o.seed??7,{profile,digest}=loadOracleProfile(),checker=createAlgorithmChecker({python:o.python??join(root,'.venv-algorithm/bin/python'),root:join(root,'robotics/algorithm')});
+  const results=[...await runKinematicsCases(checker,profile,seed),...await runPidCases(checker,profile,seed)];
+  await mkdir(o.out,{recursive:true});
+  await writeFile(join(o.out,'algorithm-results.json'),JSON.stringify({results,oracleProfileDigest:digest,lockDigest:await lockDigestOf(join(root,'robotics/algorithm/requirements.lock'))},null,2)+'\n');
+  for(const r of results)console.log(`${r.caseId} ${r.verdict}${r.reasons.length?`  ${r.reasons[0]}`:''}`);
+  return exitCodeFor(results);
+ }
+ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))process.exit(await main());
+diff --git a/scripts/native-sim/tool-identity.mjs b/scripts/native-sim/tool-identity.mjs
+index 3e718e1..b65dbc0 100644
+--- a/scripts/native-sim/tool-identity.mjs
++++ b/scripts/native-sim/tool-identity.mjs
+@@ -3,15 +3,15 @@ import {readdirSync,readFileSync,realpathSync} from 'node:fs';
+ import {join,resolve} from 'node:path';
+ import {createHash} from 'node:crypto';
+ function toolClosure(root,paths,symlink,ignorePythonMetadata=false){
+  root=realpathSync(root);const files=[];
+  const walk=(relative)=>{const path=join(root,relative);if(realpathSync(path)!==resolve(path))throw new Error(symlink);for(const e of readdirSync(path,{withFileTypes:true}).sort((a,b)=>a.name.localeCompare(b.name,'en'))){if(['__pycache__','.pytest_cache','.venv','tests'].includes(e.name)&&relative!=='tests/fixtures')continue;if(ignorePythonMetadata&&/\.(egg|dist)-info$/.test(e.name))continue;const r=relative+'/'+e.name;if(e.isDirectory())walk(r);else if(e.isFile()&&!/\.(pyc|pyo)$/.test(e.name)){const full=join(root,r);if(realpathSync(full)!==full)throw new Error(symlink);const bytes=readFileSync(full);files.push({path:r,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length});}else if(e.isSymbolicLink())throw new Error(symlink);}};
+  for(const path of paths)walk(path);
+  files.sort((a,b)=>a.path<b.path?-1:1);return {version:1,digest:createHash('sha256').update(JSON.stringify(files)).digest('hex'),files};
+ }
+ // Editable installs generate distribution metadata in robotics/agent. It is not an imported tool or consumed resource; including it makes a clean clone export a different runtime.
+ // Portable roots keep their strict file inventory (the Lab launcher verifies every distributed file).
+-export const nativeToolClosure=(root)=>toolClosure(root,['robotics/manipulation','robotics/simulation','robotics/simulation-3d/fixtures/serve-3d-v1','robotics/navigation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK',true);
++export const nativeToolClosure=(root)=>toolClosure(root,['robotics/manipulation','robotics/simulation','robotics/simulation-3d/fixtures/serve-3d-v1','robotics/navigation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','integrations/arm-controller/scripts','integrations/arm-controller/packaging','tests/fixtures/digital-twin'],'NATIVE_TOOL_SYMLINK',true);
+ /** Portable (macOS/Linux developer) Python tools: IR-SIM worker + its fixtures, LinkForge shadow worker, the Robotics Toolbox/PID algorithm checker, the Webots 3D plant compiler/worker (the engine is a host install), the MuJoCo arm cell compiler (the engine is the pinned wheel of its lock) with its xarm6 fixture, the shared description/compiler helper with the robotics/simulation
+  * packages it imports (compiler/__init__ -> compile_world -> worlds.generate_restaurant, actors.blocker/scenario/pedestrian) and the contract schemas. Separate from the native closure; neither replaces the other. */
+ export const PORTABLE_TOOL_PATHS=['robotics/navigation-2d','robotics/model-validation','robotics/algorithm','robotics/simulation-3d','robotics/simulation-mujoco','robotics/simulation/compiler','robotics/simulation/actors','robotics/simulation/worlds','packages/contracts/schemas'];
+ export const portableToolClosure=(root)=>toolClosure(root,PORTABLE_TOOL_PATHS,'PORTABLE_TOOL_SYMLINK');
+diff --git a/tests/integration/linuxcnc-alg04-evidence.test.ts b/tests/integration/linuxcnc-alg04-evidence.test.ts
+new file mode 100644
+index 0000000..559b696
+--- /dev/null
++++ b/tests/integration/linuxcnc-alg04-evidence.test.ts
+@@ -0,0 +1,78 @@
++import {describe,it,expect} from 'vitest';
++import {existsSync,readFileSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
++import {tmpdir} from 'node:os';
++import {spawnSync} from 'node:child_process';
++import {createHash} from 'node:crypto';
++import {join} from 'node:path';
++import {createAlgorithmChecker,REPO_ROOT,type AlgorithmChecker} from '../../packages/lab-runtime/src/v2/algorithm/checker';
++const api=async()=>import('../../packages/lab-runtime/src/v2/algorithm/linuxcnc-trace');
++const sha=(p:string)=>createHash('sha256').update(readFileSync(join(REPO_ROOT,p))).digest('hex');
++const base='integrations/arm-controller/';
++function fixture(){
++ const side=(id:string,deg:number[])=>({sampleId:id,rawDeg:deg,rad:deg.map(x=>x*Math.PI/180)});
++ return {schemaVersion:1,kind:'linuxcnc_actual_joint_trace',backend:'linuxcnc_sim',provenance:'controller_sim',evidenceKind:'protocol_double',
++ sourceCommit:'a'.repeat(40),controller:{version:'protocol-double',identityMethod:'linux-proc-boot-id-pid-starttime'},
++ model:{id:'puma560-reference',manifestSha256:sha(base+'models/puma560-reference/manifest.json'),dhSha256:sha(base+'models/puma560-reference/modified-dh.json'),framesSha256:sha(base+'models/puma560-reference/frames.json'),profileSha256:sha(base+'configs/sim/puma560/profile.json'),baseFrame:'arm_base',tcpFrame:'tcp',toolRevision:'tool-0-notool'},
++ units:{rawJoint:'deg',joint:'rad',receiveTime:'ns'},clock:{receive:'host_monotonic',controller:'unavailable'},
++ samples:[0,1].map(i=>({sequence:i,epoch:'boot:task:1',receiveMonotonicNs:[String(100+i*100),String(110+i*100)],controllerTime:null,synchrony:'unavailable',actual:side(`a${i}`,[0,0,0,0,0,0]),commanded:side(`c${i}`,[1,0,0,0,0,0])}))};
++}
++describe('ALG04 independent LinuxCNC actual-joint input',()=>{
++ it('provides a strict trace consumer',async()=>{expect((await api()).validateLinuxcncTrace).toBeTypeOf('function');});
++ it.each([
++  ['mock',(t:ReturnType<typeof fixture>)=>{t.backend='mock';}],
++  ['xarm',(t:ReturnType<typeof fixture>)=>{t.model.id='xarm6';}],
++  ['degrees-as-radians',(t:ReturnType<typeof fixture>)=>{t.samples[0]!.actual.rad=[90,0,0,0,0,0];}],
++  ['wrong DH',(t:ReturnType<typeof fixture>)=>{t.model.dhSha256='0'.repeat(64);}],
++  ['wrong frame',(t:ReturnType<typeof fixture>)=>{t.model.baseFrame='world';}],
++  ['wrong hash',(t:ReturnType<typeof fixture>)=>{t.model.manifestSha256='0'.repeat(64);}],
++  ['empty actual',(t:ReturnType<typeof fixture>)=>{t.samples=[];}],
++  ['missing timing',(t:ReturnType<typeof fixture>)=>{t.samples[0]!.receiveMonotonicNs=[];}],
++  ['synthetic controller clock',(t:ReturnType<typeof fixture>)=>{t.clock.controller='cycle_time';}],
++  ['identical sample IDs',(t:ReturnType<typeof fixture>)=>{t.samples[0]!.actual.sampleId='c0';}],
++  ['reversed receipt bracket',(t:ReturnType<typeof fixture>)=>{t.samples[0]!.receiveMonotonicNs=['110','100'];}],
++ ])('rejects %s before calling the oracle',async(_name,mutate)=>{
++  const f=(await api()).validateLinuxcncTrace;expect(f).toBeTypeOf('function');const t=fixture();mutate(t);expect(()=>f(t)).toThrow();
++ });
++ it('splits controller epochs without joining trajectory coverage',async()=>{
++  const f=(await api()).validateLinuxcncTrace;expect(f).toBeTypeOf('function');const t=fixture();t.samples[1]!.epoch='boot:task:2';
++  expect(f(t).segments).toEqual([{epoch:'boot:task:1',from:0,to:0},{epoch:'boot:task:2',from:1,to:1}]);
++ });
++ it('checks actual poses with RTB, separates raw following delta, and leaves native timing not_run',async()=>{
++  const run=(await api()).runLinuxcncAlg04;expect(run).toBeTypeOf('function');
++  const real=createAlgorithmChecker({python:join(REPO_ROOT,'.venv-algorithm/bin/python'),root:join(REPO_ROOT,'robotics/algorithm')});
++  let oracleInput:unknown;const checker:AlgorithmChecker={call:(op,payload)=>{oracleInput=(payload as {q:unknown}).q;return real.call(op,payload);}};
++  const report=await run(checker,fixture());
++  expect(oracleInput).toEqual([[0,0,0,0,0,0],[0,0,0,0,0,0]]);
++  expect(report.result.caseId).toBe('ALG04');expect(report.result.verdict).toBe('not_run');
++  expect(report.result.metrics.maxObservedCommandActualDeltaRad).toBeCloseTo(Math.PI/180,12);
++  expect(report.result.metrics.maxFkTranslationResidualM).toBeLessThan(1e-6);
++  expect(report.result.reasons).toContain('CONTROLLER_SAMPLE_TIME_UNAVAILABLE');
++  expect(report.coverage.interpolatedSamples).toBe(0);
++  expect(report.controllerCartesianResidual.status).toBe('not_run');
++ });
++});
++
++it('public CLI consumes retained trace bytes and preserves source/checker separation',()=>{
++ const tmp=mkdtempSync(join(tmpdir(),'l04-cli-'));try{
++  const trace=join(tmp,'trace.json'),out=join(tmp,'out');writeFileSync(trace,JSON.stringify(fixture()));
++  const r=spawnSync(process.execPath,['scripts/lab-algorithm.mjs','linuxcnc','--trace',trace,'--out',out],{cwd:REPO_ROOT,encoding:'utf8',timeout:30_000});
++  expect(r.status,r.stderr).toBe(2);
++  expect(existsSync(join(out,'algorithm-results.json')),'retained trace report missing').toBe(true);
++  const report=JSON.parse(readFileSync(join(out,'algorithm-results.json'),'utf8'));
++  expect(report.results[0].caseId).toBe('ALG04');expect(report.results[0].verdict).toBe('not_run');
++  expect(report.inputSha256).toBe(createHash('sha256').update(readFileSync(trace)).digest('hex'));
++  expect(report.subjectSourceCommit).toBe('a'.repeat(40));expect(report.checker.sourceCommit).toMatch(/^[a-f0-9]{40}$/);
++  expect(report.accepted).toBe(false);
++ }finally{rmSync(tmp,{recursive:true,force:true});}
++});
++
++it('a numerical FK failure stays fail despite unavailable native timing',async()=>{
++ const {runLinuxcncAlg04}=await api();
++ const real=createAlgorithmChecker({python:join(REPO_ROOT,'.venv-algorithm/bin/python'),root:join(REPO_ROOT,'robotics/algorithm')});
++ const skewed:AlgorithmChecker={call:(op,payload)=>{const p=structuredClone(payload) as {dh:{a:number}[]};p.dh[2]!.a+=0.01;return real.call(op,p);}};
++ const report=await runLinuxcncAlg04(skewed,fixture());
++ expect(report.result.verdict).toBe('fail');expect(report.numericVerdict).toBe('fail');
++ expect(report.result.metrics.maxFkTranslationResidualM).toBeGreaterThan(0.009);
++ expect(report.result.reasons).toContain('ACTUAL_INPUT_FK_NUMERIC_RESIDUAL_EXCEEDED');
++ expect(report.result.reasons).toContain('CONTROLLER_SAMPLE_TIME_UNAVAILABLE');
++});
+diff --git a/tests/unit/native-tool-identity.test.ts b/tests/unit/native-tool-identity.test.ts
+index 0fc6227..7051e2f 100644
+--- a/tests/unit/native-tool-identity.test.ts
++++ b/tests/unit/native-tool-identity.test.ts
+@@ -1,24 +1,30 @@
+ import {mkdtemp,mkdir,rm,writeFile} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {expect,test} from 'vitest';
+ import {nativeToolClosure} from '../../scripts/native-sim/tool-identity.mjs';
+ 
+ test('installing Python distribution metadata leaves tool identity stable while worker edits change it',async()=>{
+  const root=await mkdtemp(join(tmpdir(),'tool-identity-'));
+  try{
+-  const roots=['robotics/simulation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','tests/fixtures/digital-twin'];
++  const roots=['robotics/manipulation','robotics/simulation','robotics/simulation-3d/fixtures/serve-3d-v1','robotics/navigation','robotics/agent','packages/contracts/schemas','integrations/arm-controller/bridge','integrations/arm-controller/configs','integrations/arm-controller/models','integrations/arm-controller/programs','integrations/arm-controller/scripts','integrations/arm-controller/packaging','tests/fixtures/digital-twin'];
+   for(const path of roots)await mkdir(join(root,path),{recursive:true});
+   const agent=join(root,'robotics/agent/worker.py');
+   await writeFile(agent,'VALUE = 1\n');
++  const recorder=join(root,'integrations/arm-controller/scripts/smoke_driver.py'),lock=join(root,'integrations/arm-controller/packaging/dependencies.lock.json');
++  await writeFile(recorder,'SAMPLER = 1\n');await writeFile(lock,'{"verified":false}\n');
+   const nativeBefore=nativeToolClosure(root);
++  expect(nativeBefore.files.some(f=>f.path==='integrations/arm-controller/scripts/smoke_driver.py')).toBe(true);
++  expect(nativeBefore.files.some(f=>f.path==='integrations/arm-controller/packaging/dependencies.lock.json')).toBe(true);
++  await writeFile(recorder,'SAMPLER = 2\n');expect(nativeToolClosure(root).digest).not.toBe(nativeBefore.digest);await writeFile(recorder,'SAMPLER = 1\n');
++  await writeFile(lock,'{"verified":true}\n');expect(nativeToolClosure(root).digest).not.toBe(nativeBefore.digest);await writeFile(lock,'{"verified":false}\n');
+   // An editable pip install leaves this metadata in a working checkout; a fresh git clone has none.
+   for(const parent of ['robotics/agent','robotics/simulation']){
+    for(const suffix of ['egg-info','dist-info']){
+     const metadata=join(root,parent,`worker.1.0.${suffix}`);await mkdir(metadata);
+     await writeFile(join(metadata,'PKG-INFO'),'Name: worker\nVersion: 1.0\n');
+     await writeFile(join(metadata,'SOURCES.txt'),'worker.py\n');
+    }
+    // Older Python installations also use a single .egg-info file.
+    await writeFile(join(root,parent,'legacy.egg-info'),'Name: legacy\n');
+   }

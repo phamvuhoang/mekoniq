@@ -1,0 +1,2721 @@
+{
+  "at": "2026-11-16T01:23:40.440611+00:00",
+  "scope": "Read-only audit of exact declared supplemental table, actual own receipts/raw test results and both preserved newly owned defaults; no test rerun or qualification status splice.",
+  "kind": "r2a",
+  "primaryFiles": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/table.json",
+      "bytes": 7459,
+      "sha256": "e9e44dce065f11f52d70152f4182317146d9277233dc537997721ccaa383ada7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/execution-index.json",
+      "bytes": 45623,
+      "sha256": "f87b511aca76cc43c535673a52b6f2c725d092b16c0339e2b9cfe837ed32b185"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/row-coverage.json",
+      "bytes": 796,
+      "sha256": "5c4f295cc137d197cd2840ae402792fda3bd90fe243b9dc23e67bf5d7e8f5a42"
+    }
+  ],
+  "tableSource": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/scripts/sim-extension-qualification.mjs",
+    "bytes": 30885,
+    "sha256": "b2e1ea4d1eb532d059798fb693152661e2aa6bac224e0bbbe8d62e4ab7ac046a"
+  },
+  "parentReceipt": {
+    "file": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplemental-current-gui.receipt.json",
+      "bytes": 4939,
+      "sha256": "9275ae6fcd2eeb8125a804e8162e913c0957171267303859dede628a82b4ca53"
+    },
+    "log": {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplemental-current-gui.log",
+      "bytes": 55105,
+      "sha256": "34c24ba8e2768d6729b81fad55b2e074c462bb78e7439f7515cf8226921f9f49"
+    },
+    "argv": [
+      "caffeinate",
+      "-dims",
+      "perl",
+      "-e",
+      "alarm 18000; exec @ARGV",
+      "node",
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/supplement-tables-current-gui.mjs",
+      "r2a"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "startedAt": "2026-11-16T01:05:25.885Z",
+    "finishedAt": "2026-11-16T01:16:23.626Z",
+    "exitCode": 0,
+    "signal": null,
+    "before": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "status": "",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changed": []
+    },
+    "after": {
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "status": "",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changed": []
+    }
+  },
+  "rows": [
+    {
+      "id": "ma-static",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-static.json",
+            "bytes": 14285,
+            "sha256": "11cc54be80410a434a52af00738ffcb3f572e06cc19e22dce5fddf04a82ee8cc"
+          },
+          "actual": {
+            "passed": 38,
+            "failed": 0,
+            "notRun": 0,
+            "total": 38,
+            "rawStatusCounts": {
+              "passed": 38
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-static.receipt.json",
+          "bytes": 5618,
+          "sha256": "0f1b6a9785c8935e8724927b1050c3bc97eef2a908b4cca7d775b9abc2ff5371"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-static.log",
+          "bytes": 708,
+          "sha256": "f8ddd80145449481ddf31e6d275ca1809ce7d02af1ee13e449b24de3d100896d"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/xarm6-fixture.test.ts",
+          "tests/unit/capabilities-mujoco-arm.test.ts",
+          "tests/unit/arm-cell-scene.test.ts",
+          "tests/unit/xarm6-cell-dock.test.ts",
+          "tests/contracts/sim3d-mujoco-schema.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-static.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:26.117Z",
+        "finishedAt": "2026-11-16T01:05:29.651Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-rtb",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-rtb.json",
+            "bytes": 1091,
+            "sha256": "941399554b7332e01a5f76f6ce341ab940f76deb62b70cacd01fca79ff7c9057"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "rawStatusCounts": {
+              "passed": 1
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-rtb.receipt.json",
+          "bytes": 5434,
+          "sha256": "4c0674bec9f7dd6820c51fb08979462725460dc1b703a2445e7416af64f2887d"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-rtb.log",
+          "bytes": 583,
+          "sha256": "aee1cf73c97fb85b48119c8b64824fbb746e783e5eb0150913db58f61f1b1909"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/xarm6-rtb.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-rtb.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:30.009Z",
+        "finishedAt": "2026-11-16T01:05:33.635Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-py",
+      "repo": "source",
+      "kind": "pytest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-py.xml",
+            "bytes": 16344,
+            "sha256": "06bcf6f512e841374426223bef8aef05901569ca659dd1937068a5890c83cf80"
+          },
+          "actual": {
+            "passed": 125,
+            "failed": 0,
+            "notRun": 0,
+            "total": 125,
+            "xmlValid": true,
+            "xmlParseError": null
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-py.receipt.json",
+          "bytes": 5662,
+          "sha256": "344192305f504c7bd613d16e5d730897477eab638fef7adccef22c0ca021ff81"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-py.log",
+          "bytes": 181,
+          "sha256": "4431179b48d980685d7a9bebac14d04102d04fcb332fc6f783df38c30628b56c"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "PYTHONPATH=/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/robotics/simulation-mujoco",
+          "PYTHONDONTWRITEBYTECODE=1",
+          "PYTHONPYCACHEPREFIX=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/pycache",
+          "PYTHONNOUSERSITE=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/bin/python",
+          "-m",
+          "pytest",
+          "-p",
+          "no:cacheprovider",
+          "robotics/simulation-mujoco/tests",
+          "-q",
+          "--junitxml=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-py.xml"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:33.966Z",
+        "finishedAt": "2026-11-16T01:05:46.036Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-worker",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-worker.json",
+            "bytes": 1867,
+            "sha256": "a2269acf745002c1833ef21fcd6dedc556f587800654200da2176175408fae4a"
+          },
+          "actual": {
+            "passed": 3,
+            "failed": 0,
+            "notRun": 0,
+            "total": 3,
+            "rawStatusCounts": {
+              "passed": 3
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-worker.receipt.json",
+          "bytes": 5445,
+          "sha256": "6a91fd360f8564c7c7f55b605083629a2ca81d950ef3b11b7697049219376548"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-worker.log",
+          "bytes": 857,
+          "sha256": "bfe6fdef65d8fe377ec5b2d2ea9fb5b238c9c9cbac36a7fb9c9059176c05cfa8"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-arm-worker.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-worker.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:46.381Z",
+        "finishedAt": "2026-11-16T01:05:48.957Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-ports",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-ports.json",
+            "bytes": 7452,
+            "sha256": "6c52ded7690c36aec9a12a33ebf249ec3fbddf3df91b4f371c5adc981ef73175"
+          },
+          "actual": {
+            "passed": 16,
+            "failed": 0,
+            "notRun": 0,
+            "total": 16,
+            "rawStatusCounts": {
+              "passed": 16
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-ports.receipt.json",
+          "bytes": 5436,
+          "sha256": "1e6823f8751cfd42d10bf96da5e13c67d31b882d101ff0e7e2280b297b59df81"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-ports.log",
+          "bytes": 1285,
+          "sha256": "2e0e45ef7faa5fbd74678a4ae1897c50b42db27da09579eade328e3b628445fc"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/mujoco-arm-ports.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-ports.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:49.276Z",
+        "finishedAt": "2026-11-16T01:05:55.471Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-programs",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-programs.json",
+            "bytes": 1544,
+            "sha256": "5a8ec9c34f10ff18d3c479fa703e33da94e04a4b743ec0b979041edfe37c0b25"
+          },
+          "actual": {
+            "passed": 2,
+            "failed": 0,
+            "notRun": 0,
+            "total": 2,
+            "rawStatusCounts": {
+              "passed": 2
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-programs.receipt.json",
+          "bytes": 5449,
+          "sha256": "38e6d2148582dd2fbaf4e22454a8bc1445b5394ffb6db0f95109f2534131445d"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-programs.log",
+          "bytes": 6851,
+          "sha256": "732f976821e9f4ccc46b23b86f6e7b8f205edacd79f87c15e306e5dfab67b737"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-arm-programs.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-programs.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:55.799Z",
+        "finishedAt": "2026-11-16T01:05:58.930Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-contact",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-contact.json",
+            "bytes": 17946,
+            "sha256": "3204b41f42b6c24903157cf0f7ae0daddfa82bfafae9bcdf552cc32c694c891d"
+          },
+          "actual": {
+            "passed": 48,
+            "failed": 0,
+            "notRun": 0,
+            "total": 48,
+            "rawStatusCounts": {
+              "passed": 48
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-contact.receipt.json",
+          "bytes": 5567,
+          "sha256": "8b63f4dadf865d2af05965fd81a16146610dbbeea42d04096b68f2ee3201e45a"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-contact.log",
+          "bytes": 641,
+          "sha256": "63cfbcdfbd12761130cc8a2c6c7b11adc73c043e631ce96899e1e2849b56c681"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/mock-arm-contact.test.ts",
+          "tests/unit/arm-motion.test.ts",
+          "tests/unit/arm-collision-geometry.test.ts",
+          "tests/unit/arm-plant-report.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-contact.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:05:59.253Z",
+        "finishedAt": "2026-11-16T01:06:01.067Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-bv01",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-bv01.json",
+            "bytes": 7341,
+            "sha256": "a10844bb18e46a4fc818a5d7b2a43e3dd84608615007d53c7e3201e93871ed92"
+          },
+          "actual": {
+            "passed": 15,
+            "failed": 0,
+            "notRun": 0,
+            "total": 15,
+            "rawStatusCounts": {
+              "passed": 15
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-bv01.receipt.json",
+          "bytes": 5493,
+          "sha256": "d8807519f62c00665c46d882e26e46f84bca4ca3e3d68a6e1a68dbf01eb6e736"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-bv01.log",
+          "bytes": 5928,
+          "sha256": "c0dd1c689b2f851d9f0b43d2eaa72f39e8af67925f094c69a00a611e2fa748cd"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-arm-bv01.test.ts",
+          "tests/integration/mujoco-arm-gateway.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-bv01.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:06:01.394Z",
+        "finishedAt": "2026-11-16T01:07:08.900Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "ma-faults",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-faults.json",
+            "bytes": 8575,
+            "sha256": "58bbc3e2e23121d59c2a64d45d9381c0db6dc328bab9bd71a0d7607921bb0610"
+          },
+          "actual": {
+            "passed": 17,
+            "failed": 0,
+            "notRun": 0,
+            "total": 17,
+            "rawStatusCounts": {
+              "passed": 17
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-faults.receipt.json",
+          "bytes": 5499,
+          "sha256": "dc8b31234e5492ea14d811f7c9df7cef4affc69c9f76e7a3ec20f51367ac142b"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-ma-faults.log",
+          "bytes": 6840,
+          "sha256": "eb854dfa78025fbd7cbe57947d657c122f966876f66b8d0f5673887239b54178"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/mujoco-arm-faults.test.ts",
+          "tests/integration/mujoco-arm-readiness.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/ma-faults.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:07:09.300Z",
+        "finishedAt": "2026-11-16T01:09:47.608Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "rt-remote",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/rt-remote.json",
+            "bytes": 6015,
+            "sha256": "5dc2a191f6606ea0a43363c3b5b9a23b9c603388c3220b1853829ed57f730bb2"
+          },
+          "actual": {
+            "passed": 15,
+            "failed": 0,
+            "notRun": 0,
+            "total": 15,
+            "rawStatusCounts": {
+              "passed": 15
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-rt-remote.receipt.json",
+          "bytes": 5446,
+          "sha256": "c2df305aaea56c53dd736f11b7196b831f9994f9e8bc6892a03c1047a33fde4a"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-rt-remote.log",
+          "bytes": 760,
+          "sha256": "4f4cbe4b42928dbab9b3e69e74de10dfc728f0b045d6724a131581eb361c7f6f"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/integration/lab-runtime-remote.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/rt-remote.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:09:48.027Z",
+        "finishedAt": "2026-11-16T01:09:56.373Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "rt-paced",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/rt-paced.json",
+            "bytes": 5733,
+            "sha256": "be8a09aadf9492ccd64ba61af50557c639b16792746a868ae881cd2948674fe6"
+          },
+          "actual": {
+            "passed": 14,
+            "failed": 0,
+            "notRun": 0,
+            "total": 14,
+            "rawStatusCounts": {
+              "passed": 14
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-rt-paced.receipt.json",
+          "bytes": 5531,
+          "sha256": "7e3283adb61b23bc44121674fe352c4d4b7349d391400e55e4c3efadb7eb3d9e"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-rt-paced.log",
+          "bytes": 1939,
+          "sha256": "82c0254fb337544f76d1fb7970c6c6289ca4bdae1f64411774750252bc80807d"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/paced-step.test.ts",
+          "tests/integration/lab-v2-paced-step.test.ts",
+          "tests/integration/irsim-plant-port.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/rt-paced.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:09:56.705Z",
+        "finishedAt": "2026-11-16T01:11:40.374Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "rt-container",
+      "status": "not_run",
+      "reason": "Latest actual Docker admission unavailable; no repeated probe/build or borrowed image/service receipt absent state change"
+    },
+    {
+      "id": "regress",
+      "repo": "source",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/regress.json",
+            "bytes": 22454,
+            "sha256": "3e1316ad461be03cf378300ab37cc12a1afe0689835516305e2691fba16fe378"
+          },
+          "actual": {
+            "passed": 59,
+            "failed": 0,
+            "notRun": 0,
+            "total": 59,
+            "rawStatusCounts": {
+              "passed": 59
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-regress.receipt.json",
+          "bytes": 5598,
+          "sha256": "fa7a0a1e08052e41febb9390bbdeee9f6b33f5ca7d9ecb0d4fd7104c8f4f4634"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-regress.log",
+          "bytes": 4029,
+          "sha256": "8b1f786947ebffda41ad5ee9333a9c2d5ce7da6e2abbf183cd4802ec0d98203b"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/bv01-mock-golden.test.ts",
+          "tests/integration/portable-tool-closure.test.ts",
+          "tests/integration/lab-runtime-artifact.test.ts",
+          "tests/unit/sim-extension-qualification.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/regress.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "startedAt": "2026-11-16T01:11:40.787Z",
+        "finishedAt": "2026-11-16T01:12:12.399Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-rt-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-rt-unit.json",
+            "bytes": 19126,
+            "sha256": "9ce3046efa27b37c3877ed709f8e72a450e8b15f88cc397a2c5650ff648fc540"
+          },
+          "actual": {
+            "passed": 52,
+            "failed": 0,
+            "notRun": 0,
+            "total": 52,
+            "rawStatusCounts": {
+              "passed": 52
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-rt-unit.receipt.json",
+          "bytes": 5611,
+          "sha256": "2d895e6f60e7334b1b43acd9625f34bf8d72ef1bea5f51794ecbf74239a8f479"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-rt-unit.log",
+          "bytes": 1522,
+          "sha256": "9defeecca24e8ea9c1fbd39f862cf18787dd69a1284421b2174639827aff4f09"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/fetch-event-source.test.ts",
+          "tests/unit/twin-runtime-remote.test.ts",
+          "tests/unit/runtime-target.test.ts",
+          "tests/unit/runtime-stream.test.ts",
+          "tests/unit/runtime-compatibility.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-rt-unit.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:12:12.705Z",
+        "finishedAt": "2026-11-16T01:12:18.946Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-ui-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-ui-unit.json",
+            "bytes": 25653,
+            "sha256": "b92ad4b9ad6f975d760d998fb85b2de6defbe4a04c12c6391a586b38ff75925b"
+          },
+          "actual": {
+            "passed": 75,
+            "failed": 0,
+            "notRun": 0,
+            "total": 75,
+            "rawStatusCounts": {
+              "passed": 75
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-ui-unit.receipt.json",
+          "bytes": 5802,
+          "sha256": "84bca4001a6394cb4f7800ed0a837bb788e26da4cd7668a48dc5572199eb174c"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-ui-unit.log",
+          "bytes": 955,
+          "sha256": "170933eda6ea798ab75d568056fb8ca983d59e3d9a0219389d12b37be19a1042"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/twin-shell.test.ts",
+          "tests/unit/twin-problems.test.ts",
+          "tests/unit/twin-keys.test.ts",
+          "tests/unit/twin-notes.test.ts",
+          "tests/unit/sample-buffer.test.ts",
+          "tests/unit/live-playback.test.ts",
+          "tests/unit/twin3d-structure.test.ts",
+          "tests/unit/workspace-conditional-items.test.ts",
+          "tests/unit/twin-workspace.test.ts",
+          "tests/unit/playwright-config.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-ui-unit.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:12:19.197Z",
+        "finishedAt": "2026-11-16T01:12:20.372Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-arm-unit",
+      "repo": "lab",
+      "kind": "vitest",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-arm-unit.json",
+            "bytes": 18859,
+            "sha256": "cc57f795b2cb7d56075f8d24faa6022d6344a947dd47fd4296c6c704e98306e6"
+          },
+          "actual": {
+            "passed": 51,
+            "failed": 0,
+            "notRun": 0,
+            "total": 51,
+            "rawStatusCounts": {
+              "passed": 51
+            },
+            "notPassed": []
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-arm-unit.receipt.json",
+          "bytes": 5607,
+          "sha256": "33f9cf647ac51093ee76b2e13038c056daf9abbbd92b112b613c8de04077fee8"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-arm-unit.log",
+          "bytes": 930,
+          "sha256": "fe7063cd53cf3e364217c493add6d2e0a23bfd6686c371d7eebc2d6858f58cb6"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_V2_CLEAN_EXPORT=1",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules/vitest/vitest.mjs",
+          "run",
+          "tests/unit/arm-mesh.test.ts",
+          "tests/unit/mujoco-coffee.test.ts",
+          "tests/unit/runtime-popover.test.ts",
+          "tests/integration/mujoco-launcher.test.ts",
+          "tests/integration/runtime-artifact.test.ts",
+          "--reporter=json",
+          "--outputFile=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-arm-unit.json",
+          "--reporter=default"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:12:20.611Z",
+        "finishedAt": "2026-11-16T01:12:21.734Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-remote-origin",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-remote-origin-remote-origin.json",
+            "bytes": 4943,
+            "sha256": "3bb170c05a7b5109a02509f7e1688a77a6f154452e6c518a6bf509064e9f4e3c"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "stats": {
+              "startTime": "2026-11-16T01:12:23.216Z",
+              "duration": 24403.025999999998,
+              "expected": 1,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "a Lab on another origin sends nothing to the runtime before the click, then pairs with a bearer and runs BV01 to completed",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-remote-origin.receipt.json",
+          "bytes": 5844,
+          "sha256": "2b5c84f6308dcc90e6d7ad6aade7405aa9ce9ad76e0caf18bcbd7f094fc2ff6d"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-remote-origin.log",
+          "bytes": 1162,
+          "sha256": "e3260ebf7d5b6df1e7ffbfe4fffdac6c262c8d7269ac9ab63be38d53d1e70f19"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-remote-origin.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-remote-origin",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-remote-origin",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-remote-origin",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "remote-origin.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:12:21.978Z",
+        "finishedAt": "2026-11-16T01:12:47.713Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-twin-layout",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-layout-twin-layout.json",
+            "bytes": 21844,
+            "sha256": "6e3c3ae82e90e0f58e5d790b35d46707da4fc9134bbd57d4af0cdc0f2a089d0b"
+          },
+          "actual": {
+            "passed": 9,
+            "failed": 0,
+            "notRun": 0,
+            "total": 9,
+            "stats": {
+              "startTime": "2026-11-16T01:12:49.235Z",
+              "duration": 21577.527,
+              "expected": 9,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "first open: level 1 only, the inspector closed, no vertical scroll and a dominant viewport",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "every relocated item is reachable from its container during a run",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "3D (U04): the scene is kept while samples play; camera home and fit; a layer from the Display menu; reduced motion has no animation loop",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a re-render keeps the scroll position of an inspector tab",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a completed run still fits the window with the inspector closed and on every tab",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a fault: the problem count grows, the row leads to its object, the strip shows in the viewport; the label explains itself",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "the chosen tab survives a reload",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "phone: the transport stays in view and the inspector sheet never covers it",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "low screen: the page scrolls and the transport sticks to the bottom",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-layout.receipt.json",
+          "bytes": 5834,
+          "sha256": "cc44638fdb6525ca828bfd99d72fc7bbffe3dfa8cde048653934fa6d2aca44c4"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-layout.log",
+          "bytes": 2346,
+          "sha256": "c03a32b0c9218a107c4ece6cdc937ecfa3e372e995ff7ce7adbe1c3015432937"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-layout.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-layout",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-layout",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-twin-layout",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-layout.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:12:47.989Z",
+        "finishedAt": "2026-11-16T01:13:10.906Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-twin-polish",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-polish-twin-polish.json",
+            "bytes": 23965,
+            "sha256": "524575aaf4ca19d8b197f3dffc91d3f06fe262ee6644798ddafaacf867ee2b83"
+          },
+          "actual": {
+            "passed": 10,
+            "failed": 0,
+            "notRun": 0,
+            "total": 10,
+            "stats": {
+              "startTime": "2026-11-16T01:13:12.530Z",
+              "duration": 5255.548,
+              "expected": 10,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "Engineering tab with the arm selected: one block per quantity, nothing wider than the panel",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "Objects tab: the current cup line keeps its distance from the job cards",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "the runtime box repeats the telemetry detail, repainted live",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "scenario picker: a preset that cannot run gives one reason per backend",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "1024 × 700: no vertical scroll and the run bar keeps its one row",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-polish.receipt.json",
+          "bytes": 5834,
+          "sha256": "8d8cf6add44d6d85d4f9ce8094d58d24596262aea4b9e7bce9955f7b4d2e62b9"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-polish.log",
+          "bytes": 2582,
+          "sha256": "1f38443f33a1d016667e5e3b22413d6f27ef03f657082e13a922d0831a83442e"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-polish.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-polish",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-polish",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-twin-polish",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-polish.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:13:11.306Z",
+        "finishedAt": "2026-11-16T01:13:17.891Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-twin-transport",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-transport-twin-transport.json",
+            "bytes": 16159,
+            "sha256": "6905d21eae1f9f217ba9967facb093995eb6e06aae5d5f87f21b4580ebab0ad5"
+          },
+          "actual": {
+            "passed": 7,
+            "failed": 0,
+            "notRun": 0,
+            "total": 7,
+            "stats": {
+              "startTime": "2026-11-16T01:13:19.361Z",
+              "duration": 13693.751,
+              "expected": 7,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "watch mode can be exited by touch at 390px without a keyboard",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "watch mode can be exited by touch at 1024px without a keyboard",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "no run: keys typed in the pairing code stay there; disabled buttons look disabled",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "live run: → steps, Space starts and stops auto-run, ? lists the keys",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "watch mode: only the viewport, three labels and the transport; Escape gives everything back one step at a time",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "replay: the transport turns into a scrubber with marks; dragging moves the time, Space plays and stops",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "Escape closes the modal confirm dialog (its native cancel), and the dialog opens again",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-transport.receipt.json",
+          "bytes": 5849,
+          "sha256": "a681a1805ff17a3cc8d6b511f363747a50e612a05f8c1c0116d90dfe287018ab"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-transport.log",
+          "bytes": 2023,
+          "sha256": "0b2677641574023ef31f5cd645312b98aa297cb498ffef397a788042758c7ee3"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-transport.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-transport",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-transport",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-twin-transport",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-transport.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:13:18.141Z",
+        "finishedAt": "2026-11-16T01:13:33.148Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-twin-workspace",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-workspace-twin-workspace.json",
+            "bytes": 13011,
+            "sha256": "155dbd5ae05bca662841a772667ddb6303cd4f1eb0328b0e7c2a781b1e5e5a0d"
+          },
+          "actual": {
+            "passed": 5,
+            "failed": 0,
+            "notRun": 0,
+            "total": 5,
+            "stats": {
+              "startTime": "2026-11-16T01:13:34.694Z",
+              "duration": 7525.504000000001,
+              "expected": 5,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "WebGL disabled and reduced motion fall back to a 2D twin with the same controls",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "coffee preset runs on the mock backend with a locked, visible identity",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "layers, legend and one shared selection survive a 3D to 2D switch",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "engineering panel shows units, observed versus commanded and data age",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "mobile layout is operable with the keyboard only",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-workspace.receipt.json",
+          "bytes": 5849,
+          "sha256": "7cb8f7d5b8e7e09bdf84b90380bf6ca5fdc7a46098659dedab983ef98b4ea1b6"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-twin-workspace.log",
+          "bytes": 1569,
+          "sha256": "40173607a0572d451271779737bf3179140a2d3c402183f58f31fb3fc91f7c69"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-twin-workspace.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-workspace",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-twin-workspace",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-twin-workspace",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "twin-workspace.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:13:33.440Z",
+        "finishedAt": "2026-11-16T01:13:42.307Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-brand-accessibility",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-brand-accessibility-brand-accessibility.json",
+            "bytes": 13230,
+            "sha256": "a8815b4e95bae7b029e22b7cbd0c774059ab3f1f29806105d176e35508868c80"
+          },
+          "actual": {
+            "passed": 9,
+            "failed": 0,
+            "notRun": 0,
+            "total": 9,
+            "stats": {
+              "startTime": "2026-11-16T01:13:43.764Z",
+              "duration": 6614.313,
+              "expected": 9,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "accessible brand surface: design",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible brand surface: restaurant",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible brand surface: scenarios",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible brand surface: twin",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible brand surface: results",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible brand surface: deployment",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "accessible twin page: each details tab open, then the Display menu open (with the viewport tool buttons)",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "compact heading controls retain touch targets",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "print captions and highlighted values use dark ink",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-brand-accessibility.receipt.json",
+          "bytes": 5874,
+          "sha256": "dffe750e02fcb1ef45707eba4519afc5e3e369a71008d65b63bd47bf08c11f94"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-brand-accessibility.log",
+          "bytes": 1829,
+          "sha256": "57e9dbc7b7c0a7dbfe175dc0779c8811c529485d29547314867e03f25ae08930"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-brand-accessibility.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-brand-accessibility",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-brand-accessibility",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-brand-accessibility",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "brand-accessibility.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:13:42.564Z",
+        "finishedAt": "2026-11-16T01:13:50.472Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-arm-mesh",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-arm-mesh-arm-mesh.json",
+            "bytes": 11775,
+            "sha256": "bc11bbd23dc8a235715860a7edaf0ef4f5e4bf3856f243683faa60ec07f008ea"
+          },
+          "actual": {
+            "passed": 7,
+            "failed": 0,
+            "notRun": 0,
+            "total": 7,
+            "stats": {
+              "startTime": "2026-11-16T01:13:51.952Z",
+              "duration": 7952.894,
+              "expected": 7,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "the xArm is drawn from its meshes once loaded, swapped in place; the fingers follow the opening; the cup is at the plant's pose",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "meshes blocked: the joint chain stays, ARM_MESH_UNAVAILABLE in the problems list, the view keeps drawing",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "meshes altered: the joint chain stays, ARM_MESH_UNAVAILABLE in the problems list, the view keeps drawing",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "disposing the view releases the shared mesh geometry: mount and dispose again and again, nothing accumulates",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a mesh set that cannot be dressed: the arm keeps its joint chain and the ARM_MESH_UNAVAILABLE note, never neither drawing",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a plant cup the view does not list is counted in dataset.plantCupsDropped",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "run bar: notes only is a neutral button labelled as notes that opens the same panel; with a problem the count is the problems",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-arm-mesh.receipt.json",
+          "bytes": 5819,
+          "sha256": "849d96abe20a33d63b356a6360b29182df9a55e11e57495f11e15eede2186a84"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-arm-mesh.log",
+          "bytes": 2115,
+          "sha256": "9331978a1bda22c1005e45e91d01017ce5d1ae30cca4fb97adfbfaab116da3c3"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-arm-mesh.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-arm-mesh",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-arm-mesh",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-arm-mesh",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "arm-mesh.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:13:50.722Z",
+        "finishedAt": "2026-11-16T01:13:59.996Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-arm-cell",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-arm-cell-arm-cell.json",
+            "bytes": 10294,
+            "sha256": "ad732af630ce626acfd0cfb42f6c81f56bfe76966e24fd966bc17f9cfed88e0a"
+          },
+          "actual": {
+            "passed": 6,
+            "failed": 0,
+            "notRun": 0,
+            "total": 6,
+            "stats": {
+              "startTime": "2026-11-16T01:14:01.648Z",
+              "duration": 7735.616999999999,
+              "expected": 6,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "the MuJoCo cell shows its two supports and a mount; a cup at the pick stands on the stand, a cup at rest on the tray stands on the tray",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "the supports stand on illustrative legs from the floor; the mount and the legs are counted as illustrative parts",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "the supports turn with a turned baseInMap; their legs and the mount stay vertical under them",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "another arm (Webots): no supports and no mount",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "the arm-cell framing is computed with the real viewport on a fresh mount, and never over a camera the user moved",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              },
+              {
+                "title": "a click (no camera change) does not count as moving the camera: a later resize re-frames; a drag does count",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-arm-cell.receipt.json",
+          "bytes": 5819,
+          "sha256": "ee3c200428db9d9a56da7195bc946e748795b907eb438618998dbf3d06f12c14"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-arm-cell.log",
+          "bytes": 1749,
+          "sha256": "3c50998c3192c061217797f2ed3ed462c3bc6c0773fe7a985087d057d178a5cd"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-arm-cell.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-arm-cell",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-arm-cell",
+          "LAB_PW_OUTPUT_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/playwright/lab-e2e-arm-cell",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/test-mock-e2e.mjs",
+          "arm-cell.spec.ts"
+        ],
+        "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "startedAt": "2026-11-16T01:14:00.284Z",
+        "finishedAt": "2026-11-16T01:14:09.473Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": null
+    },
+    {
+      "id": "lab-e2e-mujoco-coffee",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-mujoco-coffee.json",
+            "bytes": 5255,
+            "sha256": "9bc0658565d81bc186e6f333f6e63518966fda09943dfcaeb76f4ece61540ac1"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "stats": {
+              "startTime": "2026-11-16T01:14:11.884Z",
+              "duration": 52757.198000000004,
+              "expected": 1,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "MJ-BV01 from the Lab UI: runtime box, mujoco-coffee at 1× then 16× to completed, the mesh arm and cups, both joint columns and the plant report",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-mujoco-coffee.receipt.json",
+          "bytes": 5768,
+          "sha256": "2b68f51883ef55a66651156f822493fb65caa807402873e9cbd0f83f06ae9501"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-mujoco-coffee.log",
+          "bytes": 1484,
+          "sha256": "62b59bd78ba9024145e4c15e58608ef08a97bd405931caeb6b4f04d4ba72172d"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-mujoco-coffee.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-mujoco-coffee",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-mujoco-coffee",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/test-irsim-e2e.mjs",
+          "--provider",
+          "mujoco",
+          "mujoco-coffee.spec.ts"
+        ],
+        "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+        "startedAt": "2026-11-16T01:14:09.756Z",
+        "finishedAt": "2026-11-16T01:15:04.808Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": {
+        "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/test-results",
+        "copy": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-copies/lab-e2e-mujoco-coffee",
+        "retainedOriginal": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-originals/lab-e2e-mujoco-coffee",
+        "files": [
+          {
+            "path": ".last-run.json",
+            "bytes": 45,
+            "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+          }
+        ],
+        "originalPathAbsentBeforeOwner": true,
+        "policy": "Only fresh owned isolated output moved after complete byte verification; raw JSON original paths preserved, active failure untouched"
+      }
+    },
+    {
+      "id": "lab-e2e-mujoco-mesh-fallback",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-mujoco-mesh-fallback.json",
+            "bytes": 4799,
+            "sha256": "a5816702453a78f4ae994469bd3bfa5bf173a7b2b891955b4693197398e0b82b"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "stats": {
+              "startTime": "2026-11-16T01:15:07.286Z",
+              "duration": 20688.578999999998,
+              "expected": 1,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "MJ-BV01 with the arm meshes unavailable: joint chain, one ARM_MESH_UNAVAILABLE note (not a problem), and the run completes",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-mujoco-mesh-fallback.receipt.json",
+          "bytes": 5796,
+          "sha256": "71d0c35a823c21fc5bcdefe2f2f2e45d381245a772d2f2686979acef0485673e"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-mujoco-mesh-fallback.log",
+          "bytes": 1154,
+          "sha256": "8410a07281a085c62e38a8c4dddb94c0a3b1ae98c519412e17f2906839f025ef"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-mujoco-mesh-fallback.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-mujoco-mesh-fallback",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-mujoco-mesh-fallback",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/test-irsim-e2e.mjs",
+          "--provider",
+          "mujoco",
+          "mujoco-mesh-fallback.spec.ts"
+        ],
+        "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+        "startedAt": "2026-11-16T01:15:05.119Z",
+        "finishedAt": "2026-11-16T01:15:28.154Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": {
+        "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/test-results",
+        "copy": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-copies/lab-e2e-mujoco-mesh-fallback",
+        "retainedOriginal": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-originals/lab-e2e-mujoco-mesh-fallback",
+        "files": [
+          {
+            "path": ".last-run.json",
+            "bytes": 45,
+            "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+          }
+        ],
+        "originalPathAbsentBeforeOwner": true,
+        "policy": "Only fresh owned isolated output moved after complete byte verification; raw JSON original paths preserved, active failure untouched"
+      }
+    },
+    {
+      "id": "lab-e2e-irsim-journey",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-irsim-journey.json",
+            "bytes": 4768,
+            "sha256": "56341d1622510d6b956298647c6ae568037267bbf91a40aa60ae723f6a93aee7"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "stats": {
+              "startTime": "2026-11-16T01:15:31.244Z",
+              "duration": 25626.357,
+              "expected": 1,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "Serve on IR-SIM 2D: validate, run IR-FD01 to completion, report and replay, then a width edit makes everything stale until it is rerun",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-irsim-journey.receipt.json",
+          "bytes": 5736,
+          "sha256": "6f897a2e5b363784c0e3686529da768f53bcb5cfd71186c554dffb191abeaaee"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-irsim-journey.log",
+          "bytes": 1077,
+          "sha256": "fc9cc4869ab78aac72188f7f75fec125836976dc170d8d8c1a021e90d8db3d68"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-irsim-journey.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-irsim-journey",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-irsim-journey",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/test-irsim-e2e.mjs",
+          "irsim-journey.spec.ts"
+        ],
+        "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+        "startedAt": "2026-11-16T01:15:28.481Z",
+        "finishedAt": "2026-11-16T01:15:56.999Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": {
+        "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/test-results",
+        "copy": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-copies/lab-e2e-irsim-journey",
+        "retainedOriginal": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-originals/lab-e2e-irsim-journey",
+        "files": [
+          {
+            "path": ".last-run.json",
+            "bytes": 45,
+            "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+          }
+        ],
+        "originalPathAbsentBeforeOwner": true,
+        "policy": "Only fresh owned isolated output moved after complete byte verification; raw JSON original paths preserved, active failure untouched"
+      }
+    },
+    {
+      "id": "lab-e2e-webots-coffee",
+      "repo": "lab",
+      "kind": "playwright",
+      "exitCode": 0,
+      "signal": null,
+      "reports": [
+        {
+          "file": {
+            "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-webots-coffee.json",
+            "bytes": 4768,
+            "sha256": "3091bf0dfd08c248dfdf633a2d21e0bb38d6bea2005e6a486adbd29897a82b81"
+          },
+          "actual": {
+            "passed": 1,
+            "failed": 0,
+            "notRun": 0,
+            "total": 1,
+            "stats": {
+              "startTime": "2026-11-16T01:16:00.041Z",
+              "duration": 23223.235,
+              "expected": 1,
+              "skipped": 0,
+              "unexpected": 0,
+              "flaky": 0
+            },
+            "actualCases": [
+              {
+                "title": "coffee with the arm on Webots: run to completed, actual and commanded joints, the joint chain in 3D, and the plant block in the report",
+                "expectedStatus": "passed",
+                "status": "expected",
+                "resultStatuses": [
+                  "passed"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "ownReceipt": {
+        "file": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-webots-coffee.receipt.json",
+          "bytes": 5768,
+          "sha256": "a16067a576a9d5d99230876e83ef8d542e7c7cb98ead613b1e984f21de9033c5"
+        },
+        "log": {
+          "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/r2a-supplement-lab-e2e-webots-coffee.log",
+          "bytes": 1135,
+          "sha256": "22fcd826f93fe1900d558137478bab22d887c0c4808067178998809e38f18942"
+        },
+        "argv": [
+          "env",
+          "-u",
+          "MEKONIQ_TEST_SERVICE_RECEIPT",
+          "LAB_PW_JSON=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/suites/lab-e2e-webots-coffee.json",
+          "LAB_IRSIM_SCREENSHOTS=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-webots-coffee",
+          "LAB_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/screens/lab-e2e-webots-coffee",
+          "MEKONIQ_WEBOTS_HOME=/Applications/Webots.app",
+          "caffeinate",
+          "-dims",
+          "perl",
+          "-e",
+          "alarm 3600; exec @ARGV",
+          "/Users/hoangpham/.nvm/versions/node/v24.22.2/bin/node",
+          "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/scripts/test-irsim-e2e.mjs",
+          "--provider",
+          "webots",
+          "webots-coffee.spec.ts"
+        ],
+        "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab",
+        "startedAt": "2026-11-16T01:15:57.263Z",
+        "finishedAt": "2026-11-16T01:16:23.491Z",
+        "exitCode": 0,
+        "signal": null,
+        "before": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        },
+        "after": {
+          "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+          "status": "",
+          "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "changed": []
+        }
+      },
+      "defaultPreservation": {
+        "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/test-results",
+        "copy": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-copies/lab-e2e-webots-coffee",
+        "retainedOriginal": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r2a-supplemental-current-gui/default-originals/lab-e2e-webots-coffee",
+        "files": [
+          {
+            "path": ".last-run.json",
+            "bytes": 45,
+            "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+          }
+        ],
+        "originalPathAbsentBeforeOwner": true,
+        "policy": "Only fresh owned isolated output moved after complete byte verification; raw JSON original paths preserved, active failure untouched"
+      }
+    }
+  ],
+  "totals": {
+    "tableRows": 28,
+    "ownZeroRows": 27,
+    "ownOneRows": 0,
+    "notRunRows": 1
+  },
+  "limits": [
+    "Supplemental observations never replace the genuine partial R2a record or its failed public guards.",
+    "Skipped individual cases and unavailable container rows remain not_run; overlapping suites and repeated invocations are not summed as unique test definitions.",
+    "Existing dependency reuse and sampled clean boundaries do not establish installation, native host, hardware, calibration or human acceptance.",
+    "Historical active default-output deviation stays disclosed separately; this audit checks only the current helper-owned copies and originals."
+  ]
+}

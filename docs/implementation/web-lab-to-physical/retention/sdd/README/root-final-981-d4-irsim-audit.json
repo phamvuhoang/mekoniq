@@ -1,0 +1,549 @@
+{
+  "schema": "root-read-only-irsim-audit/1",
+  "at": "2026-11-16T00:24:23.526150+00:00",
+  "qualification": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/qualification.json",
+    "bytes": 357969,
+    "sha256": "4d036feec10bbcfecb6664e54d3896c1b11b676e52e4dd80143a769673ca73d5"
+  },
+  "identity": {
+    "before": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "at": "2026-11-15T23:53:22.598Z"
+    },
+    "after": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "dirty": false,
+      "dirtyReasons": [],
+      "toolClosures": {
+        "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+        "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+      },
+      "node": "v24.22.2",
+      "os": "darwin 25.5.0",
+      "arch": "arm64",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "at": "2026-11-16T00:11:34.666Z"
+    },
+    "identityStable": true
+  },
+  "lab": {
+    "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+    "dirty": false,
+    "pin": {
+      "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5"
+    }
+  },
+  "gates": {
+    "G-LF1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "LF01"
+      ]
+    },
+    "G-LF2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "LF02",
+        "LF03",
+        "LF04",
+        "LF05",
+        "LF06"
+      ]
+    },
+    "G-IR1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR01"
+      ]
+    },
+    "G-IR2": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR04"
+      ]
+    },
+    "G-IR3": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "IR02",
+        "IR03",
+        "IR05",
+        "IR06",
+        "IR07",
+        "IR08",
+        "IR09",
+        "IR10"
+      ]
+    },
+    "G-INT1": {
+      "status": "tested",
+      "accepted": false,
+      "cases": [
+        "INT01",
+        "INT02",
+        "INT03",
+        "INT04"
+      ]
+    }
+  },
+  "accepted": false,
+  "cases": 30,
+  "campaignPasses": 25,
+  "campaignEvidenceComplete": false,
+  "declaredExpectedEvidenceGap": {
+    "id": "024-IR-FD01-workerkill-serve-demo-v1-s34-r1",
+    "scenarioId": "IR-FD01-workerkill",
+    "fixtureId": "serve-demo-v1",
+    "seed": 34,
+    "repeat": 1,
+    "result": "pass",
+    "kind": "operator_fault",
+    "label": "IR10: worker process killed between steps on the table leg; leg unknown, no resend, no second worker, cargo kept, the unknown tick a recorded gap",
+    "stepTicks": 500,
+    "evidenceComplete": false,
+    "evidenceAsExpected": true,
+    "reasons": [],
+    "reasonsTruncated": false,
+    "assertions": [
+      {
+        "id": "IDENTITY_BOUND",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SERVED_BEFORE_HANDOFF",
+        "result": "pass"
+      },
+      {
+        "id": "BUSINESS_OUTCOME",
+        "result": "pass"
+      },
+      {
+        "id": "EVIDENCE_GAP_AS_DECLARED",
+        "result": "pass"
+      },
+      {
+        "id": "CARGO_KEPT",
+        "result": "pass"
+      },
+      {
+        "id": "NO_SECOND_WORKER",
+        "result": "pass"
+      }
+    ],
+    "digests": {
+      "trajectoryDigest": "dfb3a84fd60b0c19084e49d7b67c57774b68be18963dd5dee80352ce9824ee77",
+      "sensorDigest": "3efe754a820ff84a1e3ec4ae784dc4ddb2ea221c489eeede4bc3ebdf24889e29",
+      "assertionDigest": "10244c861f034da356c5e1116601b11d3cd967152f72356447612b0b355fb776",
+      "outcomeDigest": "4263ae77e713074156bcadd40a345cdd23a364d3d3ea414970a435a30358e493"
+    },
+    "outcome": {
+      "status": "needs_attention",
+      "served": "0",
+      "tick": 1250,
+      "simTimeNs": "25000000000"
+    },
+    "wallMs": 5863
+  },
+  "receipts": [
+    {
+      "file": {
+        "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/record-irsim.receipt.json",
+        "bytes": 5115,
+        "sha256": "5edb621619265f481f7386e95a7b85ba3c4b2c3139f8b8f31428193bd83c4703"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 14400; exec @ARGV",
+        "node",
+        "scripts/record-irsim.mjs",
+        "--campaign",
+        "c02-qualification",
+        "--out",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim",
+        "--candidate-id",
+        "irsim-final-981e234-labd4c3032",
+        "--irsim-python",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T23:53:22.376Z",
+      "finishedAt": "2026-11-16T00:11:35.170Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "3ac44d047e2bb6258a13ff1142ca7599bc1993f91fa6b4a0b1f8dce27d6b12fb"
+    },
+    {
+      "file": {
+        "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/verify-irsim-campaign.receipt.json",
+        "bytes": 4908,
+        "sha256": "bb3eeea2fc3ddbc8fb1e160b384589d0fa827e6aa3f5179d1c480f3523a5055f"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "node",
+        "scripts/lab-irsim.mjs",
+        "verify",
+        "--input",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/campaign"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-16T00:11:35.577Z",
+      "finishedAt": "2026-11-16T00:11:35.640Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "2f652be9f920bebcb2c1dcb717cc4617d18ce83a58381ad5c0fdd9523e9e899d"
+    },
+    {
+      "file": {
+        "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/acceptance-irsim.receipt.json",
+        "bytes": 4931,
+        "sha256": "d4d61c90bfa70d9c1f535829f8d1048fd274a86419340c6f7504b243b94bb3e9"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "env",
+        "LAB_IRSIM_EVIDENCE_DIR=/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim",
+        "pnpm",
+        "test:acceptance",
+        "--",
+        "linkforge-irsim"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-16T00:11:35.956Z",
+      "finishedAt": "2026-11-16T00:11:36.949Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "37bfe00b0b6aaadfad48c49a86a351fd67734be2f1e87d902f4fa59bf2672335"
+    },
+    {
+      "file": {
+        "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/irsim-chain.receipt.json",
+        "bytes": 4775,
+        "sha256": "9f3c3c7a879c176bb0476ea6330c0209132f3b93b50af0f3ed8e9d4e4f0c8997"
+      },
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 18000; exec @ARGV",
+        "python3",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/irsim-chain.py"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T23:53:22.143Z",
+      "finishedAt": "2026-11-16T00:11:37.099Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "cd401021a28bcf8e7a21920581ca5da13b832f25641ed18c3e31bbd214685f29"
+    }
+  ],
+  "publicAcceptanceTestsPassed": 6,
+  "results": [
+    {
+      "id": "lf",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/lf.json",
+        "bytes": 11928,
+        "sha256": "9cefefe035f487f78ad56b787bee8fa0a8c3132b1e444d6bbf356608b67c858b"
+      },
+      "derived": {
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "total": 34
+      }
+    },
+    {
+      "id": "lf-py",
+      "kind": "pytest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/lf-py.xml",
+        "bytes": 4429,
+        "sha256": "1d0b25dc04b1b6bc8ab5a95d3ca1b3a0f2f37ec5510ebd6e930ef6bd431b4213"
+      },
+      "derived": {
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "total": 34
+      },
+      "xmlValid": false,
+      "xmlError": "not well-formed (invalid token): line 1, column 210",
+      "literalScrubbedHost": true,
+      "countMethod": "regex-derived raw attributes/testcase count; no XML repair or standard XML validity claim"
+    },
+    {
+      "id": "cmp",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/cmp.json",
+        "bytes": 10866,
+        "sha256": "66d3638c7f1d12f0f055ec1200b00817b3a9a9b4a8ac8323ca15090a27d664c8"
+      },
+      "derived": {
+        "passed": 29,
+        "failed": 0,
+        "skipped": 0,
+        "total": 29
+      }
+    },
+    {
+      "id": "cmp-py",
+      "kind": "pytest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/cmp-py.xml",
+        "bytes": 5291,
+        "sha256": "8ca817503b7caaf9523f13831e1c73b0b9b458b297f7fc2203aa19db06e7f8d1"
+      },
+      "derived": {
+        "passed": 40,
+        "failed": 0,
+        "skipped": 0,
+        "total": 40
+      },
+      "xmlValid": false,
+      "xmlError": "not well-formed (invalid token): line 1, column 210",
+      "literalScrubbedHost": true,
+      "countMethod": "regex-derived raw attributes/testcase count; no XML repair or standard XML validity claim"
+    },
+    {
+      "id": "parity-py",
+      "kind": "pytest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/parity-py.xml",
+        "bytes": 1736,
+        "sha256": "8cc3b75db2d5a4b907f826eb61275a28733b74cc783ae4486e4166acdc79a1a9"
+      },
+      "derived": {
+        "passed": 9,
+        "failed": 0,
+        "skipped": 0,
+        "total": 9
+      },
+      "xmlValid": false,
+      "xmlError": "not well-formed (invalid token): line 1, column 209",
+      "literalScrubbedHost": true,
+      "countMethod": "regex-derived raw attributes/testcase count; no XML repair or standard XML validity claim"
+    },
+    {
+      "id": "ir",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/ir.json",
+        "bytes": 31983,
+        "sha256": "bcfac334011088b2d62b128a1742aa7d3dd98952fd7ab55799c57de02625e8e7"
+      },
+      "derived": {
+        "passed": 77,
+        "failed": 0,
+        "skipped": 0,
+        "total": 77
+      }
+    },
+    {
+      "id": "evi",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/evi.json",
+        "bytes": 20804,
+        "sha256": "fb43ba3170d248985d645c001ae6596572d22832b721530a055d9ca4ffd6edaf"
+      },
+      "derived": {
+        "passed": 50,
+        "failed": 0,
+        "skipped": 0,
+        "total": 50
+      }
+    },
+    {
+      "id": "int",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/int.json",
+        "bytes": 13041,
+        "sha256": "6fde1e0ae0188c83cb1cf9ea67cfee4d22b9eda2062cf41b1c16eadf63eef574"
+      },
+      "derived": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30
+      }
+    },
+    {
+      "id": "batch",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/batch.json",
+        "bytes": 3151,
+        "sha256": "092eb7a0d1c65411e31259c86a453d4c42da0b379c7c212277354bbe9e1cd784"
+      },
+      "derived": {
+        "passed": 5,
+        "failed": 0,
+        "skipped": 0,
+        "total": 5
+      }
+    },
+    {
+      "id": "lab-unit",
+      "kind": "vitest",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/lab-unit.json",
+        "bytes": 21219,
+        "sha256": "0380e3e4b0c9f31f96a05fb8d458c706e19a4930e2510fa1cb747358f4753b2d"
+      },
+      "derived": {
+        "passed": 57,
+        "failed": 0,
+        "skipped": 0,
+        "total": 57
+      }
+    },
+    {
+      "id": "lab-e2e-journey",
+      "kind": "playwright",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/lab-e2e-journey.json",
+        "bytes": 4023,
+        "sha256": "a8af3ef7fd90207cf1b120dd9cd58bf1430c0d5785c02af1e7788a395bf4468d"
+      },
+      "derived": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      }
+    },
+    {
+      "id": "lab-e2e-fleet",
+      "kind": "playwright",
+      "file": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/irsim/suites/lab-e2e-fleet.json",
+        "bytes": 3993,
+        "sha256": "d78508affe9a57cb57596f98e001ce87799a4674d51aba7d6aab931ded126cff"
+      },
+      "derived": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1
+      }
+    }
+  ],
+  "performance": {
+    "schemaVersion": 1,
+    "documentType": "irsim-performance-measurement",
+    "note": "a measurement on this host, not a gate; per-tick values are means over 50-tick step batches, p50/p95 across batches",
+    "host": {
+      "platform": "darwin",
+      "release": "25.5.0",
+      "arch": "arm64",
+      "cpu": "Apple M2 Pro",
+      "cpus": 10,
+      "memGiB": 16,
+      "node": "v24.22.2",
+      "python": "3.11.15",
+      "irsim": "2.12.0"
+    },
+    "workload": {
+      "scenarioId": "IR-FD07",
+      "fixtureId": "serve-fleet-v1",
+      "robots": [
+        {
+          "robotId": "robot01",
+          "beams": [
+            360
+          ],
+          "publishEveryTicks": [
+            5
+          ]
+        },
+        {
+          "robotId": "robot02",
+          "beams": [
+            180
+          ],
+          "publishEveryTicks": [
+            5
+          ]
+        }
+      ],
+      "ticks": 3000,
+      "simSeconds": 60,
+      "finalStatus": "running",
+      "maxConcurrentMovers": 1
+    },
+    "steadyState": {
+      "batches": 60,
+      "perTickMs": {
+        "p50": 5.154495839999999,
+        "p95": 10.335707500000002,
+        "max": 12.299045840000002
+      },
+      "realtimeFactor": 3.1786415700996917,
+      "wallSeconds": 18.875987958000003,
+      "workerRssMiB": {
+        "max": 117.4375,
+        "samples": 60
+      },
+      "evidenceBytes": 1522443
+    },
+    "targets": {
+      "realtimeFactorAt1x": ">= 1 (median)",
+      "stepP95Ms": "<= 20",
+      "workerRssMiB": "<= 1024",
+      "source": "specs/2026-11-08-linkforge-irsim/verification.md \u00a74 (Mac arm64 reference, 2 robots, 360 beams each, publish 10 Hz)"
+    },
+    "meetsTargets": {
+      "realtimeFactor": true,
+      "stepP95": true,
+      "workerRss": true
+    }
+  },
+  "fullArtifactInventoryVerified": {
+    "count": 1602,
+    "bytes": 69679058,
+    "qualificationBindsFullInventory": true,
+    "engineOpenedForAudit": false
+  },
+  "limits": [
+    "No tests or engines rerun by root; all1602 listed artifact bytes/hashes verified with direct file reads.",
+    "Inherited malformed Python XML remains unchanged; regex-derived counts do not establish standard JUnit validity.",
+    "IR timing is50-tick batch-mean timing over3000ticks/60simsec; actual360/180beams and maxConcurrentMovers1. This is not a gate or full-cell production web performance.",
+    "Campaign complete:true is distinct from evidenceComplete:false at the expected worker-kill gap; all25evidenceAsExpected:true.",
+    "No human acceptance, fresh installation, native Linux or physical qualification."
+  ]
+}

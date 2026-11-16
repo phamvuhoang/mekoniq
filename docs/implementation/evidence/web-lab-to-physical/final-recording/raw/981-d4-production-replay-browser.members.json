@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:28:18.819908+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/production-replay-browser",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-production-replay-browser.tar.gz",
+  "archiveBytes": 5484563,
+  "archiveSha256": "c780ee46ccda441b916901e9c5d958ee2fcffe6131c15381abb2d7de4a499662",
+  "memberCount": 20,
+  "memberBytes": 10133813,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "browser-invocation.json",
+      "bytes": 41832,
+      "sha256": "8d68d3316bc714268583f99631f5d2578609dc42db8fd9254b207f19298c3135",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785648814246733
+    },
+    {
+      "path": "browser-runtime-identity.json",
+      "bytes": 84609,
+      "sha256": "603c9a30dde8c0046e7afb68750566fb63e78fc16cde81281f380dfcb0b790ee",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785665322449599
+    },
+    {
+      "path": "offline-import-terminal.png",
+      "bytes": 108241,
+      "sha256": "ac1decdae3c17485f3e17c6491d06a5105877fb5676afd8fa77a17e798f34186",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785662259932552
+    },
+    {
+      "path": "offline-roundtrip.zip",
+      "bytes": 8975928,
+      "sha256": "51bb646087bd935a0f8430eb413c87e29be48097c556274a200076bb7ab7ffae",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785659685403638
+    },
+    {
+      "path": "playwright/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785665123477557
+    },
+    {
+      "path": "preview-cleanup.json",
+      "bytes": 174,
+      "sha256": "f51a664baa35da1d4ed2bf6b7d967c7e216a5358f091075765521415202237ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785665323179726
+    },
+    {
+      "path": "process.json",
+      "bytes": 621,
+      "sha256": "f30e8e278a45414f11a295efdecbd81e0cea53b118e7a59cd8e291af75740947",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794785665147699472
+    },
+    {
+      "path": "result.json",
+      "bytes": 13088,
+      "sha256": "3590977bb03974e4efcb44523cde74bb5c55fe97a32cd6bcccec95b3abe47b6a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785665123148181
+    },
+    {
+      "path": "stderr.log",
+      "bytes": 328,
+      "sha256": "96ad8becab6654d7bb35375e36bc45c0e1a95ff3189c9b87912601d8e6d06a92",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794785656198452503
+    },
+    {
+      "path": "stdout.log",
+      "bytes": 771,
+      "sha256": "b19396ed6aebab4389c3dd8fb8e02f1838c3e7cdc0f1702723f9fe6a2d8af1b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794785665121445342
+    },
+    {
+      "path": "world-EN-1024.png",
+      "bytes": 95319,
+      "sha256": "be7243c56ebc6367305f03483ef09ac9851eef75b781354ecf97e26737b83049",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785654448001767
+    },
+    {
+      "path": "world-EN-1440.png",
+      "bytes": 107926,
+      "sha256": "02c561978744f04120cd74070a76a014b8559e6213cca1f648bf54bdd7866e64",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785654636698981
+    },
+    {
+      "path": "world-EN-390.png",
+      "bytes": 59301,
+      "sha256": "6f568cc46f3bf1036bc33ec84e444062ef1ca13a12f81e31a260107118de69d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785654255299996
+    },
+    {
+      "path": "world-JA-1024.png",
+      "bytes": 105693,
+      "sha256": "b2e1dd8c3e4ae4dd4b75cdc920468b3fef9315093bb2e415580ed969b1343caa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785653834096794
+    },
+    {
+      "path": "world-JA-1440.png",
+      "bytes": 118139,
+      "sha256": "7d023089db7b4cc7e8d1727b0e508926996d65782eaf3e6bd4361732a643d36b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785654040145692
+    },
+    {
+      "path": "world-JA-390.png",
+      "bytes": 65130,
+      "sha256": "e13cd9e0891551027d48a3202279a5133166e52fd16c7136e5c5641f913a41f4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785653639323849
+    },
+    {
+      "path": "world-VI-1024.png",
+      "bytes": 99632,
+      "sha256": "35a8d2c2de8bdddce8ed28988f6388b6afe0708b22b89d99ad64509e9f305b07",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785653202687513
+    },
+    {
+      "path": "world-VI-1440.png",
+      "bytes": 111818,
+      "sha256": "381eb06866dd85513edab0e4c0c081b5de7bc4541c6129c6959c581190415f25",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785653406369153
+    },
+    {
+      "path": "world-VI-390.png",
+      "bytes": 62391,
+      "sha256": "bb04fe9243d9876ada979ebbdd02f3aa9cb7b1bbaef96b4af021dec1394b99ce",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785652992960102
+    },
+    {
+      "path": "world-reduced-2d-keyboard.png",
+      "bytes": 82827,
+      "sha256": "c6b52426257b3815dbf129b8ad395284e4efc947f01d1784c7b6429950a48a8f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794785654855654298
+    }
+  ],
+  "directories": [
+    "playwright",
+    "playwright/replay-offline-offline-fir-92fc3-eserve-stored-package-bytes",
+    "playwright/replay-offline-rapid-curso-0cb28-ingle-action-Overview-reset",
+    "playwright/replay-offline-replace-and-398e8-ith-runtime-requests-denied"
+  ],
+  "declaredDependencySymlinks": []
+}

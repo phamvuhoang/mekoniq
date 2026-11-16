@@ -1,0 +1,164 @@
+{
+  "at": "2026-11-15T21:23:19.894268+00:00",
+  "scope": "Read-only failure/preservation/upstream-byte triage; no new browser execution, product edit or retry",
+  "observedFailure": {
+    "file": "tests/e2e/twin-polish.spec.ts",
+    "line": 180,
+    "wideHeightPx": 48,
+    "narrowHeightPx": 98,
+    "viewport": [
+      1024,
+      700
+    ],
+    "result": {
+      "startTime": "2026-11-15T21:17:51.816Z",
+      "duration": 5152.321,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "ownExitCode": 1,
+    "signal": null
+  },
+  "visualObservation": "Root viewed actual PNG: VI mock coffee, needs_attention, connecting runtime chip, two runbar rows with controls visible. No causal or baseline-runtime reproduction claim.",
+  "upstreamComparison": [
+    {
+      "path": "tests/e2e/twin-polish.spec.ts",
+      "baselineSha256": "ab50c8ff8d9041adda762295f1209353a0f807fe3813ed05c22f17a392b25ece",
+      "currentSha256": "ab50c8ff8d9041adda762295f1209353a0f807fe3813ed05c22f17a392b25ece",
+      "baselineBytes": 12989,
+      "currentBytes": 12989,
+      "wholeByteIdentical": true,
+      "baselinePrefixIdentical": true
+    },
+    {
+      "path": "src/ui/run-bar.ts",
+      "baselineSha256": "da5eebbd66122c6dba33b1793c30b318547a9832cf32870999c7496f0272d11f",
+      "currentSha256": "da5eebbd66122c6dba33b1793c30b318547a9832cf32870999c7496f0272d11f",
+      "baselineBytes": 20696,
+      "currentBytes": 20696,
+      "wholeByteIdentical": true,
+      "baselinePrefixIdentical": true
+    },
+    {
+      "path": "playwright.config.ts",
+      "baselineSha256": "f1d975782804c3a97e4666e5dd19b80c79a25e4e15c445600675a57c8c6c9138",
+      "currentSha256": "f1d975782804c3a97e4666e5dd19b80c79a25e4e15c445600675a57c8c6c9138",
+      "baselineBytes": 947,
+      "currentBytes": 947,
+      "wholeByteIdentical": true,
+      "baselinePrefixIdentical": true
+    },
+    {
+      "path": "src/styles/main.css",
+      "baselineSha256": "f988f0eae254e73e0cbfe3e3db9541dca6b264ac809e2878bb0bf71613758e65",
+      "currentSha256": "c27f9848972a2948b3a21581a3ddf9b12a01e77ffb134c6f4b67c592144c2205",
+      "baselineBytes": 66373,
+      "currentBytes": 74138,
+      "wholeByteIdentical": false,
+      "baselinePrefixIdentical": true
+    }
+  ],
+  "currentBroadMockTwinPolish": [
+    {
+      "title": "a notice is shown in the banner, not counted; an emptied problems box does not reopen by itself",
+      "status": "skipped"
+    },
+    {
+      "title": "running: a plain runtime word on the bar, the telemetry detail in the Engineering tab and the runtime box, repainted live",
+      "status": "skipped"
+    },
+    {
+      "title": "Engineering tab with the arm selected: one block per quantity, nothing wider than the panel",
+      "status": "skipped"
+    },
+    {
+      "title": "Objects tab: the current cup line keeps its distance from the job cards",
+      "status": "skipped"
+    },
+    {
+      "title": "one attention problem: one card holding its chain, object buttons by name; the box stays closed; the scenario name is not cut",
+      "status": "skipped"
+    },
+    {
+      "title": "the runtime box repeats the telemetry detail, repainted live",
+      "status": "skipped"
+    },
+    {
+      "title": "scenario picker: a preset that cannot run gives one reason per backend",
+      "status": "skipped"
+    },
+    {
+      "title": "toolbar buttons expose their state; ? moves focus into the key list and back; one twin-help button; the label explains itself in watch mode",
+      "status": "skipped"
+    },
+    {
+      "title": "replay: no live action on the run bar, a recorded tag, no run speed; Space on the scrubber plays, a held Space toggles once",
+      "status": "skipped"
+    },
+    {
+      "title": "1024 \u00d7 700: no vertical scroll and the run bar keeps its one row",
+      "status": "skipped"
+    }
+  ],
+  "files": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/twin-polish-default-artifact-preservation.json",
+      "bytes": 5098,
+      "sha256": "a07f72e282d47a74f7bd03de3cfd1e216887dfeac7c05acab9bedca7ad3bdce1"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/.last-run.json",
+      "bytes": 96,
+      "sha256": "44f0f57038f72e1a032b135edd3485fd8e8b1b9ae6a8dccbe0c8fd22c1257e6e"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/.last-run.json",
+      "bytes": 96,
+      "sha256": "44f0f57038f72e1a032b135edd3485fd8e8b1b9ae6a8dccbe0c8fd22c1257e6e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/error-context.md",
+      "bytes": 13132,
+      "sha256": "ea515720d6abcc7ce137d8e95e5406e0c98279d753ffe6b68657e4a645283b07"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/error-context.md",
+      "bytes": 13132,
+      "sha256": "ea515720d6abcc7ce137d8e95e5406e0c98279d753ffe6b68657e4a645283b07"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/test-results/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/test-failed-1.png",
+      "bytes": 107357,
+      "sha256": "3a647523e41a348803778ad0fb65e69055c0d89b9e9375747c651913bd035c7a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/default-artifacts-twin-polish/twin-polish-twin-page-poli-b5e49-e-run-bar-keeps-its-one-row/test-failed-1.png",
+      "bytes": 107357,
+      "sha256": "3a647523e41a348803778ad0fb65e69055c0d89b9e9375747c651913bd035c7a"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/r2a-supplemental-headless/suites/lab-e2e-twin-polish-twin-polish.json",
+      "bytes": 28262,
+      "sha256": "2f475c2adc771bfde037b8eb34a763f2833e7eb9ec6f1c10a40b5dbbb4820567"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.receipt.json",
+      "bytes": 5507,
+      "sha256": "313904075c4c73acc396d8751519f6c2e1201b02cfa3de59d06bd8307d3dd539"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234/checks/r2a-supplement-lab-e2e-twin-polish.log",
+      "bytes": 4563,
+      "sha256": "1f76dac64e13844796050eb90b3980f9a01fa0a34df028bc68cf501fc6e5883d"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-regression/lab-pw-browser.json",
+      "bytes": 188846,
+      "sha256": "32d31512d44ffbc4dd2266c9119cc0921a11e6092a53315c533513339e5951f6"
+    }
+  ],
+  "ruling": "Retain failed requirement and unresolved cause for ONE final whole-branch triage; continue independent unchanged rows/captures; no pass, waiver, test relaxation or repeated attempt for a green result.",
+  "cost": "A final finding can require correction and appropriately refreshed affected browser/build evidence."
+}

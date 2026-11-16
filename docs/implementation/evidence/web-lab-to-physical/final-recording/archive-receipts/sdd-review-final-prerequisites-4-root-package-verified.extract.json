@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T01:52:36.643097+00:00",
+  "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package-verified",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-review-final-prerequisites-4-root-package-verified.tar.gz",
+  "archiveSha256": "666f531a4114012ceb1929fd5b9a1f85b585ddca353ed805efb915803f806966",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/sdd-review-final-prerequisites-4-root-package-verified.members.json",
+  "memberIndexSha256": "a2d696b6a0dba9dc25926337b62337dc07f3973b83132fdbe92ea336462fe58e",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/sdd-review-final-prerequisites-4-root-package-verified",
+  "verifiedFiles": 5,
+  "verifiedBytes": 270139,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

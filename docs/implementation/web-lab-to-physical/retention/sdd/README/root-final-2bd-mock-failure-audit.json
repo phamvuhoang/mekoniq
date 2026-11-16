@@ -1,0 +1,169 @@
+{
+  "source": "2bd66e679aba431a84736eb10e04717dc4d32ce7",
+  "lab": "111ed9a763a5fea24ab3180834c83c1db97417dd",
+  "checks": [
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/source-unit.json",
+      "bytes": 367174,
+      "sha256": "fb3e62a9071dffbb0ef852fbe10addb297c982368ece54ac0bdd63df476b7797"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/source-unit.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/unit/r3-native-readback.test.ts",
+      "bytes": 19282,
+      "sha256": "b6fc5731e2d43e1d52ff72a4188d60cfbe634d5a7ae6be8ed0e4d64302614335"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/unit/web-replay-capture.test.ts",
+      "bytes": 4928,
+      "sha256": "eb349577fdc7c466347454052ae2c592dd802daef625f68e359452d8fa03cec9"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/scripts/retained-inputs.mjs",
+      "bytes": 1890,
+      "sha256": "a64b3cbb42aca075424678c9470d170bc346cd0cf964fc830b21017b95bc53bf"
+    },
+    {
+      "path": "/private/tmp/b10-fix1-inputs/inputs.json",
+      "bytes": 25629,
+      "sha256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/2bd66e6/checks/host-sleep-observation-recent.receipt.json",
+      "bytes": 4616,
+      "sha256": "2db7a73accc63e4d0ede14b669a03079c32cc4833198beb8d6ada747d3539ecf"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/2bd66e6/checks/host-sleep-observation-recent.log",
+      "bytes": 1230,
+      "sha256": "bcf62091aa3699a8904632b408380e48dd994e7f797505edca8658cd6e68a69b"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/source-engineering.json",
+      "bytes": 234585,
+      "sha256": "484577f650732b895ae026f7b726fb869e8a1967a7ef9aec0766735f0318b94e"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/source-engineering.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/integration/lab-v2-native-gateway.test.ts",
+      "bytes": 5712,
+      "sha256": "8ff95332d98385b41cac45ab16bcd45fc5242e602a2cf273746626a809ddac58"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/integration/lab-v2-readiness.test.ts",
+      "bytes": 14026,
+      "sha256": "3310188944bbc9686c8c3e78bbb14223ab01d803538e6001cca177e5b3052aad"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/integration/lab-v2-native-wire-deadline.test.ts",
+      "bytes": 6167,
+      "sha256": "7018ad40c054223fc5a3775156315f15ea28bb15d8abd46b34178dfd2746d1c4"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/integration/lab-v2-sil-review.test.ts",
+      "bytes": 15198,
+      "sha256": "0406ac4647d88015a489500653b71ac2ee781bf6edb3304244f7a27096846d87"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/tests/integration/lab-v2-bv01-sil.test.ts",
+      "bytes": 29606,
+      "sha256": "bcae2a7a45eec45c57a3aadc5d0522ba06d2ffcb585a2caf5de6156a0bc2e1b2"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/lab-pw-browser.json",
+      "bytes": 3187,
+      "sha256": "7e3cc1b171b68dd6f7e61dfb827a9b4eb5ec7aa921a809fbc18ffd1bd1f2edb0"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/lab-e2e-browser.log",
+      "bytes": 555,
+      "sha256": "42d5d2c001298187e81df228be4ce5196d541aba7c76740c273ded90eacda610"
+    },
+    {
+      "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-2bd66e6-z_x0yu_o/mock-regression/lab-vitest.json",
+      "bytes": 207212,
+      "sha256": "b8e79d919d54d009b19d9597a1c5dcf1971906aa39f5195fb6f671e5c8a70fed"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/tests/e2e/service-journey.spec.ts",
+      "bytes": 7339,
+      "sha256": "f3545993adf1b0b585f1dff1facb1a4a66e469fa8349f4d7a39fdc9fca24ecb5"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/metrics.ts",
+      "bytes": 11675,
+      "sha256": "0e3b20c717eebe44debbfad5546a20938e2ebaece4c2f44629345569270de07f"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/report-shape.ts",
+      "bytes": 10122,
+      "sha256": "32f212a65675e1ba8d00de7113b1e78c03ea5c71ebb707cd24f5f7573e1d4ced"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/compare.ts",
+      "bytes": 18608,
+      "sha256": "1f1392f6577a442c12dcb93d35ecf0f59d1109f5463498891897f6687179753e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/navigation2d.ts",
+      "bytes": 14267,
+      "sha256": "3836f6c53433f8588ade73fbe3c3ec6f346d9a306ce5c8899a19116105e24864"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/report-shape.ts",
+      "bytes": 10122,
+      "sha256": "32f212a65675e1ba8d00de7113b1e78c03ea5c71ebb707cd24f5f7573e1d4ced"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/reports/verification.ts",
+      "bytes": 4675,
+      "sha256": "82df0979afbe126385c210ac069821f61295763011ed83504e14f9a2351f22d4"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/scenarios/fault-schedule.ts",
+      "bytes": 1977,
+      "sha256": "6576098e027d37c94e2f1d93373a257aa433e29799932876426d46e7a6656798"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/twin/payload.ts",
+      "bytes": 8992,
+      "sha256": "d9e70213a36c33929f576c8819fc5a1f33a0014418acf1fedcbfb38e039f65b4"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/tests/e2e/service-journey.spec.ts",
+      "bytes": 7339,
+      "sha256": "f3545993adf1b0b585f1dff1facb1a4a66e469fa8349f4d7a39fdc9fca24ecb5"
+    }
+  ],
+  "counts": {
+    "source-unit.json": [
+      1055,
+      2,
+      0,
+      1057
+    ],
+    "source-engineering.json": [
+      669,
+      9,
+      43,
+      721
+    ],
+    "lab-vitest.json": [
+      593,
+      0,
+      1,
+      594
+    ]
+  },
+  "mockOwnExit": 1,
+  "missingAttributes": 16,
+  "note": "Metadata audit only. Original failed outputs unchanged; no test rerun, no native or full CI acceptance."
+}

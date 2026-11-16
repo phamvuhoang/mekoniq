@@ -1,0 +1,165 @@
+{
+  "at": "2026-11-15T23:43:45.412614+00:00",
+  "scope": "Independent read-only byte and dependency-boundary audit; no reinstallation or tool/native/host campaign executed by root. Listed scopes overlap and are not unique test counts.",
+  "boundaryFile": {
+    "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/isolated-producer-boundary.json",
+    "bytes": 322168,
+    "sha256": "a37d63a804943d6c14bee5c4240c0d194a0ee230a9839fb766dbddaec620a699"
+  },
+  "checkFile": {
+    "path": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/isolated-producer-check.json",
+    "bytes": 87249,
+    "sha256": "d64289fc88cdcd4a59c54bbbecca445ff1c93ca8d194fd0d28f5ec647ac53daa"
+  },
+  "copies": [
+    {
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/dist",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/dist",
+      "files": 200
+    },
+    {
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/.runtime/8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "destination": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/lab/.runtime/8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+      "files": 60
+    }
+  ],
+  "closures": {
+    "native": {
+      "files": 226,
+      "bytes": 1578397,
+      "digest": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634",
+      "scope": "All listed isolated Source file bytes verified against approved unchanged Source closure inventory; digest attribution belongs to Source/tool checker."
+    },
+    "portable": {
+      "files": 238,
+      "bytes": 8116001,
+      "digest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+      "scope": "All listed isolated Source file bytes verified against approved unchanged Source closure inventory; digest attribution belongs to Source/tool checker."
+    }
+  },
+  "checker": {
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "toolSha256": "2d911a9d0028b12d0b6360b49170d77bbbe95b8ca2feed7cf5771ac3bef07ffe"
+  },
+  "pythonReuse": [
+    {
+      "name": "irsim",
+      "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+      "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-irsim",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pins": 28,
+      "imports": {
+        "irsim": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/irsim/__init__.py",
+        "yaml": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/yaml/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages/jsonschema/__init__.py"
+      },
+      "pth": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-irsim/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+        "bytes": 113,
+        "sha256": "5bc82a0001109822c6c95e8b53a40ec799be797b8ccae9905dfe039c635509b3"
+      },
+      "scope": "New real ignored venv; exact existing pinned distributions via explicit owned .pth; no installation/download or active environment mutation"
+    },
+    {
+      "name": "mujoco",
+      "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+      "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-mujoco",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pins": 21,
+      "imports": {
+        "mujoco": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/mujoco/__init__.py",
+        "numpy": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/numpy/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages/jsonschema/__init__.py"
+      },
+      "pth": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-mujoco/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+        "bytes": 114,
+        "sha256": "d34f42d20aa8781b14a9ecfc82222e58945249a2dd231dd97c1431f14174f6f0"
+      },
+      "scope": "New real ignored venv; exact existing pinned distributions via explicit owned .pth; no installation/download or active environment mutation"
+    },
+    {
+      "name": "linkforge",
+      "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+      "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-linkforge",
+      "basePrefix": "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11",
+      "pins": 14,
+      "imports": {
+        "yaml": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/lib/python3.11/site-packages/yaml/__init__.py",
+        "jsonschema": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/lib/python3.11/site-packages/jsonschema/__init__.py"
+      },
+      "pth": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-981-isolated-producer-tfpc3cp6/source/.venv-linkforge/lib/python3.11/site-packages/final-recording-owned-reuse.pth",
+        "bytes": 117,
+        "sha256": "f3b81065590324157a2e83be8bb493466f5e409e6cbf9154cf6d8da62b27330a"
+      },
+      "scope": "New real ignored venv; exact existing pinned distributions via explicit owned .pth; no installation/download or active environment mutation"
+    }
+  ],
+  "nodeEntryLinksVerified": 16,
+  "runtimeLock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+  },
+  "buildIdentity": {
+    "labHead": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+    "labStatus": "",
+    "sourceHead": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "sourceStatus": "",
+    "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "runtimeArtifact": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "buildSha256": "2c1e9f307b7727c074eb160ff396251af295a520fc7884237fd752903975212e",
+    "node": "v24.22.2"
+  },
+  "receipts": [
+    {
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 300; exec @ARGV",
+        "python3",
+        ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/prepare-isolated-producer-attempt2.py"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T23:28:59.891Z",
+      "finishedAt": "2026-11-15T23:29:08.586Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "ffaca8df777d813fb3be67cba5f3a284516849ca1dec43abf42d8c6c870fab70"
+    },
+    {
+      "argv": [
+        "caffeinate",
+        "-dims",
+        "perl",
+        "-e",
+        "alarm 120; exec @ARGV",
+        "node",
+        ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-isolated-producer.mjs"
+      ],
+      "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+      "startedAt": "2026-11-15T23:29:13.322Z",
+      "finishedAt": "2026-11-15T23:29:14.904Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "0c3fa2093750be7ccb37b7c2991463c06c5c92197758e930667c735e5719b5b8"
+    }
+  ]
+}

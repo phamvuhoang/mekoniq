@@ -1,10 +1,10 @@
 # R3 profile qualification and reproduction
 
-R3 records are evidence inputs with `accepted:false` and `dynamics:not_calibrated`. The recorder recomputes retained files; a doctor report, a supplied pass list, protocol double, numeric subset, or reviewer name in the candidate cannot establish native qualification. This tooling phase does not record the final candidates. Final Source CI, Lab checks and candidate recording follow independent B10/L06 review at one clean committed/exported/pinned tuple.
+R3 records are evidence inputs with `accepted:false` and `dynamics:not_calibrated`. The recorder recomputes retained files; a doctor report, a supplied pass list, protocol double, numeric subset, or reviewer name in the candidate cannot establish native qualification. The [final recording](../implementation/web-lab-to-physical/final-recording-status.md) includes six prepared candidates at clean Source981/Labd4. Native and physical cases remain not_run; the final whole-branch review is separate from automated recording.
 
 | Level | Recorded meaning | Current qualification boundary |
 | --- | --- | --- |
-| R3.0 | `DEP-PREP-01`: the supplied L00 handoff passes static document, path, hash, schema, profile and tuple checks | Does not rerun all code tests or authenticate an installed host. Final prepared records still await the final tuple. |
+| R3.0 | `DEP-PREP-01`: the supplied L00 handoff passes static document, path, hash, schema, profile and tuple checks | Does not rerun all code tests or authenticate an installed host. All six final prepared records passed this scope at Source981/Labd4; native qualification remains open. |
 | R3.1 | Required native cases for this exact profile, ISA and scope are tested | Incomplete: no assigned host; the observation/verifier gaps below also remain. Assigning Linux alone does not close them. |
 | R3.2 | Both physical branches have reviewed preparation code and a reproducible commissioning plan | L05 preparation was reviewed separately. This recorder does not rerun/sign commissioning conformance or authenticate dossier references; `PHYS-PREP-01` and the R3.2 record level remain `not_run` here. |
 
@@ -31,7 +31,7 @@ ROS profiles require Ubuntu 24.04. The current LinuxCNC candidate requires Debia
 
 | Case | Required observations | Supported readback and remaining gap | Next action |
 | --- | --- | --- | --- |
-| DEP-PREP-01 | L00 manifest and every declared input/schema/runtime/native/portable closure | Existing L00 validator, exact target profile/ISA/OS and Source/Lab/pin binding; recomputed locally | Assemble from final clean export and matching Lab commit; run verifier. |
+| DEP-PREP-01 | L00 manifest and every declared input/schema/runtime/native/portable closure | Existing L00 validator, exact target profile/ISA/OS and Source/Lab/pin binding; recomputed locally | Final prepared inputs were assembled and verified; use the exact retained tuple for reproduction. Native cases still require their own observations. |
 | DEP-MJ-01 | Historical R2a M00 10 trials, three seeds, faults and exact engine/host/image; separate current R2b payload/cell campaign | Calls historical public checked probe and reviewed B10 current public checked probe separately. Historical/current subject and checker tuples stay distinct. Current subject must equal the R3 handoff. Both must pass; supplied inventory must be native-ready. No arm64 campaign implementation is supplied by these amd64 readers. | Assign exact host/image; execute both supported amd64 campaigns with their proper subjects. Implement/review a separate arm64 campaign before claiming arm64. |
 | DEP-NAV-01 | Host/install inventory, canonical physical mapping, live TF and clocks | Reads the actual compiled canonical world, native inventory, raw clock observations and copied SQLite topic/timestamp coverage. Bag payloads are not deserialized into verified TF semantics. | Supply assigned-host capture, then implement/review TF-payload readback. |
 | DEP-NAV-02 | FD01 load/travel/handoff/return, actual Nav2 feedback and Source confirmations | Checks retained Source journal/business ordering and raw coverage. It cannot independently join bag action UUIDs to every Source command/result. | Add reviewed UUID/command-to-feedback semantic readback; run actual nominal seeds. |

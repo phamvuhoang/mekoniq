@@ -1,0 +1,862 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T00:27:51.652565+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981e234-i5mv4tkt/mock-regression",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-b0-mock-regression.tar.gz",
+  "archiveBytes": 9645239,
+  "archiveSha256": "717b080087b8a60e7b1eb18f64327494eb0ff8bbb8443b2fab32f6ae8f08cbc5",
+  "memberCount": 116,
+  "memberBytes": 11122943,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "brand-ui/lab-deployment-1024.png",
+      "bytes": 147857,
+      "sha256": "4965d392613c55efd7a3b9f9e8cff4ca730185423c25be6f81bc13ddc061dcc3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763760090816218
+    },
+    {
+      "path": "brand-ui/lab-deployment-1512.png",
+      "bytes": 155953,
+      "sha256": "93a8d9c331df323b84813c973f8b58cb4ac73499f2e7a349be6885bb3c7da868",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763764124632976
+    },
+    {
+      "path": "brand-ui/lab-deployment-390.png",
+      "bytes": 118506,
+      "sha256": "fcf3b629e64051d223dc0707858d191a211efbecfc73a0a45a10eed00d2fba17",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763756383165759
+    },
+    {
+      "path": "brand-ui/lab-design-1024.png",
+      "bytes": 463410,
+      "sha256": "42d06c479b9bd412fc7d38d4bc9c8f36314df1df919444182eb05b58937e5795",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759168342401
+    },
+    {
+      "path": "brand-ui/lab-design-1512.png",
+      "bytes": 502353,
+      "sha256": "f03fea08a218f48e9ea4424ae448fad2786dfd762395f7bc4dc8d315c7af8b78",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763763277736647
+    },
+    {
+      "path": "brand-ui/lab-design-390.png",
+      "bytes": 287920,
+      "sha256": "dd84cf54b62ec5ac880a7eea39613ce2d2ef982235a20e45504774ed91895b0f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763755592180425
+    },
+    {
+      "path": "brand-ui/lab-restaurant-1024.png",
+      "bytes": 118949,
+      "sha256": "13ef3ccee7a449019d963da288d4cef8f4be2c84b56eb829bc65578a8e3397ae",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759325225201
+    },
+    {
+      "path": "brand-ui/lab-restaurant-1512.png",
+      "bytes": 137841,
+      "sha256": "cf0e3d6c67ed8372d483f8d43a861584528bf8ddf206bc0beb1380d24d11430d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763763465131710
+    },
+    {
+      "path": "brand-ui/lab-restaurant-390.png",
+      "bytes": 91038,
+      "sha256": "adc9ba210fdb955ac1f7d76ca4ce64be3454945f019089c155e10233ec4d3c91",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763755699474558
+    },
+    {
+      "path": "brand-ui/lab-results-1024.png",
+      "bytes": 77178,
+      "sha256": "dbea5a95ecfb99aea432a5befc58d55e153549196aa189eceb61b70758054573",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759887206308
+    },
+    {
+      "path": "brand-ui/lab-results-1512.png",
+      "bytes": 87466,
+      "sha256": "e1dfa3c2ecd704fc0511730647918341a45bb652e0e22cb363a406846e69d1c0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763763975594889
+    },
+    {
+      "path": "brand-ui/lab-results-390.png",
+      "bytes": 53547,
+      "sha256": "ee2bb192c38f31d9ac0e4fbadebaf9318bfefe84c6db2fd1f3a1386b9f258124",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763756234810008
+    },
+    {
+      "path": "brand-ui/lab-scenarios-1024.png",
+      "bytes": 165320,
+      "sha256": "91e237dd549761f53ee0647e7d11fc6d97312a45fa57efb570d54b177e04c21b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759609836422
+    },
+    {
+      "path": "brand-ui/lab-scenarios-1512.png",
+      "bytes": 169296,
+      "sha256": "03de8ef59653a74abb3090aee606e77dccca1ee4d26bf5aac88c40e3f42b93b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763763657733596
+    },
+    {
+      "path": "brand-ui/lab-scenarios-390.png",
+      "bytes": 131744,
+      "sha256": "e0fc3cfb9305f7a633e64efd1303630e6ffffed1bf02356a821b34bff73039c1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763755858959915
+    },
+    {
+      "path": "brand-ui/lab-twin-1024.png",
+      "bytes": 126875,
+      "sha256": "c2c17481137a5ffd2e3c743e2902dd211aa16451cf41c1545faf47af40103a14",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759783437321
+    },
+    {
+      "path": "brand-ui/lab-twin-1512.png",
+      "bytes": 164485,
+      "sha256": "bf764771d790a53866024fb42d2e32f95640231a9c26d58ab3d4068bd95a6049",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763763865591198
+    },
+    {
+      "path": "brand-ui/lab-twin-390.png",
+      "bytes": 66740,
+      "sha256": "a63addcfa33b6891b7be92ad53d21d48b3c85cfeb02a02f73e87363277636546",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763756021296957
+    },
+    {
+      "path": "lab-build.log",
+      "bytes": 1294,
+      "sha256": "275644414ee86fa0250a444d7c3710397456bf8fa529a03ec3c0d363b31ecee1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763743020912043
+    },
+    {
+      "path": "lab-check-source.log",
+      "bytes": 153,
+      "sha256": "e9789a19cef69e259c8c2924eeaa13fff319ec18a847efe63cd7d94cc12bccec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763717721032432
+    },
+    {
+      "path": "lab-e2e-browser.log",
+      "bytes": 38472,
+      "sha256": "e6fb94a8faedf1b0ee7915f612a783ffb17926f70596ecdc9341c993bdbfc39a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763781197252544
+    },
+    {
+      "path": "lab-mock-e2e.log",
+      "bytes": 8036,
+      "sha256": "33a0c1ac8a4c945675ae87658b6d04bb98a0f389bdb863bdaf0877d309ffd035",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899789225277
+    },
+    {
+      "path": "lab-offline-build.log",
+      "bytes": 48,
+      "sha256": "42973bfdcfa85ac8fcdbde482c0cb6b0aeefa817d778dd110b60702c543d85b5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764033668577529
+    },
+    {
+      "path": "lab-offline-e2e.log",
+      "bytes": 1907,
+      "sha256": "cee0f2b098dab4444654515996d68ae264fc9224c14e8611aabe40b0a611e678",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071741889697
+    },
+    {
+      "path": "lab-pw-browser.json",
+      "bytes": 188846,
+      "sha256": "32d31512d44ffbc4dd2266c9119cc0921a11e6092a53315c533513339e5951f6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763781198750428
+    },
+    {
+      "path": "lab-pw-mock-arm-simulation.json",
+      "bytes": 4086,
+      "sha256": "e5da094ba0b3d7f6d69f5d0e0f2a4d3e8a5573e17b508a82fa0958d48d8e828e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899792773298
+    },
+    {
+      "path": "lab-pw-mock-coffee-journey.json",
+      "bytes": 4068,
+      "sha256": "0a9547eb1757554aacd54a92a12bdfdb1b4982bed8ac9fb21276207537ab1b0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899790862120
+    },
+    {
+      "path": "lab-pw-mock-fault-schedule.json",
+      "bytes": 4080,
+      "sha256": "bdf457819d05e14dac35fd2ba5ce76119b03cf52e7014a987f6c3a0cb90d3169",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899792588630
+    },
+    {
+      "path": "lab-pw-mock-legacy-campaign.json",
+      "bytes": 8045,
+      "sha256": "a46257e5e4644c02fdaf2e57f92daf8f3ec37600d980fc6610089c43e8f9d2dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899793126466
+    },
+    {
+      "path": "lab-pw-mock-twin-inputs.json",
+      "bytes": 4067,
+      "sha256": "c792a267c355549ed4bcc25cc753341a96804d0f9e2b9b8ab68c7cce0014f99e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899792356504
+    },
+    {
+      "path": "lab-pw-mock-twin-plan01.json",
+      "bytes": 4084,
+      "sha256": "49e790001d3521a124065a7d93d05302de3bdbe6d90d3af991e2cda29313757e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899792938632
+    },
+    {
+      "path": "lab-pw-mock-twin-recovery.json",
+      "bytes": 4084,
+      "sha256": "f70bb03edc8c7d5cf88df865f6b69f64d9e63d1ef498cd65c2d506eb3b1aaaef",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899792016376
+    },
+    {
+      "path": "lab-pw-mock-twin-workspace.json",
+      "bytes": 11752,
+      "sha256": "9b2df0c160bc8126a7e69c432bdf82815cbd0555e999b41d5de5ac8e64e37d58",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899790208699
+    },
+    {
+      "path": "lab-pw-offline-coffee-journey.json",
+      "bytes": 4068,
+      "sha256": "472df08f4e6d23286c88efa4fb89f81d2bbaffe7c551460afbb48bd4871fa21c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071743078704
+    },
+    {
+      "path": "lab-pw-offline-offline-bv01.json",
+      "bytes": 4072,
+      "sha256": "d66fd03292e8fbef914f94ecf6449d63b1c9976134c13729b3faf98f7062120a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071743236580
+    },
+    {
+      "path": "lab-pw-offline-twin-recovery.json",
+      "bytes": 4093,
+      "sha256": "704d273f6e72fc10e8cf51c6155e94f445d20a06ac98922566625b036ecc6b69",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071742499034
+    },
+    {
+      "path": "lab-pw-runtime.json",
+      "bytes": 4050,
+      "sha256": "57ce15fc96965d1b734408bd2bec1681e61bc4b8faa6c46836e962b36a0c06f0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763905718783179
+    },
+    {
+      "path": "lab-runtime-e2e.log",
+      "bytes": 780,
+      "sha256": "2eaeb437cd1c1a8b72aba027e0a7e2eabf6227349023b7ea719c5290b850d75f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763905718241260
+    },
+    {
+      "path": "lab-typecheck.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763721102672178
+    },
+    {
+      "path": "lab-ui-performance.json",
+      "bytes": 2686,
+      "sha256": "9c822491b66c08bec15946fab9b87fd22402ac7a199111728577c1391f6e45f3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764032024053368
+    },
+    {
+      "path": "lab-ui-performance.log",
+      "bytes": 274,
+      "sha256": "75f704f59352687417dd7e7eca2752da7404111f1b767391a933787ccef5137a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764032023651449
+    },
+    {
+      "path": "lab-vitest.json",
+      "bytes": 207249,
+      "sha256": "e657295374d2f9b505c793b59b05533be3bf2954345671ae5576ef32a0fa805b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763737865968042
+    },
+    {
+      "path": "lab-vitest.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763737863726029
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 55332,
+      "sha256": "acc8fea1a814e5c04edc698290d093974aafd006037c4c014f7bfae9c5d675e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764072542203669
+    },
+    {
+      "path": "playwright/lab-e2e-browser/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763781162482297
+    },
+    {
+      "path": "playwright/lab-e2e-browser/captures/mekoniq-lab-desktop.png",
+      "bytes": 512027,
+      "sha256": "8b99924de4a4bd8f61473c4a72879da08caf72d68a1b8955c35bb83e8399ed8b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763772078930701
+    },
+    {
+      "path": "playwright/lab-e2e-browser/captures/mekoniq-lab-en.png",
+      "bytes": 463411,
+      "sha256": "d6977b494c707aef9abdf9c560c8abe1732de730e8aa926868b7a20571bd6d17",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763773437423049
+    },
+    {
+      "path": "playwright/lab-e2e-browser/captures/mekoniq-lab-ja.png",
+      "bytes": 452175,
+      "sha256": "348d1c11cef890eea2eeeb8a7da1aa9d1b326f2aa949afafe980d45d83e96358",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763773223781039
+    },
+    {
+      "path": "playwright/lab-e2e-browser/captures/mekoniq-lab-mobile.png",
+      "bytes": 133352,
+      "sha256": "ee0d2695f573aff08c61d4aab1d920ffbd1a00d6c68eb5ea7047039a39981d3c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763771010766606
+    },
+    {
+      "path": "playwright/lab-e2e-browser/captures/mekoniq-lab-vi.png",
+      "bytes": 466484,
+      "sha256": "a6a8e17e638f6d3489a45089b3f4bba0eedccbae50e17e519d2a295710e2bec8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763773011360994
+    },
+    {
+      "path": "playwright/lab-mock-e2e/arm-simulation/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763831182990519
+    },
+    {
+      "path": "playwright/lab-mock-e2e/coffee-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763802330503654
+    },
+    {
+      "path": "playwright/lab-mock-e2e/fault-schedule/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763827294252532
+    },
+    {
+      "path": "playwright/lab-mock-e2e/legacy-campaign/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763899683340819
+    },
+    {
+      "path": "playwright/lab-mock-e2e/twin-inputs/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763821202451213
+    },
+    {
+      "path": "playwright/lab-mock-e2e/twin-plan01/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763853766058517
+    },
+    {
+      "path": "playwright/lab-mock-e2e/twin-recovery/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763816470461918
+    },
+    {
+      "path": "playwright/lab-mock-e2e/twin-workspace/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763790663936193
+    },
+    {
+      "path": "playwright/lab-offline-e2e/coffee-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764061133926237
+    },
+    {
+      "path": "playwright/lab-offline-e2e/offline-bv01/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071694002498
+    },
+    {
+      "path": "playwright/lab-offline-e2e/twin-recovery/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764049603800086
+    },
+    {
+      "path": "playwright/lab-runtime-e2e/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763905673934623
+    },
+    {
+      "path": "playwright/lab-runtime-e2e/captures/mekoniq-lab-source-run.png",
+      "bytes": 128487,
+      "sha256": "57bf717e87d48556aa0af047c8ad332697d87a31b83c193c6c8fa162a16b305e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763905236086290
+    },
+    {
+      "path": "screens/lab-e2e-browser/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147950,
+      "sha256": "5aa1f18c73a4d9f2f27cdf52152d4544773bb34d65b43248b06214acea080027",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763765702232201
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-fallback-problems.png",
+      "bytes": 92828,
+      "sha256": "0881ab1894343ce941b19209887e5d39f0c8a6242c3af20287b3a0843db2003c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763751790760952
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-mesh-home.png",
+      "bytes": 97842,
+      "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763749796899355
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-mesh-pick-closed.png",
+      "bytes": 92877,
+      "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763750016318983
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-runbar-notes-only.png",
+      "bytes": 16450,
+      "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759617693093
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-runbar-notes-panel.png",
+      "bytes": 45630,
+      "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759772999176
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-runbar-problem-and-note-panel.png",
+      "bytes": 52341,
+      "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763760063027387
+    },
+    {
+      "path": "screens/lab-e2e-browser/U05-runbar-problem-and-note.png",
+      "bytes": 16514,
+      "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763759872959183
+    },
+    {
+      "path": "screens/lab-e2e-browser/study-final-1440.png",
+      "bytes": 189512,
+      "sha256": "310e80bba0d5dca98d606cd3caf4cf3417fc5876dee58c7f728c0e966f14f7c5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763761993260110
+    },
+    {
+      "path": "screens/lab-e2e-browser/study-final-390-table-rows.png",
+      "bytes": 50022,
+      "sha256": "ed161b1498b758ac7cdf2c5400c086f9f6dd9a5da85ec1ce00492f22f4fdedf0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763764054727522
+    },
+    {
+      "path": "screens/lab-e2e-browser/study-final-390.png",
+      "bytes": 43580,
+      "sha256": "e4150b12f78dd877c13f0279a62b5f520bd6a31f38c57eb307f5d06b66c4d912",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763764010246593
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-coffee-completed-desktop-vi.png",
+      "bytes": 157468,
+      "sha256": "e5af31b656d86f31929114b6d8dfb463eef53bf2cc60c72b06b97907e97b3b8c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763802025746731
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-coffee-run-desktop-vi.png",
+      "bytes": 143130,
+      "sha256": "397c038c5fa5905e83cf6577ce971269497567741b53405030265273c051d945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763786046196155
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-coffee-run-mobile-en.png",
+      "bytes": 74844,
+      "sha256": "444ec7f81aacfa8c4fcc32febd28713a0c23d816150e7e3841b43ae4ef40b959",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763790346942489
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-coffee-run-mobile-ja.png",
+      "bytes": 71069,
+      "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763790261860237
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-coffee-run-mobile-vi.png",
+      "bytes": 81891,
+      "sha256": "91dd434c45d9a95ca86d1c75ce171ad6547cbb3722ca23fec3fcd59954767fd4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763790165124041
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-engineering-desktop-en.png",
+      "bytes": 169875,
+      "sha256": "2f45c1c70dd5d88761d6e71b28a562369df1bdb0d4c121ed89576ef1b2a6503e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763789759471856
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-engineering-desktop-ja.png",
+      "bytes": 168276,
+      "sha256": "594ce48aecd3ea5d4979f3db8b04f849e281d3485793486d90a61177315edcb6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763789673095596
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-engineering-desktop-vi.png",
+      "bytes": 174037,
+      "sha256": "c46d86ac81e92f6273e4b1a1617d0dbbf5dd8c6206b0d77adc8940e7d03b8d0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763789569075649
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-missing-cup-desktop-vi.png",
+      "bytes": 148498,
+      "sha256": "5f58e93138166544aa16eb43f07f53d5718b95f55e7f6b5f2cdd49b830255a42",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763794623832766
+    },
+    {
+      "path": "screens/lab-mock-e2e/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147452,
+      "sha256": "f44c2ae219a127562e28c71d3fd6a90e0d4c95ec617db4b5e9e87be068a997e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763784396258961
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-browser-memory.json",
+      "bytes": 461,
+      "sha256": "16d0a4c42e3eb0d80daa2625aab820781f2e56f6ce7adb06afe6889b076acf0c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763815974439240
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-compare-desktop-vi.png",
+      "bytes": 159292,
+      "sha256": "2e751dc255c59679a6bc6847cb1eebdded1b568255fcb3c497ee5fd551d4b112",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763815971595349
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-replay-trace-desktop-vi.png",
+      "bytes": 179210,
+      "sha256": "7a095ee834e27888d9b01f6fc2836b6d813d74f4ceaab34522fa769106725c15",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763815611197555
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-session-lost-desktop-vi.png",
+      "bytes": 155791,
+      "sha256": "d28f33512ec9e5150464fe4bdcfe3314e80b05bdeb3be050289fea55d8e58e06",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763816207704659
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-telemetry-disconnected-desktop-vi.png",
+      "bytes": 126885,
+      "sha256": "47b91bd477ae11514e5a0f8087bfddb2875d2d5aade3245d5f8d773b4571b01f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763809569149197
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+      "bytes": 126323,
+      "sha256": "639ea636dc720f58a9aaebdbc06c39b1c02c85db6c30475de2cf7b79ca8e5cf9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763809466845052
+    },
+    {
+      "path": "screens/lab-mock-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+      "bytes": 124866,
+      "sha256": "f29d4d87aae98d273c52ff4bf2904270afd5592e0770183a272b92f18014f2f7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763809383912438
+    },
+    {
+      "path": "screens/lab-mock-e2e/V06-scheduled-cup-mock.png",
+      "bytes": 155980,
+      "sha256": "55e2f5b1fc5d705680b837862bda606a8c64b03ee3fbc94e696fd019e94202f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763827038046396
+    },
+    {
+      "path": "screens/lab-mock-e2e/plan01-render-independence.json",
+      "bytes": 15150,
+      "sha256": "5aa2009353527e342fdb41cbd377f177de92624284d5737a37847b4b486253ac",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763853327749014
+    },
+    {
+      "path": "screens/lab-offline-e2e/F05-coffee-completed-desktop-vi.png",
+      "bytes": 157468,
+      "sha256": "e5af31b656d86f31929114b6d8dfb463eef53bf2cc60c72b06b97907e97b3b8c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764060864257937
+    },
+    {
+      "path": "screens/lab-offline-e2e/F05-missing-cup-desktop-vi.png",
+      "bytes": 148498,
+      "sha256": "5f58e93138166544aa16eb43f07f53d5718b95f55e7f6b5f2cdd49b830255a42",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764053434352560
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-browser-memory.json",
+      "bytes": 459,
+      "sha256": "94b618cd2ceac5c151f1baedcba0ab60e8e9e0c3c8ca64db2d62aaebf975c1f7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764049127543526
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-compare-desktop-vi.png",
+      "bytes": 159304,
+      "sha256": "5577b6e7ade31e23d95aaed261745da49727d769c69c22ca37465952886ee83c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764049125616765
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-replay-trace-desktop-vi.png",
+      "bytes": 179210,
+      "sha256": "7a095ee834e27888d9b01f6fc2836b6d813d74f4ceaab34522fa769106725c15",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764048724425064
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-session-lost-desktop-vi.png",
+      "bytes": 155115,
+      "sha256": "f7fc0a24c0a788e110d85201af71ac5941f20fbd8e7a597596aaad3a8b74f90b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764049343318383
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-telemetry-disconnected-desktop-vi.png",
+      "bytes": 127129,
+      "sha256": "af1f1dc611852fce9be44c7ff167ac3f810a3a7dc6f9bf9f6c48521f26ce8719",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764042740401926
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
+      "bytes": 126569,
+      "sha256": "875b6eeda02cbcc2c87a4ecbbb464096cab8c847135baa8b3967ab1627ec5183",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764042640167251
+    },
+    {
+      "path": "screens/lab-offline-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
+      "bytes": 125110,
+      "sha256": "cc080be4270975027341292c3c16fb99e0225314aa3a1563973da8a425000790",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764042552835111
+    },
+    {
+      "path": "screens/lab-offline-e2e/R02-offline-bv01.png",
+      "bytes": 169775,
+      "sha256": "d4967761e02525ba18dbacb0d8380cec37e78cd8f05b6ea99d96fcca1b52e88f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794764071396370367
+    },
+    {
+      "path": "source-contracts-check.log",
+      "bytes": 36,
+      "sha256": "3e8bf9225a03bd72709aba63c895580240a4737d43068ce350b8c0ed5e6b18cd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763042719772261
+    },
+    {
+      "path": "source-contracts.json",
+      "bytes": 32196,
+      "sha256": "bbfccc7431e398f247ed925747817cc8d7091e4711beb4e2449801afa4301dc4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763391840921074
+    },
+    {
+      "path": "source-contracts.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763391840548530
+    },
+    {
+      "path": "source-engineering.json",
+      "bytes": 231371,
+      "sha256": "940552bf1c069759c8b6330303c43b6da45a14c6e021ec0e1fe061fc261d816f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763713480597121
+    },
+    {
+      "path": "source-engineering.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763713479335363
+    },
+    {
+      "path": "source-lint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763041767396844
+    },
+    {
+      "path": "source-pytest-simulation.log",
+      "bytes": 271,
+      "sha256": "4d20b18c4506b704ac5c8657a3b29001427282cb7fe1544241cf4be40e508e09",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763717040037622
+    },
+    {
+      "path": "source-pytest-simulation.xml",
+      "bytes": 35277,
+      "sha256": "24152a21e51e4dee94e6b7f45240a384aff679118ac4e0108f1dfb0dd3195853",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763717042137552
+    },
+    {
+      "path": "source-referenced.json",
+      "bytes": 95140,
+      "sha256": "7a146f9fa1bad697e9b516340dba5230cd9f0bcd6ca0f2a1f746fb87a7cb56db",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763187004128399
+    },
+    {
+      "path": "source-referenced.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763187003013433
+    },
+    {
+      "path": "source-typecheck.log",
+      "bytes": 59,
+      "sha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763033992176051
+    },
+    {
+      "path": "source-unit.json",
+      "bytes": 365142,
+      "sha256": "cb0a7d940920a0c3e2851c276d8138a29678771e48aaa47273072eca8f78d8a4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763387006759986
+    },
+    {
+      "path": "source-unit.log",
+      "bytes": 29,
+      "sha256": "657ee2e08dc02e9869a59de8b36679bd9e403832c89910fb1d39ab2cb154f19c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794763387004442304
+    }
+  ],
+  "directories": [
+    "brand-ui",
+    "playwright",
+    "playwright/lab-e2e-browser",
+    "playwright/lab-e2e-browser/captures",
+    "playwright/lab-e2e-browser/replay-offline-offline-fir-92fc3-eserve-stored-package-bytes",
+    "playwright/lab-e2e-browser/replay-offline-rapid-curso-0cb28-ingle-action-Overview-reset",
+    "playwright/lab-e2e-browser/replay-offline-replace-and-398e8-ith-runtime-requests-denied",
+    "playwright/lab-mock-e2e",
+    "playwright/lab-mock-e2e/arm-simulation",
+    "playwright/lab-mock-e2e/coffee-journey",
+    "playwright/lab-mock-e2e/fault-schedule",
+    "playwright/lab-mock-e2e/legacy-campaign",
+    "playwright/lab-mock-e2e/twin-inputs",
+    "playwright/lab-mock-e2e/twin-plan01",
+    "playwright/lab-mock-e2e/twin-recovery",
+    "playwright/lab-mock-e2e/twin-workspace",
+    "playwright/lab-offline-e2e",
+    "playwright/lab-offline-e2e/coffee-journey",
+    "playwright/lab-offline-e2e/offline-bv01",
+    "playwright/lab-offline-e2e/twin-recovery",
+    "playwright/lab-runtime-e2e",
+    "playwright/lab-runtime-e2e/captures",
+    "screens",
+    "screens/lab-e2e-browser",
+    "screens/lab-mock-e2e",
+    "screens/lab-offline-e2e"
+  ],
+  "declaredDependencySymlinks": []
+}

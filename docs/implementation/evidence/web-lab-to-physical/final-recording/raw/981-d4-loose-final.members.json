@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T01:46:21.634277+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/981-d4-loose-final",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/raw/981-d4-loose-final.tar.gz",
+  "archiveBytes": 37283,
+  "archiveSha256": "e1b9e2e497ac8dd29d437635f157b8b03dcf145736608c5b4cc5a9eb37059299",
+  "memberCount": 13,
+  "memberBytes": 282510,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "producerLab": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "acceptance-r1-external.json",
+      "bytes": 6706,
+      "sha256": "dc568033cf13f599206feeab67f0944ad2a4930bee2bfd6ad0b79f5b9050332d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790346888075873
+    },
+    {
+      "path": "acceptance-r1-staged.json",
+      "bytes": 5039,
+      "sha256": "3b8f1ec58140d07980ecfa22a295f8d7c6b8b5ffe34732d5f558da1a5bc4c605",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790357132269850
+    },
+    {
+      "path": "acceptance-r11-external.json",
+      "bytes": 6707,
+      "sha256": "f9dede80ea8257fefeee1abc898985f082af5b6068d9c0f402bef2648d99a903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790701638217578
+    },
+    {
+      "path": "acceptance-r11-staged.json",
+      "bytes": 5059,
+      "sha256": "a6d6c662936f7b65c638864d9c0ba4753d3c86fe9c8ebd7d57f585dc8133a2b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790705701353888
+    },
+    {
+      "path": "acceptance-r2a-partial-external.json",
+      "bytes": 11581,
+      "sha256": "dd1360ebd7c23fa8cb1d36989da3791a751fb96e4692c35b72d1771c05cbbd20",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790791854077660
+    },
+    {
+      "path": "acceptance-r2a-partial-staged.json",
+      "bytes": 10146,
+      "sha256": "230f6944ea8f2a99960a9aa0beb56218d8cf602ed69f7c31fca5e879f04beafe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790795789426581
+    },
+    {
+      "path": "acceptance-r2b-full.json",
+      "bytes": 7011,
+      "sha256": "5f0140a3833746ae331211e4eec5476c55d62fdf23db6e4b38b733128a53cdce",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794793554683898200
+    },
+    {
+      "path": "extracted-acceptance-r1.json",
+      "bytes": 5049,
+      "sha256": "1d1def7550c19d78969563c6b5acfc790918c01551fc7cdf21b9fbe2884f5c41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794790487295048920
+    },
+    {
+      "path": "extracted-acceptance-r11.json",
+      "bytes": 5062,
+      "sha256": "7b7f24619512ec6eda421805482ab8fa8fd23889f027a7477b8132537b28f704",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794791414570938640
+    },
+    {
+      "path": "extracted-acceptance-r2a-partial.json",
+      "bytes": 10143,
+      "sha256": "b398af4f8548c6fa3d2647af0891da7cf29c613088368f9d62768e913f68b9bd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794791414581242528
+    },
+    {
+      "path": "mock-acceptance-evidence.json",
+      "bytes": 193114,
+      "sha256": "e376594e27e0650e99e946d436a11c7581596eb5f78ac11da1d1ce4568698d35",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794791125475877929
+    },
+    {
+      "path": "mock-acceptance-tests.json",
+      "bytes": 15848,
+      "sha256": "8d5d6adcd5f003100dfa34d8e9cda5cdd28f0cccd3a3e6abcce8537adff65e72",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794791125485041369
+    },
+    {
+      "path": "semantic-study-tests.json",
+      "bytes": 1045,
+      "sha256": "b167c9f94b0c2b5d7b4c5af4b942eb4046f6bcaa25c2daf7c517a2b1a7ff7cea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794792571389682264
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

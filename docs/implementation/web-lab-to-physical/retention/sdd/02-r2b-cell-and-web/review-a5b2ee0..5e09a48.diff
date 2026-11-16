@@ -1,0 +1,536 @@
+# Review package: a5b2ee0fb1d5f3799aca774d7930d66985a30321..5e09a48d4a8625276495694b1a29c04679bc6a77
+
+## Commits
+5e09a48 fix: close replay validation and download lifecycle gaps
+
+## Files changed
+ packages/contracts/generated/navigation2d.ts       |  39 +++++-
+ .../schemas/web-replay-package-v1.schema.json      | 135 ++++++++++++++++++++-
+ packages/lab-runtime/src/gateway.ts                |   2 +-
+ packages/lab-runtime/src/v2/gateway.ts             |  13 +-
+ packages/lab-runtime/src/v2/replay/export.ts       |   7 +-
+ packages/lab-runtime/src/v2/replay/reader.ts       |  17 +--
+ tests/security/web-replay-gateway.test.ts          |  19 ++-
+ tests/unit/web-replay-reader.test.ts               |   9 +-
+ 8 files changed, 220 insertions(+), 21 deletions(-)
+
+## Diff
+diff --git a/packages/contracts/generated/navigation2d.ts b/packages/contracts/generated/navigation2d.ts
+index 6444e75..8d4982b 100644
+--- a/packages/contracts/generated/navigation2d.ts
++++ b/packages/contracts/generated/navigation2d.ts
+@@ -2156,41 +2156,76 @@ export interface WebReplayPackageV1 {
+         }
+     )[];
+     /**
+      * @maxItems 100
+      */
+     issues: string[];
+   };
+   /**
+    * @maxItems 512
+    */
+-  assets: {
++  assets: ((
++    | {
++        role?: 'report' | 'events' | 'scene' | 'profile' | 'vendor' | 'trace' | 'model';
++        mediaType?: 'application/json';
++        path?: {
++          [k: string]: any;
++        };
++        [k: string]: any;
++      }
++    | {
++        role?: 'model';
++        mediaType?: 'model/stl';
++        encoding?: 'identity';
++        path?: {
++          [k: string]: any;
++        };
++        [k: string]: any;
++      }
++    | {
++        role?: 'notice';
++        mediaType?: 'text/plain';
++        encoding?: 'identity';
++        path?: {
++          [k: string]: any;
++        };
++        [k: string]: any;
++      }
++    | {
++        role?: 'world' | 'physics' | 'navigation';
++        mediaType?: 'application/x-ndjson';
++        path?: {
++          [k: string]: any;
++        };
++        [k: string]: any;
++      }
++  ) & {
+     path: string;
+     sha256: string;
+     decodedSha256: string;
+     bytes: number;
+     decodedBytes: number;
+     encoding: 'identity' | 'gzip';
+     role:
+       | 'report'
+       | 'events'
+       | 'scene'
+       | 'model'
+       | 'profile'
+       | 'notice'
+       | 'vendor'
+       | 'trace'
+       | 'world'
+       | 'physics'
+       | 'navigation';
+     mediaType: 'application/json' | 'application/x-ndjson' | 'model/stl' | 'text/plain';
+-  }[];
++  })[];
+   /**
+    * @maxItems 3
+    */
+   streams: {
+     kind: 'world' | 'physics' | 'navigation';
+     /**
+      * @maxItems 256
+      */
+     chunks: string[];
+     firstTick: number;
+diff --git a/packages/contracts/schemas/web-replay-package-v1.schema.json b/packages/contracts/schemas/web-replay-package-v1.schema.json
+index ae6ce15..efb13c9 100644
+--- a/packages/contracts/schemas/web-replay-package-v1.schema.json
++++ b/packages/contracts/schemas/web-replay-package-v1.schema.json
+@@ -252,21 +252,154 @@
+             ]
+           },
+           "mediaType": {
+             "enum": [
+               "application/json",
+               "application/x-ndjson",
+               "model/stl",
+               "text/plain"
+             ]
+           }
+-        }
++        },
++        "allOf": [
++          {
++            "oneOf": [
++              {
++                "properties": {
++                  "role": {
++                    "enum": [
++                      "report",
++                      "events",
++                      "scene",
++                      "profile",
++                      "vendor",
++                      "trace",
++                      "model"
++                    ]
++                  },
++                  "mediaType": {
++                    "const": "application/json"
++                  },
++                  "path": {
++                    "pattern": "\\.json(?:\\.gz)?$"
++                  }
++                }
++              },
++              {
++                "properties": {
++                  "role": {
++                    "const": "model"
++                  },
++                  "mediaType": {
++                    "const": "model/stl"
++                  },
++                  "encoding": {
++                    "const": "identity"
++                  },
++                  "path": {
++                    "pattern": "\\.stl$"
++                  }
++                }
++              },
++              {
++                "properties": {
++                  "role": {
++                    "const": "notice"
++                  },
++                  "mediaType": {
++                    "const": "text/plain"
++                  },
++                  "encoding": {
++                    "const": "identity"
++                  },
++                  "path": {
++                    "pattern": "(?:^|/)(?:NOTICE|LICENSE)(?:\\.txt)?$|\\.txt$"
++                  }
++                }
++              },
++              {
++                "properties": {
++                  "role": {
++                    "enum": [
++                      "world",
++                      "physics",
++                      "navigation"
++                    ]
++                  },
++                  "mediaType": {
++                    "const": "application/x-ndjson"
++                  },
++                  "path": {
++                    "pattern": "\\.ndjson(?:\\.gz)?$"
++                  }
++                }
++              }
++            ]
++          },
++          {
++            "if": {
++              "properties": {
++                "encoding": {
++                  "const": "identity"
++                },
++                "mediaType": {
++                  "const": "application/json"
++                }
++              }
++            },
++            "then": {
++              "properties": {
++                "path": {
++                  "pattern": "\\.json$"
++                }
++              }
++            }
++          },
++          {
++            "if": {
++              "properties": {
++                "encoding": {
++                  "const": "identity"
++                },
++                "mediaType": {
++                  "const": "application/x-ndjson"
++                }
++              }
++            },
++            "then": {
++              "properties": {
++                "path": {
++                  "pattern": "\\.ndjson$"
++                }
++              }
++            }
++          },
++          {
++            "if": {
++              "properties": {
++                "encoding": {
++                  "const": "gzip"
++                },
++                "mediaType": {
++                  "const": "application/x-ndjson"
++                }
++              }
++            },
++            "then": {
++              "properties": {
++                "path": {
++                  "pattern": "\\.ndjson\\.gz$"
++                }
++              }
++            }
++          }
++        ]
+       }
+     },
+     "streams": {
+       "type": "array",
+       "maxItems": 3,
+       "items": {
+         "type": "object",
+         "additionalProperties": false,
+         "required": [
+           "kind",
+diff --git a/packages/lab-runtime/src/gateway.ts b/packages/lab-runtime/src/gateway.ts
+index 97c5a87..8eeca97 100644
+--- a/packages/lab-runtime/src/gateway.ts
++++ b/packages/lab-runtime/src/gateway.ts
+@@ -65,21 +65,21 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
+  });});
+  const send=(response:ServerResponse,status:number,data:unknown)=>{if(response.writableEnded)return;response.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});response.end(JSON.stringify(data));};
+  async function handle(request:IncomingMessage,response:ServerResponse){
+   const host=request.headers.host;
+   if(!host||!hostAllowed(host))throw new GatewayError(403,'HOST_FORBIDDEN');
+   const origin=request.headers.origin,url=new URL(request.url??'/',`http://${host}`),path=url.pathname,policy=origin?originPolicy(origin,path):undefined;
+   if(origin&&!policy)throw new GatewayError(403,'ORIGIN_FORBIDDEN');
+   if(origin){response.setHeader('Access-Control-Allow-Origin',origin);response.setHeader('Vary','Origin');if(policy!.credentials)response.setHeader('Access-Control-Allow-Credentials','true');}
+   if(request.method==='OPTIONS'){
+    if(!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
+-   response.setHeader('Access-Control-Allow-Methods','GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID');response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
++   response.setHeader('Access-Control-Allow-Methods',/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/replay\/[0-9a-f-]{36}$/.test(path)?'GET, POST, DELETE':'GET, POST');response.setHeader('Access-Control-Allow-Headers','Content-Type, X-CSRF-Token, Authorization, Last-Event-ID');response.setHeader('Access-Control-Max-Age','600');return send(response,204,null);
+   }
+   // the only query accepted: the initial business-event cursor of a v2 stream (EventSource cannot send Last-Event-ID on first connect)
+   if(url.search&&path!=='/lab/v2/readiness'&&!(/^\/lab\/v2\/runs\/[0-9a-f-]{36}\/events$/.test(path)&&/^\?after=\d{1,20}$/.test(url.search)))throw new GatewayError(400,'QUERY_UNSUPPORTED');
+   if(path==='/lab/v2'||path.startsWith('/lab/v2/'))return v2(request,response,path,origin);
+   if(request.method==='GET'&&path==='/lab/v1/health')return send(response,200,{sourceCommit:options.sourceCommit,schemaHash:options.schemaHash,protocolMajor:1,backends:[{id:'business_sim',available:true},{id:'gazebo_sil',available:false,reason:'W06 backend not installed'},{id:'shadow',available:false,reason:'Native read-only telemetry not provisioned'},{id:'hardware_test',available:false,reason:'Native execution is outside this dev-only gateway'}],scenarioIds:['S01'],features:{polling:true,sse:false}});
+   if(request.method==='POST'&&!origin)throw new GatewayError(403,'ORIGIN_REQUIRED');
+   if(request.method==='POST'&&path==='/lab/v1/sessions'){
+    // the legacy API serves the keyless loopback launcher only
+    if(accessKey)throw new GatewayError(403,'V1_PAIRING_DISABLED');
+    const b=await body(request);
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index 8df43d4..0d464d9 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -47,20 +47,21 @@ const PAIRING_ACCESS:readonly Access[]=['simulated','shadow'];
+ const UUID='[0-9a-f-]{36}';
+ // D55: failed pairings are counted for the whole runtime (a proxy hides client addresses)
+ const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
+ const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
+ // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
+ const statusOf=(m:string)=>m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+ export function createV2Gateway(deps:V2Deps){
+  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
+  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
+  // Runs are owned by the v2 pairing session that created them; another session sees 404, exactly as for an unknown id.
++ const replayReads=new Set<{abort:AbortController;response:ServerResponse;done:Promise<void>}>();let replayReadBytes=0;
+  let replayClosing=false;const replayWork=new Map<string,{abort:AbortController;done:Promise<void>;finish():void}>();
+  const replayPackages=new Map<string,{runId:string;directory:string;manifest:ReplayManifest}>(),replayPending=new Map<string,number>();
+  // Scan/admission and deletion share one short queue; captured materialization never holds it.
+  let replayAdmission=Promise.resolve();const replaySerial=<T>(work:()=>Promise<T>)=>{const pending=replayAdmission.then(work);replayAdmission=pending.then(()=>undefined,()=>undefined);return pending;};
+  /** Unknown residue has unknown size: refuse new exports, never follow/adopt/delete it. */
+  const replayDiskOccupied=async()=>{const root=join(deps.directory,'replay-exports'),known=new Set([...replayPackages.keys(),...replayWork.keys()]),stat=await lstat(root).catch((e:NodeJS.ErrnoException)=>{if(e.code==='ENOENT')return null;throw Error('REPLAY_RECOVERY_REQUIRED');});if(!stat)return 0;if(stat.isSymbolicLink()||!stat.isDirectory())throw Error('REPLAY_RECOVERY_REQUIRED');try{let count=0;for await(const entry of await opendir(root,{bufferSize:8})){if(entry.isSymbolicLink()||!entry.isDirectory()||!known.has(entry.name))throw Error('REPLAY_RECOVERY_REQUIRED');if(++count>=8)break;}return count;}catch{throw Error('REPLAY_RECOVERY_REQUIRED');}};
+  const dropReplayRun=(runId:string)=>replaySerial(async()=>{for(const [key,p]of replayPackages)if(p.runId===runId){await rm(p.directory,{recursive:true,force:true});replayPackages.delete(key);}});
+  const runs=new Map<string,{owner:string;run:ScenarioRun;directory:string;readOnly?:boolean;archiving?:boolean;input:RunManifestInput}>();let creating=0;
+  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
+  let expiryCleanup=Promise.resolve();
+@@ -74,21 +75,21 @@ export function createV2Gateway(deps:V2Deps){
+  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
+  const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
+  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
+  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
+   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
+   if(method==='GET'&&sub==='/health')return send(response,200,{
+    protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
+    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
+-   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
++   backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxConcurrentDownloads:4,maxDownloadBytes:16*1024*1024,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
+    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
+    ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
+    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
+    capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
+     // the arm plant needs no engineering bundle: its scene is built from the run's project
+     ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
+     ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1','sim3d_payload_experiments_v1']:[],
+     ...enabled.has('mujoco_arm')&&catalog.backends.some(b=>b.id==='mujoco_arm'&&b.installed&&b.reachable)?['sim3d_arm_contact_v1']:[]],
+   });
+   if(method==='POST'&&!origin)return deny(response,403,'ORIGIN_REQUIRED',[]);
+@@ -189,21 +190,27 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+     });if(refusal)return deny(response,refusal.status,refusal.error,[]);
+     const disconnect=()=>{if(!response.writableFinished)abort.abort();};response.once('close',disconnect);if(response.destroyed||request.aborted)abort.abort();let ownsDirectory=false;
+     try{const capture=await entry.run.captureReplay({signal:abort.signal});if(capture.report.manifest.runId!==runId)throw Error('REPLAY_CAPTURE_IDENTITY');abort.signal.throwIfAborted();await mkdir(join(deps.directory,'replay-exports'),{recursive:true,mode:0o700});await mkdir(directory,{mode:0o700});ownsDirectory=true;const manifest=await exportWebReplay(capture,join(directory,'package'),{signal:abort.signal});
+      if(replayClosing||runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)throw Error('REPLAY_OWNER_CHANGED');replayPackages.set(id,{runId:runId!,directory,manifest});return send(response,201,{exportId:id,manifest});
+     }catch(e){if(ownsDirectory)await rm(directory,{recursive:true,force:true});return deny(response,422,'REPLAY_EXPORT_REFUSED',[(e as Error).message.split(':')[0]!]);}finally{response.off('close',disconnect);await replaySerial(async()=>{replayWork.get(id)?.finish();replayWork.delete(id);const n=(replayPending.get(runId!)??1)-1;if(n)replayPending.set(runId!,n);else replayPending.delete(runId!);});}
+    }
+    const pkg=exportId?replayPackages.get(exportId):undefined;if(!pkg||pkg.runId!==runId)return deny(response,404,'NOT_FOUND',[]);
+    if(method==='DELETE'&&index===undefined){if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);const deleted=await replaySerial(async()=>{if(runs.get(runId!)!==entry||entry.owner!==sessionId||replayPackages.get(exportId!)!==pkg)return false;await rm(pkg.directory,{recursive:true,force:true});replayPackages.delete(exportId!);return true;});return deleted?send(response,200,{deleted:true}):deny(response,404,'NOT_FOUND',[]);}
+    if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);if(index===undefined)return send(response,200,pkg.manifest);
+    const asset=pkg.manifest.assets[Number(index)];if(!asset)return deny(response,404,'NOT_FOUND',[]);
+-   try{const bytes=await readReplayInput(join(pkg.directory,'package'),asset.path,asset.bytes);if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}
++   // Reserve synchronously after private run/version/index admission and before any IO/allocation. No read queue.
++   if(replayClosing||replayReads.size>=4||replayReadBytes+asset.bytes>16*1024*1024)return deny(response,429,'REPLAY_READ_CAPACITY',[]);
++   const abort=new AbortController();let ioDone=false,responseDone=response.writableFinished||response.destroyed,released=false,finish!:()=>void;const done=new Promise<void>(resolve=>finish=resolve),read={abort,response,done};
++   const release=()=>{if(released||!ioDone||!responseDone)return;released=true;response.off('finish',onFinish);response.off('close',onClose);response.off('error',onError);replayReads.delete(read);replayReadBytes-=asset.bytes;finish();};
++   const onFinish=()=>{responseDone=true;release();},onClose=()=>{responseDone=true;abort.abort();release();},onError=()=>{abort.abort();response.destroy();};replayReads.add(read);replayReadBytes+=asset.bytes;response.once('finish',onFinish);response.once('close',onClose);response.once('error',onError);if(responseDone)abort.abort();
++   try{const bytes=await readReplayInput(join(pkg.directory,'package'),asset.path,asset.bytes,{signal:abort.signal});if(abort.signal.aborted||response.destroyed)return;if(bytes.length!==asset.bytes||createHash('sha256').update(bytes).digest('hex')!==asset.sha256)throw Error('REPLAY_ASSET_HASH');if(runs.get(runId!)!==entry||entry.owner!==sessionId||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt||replayPackages.get(exportId!)!==pkg)return deny(response,404,'NOT_FOUND',[]);response.writeHead(200,{'content-type':'application/octet-stream','cache-control':'no-store','x-content-type-options':'nosniff','content-length':bytes.length});response.end(bytes);return;}catch{if(!response.destroyed&&!abort.signal.aborted){if(response.headersSent)response.destroy();else return deny(response,422,'REPLAY_ASSET_UNAVAILABLE',[]);}}finally{ioDone=true;release();}
++
+   }
+   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
+   const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive))?$`).exec(sub);
+   const runAllow=runRoute?({actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
+   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
+   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+   if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
+   if(route?.name==='validate'){
+    const result=validateProjectV2(await deps.readBody(request));
+    return result.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_PROJECT',codesOf(result.issues),result.issues);
+@@ -302,12 +309,12 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+     await writeFile(join(entry.directory,`archive-${view.run.runRevision}.json`),JSON.stringify(report),{mode:0o600,flag:'wx'}).catch(e=>{if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;});
+     await entry.run.close();runs.delete(entry.run.id);await dropReplayRun(entry.run.id);return send(response,200,{archived:true,runId:entry.run.id,eventCursor:view.run.eventCursor});
+    }catch(e){entry.archiving=false;return failed(response,e);}
+   }
+   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&entry.owner===sessionId&&!entry.archiving);}
+   try{return send(response,200,kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),...entry.readOnly?{controlAccess:'view_reconcile'}:{}});}catch(e){return failed(response,e);}
+  };
+  return Object.assign(handle,{
+   /** Ends open SSE connections so the HTTP server can close. */
+   endStreams(){for(const r of streams)r.end();streams.clear();},
+-  close:async()=>{replayClosing=true;for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
++  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close().catch(()=>{})));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
+ }
+diff --git a/packages/lab-runtime/src/v2/replay/export.ts b/packages/lab-runtime/src/v2/replay/export.ts
+index 1e69b6f..14d2db5 100644
+--- a/packages/lab-runtime/src/v2/replay/export.ts
++++ b/packages/lab-runtime/src/v2/replay/export.ts
+@@ -14,23 +14,24 @@ import {validateNavigationDocument} from '../navigation2d/contracts';
+ import type {NavigationSceneV1} from '../navigation2d/contracts';
+ import {openReplayPackage,parseReplayManifest,replayPath,REPLAY_LIMITS,type ReplayManifest,type ReplayAsset} from './reader';
+ import licensing from './xarm-licensing.json';
+ import mobileLicensing from './mobile-licensing.json';
+ import {MOBILE_PAYLOAD_IMPULSE} from '../simulation3d/mujoco-mobile';
+ import {composePose,invertPose,qrotate} from '../frames';
+ export interface CapturedReplay {directory:string;report:RunReport;rawReportSha256?:string;world?:{sceneBytes?:Uint8Array;records:WorldEvidenceRecord[];admission:WorldAdmission};mobile?:{receipt?:Uint8Array;sceneBytes?:Uint8Array;scene:NavigationSceneV1;files:Map<string,Uint8Array>;physics:PhysicsTickRecord[];navigation:{path:string;bytes:Buffer}[]}}
+ const publications=new Set<string>();
+ const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),MAX_INPUT=512*1024*1024;
+ /** Refuse symlinks at every component (including root); open with no-follow and check the same bounded inode before reading. */
+-export async function readReplayInput(root:string,path:string,max:number):Promise<Buffer>{
+- if(!replayPath(path)||!Number.isSafeInteger(max)||max<0||max>MAX_INPUT)throw Error('REPLAY_INPUT_PATH');if((await lstat(root)).isSymbolicLink())throw Error('REPLAY_INPUT_PATH');const absolute=await realpath(root);let at=absolute;for(const part of path.split('/')){at=join(at,part);const s=await lstat(at);if(s.isSymbolicLink()||at!==join(absolute,path)&&!s.isDirectory())throw Error('REPLAY_INPUT_PATH');}
+- const file=await open(join(absolute,path),constants.O_RDONLY|constants.O_NOFOLLOW);try{const s=await file.stat();if(!s.isFile()||s.size>max)throw Error('REPLAY_INPUT_LIMIT');const bytes=Buffer.alloc(s.size);let n=0;while(n<bytes.length){const r=await file.read(bytes,n,bytes.length-n,n);if(!r.bytesRead)throw Error('REPLAY_INPUT_CHANGED');n+=r.bytesRead;}const after=await file.stat();if(after.size!==s.size||after.mtimeMs!==s.mtimeMs)throw Error('REPLAY_INPUT_CHANGED');return bytes;}finally{await file.close();}
++export async function readReplayInput(root:string,path:string,max:number,options:{signal?:AbortSignal}={}):Promise<Buffer>{
++ const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();
++ if(!replayPath(path)||!Number.isSafeInteger(max)||max<0||max>MAX_INPUT)throw Error('REPLAY_INPUT_PATH');if((await lstat(root)).isSymbolicLink())throw Error('REPLAY_INPUT_PATH');const absolute=await realpath(root);let at=absolute;for(const part of path.split('/')){at=join(at,part);check();const s=await lstat(at);if(s.isSymbolicLink()||at!==join(absolute,path)&&!s.isDirectory())throw Error('REPLAY_INPUT_PATH');}
++ check();const file=await open(join(absolute,path),constants.O_RDONLY|constants.O_NOFOLLOW);try{const s=await file.stat();check();if(!s.isFile()||s.size>max)throw Error('REPLAY_INPUT_LIMIT');const bytes=Buffer.alloc(s.size);let n=0;while(n<bytes.length){check();const r=await file.read(bytes,n,bytes.length-n,n);if(!r.bytesRead)throw Error('REPLAY_INPUT_CHANGED');n+=r.bytesRead;}check();const after=await file.stat();check();if(after.size!==s.size||after.mtimeMs!==s.mtimeMs)throw Error('REPLAY_INPUT_CHANGED');return bytes;}finally{await file.close();}
+ }
+ const doc=async(root:string,path:string,max=16*1024*1024)=>JSON.parse((await readReplayInput(root,path,max)).toString());
+ export async function loadRetainedReplay(directory:string):Promise<CapturedReplay>{
+  // Trusted local run roots only; no search, spawn, latest fixture or database access. Candidate names are closed, not caller paths.
+  let raw:Buffer|undefined;for(const name of ['nominal-report.json','fault-report.json','report.json']){try{raw=await readReplayInput(directory,name,16*1024*1024);break;}catch(e){if((e as NodeJS.ErrnoException).code!=='ENOENT')throw e;}}if(!raw)throw Error('REPLAY_REPORT_MISSING');const report=JSON.parse(raw.toString()) as RunReport,h=report.outcome?.tick;if(report.schemaVersion!==2||!Number.isSafeInteger(h)||h<0||h>30000)throw Error('REPLAY_REPORT_INVALID');
+  const result:CapturedReplay={directory:resolve(directory),report,rawReportSha256:sha(raw)};
+  if(report.worldSweep?.scope){const scope=report.worldSweep.scope,scene:unknown=await doc(directory,'mujoco-world/bundle/lab-world-scene.json',256*1024);validateWorldScene(scene);if(scene.sceneDigest!==scope.identity.sceneDigest)throw Error('REPLAY_SCENE_IDENTITY');const files=new Map<string,Uint8Array>();if(scene.files.reduce((n,f)=>n+f.bytes,0)>REPLAY_LIMITS.packageBytes||scene.files.some(f=>f.bytes>REPLAY_LIMITS.assetCompressedBytes))throw Error('REPLAY_INPUT_LIMIT');for(const f of scene.files)files.set(f.path,await readReplayInput(directory,`mujoco-world/bundle/${f.path}`,f.bytes));const a=prepareWorldAdmission(scene,files),cp=await doc(directory,'run.json');if(cp.runId!==report.manifest.runId||hashJson(cp.manifest)!==hashJson(report.manifest)||cp.tick<h||cp.world?.snapshot?.bootId!==scope.identity.bootId||scope.publicCommittedTick!==h||scope.identity.admissionDigest!==a.digest)throw Error('REPLAY_HORIZON_IDENTITY');for(const f of a.scene.files)await readReplayInput(directory,`mujoco-world/bundle/${f.path}`,f.bytes);const worldManifest=await doc(directory,'world-evidence/manifest.json',256*1024);if(!Array.isArray(worldManifest.chunks)||worldManifest.chunks.length>256||new Set(worldManifest.chunks.map((f:{path:string})=>f.path)).size!==worldManifest.chunks.length||worldManifest.chunks.reduce((n:number,f:{bytes:number})=>n+f.bytes,0)>REPLAY_LIMITS.packageBytes)throw Error('REPLAY_INPUT_LIMIT');for(const f of worldManifest.chunks)await readReplayInput(directory,`world-evidence/${f.path}`,8*1024*1024);await readReplayInput(directory,'world-evidence/pending.ndjson',12*1024*1024);const capture=await captureWorldPrefixDisk(join(directory,'world-evidence'),a,{...scope.identity,admissionDigest:a.digest,publicCommittedTick:h}),prefix=await materializeWorldPrefix(capture,a);if(!prefix.covered)throw Error(`REPLAY_WORLD_CAPTURE_INVALID:${prefix.issues.join(',')}`);result.world={records:prefix.records,admission:a,sceneBytes:await readReplayInput(directory,'mujoco-world/bundle/lab-world-scene.json',256*1024)};
+  }else if(report.navigation2d?.engine.id==='mujoco_3d'&&report.physicsEvidence){const scene:unknown=await doc(directory,'bundle/navigation-scene.json',256*1024),v=validateNavigationDocument(scene);if(!v.ok)throw Error('REPLAY_SCENE_INVALID');const s=scene as NavigationSceneV1,files=new Map<string,Uint8Array>();if(s.files.reduce((n,f)=>n+f.bytes,0)>REPLAY_LIMITS.packageBytes)throw Error('REPLAY_INPUT_LIMIT');for(const f of s.files){const bytes=await readReplayInput(directory,`bundle/${f.path}`,Math.min(MAX_INPUT,f.bytes));if(bytes.length!==f.bytes||sha(bytes)!==f.sha256)throw Error('REPLAY_MODEL_HASH');files.set(f.path,bytes);}const prepared=await preparePhysicsAdmission(s,p=>Promise.resolve(files.get(p)!)),m=report.physicsEvidence.manifest;if(m.identity.runId!==report.manifest.runId||m.identity.sceneDigest!==s.sceneDigest)throw Error('REPLAY_SCENE_IDENTITY');for(const stream of m.streams)for(const ref of stream.chunks)await readReplayInput(directory,`run/physics/${ref.path}`,8*1024*1024);const physics=await readPhysicsEvidence(join(directory,'run/physics'),m,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:m.identity,runTick:h});if(physics.records.length!==h+1||physics.issues.some(i=>i!=='PHYSICS_COVERAGE_INCOMPLETE'))throw Error(`REPLAY_PHYSICS_INVALID:${physics.issues.join(',')}`);const navigation:NonNullable<CapturedReplay['mobile']>['navigation']=[];for(const refs of Object.values(report.navigation2d.artifacts))for(const f of refs){const b=await readReplayInput(directory,`run/evidence/${f.path}`,8*1024*1024);if(b.length!==f.bytes||sha(b)!==f.sha256)throw Error('REPLAY_NAVIGATION_HASH');navigation.push({path:f.path,bytes:b});}result.mobile={scene:s,files,physics:physics.records,navigation,sceneBytes:await readReplayInput(directory,'bundle/navigation-scene.json',256*1024)};if(report.manifest.simulationPerturbation){if(hashJson(report.manifest.simulationPerturbation)!==hashJson(MOBILE_PAYLOAD_IMPULSE))throw Error('REPLAY_PERTURBATION_UNREGISTERED');const record=await doc(directory,'case.json',1024*1024),ref=record.artifacts?.find((f:{path:string})=>f.path==='run/worker/payload-perturbation.json'),bytes=await readReplayInput(directory,'run/worker/payload-perturbation.json',64*1024),receipt=JSON.parse(bytes.toString()),expected=MOBILE_PAYLOAD_IMPULSE.parameters;if(record.runId!==report.manifest.runId||record.sourceCommit!==report.manifest.sourceCommit||!ref||ref.bytes!==bytes.length||ref.sha256!==sha(bytes)||receipt.id!==MOBILE_PAYLOAD_IMPULSE.id||receipt.runId!==m.identity.runId||receipt.bootId!==m.identity.bootId||receipt.sceneDigest!==m.identity.sceneDigest||receipt.loadProfileSha256!==m.identity.loadProfileDigest||receipt.tick!==expected.targetTick||receipt.tick>h)throw Error('REPLAY_RECEIPT_IDENTITY');for(const key of ['frameSampleTick','forceTransform','frameId','supportId','forceN','durationS','impulseNs','substeps','propId','method'] as const)if(hashJson(receipt[key])!==hashJson(expected[key]))throw Error('REPLAY_RECEIPT_DOSE');const before=physics.records[expected.frameSampleTick]!.loads.find(l=>l.propId===expected.propId)!,after=physics.records[expected.targetTick]!.loads.find(l=>l.propId===expected.propId)!,frame=composePose({position:before.poseMap.positionM,quaternionXyzw:before.poseMap.quaternionXyzw},invertPose({position:before.poseInSupport!.positionM,quaternionXyzw:before.poseInSupport!.quaternionXyzw})),force=qrotate(frame.quaternionXyzw,[...expected.forceN]);if(hashJson(receipt.beforePoseMap)!==hashJson(before.poseMap)||hashJson(receipt.afterPoseMap)!==hashJson(after.poseMap)||!frame.position.every((v,i)=>Math.abs(v-receipt.supportPoseMap.positionM[i])<1e-9)||Math.abs(Math.abs(frame.quaternionXyzw.reduce((sum,v,i)=>sum+v*receipt.supportPoseMap.quaternionXyzw[i],0))-1)>=1e-9||!Array.isArray(receipt.forceMapN)||receipt.forceMapN.length!==3||!force.every((v,i)=>Math.abs(v-receipt.forceMapN[i])<1e-9))throw Error('REPLAY_RECEIPT_OBSERVATION');result.mobile.receipt=bytes;}
+  }else throw Error('REPLAY_PROVIDER_UNSUPPORTED');return result;
+ }
+diff --git a/packages/lab-runtime/src/v2/replay/reader.ts b/packages/lab-runtime/src/v2/replay/reader.ts
+index 7f1f723..3ceb010 100644
+--- a/packages/lab-runtime/src/v2/replay/reader.ts
++++ b/packages/lab-runtime/src/v2/replay/reader.ts
+@@ -15,28 +15,31 @@ function checkTree(value:unknown){let nodes=0;const walk=(v:unknown,depth:number
+ /** Count lexical tokens/depth before JSON.parse allocates arrays/objects. Strings and escapes do not contribute brackets. */
+ function boundedJson(text:string){let quoted=false,escaped=false,depth=0,tokens=0,word=false;for(const c of text){if(quoted){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c==='"')quoted=false;continue;}if(c==='"'){quoted=true;tokens++;word=false;}else if(c==='{'||c==='['){if(++depth>REPLAY_LIMITS.depth)fail('STRUCTURE_LIMIT');tokens++;word=false;}else if(c==='}'||c===']'){depth--;word=false;}else if(/[0-9tfn-]/.test(c)){if(!word)tokens++;word=true;}else if(c===','||c===':'||/\s/.test(c))word=false;if(tokens>REPLAY_LIMITS.nodesPerAsset)fail('STRUCTURE_LIMIT');}const value:unknown=JSON.parse(text);checkTree(value);return value;}
+ export function parseReplayManifest(input:string|Uint8Array):ReplayManifest {
+  if((typeof input==='string'?encoder.encode(input).length:input.byteLength)>REPLAY_LIMITS.manifestBytes)fail('MANIFEST_LIMIT');const value:unknown=boundedJson(typeof input==='string'?input:decoder.decode(input));checkTree(value);if(!validate(value))fail('MANIFEST_INVALID');const m=value as ReplayManifest,paths=new Set<string>();let compressed=0,decoded=0;for(const a of m.assets){if(!replayPath(a.path)||paths.has(a.path)||a.bytes>REPLAY_LIMITS.assetCompressedBytes||a.decodedBytes>REPLAY_LIMITS.assetDecodedBytes)fail('ASSET_PATH_OR_LIMIT');paths.add(a.path);compressed+=a.bytes;decoded+=a.decodedBytes;if(a.encoding==='identity'&&a.bytes!==a.decodedBytes)fail('ASSET_SIZE');}if(compressed+(typeof input==='string'?encoder.encode(input).length:input.byteLength)>REPLAY_LIMITS.packageBytes||decoded>REPLAY_LIMITS.totalDecodedBytes)fail('PACKAGE_LIMIT');if(m.assets.filter(a=>a.role==='report').length!==1||m.assets.filter(a=>a.role==='events').length>1)fail('REPORT_REF');const used=new Set<string>();for(const s of m.streams){if(s.firstTick>s.lastTick||s.lastTick>m.horizon.tick||s.samples!==s.lastTick-s.firstTick+1||!s.chunks.length)fail('STREAM_COVERAGE');for(const p of s.chunks){if(used.has(p)||!m.assets.some(a=>a.path===p&&a.role===s.kind&&a.mediaType==='application/x-ndjson'))fail('DUPLICATE_OR_MISSING_CHUNK');used.add(p);}}if(m.assets.some(a=>['world','physics'].includes(a.role)&&!used.has(a.path)))fail('ORPHAN_CHUNK');if(m.coverage.prefixCovered&&(!m.streams.length||m.streams.some(s=>s.firstTick!==0||s.lastTick!==m.horizon.tick)))fail('PREFIX_COVERAGE');if(new Set(m.streams.map(s=>s.kind)).size!==m.streams.length)fail('DUPLICATE_STREAM');for(const l of m.licensing)if(!m.assets.some(a=>a.path===l.noticePath&&a.role==='notice')||!m.assets.some(a=>a.path===l.recordPath&&a.role==='vendor')||l.matchedAssets.some(p=>!paths.has(p)))fail('LICENSING_REF');return m;
+ }
+ async function hash(bytes:Uint8Array){return [...new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256',bytes as Uint8Array<ArrayBuffer>))].map(b=>b.toString(16).padStart(2,'0')).join('');}
+ function checkAssetDependencies(value:unknown,base:string,paths:Set<string>){const walk=(v:unknown,key='',at:string[]=[] )=>{if(typeof v==='string'&&/^(uri|url|href|src|texture|buffer|mesh|filename|path)$/i.test(key)&&!(key==='url'&&at.length===2&&at[0]==='documents'&&/^\d+$/.test(at[1]!))){if(/^[a-z][a-z0-9+.-]*:|^\/\/|\\|[?#]/i.test(v)||v.startsWith('/'))fail('EXTERNAL_ASSET');if(/\.(gltf|glb|obj|mtl|dae|urdf|xml|js|html|wasm)$/i.test(v))fail('ASSET_FORMAT_UNSUPPORTED');if(/\.(stl|png|jpe?g|bin)$/i.test(v)){const p=base.includes('/')?base.slice(0,base.lastIndexOf('/')+1)+v:v;if(!replayPath(p)||!paths.has(p))fail('NESTED_ASSET_MISSING');}}if(v&&typeof v==='object')for(const [k,x]of Object.entries(v))walk(x,k,[...at,key].filter(Boolean));};walk(value);}
+ export interface ReplayReader {readonly manifest:Readonly<ReplayManifest>;readonly capturedReport:Readonly<Record<string,unknown>>;sampleAt(kind:ReplayStream['kind'],tick:number):Promise<ReplayRow|null>;samples(kind:ReplayStream['kind']):AsyncGenerator<ReplayRow>;readAsset(path:string):Promise<Uint8Array>;eventsAt(tick:number):{events:unknown[]|null;reason:string|null};metricsAt(tick:number):{metrics:unknown|null;physicsMetrics:unknown|null;worldSweep:unknown|null;reason:string|null};close():void}
+ /** Eager integrity pass is sequential; decoded rows are released per chunk. sampleAt retains one chunk only, and close/abort drops it. */
+ export async function openReplayPackage(input:string|Uint8Array,readAsset:ReplayReadAsset,options:{signal?:AbortSignal}={}):Promise<ReplayReader>{
+- const manifest=parseReplayManifest(input),controller=new AbortController(),external=()=>controller.abort();options.signal?.addEventListener('abort',external,{once:true});if(options.signal?.aborted)controller.abort();let closed=false,cache:{path:string;rows:ReplayRow[]}|null=null;const alive=()=>{if(closed)fail('CLOSED');if(controller.signal.aborted)fail('ABORTED');};
+- const assets=new Map(manifest.assets.map(a=>[a.path,a])),paths=new Set(assets.keys()),bounds=new Map<string,{first:number;last:number}>();let operations=Promise.resolve();const serial=<T>(work:()=>Promise<T>)=>{const p=operations.then(()=>{alive();return work();});operations=p.then(()=>undefined,()=>undefined);return p;};
+- const load=async(a:ReplayAsset)=>{alive();const stored=new Uint8Array(a.bytes);let pos=0;for await(const b of await readAsset(Object.freeze({...a}),{signal:controller.signal,maxBytes:a.bytes})){alive();if(!(b instanceof Uint8Array)||pos+b.byteLength>a.bytes)fail('ASSET_SIZE_LIMIT');stored.set(b,pos);pos+=b.byteLength;}alive();if(pos!==a.bytes)fail('ASSET_SIZE');if(await hash(stored)!==a.sha256)fail('ASSET_HASH');let result=stored;if(a.encoding==='gzip'){const stream=new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip')),reader=stream.getReader(),output=new Uint8Array(a.decodedBytes);let n=0;try{while(true){alive();const {done,value}=await reader.read();if(done)break;if(n+value.length>a.decodedBytes)fail('DECODE_LIMIT');output.set(value,n);n+=value.length;}if(n!==a.decodedBytes)fail('DECODE_SIZE');result=output;}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}}alive();if(await hash(result)!==a.decodedSha256)fail('DECODE_HASH');return result;};
++ const manifest=parseReplayManifest(input),controller=new AbortController();let closed=false,termination:'closed'|'aborted'|null=null,cache:{path:string;rows:ReplayRow[]}|null=null,capturedReport:Record<string,unknown>={},sourceEvents:unknown;
++ const scenes:Record<string,unknown>[]=[],assets=new Map(manifest.assets.map(a=>[a.path,a])),paths=new Set(assets.keys()),bounds=new Map<string,{first:number;last:number}>(),verified=new Set<string>();
++ const dispose=(reason:'closed'|'aborted')=>{if(closed)return;closed=true;termination=reason;options.signal?.removeEventListener('abort',external);cache=null;capturedReport={};sourceEvents=undefined;scenes.length=0;bounds.clear();verified.clear();controller.abort();};
++ const external=()=>dispose('aborted'),alive=()=>{if(termination==='aborted')fail('ABORTED');if(closed)fail('CLOSED');};options.signal?.addEventListener('abort',external,{once:true});if(options.signal?.aborted)external();
++ let operations=Promise.resolve();const serial=<T>(work:()=>Promise<T>)=>{const p=operations.then(()=>{alive();return work();});operations=p.then(()=>undefined,()=>undefined);return p;};
++ const load=async(a:ReplayAsset)=>{alive();const stored=new Uint8Array(a.bytes);let pos=0;for await(const b of await readAsset(Object.freeze({...a}),{signal:controller.signal,maxBytes:a.bytes})){alive();if(!(b instanceof Uint8Array)||pos+b.byteLength>a.bytes)fail('ASSET_SIZE_LIMIT');stored.set(b,pos);pos+=b.byteLength;}alive();if(pos!==a.bytes)fail('ASSET_SIZE');const encodedHash=await hash(stored);alive();if(encodedHash!==a.sha256)fail('ASSET_HASH');let result=stored;if(a.encoding==='gzip'){const stream=new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip')),reader=stream.getReader(),output=new Uint8Array(a.decodedBytes);let n=0;try{while(true){alive();const {done,value}=await reader.read();if(done)break;if(n+value.length>a.decodedBytes)fail('DECODE_LIMIT');output.set(value,n);n+=value.length;}if(n!==a.decodedBytes)fail('DECODE_SIZE');result=output;}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}}alive();const decodedHash=await hash(result);alive();if(decodedHash!==a.decodedSha256)fail('DECODE_HASH');verified.add(a.path);return result;};
+  const json=async(a:ReplayAsset)=>{const v=boundedJson(decoder.decode(await load(a)));if(['model','scene','profile'].includes(a.role))checkAssetDependencies(v,a.path,paths);return v;};
+  const rows=async(a:ReplayAsset)=>{const b=await load(a),text=decoder.decode(b);if(!text.endsWith('\n'))fail('LINE_TRUNCATED');let lineCount=0;for(const c of text)if(c==='\n'&&++lineCount>REPLAY_LIMITS.linesPerChunk)fail('LINE_COUNT_LIMIT');const lines=text.slice(0,-1).split('\n');let nodes=0;if(lines.length>REPLAY_LIMITS.linesPerChunk)fail('LINE_COUNT_LIMIT');return lines.map(line=>{if(encoder.encode(line).length>REPLAY_LIMITS.lineBytes)fail('LINE_LIMIT');const v=boundedJson(line);nodes+=checkTree(v);if(nodes>REPLAY_LIMITS.nodesPerAsset)fail('STRUCTURE_LIMIT');if(!v||typeof v!=='object'||Array.isArray(v))fail('ROW_INVALID');return v as ReplayRow;});};
+  const tickOf=(r:ReplayRow)=>r.snapshot?.tick??r.tick;
+- let capturedReport:Record<string,unknown>={},sourceEvents:unknown;const scenes:Record<string,unknown>[]=[];
+  try{for(const a of manifest.assets){alive();if(a.mediaType==='application/x-ndjson'){if(a.role==='navigation'){for(const row of await rows(a))if(!Number.isSafeInteger(row.tick)||row.tick!>manifest.horizon.tick)fail('SAMPLE_IDENTITY_OR_ORDER');}continue;}if(a.mediaType==='application/json'){const v=await json(a);if(a.role==='report')capturedReport=v as Record<string,unknown>;if(a.role==='events')sourceEvents=v;if(a.role==='scene')scenes.push(v as Record<string,unknown>);}else{const bytes=await load(a);if(a.mediaType==='model/stl'&&(a.role!=='model'||!a.path.endsWith('.stl')||bytes.length<84||new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(80,true)>REPLAY_LIMITS.stlTrianglesPerAsset||84+50*new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(80,true)!==bytes.length))fail('STL_FORMAT_OR_LIMIT');}}
+   const reportManifest=capturedReport.manifest as {runId?:unknown}|undefined,outcome=capturedReport.outcome as {tick?:unknown}|undefined;if(reportManifest?.runId!==manifest.runId||outcome?.tick!==manifest.horizon.tick)fail('REPORT_IDENTITY');if(sourceEvents!==undefined&&JSON.stringify(sourceEvents)!==JSON.stringify(capturedReport.businessEvents))fail('SOURCE_EVENT_IDENTITY');sourceEvents=undefined;
+   const worldScope=(capturedReport.worldSweep as {scope?:{identity:{runId:string;bootId:string;sceneDigest:string};publicCommittedTick:number;prefixCovered:boolean;streamFinalized:boolean}}|undefined)?.scope;if(worldScope&&(worldScope.identity.runId!==manifest.runId||worldScope.publicCommittedTick!==manifest.horizon.tick||worldScope.prefixCovered!==manifest.coverage.prefixCovered||worldScope.streamFinalized!==manifest.coverage.streamFinalized))fail('REPORT_COVERAGE_IDENTITY');
+-  if(manifest.streams.length){const physicsIdentity=(capturedReport.physicsEvidence as {manifest?:{identity?:{runId:string;sceneDigest:string}}}|undefined)?.manifest?.identity,sceneDigest=worldScope?.identity.sceneDigest??physicsIdentity?.sceneDigest;if(physicsIdentity&&physicsIdentity.runId!==manifest.runId)fail('SCENE_IDENTITY');if(typeof sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(sceneDigest)||scenes.length!==1||scenes[0]!.sceneDigest!==sceneDigest)fail('SCENE_IDENTITY');const refs=scenes[0]!.files;if(!Array.isArray(refs)||refs.some(f=>!f||typeof f.path!=='string'||!assets.has('bundle/'+f.path)||assets.get('bundle/'+f.path)!.decodedSha256!==f.sha256||assets.get('bundle/'+f.path)!.decodedBytes!==f.bytes))fail('MODEL_REF_IDENTITY');}
++  if(manifest.streams.length){const physicsIdentity=(capturedReport.physicsEvidence as {manifest?:{identity?:{runId:string;sceneDigest:string}}}|undefined)?.manifest?.identity,sceneDigest=worldScope?.identity.sceneDigest??physicsIdentity?.sceneDigest;if(physicsIdentity&&physicsIdentity.runId!==manifest.runId)fail('SCENE_IDENTITY');if(typeof sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(sceneDigest)||scenes.length!==1||scenes[0]!.sceneDigest!==sceneDigest)fail('SCENE_IDENTITY');const refs=scenes[0]!.files;if(!Array.isArray(refs)||refs.some(f=>!f||typeof f.path!=='string'||!assets.has('bundle/'+f.path)||!['model','profile','scene'].includes(assets.get('bundle/'+f.path)!.role)||assets.get('bundle/'+f.path)!.decodedSha256!==f.sha256||assets.get('bundle/'+f.path)!.decodedBytes!==f.bytes))fail('MODEL_REF_IDENTITY');}
+   for(const s of manifest.streams){let next=s.firstTick,count=0;for(const p of s.chunks){const rs=await rows(assets.get(p)!);bounds.set(p,{first:tickOf(rs[0]!)!,last:tickOf(rs.at(-1)!)!});for(const row of rs){const tick=tickOf(row);if(tick!==next++||tick!>manifest.horizon.tick||row.snapshot&&(row.snapshot.runId!==manifest.runId||(row.snapshot.simTimeNs!==String(BigInt(tick!)*20_000_000n))||worldScope&&((row.snapshot as unknown as {bootId:string;sceneDigest:string}).bootId!==worldScope.identity.bootId||(row.snapshot as unknown as {sceneDigest:string}).sceneDigest!==worldScope.identity.sceneDigest)))fail('SAMPLE_IDENTITY_OR_ORDER');count++;}}if(count!==s.samples||next-1!==s.lastTick)fail('STREAM_COVERAGE');}
+- }catch(e){controller.abort();options.signal?.removeEventListener('abort',external);cache=null;capturedReport={};throw e;}
++  alive();if(verified.size!==assets.size)fail('ASSET_UNVERIFIED');
++ }catch(e){dispose(termination==='aborted'?'aborted':'closed');throw e;}
+  const getRows=async(path:string)=>{alive();if(cache?.path!==path){cache=null;const decoded=await rows(assets.get(path)!);alive();cache={path,rows:decoded};}return cache!.rows;};
+  const freeze=(v:unknown):void=>{if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.freeze(v);for(const x of Object.values(v))freeze(x);}};freeze(manifest);freeze(capturedReport);
+  const sampleAt=(kind:ReplayStream['kind'],tick:number)=>serial(async()=>{if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const s=manifest.streams.find(s=>s.kind===kind);if(!s)return null;const p=s.chunks.find(p=>tick>=bounds.get(p)!.first&&tick<=bounds.get(p)!.last);if(!p)return null;const rs=await getRows(p);return structuredClone(rs.find(r=>tickOf(r)===tick)??null);});
+- return {manifest,get capturedReport(){return capturedReport;},sampleAt,async *samples(kind){alive();const s=manifest.streams.find(s=>s.kind===kind);if(!s)return;for(let tick=s.firstTick;tick<=s.lastTick;tick++){alive();const row=await sampleAt(kind,tick);if(row)yield row;}},readAsset(path){return serial(async()=>{cache=null;const a=assets.get(path);if(!a)fail('ASSET_NOT_ADMITTED');return load(a!);});},eventsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const epoch=(capturedReport.manifest as {clock?:{businessEpochMs?:number}}|undefined)?.clock?.businessEpochMs,events=capturedReport.businessEvents;if(epoch===undefined||!Number.isFinite(epoch)||!Array.isArray(events)||events.some(e=>!Number.isFinite(Date.parse(e.at))))return {events:null,reason:'EVENT_CLOCK_UNAVAILABLE'};return {events:structuredClone(events.filter(e=>Date.parse(e.at)<=epoch+tick*20)),reason:null};},metricsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');if(tick!==manifest.horizon.tick)return {metrics:null,physicsMetrics:null,worldSweep:null,reason:'CAPTURE_HORIZON_ONLY'};return {metrics:capturedReport.metrics??null,physicsMetrics:(capturedReport.physicsEvidence as {metrics?:unknown}|undefined)?.metrics??null,worldSweep:capturedReport.worldSweep??null,reason:null};},close(){if(closed)return;closed=true;controller.abort();options.signal?.removeEventListener('abort',external);cache=null;capturedReport={};}};
++ alive();return {manifest,get capturedReport(){return capturedReport;},sampleAt,async *samples(kind){alive();const s=manifest.streams.find(s=>s.kind===kind);if(!s)return;for(let tick=s.firstTick;tick<=s.lastTick;tick++){alive();const row=await sampleAt(kind,tick);if(row)yield row;}},readAsset(path){return serial(async()=>{cache=null;const a=assets.get(path);if(!a)fail('ASSET_NOT_ADMITTED');return load(a!);});},eventsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');const epoch=(capturedReport.manifest as {clock?:{businessEpochMs?:number}}|undefined)?.clock?.businessEpochMs,events=capturedReport.businessEvents;if(epoch===undefined||!Number.isFinite(epoch)||!Array.isArray(events)||events.some(e=>!Number.isFinite(Date.parse(e.at))))return {events:null,reason:'EVENT_CLOCK_UNAVAILABLE'};return {events:structuredClone(events.filter(e=>Date.parse(e.at)<=epoch+tick*20)),reason:null};},metricsAt(tick){alive();if(!Number.isSafeInteger(tick)||tick<0||tick>manifest.horizon.tick)fail('CURSOR_INVALID');if(tick!==manifest.horizon.tick)return {metrics:null,physicsMetrics:null,worldSweep:null,reason:'CAPTURE_HORIZON_ONLY'};return {metrics:capturedReport.metrics??null,physicsMetrics:(capturedReport.physicsEvidence as {metrics?:unknown}|undefined)?.metrics??null,worldSweep:capturedReport.worldSweep??null,reason:null};},close(){dispose('closed');}};
+ }
+diff --git a/tests/security/web-replay-gateway.test.ts b/tests/security/web-replay-gateway.test.ts
+index 98c9408..b00215a 100644
+--- a/tests/security/web-replay-gateway.test.ts
++++ b/tests/security/web-replay-gateway.test.ts
+@@ -1,36 +1,51 @@
+ // HTTP ownership and scheduling protocol double; retained observations are real B04 bytes. No worker executes here.
+ import {afterEach,expect,test,vi} from 'vitest';
++import {ServerResponse} from 'node:http';
++import {createHash} from 'node:crypto';
++import * as replayExport from '../../packages/lab-runtime/src/v2/replay/export';
++import {parseReplayManifest} from '../../packages/lab-runtime/src/v2/replay/reader';
+ import * as fs from 'node:fs/promises';
+ import {mkdtemp,mkdir,readFile,readdir,rm} from 'node:fs/promises';
+ import {tmpdir} from 'node:os';
+ import {join} from 'node:path';
+ import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
+ import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
+ import {TelemetryRecorder} from '../../packages/lab-runtime/src/v2/telemetry';
+ import type {ScenarioRun,RunView} from '../../packages/lab-runtime/src/v2/scenario-runner';
+ import {loadRetainedReplay} from '../../packages/lab-runtime/src/v2/replay/export';
+ vi.mock('node:fs/promises',async original=>{const actual=await original<typeof import('node:fs/promises')>();return {...actual,opendir:vi.fn(actual.opendir)};});
+ const roots:string[]=[],gateways:LabGateway[]=[];afterEach(async()=>{vi.restoreAllMocks();for(const g of gateways.splice(0))await g.close();for(const r of roots.splice(0))await rm(r,{recursive:true,force:true});});
+-async function pair(g:LabGateway){const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {authorization:`Bearer ${(await r.json()).sessionToken}`,origin:'http://127.0.0.1:4175','content-type':'application/json'};}
++async function pair(g:LabGateway){const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});const body=await r.json();return {authorization:`Bearer ${body.sessionToken}`,cookie:r.headers.get('set-cookie')!.split(';')[0]!,'x-csrf-token':String(body.csrfToken),origin:'http://127.0.0.1:4175','content-type':'application/json'};}
+ test('immutable export and indexed asset reads are private to current owner, survive view-only reclaim, and refuse paths',async()=>{
+  const captured=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),id=captured.report.manifest.runId,directory=await mkdtemp(join(tmpdir(),'web-replay-gateway-'));roots.push(directory);const ids=['mujoco_3d','mujoco_arm','mock_coffee'],catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>ids.includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};
+  let block:Promise<void>|undefined;const hooks:{capture?:()=>void}={};
+  const view={run:{id,runRevision:0},tick:520} as RunView;const factory=async(_i:unknown,p:{directory:string})=>{await mkdir(p.directory,{recursive:true});return {id,captureReplay:async()=>{hooks.capture?.();if(block)await block;return captured;},report:async()=>captured.report,snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:520,paused:true,runRevision:0})} as ScenarioRun;};
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:ids,simulationFactory:factory,portableChecks:async()=>['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'}))}});gateways.push(g);const owner=await pair(g),other=await pair(g),base=g.url+`/lab/v2/runs/${id}`;
+  const created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:owner,body:JSON.stringify({project:JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8')),scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(created.status,await created.clone().text()).toBe(201);const proof=(await created.json()).reclaimToken;
+  expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(404);expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{"path":"../run.json"}'})).status).toBe(422);
+  const responses=await Promise.all([0,1].map(()=>fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})));expect(responses.map(r=>r.status)).toEqual([201,201]);const [a,b]=await Promise.all(responses.map(r=>r.json()));const residue=join(directory,'replay-exports','.replay-crash-staging');await mkdir(residue);expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})).status).toBe(429);expect((await fetch(base+`/replay/${b.exportId}`,{headers:owner})).status).toBe(200);expect((await readdir(join(directory,'replay-exports'))).includes('.replay-crash-staging')).toBe(true);await rm(residue,{recursive:true});expect((await fetch(base+'/replay',{method:'POST',headers:owner,body:'{}'})).status).toBe(429);expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(404);expect(a.manifest).toEqual(b.manifest);expect(a.exportId).not.toBe(b.exportId);
+  const url=base+`/replay/${a.exportId}`;expect((await fetch(url,{headers:other})).status).toBe(404);expect((await fetch(url+'/assets/0',{headers:other})).status).toBe(404);expect((await fetch(url+'/assets/0',{headers:owner})).status).toBe(200);expect((await fetch(url+'/assets/999',{headers:owner})).status).toBe(404);expect((await fetch(url+'/assets/../run.json',{headers:owner})).status).toBe(404);
+- const reclaim=await fetch(base+'/reclaim',{method:'POST',headers:other,body:JSON.stringify({proof})});expect(reclaim.status).toBe(200);expect((await fetch(url,{headers:owner})).status).toBe(404);expect((await fetch(url,{headers:other})).status).toBe(200);expect((await fetch(url,{method:'DELETE',headers:other})).status).toBe(200);expect((await fetch(url,{headers:other})).status).toBe(404);expect((await readdir(directory)).some(n=>n==='replay-exports')).toBe(true);
++ const reclaim=await fetch(base+'/reclaim',{method:'POST',headers:other,body:JSON.stringify({proof})});expect(reclaim.status).toBe(200);expect((await fetch(url,{headers:owner})).status).toBe(404);expect((await fetch(url,{headers:other})).status).toBe(200);const preflight=await fetch(url,{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE','access-control-request-headers':'content-type,authorization'}});expect(preflight.status).toBe(204);expect(preflight.headers.get('access-control-allow-methods')?.split(/,\s*/)).toContain('DELETE');expect((await fetch(url,{method:'OPTIONS',headers:{origin:'https://forbidden.invalid','access-control-request-method':'DELETE'}})).status).toBe(403);const unrelated=await fetch(base+'/actions',{method:'OPTIONS',headers:{origin:other.origin,'access-control-request-method':'DELETE'}});expect(unrelated.headers.get('access-control-allow-methods')?.split(/,\s*/)).not.toContain('DELETE');expect((await fetch(url,{method:'DELETE',headers:owner})).status).toBe(404);const cookieOnly={cookie:other.cookie,origin:other.origin};expect((await fetch(url,{method:'DELETE',headers:cookieOnly})).status).toBe(403);expect((await fetch(url,{method:'DELETE',headers:{...cookieOnly,'x-csrf-token':other['x-csrf-token']}})).status).toBe(200);expect((await fetch(url,{headers:other})).status).toBe(404);expect((await readdir(directory)).some(n=>n==='replay-exports')).toBe(true);
+  let release!:()=>void,started!:()=>void;block=new Promise<void>(r=>release=r);const began=new Promise<void>(r=>started=r);hooks.capture=started;const abort=new AbortController(),pending=fetch(base+'/replay',{method:'POST',headers:other,body:'{}',signal:abort.signal});await began;abort.abort();await expect(pending).rejects.toThrow();expect((await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'})).status).toBe(429);release();block=undefined;let retry:Response|undefined;for(let i=0;i<50;i++){retry=await fetch(base+'/replay',{method:'POST',headers:other,body:'{}'});if(retry.status!==429)break;await new Promise(r=>setTimeout(r,10));}expect(retry!.status).toBe(201);expect((await fetch(base+`/replay/${b.exportId}`,{headers:other})).status).toBe(200);expect((await readdir(join(directory,'replay-exports'))).filter(n=>n.startsWith('.replay-'))).toEqual([]);
+  await g.close();gateways.splice(gateways.indexOf(g),1);expect(await readdir(join(directory,'replay-exports'))).toEqual([]);
+ });
+ test('process caps two active captures and eight retained versions; close removes only owned exports',async()=>{
+  const {randomUUID}=await import('node:crypto'),original=await loadRetainedReplay('/tmp/mekoniq-b04a-final-681b8ad-20261114-0954/cup-fall'),directory=await mkdtemp(join(tmpdir(),'replay-global-limit-'));roots.push(directory);const ids=['mujoco_3d','mujoco_arm','mock_coffee'],catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>ids.includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};let hold:Promise<void>|undefined,started=0;
+  const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:ids,portableChecks:async()=>['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{const id=randomUUID(),report=structuredClone(original.report);report.manifest.runId=id;report.physicsEvidence!.manifest.identity.runId=id;const capture={...original,report},view={run:{id,runRevision:0},tick:520} as RunView;await mkdir(p.directory,{recursive:true});return {id,captureReplay:async()=>{started++;if(hold)await hold;return capture;},report:async()=>report,snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},telemetry:new TelemetryRecorder(),journal:async()=>[],pulse:()=>({tick:520,paused:true,runRevision:0})} as ScenarioRun;}}});gateways.push(g);const owner=await pair(g),runIds:string[]=[],project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
+  for(let n=0;n<5;n++){const r=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:owner,body:JSON.stringify({project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(r.status).toBe(201);runIds.push((await r.json()).run.id);}
+  const post=(id:string)=>fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers:owner,body:'{}'});let release!:()=>void;hold=new Promise<void>(r=>release=r);const pending=[post(runIds[0]!),post(runIds[1]!)];for(let n=0;n<100&&started<2;n++)await new Promise(r=>setTimeout(r,5));expect(started).toBe(2);const denied=await post(runIds[2]!);expect(denied.status).toBe(429);expect((await denied.json()).error).toBe('REPLAY_CAPACITY');release();hold=undefined;expect((await Promise.all(pending)).map(r=>r.status)).toEqual([201,201]);for(const id of runIds.slice(2))for(let n=0;n<2;n++)expect((await post(id)).status).toBe(201);const max=await post(runIds[0]!);expect(max.status).toBe(429);expect((await max.json()).error).toBe('REPLAY_CAPACITY');expect(await readdir(join(directory,'replay-exports'))).toHaveLength(8);await g.close();gateways.splice(gateways.indexOf(g),1);expect(await readdir(join(directory,'replay-exports'))).toEqual([]);expect(await readdir(directory)).toHaveLength(6);
+ });
+ test('crash-stale or unknown export directories consume the bounded disk slots after restart and are never deleted',async()=>{
+  const {coffeeProject}=await import('../support/lab-v2'),directory=await mkdtemp(join(tmpdir(),'replay-stale-limit-'));roots.push(directory);await mkdir(join(directory,'replay-exports'));for(let i=0;i<16;i++)await mkdir(join(directory,'replay-exports',`unknown-${i}`));let entries=0,iteratorClosed=false;const actual=(await vi.importActual<typeof fs>('node:fs/promises')).opendir;vi.spyOn(fs,'opendir').mockImplementation(async(path,options)=>{const dir=await actual(path,options);if(String(path)!==join(directory,'replay-exports'))return dir;return {[Symbol.asyncIterator]:async function*(){const iterator=dir[Symbol.asyncIterator]();try{while(true){const next=await iterator.next();if(next.done)return;entries++;yield next.value;}}finally{iteratorClosed=true;await iterator.return?.();}}} as typeof dir;});const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr','mock_coffee','mock_arm']}});gateways.push(g);const headers=await pair(g),created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers,body:JSON.stringify({project:coffeeProject(),scenarioId:'BV01',scenarioRevision:1,seed:7,mode:'mock',access:'simulated',backendSetId:'mock-default',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(created.status).toBe(201);const id=(await created.json()).run.id,response=await fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers,body:'{}'});expect(response.status).toBe(429);expect((await response.json()).error).toBe('REPLAY_RECOVERY_REQUIRED');expect(entries).toBe(1);expect(iteratorClosed).toBe(true);expect(await readdir(join(directory,'replay-exports'))).toHaveLength(16);const outside=join(directory,'outside-owned-fixture');await mkdir(outside);await fs.writeFile(join(outside,'sentinel'),'unchanged');await rm(join(directory,'replay-exports'),{recursive:true});await fs.symlink(outside,join(directory,'replay-exports'));const symlinkResponse=await fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers,body:'{}'});expect(symlinkResponse.status).toBe(429);expect((await symlinkResponse.json()).error).toBe('REPLAY_RECOVERY_REQUIRED');expect(entries).toBe(1);await g.close();gateways.splice(gateways.indexOf(g),1);expect((await fs.lstat(join(directory,'replay-exports'))).isSymbolicLink()).toBe(true);expect(await fs.readFile(join(outside,'sentinel'),'utf8')).toBe('unchanged');
+ });
++
++// Download admission protocol fixture: synthetic immutable JSON assets; actual HTTP response finish/close, no physics.
++test('download reservations bound bytes and active IO through response close/finish, with private404 precedence',async()=>{
++ const directory=await mkdtemp(join(tmpdir(),'replay-download-limit-'));roots.push(directory);const id='12345678-1234-1234-1234-123456789abc',big=Buffer.from(JSON.stringify({data:'x'.repeat(8*1024*1024-11)})),small=Buffer.from('{}'),report=Buffer.from(JSON.stringify({manifest:{runId:id},outcome:{tick:0}})),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),asset=(path:string,b:Buffer,role:string)=>({path,sha256:sha(b),decodedSha256:sha(b),bytes:b.length,decodedBytes:b.length,role,encoding:'identity',mediaType:'application/json'}),manifest=parseReplayManifest(JSON.stringify({schemaVersion:1,documentType:'web-replay-package',runId:id,horizon:{tick:0,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',rawReportSha256:sha(report),reportTransform:'credential_redaction_v1'},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:[]},assets:[asset('large.json',big,'trace'),asset('small.json',small,'trace'),asset('report.json',report,'report')],streams:[],licensing:[]}));
++ vi.spyOn(replayExport,'exportWebReplay').mockImplementation(async(_c,out)=>{await mkdir(out);return manifest;});
++ const reads:{signal?:AbortSignal;release():void;reject(e:Error):void}[]=[];let cleaned=0;vi.spyOn(replayExport,'readReplayInput').mockImplementation(async(_root,path,_max,options?:{signal?:AbortSignal})=>{let release!:()=>void,reject!:(e:Error)=>void;const gate=new Promise<void>((a,b)=>{release=a;reject=b;});reads.push({signal:options?.signal,release,reject});try{await gate;return path==='large.json'?Buffer.from(big):Buffer.from(small);}finally{cleaned++;}});
++ const held=new Map<ServerResponse,()=>void>(),end=ServerResponse.prototype.end;vi.spyOn(ServerResponse.prototype,'end').mockImplementation(function(this:ServerResponse,...args:Parameters<ServerResponse['end']>){if(this.getHeader('content-type')==='application/octet-stream'){held.set(this,()=>end.apply(this,args));this.once('close',()=>held.delete(this));this.flushHeaders();return this;}return end.apply(this,args);});
++ const ids=['mujoco_3d','mujoco_arm','mock_coffee'],catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>ids.includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)},view={run:{id,runRevision:0},tick:0} as RunView,g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{catalog,enabledBackends:ids,portableChecks:async()=>['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{await mkdir(p.directory,{recursive:true});return {id,captureReplay:async()=>({directory:p.directory,report:{manifest:{runId:id}}}),snapshot:async()=>view,holdForReclaim:async()=>view,start:async()=>view,action:async()=>view,close:async()=>{},report:async()=>({}),pulse:()=>({tick:0,paused:true,runRevision:0}),journal:async()=>[],telemetry:new TelemetryRecorder()} as unknown as ScenarioRun;}}});gateways.push(g);const owner=await pair(g),other=await pair(g),project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));expect((await fetch(g.url+'/lab/v2/runs',{method:'POST',headers:owner,body:JSON.stringify({project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-cell-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})})).status).toBe(201);const exported=await fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers:owner,body:'{}'}),version=(await exported.json()).exportId,url=g.url+`/lab/v2/runs/${id}/replay/${version}/assets/`,requests:{abort:AbortController;promise:Promise<Response>}[]=[];const get=(index:number)=>{const abort=new AbortController(),promise=fetch(url+index,{headers:owner,signal:abort.signal});void promise.catch(()=>{});const request={abort,promise};requests.push(request);return request;};
++ try{const first=get(0);get(0);await vi.waitFor(()=>expect(reads.length).toBe(2));expect((await fetch(url+'0',{headers:owner,signal:AbortSignal.timeout(1500)})).status).toBe(429);expect((await fetch(url+'0',{headers:other})).status).toBe(404);expect((await fetch(url+'999',{headers:owner})).status).toBe(404);expect(reads.length).toBe(2);first.abort.abort();await expect(first.promise).rejects.toThrow();await vi.waitFor(()=>expect(reads.filter(r=>r.signal?.aborted).length).toBe(1));const closedRead=reads.find(r=>r.signal?.aborted)!;expect((await fetch(url+'0',{headers:owner,signal:AbortSignal.timeout(1500)})).status).toBe(429);closedRead.release();await vi.waitFor(()=>expect(cleaned).toBe(1));get(0);await vi.waitFor(()=>expect(reads.length).toBe(3));reads.find(r=>r!==closedRead&&r!==reads[2])!.release();reads[2]!.release();await vi.waitFor(()=>expect(held.size).toBe(2));expect((await fetch(url+'1',{headers:owner,signal:AbortSignal.timeout(1500)})).status).toBe(429);requests[1]!.abort.abort();await vi.waitFor(()=>expect(held.size).toBe(1));get(1);get(1);get(1);await vi.waitFor(()=>expect(reads.length).toBe(6));const full=await fetch(url+'1',{headers:owner,signal:AbortSignal.timeout(1500)});expect(full.status).toBe(429);expect((await full.json()).error).toBe('REPLAY_READ_CAPACITY');reads[3]!.reject(Error('READ_FAILED'));expect((await Promise.race(requests.slice(3,6).map(r=>r.promise))).status).toBe(422);get(1);await vi.waitFor(()=>expect(reads.length).toBe(7));reads[4]!.release();await vi.waitFor(()=>expect([...held.keys()].some(r=>Number(r.getHeader('content-length'))===2)).toBe(true));const finishing=[...held.keys()].find(r=>Number(r.getHeader('content-length'))===2)!,finished=new Promise<void>(resolve=>finishing.once('finish',resolve));held.get(finishing)!();await finished;get(1);await vi.waitFor(()=>expect(reads.length).toBe(8));expect(closedRead.signal?.aborted).toBe(true);
++ }finally{for(const r of requests)r.abort.abort();for(const r of reads)r.release();for(const response of held.keys())response.destroy();await Promise.allSettled(requests.map(r=>r.promise));}
++});
+diff --git a/tests/unit/web-replay-reader.test.ts b/tests/unit/web-replay-reader.test.ts
+index bdbd104..d9a6c32 100644
+--- a/tests/unit/web-replay-reader.test.ts
++++ b/tests/unit/web-replay-reader.test.ts
+@@ -1,12 +1,17 @@
+-import {expect,test} from 'vitest';
++import {expect,test,vi} from 'vitest';
+ import {createHash} from 'node:crypto';
+ import {gzipSync} from 'node:zlib';
+ import {openReplayPackage,REPLAY_LIMITS} from '../../packages/lab-runtime/src/v2/replay/reader';
+ const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
+ const fixture=()=>{const plain=Buffer.from(JSON.stringify({schemaVersion:2,manifest:{runId:'run-1'},outcome:{tick:7},metrics:{distanceM:{a:3}},physicsEvidence:{manifest:{identity:{runId:'run-1',sceneDigest:'a'.repeat(64)}},metrics:{maxTiltRad:2}}})),bytes=gzipSync(plain),asset={path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'};return {bytes,manifest:{schemaVersion:1,documentType:'web-replay-package',runId:'run-1',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[asset],streams:[],licensing:[]}};};
+ test('pure reader verifies digest, exposes capture-only aggregates, closes and refuses bad paths before asset read',async()=>{const f=fixture();let calls=0;const read=async function*(){calls++;yield f.bytes;};const r=await openReplayPackage(JSON.stringify(f.manifest),read);expect(r.metricsAt(7).metrics).toEqual({distanceM:{a:3}});expect(r.metricsAt(6)).toMatchObject({metrics:null,reason:'CAPTURE_HORIZON_ONLY'});r.close();await expect(r.sampleAt('world',7)).rejects.toThrow(/CLOSED/);const bad=structuredClone(f.manifest);bad.assets[0]!.path='../secret';await expect(openReplayPackage(JSON.stringify(bad),read)).rejects.toThrow(/MANIFEST|PATH/);expect(calls).toBe(1);});
+ test('bounds compressed, inflated, metadata, duplicate references and corrupt content',async()=>{const f=fixture(),read=async function*(){yield f.bytes;};for(const change of [(m:typeof f.manifest)=>{m.assets.push(m.assets[0]!);},(m:typeof f.manifest)=>{m.assets[0]!.bytes=REPLAY_LIMITS.assetCompressedBytes+1;},(m:typeof f.manifest)=>{m.assets[0]!.decodedBytes=REPLAY_LIMITS.assetDecodedBytes+1;}]){const m=structuredClone(f.manifest);change(m);await expect(openReplayPackage(JSON.stringify(m),read)).rejects.toThrow();}await expect(openReplayPackage(' '.repeat(REPLAY_LIMITS.manifestBytes+1),read)).rejects.toThrow(/LIMIT/);await expect(openReplayPackage(JSON.stringify(f.manifest),async function*(){yield Buffer.from('corrupt');})).rejects.toThrow(/HASH|SIZE/);const expansion=gzipSync(Buffer.alloc(2*1024*1024,32));const m=structuredClone(f.manifest);Object.assign(m.assets[0]!,{sha256:sha(expansion),bytes:expansion.length,decodedBytes:10});await expect(openReplayPackage(JSON.stringify(m),async function*(){yield expansion;})).rejects.toThrow(/DECODE|LIMIT/);});
+ test('cancel during load calls iterator cleanup and retains no package',async()=>{const f=fixture(),abort=new AbortController();let cleaned=false;const read=async function*(){try{yield f.bytes.subarray(0,5);abort.abort();yield f.bytes.subarray(5);}finally{cleaned=true;}};await expect(openReplayPackage(JSON.stringify(f.manifest),read,{signal:abort.signal})).rejects.toThrow(/ABORT/);expect(cleaned).toBe(true);});
+ test('rejects nested external render dependencies even beneath documents and never requests those URLs',async()=>{const f=fixture(),files=new Map<string,Uint8Array>([['report.json.gz',f.bytes]]);for(const value of [{textures:[{uri:'https://attacker.invalid/x.png'}]},{documents:[{nested:{uri:'https://attacker.invalid/x.bin'}}]},{mesh:{filename:'../outside.stl'}},{buffers:[{uri:'data:application/octet-stream;base64,AA=='}]}]){const raw=Buffer.from(JSON.stringify(value)),m=structuredClone(f.manifest);m.assets.push({path:'model.json',sha256:sha(raw),decodedSha256:sha(raw),bytes:raw.length,decodedBytes:raw.length,encoding:'identity',role:'model',mediaType:'application/json'} as never);files.set('model.json',raw);const asked:string[]=[];await expect(openReplayPackage(JSON.stringify(m),async function*(a){asked.push(a.path);yield files.get(a.path)!;})).rejects.toThrow(/EXTERNAL|NESTED/);expect(asked.every(p=>!p.includes('://'))).toBe(true);}});
+-test('checks exact stream order, missing chunks, sample limits, line and structure expansion before exposing rows',async()=>{const f=fixture();for(const lines of [[{tick:0},{tick:2}],Array.from({length:1001},()=>({tick:0})),[{tick:0,x:'x'.repeat(REPLAY_LIMITS.lineBytes)}]]){const plain=Buffer.from(lines.map(l=>JSON.stringify(l)).join('\n')+'\n'),bytes=gzipSync(plain),m=structuredClone(f.manifest);m.assets.push({path:'physics.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'physics',mediaType:'application/x-ndjson'} as never);const scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[]}));m.assets.push({path:'scene.json',sha256:sha(scene),decodedSha256:sha(scene),bytes:scene.length,decodedBytes:scene.length,encoding:'identity',role:'scene',mediaType:'application/json'} as never);m.streams.push({kind:'physics',chunks:['physics.gz'],firstTick:0,lastTick:1,samples:2} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield a.path==='report.json.gz'?f.bytes:a.path==='scene.json'?scene:bytes;})).rejects.toThrow(/ORDER|COUNT|LINE/);}});
++test('checks exact stream order, missing chunks, sample limits, line and structure expansion before exposing rows',async()=>{const f=fixture();for(const lines of [[{tick:0},{tick:2}],Array.from({length:1001},()=>({tick:0})),[{tick:0,x:'x'.repeat(REPLAY_LIMITS.lineBytes)}]]){const plain=Buffer.from(lines.map(l=>JSON.stringify(l)).join('\n')+'\n'),bytes=gzipSync(plain),m=structuredClone(f.manifest);m.assets.push({path:'physics.ndjson.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'physics',mediaType:'application/x-ndjson'} as never);const scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[]}));m.assets.push({path:'scene.json',sha256:sha(scene),decodedSha256:sha(scene),bytes:scene.length,decodedBytes:scene.length,encoding:'identity',role:'scene',mediaType:'application/json'} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson.gz'],firstTick:0,lastTick:1,samples:2} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield a.path==='report.json.gz'?f.bytes:a.path==='scene.json'?scene:bytes;})).rejects.toThrow(/ORDER|COUNT|LINE/);}});
+ test('event cursor is unavailable without the Source clock, never guessed from an aggregate',async()=>{const f=fixture(),r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;});expect(r.eventsAt(6)).toEqual({events:null,reason:'EVENT_CLOCK_UNAVAILABLE'});r.close();});
++test('refuses role/media and format disguises before any asset IO',async()=>{const f=fixture();for(const a of [{path:'trace.ndjson',role:'trace',mediaType:'application/x-ndjson',encoding:'identity'},{path:'model.json',role:'model',mediaType:'text/plain',encoding:'identity'},{path:'model.glb',role:'model',mediaType:'application/json',encoding:'identity'}]){const raw=Buffer.from('{"textures":[{"uri":"https://outside.invalid/texture.png"}]}'),m=structuredClone(f.manifest);m.assets.push({...a,sha256:'0'.repeat(64),decodedSha256:'0'.repeat(64),bytes:raw.length,decodedBytes:raw.length} as never);let calls=0;await expect(openReplayPackage(JSON.stringify(m),async function*(asset){calls++;yield asset.path==='report.json.gz'?f.bytes:raw;})).rejects.toThrow(/MANIFEST|FORMAT/);expect(calls).toBe(0);}});
++test('hash-checks every admitted auxiliary role and abort after open clears owned metadata',async()=>{const f=fixture();for(const role of ['trace','profile','vendor','scene','model']){const raw=Buffer.from('{}'),m=structuredClone(f.manifest);m.assets.push({path:`${role}.json`,role,mediaType:'application/json',encoding:'identity',sha256:'0'.repeat(64),decodedSha256:sha(raw),bytes:raw.length,decodedBytes:raw.length} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield a.path==='report.json.gz'?f.bytes:raw;})).rejects.toThrow('REPLAY_ASSET_HASH');}const abort=new AbortController(),r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;},{signal:abort.signal});expect(r.capturedReport.manifest).toBeDefined();abort.abort();expect(r.capturedReport).toEqual({});await expect(r.readAsset('report.json.gz')).rejects.toThrow(/ABORT|CLOSED/);r.close();});
++test('abort after a decoded sample disposes cache/report while caller-owned sample remains intact',async()=>{const f=fixture(),row={tick:0,simTimeNs:'0'},raw=Buffer.from(JSON.stringify(row)+'\n'),scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[]})),m=structuredClone(f.manifest),files=new Map<string,Uint8Array>([['report.json.gz',f.bytes],['physics.ndjson',raw],['scene.json',scene]]);for(const [path,bytes,role,mediaType]of [['physics.ndjson',raw,'physics','application/x-ndjson'],['scene.json',scene,'scene','application/json']] as const)m.assets.push({path,role,mediaType,encoding:'identity',sha256:sha(bytes),decodedSha256:sha(bytes),bytes:bytes.length,decodedBytes:bytes.length} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson'],firstTick:0,lastTick:0,samples:1} as never);const abort=new AbortController(),r=await openReplayPackage(JSON.stringify(m),async function*(a){yield files.get(a.path)!;},{signal:abort.signal}),sample=await r.sampleAt('physics',0);abort.abort();expect(r.capturedReport).toEqual({});expect(sample).toEqual(row);await expect(r.sampleAt('physics',0)).rejects.toThrow(/ABORT|CLOSED/);expect(()=>r.metricsAt(7)).toThrow(/ABORT|CLOSED/);r.close();});
++test('abort at the final digest boundary cannot publish a reader',async()=>{const f=fixture(),abort=new AbortController(),digest=globalThis.crypto.subtle.digest.bind(globalThis.crypto.subtle);let hashes=0;const spy=vi.spyOn(globalThis.crypto.subtle,'digest').mockImplementation(async(...args)=>{const result=await digest(...args);if(++hashes===2)abort.abort();return result;});try{await expect(openReplayPackage(JSON.stringify(f.manifest),async function*(){yield f.bytes;},{signal:abort.signal})).rejects.toThrow('REPLAY_ABORTED');}finally{spy.mockRestore();}});
++test('scene renderer references cannot disguise a model as metadata',async()=>{const f=fixture(),model=Buffer.from('{"textures":[{"uri":"https://outside.invalid/a.png"}]}'),row=Buffer.from('{"tick":0}\n'),scene=Buffer.from(JSON.stringify({sceneDigest:'a'.repeat(64),files:[{path:'component.json',sha256:sha(model),bytes:model.length}]})),m=structuredClone(f.manifest),files=new Map([['report.json.gz',f.bytes],['bundle/component.json',model],['scene.json',scene],['physics.ndjson',row]]);for(const [path,b,role,mediaType]of [['bundle/component.json',model,'vendor','application/json'],['scene.json',scene,'scene','application/json'],['physics.ndjson',row,'physics','application/x-ndjson']] as const)m.assets.push({path,role,mediaType,encoding:'identity',sha256:sha(b),decodedSha256:sha(b),bytes:b.length,decodedBytes:b.length} as never);m.streams.push({kind:'physics',chunks:['physics.ndjson'],firstTick:0,lastTick:0,samples:1} as never);await expect(openReplayPackage(JSON.stringify(m),async function*(a){yield files.get(a.path)!;})).rejects.toThrow('REPLAY_MODEL_REF_IDENTITY');});

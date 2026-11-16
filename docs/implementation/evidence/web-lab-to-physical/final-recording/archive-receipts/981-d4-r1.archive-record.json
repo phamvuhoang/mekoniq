@@ -1,0 +1,15 @@
+{
+  "id": "981-d4-r1",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/r1",
+  "archive": "981-d4-r1.tar.gz",
+  "archiveBytes": 87286882,
+  "archiveSha256": "a6baf1001150eb6676ebf0a59e5e1fdb6dfd795340b1260bbda9e6c75e9cb2d6",
+  "memberIndex": "981-d4-r1.members.json",
+  "memberIndexSha256": "ca5e5fa2c5c6ec3d2d98778c99c4d4985c61825605956bd8cfcc9cae4a142d4f",
+  "memberCount": 2588,
+  "memberBytes": 139842909,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/archive-receipts/981-d4-r1.extract.json",
+  "safeExtractionReceiptSha256": "afdfd97604eaa14ad524b384ca9194201fd59b9dafcb9e8edd9ebaf2e34e2558",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-981-d4c3032-d1bu5pia/publication-staging/extracted/981-d4-r1",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}
