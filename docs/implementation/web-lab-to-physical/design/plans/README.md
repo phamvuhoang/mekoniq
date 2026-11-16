@@ -35,6 +35,7 @@
 | [01 — Mobility](01-r2b-mobility.md) | B00–B04 | AMR có tải chạy trên Lab, physics report/replay local | Có |
 | [02 — Cell và web](02-r2b-cell-and-web.md) | B05–B10 | Cell liên tục, replay package, compare/study, image, candidate | Có; WEB06 hosting giữ external |
 | [03 — Linux/readiness](03-r3-linux-readiness.md) | L00–L06 | Handoff, native profiles, hai arm lanes, dossier | L00, L05 phần chuẩn bị; host tests chờ Linux |
+| [04 — Merge và đóng phần còn lại](04-merge-and-closeout.md) | Bước 1–5 | Sửa review 16/11, fast-forward về `main`, hiệu năng live cell, ghi lại R1 → R2b, chuẩn bị R3 | Bước 1–4 có; R3 host chờ Linux |
 
 ```mermaid
 flowchart LR
