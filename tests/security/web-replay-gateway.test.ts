@@ -50,6 +50,24 @@ test('residue of an export killed with its gateway is cleared by the next owner 
  const exported=await fetch(g.url+`/lab/v2/runs/${id}/replay`,{method:'POST',headers:owner,body:'{}'});expect(exported.status,await exported.clone().text()).toBe(201);expect(await readdir(join(directory,'replay-exports'))).toEqual([(await exported.json()).exportId]);
 });
 
+// Startup cleanup of replay-exports without retained inputs: filesystem-only assertions around a real gateway open/close.
+const startupFixture=async(name:string)=>{const directory=await mkdtemp(join(tmpdir(),`replay-startup-${name}-`)),outside=await mkdtemp(join(tmpdir(),`replay-outside-${name}-`));roots.push(directory,outside);await fs.writeFile(join(outside,'sentinel'),'unchanged');return {directory,outside,exportsRoot:join(directory,'replay-exports'),start:async()=>{const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{enabledBackends:['mock_amr','mock_coffee','mock_arm']}});gateways.push(g);return g;}};};
+test('startup clears junk directories and files left in a real replay-exports root',async()=>{
+ const f=await startupFixture('junk');await mkdir(join(f.exportsRoot,'killed','.replay-staging','assets'),{recursive:true});await fs.writeFile(join(f.exportsRoot,'killed','.replay-staging','assets','0'),'x');await fs.writeFile(join(f.exportsRoot,'stray-file'),'x');await mkdir(join(f.exportsRoot,'.hidden'));
+ const g=await f.start();expect(await readdir(f.exportsRoot)).toEqual([]);await g.close();gateways.splice(gateways.indexOf(g),1);expect(await readdir(f.exportsRoot)).toEqual([]);
+});
+test('startup leaves a symlinked replay-exports root and its outside target alone; exports stay refused',async()=>{
+ const {coffeeProject}=await import('../support/lab-v2'),f=await startupFixture('root-link');await fs.symlink(f.outside,f.exportsRoot);
+ const g=await f.start();expect((await fs.lstat(f.exportsRoot)).isSymbolicLink()).toBe(true);expect(await readdir(f.outside)).toEqual(['sentinel']);expect(await fs.readFile(join(f.outside,'sentinel'),'utf8')).toBe('unchanged');
+ const headers=await pair(g),created=await fetch(g.url+'/lab/v2/runs',{method:'POST',headers,body:JSON.stringify({project:coffeeProject(),scenarioId:'BV01',scenarioRevision:1,seed:7,mode:'mock',access:'simulated',backendSetId:'mock-default',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}})});expect(created.status).toBe(201);
+ const refused=await fetch(g.url+`/lab/v2/runs/${(await created.json()).run.id}/replay`,{method:'POST',headers,body:'{}'});expect(refused.status).toBe(429);expect((await refused.json()).error).toBe('REPLAY_RECOVERY_REQUIRED');
+ await g.close();gateways.splice(gateways.indexOf(g),1);expect((await fs.lstat(f.exportsRoot)).isSymbolicLink()).toBe(true);expect(await fs.readFile(join(f.outside,'sentinel'),'utf8')).toBe('unchanged');
+});
+test('startup removes a symlinked child of replay-exports without touching its outside target',async()=>{
+ const f=await startupFixture('child-link');await mkdir(f.exportsRoot);await fs.symlink(f.outside,join(f.exportsRoot,'escape'));
+ const g=await f.start();expect(await readdir(f.exportsRoot)).toEqual([]);expect(await readdir(f.outside)).toEqual(['sentinel']);expect(await fs.readFile(join(f.outside,'sentinel'),'utf8')).toBe('unchanged');await g.close();gateways.splice(gateways.indexOf(g),1);
+});
+
 // Download admission protocol fixture: synthetic immutable JSON assets; actual HTTP response finish/close, no physics.
 test('download reservations bound bytes and active IO through response close/finish, with private404 precedence',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'replay-download-limit-'));roots.push(directory);const id='12345678-1234-1234-1234-123456789abc',big=Buffer.from(JSON.stringify({data:'x'.repeat(8*1024*1024-11)})),small=Buffer.from('{}'),report=Buffer.from(JSON.stringify({manifest:{runId:id},outcome:{tick:0}})),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),asset=(path:string,b:Buffer,role:string)=>({path,sha256:sha(b),decodedSha256:sha(b),bytes:b.length,decodedBytes:b.length,role,encoding:'identity',mediaType:'application/json'}),manifest=parseReplayManifest(JSON.stringify({schemaVersion:1,documentType:'web-replay-package',runId:id,horizon:{tick:0,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',rawReportSha256:sha(report),reportTransform:'credential_redaction_v1'},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:[]},assets:[asset('large.json',big,'trace'),asset('small.json',small,'trace'),asset('report.json',report,'report')],streams:[],licensing:[]}));
