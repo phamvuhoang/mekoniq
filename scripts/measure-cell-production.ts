@@ -16,6 +16,9 @@ import {portableSimulationFromOptions} from '../../source/packages/lab-runtime/s
 import {engineeringFromOptions} from '../../source/packages/lab-runtime/src/engineering/runtime-options';
 import {startLabGateway} from '../../source/packages/lab-runtime/src/gateway';
 import {OwnedProcesses} from '../../source/tests/support/owned-processes';
+/** Canonical argv; must equal source/scripts/browser-evidence-readback.mjs (tests/unit/measure-args.test.ts). */
+export const BROWSER_ARGS=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'];
+if(resolve(process.argv[1]??'')===import.meta.filename){ // run only as a script; importing (unit test) has no side effects
 const arg=(key:string)=>{const i=process.argv.indexOf(key);return i<0?undefined:process.argv[i+1];};
 const exported=process.argv.includes('--exported-runtime');
 const lab=resolve(import.meta.dirname,'..'),source=resolve(lab,'../source'),output=resolve(arg('--out')??'/tmp/b07b-production'),duration=Number(arg('--duration-ms')??185000),warmup=Number(arg('--warmup-ms')??5000);
@@ -46,9 +49,9 @@ try{
  }
  web=await preview({root:lab,configFile:join(lab,'vite.config.ts'),logLevel:'error',preview:{host:'127.0.0.1',port:4175,strictPort:true,proxy:{'/lab':{target:gateway.url,changeOrigin:false}}}});
  if(process.argv.includes('--verify-browser')){
-  const invocationId=randomUUID(),args=['exec','playwright','test','--config','playwright.b07b.config.ts','--output',join(output,'browser-artifacts'),'mujoco-cell.spec.ts'],startedAtEpochMs=Date.now();
+  const invocationId=randomUUID(),args=BROWSER_ARGS,startedAtEpochMs=Date.now();
   await writeFile(join(output,'browser-invocation.json'),JSON.stringify({version:2,invocationId,before:buildIdentity,startedAtEpochMs}));
-  const child=spawn('pnpm',args,{cwd:lab,stdio:'inherit',env:{...process.env,LAB_TEST_PAIRING_TOKEN:gateway!.pairingToken,LAB_B07B_EVIDENCE:output,LAB_BROWSER_INVOCATION:invocationId,LAB_PW_JSON:join(output,'browser-result.json')}});
+  const child=spawn('pnpm',args,{cwd:lab,stdio:'inherit',env:{...process.env,LAB_TEST_PAIRING_TOKEN:gateway!.pairingToken,LAB_B07B_EVIDENCE:output,LAB_BROWSER_INVOCATION:invocationId,LAB_PW_JSON:join(output,'browser-result.json'),LAB_PW_OUTPUT:join(output,'browser-artifacts')}});
   const exit=await new Promise<{code:number|null;signal:NodeJS.Signals|null}>((r,reject)=>{child.once('error',reject);child.once('exit',(code,signal)=>r({code,signal}));});
   const after=await productionBuildIdentity(lab,source,lock),resultBytes=await readFile(join(output,'browser-result.json'));
   await writeFile(join(output,'browser-runtime-identity.json'),JSON.stringify({version:2,invocationId,startedAtEpochMs,finishedAtEpochMs:Date.now(),before:buildIdentity,after,command:'pnpm',args,exitCode:exit.code,signal:exit.signal,exported,resultSha256:createHash('sha256').update(resultBytes).digest('hex')},null,2));
@@ -98,4 +101,5 @@ try{
  if(exported){try{const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line)),end=rows.at(-1);await writeFile(join(output,'observer-summary.json'),JSON.stringify(end,null,2));if(end?.kind!=='observer_end'||end.overflow||end.observerFailure)throw Error('OBSERVER_INCOMPLETE');}catch(error){cleanupErrors.push(error);}}
  try{if(owned.processes().length)throw Error('OWNED_WORKERS_REMAIN');}catch(error){cleanupErrors.push(error);}
  await writeFile(join(output,'cleanup.json'),JSON.stringify({completed:cleanupErrors.length===0,errors:cleanupErrors.map(String)},null,2));if(cleanupErrors.length)throw new AggregateError(cleanupErrors,'PRODUCTION_CLEANUP_FAILED');console.log('OWNED_CLEANUP_DONE');
+}
 }
