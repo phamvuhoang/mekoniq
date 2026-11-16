@@ -1,0 +1,1624 @@
+{
+  "at": "2026-11-16T07:24:36.245757+00:00",
+  "scope": {
+    "at": "2026-11-16T07:24:21.640140+00:00",
+    "scope": "All owned exact Git URLs across published current/immutable readable Markdown plus retained prior reproduction/envelope refs and every historical/current capture producer pair. Each must resolve from ordinary clone objects and be ancestor of the shipped feature head; local/shared object existence alone is insufficient. Remote permissions/advertisement not claimed.",
+    "refs": [
+      {
+        "repository": "source",
+        "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+          },
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 checker"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+          }
+        ]
+      },
+      {
+        "repository": "web",
+        "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+            "field": "base"
+          },
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+            "field": "frozenHead"
+          },
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "4f893ac",
+        "origins": [
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 subject"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "a6ec316",
+        "origins": [
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 subject"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+        "origins": [
+          {
+            "descriptor": "new-generation raw index/reproduction",
+            "role": "current recorded/checker producer"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+            "line": 3,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+        "origins": [
+          {
+            "descriptor": "new-generation raw index/reproduction",
+            "role": "current recorded Lab/build producer"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+            "line": 3,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+        "origins": [
+          {
+            "descriptor": "new-generation raw index/reproduction",
+            "role": "unchanged prior wholebranch publication/package"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "bfde031f552c4909941beae2df8a51e3af73c23d",
+        "origins": [
+          {
+            "descriptor": "new-generation raw index/reproduction",
+            "role": "unchanged prior wholebranch publication/package"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+        "origins": [
+          {
+            "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+            "role": "historical capture exact producer/reader"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+        "origins": [
+          {
+            "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+            "role": "historical capture exact Lab/build producer"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+        "origins": [
+          {
+            "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+            "role": "historical capture exact producer/reader"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "fded4b26638eb412f3285d5fe37d415108f58f19",
+        "origins": [
+          {
+            "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+            "role": "historical capture exact Lab/build producer"
+          }
+        ]
+      }
+    ]
+  },
+  "scopeSha256": "cfaacedd14d728d437c4d1baa2462725c867df7ed6802eb4f39470bc36d1cea4",
+  "records": [
+    {
+      "repository": "source",
+      "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ],
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4:scripts/native-checker-bootstrap.mjs"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4:scripts/native-checker-bootstrap.mjs"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ],
+      "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6:scripts/measure-cell-production.ts"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6:scripts/measure-cell-production.ts"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        },
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 checker"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        }
+      ],
+      "commit": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "874d05aedfbf573496994fd73016f19ef19e6932^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "874d05aedfbf573496994fd73016f19ef19e6932\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "874d05aedfbf573496994fd73016f19ef19e6932",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "874d05aedfbf573496994fd73016f19ef19e6932"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "874d05aedfbf573496994fd73016f19ef19e6932"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ],
+      "commit": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "11d25b47a18adafb88ac21adc249499109996bc5^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "11d25b47a18adafb88ac21adc249499109996bc5\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "11d25b47a18adafb88ac21adc249499109996bc5",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "11d25b47a18adafb88ac21adc249499109996bc5"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "11d25b47a18adafb88ac21adc249499109996bc5"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ],
+      "commit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "a7449541e118d01f65af0ad1466e0c963a173f3c\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ]
+    },
+    {
+      "repository": "web",
+      "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ],
+      "commit": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "shippedHead": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/web",
+          "exitCode": 0,
+          "stdout": "e8d763906bab6a010c3b018813c60f2d043cfcf4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/web",
+          "exitCode": 0,
+          "stdout": "e8d763906bab6a010c3b018813c60f2d043cfcf4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/web",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4:index.html"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/web",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4:index.html"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/web",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "base"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "frozenHead"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "d0f30749c0ddb474f0844c68be63a6f0fa4b1933^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "538ba452c81005010a479f337aab0edbad6e5159",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "538ba452c81005010a479f337aab0edbad6e5159^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "538ba452c81005010a479f337aab0edbad6e5159\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "538ba452c81005010a479f337aab0edbad6e5159",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "176bf348b6a839037473cc6d87413093ed17ff54^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "176bf348b6a839037473cc6d87413093ed17ff54\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "176bf348b6a839037473cc6d87413093ed17ff54",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "4f893ac",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ],
+      "commit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "4f893ac^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "4f893ac6fb75dff414a3ee42a726defb7935c734\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "4f893ac",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a6ec316",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ],
+      "commit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "a6ec316^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "a6ec316",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "current recorded/checker producer"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+          "line": 3,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589"
+        }
+      ],
+      "commit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "0d4640324d7fdb2f169ed9078db2208aae61b589^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "0d4640324d7fdb2f169ed9078db2208aae61b589\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "0d4640324d7fdb2f169ed9078db2208aae61b589",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "0d4640324d7fdb2f169ed9078db2208aae61b589"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "current recorded Lab/build producer"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+          "line": 3,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9"
+        }
+      ],
+      "commit": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "7c97b202143dd156d8e7751dfa2bbf198d17f9b9^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "7c97b202143dd156d8e7751dfa2bbf198d17f9b9"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "unchanged prior wholebranch publication/package"
+        }
+      ],
+      "commit": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "907087c4f2a4d6bc1348f50177c19143d956e9d9^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "907087c4f2a4d6bc1348f50177c19143d956e9d9\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "unchanged prior wholebranch publication/package"
+        }
+      ],
+      "commit": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "bfde031f552c4909941beae2df8a51e3af73c23d^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "bfde031f552c4909941beae2df8a51e3af73c23d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "bfde031f552c4909941beae2df8a51e3af73c23d",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+          "role": "historical capture exact producer/reader"
+        }
+      ],
+      "commit": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "89e2fd68178647bcafa484f4dfdfcb37b801fc14^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "89e2fd68178647bcafa484f4dfdfcb37b801fc14\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+          "role": "historical capture exact Lab/build producer"
+        }
+      ],
+      "commit": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "a1558f7075cb1ef2fd86692e451220065423f2e6^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "a1558f7075cb1ef2fd86692e451220065423f2e6\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "a1558f7075cb1ef2fd86692e451220065423f2e6",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+          "role": "historical capture exact producer/reader"
+        }
+      ],
+      "commit": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "shippedHead": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "5194c992a31df7cf0b75af967ffa1bae3515d72d\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+          "role": "historical capture exact Lab/build producer"
+        }
+      ],
+      "commit": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "shippedHead": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "fded4b26638eb412f3285d5fe37d415108f58f19^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "fded4b26638eb412f3285d5fe37d415108f58f19\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "5ec4010a53c312d7e08660cbc543239c4e6549ea\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "fded4b26638eb412f3285d5fe37d415108f58f19",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "remoteAvailability": "Not checked; ordinary local clone graph reachability does not establish remote advertisement or permissions."
+}

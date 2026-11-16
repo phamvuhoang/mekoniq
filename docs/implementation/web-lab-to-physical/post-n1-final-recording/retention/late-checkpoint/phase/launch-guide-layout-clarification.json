@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-16T07:26:40.527006+00:00",
+  "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+  "before": {
+    "bytes": 6239,
+    "sha256": "3f3e86ab1d05e25e4bcc58dc4d23d995f1cf07b9bcb516da905d9186ae858a89"
+  },
+  "after": {
+    "bytes": 6432,
+    "sha256": "db0c1b0e3e046c76065684be3ce1aa579685cb168951f2679b6b8bc174f8f03c"
+  },
+  "replacedText": "Use sibling `workspace/{source,lab,web,trial}` repositories.",
+  "replacementText": "Launching needs sibling `workspace/{source,lab}` repositories. The four-repository `workspace/{source,lab,web,trial}` layout was used only for the workspace-wide documentation-link and ordinary-clone checks; web/trial are not required to launch the Lab.",
+  "authority": "Root final narrow factual request: source+lab suffice for launch; four siblings were clone/link-check layout only. No new run/review needed.",
+  "scope": "One sentence-only factual correction after the ordinary clone checks. No URLs, fragments, commands, runtime or link targets changed; checked first publication hash retained separately."
+}

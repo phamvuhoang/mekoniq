@@ -1,0 +1,211 @@
+{
+  "at": "2026-11-16T07:23:54.804829+00:00",
+  "workspace": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4",
+  "heads": {
+    "source": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+    "lab": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+    "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+    "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+  },
+  "origins": {
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "web": "/Users/hoangpham/source/prv/robot/web",
+    "trial": "/Users/hoangpham/source/prv/robot/trial"
+  },
+  "nodeReuse": [
+    {
+      "repository": "source",
+      "lockSha256": "ce094c95fc4cbbaf868ae5ac29172a92a236a7296328f8c21bd6f9d7dcde8ec4",
+      "nodeModules": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/node_modules",
+      "scope": "Owned real ignored root with explicit per-entry links to existing equal-lock dependencies. Ordinary nonshared Git clone, no install/download/fresh-host qualification."
+    },
+    {
+      "repository": "lab",
+      "lockSha256": "b8436a8e2c92c8140dd95b84071ad28adf87e83dbf759b93a93043e202229b83",
+      "nodeModules": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab/node_modules",
+      "scope": "Owned real ignored root with explicit per-entry links to existing equal-lock dependencies. Ordinary nonshared Git clone, no install/download/fresh-host qualification."
+    }
+  ],
+  "pythonMetadataReuse": [
+    {
+      "venv": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-irsim",
+      "originalPython": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python",
+      "sitePackages": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/lib/python3.11/site-packages",
+      "lock": "robotics/navigation-2d/requirements.lock",
+      "lockSha256": "428308122946981ae3da4e3080f55357a0c56ee6d9a73ccacff9929edb8322e4",
+      "observation": {
+        "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-irsim",
+        "pins": {
+          "attrs": "26.1.0",
+          "contourpy": "1.3.3",
+          "cycler": "0.12.1",
+          "fonttools": "4.68.0",
+          "imageio": "2.38.1",
+          "iniconfig": "2.3.1",
+          "ir-sim": "2.12.0",
+          "jsonschema": "4.26.0",
+          "jsonschema-specifications": "2025.9.1",
+          "kiwisolver": "1.5.1",
+          "loguru": "0.7.3",
+          "matplotlib": "3.11.2",
+          "numpy": "2.4.6",
+          "packaging": "26.3",
+          "pillow": "13.0.0",
+          "pluggy": "1.7.0",
+          "pygments": "2.21.0",
+          "pyparsing": "3.3.3",
+          "pytest": "9.2.0",
+          "python-dateutil": "4.0.0",
+          "pyyaml": "6.0.3",
+          "referencing": "0.37.0",
+          "rfc8785": "0.1.4",
+          "rpds-py": "2026.9.1",
+          "scipy": "1.17.1",
+          "shapely": "2.2.0",
+          "typing-extensions": "4.16.0",
+          "tzdata": "2026.6"
+        }
+      }
+    },
+    {
+      "venv": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-linkforge",
+      "originalPython": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/bin/python",
+      "sitePackages": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-linkforge/lib/python3.11/site-packages",
+      "lock": "robotics/model-validation/requirements.lock",
+      "lockSha256": "f45c10abeb0971cc436d29aee600b1f5fb5dcc7ccae202ddef7a0bf7ae98d56c",
+      "observation": {
+        "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-linkforge",
+        "pins": {
+          "attrs": "26.1.0",
+          "iniconfig": "2.3.1",
+          "jsonschema": "4.26.0",
+          "jsonschema-specifications": "2025.9.1",
+          "linkforge-core": "1.6.0",
+          "packaging": "26.3",
+          "pluggy": "1.7.0",
+          "pygments": "2.21.0",
+          "pytest": "9.2.0",
+          "pyyaml": "6.0.3",
+          "referencing": "0.37.0",
+          "rfc8785": "0.1.4",
+          "rpds-py": "2026.9.1",
+          "typing-extensions": "4.16.0"
+        }
+      }
+    },
+    {
+      "venv": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-algorithm",
+      "originalPython": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-algorithm/bin/python",
+      "sitePackages": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-algorithm/lib/python3.11/site-packages",
+      "lock": "robotics/algorithm/requirements.lock",
+      "lockSha256": "41a51bd2654b09bc1a557194ccf1b433d37b0e248b3290463217b03e8daf5102",
+      "observation": {
+        "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-algorithm",
+        "pins": {
+          "ansitable": "1.2.0",
+          "catkin-pkg": "1.1.1",
+          "colored": "2.3.2",
+          "contourpy": "1.3.3",
+          "cycler": "0.12.1",
+          "distro": "1.9.0",
+          "docutils": "0.23",
+          "fonttools": "4.68.0",
+          "gitdb": "4.0.12",
+          "gitpython": "3.2.1",
+          "iniconfig": "2.3.1",
+          "kiwisolver": "1.5.1",
+          "matplotlib": "3.11.2",
+          "numpy": "2.4.6",
+          "packaging": "26.3",
+          "pgraph-python": "1.0.0",
+          "pillow": "13.0.0",
+          "pluggy": "1.7.0",
+          "progress": "1.6.1",
+          "pygments": "2.21.0",
+          "pyparsing": "3.3.3",
+          "pytest": "9.2.0",
+          "python-dateutil": "4.0.0",
+          "pyyaml": "6.0.3",
+          "robot-descriptions": "2.0.0",
+          "roboticstoolbox-python": "1.5.0",
+          "rospkg": "1.6.3",
+          "rtb-data": "2.0.0",
+          "scipy": "1.17.1",
+          "smmap": "5.0.3",
+          "spatialgeometry": "1.4.2",
+          "spatialmath-python": "1.1.19",
+          "tqdm": "4.70.1",
+          "typing-extensions": "4.16.0",
+          "tzdata": "2026.6",
+          "xacro": "2.1.1",
+          "xacrodoc": "2.0.1"
+        }
+      }
+    },
+    {
+      "venv": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-webots",
+      "originalPython": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-webots/bin/python",
+      "sitePackages": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-webots/lib/python3.11/site-packages",
+      "lock": "robotics/simulation-3d/requirements.lock",
+      "lockSha256": "2af9786fd7be987694aef3f0973003d7433deb051ca174ed14eca133452646c2",
+      "observation": {
+        "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-webots",
+        "pins": {
+          "attrs": "26.1.0",
+          "iniconfig": "2.3.1",
+          "jsonschema": "4.26.0",
+          "jsonschema-specifications": "2025.9.1",
+          "packaging": "26.3",
+          "pluggy": "1.7.0",
+          "pygments": "2.21.0",
+          "pytest": "9.2.0",
+          "referencing": "0.37.0",
+          "rfc8785": "0.1.4",
+          "rpds-py": "2026.9.1",
+          "typing-extensions": "4.16.0"
+        }
+      }
+    },
+    {
+      "venv": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-mujoco",
+      "originalPython": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/bin/python",
+      "sitePackages": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco/lib/python3.11/site-packages",
+      "lock": "robotics/simulation-mujoco/requirements.lock",
+      "lockSha256": "a3c78091c9042b3a9b0428eaa9b140eb2b9c3a1bb89e57033fb1f81f9f0b4d84",
+      "observation": {
+        "version": "3.11.15 (main, Mar  3 2026, 00:52:57) [Clang 21.0.0 (clang-2100.0.123.102)]",
+        "prefix": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source/.venv-mujoco",
+        "pins": {
+          "absl-py": "2.5.1",
+          "attrs": "26.1.0",
+          "etils": "1.15.0",
+          "fsspec": "2026.9.0",
+          "glfw": "2.11.0",
+          "iniconfig": "2.3.1",
+          "jsonschema": "4.26.0",
+          "jsonschema-specifications": "2025.9.1",
+          "mujoco": "3.17.0",
+          "numpy": "2.4.6",
+          "packaging": "26.3",
+          "pluggy": "1.7.0",
+          "pygments": "2.21.0",
+          "pyopengl": "3.1.10",
+          "pytest": "9.2.0",
+          "referencing": "0.37.0",
+          "rfc8785": "0.1.4",
+          "rpds-py": "2026.9.1",
+          "typing-extensions": "4.16.0",
+          "websockets": "17.4",
+          "zipp": "4.1.2"
+        }
+      }
+    }
+  ],
+  "runtimeInput": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export",
+  "scope": "Four actual ordinary --no-local sibling clones with no alternates. Explicit equal-lock Node reuse and five owned real Python3.11 venvs with .pth frozen installed-distribution metadata reuse; no installation/download/engine/browser/campaign or fresh-host trust claim."
+}

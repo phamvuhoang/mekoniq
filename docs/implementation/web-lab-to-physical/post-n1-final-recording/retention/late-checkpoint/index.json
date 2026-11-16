@@ -1,0 +1,520 @@
+{
+  "at": "2026-11-16T07:26:41.545991+00:00",
+  "scope": "Late actual publication/normal-clone/root/report retention only, no new raw archives/campaigns/engineering review. Initial raw archives, member indices and maintained prose document hashes unchanged. Later final commit identity is external to avoid self-hash cycle.",
+  "initialCurrentMap": {
+    "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/snapshots/initial-readable/location-map.json",
+    "bytes": 290010,
+    "sha256": "06d413f2537b3b573c3ce9db47452e94a5a8bfa2c7a07ed030754cc18ce60686"
+  },
+  "initialDerivedIndices": {
+    "rulings-whole-lines.json": {
+      "initialPath": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/snapshots/initial-readable/indices/rulings-whole-lines.json",
+      "bytes": 256696,
+      "sha256": "2b5bb376082c734e56fa5755948d26e35f4edfe7d97cd01a58e8b468d495dedf"
+    },
+    "rulings-whole-lines.md": {
+      "initialPath": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/snapshots/initial-readable/indices/rulings-whole-lines.md",
+      "bytes": 235216,
+      "sha256": "56faf7e53b9e7a81702e629b281685d8f956c29b6d406c20f7b160bbfcc7fa23"
+    },
+    "review-index.json": {
+      "initialPath": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/snapshots/initial-readable/indices/review-index.json",
+      "bytes": 26409,
+      "sha256": "bd75fac8ce54f72352b3916f21a8af36a3543f2829f3a7c10d7ae506e5d01f82"
+    }
+  },
+  "currentMap": {
+    "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/current-readable-location-map.json",
+    "bytes": 290357,
+    "sha256": "d7095130ee44d4afa59ed38541d24c2a9d9fe01b7048f5d3f792b24a0cc47aed"
+  },
+  "completeStaticUpdates": [
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/current-state.md",
+      "bytes": 127710,
+      "sha256": "d490d8dc48767898695749541c3fb74b254c9936ca5ae1eb35cffc92e90d101b",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/sdd/README/current-state.md",
+      "retention": "Exact late complete original source/report/ledger/root metadata after initial publication/clone checks; initial frozen destinations unchanged"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-post-n1-final-recording-report.md",
+      "bytes": 62601,
+      "sha256": "ef242e91888ed6a17f334fb40b1217143e10f881a6893c33d1f182e7ea036d27",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/sdd/README/task-post-n1-final-recording-report.md",
+      "retention": "Exact late complete original source/report/ledger/root metadata after initial publication/clone checks; initial frozen destinations unchanged"
+    }
+  ],
+  "phaseUpdates": [
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/build-publication-docs.py",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/build-publication-docs.py",
+      "bytes": 32979,
+      "sha256": "0988e24e2beb6cef4f0d5a252600bf7777e67be98006ec107372def3ead4fd8c",
+      "initialPhaseMember": {
+        "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/build-publication-docs.py",
+        "path": "build-publication-docs.py",
+        "bytes": 32719,
+        "sha256": "4b442d528732e35defc9fd59f55d585629cefa665eafa628af98367e846ec426"
+      },
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/archive-phase-metadata.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/archive-phase-metadata.log",
+      "bytes": 1353,
+      "sha256": "3903a8f52f2431c5af1173664025f2d65883cb3643a29dcbc5a59566c14ee005",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/archive-phase-metadata.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/archive-phase-metadata.receipt.json",
+      "bytes": 4804,
+      "sha256": "7f382e09e11d91b6584d6bff9202ddc3d06e6a1510305d2d61dc7250120568c3",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-check-source.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-check-source.log",
+      "bytes": 326,
+      "sha256": "ac121326135dcfcd95154a556ed8abeaf7e284ac34a9f89cc6476b1d2b521479",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-check-source.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-check-source.receipt.json",
+      "bytes": 5526,
+      "sha256": "7bd2652aada8977f810a13a406a1aa1563875e0dfaeb2eb8cffa2fb0bed5fa37",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-closure-identity.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-closure-identity.log",
+      "bytes": 194,
+      "sha256": "93b84b8ca95ea399ca7357b7d8fb5c934b0541ae40799d9d21f164054e6fa57b",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-closure-identity.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-closure-identity.receipt.json",
+      "bytes": 6070,
+      "sha256": "548af90c28df88427be0b958f5e7c1176337c6fc99df97bd30ae7e35e2d6b5bc",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-contracts.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-contracts.log",
+      "bytes": 223,
+      "sha256": "4b984bf74453012436677cdbae8c3a01bec3784af060057b4af7ee756294c0ec",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-contracts.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-contracts.receipt.json",
+      "bytes": 5532,
+      "sha256": "18a617b24a5c94a7312420631a070c31a9552044a603661662f9b2047b10632a",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-exactrefs.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-exactrefs.log",
+      "bytes": 26,
+      "sha256": "1b5410c959d9a78b842769242eb8e8ef8c856ae63d7a4f6e4728033c1d6d99b3",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-exactrefs.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-exactrefs.receipt.json",
+      "bytes": 6207,
+      "sha256": "ed388f3b8c8333e63b89e528a9d9c834a5b4f5013cfec99e64d14a34dc10f7c1",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-generated-contracts.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-generated-contracts.log",
+      "bytes": 36,
+      "sha256": "741044d5071b73ecdf875d16233a3e9196942e969ef0f118a2d5144ad50f0621",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-generated-contracts.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-generated-contracts.receipt.json",
+      "bytes": 5567,
+      "sha256": "1d73efead2c5b12140daaa3a2f79c8b90a5351bdeb2ebe85991e1edbaf711670",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-import-pin.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-import-pin.log",
+      "bytes": 198,
+      "sha256": "69d5dbd141d8149bf0c77238107ecbe3564783aab3b3b23f7e3cdb5cbb4ef0d3",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-import-pin.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-import-pin.receipt.json",
+      "bytes": 5633,
+      "sha256": "d8f9cdd0a375a6e51734cc6862463b1279af204eb00cf2f47b5e0448f31fe7f4",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-link-scope.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-link-scope.log",
+      "bytes": 45,
+      "sha256": "cab95dde31d80d0a9a8a3808887a750011a7f5137bc0406bf30d5a7c7d24282c",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-link-scope.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-link-scope.receipt.json",
+      "bytes": 5753,
+      "sha256": "b086f312a8a5ffbba4a12dba94e2612e705bc67df6176aa86c41cf16163e73a7",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-links.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-links.log",
+      "bytes": 83,
+      "sha256": "8e915c69cc2f417d7007e9fabaee3278b5772e34836ea15913e63929daf90a0c",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-links.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-links.receipt.json",
+      "bytes": 6201,
+      "sha256": "154232ccbcbf2ac2d243a968b7ec8a22d877db5ac960eb8a3945e5bbffd0df29",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-portable-licenses.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-portable-licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-portable-licenses.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-portable-licenses.receipt.json",
+      "bytes": 5561,
+      "sha256": "65481939dd5c362d2ad7483809c5543aacab27debd58714ee628dc835287b552",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-retention.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-retention.log",
+      "bytes": 48,
+      "sha256": "f6709d0237a05c6b66768c76b0e76597f16c2ff68eb9202c3aeed10ceedfb76b",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-retention.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-clone-retention.receipt.json",
+      "bytes": 5759,
+      "sha256": "af20440d933b8daebae405ba2c9e6323ad3a787f93d84111b3dd106fd16f6cdb",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-publication-checks.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-publication-checks.log",
+      "bytes": 1635,
+      "sha256": "89c826a04082abbe1bf4dc0df3a8e391e92e4eac518a747f647c996475817536",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-publication-checks.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/normal-publication-checks.receipt.json",
+      "bytes": 5529,
+      "sha256": "49905ba07a2d2dafcd52ba5163af90d1ebddca8486f37b8fe7359176a69585f0",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/prepare-normal-clones.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/prepare-normal-clones.log",
+      "bytes": 350,
+      "sha256": "8988af55e200b1d58fc7e7196baff143536e9c21ae27f8194a9a9a42d1cffd30",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/prepare-normal-clones.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/prepare-normal-clones.receipt.json",
+      "bytes": 5526,
+      "sha256": "853ef591099930fa8b1515734519daabe9c6ab4d3f0bde34c15d86e5bab1b445",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/publish-current-docs.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/publish-current-docs.log",
+      "bytes": 260,
+      "sha256": "369cd9c8197339946b7dbde9c3116849d6766e04044ace596cc6bd97159b4894",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/publish-current-docs.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/publish-current-docs.receipt.json",
+      "bytes": 5472,
+      "sha256": "6bde6a5db392a3062dee6be472e23f0c065dba9825de8e3fc59ad93febdf9ddf",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/render-current-docs.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/render-current-docs.log",
+      "bytes": 100,
+      "sha256": "68a89f47cf8a7d9d375e8e7bb6f47ecd6deb30be6e6afd7668e86b244eb04257",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/render-current-docs.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/render-current-docs.receipt.json",
+      "bytes": 5475,
+      "sha256": "a53600565de7a6e13d699b9453d440e84ccd0ceb538eeb672d5ff2598a745f4a",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-current-entrypoints.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-current-entrypoints.log",
+      "bytes": 41,
+      "sha256": "01f32cb0b927efda5cc87683ef80f93c08070eeb96f7f5e6c5edf5ae3364cf5a",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-current-entrypoints.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-current-entrypoints.receipt.json",
+      "bytes": 5470,
+      "sha256": "104e19423a78dc2d89bdfdaad204b59815752dd0926a2f77de70ec443af42bf4",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-new-raw-index.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-new-raw-index.log",
+      "bytes": 386,
+      "sha256": "b906ca157ad1fb7615d9ebfdc0efd9b6d731d74e7835b5a3019e90b67d924771",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-new-raw-index.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-new-raw-index.receipt.json",
+      "bytes": 5472,
+      "sha256": "88d245a36ab1109ffe5f94f220544883ed48e55264beca75bbde4d5db4d711b7",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-readable-delta.log",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-readable-delta.log",
+      "bytes": 98,
+      "sha256": "24f685d50afb92853c8f2d7b6d742f64f8dec29a3a4f3f71b12862d559e9a66c",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/stage-readable-delta.receipt.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/checks/stage-readable-delta.receipt.json",
+      "bytes": 5473,
+      "sha256": "42e9c2f5499e4ea8387280f181ea556dda62f332912a3e0e9a0f46e7bcb8b1ae",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/commit-final-checkpoint.py",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/commit-final-checkpoint.py",
+      "bytes": 4010,
+      "sha256": "3b2ba97a1662337c339a4efbb51b90e7215755cc17044524c118fadeb8f7f703",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/final-owned-boundary.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/final-owned-boundary.json",
+      "bytes": 544,
+      "sha256": "4757c1985bde6c0a043431a821ebcc77c41045170d11ea7aa0f775fb2f6fc6b2",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/first-publication-heads.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/first-publication-heads.json",
+      "bytes": 194795,
+      "sha256": "d288ed1dcafef6b3fc7139d963257df1eb1423e7d75e9b6ddae25944a618b55c",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/launch-guide-layout-clarification.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/launch-guide-layout-clarification.json",
+      "bytes": 1092,
+      "sha256": "3edc9473829da5228e2b90fd7f6bbdaa630acbed998380f93bc8c43e3cf65aab",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/new-publication-raw-index-summary.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/new-publication-raw-index-summary.json",
+      "bytes": 751,
+      "sha256": "c52837d478701b07a5876d8011bb576d1a0ba5ec55c2a615c9150924c625cb92",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-check-receipt-summary.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-check-receipt-summary.json",
+      "bytes": 5149,
+      "sha256": "fb326dd77a888f336f24f877781da3e37b1b6179b582122593fe405b37e5768b",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-clone-exact-ref-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-clone-exact-ref-audit.json",
+      "bytes": 57184,
+      "sha256": "1459b4fc8fc984a80d1e1b353b03cf6c641fac36ddc747568afb67c5de632759",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-clone-link-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-clone-link-audit.json",
+      "bytes": 199237,
+      "sha256": "7bcc5e65264304c5887be38a91e0f891ae010229dd18ba88aa47635a09eba7dc",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-clone-link-scope.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-clone-link-scope.json",
+      "bytes": 3078,
+      "sha256": "4e2db75146b0974845bc0deb3b47ec01aedfcc8142267ac39326872a425cb15e",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-clone-preparation-operations.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-clone-preparation-operations.json",
+      "bytes": 21675,
+      "sha256": "7e99833ff91d62f6bc0d9338b68c03d2e26fc780ee76a2e857c1942a84da52dd",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-clone-retention-audit.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-clone-retention-audit.json",
+      "bytes": 350030,
+      "sha256": "ca2c0678a7574469812a9431fde003ee80065cbf5194dd3a6278b5e74d8562ee",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-publication-checks-completed.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-publication-checks-completed.json",
+      "bytes": 894,
+      "sha256": "9cb7cf1d585e4087c158040bed5b1ec9c44fb1d0112d2a0887b74dc089dd21fe",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/normal-publication-clones.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/normal-publication-clones.json",
+      "bytes": 9891,
+      "sha256": "a1d4af85656f753bb089ac63234c75024f2965a342fa4cc3f62c15045a65c3b2",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/publication-git-operations.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/publication-git-operations.json",
+      "bytes": 249276,
+      "sha256": "16af492039ac6c399042a1171d43e1972f58c2f84dab5a249d00b319c46fde77",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/publication-raw-freeze-completed.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/publication-raw-freeze-completed.json",
+      "bytes": 1550,
+      "sha256": "b5cc70b9da01244b627303f7513e8a7a874441a6121714e760fd56e768ef4c32",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/published-exact-ref-scope.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/published-exact-ref-scope.json",
+      "bytes": 10533,
+      "sha256": "cfaacedd14d728d437c4d1baa2462725c867df7ed6802eb4f39470bc36d1cea4",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/root-archive-audit-returned.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/root-archive-audit-returned.json",
+      "bytes": 1656,
+      "sha256": "93f65a9ddfafff0562aa13212bc3f38daaa261318f5c46d4d38778f0eb7d6ad2",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/root-newstage-audit-ready.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/root-newstage-audit-ready.json",
+      "bytes": 1433,
+      "sha256": "60a08a75aa06ac00e471f31ca4719eec06d030f1edee1132c9827ceb8182bb64",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/root-readable-freeze-admitted.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/root-readable-freeze-admitted.json",
+      "bytes": 466,
+      "sha256": "ec56704ac99f160af7cfb02c4cd9fe8c3e6cf3e6b46855d1e5e2c1f7c0a7f30d",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/stage-late-checkpoint.py",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/stage-late-checkpoint.py",
+      "bytes": 7144,
+      "sha256": "c91205c711130438dbdb23ade9a35af86302c07c1164e29c7bee7092b0ca5c68",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/staged-entrypoint-map.json",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/phase/staged-entrypoint-map.json",
+      "bytes": 13949,
+      "sha256": "a370a1c3b6eb77573cb21bd97881260841d0f17f09d32e7d4c54b39b8a7428d9",
+      "initialPhaseMember": null,
+      "scope": "Distinct late actual own receipt/log/caller/metadata; earlier failed versions remain in initial safe-phase archive if changed."
+    }
+  ],
+  "rulingLines": 253,
+  "rulingClauses": 262
+}

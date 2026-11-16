@@ -1,0 +1,284 @@
+{
+  "at": "2026-11-16T07:24:21.640140+00:00",
+  "scope": "All owned exact Git URLs across published current/immutable readable Markdown plus retained prior reproduction/envelope refs and every historical/current capture producer pair. Each must resolve from ordinary clone objects and be ancestor of the shipped feature head; local/shared object existence alone is insufficient. Remote permissions/advertisement not claimed.",
+  "refs": [
+    {
+      "repository": "source",
+      "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        },
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 checker"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ]
+    },
+    {
+      "repository": "web",
+      "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "base"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "frozenHead"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "4f893ac",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a6ec316",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "current recorded/checker producer"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+          "line": 3,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "current recorded Lab/build producer"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+          "line": 3,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "unchanged prior wholebranch publication/package"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "origins": [
+        {
+          "descriptor": "new-generation raw index/reproduction",
+          "role": "unchanged prior wholebranch publication/package"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+          "role": "historical capture exact producer/reader"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture/actual-cell-production.json",
+          "role": "historical capture exact Lab/build producer"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+          "role": "historical capture exact producer/reader"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "origins": [
+        {
+          "descriptor": "post907-correction complete tree / production-capture-ordered/actual-cell-production.json",
+          "role": "historical capture exact Lab/build producer"
+        }
+      ]
+    }
+  ]
+}

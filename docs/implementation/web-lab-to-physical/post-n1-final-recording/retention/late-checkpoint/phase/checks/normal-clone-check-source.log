@@ -1,0 +1,5 @@
+
+> mekoniq-robot-lab@0.1.0 check:source /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab
+> node scripts/check-source.mjs
+
+Verified source 0d4640324d7fdb2f169ed9078db2208aae61b589; schema 0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5; protocol 1/2; Node 24

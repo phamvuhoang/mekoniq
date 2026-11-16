@@ -1,6 +1,6 @@
 # Launch, replay and reproduce exact evidence
 
-Use sibling `workspace/{source,lab,web,trial}` repositories. [Source producer](https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589) and [Lab producer](https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9) are distinct from later publication heads. The Lab pin is Source 0d/runtime 73ca9b. A documentation commit needs no runtime re-export. Remote GitHub access/hosting is not implied by local link/reachability checks.
+Launching needs sibling `workspace/{source,lab}` repositories. The four-repository `workspace/{source,lab,web,trial}` layout was used only for the workspace-wide documentation-link and ordinary-clone checks; web/trial are not required to launch the Lab. [Source producer](https://github.com/phamvuhoang/mekoniq/tree/0d4640324d7fdb2f169ed9078db2208aae61b589) and [Lab producer](https://github.com/phamvuhoang/mekoniq-lab/tree/7c97b202143dd156d8e7751dfa2bbf198d17f9b9) are distinct from later publication heads. The Lab pin is Source 0d/runtime 73ca9b. A documentation commit needs no runtime re-export. Remote GitHub access/hosting is not implied by local link/reachability checks.
 
 From Lab with Node 24.22.2, pnpm 10.32.1, matching locked Python 3.11 environments and the installed pinned runtime:
 

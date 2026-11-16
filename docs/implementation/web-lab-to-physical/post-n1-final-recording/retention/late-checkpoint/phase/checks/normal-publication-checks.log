@@ -1,0 +1,27 @@
+{"maintainedDocuments": 33, "exactRefs": 20}
+PUBLICATION_CHECK normal-clone-link-scope 0
+{"links": 381, "local": 333, "exactGit": 9, "externalUnverified": 39, "failed": 0}
+PUBLICATION_CHECK normal-clone-links 0
+{"refs": 20, "failed": 0}
+PUBLICATION_CHECK normal-clone-exactrefs 0
+{"archives": 64, "checks": 1110, "failures": 0}
+PUBLICATION_CHECK normal-clone-retention 0
+Installed source 0d4640324d7fdb2f169ed9078db2208aae61b589, artifact 73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508, protocol 1/2. Previous pin kept in .runtime/rollback.lock.json.
+PUBLICATION_CHECK normal-clone-import-pin 0
+
+> mekoniq-robot-lab@0.1.0 check:source /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/lab
+> node scripts/check-source.mjs
+
+Verified source 0d4640324d7fdb2f169ed9078db2208aae61b589; schema 0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5; protocol 1/2; Node 24
+PUBLICATION_CHECK normal-clone-check-source 0
+Engineering contracts match source.
+PUBLICATION_CHECK normal-clone-generated-contracts 0
+PUBLICATION_CHECK normal-clone-portable-licenses 0
+{"native":"79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634","portable":"30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b","nativeFiles":226,"portableFiles":238}
+PUBLICATION_CHECK normal-clone-closure-identity 0
+
+> mekoniq-platform@ contracts:check /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-normal-clones-8uxpw0y4/source
+> node scripts/generate-contracts.mjs --check
+
+Contract generation matches schema.
+PUBLICATION_CHECK normal-clone-contracts 0

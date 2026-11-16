@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-16T07:13:53.636796+00:00",
+  "stage": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging",
+  "archiveCount": 64,
+  "compressedBytes": 653098761,
+  "regularMemberOccurrences": 15827,
+  "memberBytes": 1625549720,
+  "completeTreeCount": 47,
+  "publicReaders": 27,
+  "publicReaderOwn0": 23,
+  "publicReaderOwn1": 4,
+  "phaseArchiveOwnReceipt": {
+    "startedAt": "2026-11-16T07:13:29.841Z",
+    "finishedAt": "2026-11-16T07:13:30.674Z",
+    "exitCode": 0,
+    "signal": null,
+    "logSha256": "3903a8f52f2431c5af1173664025f2d65883cb3643a29dcbc5a59566c14ee005"
+  },
+  "frozenPaths": [
+    "raw",
+    "archive-receipts",
+    "extracted",
+    "reassembled",
+    "chunk-copies",
+    "safe-n1-original",
+    "safe-post-n1-phase-metadata",
+    "public-readbacks"
+  ],
+  "report": {
+    "path": ".superpowers/sdd/README/task-post-n1-final-recording-report.md",
+    "bytes": 53270,
+    "sha256": "8afe271c3ea6762537f1ca03e054e500fc7b63aa21930466429be4ec9c55d5c4"
+  },
+  "scope": "All new raw archives/indices/source staging/extractions/reassemblies/public reader outcomes settled. Old121 untouched. Root may run its one newstage archive auditor now; owner will pause heavy hashes/tests/archives until root audit closes. Root result direct late metadata, not inside its own frozen archive. Five private exclusions and two missing failure originals explicit."
+}

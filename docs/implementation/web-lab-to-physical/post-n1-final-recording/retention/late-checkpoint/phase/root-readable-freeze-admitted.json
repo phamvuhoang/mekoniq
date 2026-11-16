@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-16T07:20:31.041841+00:00",
+  "rootMetadataFreezeAt": "2026-11-16T07:15:45.744Z",
+  "authority": "Parent explicit message: ROOT METADATA WRITES NOW FROZEN; one readable/map copy, docs commits, ordinary clones, late checkpoint. No recursive archive/new audit/review.",
+  "rootSession87572": "settled own0/signalnull",
+  "scope": "Current root/static readable bytes captured once; later own-publication receipts retained at a distinct checkpoint."
+}

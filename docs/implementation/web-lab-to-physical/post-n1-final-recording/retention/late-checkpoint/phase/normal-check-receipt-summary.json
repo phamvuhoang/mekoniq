@@ -1,0 +1,96 @@
+{
+  "at": "2026-11-16T07:25:50.691337+00:00",
+  "checks": [
+    {
+      "name": "normal-clone-check-source.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-check-source.receipt.json",
+      "startedAt": "2026-11-16T07:24:39.225Z",
+      "finishedAt": "2026-11-16T07:24:39.624Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "ac121326135dcfcd95154a556ed8abeaf7e284ac34a9f89cc6476b1d2b521479"
+    },
+    {
+      "name": "normal-clone-closure-identity.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-closure-identity.receipt.json",
+      "startedAt": "2026-11-16T07:24:41.067Z",
+      "finishedAt": "2026-11-16T07:24:41.194Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "93b84b8ca95ea399ca7357b7d8fb5c934b0541ae40799d9d21f164054e6fa57b"
+    },
+    {
+      "name": "normal-clone-contracts.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-contracts.receipt.json",
+      "startedAt": "2026-11-16T07:24:41.574Z",
+      "finishedAt": "2026-11-16T07:24:42.223Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "4b984bf74453012436677cdbae8c3a01bec3784af060057b4af7ee756294c0ec"
+    },
+    {
+      "name": "normal-clone-exactrefs.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-exactrefs.receipt.json",
+      "startedAt": "2026-11-16T07:24:34.781Z",
+      "finishedAt": "2026-11-16T07:24:36.251Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "1b5410c959d9a78b842769242eb8e8ef8c856ae63d7a4f6e4728033c1d6d99b3"
+    },
+    {
+      "name": "normal-clone-generated-contracts.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-generated-contracts.receipt.json",
+      "startedAt": "2026-11-16T07:24:39.868Z",
+      "finishedAt": "2026-11-16T07:24:40.036Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "741044d5071b73ecdf875d16233a3e9196942e969ef0f118a2d5144ad50f0621"
+    },
+    {
+      "name": "normal-clone-import-pin.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-import-pin.receipt.json",
+      "startedAt": "2026-11-16T07:24:38.336Z",
+      "finishedAt": "2026-11-16T07:24:38.973Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "69d5dbd141d8149bf0c77238107ecbe3564783aab3b3b23f7e3cdb5cbb4ef0d3"
+    },
+    {
+      "name": "normal-clone-link-scope.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-link-scope.receipt.json",
+      "startedAt": "2026-11-16T07:24:21.067Z",
+      "finishedAt": "2026-11-16T07:24:21.693Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "cab95dde31d80d0a9a8a3808887a750011a7f5137bc0406bf30d5a7c7d24282c"
+    },
+    {
+      "name": "normal-clone-links.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-links.receipt.json",
+      "startedAt": "2026-11-16T07:24:22.039Z",
+      "finishedAt": "2026-11-16T07:24:34.379Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "8e915c69cc2f417d7007e9fabaee3278b5772e34836ea15913e63929daf90a0c"
+    },
+    {
+      "name": "normal-clone-portable-licenses.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-portable-licenses.receipt.json",
+      "startedAt": "2026-11-16T07:24:40.339Z",
+      "finishedAt": "2026-11-16T07:24:40.698Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "normal-clone-retention.receipt",
+      "receipt": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/normal-clone-retention.receipt.json",
+      "startedAt": "2026-11-16T07:24:36.619Z",
+      "finishedAt": "2026-11-16T07:24:37.961Z",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "f6709d0237a05c6b66768c76b0e76597f16c2ff68eb9202c3aeed10ceedfb76b"
+    }
+  ],
+  "scope": "Ten exact narrow checks, all own0/signalnull. Original/extracted campaign/public reader failures remain separate and unchanged."
+}

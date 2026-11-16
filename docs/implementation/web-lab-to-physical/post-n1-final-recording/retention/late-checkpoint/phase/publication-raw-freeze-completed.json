@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-16T07:21:04.561734+00:00",
+  "stage": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging",
+  "rawIndex": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/source/docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/index.json",
+    "bytes": 336373,
+    "sha256": "d5cb59637d12b10ef71ee91660ae1c6834c56d1936e456934b797599a8d278bb",
+    "totals": {
+      "archives": 64,
+      "compressedBytes": 653098761,
+      "regularMemberOccurrences": 15827,
+      "memberBytes": 1625549720
+    },
+    "readbacks": {
+      "invocations": 27,
+      "own0": 23,
+      "nonzero": 4,
+      "policy": "All original/extracted nonzero outcomes preserved. Same-byte duplicate subject aliases identify one exact-reader receipt, not extra reruns. Qualification statuses stay raw and accepted:false."
+    }
+  },
+  "readableMap": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/source/docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/current-readable-location-map.json",
+  "independentAudit": "root-archive-audit-returned.json",
+  "scope": "All raw archives, original/extracted readbacks and independent audit settled; one readable snapshot complete. No new raw archive or product execution. Authored five handoff docs fully read; absent-candidate wording corrected before first publication."
+}

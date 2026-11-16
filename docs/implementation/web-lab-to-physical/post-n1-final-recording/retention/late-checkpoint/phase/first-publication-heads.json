@@ -1,0 +1,4195 @@
+{
+  "at": "2026-11-16T07:21:30.552352+00:00",
+  "producer": {
+    "source": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "lab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtime": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "build": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0"
+  },
+  "firstPublicationHeads": {
+    "source": {
+      "commit": "5194c992a31df7cf0b75af967ffa1bae3515d72d",
+      "tree": "845c36cf67da3b325a0b746aeb01fab5a260d219",
+      "files": 585
+    },
+    "lab": {
+      "commit": "5ec4010a53c312d7e08660cbc543239c4e6549ea",
+      "tree": "540626bb4079b5cd7075ea05d5ba269b0ca9bb72",
+      "files": 1
+    }
+  },
+  "copies": [
+    {
+      "repository": "source",
+      "path": "README.md",
+      "stagedBytes": 6086,
+      "stagedSha256": "08912d121cc1c2e1d30203ce192adb2a4b385e282cb9f725059cb4d24e0d3e1d",
+      "prior": {
+        "bytes": 6099,
+        "sha256": "4d3537aac401e388044aa623ad11f407398275e9bd288bf78ca615471cea6324"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "stagedBytes": 20152,
+      "stagedSha256": "63779c6adb2ac04c192ddd8598a5bb7a4803243ebbc41fc9c902898a06ec13c7",
+      "prior": {
+        "bytes": 20089,
+        "sha256": "64a2f67b9cf2475e882b29a1e7de63a7970c99bbaafb11919df4cbd715d2e80f"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "stagedBytes": 20290,
+      "stagedSha256": "07f3a3c37a2de10792a2505479d543a0f829b2e9ef6c9596b542789fd83e774c",
+      "prior": {
+        "bytes": 20227,
+        "sha256": "b0ecbab6585823a62f77b2350aa11402d31103281b4c70e989df47ba981de1db"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "stagedBytes": 20702,
+      "stagedSha256": "56234ad720b3656e08249797ec3bf3d6397e0b8b3abf746841a8ed1129f49b2b",
+      "prior": {
+        "bytes": 20639,
+        "sha256": "290b976e31e43c7dd455da064cd0b2a51770d269b032d844953fbb36e60286b6"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "stagedBytes": 14900,
+      "stagedSha256": "2d3664e35f4272fb75090c9d214ce7397bf3eb4ef06ff8e4b0797146bb7e46c9",
+      "prior": {
+        "bytes": 14837,
+        "sha256": "93b43f1a3b1085b0b485ba4d70e745165acc6e847661fa2b494b50e2b1828c8c"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "stagedBytes": 23559,
+      "stagedSha256": "180d656554d7ee054f8090a2477cc6282a3a6a2a135c5b4490e5198468ff5bca",
+      "prior": {
+        "bytes": 23496,
+        "sha256": "3c8dd9581e0fc40b5dad5ce7fc8ab220fbbd6343635bc2d33273ad94017150fe"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "stagedBytes": 18729,
+      "stagedSha256": "142d7045991ff51d99f3a93ddf115ac7bbc8d20a28151f200953faeb8b76219e",
+      "prior": {
+        "bytes": 18666,
+        "sha256": "c427776f4883328e6d2dec3196bd78c599ef68227eb86e63ea1e132c4fc3d6af"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "stagedBytes": 11006,
+      "stagedSha256": "52c67a4da56a1053055139d0d6b9917f9ebd8ecc3b030395339792a829f70bde",
+      "prior": {
+        "bytes": 10943,
+        "sha256": "c62d3be7c4461c2535dccf9834ced5c3031a8d271ae52ff71f616a51d541a173"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "stagedBytes": 6813,
+      "stagedSha256": "fc889e18decbde7042f2915a646e2abff474c30dc4188fe4d4a0b067f67ff015",
+      "prior": {
+        "bytes": 6326,
+        "sha256": "cc6ce732da38493d307fc25f17b43a9090b7ee901a98fa412e2a660ecddc865d"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/09-post-n1-engineering-readiness.md",
+      "stagedBytes": 4064,
+      "stagedSha256": "091681b5acc37ed53d2f204d8a86924b8e049c9176a636154d4d9a2852cf58c3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/gtm/2026-11-14-web-simulation/README.md",
+      "stagedBytes": 12977,
+      "stagedSha256": "336e3266344b3cd4d8f4b2ddece11174656b33503ba0582eaa8199583b324da6",
+      "prior": {
+        "bytes": 12914,
+        "sha256": "36fa6328094bcb3241e3475d93e7f9695e028ed28681767bb54ade577d1152cb"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/measured-build-runtime-retention-boundary.json",
+      "stagedBytes": 55547,
+      "stagedSha256": "0260aa9784740f8d84a11bee0c941f845b9ed29a5e9d33f0e38eca10acb6829e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/n1-safe-copy-map.json",
+      "stagedBytes": 16592,
+      "stagedSha256": "29cc799bf468322cc97e0a12543f702f4da4a15d66e2d812f04051cea6d53d22",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/new-recording-archive-plan.json",
+      "stagedBytes": 9864,
+      "stagedSha256": "68bd3c90cf6af50d2848adaaf996d94c63fff558104c22c246cec8c1224abda1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/new-recording-archives-completed.json",
+      "stagedBytes": 176,
+      "stagedSha256": "5e86ed9f348f7898d119ce10e03f876e4af19ede6188db9ec8833d1b188e5bc4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part001.archive-invocations.json",
+      "stagedBytes": 4037,
+      "stagedSha256": "bd1b03867f28c146b308b43bc7b9be2a95375520d4b1134b51fcb146fbce82ce",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part001.archive-record.json",
+      "stagedBytes": 1183,
+      "stagedSha256": "1e6ee82918971bda8cca52860b101b2cfd9269dabfb9eecae4d8f68f20637580",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part001.extract.json",
+      "stagedBytes": 1153,
+      "stagedSha256": "f145816db98ccb78391f2519e26236f9e1c27d8b55165735bd767aa8518c2379",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part002.archive-invocations.json",
+      "stagedBytes": 4037,
+      "stagedSha256": "f38836ec9556ad01bd6ed0f05d128c16b4405e901e4e1dab26e088dc03217526",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part002.archive-record.json",
+      "stagedBytes": 1183,
+      "stagedSha256": "007babab2937d04a12e6eebe8df7575b98d5e3481bfd263487344029e26f5e9e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part002.extract.json",
+      "stagedBytes": 1153,
+      "stagedSha256": "5c5ec77dcec78adbb53180e1d0f1065e76626dd29cde4a85e573faf3016080b3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part003.archive-invocations.json",
+      "stagedBytes": 4037,
+      "stagedSha256": "6fef04fdb5333d97562fe655d403f998b8048440ab6b1a664a61c8d066ea8a4b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part003.archive-record.json",
+      "stagedBytes": 1183,
+      "stagedSha256": "0d89fcf222eebe8cdf30042380b4e5f2ea6d2d76b0b0a4211bf2fcbe27adc3e0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign-part003.extract.json",
+      "stagedBytes": 1153,
+      "stagedSha256": "e9893f6901cc7ef769b51acdef7cebf97561673c0cb7fd8be31530a423b2f2fd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign.tree-invocation.json",
+      "stagedBytes": 4477,
+      "stagedSha256": "8806467baa136cdb61d61e8089a9fac65ec53317e588a6467acb13ecfa91a191",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-cell-campaign.tree-retention.json",
+      "stagedBytes": 137148,
+      "stagedSha256": "7be1fe0bf3480ca30fe00e01c5d669bc8ecf84037c64c69435a198b94a08aca3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-amd64.archive-invocations.json",
+      "stagedBytes": 3965,
+      "stagedSha256": "6ee47b92104eaba793888e057c33f7581f7c91b6cd4265683bc535f0374dab74",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-amd64.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "7d61204a2142c343f39e848ad781fdec9187389d46aa02ad509ea7a9e06fbe75",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-amd64.extract.json",
+      "stagedBytes": 1128,
+      "stagedSha256": "62cef73a6dd64db8985906ccc85ab85bd84c74b7f7d6e37fff1b8e67931efa4c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-amd64.tree-invocation.json",
+      "stagedBytes": 2100,
+      "stagedSha256": "0d01526d354ded1c5c882cdc629eaace5544acb9c71278209bc25bda491eb927",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-amd64.tree-retention.json",
+      "stagedBytes": 69336,
+      "stagedSha256": "9f9fe99a940ab08a4724d9991b54f1ee96013f1f005eb58a72433f86cf50601f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-arm64.archive-invocations.json",
+      "stagedBytes": 3965,
+      "stagedSha256": "48b6297ff64b2ed2c51f21500c46db2922663f6d2f293d710e421a8b330bee1a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-arm64.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "51f6d8c9d8d40be9ecf7fc8f18fc99ecc234b1a28ff68a0b71483f2e0c8191da",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-arm64.extract.json",
+      "stagedBytes": 1128,
+      "stagedSha256": "89f1252a94605e075cfb529c9fc81bd2088890ee26e07ae27fd4c7eedd3e93ab",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-arm64.tree-invocation.json",
+      "stagedBytes": 2100,
+      "stagedSha256": "13e77ded1b2665eedffa55ddf10446863a95c3d8d69335c5ea33a2c83808a8a0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-engineering-arm64.tree-retention.json",
+      "stagedBytes": 69336,
+      "stagedSha256": "9559c3d34f15b07d5d814d348ca52b1edbbb703c96390557e2da6a0c5646e730",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-amd64.archive-invocations.json",
+      "stagedBytes": 4056,
+      "stagedSha256": "0761b5940ef93a388b60b9f79fdcd62621c4eed6ba9998e600a576b2e91574d8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-amd64.archive-record.json",
+      "stagedBytes": 1207,
+      "stagedSha256": "15c4a9fe3615bb181201a8ea33b9790e9813ee7e5f54c8690f299c74465a5f95",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-amd64.extract.json",
+      "stagedBytes": 1156,
+      "stagedSha256": "c59a090a178e4fbacc58420d2b3a31dea8e1ef089d439ee1a392aafb840eb33a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-amd64.tree-invocation.json",
+      "stagedBytes": 2170,
+      "stagedSha256": "e2a54b5357eb91ea733d2cdb4d45e14dfa853e8e95e7b03178d189c7e7c69d9e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-amd64.tree-retention.json",
+      "stagedBytes": 69399,
+      "stagedSha256": "864476520c620da1863c24c084e79e58c8d96cd59e8f96cf2929a8344b27dd85",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-arm64.archive-invocations.json",
+      "stagedBytes": 4056,
+      "stagedSha256": "4e6293f971f931bf205db3179dd2f366f92e05acea47be24007ce6c9457954c3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-arm64.archive-record.json",
+      "stagedBytes": 1207,
+      "stagedSha256": "1cc1a8a17842ea2c0d2f1e2a698878d15b55bc7e33114e66b19c7ffa29b7e48b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-arm64.extract.json",
+      "stagedBytes": 1156,
+      "stagedSha256": "ff3b9e50c8875f3c8944aeb4b4378b3a328f30d6b4c397e25da15381f6f94e19",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-arm64.tree-invocation.json",
+      "stagedBytes": 2170,
+      "stagedSha256": "ff26b955e0502480c06078883648d0ed18b573a698456e9f87118b91d610fbbb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-engineering-arm64.tree-retention.json",
+      "stagedBytes": 69399,
+      "stagedSha256": "b50c8502e1c51cf8d4abd601cc33283fd62b635366c1c450e0ef9941c7be7ec2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.archive-invocations.json",
+      "stagedBytes": 4069,
+      "stagedSha256": "b0ae4752fbf0b4aef1709b844579e24e4b995d6487619dc026308c7d119b0f3d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.archive-record.json",
+      "stagedBytes": 1213,
+      "stagedSha256": "78b4357ab8c1498e77e374c0c612a191ab4e7f55f3c2eb7ef34fdeba13c12c24",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.extract.json",
+      "stagedBytes": 1160,
+      "stagedSha256": "73b3d0002472712ac44afb2ceac42d7fc03352a9312269e02641ca7a9c0f28df",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.tree-invocation.json",
+      "stagedBytes": 2180,
+      "stagedSha256": "3f32fc1dbf73747498cd4ac85b6a0d451b67e31640207085e6e37bfa4bc529fc",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.tree-retention.json",
+      "stagedBytes": 69410,
+      "stagedSha256": "18406c8a85736f082c27e8c1ec9c05ccbc0ee7091dcb2b2367c32f4dba5ba1fb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.archive-invocations.json",
+      "stagedBytes": 4069,
+      "stagedSha256": "38c7014ed26b66cfa039b4c62c2744df77d48b01c6a50d55eda032be21ef3ec7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.archive-record.json",
+      "stagedBytes": 1213,
+      "stagedSha256": "7e4e4efcf55f1d9d4fdcc1b6c531fd16b2061fe8dbf7f9763ec610c8b10c74f9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.extract.json",
+      "stagedBytes": 1160,
+      "stagedSha256": "a6858efcd96f50f0ed55bd4daf5c5c9d6c1928ea07e21a70f39637e689e5e176",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.tree-invocation.json",
+      "stagedBytes": 2180,
+      "stagedSha256": "175a38889de5ae1ef32a204c9adbe0dd605f897ecd4813e96141cab0875898b0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.tree-retention.json",
+      "stagedBytes": 69410,
+      "stagedSha256": "2d60446c3a27a85b05d93f7e871f097ddbe0e78e62410f3272600b969d458339",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.archive-invocations.json",
+      "stagedBytes": 4095,
+      "stagedSha256": "26d309c6733db3df7324651753ba3313d536c54d7be5e021b2691621928fef7b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.archive-record.json",
+      "stagedBytes": 1225,
+      "stagedSha256": "d37cd06ad42a5a6b24d73436075b37d7ea69544be34f5faaeb2a1e804e1b3c4e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.extract.json",
+      "stagedBytes": 1168,
+      "stagedSha256": "716531c466facfb51c72357a2c2354cc67ffc543a0a99cac7bca9d9101f8fd03",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.tree-invocation.json",
+      "stagedBytes": 2200,
+      "stagedSha256": "600fb3118cf39932b3c10ca1f47161947cce0c598e65bc179d6ba8f7932b4a6b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.tree-retention.json",
+      "stagedBytes": 111155,
+      "stagedSha256": "64ab53f6a8a2ac4b86eca278566e66a829500a6e3c31b768be2162705fb7162a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.archive-invocations.json",
+      "stagedBytes": 4030,
+      "stagedSha256": "3254eff344ca9210569fa2ed7c35ad5fcf54230fd1168a3c8afde93e4d5e26e8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.archive-record.json",
+      "stagedBytes": 1195,
+      "stagedSha256": "40f0f5a3a074547ae60851f8929af58b7f2a48474c6e979ed523febfa5b3d8a8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.extract.json",
+      "stagedBytes": 1148,
+      "stagedSha256": "79362b02fc9f9291ad22e2b0680f8510c11e99dae188fb850028d703d9a08b9d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.tree-invocation.json",
+      "stagedBytes": 2150,
+      "stagedSha256": "9e6789ad80738c6efa579a98c05d9f2c525b13b55fe80b312ad55001138f7f34",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.tree-retention.json",
+      "stagedBytes": 69383,
+      "stagedSha256": "2df213aabbc3e8491ca454df5c7e827e8720ac462f2c904c29b605a1b435a8b9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-amd64.archive-invocations.json",
+      "stagedBytes": 3978,
+      "stagedSha256": "10bb93f4ee8c4f87dd60d5a282f670d3565bfe8e6786c6d2a76891494e3892e6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-amd64.archive-record.json",
+      "stagedBytes": 1171,
+      "stagedSha256": "432d15a68c60244e47b5ae0c6c14b816eb31e8879102130e448abd36a3b1e6d7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-amd64.extract.json",
+      "stagedBytes": 1132,
+      "stagedSha256": "28d9c4c37d4500e311092df79ec8b4c3e790efd1517615dd73faab70d937219f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-amd64.tree-invocation.json",
+      "stagedBytes": 2110,
+      "stagedSha256": "3556ce2f3921426b1aa4db82067914cf5dbed7b98a6bf6f0bc9e8d1cc453a965",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-amd64.tree-retention.json",
+      "stagedBytes": 69347,
+      "stagedSha256": "6349078328dfe25f42998f263a35e26e37b151a15b87bf3e11e18a17cf4fd5d7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-arm64.archive-invocations.json",
+      "stagedBytes": 3978,
+      "stagedSha256": "ed1901053c384a99130b56740d8c78182fbe183d9f564ad8474279a63031afe9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-arm64.archive-record.json",
+      "stagedBytes": 1171,
+      "stagedSha256": "cb6774d7a522a3268a20d291ced17538ed4ff29e892c8f8389fef639228d12b8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-arm64.extract.json",
+      "stagedBytes": 1132,
+      "stagedSha256": "78d805250ad2ea1b5a9dea9f750b9bd4fc8670cba1c0cfc18b8bd5399475ef28",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-arm64.tree-invocation.json",
+      "stagedBytes": 2110,
+      "stagedSha256": "a1074d29857f9cadf8d114ce1c21fb5ca8e2b6700d042d0e06b915905b6ea548",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-mujoco-linux-arm64.tree-retention.json",
+      "stagedBytes": 69347,
+      "stagedSha256": "9f825b7864c2bd31898fda921df77f29e7b70c02ac7f61f22b1c954336a501c6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.archive-invocations.json",
+      "stagedBytes": 4004,
+      "stagedSha256": "b6b2a481b96c4a8e0cb944ba5e59baf43bd40a0ee92464af5f38b104f63f42fa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.archive-record.json",
+      "stagedBytes": 1183,
+      "stagedSha256": "75876e16ef322ecee08f3a535ad2eb345d599d2ba60fb7fb1ad09d135e26414f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "af8f1ef27cf5a2417ebcf0b64cb3443898643ba6adb6464ba4813ce076758876",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.tree-invocation.json",
+      "stagedBytes": 2130,
+      "stagedSha256": "883af19ea9a975fcb2f3684801a77ae6e830a1169151f2f7753ac59cda639d5d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.tree-retention.json",
+      "stagedBytes": 111092,
+      "stagedSha256": "65af97f2bc7c68c9d0a756da83fe2044947b833300df8dbe2d37858ba903fd96",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.archive-invocations.json",
+      "stagedBytes": 3939,
+      "stagedSha256": "5233fd5a25b5c1d75b01027b0ff176e6a6d1a5c8195e0f8a5365c42fc455f431",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.archive-record.json",
+      "stagedBytes": 1153,
+      "stagedSha256": "3f452b8608f2d3980f0eb688520fac4e7603d3da284b275f6d5af586ab63b9cf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.extract.json",
+      "stagedBytes": 1120,
+      "stagedSha256": "2d19d8520522f37feb400287b188442301c430fffad3a5ecb0a7a622a914bbaf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.tree-invocation.json",
+      "stagedBytes": 2080,
+      "stagedSha256": "4ad47cfcb69443ca72a5a2e64a198eb62c2cd72d43d038782e0ea608e5be6513",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.tree-retention.json",
+      "stagedBytes": 69320,
+      "stagedSha256": "2ed8c79ed627945ad9c64904697cdbc6cd2ae4be047b1685226cc5e5c404ecb2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-installed-runtime.archive-invocations.json",
+      "stagedBytes": 4024,
+      "stagedSha256": "ea04869cfb7ec87b6e4665541877113340ff9c9d58d63baad024aabe4ff7caac",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-installed-runtime.archive-record.json",
+      "stagedBytes": 1170,
+      "stagedSha256": "d787ab91e3f3d33d0bb65281bfb04d1360994477974c2b3f2520fa093a33b0aa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-installed-runtime.extract.json",
+      "stagedBytes": 1150,
+      "stagedSha256": "46c70e84290839e7cf16de33a4d945f9af6fb935d5deaf5e59545ff32ca178a1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-installed-runtime.tree-invocation.json",
+      "stagedBytes": 2127,
+      "stagedSha256": "99bb0b061124b37f6f75a70b4108cecc984e76f8e22843b8eb1dfc9e37ca7c81",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-installed-runtime.tree-retention.json",
+      "stagedBytes": 16953,
+      "stagedSha256": "95d253506b7de62f934df0b828612790ca91996ba128a4dc3cb3662f30b8292f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-copy.archive-invocations.json",
+      "stagedBytes": 3958,
+      "stagedSha256": "fcb07169bcc82a7db88a2cbbb489921cca5d8f6717b49bd341ad3c422ec3f9f6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-copy.archive-record.json",
+      "stagedBytes": 1159,
+      "stagedSha256": "2c5e144b30d0a10914b9c5335aca11f28bda2f2f317b6a8f28fd672b8de55bc8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-copy.extract.json",
+      "stagedBytes": 1124,
+      "stagedSha256": "3119e0489479cdd2b8c6d40987651a882ab99ac9ec9eea0352d374408dc5d2e0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-copy.tree-invocation.json",
+      "stagedBytes": 2090,
+      "stagedSha256": "eafede391512c95679d4900565bcb5bfb24cab15af32b49cfd2d44bc3c570744",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-copy.tree-retention.json",
+      "stagedBytes": 2383,
+      "stagedSha256": "93bdd1e04302b401368980b2200ce945ebb5b698ef9694af11588d2b8562d3b8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-original.archive-invocations.json",
+      "stagedBytes": 4010,
+      "stagedSha256": "351734de14d3d608bc861dcd82ccf308ce2f7fdbcabfda57b7bafcdd1be305de",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-original.archive-record.json",
+      "stagedBytes": 1183,
+      "stagedSha256": "919f55f0ca7220d45cb0c5ac77187dd782684d338ce92ea469059a59d016b655",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-original.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "cf3871d9929b61e9d872867ae6ba732cfa77ee9f56ed8af0d72dd4fb65f92d06",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-original.tree-invocation.json",
+      "stagedBytes": 2130,
+      "stagedSha256": "df0f46a65f2356c0114399e8562895566cf9bf6c23fdbacb9edc9198bba5d3ad",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-default-results-original.tree-retention.json",
+      "stagedBytes": 2419,
+      "stagedSha256": "93a7e9d4644d9e12b5eb8e287159c3a03f81c7e49a7c655f927baad625f61788",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part001.archive-invocations.json",
+      "stagedBytes": 3935,
+      "stagedSha256": "9796ea4ca136a367d4a51a64ac78201e300c4290ada8ddb8c3558fcd2b74f43a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part001.archive-record.json",
+      "stagedBytes": 1136,
+      "stagedSha256": "1f04da35a668084cd885ef7f87c68283daf8741166a4e51884d6f0864d46af6b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part001.extract.json",
+      "stagedBytes": 1122,
+      "stagedSha256": "99d1318878e501a52cdc29336a0200bc5e40d835028c2c3d06a6138bee2a0f9d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part002.archive-invocations.json",
+      "stagedBytes": 3928,
+      "stagedSha256": "ac36faa3e0b69daa5de6cf0239e3dcd99abc62d13b273d090fde88ff36607bf4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part002.archive-record.json",
+      "stagedBytes": 1132,
+      "stagedSha256": "352889a36eab21db370f9677175bc62bbb59815865d7e8d5e98f042faf586fb7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim-part002.extract.json",
+      "stagedBytes": 1119,
+      "stagedSha256": "564323f56dd32631fd0eb1350f3f99bf6502ffe0f0c1b296490d043b9e5587b0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim.tree-invocation.json",
+      "stagedBytes": 3145,
+      "stagedSha256": "814a5aa0b71794e82e442955a000b098985a2a6da0e96a5790266f2fc2e32e18",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-irsim.tree-retention.json",
+      "stagedBytes": 494276,
+      "stagedSha256": "814b00a73c884585be985365e059696172f9baa5018f438fc9a1ba2c45bcd577",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-loose.archive-invocations.json",
+      "stagedBytes": 3794,
+      "stagedSha256": "e0b690ccd64c81fb5efb6217ebef2142950c5c70bf4161b610311c0e3d78c14e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-loose.archive-record.json",
+      "stagedBytes": 1071,
+      "stagedSha256": "63f02142d17c138b981966555951fecab7b4c49e8c72c6632c34c54d31d50f2c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-loose.extract.json",
+      "stagedBytes": 1077,
+      "stagedSha256": "c9dc3c24f18f8c038dcbe7c73680af914b9b017d993300ece07c952e83e7f770",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-loose.tree-invocation.json",
+      "stagedBytes": 1955,
+      "stagedSha256": "fb42487d1b9ef52e3a0821836f1c5483ca6944b86391ad3f125811492f3e2e4e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-loose.tree-retention.json",
+      "stagedBytes": 3687,
+      "stagedSha256": "64325d2f48b21eeacebdf8d5e76f721d2df3b32bb0179646478c3f9539ce97aa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-measured-lab-dist.archive-invocations.json",
+      "stagedBytes": 3823,
+      "stagedSha256": "562d5dd1c32de34eafb997bc036e94abc5c92e9403ca1388adf261791d9b727e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-measured-lab-dist.archive-record.json",
+      "stagedBytes": 1105,
+      "stagedSha256": "3c2596a11dbcdbea77288959ba74b4c6ca4983f60207c6a9ff8f328fcf6e99e0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-measured-lab-dist.extract.json",
+      "stagedBytes": 1083,
+      "stagedSha256": "3aa4fd2ab1d6c87961c71dc56d83f6cd5e819dbdc9c77b9f4d8f6fe11169312a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-measured-lab-dist.tree-invocation.json",
+      "stagedBytes": 1995,
+      "stagedSha256": "ed31fe825c1fbbc9b53e5be01a9bbeca2f1568e1af56289803421696eb9ebdd4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-measured-lab-dist.tree-retention.json",
+      "stagedBytes": 57106,
+      "stagedSha256": "cf69c26e151631263dbc2380e1ced021573a1a22b829ae212f1a03bc6dba8386",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-mock-regression.archive-invocations.json",
+      "stagedBytes": 3835,
+      "stagedSha256": "3c0bd6a3806019548025795025e991c8a280cf649a70c34178f932e1aa35f7e0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-mock-regression.archive-record.json",
+      "stagedBytes": 1105,
+      "stagedSha256": "2913feca5c8f99b8586d52097dfa8c932daf2684d70e6695cde33d3bf0a1caed",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-mock-regression.extract.json",
+      "stagedBytes": 1088,
+      "stagedSha256": "0d5967623a474c6ebae1ae4f18373270c30248fe6d90b82f56c3bd09075abda5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-mock-regression.tree-invocation.json",
+      "stagedBytes": 2000,
+      "stagedSha256": "eb2c6b45801cbe631f0c528f58bf686316bfbc3579e033ab975a6c46a0460d67",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-mock-regression.tree-retention.json",
+      "stagedBytes": 32849,
+      "stagedSha256": "89515859893a454a8069a6f7f254fd07a6b7066c905bd77d27f3457446f5bd2f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-native-empty.archive-invocations.json",
+      "stagedBytes": 3773,
+      "stagedSha256": "3e4f7b02a8b7a417424018e82873f0d4be9b64c8503ce8ea25ea06e6da53c3b9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-native-empty.archive-record.json",
+      "stagedBytes": 1073,
+      "stagedSha256": "031442806db279b02a09a7ccfd455875c70c4faf7853dec3559cdbd503927c58",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-native-empty.extract.json",
+      "stagedBytes": 1067,
+      "stagedSha256": "6c5b880c6acf6c226dcc0719fe048e65e5509fa6615e22cdee4e73aec0842f0b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-native-empty.tree-invocation.json",
+      "stagedBytes": 1947,
+      "stagedSha256": "ae2aa1c8dbac556a85feb48618a4bc3d952eeae0442ea673650e58ebe914f699",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-native-empty.tree-retention.json",
+      "stagedBytes": 2028,
+      "stagedSha256": "ce1c71a30defc5f15b850ca87c02aa698aeb8d3cafd4bb1904701e6f575f5bd8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part001.archive-invocations.json",
+      "stagedBytes": 4076,
+      "stagedSha256": "27bdf89e0e8c53c0a24b42390e903904134b72fdc9a0d0c2dca2ffcfa82719dd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part001.archive-record.json",
+      "stagedBytes": 1201,
+      "stagedSha256": "7d49ea380071e9b6f90c0c9c747e665ea9cd4e6e0a21fd5e0d7134c288665825",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part001.extract.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "b8348cc7729dd4c601ce1bb3cf0506cec2115286ba7cab4aa88e8b4d98ca7005",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part002.archive-invocations.json",
+      "stagedBytes": 4076,
+      "stagedSha256": "06c119516db260e3caf4c2a16f46c837c015fd7c9a2e8d175a7966cf7bbd4d56",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part002.archive-record.json",
+      "stagedBytes": 1201,
+      "stagedSha256": "3a771c816ac5b7532e044a372f39882b9be2e3cd865c74ccae542b1a40f8886e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign-part002.extract.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "521b41151650ff6d2237ce4fad7555e3d51d5f8c2f80483ddeebac28c18b6076",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign.tree-invocation.json",
+      "stagedBytes": 3324,
+      "stagedSha256": "d83742c7e30d0475f821facad437181a72251e6f943616cb7951d48036bf32db",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-payload-campaign.tree-retention.json",
+      "stagedBytes": 396820,
+      "stagedSha256": "7db9a5520ad1b99d8ea26d81072869ad021d583225bcac764d9b66ab40026eb1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-phase-metadata-copy-map.json",
+      "stagedBytes": 107636,
+      "stagedSha256": "21ab722e29edf9dfdfcd7a9a3f64ce73cc772394e484c6613cbcf3878005828d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-phase-metadata.archive-invocations.json",
+      "stagedBytes": 3921,
+      "stagedSha256": "b395cd1b99f130bcf61f609523e14c9b11dac8873140482c2fd0439e59353291",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-phase-metadata.archive-record.json",
+      "stagedBytes": 1132,
+      "stagedSha256": "52150686289d444481a665a1805d1ba98be7ebfed92c3216da20dead7ed7d24f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-phase-metadata.extract.json",
+      "stagedBytes": 1117,
+      "stagedSha256": "9ac5b5f21092ee47c28a8f3097959db7e9bc422c1310e40f17191aadfee689ed",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-phase-metadata.tree-retention.json",
+      "stagedBytes": 73217,
+      "stagedSha256": "73797ce26a7a7a11953bd545458324f0d26204148f4023eb2f7b845bd2ac5801",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-browser.archive-invocations.json",
+      "stagedBytes": 3872,
+      "stagedSha256": "8831ef2344c347e3800d6c5ec2a22fceecda78cfaca281b9aae57be04e581cca",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-browser.archive-record.json",
+      "stagedBytes": 1122,
+      "stagedSha256": "61a992f58917aa4c737eb56f65046d1c09070089cc313ff74fc26e894fbe4ee4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-browser.extract.json",
+      "stagedBytes": 1099,
+      "stagedSha256": "846dd556a17f39dc4f556cb142630aac232c74631cdd2bc4a4c679192be6a326",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-browser.tree-invocation.json",
+      "stagedBytes": 2028,
+      "stagedSha256": "1c5fd62820c66e4466e590a4c9cc1ae9bd971aff7163eb5709200c8d1759958c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-browser.tree-retention.json",
+      "stagedBytes": 17682,
+      "stagedSha256": "d09d25e78b4ef85bb960d4923e251a3d540cc5fd598c52169af14ab929d1c3c4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part001.archive-invocations.json",
+      "stagedBytes": 4149,
+      "stagedSha256": "dcb343ebe8ecccef8413a0c68b49495ce1ac58cb21a0819e699074eea9f673e1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part001.archive-record.json",
+      "stagedBytes": 1234,
+      "stagedSha256": "cd5777b8fae135333fe8d2f6a88147212c63796ea048e865b9479b5c48bd6c1d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part001.extract.json",
+      "stagedBytes": 1187,
+      "stagedSha256": "32b4dadfc2a324376a8a0d89eadd7655c764597565184700eeac42cbbf5806a8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part002.archive-invocations.json",
+      "stagedBytes": 4151,
+      "stagedSha256": "0096c858e7862a4f0b3455a066cd86a12493bf6eab62a004575eda84bd2ea598",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part002.archive-record.json",
+      "stagedBytes": 1235,
+      "stagedSha256": "5efd1cb4db12357f70ba58b7ced5df5a453524b547c247cf8dd73fd37f0f78f7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance-part002.extract.json",
+      "stagedBytes": 1188,
+      "stagedSha256": "65773b5444f3e8b61125eb6f612e0fe07c69e521caee09928a914da4822a0487",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance.tree-invocation.json",
+      "stagedBytes": 3412,
+      "stagedSha256": "d28fb172333d5e3dab08e254719541f25bbca06069d618f8003115126c54d899",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-performance.tree-retention.json",
+      "stagedBytes": 7967,
+      "stagedSha256": "2f56572ce680b6230f10f5bc53d37bd9358e4545c2938eba08e92612aef707b3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-replay-browser.archive-invocations.json",
+      "stagedBytes": 3963,
+      "stagedSha256": "f8acebd7fe025dd491120da5e2ae6e44395a62130799bdfa893b5104026249a0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-replay-browser.archive-record.json",
+      "stagedBytes": 1164,
+      "stagedSha256": "346082f7adf2fcf9939529feb962245a5ab2a6b0a997628d7716c0b73fcd878a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-replay-browser.extract.json",
+      "stagedBytes": 1127,
+      "stagedSha256": "ecffd8ac85ad32a31d7e93af4e20796e717074a087a01f022f9691862b964bca",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-replay-browser.tree-invocation.json",
+      "stagedBytes": 2098,
+      "stagedSha256": "81e9b6a26ccadbef88720c99bc6be879ad8ab8443b1099f75a5e098abdf691a7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-production-replay-browser.tree-retention.json",
+      "stagedBytes": 7020,
+      "stagedSha256": "e484f114cd9474fc1ffe6b82ea960ad24ba1955a3d5d7d37975f0d05fa391c48",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-copy.archive-invocations.json",
+      "stagedBytes": 3919,
+      "stagedSha256": "f53cdb80f84db407cadb18e61d8faed9b1d251af3737756e12cf6dcfd7b37947",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-copy.archive-record.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "8284cfa4e665f30d193ace661341c1ca5c9965b6b664c487391072ede4ab10cd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-copy.extract.json",
+      "stagedBytes": 1112,
+      "stagedSha256": "554498d02f5d758fb0919950e007791c8903c29023d9ce66b2298c3812fe5c1d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-copy.tree-invocation.json",
+      "stagedBytes": 2060,
+      "stagedSha256": "097833a600dbfa2d271c18f7a83a127e73b07f7312e1c72122870a8b61427baf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-copy.tree-retention.json",
+      "stagedBytes": 2356,
+      "stagedSha256": "453a80230d19a5fd7623efdc5a5b248680eccb010f34b14849fdacbf3c7a216b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-original.archive-invocations.json",
+      "stagedBytes": 3971,
+      "stagedSha256": "e79d618ff2213be7ea454b6900abb26b3d6a5b83af33c6510547637cef2263aa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-original.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "dbd8b5e08e9d4344d1b141b2b2772ec63625e5dca4cdc6e639a80976d628ddae",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-original.extract.json",
+      "stagedBytes": 1128,
+      "stagedSha256": "7d6460f098423d1c0960e8e2bbd3b5b7bea8e25cfd2c475b6ae8f1406b3be268",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-original.tree-invocation.json",
+      "stagedBytes": 2100,
+      "stagedSha256": "dea4d17f7732f7146e68496708d703ed1c560b5ee0b7d4ebdfe28b64c77e7018",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-default-results-original.tree-retention.json",
+      "stagedBytes": 2392,
+      "stagedSha256": "112425d54fcc7d3d93d21f5e200a2cd8012759a5a950133c0396f7047e5be1f9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part001.archive-invocations.json",
+      "stagedBytes": 3896,
+      "stagedSha256": "5a1fc805549446678aa566d5baedfa20da9dd9a4da9d89d855697b7a83cb8e34",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part001.archive-record.json",
+      "stagedBytes": 1118,
+      "stagedSha256": "2d10fb6b44c887537f6bd2439d9594f047423799bfc3cea46b8c008e763ef424",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part001.extract.json",
+      "stagedBytes": 1110,
+      "stagedSha256": "818f4f70d9399be4395e62f80a78e4cab3099466032db4d7d4a2f150aaa885a3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part002.archive-invocations.json",
+      "stagedBytes": 3894,
+      "stagedSha256": "90c94b4e3a35073aed7bbc39e3a7f536aba2f107e341d3bd2601ed2bf7259ae6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part002.archive-record.json",
+      "stagedBytes": 1117,
+      "stagedSha256": "7dbfdf4177abe4bd97a7a282017a25765514e457107193c42b2a2658da5bbfff",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part002.extract.json",
+      "stagedBytes": 1109,
+      "stagedSha256": "fe72a55ba31e0e3ecc6b3f6e128363a78eecd8504b574f2a6a7c496dc9369a60",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part003.archive-invocations.json",
+      "stagedBytes": 3889,
+      "stagedSha256": "2c499cad0e0cb7ec4f6acc7ac3926e1264619d8d1999870731ee709a67107a2d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part003.archive-record.json",
+      "stagedBytes": 1114,
+      "stagedSha256": "2e5ed927c05c0553363dc1c085b8164972c94bcbd221c1915c3a27bc5ddae123",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1-part003.extract.json",
+      "stagedBytes": 1107,
+      "stagedSha256": "fe9110c773fc72460f9e9130545b4b7cbcf16466f07614ff837cacc9c30dabb9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1.tree-invocation.json",
+      "stagedBytes": 4234,
+      "stagedSha256": "7a89417d2287c36e628a3703992f2ef27159e7ac236deb6ac09a7f7ad633a1b7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r1.tree-retention.json",
+      "stagedBytes": 793163,
+      "stagedSha256": "ca4050bbdbbd1d4fdcea2cbe4ff368c42b9eb898792f7f9bdfb5f080fe648e82",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2a-supplemental-current-gui.archive-invocations.json",
+      "stagedBytes": 4005,
+      "stagedSha256": "338244a12509db4be7715ffc9955a71745a78559f6f2172411dd255ac5da0253",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2a-supplemental-current-gui.archive-record.json",
+      "stagedBytes": 1184,
+      "stagedSha256": "f085bc50aa9afacbd78ed2ea46ba329eb90c71ce0f84b02e468544239438b0c2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2a-supplemental-current-gui.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "9b9aac2e5be68b061a3bdde7c6fd2f0b4320b87181c47d04f5bd8c81cafed053",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2a-supplemental-current-gui.tree-invocation.json",
+      "stagedBytes": 2131,
+      "stagedSha256": "04a54693da09837193db716b3ca264740d60fc8c50b25ab5ac8d77e11a17e5c8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2a-supplemental-current-gui.tree-retention.json",
+      "stagedBytes": 40849,
+      "stagedSha256": "22c59d09455720809aa7e6d117e27f8ded5e50455f54bd348f3bc61483f877e5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2b.archive-invocations.json",
+      "stagedBytes": 3657,
+      "stagedSha256": "043729232245cf1947e03c0d28bd97ccf9a3513811b08ed1031e77cb2433843f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2b.archive-record.json",
+      "stagedBytes": 1020,
+      "stagedSha256": "14f691c5a36def8c51753cd950cae0e3fd8cc9fdd70cf16ba0580118eb6a4839",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2b.extract.json",
+      "stagedBytes": 1031,
+      "stagedSha256": "4b138f329b96e81b0375e039988219d9831c5598b16e3588e8e7a14e1b0f1b64",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2b.tree-invocation.json",
+      "stagedBytes": 1858,
+      "stagedSha256": "67e9d1d596d07e9a696d168111dd62987ebf912299cfce769361dad426ca363c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r2b.tree-retention.json",
+      "stagedBytes": 1984,
+      "stagedSha256": "8de847c7f3b6f627078827760aac21a293f7dcf75f1ec7c595f417b4521fd2f8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-amd64-prepared.archive-invocations.json",
+      "stagedBytes": 4017,
+      "stagedSha256": "b45443c7d807f219b58c38c65a613aaa79feaaa3c8f48879cddedd2e08f12a65",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-amd64-prepared.archive-record.json",
+      "stagedBytes": 1189,
+      "stagedSha256": "17fb0598dd0d93657479cc007b8ebf5d0f20f41e40edc08429b2ca4f70b8ec24",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-amd64-prepared.extract.json",
+      "stagedBytes": 1144,
+      "stagedSha256": "ca0e3507fbb37e205d1ccf1c604488cebc55b3869273c3e48c9feeeb0b2db1b3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-amd64-prepared.tree-invocation.json",
+      "stagedBytes": 2140,
+      "stagedSha256": "ba2055b324ea17fb58ba25f228741334b66cb3f0e9b6632ce85d16300319d0c6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-amd64-prepared.tree-retention.json",
+      "stagedBytes": 73819,
+      "stagedSha256": "c3d377852963b423ab4e4b70b8bf0328c89cdb91d4cef5287f85d91805d9c6ce",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-arm64-prepared.archive-invocations.json",
+      "stagedBytes": 4017,
+      "stagedSha256": "75a5d68ad05dce0fb3462ee65fa9887ff09f547829eacf73581ebe313adc4cb5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-arm64-prepared.archive-record.json",
+      "stagedBytes": 1189,
+      "stagedSha256": "c85313665e7d250d739f7822b45e87a8ea9fb4500c18941f6e5fc08de6a7d7f4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-arm64-prepared.extract.json",
+      "stagedBytes": 1144,
+      "stagedSha256": "514279fd1d41d810a99038b9e3a6cb311e24fb62b148269d57b7aa8e5d5cc7fa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-arm64-prepared.tree-invocation.json",
+      "stagedBytes": 2140,
+      "stagedSha256": "1b849052c402ba86666723e09ffe417f05be227cc256113794399b8781be83e7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-engineering-arm64-prepared.tree-retention.json",
+      "stagedBytes": 73819,
+      "stagedSha256": "7637618ed7ea405a5a740d2c12e224cf0e63a6cfb77c10095848e4a99bc8648f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.archive-invocations.json",
+      "stagedBytes": 4030,
+      "stagedSha256": "d39c20fec79975b8709bd9a36402ec1c22addc0615d0019d98e690c20a7c8c08",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.archive-record.json",
+      "stagedBytes": 1195,
+      "stagedSha256": "84531694d0b1a862042b3878cd570c1c89826b7008626164f701b38b925e1822",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.extract.json",
+      "stagedBytes": 1148,
+      "stagedSha256": "4bdd2e05e16b3fa60f0087f5150aa9cd70470cc23f4c00cf75c30c355204714f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.tree-invocation.json",
+      "stagedBytes": 2150,
+      "stagedSha256": "eb2bc457e5b48125066edc6a6f9f5fe0b5e6209666b8f6be7337efcaa6c0d573",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.tree-retention.json",
+      "stagedBytes": 73830,
+      "stagedSha256": "6f4cf92b67225e012ad7a537e24038ffaf60de97e5099847baaa023010115ced",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.archive-invocations.json",
+      "stagedBytes": 4030,
+      "stagedSha256": "a508d997644b0753f38c7ad679118701fb087fd9d8cf3703862086658fa5979a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.archive-record.json",
+      "stagedBytes": 1195,
+      "stagedSha256": "c50d8064549586fd5a5b5ca33b4945ddf93634ca3d86ad0c492abd710ef88b8d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.extract.json",
+      "stagedBytes": 1148,
+      "stagedSha256": "e38cf36dd2861f4062699829912d80e93c17c8a2594eec859f664cfb867a1898",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.tree-invocation.json",
+      "stagedBytes": 2150,
+      "stagedSha256": "fb39f7b8d06c80b8ee0e6d9a8879a67e9ced83a4c0bf29bb5cad3b738d437b00",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.tree-retention.json",
+      "stagedBytes": 73830,
+      "stagedSha256": "2c343c32bbc51f6f831324265304044a284365b0210c96a641f5e8f67615aa64",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.archive-invocations.json",
+      "stagedBytes": 4056,
+      "stagedSha256": "c412234e254a92aef6a54923fd43c90834f0b2b80e00c7e4343b7f7eaeebaf3f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.archive-record.json",
+      "stagedBytes": 1207,
+      "stagedSha256": "e16df488ec1c85133721c95137065dea06889fcfa683c42c0dd230003ce23515",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.extract.json",
+      "stagedBytes": 1156,
+      "stagedSha256": "92f083966899b659126d0dce308209f146a063a7932947b63a35b17db40ed3d1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.tree-invocation.json",
+      "stagedBytes": 2170,
+      "stagedSha256": "beaa2e56636b7d2d3e4ac9d675cd9e30c35fe382b2236e29c1c6f68f4666f5a5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.tree-retention.json",
+      "stagedBytes": 118530,
+      "stagedSha256": "8f91deac5f73919b2711665b754d8f88d38125be6f09bd32af3ba8f4530dbf87",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.archive-invocations.json",
+      "stagedBytes": 3991,
+      "stagedSha256": "b5d67354b9c37d0a0ff353f49230207d077a66fcfde23225bd599e1345f67290",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.archive-record.json",
+      "stagedBytes": 1177,
+      "stagedSha256": "2a9972411e384f58c6dfbe3417953c07116e5aa76b3088becb85582de3ccebca",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.extract.json",
+      "stagedBytes": 1136,
+      "stagedSha256": "7e23e28ce44aa4b4d93379f64696ab0ba5e75803c2eddad9a3f59af367eec460",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.tree-invocation.json",
+      "stagedBytes": 2120,
+      "stagedSha256": "484d25d019377ecc0148381bd709361168428cecd34ddbc58f0664907c2b7b75",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.tree-retention.json",
+      "stagedBytes": 73803,
+      "stagedSha256": "451b3d65c280c5cd6b3cc1284790ec24703173839988aff8d511cb3b6acdfe8f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study-process.archive-invocations.json",
+      "stagedBytes": 3911,
+      "stagedSha256": "7ebf091a7dbc173c5caa7d17adfa0cd716525550a45bab411f0b23dbe78998e8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study-process.archive-record.json",
+      "stagedBytes": 1138,
+      "stagedSha256": "d55a7143f20333483efec33ba25f988ea45686af9380466381ee59a144d2b81e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study-process.extract.json",
+      "stagedBytes": 1110,
+      "stagedSha256": "42000f2c38a845a2c9ac86be8b6f94b8bb5367d5c827fbe19513314b1768ae3b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study-process.tree-invocation.json",
+      "stagedBytes": 2055,
+      "stagedSha256": "4a58eacbb747f4740fed926d22c11a5244acf7e7896151dcb04a4c5c0898874c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study-process.tree-retention.json",
+      "stagedBytes": 2788,
+      "stagedSha256": "11a2e3642db2d8ee12d92f4e8f012e44160b64e3170d63fe8af4cd154d6e1300",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study.archive-invocations.json",
+      "stagedBytes": 3823,
+      "stagedSha256": "aa5fa975b86d0c50b073039be3ef2eb9a8fa96b439d7e9bdca7ab92005a30a36",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study.archive-record.json",
+      "stagedBytes": 1100,
+      "stagedSha256": "a05dbfcee92505e52a6b23b73fc3d12070414c072c659a3f5afaf41780a5ee7b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study.extract.json",
+      "stagedBytes": 1084,
+      "stagedSha256": "1c35fa033e4c6c1bfae72ca13cafb6c14f24dad9d68e5065c271ec6306ee5da7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study.tree-invocation.json",
+      "stagedBytes": 1991,
+      "stagedSha256": "559ed4cbbea0e46a2b7f9363d89bf5169f0eb30a38c2648d32b51c79f448d6f9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-semantic-study.tree-retention.json",
+      "stagedBytes": 57375,
+      "stagedSha256": "b2ea21b424d34a0c05a6c8ad5524fac04c842efd05633f0802d78e1a8489ecd5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-stock-launcher-web-active.archive-invocations.json",
+      "stagedBytes": 3963,
+      "stagedSha256": "fe732ee89d3c93cf828a47ccc12ff8695e27841229c241a51b01d7edb35953e2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-stock-launcher-web-active.archive-record.json",
+      "stagedBytes": 1164,
+      "stagedSha256": "9bbaa5e78634aa45e5ab54ba0a8e76a50e051973c5be816fb1d1bcb8c93d268c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-stock-launcher-web-active.extract.json",
+      "stagedBytes": 1127,
+      "stagedSha256": "2f01aeda06881752186941d100002a36ffbfb0b82874048ac8104dc302d909c5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-stock-launcher-web-active.tree-invocation.json",
+      "stagedBytes": 2098,
+      "stagedSha256": "9966baab5e06f8451b9973c91ffc4aadf3bb85333919d8973e7885505c4cc65e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-stock-launcher-web-active.tree-retention.json",
+      "stagedBytes": 17976,
+      "stagedSha256": "f5462575be98fd8453ab30b759b5df391c975a7ec4666230b6956ef2dbe37afe",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part001.archive-invocations.json",
+      "stagedBytes": 3995,
+      "stagedSha256": "813495f9b677926bc3e10e90cc519a9b6e44c3d1498e61afa5c5e924f8eb355b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part001.archive-record.json",
+      "stagedBytes": 1163,
+      "stagedSha256": "dfe56c7eedb2cf6feb3d2e383be6945ecfef4216360090af2fe75cf2b300d6ec",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part001.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "5dcf7baa9a56f63fb2c1fcb584f4ce3a6e0f56924b022189d334fa46ae157841",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part002.archive-invocations.json",
+      "stagedBytes": 3996,
+      "stagedSha256": "f349efaabaf4665bd237e42d3dbd92e2359a557bd05cce06429d1480919a57fd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part002.archive-record.json",
+      "stagedBytes": 1164,
+      "stagedSha256": "31d7efae9698a4ade9c3e3bb4389a1ccf9d55315dbca098b500557f75779392c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record-part002.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "a85f3cfaf21275d88a151621e19b11c90f461d9a7ed947cf715b797c51dc2cf1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record.tree-invocation.json",
+      "stagedBytes": 3222,
+      "stagedSha256": "c2cf35f0441af081fb8e809ed9c9bafdef9b6e1bb2abb2c6231f6c1bfa0a4c2b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post-n1-web-record.tree-retention.json",
+      "stagedBytes": 25638,
+      "stagedSha256": "d794681de1bba9982a4b718d98f3459eff3d90aac973284d26062e6a5401a103",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part001.archive-invocations.json",
+      "stagedBytes": 3998,
+      "stagedSha256": "b84218e2a7b03af8f6afba92f2c4ce5d8788b1174f9a2f81bda43a29c9d888e6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part001.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "186f9dbbde35e91ac72e682fa4bc83728f6780467f212b7f00d7f8efd52bd237",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part001.extract.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "0a8185263792acba5c4ec8079582e9b6e962e4767233bbb24799ea51103549f3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part002.archive-invocations.json",
+      "stagedBytes": 3998,
+      "stagedSha256": "05dcf669849bf875ca1c952354d432ad566da71fff4993b7f3d3c4c41b72f335",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part002.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "c650ec2feac09a5a76b2523cab72da61700883a69e2d1e5b6004d417a1d2ff51",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part002.extract.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "d82d7ac70d5129aae55e67cbbc1514d86c68b62f8f1b16ecc06146faec10ff59",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part003.archive-invocations.json",
+      "stagedBytes": 3998,
+      "stagedSha256": "6dae52fb49ed30b86aabb991d8a00fb0fdbac5b31e18d728a8b383ca5815334d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part003.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "259f0262f3f2f4d5c8206d0fbc2486279549bf37984d93e261bc58c72b9eac4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part003.extract.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "7e7d8994d495e31143f57f43d6a8bbbfc74038968b1517c9cbe5488d6201a457",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part004.archive-invocations.json",
+      "stagedBytes": 3998,
+      "stagedSha256": "bfdd48f15dce21838cdf09466c60dd71f78b742af887bdf1f5fc2ce915dfcb7f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part004.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "bb97be96b1dd3b986c3c5e10efe2fbe8c3462921d83081bbe838358491801050",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part004.extract.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "d4fcfab24dbb036bc45cd983feadd1d15c0db85462e51d34025ceab066366471",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part005.archive-invocations.json",
+      "stagedBytes": 3993,
+      "stagedSha256": "a0894d19792ed8c0814bbe34f57f445d19785dc586ca7f45bc88a0cd301c5776",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part005.archive-record.json",
+      "stagedBytes": 1162,
+      "stagedSha256": "0f4d11604da92a5925552e1c038d2b6a16f0bc0a6f81d3344d12c94351f1053d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part005.extract.json",
+      "stagedBytes": 1139,
+      "stagedSha256": "df663eec53a1e39301494a72139bfd4531e6fe2cb1a9ee654fcba168947746f9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part006.archive-invocations.json",
+      "stagedBytes": 3996,
+      "stagedSha256": "cda2d7237de7dde558fafc0d9f7918610bbe56ecddcba03e6a17b49a2c135e98",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part006.archive-record.json",
+      "stagedBytes": 1164,
+      "stagedSha256": "64e0e0a63be75f44554ee79d5a3543d183c0d16d19d83906c5afa950d5803e52",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part006.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "cc3e95393398431cb2f204cb4051e2b94b197c088c7822caf1d9c16ee69a2e37",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part007.archive-invocations.json",
+      "stagedBytes": 3996,
+      "stagedSha256": "082ef298ef33c0852ae554ec3734e8e89b23afe7242935aa960cfc8bbca4657b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part007.archive-record.json",
+      "stagedBytes": 1164,
+      "stagedSha256": "a56de767d250452f8341b4a777f948c8cf295b000effa32b5ab41224830b22c6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part007.extract.json",
+      "stagedBytes": 1140,
+      "stagedSha256": "1393e90355c085d654a99e2e7fb98e26c47cb4fa27782d491ef4c98ef912e92e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part008.archive-invocations.json",
+      "stagedBytes": 3998,
+      "stagedSha256": "31bb0d7297032e8000f41fdd3a067c13ae8e748cf52c2a4c34d8da65e2f7c565",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part008.archive-record.json",
+      "stagedBytes": 1165,
+      "stagedSha256": "055c4ac313599573a5c5a552fc48c446ffdaf4c5bdc8cd23ce3677b2759d2f84",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part008.extract.json",
+      "stagedBytes": 1141,
+      "stagedSha256": "200a956b8f6e312d9ea6f9497a1570bc2df6ec1c26b220fe6efb7fd2efc7a10d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part009.archive-invocations.json",
+      "stagedBytes": 3992,
+      "stagedSha256": "c283f64c49637eb07473f52e87a2857ea8c41def78b5ffdebca6b40d3c89515f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part009.archive-record.json",
+      "stagedBytes": 1161,
+      "stagedSha256": "ec7f14f949d87bb1bf402286efb49d9796abd1caa6e688f4ae54a2626b1b780d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-part009.extract.json",
+      "stagedBytes": 1139,
+      "stagedSha256": "df3d463f064fc401275237256a837ef791182288e620cfaeb0294d541cfe1f39",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-static-package.archive-invocations.json",
+      "stagedBytes": 3934,
+      "stagedSha256": "468a8efba40200075a4b31e452c19593bab8674ea7f12daf0fab1d8951e1684d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-static-package.archive-record.json",
+      "stagedBytes": 1153,
+      "stagedSha256": "b6d593bc28ce622d6e1f952b921552c8953c2f7749afb56d4f491e98688f704a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-static-package.extract.json",
+      "stagedBytes": 1117,
+      "stagedSha256": "a1458b0e697c313b8561c4f4c5b9e3aca265ebc04982a9949d18413cded29175",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-static-package.tree-invocation.json",
+      "stagedBytes": 2085,
+      "stagedSha256": "e5ef86b08c24ea2ff9a4ee19daf6ca5e7a50fb068b84a86547bca1718e1ef812",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction-static-package.tree-retention.json",
+      "stagedBytes": 4905,
+      "stagedSha256": "4a22fea9fc668c6465da724a5bf348690ea18e6990924fae82ebd1dd5d076e87",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction.tree-invocation.json",
+      "stagedBytes": 11479,
+      "stagedSha256": "3d1f61575821829795ca62d97ee9d5ecfa513f4001f2cb576d60afcf3e9ffc91",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-correction.tree-retention.json",
+      "stagedBytes": 1025532,
+      "stagedSha256": "9dfee4f8fb65628fd8abd4fd9f836e3bfd19c04933bf45bdf482fbee907b4571",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-probe.archive-invocations.json",
+      "stagedBytes": 3662,
+      "stagedSha256": "b719ad256c8cc2274d20c8fc940f1a99017c5eec2c5e23a48d6b3c3aac5f5664",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-probe.archive-record.json",
+      "stagedBytes": 1032,
+      "stagedSha256": "7793f4b93945e649aa494f9a7d548874428c656380aa50fddcd7d372d23da9e6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-probe.extract.json",
+      "stagedBytes": 1032,
+      "stagedSha256": "8d53fb193231dcc0283fb11f994cfc44ede81f8d3fd950c507f86c07b1168892",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-probe.tree-invocation.json",
+      "stagedBytes": 1871,
+      "stagedSha256": "fae311c1569f860077b07cf20c2e0376985eccb92650e57d35dc2f714c2d3bb8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-probe.tree-retention.json",
+      "stagedBytes": 2619,
+      "stagedSha256": "896a12ad170bb1489d037e292575713329331977a9a0e51b5227707485054a36",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-safe.archive-invocations.json",
+      "stagedBytes": 3813,
+      "stagedSha256": "075444674725ed906692fa7d058b41fb923b9b491bac648c38abebad4cabdd78",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-safe.archive-record.json",
+      "stagedBytes": 1083,
+      "stagedSha256": "5ab786aa8047effcca7f93d6cf7702044f167a0e2bcaf5cd65b2673c3b49ce30",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-safe.extract.json",
+      "stagedBytes": 1083,
+      "stagedSha256": "b8da2b289377d65afbe7762b939e92b014204dfa9230cef4b7ac55f7242eef9d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-safe.tree-invocation.json",
+      "stagedBytes": 1973,
+      "stagedSha256": "0e309862b2f245d310842eaef69b4bedcc57ca1bbeaa83b15de3de1149252f5f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-safe.tree-retention.json",
+      "stagedBytes": 24045,
+      "stagedSha256": "19d8d2ac09ea7ef982349084ac575cf172bbe83780967eb9b7bbfeaa56e2a91e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-static-package.archive-invocations.json",
+      "stagedBytes": 3830,
+      "stagedSha256": "f7af41f73bc1bd4957d56eca5c297e47a74723cbf19c1c9c050a5c234c880aa3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-static-package.archive-record.json",
+      "stagedBytes": 1103,
+      "stagedSha256": "c9b7ad1fda7bed908c36d74c298c2c59d8d5c18493cc13f49ea55f171016c520",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-static-package.extract.json",
+      "stagedBytes": 1085,
+      "stagedSha256": "667f63f8c91d2c7ac956811e6145782cee750a716dba97c29939094ff38ab606",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-static-package.tree-invocation.json",
+      "stagedBytes": 2003,
+      "stagedSha256": "74de34624f18062f2f0e86ede4e41bbe4d9b155f639f528b6de8061781ad6749",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-n1-static-package.tree-retention.json",
+      "stagedBytes": 3425,
+      "stagedSha256": "64ea9da1275fcc8b7e3ca112832be84222a2e0201a53413d75cb17c71c35318d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part001.archive-invocations.json",
+      "stagedBytes": 4125,
+      "stagedSha256": "33f5caa422dc4139093ed49dc6fddd40b1967b3425a0dc4bde4148deb5e3c105",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part001.archive-record.json",
+      "stagedBytes": 1223,
+      "stagedSha256": "fff24a2db318e564b6ebbd70bbc2d23775e956822fd350e15a20e7ef8a6844dc",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part001.extract.json",
+      "stagedBytes": 1180,
+      "stagedSha256": "d54dbde665681a9f86f2b91e72e0dda0ebac16b86a7aec47efda0f4994a5df1d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part002.archive-invocations.json",
+      "stagedBytes": 4124,
+      "stagedSha256": "886d0dc229e576066bcb2cbe9607bff7f6ef67196f560104de0fabeae98d5cf9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part002.archive-record.json",
+      "stagedBytes": 1223,
+      "stagedSha256": "7c6b532c86d3e030bc0d793a138350ad1d36199783199c90ae09d0234cd475c2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package-part002.extract.json",
+      "stagedBytes": 1179,
+      "stagedSha256": "34f6e6cd7ef6081f4aff7767a4162e9706ebe2153866a7fd11f7c10a4514f301",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package.tree-invocation.json",
+      "stagedBytes": 3403,
+      "stagedSha256": "5530a5cac1cb1e41104cc91c8f705ece6af1377ec2978e60bcb19de802a08ebf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/archive-receipts/post907-whole-branch-package.tree-retention.json",
+      "stagedBytes": 6806,
+      "stagedSha256": "757d246d972963701f3108eff196ec4f9bec42db182b39510f357b77dbf00043",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/index.json",
+      "stagedBytes": 336373,
+      "stagedSha256": "d5cb59637d12b10ef71ee91660ae1c6834c56d1936e456934b797599a8d278bb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/n1-private-settlement-disposition.json",
+      "stagedBytes": 1002,
+      "stagedSha256": "24c71ea4f5e25ee5fdce0db49764c6662b005cfcfbee69623df32d60bbbee4ea",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/observed-results.json",
+      "stagedBytes": 3802699,
+      "stagedSha256": "a5a77c81b8bda72038481311b095596e469a47e0081a91c0a2199a5cb9e20efd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/privacy-exclusions.json",
+      "stagedBytes": 5555,
+      "stagedSha256": "1b024dde7591579288343bc0e5a3ee75ca5a7783a9401dc91f7461349975da06",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/current-web-complete-readback.log",
+      "stagedBytes": 427,
+      "stagedSha256": "1f5d8c2c2426f742369a118b3a172584eb5b79f819d1c795b6952ca688a6304b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/current-web-complete-readback.receipt.json",
+      "stagedBytes": 1926,
+      "stagedSha256": "0f4e4f76b4952bcdc8087d2cf63e7800a6cc7cdfb11cb6adaacbbf0058ee027c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/index.json",
+      "stagedBytes": 40417,
+      "stagedSha256": "058d29271b7bef8aa90601622ba75c19d31638d8ae0410c486cbfd84771cf394",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-cell-campaign-verify.log",
+      "stagedBytes": 89,
+      "stagedSha256": "feb1d6c24cc371a6b0435bea3ae55dba063016480d002e9d9cc4b45085c2d63b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-cell-campaign-verify.receipt.json",
+      "stagedBytes": 1235,
+      "stagedSha256": "2c962da83a656ee06ccaa24e0c61d2e884559f337710d67923eaeffb623fa541",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-engineering-amd64-verify.log",
+      "stagedBytes": 1534,
+      "stagedSha256": "e4bd504fb2ea5350dad1e6576f4a30485d1f7a65f4d95d983be4f3769f8f3f02",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-engineering-amd64-verify.receipt.json",
+      "stagedBytes": 1285,
+      "stagedSha256": "52c0f1cacc362c4bfae6476c773abd19c37b42656cbb8a67c11e529202948f7b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-engineering-arm64-verify.log",
+      "stagedBytes": 1534,
+      "stagedSha256": "2210669c502821ec2c91623a20f718ae0c86ad1b4bf6320c9e412c964aecaee5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-engineering-arm64-verify.receipt.json",
+      "stagedBytes": 1285,
+      "stagedSha256": "86d10f245ced58afe600ab2e7a2a5379c17afddb17139740f514a07bd83e31b0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-engineering-amd64-verify.log",
+      "stagedBytes": 1534,
+      "stagedSha256": "e4bd504fb2ea5350dad1e6576f4a30485d1f7a65f4d95d983be4f3769f8f3f02",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-engineering-amd64-verify.receipt.json",
+      "stagedBytes": 1313,
+      "stagedSha256": "b338373ca4b2a23d4fc3e6b75bffd3db910ec4f064d2bc0330260c9eb489952e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-engineering-arm64-verify.log",
+      "stagedBytes": 1534,
+      "stagedSha256": "2210669c502821ec2c91623a20f718ae0c86ad1b4bf6320c9e412c964aecaee5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-engineering-arm64-verify.receipt.json",
+      "stagedBytes": 1313,
+      "stagedSha256": "18e7335e0bcc5f508a04d8234bad9405bea940e695541829361d1f6eb5f2bb4a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-mujoco-linux-amd64-verify.log",
+      "stagedBytes": 1655,
+      "stagedSha256": "70ec1b2b796b27b4ff26d4b16fbdae05b32885363529e8b4f35d7b1e9e6b28e6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-mujoco-linux-amd64-verify.receipt.json",
+      "stagedBytes": 1317,
+      "stagedSha256": "ef0befb7a0911543ac3688a1a3b6db751f1753deab3813eb9963423c72f935bf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-mujoco-linux-arm64-verify.log",
+      "stagedBytes": 1655,
+      "stagedSha256": "53cb5bd487cfd1cbededbfcfc88d0c719b32ab1d25088c50200d79014c5cc98e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-mujoco-linux-arm64-verify.receipt.json",
+      "stagedBytes": 1317,
+      "stagedSha256": "3333830c3b2966cdcb16caaf48ce3d258d45b25bb7f73d8dbae300e6172b093d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-puma560-linuxcnc-sim-verify.log",
+      "stagedBytes": 1471,
+      "stagedSha256": "4accf11d6819a51a4eb2a49f13f5b9d5fa8fd092fcfd2aa39e25400c403d2065",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-puma560-linuxcnc-sim-verify.receipt.json",
+      "stagedBytes": 1325,
+      "stagedSha256": "b3ed28563e9580bd498c65e6eb54703b1ed5e64cb3e534b1ed6819169f804c76",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-xarm6-jazzy-sim-verify.log",
+      "stagedBytes": 1653,
+      "stagedSha256": "40b11ee92d2a26f67ef0953a3c3a20720b2c03597563a636dc029bb612274ba5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-export-xarm6-jazzy-sim-verify.receipt.json",
+      "stagedBytes": 1305,
+      "stagedSha256": "11823b729b1750d3e381f4927fb6007583f5a116f08a42d2b031146c6c15620c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-mujoco-linux-amd64-verify.log",
+      "stagedBytes": 1655,
+      "stagedSha256": "70ec1b2b796b27b4ff26d4b16fbdae05b32885363529e8b4f35d7b1e9e6b28e6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-mujoco-linux-amd64-verify.receipt.json",
+      "stagedBytes": 1289,
+      "stagedSha256": "5f5b747eb51a8ab4babb0e3358241044fe522061d5c95625f217ec9516091377",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-mujoco-linux-arm64-verify.log",
+      "stagedBytes": 1655,
+      "stagedSha256": "53cb5bd487cfd1cbededbfcfc88d0c719b32ab1d25088c50200d79014c5cc98e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-mujoco-linux-arm64-verify.receipt.json",
+      "stagedBytes": 1289,
+      "stagedSha256": "1c22632c54b59b06777af93d2dec41c8f3fc28a0ce07627cb0db13f349ae327a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-puma560-linuxcnc-sim-verify.log",
+      "stagedBytes": 1471,
+      "stagedSha256": "4accf11d6819a51a4eb2a49f13f5b9d5fa8fd092fcfd2aa39e25400c403d2065",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-puma560-linuxcnc-sim-verify.receipt.json",
+      "stagedBytes": 1297,
+      "stagedSha256": "251a26aba6275f4061f86a384b8a1ffbc953d57c076ff1a2e16c1ba94d90ee2d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-xarm6-jazzy-sim-verify.log",
+      "stagedBytes": 1653,
+      "stagedSha256": "40b11ee92d2a26f67ef0953a3c3a20720b2c03597563a636dc029bb612274ba5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-handoff-xarm6-jazzy-sim-verify.receipt.json",
+      "stagedBytes": 1277,
+      "stagedSha256": "fe19362da77eb1c7092c41ad61cc3522b54bf371bbdce223ff3f0bab925b24f1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-irsim-campaign-verify.log",
+      "stagedBytes": 92,
+      "stagedSha256": "4caa218118292739e58e30ef6cf1a4618d2dd79436d1f3c378f58cadfa5fe6e2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-irsim-campaign-verify.receipt.json",
+      "stagedBytes": 1238,
+      "stagedSha256": "25a302b6c7d5651a87ce8f5c85e0c477441fabc584a932ac36302ae6b6822ee5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-irsim-q000.log",
+      "stagedBytes": 3,
+      "stagedSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-irsim-q000.receipt.json",
+      "stagedBytes": 1564,
+      "stagedSha256": "e147950adc1c75b86defa4bcfc18b6b0c6ecfaabc67819de905cb96b96b06230",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-payload-campaign-verify.log",
+      "stagedBytes": 380,
+      "stagedSha256": "8905a586d3873a62782fc84653b1f9aba8e928ca05e788aec1d2f9da8481f1c7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-payload-campaign-verify.receipt.json",
+      "stagedBytes": 1248,
+      "stagedSha256": "62019005216d5547c431605a3e796cd698997bf7110b574c4161e56dbd87ad40",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-production-performance-capture023.log",
+      "stagedBytes": 367,
+      "stagedSha256": "eee7a559b2c90636cbf3ffec2b684a4b537cd50683eae1ea43bcdf7c1149f1bf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-production-performance-capture023.receipt.json",
+      "stagedBytes": 1563,
+      "stagedSha256": "44e5677a8c5394549c64aac1d96e61f1c557e6e82f872cd26662e42d627c985c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r1-q001.log",
+      "stagedBytes": 40,
+      "stagedSha256": "59f4ea61892ad45eace008ce751d5d1e8e14a9c9f1c39f2773bd733107547209",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r1-q001.receipt.json",
+      "stagedBytes": 1561,
+      "stagedSha256": "f53136d09ed76ab56a7a5e64c67e3921616a7f4dd390861dda644efc7d039dea",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-engineering-amd64-prepared-q002.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-engineering-amd64-prepared-q002.receipt.json",
+      "stagedBytes": 1281,
+      "stagedSha256": "d75ff78b435b2888e0b2ad7b51018a8221c52033f97620409c3647908476c6d5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-engineering-arm64-prepared-q003.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-engineering-arm64-prepared-q003.receipt.json",
+      "stagedBytes": 1281,
+      "stagedSha256": "290fe39533fbafeb7f22f0ba8c4b6a3cc51c9c34d6f23f7dfdb7f32e88aea832",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-mujoco-linux-amd64-prepared-q004.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-mujoco-linux-amd64-prepared-q004.receipt.json",
+      "stagedBytes": 1285,
+      "stagedSha256": "beecb532a1fe20af7df0006eb6dbc3611a527d524b3264acb01ab612ecf3faaa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-mujoco-linux-arm64-prepared-q005.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-mujoco-linux-arm64-prepared-q005.receipt.json",
+      "stagedBytes": 1285,
+      "stagedSha256": "2e2eb5ca3daf79165c8194d81e8e2a97cc62894082df8db35d95175481e9f92d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-puma560-linuxcnc-sim-prepared-q006.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-puma560-linuxcnc-sim-prepared-q006.receipt.json",
+      "stagedBytes": 1293,
+      "stagedSha256": "205c57db4d416b4bbfe82219dc31fa08b5fa8b9e2ee955ecb5fef161e6586acb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-xarm6-jazzy-sim-prepared-q007.log",
+      "stagedBytes": 183,
+      "stagedSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post-n1-r3-xarm6-jazzy-sim-prepared-q007.receipt.json",
+      "stagedBytes": 1273,
+      "stagedSha256": "816239515ff6daa6ce3a0435642ad31f299b3c4c15f067ecc989ce2115156d82",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post907-correction-capture024.log",
+      "stagedBytes": 390,
+      "stagedSha256": "92c33c40ff30df00009fd7003fddfc744a82b24507e2553911195a59ac8ba786",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post907-correction-capture024.receipt.json",
+      "stagedBytes": 1553,
+      "stagedSha256": "2273b0eb69a6f863aa603174bb029eeb56954f933bf78cceebc8fe6c7ceac007",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post907-correction-capture025.log",
+      "stagedBytes": 293,
+      "stagedSha256": "f875141a6e3e9934368f083a12d46338bbaa8769b6f2f1cbc547663db7dcb03c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/post907-correction-capture025.receipt.json",
+      "stagedBytes": 1569,
+      "stagedSha256": "749842d0ebf46af0edec5354ba0db049b7c7c7b697caf575f4dabd46e6592316",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/public-readbacks/reader-preparation.json",
+      "stagedBytes": 14803,
+      "stagedSha256": "64aebaaa72cfb0132da351539665894417af03a36475f344648cc50da088b4ab",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part001.members.json",
+      "stagedBytes": 55570,
+      "stagedSha256": "ae851d1f684e833888c7d6f05c03a3eda0f5f996854a71be06f6f6692fd0aa80",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part001.tar.gz",
+      "stagedBytes": 16892430,
+      "stagedSha256": "8354716c9b33c6dead228e682f1d17f586c17232da39da664055bdbd04bbcabe",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part002.members.json",
+      "stagedBytes": 46607,
+      "stagedSha256": "2b60ef5f325bad9d40d92887738b84ed86e940f4895eea3732117ea00f7a0420",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part002.tar.gz",
+      "stagedBytes": 27841584,
+      "stagedSha256": "0b26aff32e4d92b899d75ac8e3deb5dd094a085cddc123b3448fcbba74c23b96",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part003.members.json",
+      "stagedBytes": 39353,
+      "stagedSha256": "1d1defccb0a95cf828e6bc16f79349349d230db0cd6d8704d4567ff8b27bb6f1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-cell-campaign-part003.tar.gz",
+      "stagedBytes": 19143047,
+      "stagedSha256": "19f1db77dece95b2b4b907941140cef738604a7335c72df7223defc0be7f49d9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-engineering-amd64.members.json",
+      "stagedBytes": 68663,
+      "stagedSha256": "1aff25f0ae506041f3349b97647394b1d7487bd5dd30cf09b7b32befd5f7405b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-engineering-amd64.tar.gz",
+      "stagedBytes": 2584409,
+      "stagedSha256": "c4e03a321ee693962e502dc3720c2bc6c6568e188265754faa92d020c4874ae8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-engineering-arm64.members.json",
+      "stagedBytes": 68663,
+      "stagedSha256": "7bc326f14be60c5238e12b8d89694ccdc0d2cca844a5396b188e989ff1738aa6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-engineering-arm64.tar.gz",
+      "stagedBytes": 2584410,
+      "stagedSha256": "b609cfee608242b3603914f369e89988c3047d874a4e199d6d06b872f5ff1af0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-engineering-amd64.members.json",
+      "stagedBytes": 68677,
+      "stagedSha256": "aabb651343469b3efcd2dbc180dfb10269bc10234c968ade33192f26c7fa233b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-engineering-amd64.tar.gz",
+      "stagedBytes": 2584374,
+      "stagedSha256": "b22e4c3e8fa8c65a13b5e569b36c655d09eef51ad5f34b300ea8f493b9fc3884",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-engineering-arm64.members.json",
+      "stagedBytes": 68677,
+      "stagedSha256": "b17f6ea6bc0cc3d8c2c75f559fc5e4e1e923e84975861a335f680b23f95a5231",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-engineering-arm64.tar.gz",
+      "stagedBytes": 2584391,
+      "stagedSha256": "14d6239f210ad0a1540a9b6e0e9db9d26eb63ab24e3d2f55b2b9010abbd50626",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-mujoco-linux-amd64.members.json",
+      "stagedBytes": 68681,
+      "stagedSha256": "4de02caae027512320a346c38159e3e38123014760824033af97f1444c56e422",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-mujoco-linux-amd64.tar.gz",
+      "stagedBytes": 2585142,
+      "stagedSha256": "e1602fe16dae1efd37ae8296d1924a216d56fff724dae51cc0a1d87a0d90b818",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-mujoco-linux-arm64.members.json",
+      "stagedBytes": 68681,
+      "stagedSha256": "f6b3ef5fde6982e2b2aae3b5ca1b1dd7c086f6691493770f25c714667fcdacaa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-mujoco-linux-arm64.tar.gz",
+      "stagedBytes": 2585133,
+      "stagedSha256": "c5ab4bc1b31270094208f29a70f76f558f3d055a950b9b902657eb1d1c8d4a78",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-puma560-linuxcnc-sim.members.json",
+      "stagedBytes": 110018,
+      "stagedSha256": "fa9e121c0e807a0452249b9332069b0c1e947e2c880b9a6599ff399df18b28d9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-puma560-linuxcnc-sim.tar.gz",
+      "stagedBytes": 2764276,
+      "stagedSha256": "18444cc30fbcbfde1005c8943f4065b43d175e0a9b610590b9089d23c060c061",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-xarm6-jazzy-sim.members.json",
+      "stagedBytes": 68675,
+      "stagedSha256": "5be089c822976add0d34b8af1654d3639d43de1b2f23c7b2bc96dca71e6ce163",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-export-xarm6-jazzy-sim.tar.gz",
+      "stagedBytes": 2585198,
+      "stagedSha256": "fdf8e464673e5d95b28e0ea2184fcf0dc1cadd994852daf4684c7c04f230de06",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-mujoco-linux-amd64.members.json",
+      "stagedBytes": 68667,
+      "stagedSha256": "5b23969cfeb127b660ee4e5245331314efe26dfa314550db1da9437d6345fc39",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-mujoco-linux-amd64.tar.gz",
+      "stagedBytes": 2585157,
+      "stagedSha256": "48795627940bbce4b1992f75a11ab5d47a95b01518973348a444525fa5135804",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-mujoco-linux-arm64.members.json",
+      "stagedBytes": 68667,
+      "stagedSha256": "6eda5a57d4a7f9ef991e3db5d44b796586a938134a00e1b2af120226781bdfa6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-mujoco-linux-arm64.tar.gz",
+      "stagedBytes": 2585155,
+      "stagedSha256": "70680799dd9e7fc79d7de95510d1d510ae5a85db20e84629138587bf8dccd6ba",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-puma560-linuxcnc-sim.members.json",
+      "stagedBytes": 110004,
+      "stagedSha256": "dbf4368ca4ad372bb39bf5156c27cbfca30729a2d14d4011302a70a7701da18f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-puma560-linuxcnc-sim.tar.gz",
+      "stagedBytes": 2764327,
+      "stagedSha256": "01cb80abd576415a6871e1d28194b90c81819ffb849e538c08179a57897e526d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-xarm6-jazzy-sim.members.json",
+      "stagedBytes": 68661,
+      "stagedSha256": "4e89415e9b42bb8bdd9f7981e382f840b5bf2e5837fc2e910b8547b1e56a55e9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-handoff-xarm6-jazzy-sim.tar.gz",
+      "stagedBytes": 2585227,
+      "stagedSha256": "03931a7b822436a43c4bafb2e7ac9e0eeb41f36abb3adde61a37577929a4fec4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-installed-runtime.members.json",
+      "stagedBytes": 16714,
+      "stagedSha256": "a9007a4157911fdfd8ed542b1fa4a3c99242c1f1d32946a8793fe9143c675ed8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-installed-runtime.tar.gz",
+      "stagedBytes": 654830,
+      "stagedSha256": "c8dd0c4becb6a94c938569f954985b080e704c1b960bdf28136f00a030ddc8c7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-default-results-copy.members.json",
+      "stagedBytes": 2265,
+      "stagedSha256": "2367806998b03ad51968add395c08c47c1738c438be8477956e16386773ffabd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-default-results-copy.tar.gz",
+      "stagedBytes": 153,
+      "stagedSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-default-results-original.members.json",
+      "stagedBytes": 2273,
+      "stagedSha256": "e32836fc773b3e4677720944b3af4bb24c5e616b5966ab844765809dc31f426f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-default-results-original.tar.gz",
+      "stagedBytes": 153,
+      "stagedSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-part001.members.json",
+      "stagedBytes": 479903,
+      "stagedSha256": "359df105cd368f673645f704042a2ca0ba0b7d245200994e10d07013c79ee72e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-part001.tar.gz",
+      "stagedBytes": 39780595,
+      "stagedSha256": "7f6909efd48d7c2d76e200d377d18a3d897b5796ce8a7e5b9b055ae5aceaec12",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-part002.members.json",
+      "stagedBytes": 22504,
+      "stagedSha256": "665ac479048cbd3d503170276c7e82dd30f3e3f963c2891258fb4e50abf726de",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-irsim-part002.tar.gz",
+      "stagedBytes": 3144694,
+      "stagedSha256": "b7bd266cb0aba98f1da2daa720327e531d841eea8fb8224d3f572ebfd5a3b6de",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-loose.members.json",
+      "stagedBytes": 3667,
+      "stagedSha256": "8950c9436afbe63ba1f304d0be682dbe90e750daa74f9af527d01e771892c351",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-loose.tar.gz",
+      "stagedBytes": 7508,
+      "stagedSha256": "37d113306883f4a35b18950f5ec29466ec0f3d63a8d537c826ff05116927936d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-measured-lab-dist.members.json",
+      "stagedBytes": 56606,
+      "stagedSha256": "32e7cfbf447600292fd80052cd60e76da15aa56a1d1bd444d848659bd204a1f7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-measured-lab-dist.tar.gz",
+      "stagedBytes": 21165138,
+      "stagedSha256": "5af4f9a13c09da86487f6c1c7bd73e5097e48f0ec12128dbfd58698dfbc4a67b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-mock-regression.members.json",
+      "stagedBytes": 32504,
+      "stagedSha256": "19242dcb8b54352eaa34f7e68e6d899df2a3055966e7452f11c84a0876cc1341",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-mock-regression.tar.gz",
+      "stagedBytes": 9652069,
+      "stagedSha256": "0e6a140a6df365c243eafb2145fdf41a01eb1a911d8bb17559ab161782168466",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-native-empty.members.json",
+      "stagedBytes": 2013,
+      "stagedSha256": "0770a10c254d8618d3e562f647700f72771f859d92ef72254b845066c1358eb4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-native-empty.tar.gz",
+      "stagedBytes": 45,
+      "stagedSha256": "b94b4d079a0a84bdf416bc4a472ccff4775bb999858da78e854446f0d5221b84",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-payload-campaign-part001.members.json",
+      "stagedBytes": 244236,
+      "stagedSha256": "a719c69edadd76df06d76e864ee34adda9c15aa3755876fd06cfabd24ca106fb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-payload-campaign-part001.tar.gz",
+      "stagedBytes": 41547532,
+      "stagedSha256": "470b7675d4c6b8fc96edf15235ad764703b6d83667d3cb442b1a17dda2787aed",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-payload-campaign-part002.members.json",
+      "stagedBytes": 156723,
+      "stagedSha256": "4e4c27ab5f56e51aa2cc206aadc26b4f7993d1595a30e44bc808b10ba6d31d2d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-payload-campaign-part002.tar.gz",
+      "stagedBytes": 30434510,
+      "stagedSha256": "1ba98bc7ce6fa8a7b24664e9d4b0b8c94ea08b3c75b5a595fcc4f8e6fd818520",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-phase-metadata.members.json",
+      "stagedBytes": 72562,
+      "stagedSha256": "3dac6c0c87f03d869cce62ed833c77adc8580340587001d3bb71c5cb8b703b3e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-phase-metadata.tar.gz",
+      "stagedBytes": 2065223,
+      "stagedSha256": "8395bb20a608185cf59f6685ecbbbd97a952521a53f74d5f1ec8a0f4925ba0e4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-browser.members.json",
+      "stagedBytes": 17479,
+      "stagedSha256": "2370e834cea0b3fa7e1430e0f9c8f9aa76cd2bb721e5e4f1318e63de2a06faf5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-browser.tar.gz",
+      "stagedBytes": 5381264,
+      "stagedSha256": "a09c832e762a00c512edfecd48d4d69574b47d0c4bcfe4e87de45bbd4f60f2fd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-performance-part001.members.json",
+      "stagedBytes": 3701,
+      "stagedSha256": "d38bcbf1ac8db45227e628488b143c54efb47c5ddd360bd3ee92839e9a94e92c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-performance-part001.tar.gz",
+      "stagedBytes": 6071974,
+      "stagedSha256": "4ee5e3356ec676db9cf67b40f0dde73f26c6dd48c118ed560a6d709cfcc71625",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-performance-part002.members.json",
+      "stagedBytes": 4908,
+      "stagedSha256": "a492722ea5817c0c8ec9bbdad1915017bbbd204f5f5d120343886447e4c61046",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-performance-part002.tar.gz",
+      "stagedBytes": 7404393,
+      "stagedSha256": "257df0d9e238cbdd7179ea380ca122d3309d4ebd7d0390a19a182d6e01ed1492",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-replay-browser.members.json",
+      "stagedBytes": 6854,
+      "stagedSha256": "f599661f5641caf645499de5a4a70b4f3506b23bd7c3066708ea64198ef4e104",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-production-replay-browser.tar.gz",
+      "stagedBytes": 5484547,
+      "stagedSha256": "48c6395a8ca13adedd98ebc8762807935d41b6236cbb1e76a2877efaeb3fb8e5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-default-results-copy.members.json",
+      "stagedBytes": 2259,
+      "stagedSha256": "87257d6c88d1d65a290251d0675f3ea1955a9ec9f80ad8e9eded20b07d83262b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-default-results-copy.tar.gz",
+      "stagedBytes": 153,
+      "stagedSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-default-results-original.members.json",
+      "stagedBytes": 2267,
+      "stagedSha256": "01840aceb3e4cf91e9f137cfec655634548380dee861717f9a88df775528180e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-default-results-original.tar.gz",
+      "stagedBytes": 153,
+      "stagedSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part001.members.json",
+      "stagedBytes": 475081,
+      "stagedSha256": "a4533d8e6f4af31ef22e7f3f5e0ed4fa2f4f6e358dc89aef26491fa4c7d5699f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part001.tar.gz",
+      "stagedBytes": 42644296,
+      "stagedSha256": "e70e473deffc8a57cf279e462296333918d05422b35af4bd96c8498b0eceaa1b",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part002.members.json",
+      "stagedBytes": 312268,
+      "stagedSha256": "be76fed51dd76c9cc3a7e795015094be8e91e3696ddf26025ab0008c9d6214f0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part002.tar.gz",
+      "stagedBytes": 39266686,
+      "stagedSha256": "3b01a6a5083fe18227d34cc43245e5c6a8a80c18fd68bcaad8d1c377f70303e2",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part003.members.json",
+      "stagedBytes": 19696,
+      "stagedSha256": "84d8dd59d68eb348daf17f8a8cb35e21eb7e407ee6763d9eb762955f75d3a562",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r1-part003.tar.gz",
+      "stagedBytes": 3041007,
+      "stagedSha256": "8c9875bf7d5162c70736b8eb93ba34fc490c604a02e00af485cce8197e40ed52",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r2a-supplemental-current-gui.members.json",
+      "stagedBytes": 40315,
+      "stagedSha256": "792c7847d0e5d402d07f39fc9f6c88c02ccbe23b82c99898e2e3d7bb2821cb11",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r2a-supplemental-current-gui.tar.gz",
+      "stagedBytes": 17755811,
+      "stagedSha256": "435a82262ccd1c577a6e679c3256016766f678a2dd6280d4234f136010623388",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r2b.members.json",
+      "stagedBytes": 2026,
+      "stagedSha256": "0d2c8b45c0bb672321ada3c706146d5fda740d79bf220a41cafed8932eca30ff",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r2b.tar.gz",
+      "stagedBytes": 106,
+      "stagedSha256": "56db4bbfb1dbe70578a61d32934cc1713ac5fa4cbbf151bfd5c7f528977d14ad",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-engineering-amd64-prepared.members.json",
+      "stagedBytes": 73110,
+      "stagedSha256": "0432a9909be5c23fe49cef07539fc8a7b7350f680b86b6073d9462e64c30054e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-engineering-amd64-prepared.tar.gz",
+      "stagedBytes": 2599448,
+      "stagedSha256": "9679ab5896eb47c3e7fcfd7c9f94749c393cbcc742cb0f739328fa7462c468f4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-engineering-arm64-prepared.members.json",
+      "stagedBytes": 73110,
+      "stagedSha256": "11ed5c214dcaa7c2fdc023b303874efdb11bbd38a3fb721fc275b0f4e05928d1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-engineering-arm64-prepared.tar.gz",
+      "stagedBytes": 2599450,
+      "stagedSha256": "0203321fc69173bc2e0e35202b0137d6e023f634dac9dbbdf2f6862a3e123d4e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-mujoco-linux-amd64-prepared.members.json",
+      "stagedBytes": 73114,
+      "stagedSha256": "a5dda88ab5c3ef456393d68cf84bef5ef61147a423f999c6430ef5f22c7377bf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-mujoco-linux-amd64-prepared.tar.gz",
+      "stagedBytes": 2599809,
+      "stagedSha256": "301b6c586c37dee262f150c53f1277705999079c409a6c5810bb8c65def7a214",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-mujoco-linux-arm64-prepared.members.json",
+      "stagedBytes": 73114,
+      "stagedSha256": "7c3e4d7668a0bb373be36a81a14f8e75d7034889c165a738b99ba46a19bebf8f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-mujoco-linux-arm64-prepared.tar.gz",
+      "stagedBytes": 2599819,
+      "stagedSha256": "693f2b4fdd89b53689d0f8c836348b7978d736e473e9b2184f183d691b6b8aaa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.members.json",
+      "stagedBytes": 117406,
+      "stagedSha256": "2ac81835bbaf8d5acb4aa92967f229e08038469e45706fbe00f96c912cd758e8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.tar.gz",
+      "stagedBytes": 2787944,
+      "stagedSha256": "eb014bb02f98e0ceabb916372d3063bcd874e05684600cc73dc8110feb5be79c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-xarm6-jazzy-sim-prepared.members.json",
+      "stagedBytes": 73108,
+      "stagedSha256": "17d1c743ce1b48375fc83679cd8f5794a0ed03df7c4f8cffe4f0b504fae1cdf3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-r3-xarm6-jazzy-sim-prepared.tar.gz",
+      "stagedBytes": 2600021,
+      "stagedSha256": "33d76a6cce44da042b966f3846d056e8fba9fc26ac84341a915ead85072cea4f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-semantic-study-process.members.json",
+      "stagedBytes": 2692,
+      "stagedSha256": "ba512a8b718edae46917262e1e7fa1d8bb9fbb13c6a064c21b859c0f15a4b914",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-semantic-study-process.tar.gz",
+      "stagedBytes": 1308,
+      "stagedSha256": "b5af93188d519c39e2a659278683623480313616c4df58dcf51b03ce99afd9ae",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-semantic-study.members.json",
+      "stagedBytes": 56853,
+      "stagedSha256": "1f718fa7ca4ab5fa7f6a877473edc6cf1705b830151a5086719af9ac3b1836fd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-semantic-study.tar.gz",
+      "stagedBytes": 13209190,
+      "stagedSha256": "cd97c0eba9cc76537bbcb103e31e8548c6cde1292efd32a7ff51bb19f1b5278f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-stock-launcher-web-active.members.json",
+      "stagedBytes": 17720,
+      "stagedSha256": "f869e184a3b261a962ea162e922e36e834e8645f1aae19a0be0f50ee11a6fac6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-stock-launcher-web-active.tar.gz",
+      "stagedBytes": 5356758,
+      "stagedSha256": "d153adb7e101e92419e426fd421c1409f45745e7f38cfd86091eed748b63b13f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-web-record-part001.members.json",
+      "stagedBytes": 19721,
+      "stagedSha256": "e8bb23339d5604b9c72b04d067917acbe9b426f50f507525e06ef0f0fa6aecb6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-web-record-part001.tar.gz",
+      "stagedBytes": 8202498,
+      "stagedSha256": "e006a5b1f9bcfe48221280662f633e4c2a31b1c2164ddb878989f75773c63133",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-web-record-part002.members.json",
+      "stagedBytes": 6770,
+      "stagedSha256": "d742ab35ed47c8e64171e76002793c15a405f9d1bb7b51c68d6108e139cf7cb6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post-n1-web-record-part002.tar.gz",
+      "stagedBytes": 10749428,
+      "stagedSha256": "9dfd4dd51085862aff4fdcb8a28a0f627eaabaf99df5bf7bc2dab5e822d0de3c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part001.members.json",
+      "stagedBytes": 255421,
+      "stagedSha256": "8fcaf5736c92a243b56c1b4a6205517a9757500448552fb71ea79aa73697ae53",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part001.tar.gz",
+      "stagedBytes": 37207927,
+      "stagedSha256": "a7779def6d6ede3cc4f0a50eb96945a00a2eb131fa2e2202f648450943fbb36e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part002.members.json",
+      "stagedBytes": 235601,
+      "stagedSha256": "b4b8e196ce9b0212a7f5078dfb22625b8b61d4281806801c209f3d4739e25b86",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part002.tar.gz",
+      "stagedBytes": 40452771,
+      "stagedSha256": "fe63f5f97f4a03cd522e7a1c0dab5ffc83f73739890467ae334ecc97dc48b29d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part003.members.json",
+      "stagedBytes": 269568,
+      "stagedSha256": "a1e30490b878e4e7e9260565650d18d5821b25640078f0d5b2e5be2711bce409",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part003.tar.gz",
+      "stagedBytes": 40075439,
+      "stagedSha256": "f4d7b7657cfe0e0e7b6dccd8944be8b78fe871b727a20858a27f6e033eecc799",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part004.members.json",
+      "stagedBytes": 216076,
+      "stagedSha256": "363d3fcd67b9a00ff9fbb558999257055922af2c0926974d2fcd6d0b1910647e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part004.tar.gz",
+      "stagedBytes": 37320142,
+      "stagedSha256": "7cbe6c82bba38fa9e4965a67e9d678dedaff19da643a551c3685e909581b7ccf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part005.members.json",
+      "stagedBytes": 27068,
+      "stagedSha256": "4f14938caed9043aef8dfb5a85d420eb13a85b3bbb21afc99172ff93c1ab31a0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part005.tar.gz",
+      "stagedBytes": 5654126,
+      "stagedSha256": "e95eda660093b1bba5fc78187e5a5687ee3d5d5fdcd2275b754dab72eba446ef",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part006.members.json",
+      "stagedBytes": 30132,
+      "stagedSha256": "c3c1200ad4c46b1ed7b8f8187fd5ce6b891f5887f4355bbda10d686a0dd4d76a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part006.tar.gz",
+      "stagedBytes": 12042211,
+      "stagedSha256": "a94a9ce7f5214281683aef57adb5a5fb8241ea9c364cfd37bf2bd9cad772444a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part007.members.json",
+      "stagedBytes": 33611,
+      "stagedSha256": "ce38fa2864b56d7aabf256b218726c603443f302089985d42c71b82776a3f934",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part007.tar.gz",
+      "stagedBytes": 14005097,
+      "stagedSha256": "7f17bf7e6bc8fc1a90dace776ec361421e32e3f27464137a218877a183aa1a93",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part008.members.json",
+      "stagedBytes": 95050,
+      "stagedSha256": "6e119621a473ec2cde3f283f1f124b851798297c5dc9b3bb8132a684ee71f03f",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part008.tar.gz",
+      "stagedBytes": 25791954,
+      "stagedSha256": "eaa39918fd4c645ecccf97accb34e49fd30c12b3ad52eae889cd79cc6636d4ac",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part009.members.json",
+      "stagedBytes": 49617,
+      "stagedSha256": "95570d7e41d613d5743c4cb70439fdf0e099f0c6953ee748bb80243895f154ce",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-part009.tar.gz",
+      "stagedBytes": 768516,
+      "stagedSha256": "5a9b37f26dbb8fef386537ee4b192d5a40b62ea11a8376effc62d227bd4bb2b1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-static-package.members.json",
+      "stagedBytes": 4775,
+      "stagedSha256": "1f9322dbb04fe245d2ff68faa9823c8544f0dcf0806d09755e8b1cd0730ea7d1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-correction-static-package.tar.gz",
+      "stagedBytes": 110207,
+      "stagedSha256": "2d2a1f75105401f9b4f60def925f1bef2c40099c3033fd89711acb7e0c5db489",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-probe.members.json",
+      "stagedBytes": 2643,
+      "stagedSha256": "92a3b1a614065be5edc8a9a427cb27973fc0442d56f7569cb82a38322aa31751",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-probe.tar.gz",
+      "stagedBytes": 4708,
+      "stagedSha256": "40141497a396e9b377139cb3bdfe5d62818f51359edb34582a4e9da6214e420d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-safe.members.json",
+      "stagedBytes": 23845,
+      "stagedSha256": "2038fd4dcf669ce4b6968d26e1e611cdf58efaf574755d4765fb3538460a7a7e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-safe.tar.gz",
+      "stagedBytes": 705136,
+      "stagedSha256": "86c41d88d5af78953c0af3ea489504103a07c7bb4512d1dd0f61f5c40225cbef",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-static-package.members.json",
+      "stagedBytes": 3363,
+      "stagedSha256": "d3ddd626b618507198acb1f869fb0f0e3d976c63c65400fca805d8195100d93c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-n1-static-package.tar.gz",
+      "stagedBytes": 7665,
+      "stagedSha256": "cc35de7d6f2e0ff3ae72f5cb8af581c0ffc5db9099cfa8aa3cdc9aac7dee10c8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-whole-branch-package-part001.members.json",
+      "stagedBytes": 5142,
+      "stagedSha256": "f8145ce856f06daf5722113f36bb10b37c5f5544fa5104ee445798d82c7aa65a",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-whole-branch-package-part001.tar.gz",
+      "stagedBytes": 2216939,
+      "stagedSha256": "5fb1976a8c261a0bf9fa039abd53483d381990ca6a151217ab3befe0f3a78d69",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-whole-branch-package-part002.members.json",
+      "stagedBytes": 2324,
+      "stagedSha256": "3fadc134bca77a260fb2ae86f23fc6d3a3f827cf9effad960b3aaf8a5fc42bbd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/evidence/web-lab-to-physical/post-n1-final-recording/raw/post907-whole-branch-package-part002.tar.gz",
+      "stagedBytes": 12673150,
+      "stagedSha256": "398807748363b44d6209480a45b59279b4def244a11665a421ef4461a792bae7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/README.md",
+      "stagedBytes": 2162,
+      "stagedSha256": "a278c1ae95739dab55ab2b0a6d26e9b044cb5abf535ebe59cc81397c3514a026",
+      "prior": {
+        "bytes": 2608,
+        "sha256": "b41c616146c2f1352f51de6b2c1e8cf5cde641c11f1b0a23e41d551dc927035c"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "stagedBytes": 24812,
+      "stagedSha256": "ade5fb627326bb08d4ad0f01556bbafc6c00e874a4eeca74044a2f2b94d84962",
+      "prior": {
+        "bytes": 24755,
+        "sha256": "1abf2bf17054a2af04b5ec1da4d8d7a63d8181964740df61402bacf44c1576a5"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/01-research.md",
+      "stagedBytes": 22849,
+      "stagedSha256": "8b26c4abc5dc5714294af6caf23d75f22a718f190be958d0c487b523d75cf4d3",
+      "prior": {
+        "bytes": 22363,
+        "sha256": "a9c184379462b86f2ddb2b3927fa50ff6406193a7580cc636370a9ed32dc9405"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "stagedBytes": 22914,
+      "stagedSha256": "1f1fa6e885b2c66df02aac743182565961949a4341087e5c37dd7711ad07f30e",
+      "prior": {
+        "bytes": 22428,
+        "sha256": "3fefd42b2126dc799a384d6a4b40f4e857b066a583c167f82efbf6761d0f853b"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "stagedBytes": 36363,
+      "stagedSha256": "89769ef0084a90bc1736747d0e0da05c7f40ebb1aada344107684abdb6dcca54",
+      "prior": {
+        "bytes": 35877,
+        "sha256": "3a0fc8d51811bd85d775ccef30060e1e1cf724354147269c28e3fb4bfd76b8c9"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "stagedBytes": 26219,
+      "stagedSha256": "3930550713279569dc4f3ded4741b050588f9ec81fb2b1aa973b58769e2c18cb",
+      "prior": {
+        "bytes": 25733,
+        "sha256": "c480d87aa0738e6b9a1148f3730b3f6fe611dd9b9f00e685ca8a22077e3042c3"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "stagedBytes": 78393,
+      "stagedSha256": "c8bbc7115dd199d0b9ce2a2930b0e66422b3ddc163c817129b255f3ae7bc35cc",
+      "prior": {
+        "bytes": 77907,
+        "sha256": "93f936322bc31ddcdeeeeb821103af6815393e4bb34f22250024c2401bcc84e7"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/README.md",
+      "stagedBytes": 9702,
+      "stagedSha256": "0d2be1da376e77c4e3cf5072fc49d0d4db95d11390bf8435d519aae7c84d58b2",
+      "prior": {
+        "bytes": 9645,
+        "sha256": "7f206b479b2665cb944b6d050ca68cfbd65faa6af575e11cc844e2a5898b1584"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "stagedBytes": 15893,
+      "stagedSha256": "71ea5c2aeeb8bbb14b3e1af50aee6f9464e1902358fa3eeeb3c29cff4d324153",
+      "prior": {
+        "bytes": 15398,
+        "sha256": "45ceeceaf59d3376aec4c76769fbe7cc7c4dbb1ffdf083656132fce816f14d16"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "stagedBytes": 22962,
+      "stagedSha256": "2242b1c83146fa70bba55e57de230100db5e54428316edcc2638181396e9092b",
+      "prior": {
+        "bytes": 22467,
+        "sha256": "ae0c7c17aa424e2e46de6c262e4c129f11c65d57245aea80dd387acab20297fa"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "stagedBytes": 23296,
+      "stagedSha256": "2e4f61cf1a710c18852138b70c46eef52ad691d955b8caf05b59eea4631471d7",
+      "prior": {
+        "bytes": 22801,
+        "sha256": "b1f986c1d7b40191dd4a2841da2a3c3787a6c544acce1e7627722d2dad3c9f6f"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "stagedBytes": 8744,
+      "stagedSha256": "cfb1ff71fcd7104c1a5d019a344e2e5303d6ab3039cba4a73c3c160e72a76204",
+      "prior": {
+        "bytes": 8249,
+        "sha256": "958d9a25613b0477e589f668373996a630e3f89c03711f9516351bf7033c44b1"
+      }
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/README.md",
+      "stagedBytes": 1875,
+      "stagedSha256": "5cc372482acc4ac36568bd2578dd590af14a5cb5353072c50454e052c7981f68",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/dispositions.md",
+      "stagedBytes": 5278,
+      "stagedSha256": "066b2c522a4dd7f7529ffa94bb860f7f89923026cbf77945413e2991bffc84bb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md",
+      "stagedBytes": 6239,
+      "stagedSha256": "3f3e86ab1d05e25e4bcc58dc4d23d995f1cf07b9bcb516da905d9186ae858a89",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/current-readable-location-map.json",
+      "stagedBytes": 290010,
+      "stagedSha256": "06d413f2537b3b573c3ce9db47452e94a5a8bfa2c7a07ed030754cc18ce60686",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/review-index.json",
+      "stagedBytes": 26409,
+      "stagedSha256": "bd75fac8ce54f72352b3916f21a8af36a3543f2829f3a7c10d7ae506e5d01f82",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/rulings-whole-lines.json",
+      "stagedBytes": 256696,
+      "stagedSha256": "2b5bb376082c734e56fa5755948d26e35f4edfe7d97cd01a58e8b468d495dedf",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/rulings-whole-lines.md",
+      "stagedBytes": 235216,
+      "stagedSha256": "56faf7e53b9e7a81702e629b281685d8f956c29b6d406c20f7b160bbfcc7fa23",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/current-state.md",
+      "stagedBytes": 125812,
+      "stagedSha256": "d1127d0e080d3ebe6a9a969d087385fb05ad5edbaae67ed502c2d4071b9da29c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/capture-readback.mjs",
+      "stagedBytes": 380,
+      "stagedSha256": "a32943661c5d065effeefee2860e986263d7ce99c654128977c937cb33f2bb92",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/dependency-reuse.json",
+      "stagedBytes": 695,
+      "stagedSha256": "07748aef2afd440eba6328744f706259321c6373cfd5177591e0cb96f36b9a85",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/final-inventory.py",
+      "stagedBytes": 1030,
+      "stagedSha256": "35b5e38e880a73fe4bba8d46a6a9c26a81df26ad805b36be9dd1b42bbcda9a96",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/identity.mjs",
+      "stagedBytes": 1492,
+      "stagedSha256": "e69fdc0532a727f8cfab4087fb167ed02581e905ac45f74c552fae827aa67bb1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/lab-scoped-review.diff",
+      "stagedBytes": 112610,
+      "stagedSha256": "218c24d7af42b06da1b7b1645d587292f9ebf674e61b07b5b93df07fb4ddf168",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/output-root.txt",
+      "stagedBytes": 79,
+      "stagedSha256": "ccaf13eb4a4f37a9e2edc879467b712fd14c054677dfee3c4e4cf33fa944e4bc",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/production-replay-browser.mjs",
+      "stagedBytes": 2979,
+      "stagedSha256": "35f8224b5f6b908deefa375172d4ba1100ff82da3fa9ad6a85f7bcf35bdd90e7",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/row-readback.mjs",
+      "stagedBytes": 842,
+      "stagedSha256": "72d26390200721a8b8241b6133f2361a07c7aa39b3c8199a94f42a4f908a35c3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/run-check.py",
+      "stagedBytes": 2192,
+      "stagedSha256": "cef739118a7cd383038bb2f56c41ed430027e8b3d33ee2f8085e834159af6879",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-907-bfde/source-scoped-review.diff",
+      "stagedBytes": 108297,
+      "stagedSha256": "58690bfb2695b91c77dcccffbce0a5288e8ba6c2cf36441dc268209e425f6363",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-cadence-and-ordering-ruling.md",
+      "stagedBytes": 6040,
+      "stagedSha256": "76b36b26ca97c7b20dfd90c215759796b3ccbd41c939f1e14c67d4551af69207",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-i1-design-ruling.md",
+      "stagedBytes": 5057,
+      "stagedSha256": "65c2665d7ac2147e39826f664a090989ab26ad40127cfe87e80a6f8c36adeb66",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-correction-i2-hold-disposition.md",
+      "stagedBytes": 1322,
+      "stagedSha256": "06b3741e6915f4361c63db613bd97692048d5cd317cea344b96af24ab4d78dfb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/identity.mjs",
+      "stagedBytes": 1492,
+      "stagedSha256": "e69fdc0532a727f8cfab4087fb167ed02581e905ac45f74c552fae827aa67bb1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/lab-n1-review.diff",
+      "stagedBytes": 3433,
+      "stagedSha256": "3e4f5a4c930cdf98b207aa6544254ec8ad282053f2ff67ff035991619e4f8419",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/output-root.txt",
+      "stagedBytes": 71,
+      "stagedSha256": "d88c990bcbee546c5514e018fe3ffcfa78c7f1fb67320fcacadf270aefb7fe90",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/run-check.py",
+      "stagedBytes": 2195,
+      "stagedSha256": "9c8a6c5d9b7b1419bb87153a357033b1211c09bc55139268e268b9b80aa83113",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/settlement.py",
+      "stagedBytes": 3009,
+      "stagedSha256": "1017f5e8fb60452d55267189d6c9600a29a4f3f156c8dab6e194ecf498341c09",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-correction/source-n1-review.diff",
+      "stagedBytes": 11147,
+      "stagedSha256": "5e2d3aba94e7fca78c4d71ad357ededbc641c74d55bb285285fed311ab47de21",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-n1-review-dispositions.md",
+      "stagedBytes": 2465,
+      "stagedSha256": "ac2c8bd761e0108fbd4b766b8573752409e36ab174a3c0114be5e2748c92b0f3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-review-controller-dispositions.md",
+      "stagedBytes": 6483,
+      "stagedSha256": "f7f8616c21905a809c1289e47d4531e6c682f63f6c37917efda6348ebae1dd92",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-scoped-review-dispositions.md",
+      "stagedBytes": 3233,
+      "stagedSha256": "9541340785f67783d845ae2ba7dc366e68167e44bec53208422aea6c42629bfe",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-scoped-review-input-index.json",
+      "stagedBytes": 1156,
+      "stagedSha256": "ca1a53dedcd768cddefeeea47cb8b3b564d9279f5b806a6b55a1277321eaa2db",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-whole-branch-package-907087c-bfde031.log",
+      "stagedBytes": 2682,
+      "stagedSha256": "7485c8a18cc6da9f01508938859c632268af65504e18d632a895fb414bfa7950",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/final-whole-branch-review-907087c-bfde031-brief.md",
+      "stagedBytes": 16127,
+      "stagedSha256": "2d4b736be9ba8bd30d6be8342c9717f5661da572b2a8760e63578629b2bc1e8d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/post-correction-recording-outline.md",
+      "stagedBytes": 7383,
+      "stagedSha256": "90964bfdd9c40e046aba627f984ee1fcd7144363ba462a2f3c46002f754da0b0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/post-n1-final-recording-brief.md",
+      "stagedBytes": 13376,
+      "stagedSha256": "fde4b36c355a2ea98b48d7dc7f27326c96241663f57db1a2be0533c51ab40b44",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/post-n1-final-recording-entry.json",
+      "stagedBytes": 3155,
+      "stagedSha256": "910b4ec5cbfafeff77e59fa640371a268c5b579cf1a3216b072e9ee3e0f70753",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/progress.md",
+      "stagedBytes": 153380,
+      "stagedSha256": "5cef35776fa632d03aeb7483c31a8ee5623e345927a7c9bcbd5d82a2f3898373",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-audit-cb5-fded-v2.json",
+      "stagedBytes": 101218,
+      "stagedSha256": "ca1bedd61f524b5a79136693b87a787bf351c616d5772d82445fd5cd9cda8e3e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-audit-cb5-fded.json",
+      "stagedBytes": 98327,
+      "stagedSha256": "233d4babe43373df54f75b1509fc1265b2eb1f430a6abe20163760a76eab0224",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-audit-first-invocation.json",
+      "stagedBytes": 1686,
+      "stagedSha256": "6e530863029a97c188646ade05b6e385f6a9520435c344956b0a7a4ff5c8a2cb",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-audit-second-invocation.json",
+      "stagedBytes": 1415,
+      "stagedSha256": "c0461e24df74c9024c2022857631006a1523023e3d16cd386fe4b5226757b9dc",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-audit.py",
+      "stagedBytes": 8845,
+      "stagedSha256": "11835abb41534c445c7595588304ee84e3270f7fbfc42bc5ab7dbb1e1201164d",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-first-freeze.json",
+      "stagedBytes": 1268,
+      "stagedSha256": "507026370f58956e3466c730969cb2ca85d90592becbd789d7f89b5dc5c42220",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-inventory-audit.json",
+      "stagedBytes": 1077,
+      "stagedSha256": "e282e0f9b4d8e01379929ac530fbda7922693be24dd7711458d4e15bb2908e00",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-overlap-disposition.md",
+      "stagedBytes": 1686,
+      "stagedSha256": "0a43f225e87f4a905754eb2821569135098153acdff7717c7412e11cd6469588",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-payload-row-audit.json",
+      "stagedBytes": 439203,
+      "stagedSha256": "bc5e4a06910cd10e2b9d010309e05d02e293886a77dccc8c56e95f77990829d0",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-quantized-boundary-observation.json",
+      "stagedBytes": 3274,
+      "stagedSha256": "cd53537f9243a5b78533403cb04667bc777b862fce37e88b007da58eff3a6a02",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-report-final-read-checkpoint.json",
+      "stagedBytes": 411,
+      "stagedSha256": "910cfb9bad62957bf2e1f61c1e94921558da692a6f8697ec475c8d11946e1e37",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-correction-report-read-checkpoint.json",
+      "stagedBytes": 451,
+      "stagedSha256": "605ad57d1dd39d7f1f2290fb1def6a6587c5b7a5cdb3442e6e8d7d59c41edba8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-handoff-audit-907087c-bfde031.json",
+      "stagedBytes": 208048,
+      "stagedSha256": "239ea9198398535949ba7a197210b01879449c3bdb822d24207a0e3fe03c3afd",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-handoff-audit-initial-failure.json",
+      "stagedBytes": 857,
+      "stagedSha256": "1231de8283308ca14332c1d63ed4797e5afe8bb8bc551e99ed3326792276ff47",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-handoff-audit-initial.py",
+      "stagedBytes": 7994,
+      "stagedSha256": "7a0710f0aa905f3c480ea6d692fb929747cbbab756b4fb6c94e14891a939dcef",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-handoff-audit.py",
+      "stagedBytes": 8254,
+      "stagedSha256": "709cc6ec5109c90b85e520712ec2b41c7404b4fea3c598cbf8f2f614bbc9b01c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-public-archive-audit-complete121.json",
+      "stagedBytes": 171946,
+      "stagedSha256": "c0cb9646557a565e2128e1d320ac7cc1db2c6aef0d52c1f657a98022e1c6a2c1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-public-archive-audit-complete121.log",
+      "stagedBytes": 8952,
+      "stagedSha256": "87300d1724e4f700cd6a15fbcbb086c0ed3ba4e677ac5161dcb898f141b5a672",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-readable-retention-audit.json",
+      "stagedBytes": 2220,
+      "stagedSha256": "39a43eb6051b39e307063e40d5f800702493cd4ce014b229b02ab0b6c575b529",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-recording-report-checkpoint-complete.json",
+      "stagedBytes": 452,
+      "stagedSha256": "824231d0910f7d6568e9daaf064879d375f7b7bf4859fea28cb858503df36ac4",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-scoped-review-read-checkpoint.json",
+      "stagedBytes": 657,
+      "stagedSha256": "d1efd4cf170542743a5ee804323964be2e62ec293ab8de91fd322167e27651c5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-final-whole-branch-review-read-checkpoint.json",
+      "stagedBytes": 986,
+      "stagedSha256": "8b7e369cdcca47831c3fda0b2b4ceec51db3ff14f36b8a7864847f13876052f6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-n1-correction-audit-final-resolution.json",
+      "stagedBytes": 5150,
+      "stagedSha256": "cd1a9b0264a71f43dd37a9530e37b7f18e6ac7fbe3a54c53eb9ae4df402529fa",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-n1-correction-audit-inventory-resolution.json",
+      "stagedBytes": 15292,
+      "stagedSha256": "dbf525531e9f1588585ed30bc1f7d66dfcc0d8e3c48d67a4ad48cd509ab30c87",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-n1-correction-audit.json",
+      "stagedBytes": 11357,
+      "stagedSha256": "5d1626e25f9c7e78db9f8e548695b79355ad2e0adc7517eb0eda7b30afd268ac",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-n1-navigation-coverage-observation.md",
+      "stagedBytes": 2251,
+      "stagedSha256": "eec57e4d3891b4d51fe214dd7b0162849334cf37429b0784999ac0c23f3325a6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-n1-private-settlement-disposition.json",
+      "stagedBytes": 1002,
+      "stagedSha256": "24c71ea4f5e25ee5fdce0db49764c6662b005cfcfbee69623df32d60bbbee4ea",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-normal-clone-link-case-audit.json",
+      "stagedBytes": 62570,
+      "stagedSha256": "13a2f25fcf6880b17d5f08ccd94702f623bce83400f933e7c39a3a0c536ca9f5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-capture-audit.json",
+      "stagedBytes": 5749,
+      "stagedSha256": "eba901223b2a2216c2fc8ef22b772beb3983ed84fcd95a6c951835bdff2bc614",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-capture-residual-observations.json",
+      "stagedBytes": 8481,
+      "stagedSha256": "11c5c11907e689e258164e80d11f8a623de83fa3bcb05ad1780f2633d8cbef12",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-public-archive-audit.json",
+      "stagedBytes": 96239,
+      "stagedSha256": "7f26f9c8d41a1e9e4f69ff0275f03959d05db9182e7b341409a906e545247ec8",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-public-archive-audit.log",
+      "stagedBytes": 5096,
+      "stagedSha256": "c31f6784097d3d989779fb0ea824ebbb3c016b49bd5d624892182af8b213e64e",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-public-archive-audit.receipt.json",
+      "stagedBytes": 2146,
+      "stagedSha256": "5bd23d9f200e9f5c718aec7d35c01b0ba2025be0172be605fe794f2e84abf9b1",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post-n1-report-read-checkpoints.jsonl",
+      "stagedBytes": 2312,
+      "stagedSha256": "60f9d5515b9927c1bc9e0a32d3499f319ccd8d330329bc638cc5dc1b586455e9",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/root-post907-static-retention-pending.json",
+      "stagedBytes": 2572,
+      "stagedSha256": "c992b258d2ff24180f2fbb43902976530fe709c1011d7630663c81cb2a6eff28",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-correction-brief.md",
+      "stagedBytes": 15421,
+      "stagedSha256": "0af949782798459d1a60d079b5b595c4648a90d8992e541e918d2674feec03c6",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-correction-report.md",
+      "stagedBytes": 57452,
+      "stagedSha256": "d39e858f16b5b67f5fe2d11ebdc2cbaf3ba61b522633042f9bf467aac6788da3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-n1-correction-brief.md",
+      "stagedBytes": 4502,
+      "stagedSha256": "4cf74d962dc62bf1c83667d8c7523622972750a49a60b95fda99281c8643fcea",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-n1-correction-report.md",
+      "stagedBytes": 13849,
+      "stagedSha256": "270f70431de9d44498dd63025ded4c178acd5a7a51808b3e563f3c5e6ec4be55",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-n1-review-brief.md",
+      "stagedBytes": 4510,
+      "stagedSha256": "4094f6416f59087a3fa3059dba876924ca0bc1f20c8aab8fad6a74f26bd46ec3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-n1-review.md",
+      "stagedBytes": 11082,
+      "stagedSha256": "5f680f51f6facc20f4e032afdd6f920cc645042720a91779d20e206669b2967c",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-scoped-review-brief.md",
+      "stagedBytes": 21007,
+      "stagedSha256": "906132909443c6f76afaa864c966b5a7f93e066ece3527b4ccaed90677c6dd72",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-scoped-review.md",
+      "stagedBytes": 22575,
+      "stagedSha256": "098a5e95587f55995143cb5e722f44092c3b33d76c232fe40e7fc9d3d65d23f3",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-final-whole-branch-review.md",
+      "stagedBytes": 43287,
+      "stagedSha256": "028367f2bd73fac034a28b1432e1f9177da9dffca815b0f99b5120625e25fe28",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-post-n1-final-recording-report.md",
+      "stagedBytes": 54643,
+      "stagedSha256": "215d28b794c5f9b10c7e7735aa77d684f34ac62c50b2e4b757fa6c9e4ee216db",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/deferred-findings.md",
+      "stagedBytes": 33626,
+      "stagedSha256": "a6307f86f9226d4ea63379ba70d6c87ad7613c2b9ed6ccc0353de804dc7b22c5",
+      "prior": null
+    },
+    {
+      "repository": "source",
+      "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/status.md",
+      "stagedBytes": 11071,
+      "stagedSha256": "bc640e864ae741bef3dc5270e96904a5d97f66129572dd382a3142d1689bf14c",
+      "prior": null
+    },
+    {
+      "repository": "lab",
+      "path": "README.md",
+      "stagedBytes": 30317,
+      "stagedSha256": "b27af73ab4cb4003043b908fd1098dcfe8071c400b4cd237b343b5bb02c5807f",
+      "prior": {
+        "bytes": 30338,
+        "sha256": "1cf660adff385ba25fb8c9d54fe027f6cf3973fc4a2691450f6ad775a79c12ee"
+      }
+    }
+  ],
+  "scope": "Only feature-branch current docs and new retained evidence. Immutable old121/report/maps unchanged. No runtime export/repin, product code, main/remote/push/deploy/provision/hardware or workspace cleanup. Whitespace check scoped to authored maintained prose, preserving original historical report/raw bytes."
+}

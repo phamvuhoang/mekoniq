@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-16T07:20:31.041841+00:00",
+  "status": "verified",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-11-16T07:14:41.825259+00:00",
+  "finishedAt": "2026-11-16T07:14:58.334832+00:00",
+  "files": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.json",
+      "bytes": 96239,
+      "sha256": "7f26f9c8d41a1e9e4f69ff0275f03959d05db9182e7b341409a906e545247ec8"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.receipt.json",
+      "bytes": 2146,
+      "sha256": "5bd23d9f200e9f5c718aec7d35c01b0ba2025be0172be605fe794f2e84abf9b1"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.log",
+      "bytes": 5096,
+      "sha256": "c31f6784097d3d989779fb0ea824ebbb3c016b49bd5d624892182af8b213e64e"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-public-archive-audit.py",
+      "bytes": 5564,
+      "sha256": "fe5c4c5928a01cadbe3ad838a411a78f31075b0f7dfaa5fd8c1fac52a1df99a4"
+    }
+  ],
+  "totals": {
+    "archives": 64,
+    "compressedBytes": 653098761,
+    "regularMemberOccurrences": 15827,
+    "memberBytes": 1625549720
+  },
+  "scope": "ONE independent audit of new frozen archives only; prior121 unchanged, not re-audited. Integrity proof, not qualification. Root metadata frozen after07:15:45.744UTC; no recursive archive/audit."
+}

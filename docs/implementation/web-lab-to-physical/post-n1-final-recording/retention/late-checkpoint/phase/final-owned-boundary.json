@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-16T07:25:50.691337+00:00",
+  "knownOwnerPids": [
+    {
+      "pid": 38432,
+      "absent": true
+    },
+    {
+      "pid": 52197,
+      "absent": true
+    },
+    {
+      "pid": 38861,
+      "absent": true
+    },
+    {
+      "pid": 9849,
+      "absent": true
+    }
+  ],
+  "ports": [
+    4175,
+    4176
+  ],
+  "listenerExitCode": 1,
+  "stdout": "",
+  "stderr": "",
+  "scope": "Known task owners absent and the two task ports free. No full-host snapshot or claim about unrelated machine-wide processes. No kill/reset/cleanup."
+}

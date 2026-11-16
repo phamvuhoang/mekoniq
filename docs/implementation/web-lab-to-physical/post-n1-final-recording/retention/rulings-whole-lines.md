@@ -1,6 +1,6 @@
-# Complete literal ruling lines
+# Complete current literal ruling lines
 
-The current readable location map resolves every original source. Intentional duplicates are preserved.
+Initial index bytes and all full source snapshots remain preserved. Intentional duplicates are retained.
 
 ## 01-r2b-mobility/progress.md:14
 
@@ -956,49 +956,49 @@ Externaldesign /Users/hoangpham/source/prv/robot/docs/2026-11-13-web-lab-to-phys
 89human/93rawrulings, exactauditREADME/root-decision-audit-R89-after-L04.json. Capture ALL lines containingliteralRuling: andSequencingruling, includingembeddedTaskprefixes/intentionalduplicates. InitialR89prefix-only85failed, corrected93. R89addscontroller scripts+packagingtonativeclosure; generatedtrace/inventoryevidenceoutside. Newdigestrequirescleanexportpin, notnativeproof. Sourcepipelinefuturehardwareboundariesunchanged.
 ```
 
-## README/current-state.md:199
+## README/current-state.md:209
 
 ```text
 Ruling: authorize prospective I3/I4 code/table/reader corrections under new identities, preserving all old records and their original checker outcomes — the earlier R93 recording-only prohibition protected evidence from status manipulation; it does not mandate retaining a demonstrated coverage or metric defect — if wrong, the new qualification contract may refuse legitimate data or miss a boundary, so meaningful coherent membership/measurement regressions and the scoped re-review are required; old R1/R1.1/R2a policy must not silently change.
 ```
 
-## README/current-state.md:201
+## README/current-state.md:211
 
 ```text
 Ruling: move the existing generic cloud payload security test from mj-evidence to the existing r2b-regression row while correcting the physics-evidence path and keeping all suite/case/gate IDs and required cloud coverage — the cloud test validates HTTP/webhook/payment input, while G-MJ1 requires physical-payload/evidence coverage — if wrong, a cross-layer dependency could be missed, so retain the cloud test explicitly in regression and test the complete mapping; genuine unavailable-service regression still fails and no old result is reclassified.
 ```
 
-## README/current-state.md:203
+## README/current-state.md:213
 
 ```text
 Ruling: retain M1 as a nonblocking conservative native-input follow-up outside this web/authority/qualification correction — pinned positive-zero input is unaffected and no unsafe admission is demonstrated — if wrong, a valid equivalent negative-zero declaration remains refused until paired Python/TypeScript normalization and regression coverage are implemented; no native-ready claim is made.
 ```
 
-## README/current-state.md:205
+## README/current-state.md:215
 
 ```text
 Ruling: retain M2 as a nonblocking PUMA input-boundary follow-up outside this correction — ordinary short prepared terminal traces have no demonstrated failure, and native ALG04 remains not_run — if wrong, a longer valid trace may be refused or misclassified before numerical evaluation; future work must align row and byte limits or bounded batches and distinguish unsupported input from residual failure.
 ```
 
-## README/current-state.md:207
+## README/current-state.md:217
 
 ```text
 Ruling: retain M3's remaining inventory/world semantic-isolation gaps as explicit test limits, preserving the already repaired coherent negatives — no current production bypass is demonstrated and those native predicates are not being changed — if wrong, an untested predicate defect remains; I3's new touched coverage tests must use valid upstream seals and specific semantic refusal, and no broad semantic-coverage claim is permitted.
 ```
 
-## README/current-state.md:209
+## README/current-state.md:219
 
 ```text
 Ruling: retain inherited M4 outside the final correction rather than changing unrelated historical recorder behavior — actual exits/log counters remain usable at their disclosed scope and original malformed XML is immutable — if wrong, a future XML consumer still cannot ingest fresh output from that inherited scrubber; fix it with parser-based tests in its owning recorder change, never by rewriting historical files or declaring regex counting to be XML validation.
 ```
 
-## README/current-state.md:322
+## README/current-state.md:332
 
 ```text
 Root final-review draft now contains correction5 and current production shortcomings. Prepared but unexecuted package-final-review-text.py5124B SHAc53a76bab0e4ec1819552ce4e752003633cf2c1e7c42ccfd651ff83ed103d8f2 supersedes original helper only for future review packaging. New progress Ruling: full -U10 textdiff/allpaths+binarymarkers, exact blob/bytes/SHA matrix and semantic retained binary artifacts; exact fullbinary reproduction argv remains explicitly unexecuted. Original helper preserved. Refresh all literal Ruling lines at publication (agent's earlier113physical/114clauses and47reviews507505B snapshot predates this new Ruling). No finalnetpackage, finalreview, cleanup, merge/push/deploy/publication/spend.
 ```
 
-## README/current-state.md:358
+## README/current-state.md:368
 
 ```text
 Final prerequisites5 environment — Ruling: Permit one unchanged complete release browser-file rerun with caffeinate -dims and the samePerl120 bound in a fresh output directory. Read-onlypmset own0 shows992s host sleep from22:47:00Z to23:03:32Z inside the1005s failedinvocation; root read both exacteventrows/receipt andverified32001B excerpt SHAd9a4eeaa6dbf55ad6390c308220f1b35aa2b33dd05c7708cd000124c0a1d924f. Original4pass/1timeout remainsfailed, notpass. Reason: actualsleep is a demonstrated environmental cause of wall-time inflation, and the unfinished-bodybehavior remainsunresolved on finalbytes whileawake. Cost: one additional genuine invocation; cannotinfer an awakepass or productionqualification untilitactuallyreturns. No timeout/test/code/reader change and noOSsettings modified. Root root-final-fix5-sleep-wake-audit.json bindsreadscope.

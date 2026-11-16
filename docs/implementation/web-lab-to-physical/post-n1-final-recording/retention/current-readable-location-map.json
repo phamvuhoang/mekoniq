@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "at": "2026-11-16T07:20:32.324239+00:00",
-  "scope": "Complete current static SDD readable location map, reusing byte-identical earlier copies and adding every changed/new complete file. Post907 correction/probe/raw/package archives are indexed separately. Initial/current prior maps remain immutable. Later own-publication receipts are a distinct checkpoint, not retroactively in this snapshot.",
+  "at": "2026-11-16T07:26:41.542933+00:00",
+  "scope": "Final current readable location map. Initial first-publication map and all its exact destinations remain unchanged; later complete report/ledger/root records use distinct late paths. Prior907/121 old-current/initial maps and old190669-byte report remain immutable.",
   "files": [
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/01-r2b-mobility/implement-B00R2-dispatch.md",
@@ -2105,10 +2105,10 @@
     },
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/current-state.md",
-      "bytes": 125812,
-      "sha256": "d1127d0e080d3ebe6a9a969d087385fb05ad5edbaae67ed502c2d4071b9da29c",
-      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/current-state.md",
-      "retention": "exact current readable snapshot, complete report/review/brief/ruling/root metadata; raw bytes unchanged"
+      "bytes": 127710,
+      "sha256": "d490d8dc48767898695749541c3fb74b254c9936ca5ae1eb35cffc92e90d101b",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/sdd/README/current-state.md",
+      "retention": "Exact late complete original source/report/ledger/root metadata after initial publication/clone checks; initial frozen destinations unchanged"
     },
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-correction-907-bfde/capture-readback.mjs",
@@ -2559,34 +2559,6 @@
       "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
     },
     {
-      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/lab-commits-stat.txt",
-      "bytes": 430,
-      "sha256": "e7b17652b06118601f6d343f3d168f1278efd7b691be3819cf6ee59ca96aec12",
-      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/lab-commits-stat.txt",
-      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
-    },
-    {
-      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/lab.diff",
-      "bytes": 3277,
-      "sha256": "4f050702677841e1b90d5d378cd0f4bece656263f393835401a55ce7682644f9",
-      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/lab.diff",
-      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
-    },
-    {
-      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/source-commits-stat.txt",
-      "bytes": 601,
-      "sha256": "3905ab55ce06805b50ef1a6ae3a871dd68cf2b36787408f00642e6455930669b",
-      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/source-commits-stat.txt",
-      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
-    },
-    {
-      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/source.diff",
-      "bytes": 42640,
-      "sha256": "d437df18fa6d5f014003464908a3dd0ec27338ed635b279b8416e7a4f0eac1ae",
-      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/source.diff",
-      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
-    },
-    {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package-verified/audit.json",
       "bytes": 223191,
       "sha256": "2ab593e8d8a95a3c5bd7ecbc5530aadbe6b4e7dd72282a29a2a34e05d382e871",
@@ -2619,6 +2591,34 @@
       "bytes": 42640,
       "sha256": "d437df18fa6d5f014003464908a3dd0ec27338ed635b279b8416e7a4f0eac1ae",
       "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package-verified/source.diff",
+      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/lab-commits-stat.txt",
+      "bytes": 430,
+      "sha256": "e7b17652b06118601f6d343f3d168f1278efd7b691be3819cf6ee59ca96aec12",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/lab-commits-stat.txt",
+      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/lab.diff",
+      "bytes": 3277,
+      "sha256": "4f050702677841e1b90d5d378cd0f4bece656263f393835401a55ce7682644f9",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/lab.diff",
+      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/source-commits-stat.txt",
+      "bytes": 601,
+      "sha256": "3905ab55ce06805b50ef1a6ae3a871dd68cf2b36787408f00642e6455930669b",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/source-commits-stat.txt",
+      "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/review-final-prerequisites-4-root-package/source.diff",
+      "bytes": 42640,
+      "sha256": "d437df18fa6d5f014003464908a3dd0ec27338ed635b279b8416e7a4f0eac1ae",
+      "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/review-final-prerequisites-4-root-package/source.diff",
       "retention": "unchanged exact prior-generation readable copy, referenced without rewriting audited bytes"
     },
     {
@@ -3883,10 +3883,10 @@
     },
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-post-n1-final-recording-report.md",
-      "bytes": 54643,
-      "sha256": "215d28b794c5f9b10c7e7735aa77d684f34ac62c50b2e4b757fa6c9e4ee216db",
-      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/sdd/README/task-post-n1-final-recording-report.md",
-      "retention": "exact current readable snapshot, complete report/review/brief/ruling/root metadata; raw bytes unchanged"
+      "bytes": 62601,
+      "sha256": "ef242e91888ed6a17f334fb40b1217143e10f881a6893c33d1f182e7ea036d27",
+      "destination": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/late-checkpoint/sdd/README/task-post-n1-final-recording-report.md",
+      "retention": "Exact late complete original source/report/ledger/root metadata after initial publication/clone checks; initial frozen destinations unchanged"
     },
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/deferred-findings.md",
@@ -3932,8 +3932,14 @@
     }
   ],
   "reportCount": 34,
-  "reportBytes": 1179341,
+  "reportBytes": 1187299,
   "reviewCount": 52,
   "reviewBytes": 609966,
-  "legacyLimitation": "B00/B01 standalone reviews remain ledger-only; no report invented."
+  "legacyLimitation": "B00/B01 standalone reviews remain ledger-only; no report invented.",
+  "initialCurrentMap": {
+    "path": "docs/implementation/web-lab-to-physical/post-n1-final-recording/retention/snapshots/initial-readable/location-map.json",
+    "bytes": 290010,
+    "sha256": "06d413f2537b3b573c3ce9db47452e94a5a8bfa2c7a07ed030754cc18ce60686"
+  },
+  "latePhaseIndex": "late-checkpoint/index.json"
 }
