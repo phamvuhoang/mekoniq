@@ -531,14 +531,14 @@ class FixedStepRun implements ScenarioRun {
   const step=(a as {kind?:unknown}|null)?.kind==='step';
   if(step)this.steps++;
   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;}
- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
+ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,onControlBegin?:()=>void):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
   // A priority receipt waited inside a step, so it still needs current writer/session authority.
   // Ordinary cached actions keep their existing readiness-independent replay semantics.
-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
+  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(onControlBegin)await beforeExecute?.();return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
   const view=await this.view(),status=view.run.status;
@@ -558,7 +558,9 @@ class FixedStepRun implements ScenarioRun {
   if(pending&&c.plant.status==='lost')throw new Error('INVALID_STATE:LOCALIZATION_LOST');
   // a worker slot is taken at admission (no state change when the host is full) and given back if the plant never goes live
   if(a.kind==='start'){if(!irsimCapacity(this.irsim.maxActiveRuns,c.runId,this.plant.identity.amr.id))throw new Error('IRSIM_CAPACITY');slotsOf(this.plant.identity.amr.id).add(c.runId);}
-  try{await beforeExecute?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
+  // Receipt replay rechecks authority above, but only a new control interrupts a batch.
+  // Mark before persistence: a begun control with an uncertain outcome must still stop it.
+  try{await beforeExecute?.();onControlBegin?.();c.inFlight=true;await this.persist();}catch(e){if(!this.worker)this.releaseSlot();throw e;}
   try{
    if(a.kind==='start'){await this.startPlant();c.started=true;}
    else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;if(this.worker)await this.ask('pause',{}).catch(e=>this.plantLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED'));}
@@ -623,7 +625,7 @@ class FixedStepRun implements ScenarioRun {
   * the steps decrement happen before any await). */
  private async takeControls(){
   let admitted=false;
-  while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}
+  while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,x.beforeExecute,()=>{admitted=true;}).then(x.resolve,x.reject);}
   // Admission refusals do not stop the batch. Once admitted, even a failed checkpoint or
   // worker operation ends it here; an uncertain mutation must never be followed by more ticks.
   return admitted;

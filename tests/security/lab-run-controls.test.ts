@@ -139,12 +139,12 @@ test.skipIf(!irsimAvailable)('a control failing checkpoint persistence after adm
  f.release.release();expect(await pause).toBe('CHECKPOINT_IO_FAILURE');expect((await batch).body.tick).toBe(1);expect(f.run.pulse().paused).toBe(false);
 },120_000);
 
-test.skipIf(!irsimAvailable)('an authorized cached control yields the batch without reapplying the control or creating another control revision',async()=>{
+test.skipIf(!irsimAvailable)('an authorized cached control replays without truncating the batch, reapplying the control or creating another control revision',async()=>{
  const f=await fixture(),paused=await f.act('pause',f.rev),resumed=await f.act('resume',paused.body.run.runRevision);let checks=0;
  const batch=f.run.action({actionId:'later-batch',expectedRevision:resumed.body.run.runRevision,kind:'step',payload:{ticks:2}});
  const retry=f.run.action({actionId:'pause',expectedRevision:f.rev,kind:'pause',payload:{}},async()=>{checks++;});
  const [receipt,stepped]=await Promise.all([retry,batch]);expect(receipt.run).toEqual(paused.body.run);expect(checks).toBe(1);
- expect(stepped.tick).toBe(0);expect(stepped.run.runRevision).toBe(resumed.body.run.runRevision+1);expect(f.run.pulse().paused).toBe(false);
+ expect(stepped.tick).toBe(2);expect(stepped.run.runRevision).toBe(resumed.body.run.runRevision+1);expect(f.run.pulse().paused).toBe(false);
 },120_000);
 
 test.skipIf(!irsimAvailable)('same-turn handler step and pause reach the first boundary without an admission microtask gap',async()=>{
