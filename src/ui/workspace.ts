@@ -549,10 +549,10 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   }
   await this.settlePrevious();
   this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.exportAbort?.abort();this.clearWorld();this.gen++;this.payloadCancelPaused=false;this.archived=false;this.view=null;this.report=null;this.seen={};this.runPreset={...p,project:structuredClone(p.project)};this.stopReplay();this.replay=null;this.navigation=null;this.payloadBundle=null;const token=++this.sceneLoad;
-  const ref=this.refOf(p);if(ref){this.payloadBundle=await loadPayloadBundle(this.rt,ref.bundleDigest);const s=await loadNavigationScene(this.rt,ref.bundleDigest).catch(()=>null);if(token===this.sceneLoad)this.navigation=s;}
+  const ref=this.refOf(p);if(ref){if(p.backendSetId===MUJOCO_MOBILE_SET)this.payloadBundle=await loadPayloadBundle(this.rt,ref.bundleDigest).catch(()=>null);const s=await loadNavigationScene(this.rt,ref.bundleDigest).catch(()=>null);if(token===this.sceneLoad)this.navigation=s;}
   this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';const v=await this.current(this.rt.create(requestForPreset(p),{sourceCommit:this.health.sourceCommit,schemaHash:this.health.schemaHash}));this.pinMismatch=null;
   if(p.id==='mujoco-payload'&&v.lockedInput?.engineering)this.runPreset={...this.runPreset!,project:structuredClone(v.lockedInput.engineering.runtimeProjection.project),assets:structuredClone(v.lockedInput.engineering.runtimeProjection.assets) as TwinPreset['assets']};
-  await this.apply(v);this.openStreams(v);void this.refreshWorld();if(start){await this.act('start');if(this.clock()?.step&&p.id!=='mujoco-payload'&&p.id!=='mujoco-cell')await this.act('step',{ticks:STEP_TICKS});}
+  await this.apply(v);this.rerender();this.openStreams(v);void this.refreshWorld();if(start){await this.act('start');if(this.clock()?.step&&p.id!=='mujoco-payload'&&p.id!=='mujoco-cell')await this.act('step',{ticks:STEP_TICKS});}
  }
  /** Cancellation needs native observations even when the source clock was paused. No new mission, force or observation tail. */
  private async cancelPayload(){

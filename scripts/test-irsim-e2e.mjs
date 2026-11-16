@@ -3,6 +3,7 @@
 // provider makes the launcher exit before ready, and this script FAILS (exit 1); it never skips and never falls back to mock.
 // --provider webots / --provider mujoco: the same through lab:webots (real Webots R2025a) or lab:mujoco (real MuJoCo worker); leftovers of that provider fail the run.
 // UI/runtime ports are the launcher's 4175/4176 (the only origins the source runtime accepts browser traffic from; never 1880/1884), passed explicitly.
+// Failure attachments go to LAB_PW_OUTPUT_DIR, default a fresh <tmp>/mekoniq-e2e-output/<spec>-<time> per spec (outside test-results/, which the next run would wipe); the path is printed.
 // Screenshots (candidate evidence only, not backend evidence) go to LAB_IRSIM_SCREENSHOTS (default test-results/irsim-evidence, git-ignored).
 import {spawn,execFileSync} from 'node:child_process';
 import {mkdtemp,rm,mkdir} from 'node:fs/promises';
@@ -31,7 +32,8 @@ try{
  const redacted=pairingOutput(c=>process.stdout.write(c));launcher.stdout.once('end',()=>redacted.end());
  const token=await new Promise((ok,fail)=>{let out='';launcher.stdout.on('data',c=>{out+=c;redacted.write(c);const m=/one-use pairing code \(expires in 5 minutes\): (\S+)[\s\S]*Ready in/.exec(out);if(m)ok(m[1]);});void exited.then(c=>fail(new Error(`${NAME[0]}_PREREQUISITE_FAILED: the ${NAME[1].split(' ')[0]} launcher exited before ready (${c}); see its message above. Not skipped.`)));});
  const list=specs.length?specs:[NAME[2]];
- console.log(`Running ${list.join(', ')} through pnpm ${NAME[1]} with a fresh journal.`);
+ env.LAB_PW_OUTPUT_DIR=resolve(process.env.LAB_PW_OUTPUT_DIR??join(tmpdir(),'mekoniq-e2e-output',`${list[0].replace(/\.spec\.ts$/,'')}-${new Date().toISOString().replace(/[:.]/g,'-')}`));
+ console.log(`Running ${list.join(', ')} through pnpm ${NAME[1]} with a fresh journal; failure attachments in ${env.LAB_PW_OUTPUT_DIR}.`);
  runner=spawn('pnpm',['exec','playwright','test','--config','playwright.irsim.config.ts',...list],{cwd:root,stdio:'inherit',env:{...env,LAB_TEST_PAIRING_TOKEN:token}});
  const code=await new Promise((ok,fail)=>{runner.once('error',fail);runner.once('exit',c=>ok(c??1));});
  runner=undefined;launcher.kill('SIGINT');const stopped=await exited;launcher=undefined;

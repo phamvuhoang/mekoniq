@@ -8,6 +8,9 @@ import type {NavigationSceneV1} from '../../src/shared/navigation2d';
 import type {SavedEvidence} from '../../src/reports/evidence';
 import serveScene from '../../fixtures/engineering/serve-demo-v1/navigation-scene.json' with {type:'json'};
 import {D,evidence,project,report} from '../support/navigation-report';
+// Task 1.4: create() reads the payload bundle only for the MuJoCo mobile preset, and a bundle that fails never stops the run
+const payloadSpy=vi.hoisted(()=>({fn:null as null|((...a:unknown[])=>Promise<unknown>)}));
+vi.mock('../../src/twin/payload',async orig=>{const m=await orig<typeof import('../../src/twin/payload')>();return {...m,loadPayloadBundle:(...a:unknown[])=>payloadSpy.fn?payloadSpy.fn(...a):m.loadPayloadBundle(...(a as Parameters<typeof m.loadPayloadBundle>))};});
 vi.stubGlobal('localStorage',{getItem:()=>'en',setItem:()=>{}});
 vi.stubGlobal('innerWidth',600);
 vi.stubGlobal('document',{querySelector:()=>null,getElementById:()=>null,activeElement:null});
@@ -106,4 +109,28 @@ test('review7 #4: in 3D a layer the 3D view does not draw is disabled with a vis
  for(const l of ['footprint','safety','path','observed','frames'])expect(button(l),l).not.toContain('disabled');
  expect(html).toContain('data-testid="layers-2d-only"');expect(html).toContain('Drawn on the 2D plan only');
  w.click('twin-layer','scan');expect((h as unknown as {vs:{layers:Record<string,boolean>}}).vs.layers.scan).toBe(false);// a 2D-only layer cannot be switched in 3D
+});
+async function created(presetId:string,bundle:()=>Promise<unknown>){
+ const {presets}=await import('../../src/scenarios/catalog'),{hashJson}=await import('../../src/twin/hash'),base=presets.find(x=>x.id===presetId)!;
+ const p={...base,engineering:{project:base.engineering!.project,receipt:{state:'compiled',problems:[],bundleDigest:BUNDLE_A,projectDigest:hashJson(base.engineering!.project)}}};// a compiled receipt for exactly this draft
+ const log:string[]=[],calls=vi.fn(bundle);payloadSpy.fn=calls;
+ const view={run:{id:'run-1',backendSetId:p.backendSetId,status:'created'}};
+ const rt={paired:true,create:async()=>{log.push('rt.create');return view;},engineeringManifest:async()=>{throw new Error('BUNDLE_NOT_FOUND');}} as unknown as TwinRuntime;
+ const w=new TwinWorkspace(()=>{},rt);workspaces.push(w);
+ Object.assign(w,{health:{sourceCommit:'d'.repeat(40),schemaHash:'s',features:{}},settlePrevious:async()=>{},apply:async()=>{log.push('apply');},
+  openStreams:()=>{},refreshWorld:async()=>{},render:()=>log.push('render'),act:async(a:string)=>{log.push(`act:${a}`);}});
+ await (w as unknown as {create(p:unknown,start?:boolean):Promise<void>}).create(p,true);payloadSpy.fn=null;
+ return {log,calls};
+}
+test('Task 1.4: a non-mobile engineering preset (Webots FD01) never loads the payload bundle, and the run view is painted before start',async()=>{
+ const {log,calls}=await created('webots-fd01',async()=>null);
+ expect(calls).toHaveBeenCalledTimes(0);
+ expect(log.slice(0,4)).toEqual(['rt.create','apply','render','act:start']);
+});
+test('Task 1.4: the mobile preset whose payload bundle rejects still reaches rt.create',async()=>{
+ const {MUJOCO_MOBILE_SET}=await import('../../src/twin/payload');
+ const {presets}=await import('../../src/scenarios/catalog');expect(presets.some(p=>p.id==='mujoco-payload'&&p.backendSetId===MUJOCO_MOBILE_SET)).toBe(true);
+ const {log,calls}=await created('mujoco-payload',async()=>{throw new Error('PAYLOAD_MODEL_INVALID');});
+ expect(calls).toHaveBeenCalledTimes(1);
+ expect(log).toContain('rt.create');
 });
