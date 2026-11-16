@@ -498,7 +498,8 @@ class Run implements ScenarioRun {
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
-  if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
+  // a lost response of an action that committed before the world went terminal is still answered from its receipt
+  if(c.world?.terminal&&!old)throw new Error('WORLD_TERMINAL');
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
   if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(onControlBegin)await beforeExecute?.();return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');

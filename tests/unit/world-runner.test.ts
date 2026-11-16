@@ -53,6 +53,12 @@ for(const failure of ['append','commit','source-write','direct-source-write','lo
  const reopened=await h.open();try{expect(h.opens()).toBe(1);expect((await reopened.snapshot()).entities[0]!.pose.x).toBe(.35);await expect(act(reopened,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await reopened.close();}
 });
 
+test('terminal world replays a stored receipt but refuses a new action as WORLD_TERMINAL',async()=>{
+ const h=await setup('commit'),run=await h.open();try{const revision=(await run.snapshot()).run.runRevision,started=await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow('COMMIT_FAILED');
+  expect(await run.action({actionId:'start',expectedRevision:revision,kind:'start',payload:{}})).toEqual(started);
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await run.close();}
+});
+
 for(const failure of ['flush-chunk','flush-cleanup'] as const)test(`actual recorder ${failure} failure preserves Source horizon and close prefix`,async()=>{
  const h=await setup(failure),run=await h.open();await run.start();const write=durable.writeDurable;let injected=false;
  vi.spyOn(durable,'writeDurable').mockImplementation(async(dir,name,bytes)=>{if(dir===h.evidenceDirectory&&!injected&&(failure==='flush-chunk'?name.endsWith('.ndjson.gz'):name==='pending.ndjson'&&bytes==='')){injected=true;throw Error('ACTUAL_RECORDER_FAILED');}return write(dir,name,bytes);});

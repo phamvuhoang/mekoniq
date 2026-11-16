@@ -1,6 +1,7 @@
 import {createServer,type IncomingMessage,type ServerResponse} from 'node:http';
 import {randomBytes,createHash,timingSafeEqual,randomUUID} from 'node:crypto';
 import {join} from 'node:path';
+import {lstatSync,readdirSync,rmSync} from 'node:fs';
 import {isIPv4} from 'node:net';
 import {createLabSession,type LabSession,type RunAction} from './session';
 import {parseJsonStrict} from '../../contracts/src/validate';
@@ -52,6 +53,8 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
  let port=options.port??4176;
  const ownership=acquireDataRoot(options.directory);
  try{
+ // Only this process may own replay exports now: anything left under the root was abandoned by a killed export. A symlinked or non-directory root is left alone and still refused.
+ const exportsRoot=join(options.directory,'replay-exports');if(lstatSync(exportsRoot,{throwIfNoEntry:false})?.isDirectory())for(const name of readdirSync(exportsRoot))rmSync(join(exportsRoot,name),{recursive:true,force:true});
  const configuredV2=options.prepareV2?await options.prepareV2():options.v2;
  let currentToken='',tokenExpiresAt=0;
  const sessions=new Map<string,{csrf:string;expiresAt:number}>();
@@ -126,7 +129,8 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
   closing=true;const stopped=new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
   v2.beginClose();v2.endStreams();for(const response of responses)response.destroy();server.closeAllConnections();
   // Admitted handlers own file/compiler/capture work even after their clients disconnect.
-  await Promise.all([...requests]);await Promise.all([...runs.values()].map(r=>r.session.close()));await v2.close();await stopped;ownership.close();
+  // Every owned close settles before the data root is released; a failed close is reported, never a lock held forever.
+  try{await Promise.all([...requests]);for(const r of await Promise.allSettled([...runs.values()].map(r=>r.session.close())))if(r.status==='rejected')process.stderr.write(`lab v1 run close failed: ${r.reason instanceof Error?r.reason.message:String(r.reason)}\n`);await v2.close();await stopped;}finally{ownership.close();}
  })();}};
  }catch(error){ownership.close();throw error;}
 }

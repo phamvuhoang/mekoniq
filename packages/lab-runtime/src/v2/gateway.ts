@@ -49,7 +49,7 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|^WORLD_TERMINAL$|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
@@ -85,8 +85,10 @@ export function createV2Gateway(deps:V2Deps){
  };
  // Readiness and creation share cleanup. Concurrent callers wait for the worker to close before probing its slot.
  let expiryCleanup=Promise.resolve();
+ const closeFailed=(id:string)=>(e:unknown)=>{process.stderr.write(`lab run ${id} close failed: ${e instanceof Error?e.message:String(e)}\n`);};
  const closeExpiredRuns=()=>expiryCleanup=expiryCleanup.then(async()=>{
-  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(runs.get(id)!==e||current&&deps.now()<current.expiresAt)return;runs.delete(id);await e.run.close();await dropReplayRun(id);});}}
+  // one run's failed close is reported and never latches the chain: later creates, readiness and close still proceed
+  for(const [id,e]of runs){const s=sessions.get(e.owner);if(!s||deps.now()>=s.expiresAt){await serial(e,async()=>{const current=sessions.get(e.owner);if(runs.get(id)!==e||current&&deps.now()<current.expiresAt)return;runs.delete(id);try{await e.run.close();}finally{await dropReplayRun(id);}}).catch(closeFailed(id));}}
  });
  const reclaiming=new Set<string>();
  let pairingFailures:number[]=[];
@@ -404,5 +406,5 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   /** Ends open SSE connections so the HTTP server can close. */
   endStreams(){for(const r of streams)r.end();streams.clear();},
   beginClose(){replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}for(const work of replayWork.values())work.abort.abort();},
-  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.all([...runs.values()].map(x=>x.run.close()));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
+  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.allSettled([...runs].map(([id,x])=>x.run.close().catch(closeFailed(id))));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
 }
