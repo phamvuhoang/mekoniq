@@ -321,16 +321,26 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
    if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
+   const currentSession=()=>{if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');};
    reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
    try{
     const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
     const locked=stored.record.input.engineering;
     const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,reclaimOnly:true,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
+    currentSession();
     // a verified proof restores read access to this run's bundle for the new session; it never confers control
     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
+    currentSession();
     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
+    currentSession();
     const view=await run.holdForReclaim();
+    // A successful hold is irreversible: preserve the owner/readers but expose its
+    // reconcile-only safety state even when the requesting session has expired.
+    if(entry)entry.readOnly=true;currentSession();
     const epoch=Math.max(entry?.controlEpoch??0,stored.record.controlEpoch??0)+1;await saveControlEpoch(stored.directory,epoch);
+    // Persistence is monotonic even if authorization expires during fsync. Keep the
+    // existing owner/readers, but synchronize its fence before refusing publication.
+    if(entry)entry.controlEpoch=epoch;currentSession();
     if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,run,directory:stored.directory,readOnly:true,input:stored.record.input});
     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
     return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});

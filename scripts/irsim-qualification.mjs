@@ -136,6 +136,7 @@ export function checkQualification(m,read,table=TABLE){
   const st=suiteState(su);if(st==='failed')r.push(`SUITE_FAILED:${su.id}`);else if(skippedOf(su)>0)r.push(`SUITE_SKIPPED:${su.id}`);else if(st==='not_run')r.push(`SUITE_EMPTY:${su.id}`);
   if(!su.result){r.push(`SUITE_RESULT_MISSING:${su.id}`);continue;}
   const bytes=read(su.result.file);if(!bytes||sha(bytes)!==su.result.sha256){r.push(`SUITE_RESULT_CORRUPT:${su.id}`);continue;}
+  const requiredSuite=table.suites.find(t=>t.id===su.id);if(requiredSuite&&table.checkSuiteResult)r.push(...table.checkSuiteResult(requiredSuite,bytes));
   // the counts come from the file, not from the manifest (kind from the table, not from a claim)
   try{if(JSON.stringify(summarizeResult(table.suites.find(t=>t.id===su.id)?.kind,bytes.toString('utf8')))!==JSON.stringify(su.result.summary))r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}catch{r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}
  }

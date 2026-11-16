@@ -4,7 +4,7 @@ import {existsSync} from 'node:fs';
 import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
-import {tableR2b,qualifyR2bStructure} from './sim-extension-r2b.mjs';
+import {tableR2b,qualifyR2bStructure,validateR2bSelectors} from './sim-extension-r2b.mjs';
 import {verifyR2bDirectory,assessR2bDirectory,collectR2bArtifactDispositions,evidenceInventory,boundedEvidenceRead} from './r2b-readback.mjs';
 import {summarizeResult} from './irsim-qualification.mjs';
 import {closureIdentity} from './lab-irsim.mjs';
@@ -15,6 +15,7 @@ export async function recordR2b(args){
  const table=tableR2b(o.scope);if(o.plan){console.log(JSON.stringify({release:'r2b',scope:o.scope,suites:table.suites,gates:table.gates,note:'No prerequisite probes run in R2b plan; WEB06 blocked_external; missing container remains not_run while other local cases execute.'},null,2));return 0;}
  for(const key of ['r2a-record','physics-campaign','out',...o.scope==='full'?['cell-campaign','semantic-study','web-record']:[]])if(!o[key])throw Error('MISSING_OPTION:--'+key);
  const out=resolve(o.out),lab=resolve(o.lab??join(root,'../lab'));if(existsSync(out))throw Error('OUT_EXISTS');if(out===root||out.startsWith(root+'/')||out===lab||out.startsWith(lab+'/'))throw Error('OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES');
+ validateR2bSelectors(table,{source:root,lab});
  const git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8'}).trim(),identity=()=>({sourceCommit:git(root,'rev-parse','HEAD'),dirty:!!git(root,'status','--porcelain','--untracked-files=all'),toolClosures:closureIdentity(),node:process.version}),before=identity();if(before.dirty)throw Error('SOURCE_DIRTY');
  const pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),labCommit=git(lab,'rev-parse','HEAD');if(git(lab,'status','--porcelain','--untracked-files=all'))throw Error('LAB_DIRTY');if(pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
  await mkdir(out,{mode:0o700});await mkdir(join(out,'inputs'));await mkdir(join(out,'suites'));const refs={};

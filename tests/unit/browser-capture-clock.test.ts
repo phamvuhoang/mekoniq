@@ -15,8 +15,37 @@ test.each(['step','pause','render-window','worker-run','worker-tick','worker-ori
 
 test('existing latency budgets apply to coherent observations; pause UI has no added budget',()=>{
  const slowWorker=captureFixture();for(const w of slowWorker.workerRaw)w.elapsedMs=16;const worker=clock.assessCapture(slowWorker);expect(worker.valid).toBe(true);expect(worker.meetsTargets).toBe(false);
- const slowRender=captureFixture();slowRender.capture.renderEvents=slowRender.capture.renderEvents.filter((_,i)=>i%2===0);const render=clock.assessCapture(slowRender);expect(render.valid).toBe(true);expect(render.metrics.renderIntervalP95Ms).toBe(40);expect(render.meetsTargets).toBe(false);
+ const slowRender=captureFixture();slowRender.capture.renderEvents=slowRender.capture.renderEvents.filter((_,i)=>i%2===0);for(const [i,s]of slowRender.capture.samples.entries()){s.drawn=i%2===0;s.drawCalls=s.drawn?1:0;}const render=clock.assessCapture(slowRender);expect(render.valid).toBe(true);expect(render.metrics.renderIntervalP95Ms).toBe(40);expect(render.meetsTargets).toBe(false);
  const lateReceipt=captureFixture(),tail=lateReceipt.actions.find(a=>a.actionId==='tail')!;tail.observedAtEpochMs=lateReceipt.pause.clickEpochMs+501;const receipt=clock.assessCapture(lateReceipt);expect(receipt.valid).toBe(true);expect(receipt.metrics.lastStepReceiptMs).toBe(501);expect(receipt.meetsTargets).toBe(false);
  const slowUI=captureFixture();slowUI.pause.uiObservedAtEpochMs+=1000000;expect(clock.assessCapture(slowUI).meetsTargets).toBe(true);
 });
 test('missing streams remain unavailable rather than a zero latency pass',()=>{for(const stream of ['workerRaw','renders','steps']){const f=captureFixture();if(stream==='workerRaw')f.workerRaw=[];else if(stream==='renders')f.capture.renderEvents=[];else f.actions=f.actions.filter(a=>a.kind!=='step');const result=clock.assessCapture(f);expect(result.valid).toBe(false);expect(result.meetsTargets).toBe(false);if(stream==='workerRaw')expect(result.metrics.workerP95Ms).toBeNull();if(stream==='renders')expect(result.metrics.renderIntervalP95Ms).toBeNull();if(stream==='steps')expect(result.metrics.lastStepReceiptMs).toBeNull();}});
+
+function lowerDrawCadence(){
+ const f=captureFixture();f.capture.samples=Array.from({length:18501},(_,i)=>({at:i*10,interval:i?10:0,drawn:i%2===0,drawCalls:i%2===0?1:0,fullCell:true,tick:Math.min(1850,Math.floor(i/10)),worldTick:Math.min(1850,Math.floor(i/10))}));return f;
+}
+test('active moving-world wall duration admits genuine 20 ms draws sampled by 10 ms RAF',()=>{
+ const f=lowerDrawCadence(),r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.activeCellMs).toBe(185000);expect(r.metrics.fullCellDrawingMs).toBe(92500);expect(r.metrics.renderIntervalP95Ms).toBe(20);expect(r.meetsTargets).toBe(true);
+});
+test.each(['short','frozen','missing','gap'])('coherent %s activity cannot qualify by summary duration or repeated repaint',kind=>{
+ const f=lowerDrawCadence();
+ if(kind==='short'){f.capture.samples=f.capture.samples.filter(s=>s.at<179000);f.capture.renderEvents=f.capture.renderEvents.filter(s=>s.atMs<f.clock.browserStartMs+179000);}
+ if(kind==='frozen'){for(const s of f.capture.samples)s.worldTick=0;for(const e of f.capture.renderEvents)e.worldTick=0;}
+ if(kind==='missing'){f.capture.renderEvents=[];for(const s of f.capture.samples){s.drawn=false;s.drawCalls=0;}}
+ if(kind==='gap'){f.capture.samples=f.capture.samples.filter(s=>s.at<=90000||s.at>=92000);for(let i=1;i<f.capture.samples.length;i++)f.capture.samples[i]!.interval=f.capture.samples[i]!.at-f.capture.samples[i-1]!.at;f.capture.renderEvents=f.capture.renderEvents.filter(s=>s.atMs<=f.clock.browserStartMs+90000||s.atMs>=f.clock.browserStartMs+92000);}
+ const r=clock.assessCapture(f);expect(r.valid).toBe(false);expect(r.issues).toContain(kind==='short'?'CAPTURE_ACTIVE_DRAWING_DURATION':kind==='frozen'?'CAPTURE_RENDER_PROGRESSION':kind==='missing'?'CAPTURE_RENDER_STREAM':'CAPTURE_STREAM_GAP');
+});
+
+test('a final priority-paused batch covers its exact actual prefix, never its unexecuted requested tail',()=>{
+ const f=captureFixture(),tail=f.actions.find(a=>a.actionId==='tail')! as typeof f.actions[number]&{revision:number;expectedRevision:number},pause=f.actions.find(a=>a.actionId==='pause')! as typeof tail;
+ Object.assign(tail,{payload:{ticks:50}});tail.status='paused';tail.expectedRevision=10;tail.revision=12;pause.expectedRevision=10;pause.revision=11;pause.requestStartEpochMs=f.clock.endEpochMs+40;f.pause.clickEpochMs=pause.requestStartEpochMs;
+ f.responses.find(r=>r.actionId==='pause')!.requestStartEpochMs=pause.requestStartEpochMs;
+ expect(clock.assessCapture(f).issues).toEqual([]);expect(clock.assessCapture(f).meetsTargets).toBe(true);
+ for(const change of ['worker','revision','earlier'] as const){const bad=structuredClone(f);if(change==='worker')bad.workerOutsideWindow.after=[];if(change==='revision')(bad.actions.find(a=>a.actionId==='pause')! as typeof pause).expectedRevision=9;if(change==='earlier')Object.assign(bad.actions[10]!,{payload:{ticks:50}});expect(clock.assessCapture(bad).valid,change).toBe(false);}
+});
+
+test('continuous repaint cannot hide a long frozen Source horizon inside an otherwise advancing capture',()=>{
+ const f=captureFixture();for(const e of f.capture.renderEvents)if(e.atMs>=f.clock.browserStartMs+90000&&e.atMs<f.clock.browserStartMs+92000)e.worldTick=900;
+ for(const s of f.capture.samples)if(s.at>=90000&&s.at<92000)s.worldTick=900;
+ const r=clock.assessCapture(f);expect(r.valid).toBe(false);expect(r.issues).toContain('CAPTURE_RENDER_PROGRESSION');
+});

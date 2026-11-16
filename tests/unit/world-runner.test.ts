@@ -39,7 +39,7 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
    world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
- const open=(reclaimOnly=false)=>createScenarioRun(manifest,{...providers,reclaimOnly});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
+ const open=(reclaimOnly=false,wall?:import('../../packages/lab-runtime/src/v2/pace').WallClock)=>createScenarioRun(manifest,{...providers,reclaimOnly,...wall?{wall}:{}});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
 }
 test('world path never constructs/advances mock AMR and commits actual pose with target observation time',async()=>{
  const h=await setup();vi.spyOn(MockPlant.prototype,'advance').mockImplementation(()=>{throw Error('MOCK_ADVANCE_FORBIDDEN');});
@@ -97,7 +97,7 @@ test('failed H+1 ACK never becomes a public world display observation or control
  const h=await setup('commit'),run=await h.open();try{await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow();expect(await run.worldDisplay!()).toMatchObject({tick:0,availability:'stale',reason:'WORLD_UNKNOWN',snapshot:{tick:0},control:null});}finally{await run.close();}
 });
 
-test('display read queued behind an in-flight action publishes a single settled H/revision',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(false);gate.release();const after=await action,d=await display;expect(d).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7}});}finally{gate.release();await run.close();}});
+test('display read during action admission retains the previous coherent committed pair',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(true);const d=await display;expect(d).toMatchObject({tick:0,revision:v.run.runRevision,snapshot:{tick:0},view:{tick:0}});gate.release();const after=await action;expect(await run.worldDisplay!()).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7},view:{tick:7}});}finally{gate.release();await run.close();}});
 
 test('explicit world reclaim never respawns and refuses a missing committed world checkpoint',async()=>{
  const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
@@ -111,4 +111,36 @@ for(const missing of ['snapshot','bootId','sceneDigest','runId','tick','coffee',
  if(missing==='snapshot')cp.world={};else if(missing==='coffee')delete cp.coffee;else if(missing==='arm')delete cp.coffee.arm;else if(missing==='tick')cp.world.snapshot.tick=0;else delete cp.world.snapshot[missing];
  const bytes=JSON.stringify(cp);await fs.writeFile(path,bytes);const journal=await fs.readFile(join(h.directory,'journal.db')),files=await fs.readdir(h.directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof h.open>>|undefined;
  try{await expect(h.open(true).then(value=>{unexpected=value;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(h.opens()).toBe(1);expect(await fs.readFile(path,'utf8')).toBe(bytes);expect((await fs.readFile(join(h.directory,'journal.db'))).equals(journal)).toBe(true);expect(await fs.readdir(h.directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
+});
+
+for(const kind of ['pause','cancel'] as const)test(`shared world priority ${kind} stops at held paced boundary, with exact action replay`,async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
+ try{const started=await run.start(),revision=started.run.runRevision;batch=run.action({actionId:'batch',expectedRevision:revision,kind:'step',payload:{ticks:50,pace:{factor:1}}});await entered.promise;
+  const raw={actionId:'priority',expectedRevision:revision,kind,payload:{}};const control=run.controlDuringStep?.(raw);expect(control).toBeDefined();release.release();const result=await control!;
+  expect(result.tick).toBe(1);expect((await batch as {tick:number}).tick).toBe(1);expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(1);expect(await run.action(raw)).toEqual(result);
+ }finally{release.release();await batch;await run.close();}
+});
+test('paired display publishes only committed tick during a held batch without awaiting its remaining ticks',async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
+ try{const started=await run.start();batch=run.action({actionId:'display-batch',expectedRevision:started.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
+  let published:unknown;const read=run.worldDisplay!().then(x=>{published=x;});await new Promise<void>(r=>setImmediate(r));expect(published).toMatchObject({tick:1,snapshot:{tick:1},view:{tick:1,run:{runRevision:started.run.runRevision}}});release.release();await Promise.all([batch,read]);
+ }finally{release.release();await batch;await run.close();}
+});
+
+for(const reason of ['SESSION_REQUIRED','RUN_WRITER_CONFLICT'])test(`shared world control revalidates ${reason} and never truncates the batch on refusal`,async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
+ try{const v=await run.start();batch=run.action({actionId:'guard-batch',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
+  const control=run.controlDuringStep!({actionId:'guard-pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}},async()=>{throw Error(reason);})!.catch(e=>(e as Error).message);release.release();expect(await control).toBe(reason);expect((await batch as {tick:number}).tick).toBe(2);expect((await run.worldDisplay!()).view!.run.status).toBe('running');expect(run.controlDuringStep!({kind:'pause'})).toBeUndefined();
+ }finally{release.release();await batch;await run.close();}
+});
+for(const lifecycle of ['close','reclaim'])test(`shared world ${lifecycle} waits for attached control and batch completion`,async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
+ try{const v=await run.start();batch=run.action({actionId:'lifecycle-batch',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
+  const pause=run.controlDuringStep!({actionId:'lifecycle-pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}})!;let settled=false;const end=(lifecycle==='close'?run.close():run.holdForReclaim()).then(()=>{settled=true;});await new Promise<void>(r=>setImmediate(r));expect(settled).toBe(false);expect(h.calls).not.toContain('close');release.release();expect((await pause).tick).toBe(1);expect((await batch as {tick:number}).tick).toBe(1);await end;
+  if(lifecycle==='close')await expect(run.worldDisplay!()).rejects.toThrow('RUN_CLOSED');else expect((await run.worldDisplay!()).view!.controlAccess).toBe('view_reconcile');
+ }finally{release.release();await batch;await run.close();}
 });

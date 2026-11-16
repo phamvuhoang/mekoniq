@@ -174,7 +174,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  if(cp.inFlight)await run.recover();
  run.recoverFaultSchedule();
  run.record();
- await run.persist();
+ await run.persist();await run.publishWorldDisplay();
  return run;
  }catch(error){await run.close();throw error;}
 }
@@ -189,6 +189,9 @@ class Run implements ScenarioRun {
  private observations:RobotEvent[]=[];
  private coffee?:CoffeeDriver;
  private queue:Promise<unknown>=Promise.resolve();
+ private display:import('./simulation3d/world-display').WorldDisplay|undefined;
+ private steps=0;
+ private controls:{raw:unknown;beforeExecute?:()=>Promise<void>;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
  private closed=false;
  /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
@@ -399,6 +402,7 @@ class Run implements ScenarioRun {
   }else{this.clock.advance(1);c.tick=this.clock.tick;this.plant.advance();await this.coffee?.advance();}
   await this.drain();await this.coffee?.drain();
   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
+  await this.publishWorldDisplay();
  }
  recoverFaultSchedule(){
   for(const f of this.cp.faultFires??[])if(f.outcome==='dispatching'||f.outcome==='unknown'){
@@ -446,11 +450,14 @@ class Run implements ScenarioRun {
    else if(!on&&i>=0){injected.splice(i,1);c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:off`,entityId:null});}
   }
  }
- worldDisplay(){return this.queue.then(()=>{
-  if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
+ /** Publish from inside the mutation queue, only after a completed tick/control. Readers
+  * clone this immutable pair and never observe an in-flight checkpoint or join two horizons. */
+ async publishWorldDisplay(){
+  if(!this.worldConfig)return;const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
   const matched=!!s&&s.runId===c.runId&&s.tick===c.tick&&s.simTimeNs===this.clock.simTimeNs();
-  return {version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'};
- });}
+  this.display=structuredClone({view:await this.view(),version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'});
+ }
+ async worldDisplay(){if(this.closed)throw Error('RUN_CLOSED');if(!this.display)throw Error('WORLD_DISPLAY_UNSUPPORTED');return structuredClone(this.display);}
  worldDisplayScene(){return this.queue.then(()=>{if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const scene=this.world?.displayScene?.();return {version:1 as const,runId:this.cp.runId,availability:scene?'available' as const:'unavailable' as const,reason:scene?null:'WORLD_SCENE_UNAVAILABLE_AFTER_REOPEN',scene:scene??null};});}
  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
  holdForReclaim(){
@@ -470,20 +477,30 @@ class Run implements ScenarioRun {
      }
      if(!targets)c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',tick:c.tick});
     }
-    c.reclaimed=true;c.revision++;this.record();await this.persist();
+    c.reclaimed=true;c.revision++;this.record();await this.persist();await this.publishWorldDisplay();
    }
    return this.view();
   });this.queue=p.catch(()=>{});return p;
  }
  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
- action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{const p=this.queue.then(()=>this.execute(a,beforeExecute));this.queue=p.catch(()=>{});return p;}
- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+ controlDuringStep(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined{
+  const kind=(a as {kind?:unknown}|null)?.kind;if(!this.worldConfig||!this.steps||(kind!=='pause'&&kind!=='cancel'))return undefined;
+  if(this.controls.length>=10000)return Promise.reject(Error('ACTION_LIMIT'));
+  return new Promise((resolve,reject)=>this.controls.push({raw:a,beforeExecute,resolve,reject}));
+ }
+ action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+  const control=this.controlDuringStep(a,beforeExecute);if(control)return control;
+  const step=(a as {kind?:unknown}|null)?.kind==='step';if(step)this.steps++;
+  const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;
+ }
+ private async takeControls(){let admitted=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}return admitted;}
+ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
   if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
+  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
   const view=await this.view(),status=view.run.status;
@@ -508,7 +525,7 @@ class Run implements ScenarioRun {
    if(a.kind==='start')c.started=true;
    else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;}
    else if(a.kind==='resume'){c.paused=false;this.clock.resume();this.anchor=null;}
-   else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;for(let i=0;i<Number(p.ticks);i++){if(pace)this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);await this.tick();}}
+   else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;try{for(let i=0;i<Number(p.ticks);i++){if(await this.takeControls())break;if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(await this.takeControls())break;}await this.tick();}}finally{await this.takeControls();}}
    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
    else if(a.kind==='restoreCup'){
     if(!this.coffee)throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');await this.coffee.restoreCup(String(p.subjectId));
@@ -532,10 +549,10 @@ class Run implements ScenarioRun {
     c.reconciliations.push({subjectId:subject,commandId,nativeState:this.recoveryOnly?'unknown':commandId?(await this.adapters[index]!.reconcile(commandId)).status:'idle',tick:c.tick});}
    }
    c.revision++;c.pendingOps=[];c.inFlight=false;this.record();
-   const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();return structuredClone(after);
+   const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();await this.publishWorldDisplay();return structuredClone(after);
   }catch(e){
    if(e instanceof SimulatedCrash){this.closed=true;try{await this.coffee?.close();}finally{try{if(this.world){await this.world.evidence.fail({targetTick:c.tick,lastCommittedTick:c.tick,ackTick:c.tick,reason:'SIMULATED_CRASH'});await this.world.world.close();}}finally{await this.source?.close();}}throw e;}
-   c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();throw e;
+   c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();await this.publishWorldDisplay();throw e;
   }
  }
  private async missionsDone(){
