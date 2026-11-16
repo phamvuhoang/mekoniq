@@ -144,3 +144,27 @@ for(const lifecycle of ['close','reclaim'])test(`shared world ${lifecycle} waits
   if(lifecycle==='close')await expect(run.worldDisplay!()).rejects.toThrow('RUN_CLOSED');else expect((await run.worldDisplay!()).view!.controlAccess).toBe('view_reconcile');
  }finally{release.release();await batch;await run.close();}
 });
+
+for(const outcome of ['allow','SESSION_REQUIRED','RUN_WRITER_CONFLICT','ACTION_CONFLICT'] as const)test(`stored Pause replay after Resume leaves a different 50-tick batch intact: ${outcome}`,async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<import('../../packages/lab-runtime/src/v2/scenario-runner').RunView>|undefined;
+ try{
+  const started=await run.start(),pause={actionId:'stored-pause',expectedRevision:started.run.runRevision,kind:'pause',payload:{}},stored=await run.action(pause),storedBytes=JSON.stringify(stored),resumed=await act(run,'resume');
+  const next={actionId:'different-batch',expectedRevision:resumed.run.runRevision,kind:'step',payload:{ticks:50,pace:{factor:1}}};batch=run.action(next);await entered.promise;
+  const authorize=vi.fn(async()=>{if(outcome==='SESSION_REQUIRED'||outcome==='RUN_WRITER_CONFLICT')throw Error(outcome);});
+  const replay=run.controlDuringStep!(outcome==='ACTION_CONFLICT'?{...pause,expectedRevision:resumed.run.runRevision}:pause,authorize)!;
+  const observed=replay.then(value=>({value,error:null}),error=>({value:null,error:(error as Error).message}));release.release();const result=await observed;
+  expect(authorize).toHaveBeenCalledTimes(outcome==='ACTION_CONFLICT'?0:1);if(outcome==='allow')expect(JSON.stringify(result.value)).toBe(storedBytes);else expect(result.error).toBe(outcome);
+  const completed=await batch;expect(completed).toMatchObject({tick:50,run:{runRevision:resumed.run.runRevision+1,status:'running'}});expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(50);
+  expect(await run.snapshot()).toEqual(completed);expect(await run.action(next)).toEqual(completed);expect(JSON.stringify(await run.action(pause))).toBe(storedBytes);expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(50);
+ }finally{release.release();await batch;await run.close();}
+});
+for(const checkpoint of [1,2])test(`a newly begun priority Pause with uncertain checkpoint ${checkpoint} still ends the batch conservatively`,async()=>{
+ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0,armed=false,writes=0;
+ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}}),state=run as unknown as {persist():Promise<void>},persist=state.persist.bind(state);let batch:Promise<import('../../packages/lab-runtime/src/v2/scenario-runner').RunView>|undefined;
+ vi.spyOn(state,'persist').mockImplementation(async()=>{await persist();if(armed&&++writes===checkpoint)throw Error('PERSIST_ACK_UNKNOWN');});
+ try{const started=await run.start();batch=run.action({actionId:'uncertain-batch',expectedRevision:started.run.runRevision,kind:'step',payload:{ticks:50,pace:{factor:1}}});await entered.promise;
+  const control=run.controlDuringStep!({actionId:'uncertain-pause',expectedRevision:started.run.runRevision,kind:'pause',payload:{}},async()=>{armed=true;})!.catch(e=>(e as Error).message);release.release();expect(await control).toBe('PERSIST_ACK_UNKNOWN');const completed=await batch;
+  expect(completed).toMatchObject({tick:1,run:{status:checkpoint===1?'running':'needs_attention'}});expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(1);expect((await run.snapshot()).tick).toBe(1);if(checkpoint===2)expect(completed.attention).toContainEqual({reason:'ACTION_INTERRUPTED',tick:1});
+ }finally{release.release();await batch;await run.close();}
+});

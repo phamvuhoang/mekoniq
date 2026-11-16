@@ -493,14 +493,14 @@ class Run implements ScenarioRun {
   const step=(a as {kind?:unknown}|null)?.kind==='step';if(step)this.steps++;
   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;
  }
- private async takeControls(){let admitted=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}return admitted;}
- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
+ private async takeControls(){let begun=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,x.beforeExecute,()=>{begun=true;}).then(x.resolve,x.reject);}return begun;}
+ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,onControlBegin?:()=>void):Promise<RunView>{
   if(this.closed)throw new Error('RUN_CLOSED');
   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
   if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
+  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(onControlBegin)await beforeExecute?.();return structuredClone(old.view);}
   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
   const view=await this.view(),status=view.run.status;
@@ -520,6 +520,9 @@ class Run implements ScenarioRun {
   // Admission applies only to a new action, inside the same queue as receipt replay and execution.
   // A lost response can therefore be retried even if providers became unavailable after success.
   await beforeExecute?.();
+  // Receipt replay rechecks authority above, but only a new control interrupts a batch.
+  // Mark before persistence: a begun control with an uncertain outcome must still stop it.
+  onControlBegin?.();
   c.inFlight=true;await this.persist();
   try{
    if(a.kind==='start')c.started=true;
