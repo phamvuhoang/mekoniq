@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ ca550d05ed2bfc7700796cef038169189d6465d8 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 1369dbda348cdec5f73d759edf389048fa72f104 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
