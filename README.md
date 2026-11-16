@@ -158,7 +158,7 @@ cd /path/to/mekoniq-lab-offline
 
 `./start` dùng Node trong gói; không cần Node, pnpm, npm hay tải mạng trên máy nhận. Mở `http://127.0.0.1:4175`, nhập mã ghép nối in trong terminal. Runtime dùng cổng 4176, dữ liệu mặc định ở `runs/` trong gói; có thể chọn `./start --data-dir /path/to/runs`. UI phải giữ cổng 4175 để khớp origin được runtime cho phép. Launcher kiểm manifest/platform, từ chối cổng đang dùng và chỉ dừng tiến trình nó đã tạo.
 
-Gói lịch sử Plan 01 cho macOS/Apple Silicon ở [`releases/mekoniq-lab-plan01-macos-arm64-c1d1ea7.tar.gz`](releases/mekoniq-lab-plan01-macos-arm64-c1d1ea7.tar.gz), kèm [checksum và nguồn runtime](docs/implementation/evidence/digital-twin-v2/plan01-offline-release.json). Giải nén rồi chạy `./start`. Gói này đã qua kiểm khởi động; các hành trình FD01/BV01 đã qua browser với bản offline cùng code/pin. Kiểm không có package manager trong `PATH` đã qua. Cài trên máy mới, ngắt mạng hệ điều hành, cold boot và Linux vẫn cần bằng chứng riêng.
+Gói lịch sử Plan 01 cho macOS/Apple Silicon có [descriptor, checksum và nguồn runtime](docs/implementation/evidence/digital-twin-v2/plan01-offline-release.json). Binary `releases/mekoniq-lab-plan01-macos-arm64-c1d1ea7.tar.gz` không nằm trong checkout Git này. Dùng builder ở trên để tạo một gói mock mới theo pin hiện tại; nếu có đúng gói lịch sử, giải nén rồi chạy `./start`. Gói này đã qua kiểm khởi động; các hành trình FD01/BV01 đã qua browser với bản offline cùng code/pin. Kiểm không có package manager trong `PATH` đã qua. Cài trên máy mới, ngắt mạng hệ điều hành, cold boot và Linux vẫn cần bằng chứng riêng.
 
 ## Đầu vào, khôi phục và báo cáo Twin
 
