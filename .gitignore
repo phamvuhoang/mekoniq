@@ -33,3 +33,6 @@ local.properties
 robotics/install/
 robotics/log/
 .venv-*/
+
+# Raw evidence archives live outside Git (docs/implementation/README.md)
+docs/implementation/evidence/**/raw/*.tar.gz

@@ -79,6 +79,8 @@ Mọi gate của IR-SIM, R1, R1.1 và bảy gate cục bộ R2a đều `tested`;
 
 Ghi R2a: `--release r2a --r11-record <dir> --mock-regression <dir>`, cần Docker cho RT05. Các README ghi rõ định danh, giới hạn, tham số `assumed` và số đo. Mọi thay đổi runtime/schema/tool phải được commit và ghim lại trước khi ghi; sau đó chỉ thêm bằng chứng và cập nhật tài liệu ngoài tool root.
 
+Bằng chứng thô từ nay: archive thô lớn hơn 5 MB không commit vào Git. Lưu ngoài Git tại `robot/evidence-archive/<candidate>/` trên máy ghi, sao lưu theo nơi người dùng chỉ định; trong Git chỉ giữ index ghi đường dẫn tương đối, kích thước và sha256 của từng archive. `.gitignore` bỏ qua `docs/implementation/evidence/**/raw/*.tar.gz`; file đã theo dõi (ví dụ `post-n1-final-recording/raw/`) không bị ảnh hưởng. Archive `final-recording/raw/` cũ đã gỡ khỏi cây, cách lấy lại ở [raw.REMOVED.md](evidence/web-lab-to-physical/final-recording/raw.REMOVED.md).
+
 
 ## Nhánh phát triển R2b hiện tại
 
