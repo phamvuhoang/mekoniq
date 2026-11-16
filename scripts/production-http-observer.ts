@@ -39,7 +39,7 @@ export function observeProductionHTTP(page:Page,data:{responses:Row[];actions:Ro
     if(status!==200||typeof body?.actionId!=='string'||!body.actionId||typeof body.kind!=='string'||receipt?.run?.id!==runId||!Number.isSafeInteger(receipt.tick)||receipt.tick<0||!Number.isSafeInteger(receipt.run.runRevision)||typeof receipt.run.status!=='string')throw Error('ACTION_RECEIPT_INVALID');
     if(!pending.has(request))return;
     const correlation={runId,actionId:body.actionId,tick:receipt.tick,requestStartEpochMs:timing.startTime,responseEndEpochMs:timing.startTime+timing.responseEnd};
-    data.actions.push({...correlation,kind:body.kind,payload:body.payload,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt.run.runRevision,status:receipt.run.status});settle(entry,'completed',undefined,correlation);
+    data.actions.push({...correlation,kind:body.kind,payload:body.payload,expectedRevision:body.expectedRevision,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt.run.runRevision,status:receipt.run.status});settle(entry,'completed',undefined,correlation);
    }else if(request.method()==='POST'&&path.endsWith('/replay')){
     const publication=await response.json(),manifest=publication?.manifest;
     if(status!==201||typeof publication?.exportId!=='string'||!publication.exportId||manifest?.runId!==runId||manifest.documentType!=='web-replay-package'||!Number.isSafeInteger(manifest.horizon?.tick)||manifest.horizon.tick<0)throw Error('REPLAY_PUBLICATION_INVALID');

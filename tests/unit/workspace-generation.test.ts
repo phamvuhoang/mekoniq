@@ -7,6 +7,7 @@ vi.stubGlobal('matchMedia',()=>({matches:false}));
 vi.stubGlobal('document',{getElementById:()=>null,querySelector:()=>null,activeElement:null,addEventListener(){},removeEventListener(){}});
 vi.stubGlobal('location',{origin:'http://127.0.0.1:4175',hostname:'127.0.0.1'});
 import type {RunReport,RunView,TwinHealth,TwinRuntime,ReadinessSnapshot} from '../../src/scenarios/controls';
+import {TwinRuntimeError} from '../../src/scenarios/controls';
 import type {RuntimeTarget} from '../../src/runtime/target';
 import {coffeeReplay,at} from '../support/coffee-replay';
 const {TwinWorkspace}=await import('../../src/ui/workspace');
@@ -131,7 +132,7 @@ test('failed/unknown physical authority immediately discards a retained current-
 
 test('a newer owner-scoped world observation refreshes matching Source context and repaints its displayed horizon',async()=>{
  const {w,h,renders}=setup(),internal=w as unknown as {rt:TwinRuntime;left:boolean;refreshWorld():Promise<void>};const scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1;h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.tick=0;h.view!.simTimeNs='0';internal.left=false;const current={...structuredClone(h.view!),tick:7,simTimeNs:'140000000',run:{...h.view!.run,runRevision:h.view!.run.runRevision+1}};
- internal.rt.worldDisplayScene=async()=>({runId:current.run.id,availability:'available',reason:null,scene});internal.rt.worldDisplay=async()=>({version:1,runId:current.run.id,tick:7,revision:current.run.runRevision,simTimeNs:current.simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',snapshot:{runId:current.run.id,bootId:'one-boot',sceneDigest:scene.sceneDigest,tick:7,simTimeNs:current.simTimeNs,arms:[],robots:[],props:[]} as unknown as import('../../src/shared/navigation2d').Sim3DSnapshotV1});internal.rt.get=async()=>current;
+ internal.rt.worldDisplayScene=async()=>({runId:current.run.id,availability:'available',reason:null,scene});internal.rt.worldDisplay=async()=>({version:1,runId:current.run.id,tick:7,revision:current.run.runRevision,simTimeNs:current.simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',view:current,snapshot:{runId:current.run.id,bootId:'one-boot',sceneDigest:scene.sceneDigest,tick:7,simTimeNs:current.simTimeNs,arms:[],robots:[],props:[]} as unknown as import('../../src/shared/navigation2d').Sim3DSnapshotV1});internal.rt.get=async()=>current;
  const before=renders();await internal.refreshWorld();expect(h.view!.tick).toBe(7);expect(renders()).toBeGreaterThan(before);
 });
 
@@ -165,3 +166,28 @@ test('same-H newer revision expires the retained pair without attaching old geom
 test('an ignored-abort late world response cannot repopulate report replay after its generation reset',async()=>{const {w,h,internal}=await cellBoundary('paused'),late=deferred<import('../../src/scenarios/controls').WorldDisplay>(),drawing=internal.world!,observer=internal as unknown as {worldRun:string;worldDrawing:Omit<import('../../src/twin/world-view').WorldDrawing,'record'>};observer.worldRun=h.view!.run.id;observer.worldDrawing=drawing;internal.rt.worldDisplayScene=async()=>({runId:h.view!.run.id,availability:'available',reason:null,scene:drawing.scene});internal.rt.worldDisplay=()=>late.promise;internal.left=false;const read=internal.refreshWorld(),abort=internal.worldAbort;w.click('twin-replay');expect(abort!.signal.aborted).toBe(true);late.resolve({version:1,runId:h.view!.run.id,tick:7,revision:11,simTimeNs:'140000000',availability:'valid',reason:null,snapshot:drawing.record.snapshot,control:null,controlReason:'NOT_RECORDED_AT_TICK'});await read;await settle();expect(internal.world).toBeNull();expect(internal.worldView).toBeNull();expect(internal.frame().view!.tick).toBe(0);});
 
 test('a Resume selected against retained running geometry sends the current acknowledged revision',async()=>{const {w,h,internal}=await cellBoundary('running');internal.applyView({...h.view!,run:{...h.view!.run,status:'paused',runRevision:12}});const action=vi.fn(async(v:RunView)=>({...v,run:{...v.run,status:'running' as const,runRevision:13}}));internal.rt.action=action;w.click('twin-resume');await vi.waitFor(()=>expect(h.busy).toBe(false));expect(action.mock.calls[0]![0].run.runRevision).toBe(12);expect(internal.world!.sourceRevision).toBe(11);});
+
+test('paired Source world/context is consumed without racing a later independent GET',async()=>{
+ const {h,internal}=await cellBoundary('running'),world=internal.world!,paired={...structuredClone(h.view!),tick:8,simTimeNs:'160000000'};
+ const observer=internal as unknown as {worldRun:string;worldDrawing:Omit<import('../../src/twin/world-view').WorldDrawing,'record'>};observer.worldRun=paired.run.id;observer.worldDrawing=world;
+ internal.rt.worldDisplayScene=async()=>({runId:paired.run.id,availability:'available',reason:null,scene:world.scene});
+ internal.rt.worldDisplay=async()=>({version:1,runId:paired.run.id,revision:paired.run.runRevision,tick:8,simTimeNs:paired.simTimeNs,availability:'valid',reason:null,snapshot:{...world.record.snapshot,tick:8,simTimeNs:paired.simTimeNs},control:null,controlReason:'NOT_RECORDED_AT_TICK',view:paired});
+ const get=vi.fn(async()=>({...paired,tick:9,simTimeNs:'180000000'}));internal.rt.get=get;internal.left=false;await internal.refreshWorld();
+ expect(internal.world!.record.snapshot.tick).toBe(8);expect(internal.worldView!.tick).toBe(8);expect(get).not.toHaveBeenCalled();
+});
+test('cell Pause is admitted while its paced step is held and retains the admitted revision',async()=>{
+ const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};
+ const held=deferred<RunView>(),started=deferred<void>(),calls:{kind:string;revision:number}[]=[],before=structuredClone(h.view!);
+ internal.rt.action=async(v,kind)=>{calls.push({kind,revision:v.run.runRevision});if(kind==='step'){started.resolve();return held.promise;}return {...before,run:{...before.run,status:'paused',runRevision:12}};};
+ w.click('twin-play');await started.promise;w.click('twin-pause');await settle();
+ try{expect(calls).toContainEqual({kind:'pause',revision:11});}finally{held.resolve({...before,run:{...before.run,status:'paused',runRevision:13}});await vi.waitFor(()=>expect(h.busy).toBe(false));}
+ expect(h.view!.run.runRevision).toBe(13);expect(calls.filter(c=>c.kind==='pause')).toHaveLength(1);
+});
+
+for(const code of ['REVISION_CONFLICT','NETWORK_ERROR'])test(`cell priority Pause ${code} preserves definite versus unknown mutation semantics`,async()=>{
+ const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};
+ const held=deferred<RunView>(),started=deferred<void>(),before=structuredClone(h.view!),calls:{kind:string;revision:number;id:string|undefined}[]=[];
+ internal.rt.action=async(v,kind,_payload,id)=>{calls.push({kind,revision:v.run.runRevision,id});if(kind==='step'){started.resolve();return held.promise;}if(calls.filter(c=>c.kind==='pause').length===1)throw new TwinRuntimeError(code,[],code==='REVISION_CONFLICT'?409:0);return {...before,run:{...before.run,status:'paused',runRevision:13}};};
+ w.click('twin-play');await started.promise;w.click('twin-pause');await settle();held.resolve({...before,run:{...before.run,runRevision:12}});await vi.waitFor(()=>expect(h.busy).toBe(false));
+ const pauses=calls.filter(c=>c.kind==='pause');expect(pauses.map(c=>c.revision)).toEqual(code==='REVISION_CONFLICT'?[11,12]:[11]);if(pauses.length===2)expect(pauses[1]!.id).not.toBe(pauses[0]!.id);expect(h.view!.run.status).toBe(code==='REVISION_CONFLICT'?'paused':'running');
+});

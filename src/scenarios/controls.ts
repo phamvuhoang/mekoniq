@@ -98,7 +98,7 @@ export function requestFromLocked(locked:LockedInput):CreateRun {
 }
 export type ActionKind='start'|'pause'|'resume'|'cancel'|'step'|'confirm'|'injectFault'|'reconcile'|'restoreCup';
 export interface EngineeringManifest {schemaVersion:1;projectDigest:string;assemblyDigest:string;sceneDigest:string;profile:string;compilerVersion:string;files:{path:string;sha256:string;sizeBytes:number}[]}
-export interface WorldDisplay {version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
+export interface WorldDisplay {view?:RunView;version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
 export interface TwinRuntime {
  exportReplay?(id:string,signal:AbortSignal):Promise<{reader:import('../reports/replay-package').ReplayReader;release():Promise<void>}>;
  worldDisplay?(id:string,signal?:AbortSignal):Promise<WorldDisplay>;

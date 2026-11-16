@@ -29,7 +29,7 @@ type Pose7={positionM:[number,number,number];quaternionXyzw:[number,number,numbe
 /** Transforms only. `bodies`: an AMR's base origin in the ROS map (z up; z 0 for a planar plant) and its ROS orientation. `arms`: the joints shown and the
  * measured gripper opening. `cups`: the cups drawn where the plant reports them (map frame, cup centre). */
 export interface TwinPoses {arms:Record<string,{jointsRad:number[];gripperOpeningM:number|null}>;bodies:Record<string,Pose7>;cups?:Record<string,Pose7>}
-export interface Twin3d {canvas:HTMLCanvasElement;/** Move into a re-rendered stage and size from it. */attach(host:HTMLElement):void;update(f:TwinFrame,vs:ViewState):void;pose(p:TwinPoses):void;
+export interface Twin3d {canvas:HTMLCanvasElement;/** Move into a re-rendered stage and size from it. */attach(host:HTMLElement):void;update(f:TwinFrame,vs:ViewState,displayPoses?:TwinPoses):void;pose(p:TwinPoses):void;
  /** Camera back to the preset's home framing: its arm cell (homeRegion), else the whole floor. */home():void;/** Frame one object, or the whole scene for null or an object not drawn. */fit(entityId:string|null):void;camera(mode:'overview'|'cell'|'amr'):void;dispose():void}
 const LIME=0xb4f375,NAVY=0x182a33;
 const COLOR:Record<string,number>={footprint:0x9dccff,safety:0xf0b45a,observed:0x5ad1c6};
@@ -337,7 +337,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   userMoved=false;controls.update();render();};
  return {canvas,pose,home,
   attach(next){if(canvas.parentElement!==next)next.replaceChildren(canvas);ro.disconnect();ro.observe(next);resize();},
-  update(f,vs){
+  update(f,vs,displayPoses){
    lf=f;canvas.setAttribute('aria-label',tr('Bản sao 3D. Chọn vật thể từ danh sách.','3Dツイン。物体リストから選択できます。','3D twin view. Use the entity list to select objects.'));put('worldTick',f.world?String(f.world.record.snapshot.tick):'');put('worldQuality',f.world?.quality??(f.world?'valid':''));put('plantCupsDropped',String(droppedPlantCups(f).length));
    const k=sceneKey(f,vs),o=objectKeys(f);
    if(k!==key){key=k;okeys=o;build(f,vs);}
@@ -351,7 +351,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    const w=f.preset.project.world,size=`${w.width}x${w.height} ${f.preset.view??''}`;if(size!==floor){floor=size;home();}
    // objects without a pose of their own (cups, a cylinder arm, machines) move with the frame
    for(const {e} of drawn(f)){const o=objs.get(e.id);if(o&&e.kind!=='amr'&&!o.arm&&!e.plant)o.obj.position.copy(at(e.x,e.y,heightOf(e)));}
-   drawOverlays(f,vs);pose(posesOf(f));
+   drawOverlays(f,vs);pose(displayPoses??posesOf(f));
   },
   camera(mode){explicitCamera=mode;if(!lf)return;if(mode==='overview'){const original=lf;lf={...lf,preset:{...lf.preset,view:undefined}};home();lf=original;}else if(mode==='cell'){const original=lf;lf={...lf,preset:{...lf.preset,view:'arm_cell'}};home();lf=original;}else this.fit(lf.preset.project.entities.find(e=>e.kind==='amr')?.id??null);},
   fit(id){
