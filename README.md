@@ -12,6 +12,49 @@ Nhánh `codex/web-lab-to-physical` giữ UI và runtime pin của B00–B09. B00
 
 Image R2b vẫn `null` (chưa build), WEB05 `not_run` theo R76 vì Docker không phản hồi; B00R2 chỉ kiểm bản ghi đã lưu và không triển khai hay chạy lại cloud/native/browser/Docker. Kết quả R2a không thay cho qualification R2b hoặc nghiệm thu con người (`accepted:false`, `not_calibrated`). Source giữ mission/journal/custody; Lab chỉ mô phỏng/replay, không có đường Lab → phần cứng.
 
+<a id="shared-cell-final-recording"></a>
+
+## Shared cell, replay và bằng chứng ngày16/11/2026
+
+Bản ghi đo dùng Source `981e234` / Lab `d4c3032`, runtime `8eb111…`, build `2c1e9f30…`; commit công bố tài liệu sau đó là identity khác. [Trạng thái cuối](../source/docs/implementation/web-lab-to-physical/final-recording-status.md), [tái hiện đúng tuple](../source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md) và [giới hạn từng profile](../source/docs/operations/native-profile-case-matrix.md) giữ kết quả thật và mọi lần thất bại. Đây là mô phỏng phần mềm, `accepted:false`/`not_calibrated`, chưa nghiệm thu Linux/native/phần cứng hay ra mắt công khai.
+
+### Một world tay máy + AMR + hai cốc
+
+Cần Node24.22.2/pnpm10.32.1, runtime đã import đúng pin và các môi trường Python3.11 đúng lock trong Source sibling (`.venv-mujoco`, `.venv-irsim`). Launcher kiểm dependency/closure/port; không tự cài, tải, đổi mô hình hay chuyển sang backend khác.
+
+```sh
+pnpm check:source
+pnpm lab:mujoco -- --mujoco-mobile
+```
+
+Mở `http://127.0.0.1:4175`, vào Twin, ghép nối bằng mã một lần in ở terminal. Trong Scenario, chọn **Coffee delivery · simulated physical cell** (`mujoco-cell`), đợi readiness rồi tạo run. Quan sát tick 0 và tốc độ mục tiêu1×. Auto-run/Play tiến đồng hồ Source; Pause/Resume theo view đã biết. Chọn Overview/Cell/FollowAMR để đổi camera. Ảnh chỉ chứng minh phần đang nhìn thấy; custody cần mẫu/report Source tương ứng.
+
+Trong Setup, chọn Coffee delivery, Cup falls after an impact hoặc Dock drift after an impact rồi tạo run mới. Đổi thí nghiệm không sửa run cũ. Nguồn giữ journal/custody, kết quả unknown/needs_attention không được tự resend hoặc respawn để coi thành công. Reset/new trial có runId mới. Không có đường Lab→robot thật.
+
+Lựa chọn1× là mục tiêu gửi bước; số measured mới là tốc độ quan sát. Lượt production 185 giây đạt0.47188883×, nhịp vẽ thực p95 300.2 ms so với mục tiêu33ms, worker IPC4.837ms so với15ms và pause tới receipt cuối2797.283ms so với500ms. UI acknowledgement3322.858ms là lượng khác. Public capture reader còn từ chối `CAPTURE_ACTIVE_DRAWING_DURATION`; không quảng bá live realtime/1×. Lượt ghi này phục vụ1cốc, chưa chứng minh một mission live hai cốc hoàn tất. Ba nominal headless có served 2 là scope Source khác.
+
+Lượt launcher trên checkout isolated đã khởi động, health 200 và xuất package H7, rồi thất bại khi mở trang replay thứ hai. Diagnostic giữ riêng quan sát Vite dependency path. Lượt full stock sau đó trên cặp active sạch đã pass 1 case browser với assertions giữ nguyên và cleanup mã 0. Toàn bộ lỗi/setup cũ vẫn được giữ theo đúng layout. Same-build production browser có 1 case pass, strict replay/story có 5 case pass ở scope riêng; các mục tiêu hiệu năng production vẫn thất bại.
+
+### Xem lại đúng dữ liệu đã ghi
+
+Bấm **Export replay**, giữ nguyên ZIP, giải nén vào thư mục mới rồi mở **Explore recordings** (`/#replay`). Mở Replay files, nhập nguyên thư mục đã giải nén và kiểm run/horizon. Kéo cursor từng tick; thay camera và VI/JA/EN. Trang này được chọn trước runtime client và không được gửi`/lab`/EventSource/WebSocket. Các kiểm từ chối file thiếu/sai/hash hỏng, keyboard/reduced-motion/2D, viewport390/1024/1440 và axe được ghi riêng trong production replay.
+
+Replay trong tab Report chỉ có dữ liệu report. Khi report không ghi world pose chính xác, UI hiện`WORLD_NOT_RECORDED_IN_REPORT`; không dùng pose live hoặc suy diễn vật lý để lấp chỗ thiếu. Package replay mới có world/physics samples đã hash. ZIP dài đo tớiH4515/prefixCovered:true/streamFinalized:false, khác view pausedH4520; không kéo horizon để ép khớp. Fault/KPI cuối không trở thành số đo ở cursor trước đó.
+
+Có thể chỉ phục vụ production UI để xem bản ghi, không mở runtime:
+
+```sh
+pnpm build
+pnpm exec vite preview --host 127.0.0.1 --port 4175 --strictPort
+# Mở trực tiếp http://127.0.0.1:4175/#replay
+```
+
+Các production checks thực dùng cùng Vite preview/config qua API sở hữu riêng; lệnh CLI trên đã kiểm các cờ qua `vite preview --help`, còn workflow browser thực dùng preview API. First-load strict replay được kiểm tự động trên Chromium 157, không là cold-boot/mất mạng hệ điều hành/máy mới hay mọi trình duyệt đã qualified.
+
+### Gói offline và mock
+
+`node scripts/build-offline.mjs --out <new-dir>` và `./start` là gói **offline mock** có Node/UI/runtime/schema và license; không đóng gói hay qualification một host MuJoCo/ROS/LinuxCNC. Complete current mock đã chạy builder và ba offline journeys; producer xoá gói tạm trong finally nên bằng chứng giữ log/rawbrowser/ảnh, không tuyên bố còn archive gói tạm. Replay package là đường chỉ đọc dữ liệu đã ghi; chạy physics mới vẫn cần môi trường worker đúng pin. Xem phần gói offline bên dưới cho lệnh và giới hạn cùng OS/ISA.
+
 ## Chạy giao diện
 
 Dùng **Node.js 24** và **pnpm 10.32.1**; phiên bản Node nằm trong `.node-version`/`.nvmrc`.
@@ -21,7 +64,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Mở **http://127.0.0.1:4175**. Thiết kế, mặt bằng, lưu IndexedDB và xuất dự thảo dùng được khi chưa mở runtime. `pnpm build` tạo website tĩnh trong `dist/`. Trình xem 3D tải khi cần; điện thoại mặc định dùng 2D. Catalog là giả định thiết kế, giá còn thiếu hiển thị rõ; preset Valetudo không tự nhận thông số cơ khí chưa đo.
+Mở **http://127.0.0.1:4175**. Thiết kế, mặt bằng, lưu IndexedDB và xuất dự thảo dùng được khi chưa mở runtime. `pnpm build ` tạo website tĩnh trong `dist/`. Trình xem 3D tải khi cần; điện thoại mặc định dùng 2D. Catalog là giả định thiết kế, giá còn thiếu hiển thị rõ; preset Valetudo không tự nhận thông số cơ khí chưa đo.
 
 ## Chạy digital twin mock bằng một lệnh
 
@@ -52,7 +95,7 @@ Launcher không tự tải hay cài gì khi khởi động, không mở bản m�
 | `DIRTY_SOURCE_ARTIFACT` | Artifact build từ source có thay đổi chưa commit; bị từ chối. Export lại từ source sạch. |
 | `RUNTIME_PROTOCOL_V2_REQUIRED` | Lock đang trỏ artifact chỉ có protocol v1 (S01). Import artifact v2. |
 | `DEPENDENCIES_NOT_INSTALLED` | Chạy `pnpm install --frozen-lockfile` một lần. |
-| `PORT_IN_USE:4175/4176` | Có tiến trình khác giữ cổng (ví dụ `pnpm dev`/`pnpm runtime` đang chạy). Tự dừng tiến trình đó; launcher không dừng giúp. Kiểm tra: `lsof -nP -iTCP:4176 -sTCP:LISTEN`. |
+| `PORT_IN_USE:4175/4176` | Có tiến trình khác giữ cổng (ví dụ `pnpm dev`/`pnpm runtime ` đang chạy). Tự dừng tiến trình đó; launcher không dừng giúp. Kiểm tra: `lsof -nP -iTCP:4176 -sTCP:LISTEN`. |
 | `BACKEND_UNAVAILABLE:<id>` / `NON_MOCK_BACKEND_ENABLED:<id>` | Runtime không bật đủ backend mock hoặc bật backend ngoài danh sách mock; launcher dừng runtime vừa mở. |
 | `RUNTIME_IDENTITY_MISMATCH` | Runtime đang chạy không khớp commit/schema trong lock. |
 
@@ -168,7 +211,7 @@ node scripts/import-runtime.mjs /tmp/mekoniq-source-runtime-artifact
 pnpm check:source
 ```
 
-Importer là một giao dịch: kiểm metadata, protocol major (Lab hỗ trợ 1 và 2; major lạ bị từ chối `UNSUPPORTED_PROTOCOL`), SHA-256 runtime, băm lại các schema hợp đồng đi kèm so với `schemaHash`, chép vào `.runtime/<sha256>/` qua thư mục staging rồi mới đổi lock bằng một lần rename. Lỗi ở bất kỳ bước nào giữ nguyên lock và artifact cũ. Import lại cùng một SHA thì giữ nguyên thư mục đã kiểm hash. Bản ghi rollback chỉ được ghi (nguyên tử) sau khi lock mới đã thay xong. Importer từ chối artifact build từ source bẩn. Quay lại pin trước: `node scripts/import-runtime.mjs --rollback` (artifact cũ vẫn nằm trong `.runtime/`). Sau mỗi lần đổi lock, chạy `pnpm test`, `pnpm build` và `pnpm test:runtime-e2e`. `pnpm check:source` kiểm tính toàn vẹn artifact đã pin, không kiểm đó có phải HEAD mới nhất hay không. Runtime đóng gói chạy độc lập, không đọc source đang được chỉnh sửa ở bên cạnh. Xem thêm [README runtime source](../source/packages/lab-runtime/README.md) và [bằng chứng cập nhật W11](docs/implementation/evidence/2026-11-04-source-w11.md).
+Importer là một giao dịch: kiểm metadata, protocol major (Lab hỗ trợ 1 và 2; major lạ bị từ chối `UNSUPPORTED_PROTOCOL`), SHA-256 runtime, băm lại các schema hợp đồng đi kèm so với `schemaHash`, chép vào `.runtime/<sha256>/` qua thư mục staging rồi mới đổi lock bằng một lần rename. Lỗi ở bất kỳ bước nào giữ nguyên lock và artifact cũ. Import lại cùng một SHA thì giữ nguyên thư mục đã kiểm hash. Bản ghi rollback chỉ được ghi (nguyên tử) sau khi lock mới đã thay xong. Importer từ chối artifact build từ source bẩn. Quay lại pin trước: `node scripts/import-runtime.mjs --rollback` (artifact cũ vẫn nằm trong `.runtime/`). Sau mỗi lần đổi lock, chạy `pnpm test`, `pnpm build ` và `pnpm test:runtime-e2e`. `pnpm check:source` kiểm tính toàn vẹn artifact đã pin, không kiểm đó có phải HEAD mới nhất hay không. Runtime đóng gói chạy độc lập, không đọc source đang được chỉnh sửa ở bên cạnh. Xem thêm [README runtime source](../source/packages/lab-runtime/README.md) và [bằng chứng cập nhật W11](docs/implementation/evidence/2026-11-04-source-w11.md).
 
 ## Kiểm thử
 
@@ -195,7 +238,7 @@ Code W00–W11 trong source không tự trở thành scenario hoặc backend Lab
 
 ## Tài liệu
 
-- **[Đề xuất LinkForge + IR-SIM — 2026-11-08](docs/plans/2026-11-08-linkforge-irsim.md)**: nghiên cứu, spec và plan tích hợp model validation/2D navigation trên Mac. Chưa triển khai provider; không thay trạng thái R-MOCK, native hoặc hardware.
+- **[Đề xuất LinkForge + IR-SIM — 2026-11-08](docs/plans/2026-11-08-linkforge-irsim.md)**: nghiên cứu, spec và plan tích hợp model validation/2D navigation trên Mac. Đề xuất lịch sử; provider IR-SIM/LinkForge và các bản ghi phần mềm hiện có được nêu trong [trạng thái cuối](../source/docs/implementation/web-lab-to-physical/final-recording-status.md). R-MOCK, native và hardware vẫn có gate nghiệm thu riêng.
 - **[Physical Robot Lab — lắp ráp và mô phỏng vật lý](docs/specs/2026-11-06-physical-robot-lab/README.md)**: đã có contracts/catalog, resolver/compiler, bundle gateway, trang Lắp ráp, lưu/nhập/xuất archive và đánh giá bằng chứng. Runtime engineering bật bằng các cờ opt-in; compile preview không phải một lần chạy vật lý. Xem [kế hoạch triển khai](docs/plans/2026-11-06-physical-robot-lab/README.md) và [bằng chứng, giới hạn hiện tại](docs/implementation/evidence/physical-robot-lab/README.md). Linux/Gazebo/MoveIt, G1–G3 và nghiệm thu phần cứng vẫn chưa hoàn thành.
 - [Remediation Plan 01 và trạng thái các gate](docs/reviews/2026-11-05-plan-01-remediation.md).
 - [Tương thích runtime và giới hạn bằng chứng](docs/simulation-compatibility.md); [record pin/hash máy đọc](config/simulation-compatibility.json).
