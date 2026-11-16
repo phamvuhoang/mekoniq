@@ -1,0 +1,36 @@
+node:internal/child_process:1191
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+
+<ref *1> Error: spawnSync /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python ENOENT
+    at Object.spawnSync (node:internal/child_process:1191:20)
+    at spawnSync (node:child_process:929:24)
+    at execFileSync (node:child_process:972:15)
+    at licenseInventory (file:///private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/scripts/portable-licenses.mjs:25:29)
+    at async file:///private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/scripts/portable-licenses.mjs:33:71 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'spawnSync /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python',
+  path: '/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python',
+  spawnargs: [
+    '-I',
+    '-B',
+    '-c',
+    'import json,importlib.metadata as m\n' +
+      'r={}\n' +
+      'for d in m.distributions():\n' +
+      " md=d.metadata;c=[x for x in (md.get_all('Classifier') or []) if x.startswith('License ::')]\n" +
+      " e=md.get('License-Expression');l=(md.get('License') or '').strip()\n" +
+      " r[md['Name'].lower().replace('_','-').replace('.','-')]={'version':d.version,'license':e or (l if l and len(l)<=120 and '\\n' not in l else '') or (c[0].split('::')[-1].strip() if c else ''),'source':'License-Expression' if e else 'License' if l and len(l)<=120 and '\\n' not in l else 'Classifier' if c else 'none'}\n" +
+      'print(json.dumps(r))'
+  ],
+  error: [Circular *1],
+  status: null,
+  signal: null,
+  output: null,
+  pid: 0,
+  stdout: undefined,
+  stderr: undefined
+}
+
+Node.js v24.22.2

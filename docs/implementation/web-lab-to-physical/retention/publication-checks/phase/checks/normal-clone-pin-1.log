@@ -1,0 +1,29 @@
+node:fs:797
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: EISDIR: illegal operation on a directory, read
+    at Object.readSync (node:fs:797:18)
+    at tryReadSync (node:fs:426:20)
+    at readFileSync (node:fs:529:19)
+    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check.mjs:10:320
+    at Array.map (<anonymous>)
+    at state (file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check.mjs:10:266)
+    at file:///Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check.mjs:11:14
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  errno: -21,
+  code: 'EISDIR',
+  syscall: 'read'
+}
+
+Node.js v24.22.2
+Traceback (most recent call last):
+  File "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-normal-publication-pin.py", line 9, in <module>
+    installed=Path(paths['lab'])/'.runtime'/manifest['artifactSha256'];run('normal-clone-import-pin',workspace/'lab',['node','scripts/import-runtime.mjs',installed]);assert sha(workspace/'lab/config/source-runtime.lock.json')==sha(Path(paths['lab'])/'config/source-runtime.lock.json')
+                                                                       ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-normal-publication-pin.py", line 8, in run
+    r=subprocess.call([sys.executable,str(b/'run.py'),name,str(cwd),'perl','-e','alarm 300; exec @ARGV',*map(str,args)]);assert r==0,(name,r)
+                                                                                                                                ^^^^
+AssertionError: ('normal-clone-import-pin', 1)

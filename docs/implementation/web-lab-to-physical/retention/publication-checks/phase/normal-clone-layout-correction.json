@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-16T02:04:38.178145+00:00",
+  "originalFailure": "normal-clone-pin-1 own1; inner wrapper failed before import, no import receipt/command admission",
+  "retentionFailure": "Two small clearly marked public derivative members had original leaf names under distinct derivative paths. Excluded originals are bound by four exact hashes; v3 checks those hashes and private-owner filename rather than banning safe derivative basenames. Archive bytes unchanged.",
+  "boundary": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/node_modules",
+      "formerLink": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules",
+      "correction": "Exact known owned symlink only unlinked; replaced by own real ignored directory with per-entry links to same frozen-lock dependencies. No dependency installation or original directory change."
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab/node_modules",
+      "formerLink": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules",
+      "correction": "Exact known owned symlink only unlinked; replaced by own real ignored directory with per-entry links to same frozen-lock dependencies. No dependency installation or original directory change."
+    }
+  ]
+}

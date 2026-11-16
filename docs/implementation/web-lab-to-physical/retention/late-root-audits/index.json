@@ -1,5 +1,5 @@
 {
-  "scope": "Exact late root audits created after frozen metadata archive/readable initial snapshot; not recursively part of their own input snapshot. Initial118 archive audit remains in readable SDD unchanged.",
+  "scope": "Exact direct late root audits created after the frozen metadata archive/initial readable snapshot; earlier three-audit index remains beside this current index. Exact-case clone audit observes Source838/Labbfde and all28 maintained documents/270 local targets.",
   "files": [
     {
       "original": ".superpowers/sdd/README/root-final-public-archive-audit-complete121.json",
@@ -18,6 +18,12 @@
       "path": "late-root-audits/root-final-readable-retention-audit.json",
       "bytes": 2220,
       "sha256": "39a43eb6051b39e307063e40d5f800702493cd4ce014b229b02ab0b6c575b529"
+    },
+    {
+      "original": ".superpowers/sdd/README/root-normal-clone-link-case-audit.json",
+      "path": "late-root-audits/root-normal-clone-link-case-audit.json",
+      "bytes": 62570,
+      "sha256": "13a2f25fcf6880b17d5f08ccd94702f623bce83400f933e7c39a3a0c536ca9f5"
     }
   ]
 }

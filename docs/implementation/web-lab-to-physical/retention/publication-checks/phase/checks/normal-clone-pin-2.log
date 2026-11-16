@@ -1,0 +1,50 @@
+Installed source 981e234b1a0da8c72d220445daaf780b3bf65ae4, artifact 8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1, protocol 1/2. Previous pin kept in .runtime/rollback.lock.json.
+
+> mekoniq-robot-lab@0.1.0 check:source /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab
+> node scripts/check-source.mjs
+
+Verified source 981e234b1a0da8c72d220445daaf780b3bf65ae4; schema 0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5; protocol 1/2; Node 24
+Engineering contracts match source.
+node:internal/child_process:1191
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+
+<ref *1> Error: spawnSync /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python ENOENT
+    at Object.spawnSync (node:internal/child_process:1191:20)
+    at spawnSync (node:child_process:929:24)
+    at execFileSync (node:child_process:972:15)
+    at licenseInventory (file:///private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/scripts/portable-licenses.mjs:25:29)
+    at async file:///private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/scripts/portable-licenses.mjs:33:71 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'spawnSync /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python',
+  path: '/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source/.venv-irsim/bin/python',
+  spawnargs: [
+    '-I',
+    '-B',
+    '-c',
+    'import json,importlib.metadata as m\n' +
+      'r={}\n' +
+      'for d in m.distributions():\n' +
+      " md=d.metadata;c=[x for x in (md.get_all('Classifier') or []) if x.startswith('License ::')]\n" +
+      " e=md.get('License-Expression');l=(md.get('License') or '').strip()\n" +
+      " r[md['Name'].lower().replace('_','-').replace('.','-')]={'version':d.version,'license':e or (l if l and len(l)<=120 and '\\n' not in l else '') or (c[0].split('::')[-1].strip() if c else ''),'source':'License-Expression' if e else 'License' if l and len(l)<=120 and '\\n' not in l else 'Classifier' if c else 'none'}\n" +
+      'print(json.dumps(r))'
+  ],
+  error: [Circular *1],
+  status: null,
+  signal: null,
+  output: null,
+  pid: 0,
+  stdout: undefined,
+  stderr: undefined
+}
+
+Node.js v24.22.2
+Traceback (most recent call last):
+  File "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-normal-publication-pin-v2.py", line 12, in <module>
+    run('normal-clone-v2-portable-licenses',workspace/'source',['node','scripts/portable-licenses.mjs','--check'])
+  File "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-normal-publication-pin-v2.py", line 8, in run
+    r=subprocess.call([sys.executable,str(b/'run.py'),name,str(cwd),'perl','-e','alarm 300; exec @ARGV',*map(str,args)]);assert r==0,(name,r)
+                                                                                                                                ^^^^
+AssertionError: ('normal-clone-v2-portable-licenses', 1)

@@ -1,0 +1,905 @@
+{
+  "at": "2026-11-16T02:02:54.540493+00:00",
+  "scope": {
+    "scope": "Every owned exact Git URL found across all staged Markdown, including exact retained historical reports, plus all exact commits in the published giant-patch/envelope reproduction descriptors and explicit historical L01 subject/checker. Relative links in immutable historical reports are provenance and audited separately from maintained navigation.",
+    "refs": [
+      {
+        "repository": "source",
+        "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 13,
+            "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          },
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 14,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+          },
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 checker"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+            "line": 16,
+            "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+          }
+        ]
+      },
+      {
+        "repository": "web",
+        "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+        "origins": [
+          {
+            "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+            "line": 15,
+            "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+            "field": "base"
+          },
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+            "field": "frozenHead"
+          },
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+        "origins": [
+          {
+            "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+            "field": "largeUpstreamPatchExclusions.argv"
+          }
+        ]
+      },
+      {
+        "repository": "source",
+        "ref": "4f893ac",
+        "origins": [
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 subject"
+          }
+        ]
+      },
+      {
+        "repository": "lab",
+        "ref": "a6ec316",
+        "origins": [
+          {
+            "descriptor": "reproduce-final-recording.md",
+            "role": "L01 subject"
+          }
+        ]
+      }
+    ]
+  },
+  "scopeSha256": "eceb4479ee7cabc7cafb21f3223e0d5a1e34df0f4c0d7553e2bc8ac9443d1b3f",
+  "records": [
+    {
+      "repository": "source",
+      "ref": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 13,
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ],
+      "commit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "981e234b1a0da8c72d220445daaf780b3bf65ae4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/981e234b1a0da8c72d220445daaf780b3bf65ae4"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "981e234b1a0da8c72d220445daaf780b3bf65ae4:scripts/native-checker-bootstrap.mjs"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/blob/981e234b1a0da8c72d220445daaf780b3bf65ae4/scripts/native-checker-bootstrap.mjs"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 14,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ],
+      "commit": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+      "shippedHead": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "affce0caa0d2bcdb9e5b1314ebe262a97916004a\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6"
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6:scripts/measure-cell-production.ts"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/blob/d4c30329b5abe104a94e1ea050f7e4bee7fa0ec6/scripts/measure-cell-production.ts"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        },
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 checker"
+        }
+      ],
+      "commit": "874d05aedfbf573496994fd73016f19ef19e6932",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "874d05aedfbf573496994fd73016f19ef19e6932^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "874d05aedfbf573496994fd73016f19ef19e6932\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "874d05aedfbf573496994fd73016f19ef19e6932",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "874d05aedfbf573496994fd73016f19ef19e6932"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/874d05aedfbf573496994fd73016f19ef19e6932"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ],
+      "commit": "11d25b47a18adafb88ac21adc249499109996bc5",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "11d25b47a18adafb88ac21adc249499109996bc5^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "11d25b47a18adafb88ac21adc249499109996bc5\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "11d25b47a18adafb88ac21adc249499109996bc5",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "11d25b47a18adafb88ac21adc249499109996bc5"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq/tree/11d25b47a18adafb88ac21adc249499109996bc5"
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+          "line": 16,
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ],
+      "commit": "a7449541e118d01f65af0ad1466e0c963a173f3c",
+      "shippedHead": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "a7449541e118d01f65af0ad1466e0c963a173f3c\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "affce0caa0d2bcdb9e5b1314ebe262a97916004a\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "a7449541e118d01f65af0ad1466e0c963a173f3c"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-lab/tree/a7449541e118d01f65af0ad1466e0c963a173f3c"
+        }
+      ]
+    },
+    {
+      "repository": "web",
+      "ref": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "origins": [
+        {
+          "path": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/checkpoint-final-2bd66e6-active.md",
+          "line": 15,
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ],
+      "commit": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "shippedHead": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web",
+          "exitCode": 0,
+          "stdout": "e8d763906bab6a010c3b018813c60f2d043cfcf4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web",
+          "exitCode": 0,
+          "stdout": "e8d763906bab6a010c3b018813c60f2d043cfcf4\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "cat-file",
+            "-e",
+            "e8d763906bab6a010c3b018813c60f2d043cfcf4:index.html"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": "",
+          "url": "https://github.com/phamvuhoang/mekoniq-web/blob/e8d763906bab6a010c3b018813c60f2d043cfcf4/index.html"
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "base"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "3c917ceee6a92c6b087f0bd37baaa4e0740d44a8",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/giant-review-envelope-descriptor.json",
+          "field": "frozenHead"
+        },
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "d0f30749c0ddb474f0844c68be63a6f0fa4b1933^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "d0f30749c0ddb474f0844c68be63a6f0fa4b1933\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "d0f30749c0ddb474f0844c68be63a6f0fa4b1933",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "538ba452c81005010a479f337aab0edbad6e5159",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "538ba452c81005010a479f337aab0edbad6e5159",
+      "shippedHead": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "538ba452c81005010a479f337aab0edbad6e5159^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "538ba452c81005010a479f337aab0edbad6e5159\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "affce0caa0d2bcdb9e5b1314ebe262a97916004a\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "538ba452c81005010a479f337aab0edbad6e5159",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "origins": [
+        {
+          "descriptor": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/earlier-sdd-archive-index.json",
+          "field": "largeUpstreamPatchExclusions.argv"
+        }
+      ],
+      "commit": "176bf348b6a839037473cc6d87413093ed17ff54",
+      "shippedHead": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "176bf348b6a839037473cc6d87413093ed17ff54^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "176bf348b6a839037473cc6d87413093ed17ff54\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "affce0caa0d2bcdb9e5b1314ebe262a97916004a\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "176bf348b6a839037473cc6d87413093ed17ff54",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "source",
+      "ref": "4f893ac",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ],
+      "commit": "4f893ac6fb75dff414a3ee42a726defb7935c734",
+      "shippedHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "4f893ac^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "4f893ac6fb75dff414a3ee42a726defb7935c734\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "4f893ac",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "repository": "lab",
+      "ref": "a6ec316",
+      "origins": [
+        {
+          "descriptor": "reproduce-final-recording.md",
+          "role": "L01 subject"
+        }
+      ],
+      "commit": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00",
+      "shippedHead": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+      "reachable": true,
+      "operations": [
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "--verify",
+            "a6ec316^{commit}"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "a6ec316fb3ac2f71afff25e6fa77e931f4439e00\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "rev-parse",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "affce0caa0d2bcdb9e5b1314ebe262a97916004a\n",
+          "stderr": ""
+        },
+        {
+          "argv": [
+            "git",
+            "merge-base",
+            "--is-ancestor",
+            "a6ec316",
+            "HEAD"
+          ],
+          "cwd": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab",
+          "exitCode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "remoteAvailability": "Not checked; ordinary local clone graph reachability does not establish remote advertisement or permissions."
+}

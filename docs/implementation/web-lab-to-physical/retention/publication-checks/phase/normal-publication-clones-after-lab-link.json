@@ -1,0 +1,102 @@
+{
+  "at": "2026-11-16T02:02:32.241436+00:00",
+  "workspace": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni",
+  "heads": {
+    "source": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+    "lab": "bfde031f552c4909941beae2df8a51e3af73c23d",
+    "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+    "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+  },
+  "operations": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "--single-branch",
+        "--branch",
+        "codex/web-lab-to-physical",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source"
+      ],
+      "startedAt": "2026-11-16T02:01:02.816354+00:00",
+      "finishedAt": "2026-11-16T02:02:15.707349+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source'...\nUpdating files:  34% (2807/8050)\nUpdating files:  35% (2818/8050)\nUpdating files:  36% (2898/8050)\nUpdating files:  37% (2979/8050)\nUpdating files:  38% (3059/8050)\nUpdating files:  39% (3140/8050)\nUpdating files:  40% (3220/8050)\nUpdating files:  41% (3301/8050)\nUpdating files:  42% (3381/8050)\nUpdating files:  43% (3462/8050)\nUpdating files:  44% (3542/8050)\nUpdating files:  45% (3623/8050)\nUpdating files:  46% (3703/8050)\nUpdating files:  47% (3784/8050)\nUpdating files:  48% (3864/8050)\nUpdating files:  49% (3945/8050)\nUpdating files:  50% (4025/8050)\nUpdating files:  51% (4106/8050)\nUpdating files:  52% (4186/8050)\nUpdating files:  53% (4267/8050)\nUpdating files:  54% (4347/8050)\nUpdating files:  55% (4428/8050)\nUpdating files:  56% (4508/8050)\nUpdating files:  57% (4589/8050)\nUpdating files:  58% (4669/8050)\nUpdating files:  59% (4750/8050)\nUpdating files:  60% (4830/8050)\nUpdating files:  61% (4911/8050)\nUpdating files:  62% (4991/8050)\nUpdating files:  63% (5072/8050)\nUpdating files:  64% (5152/8050)\nUpdating files:  65% (5233/8050)\nUpdating files:  66% (5313/8050)\nUpdating files:  67% (5394/8050)\nUpdating files:  67% (5457/8050)\nUpdating files:  68% (5474/8050)\nUpdating files:  68% (5475/8050)\nUpdating files:  68% (5507/8050)\nUpdating files:  69% (5555/8050)\nUpdating files:  69% (5559/8050)\nUpdating files:  69% (5603/8050)\nUpdating files:  69% (5615/8050)\nUpdating files:  70% (5635/8050)\nUpdating files:  70% (5641/8050)\nUpdating files:  70% (5647/8050)\nUpdating files:  71% (5716/8050)\nUpdating files:  72% (5796/8050)\nUpdating files:  73% (5877/8050)\nUpdating files:  74% (5957/8050)\nUpdating files:  75% (6038/8050)\nUpdating files:  76% (6118/8050)\nUpdating files:  77% (6199/8050)\nUpdating files:  78% (6279/8050)\nUpdating files:  78% (6336/8050)\nUpdating files:  79% (6360/8050)\nUpdating files:  80% (6440/8050)\nUpdating files:  81% (6521/8050)\nUpdating files:  82% (6601/8050)\nUpdating files:  83% (6682/8050)\nUpdating files:  84% (6762/8050)\nUpdating files:  85% (6843/8050)\nUpdating files:  86% (6923/8050)\nUpdating files:  87% (7004/8050)\nUpdating files:  88% (7084/8050)\nUpdating files:  89% (7165/8050)\nUpdating files:  90% (7245/8050)\nUpdating files:  91% (7326/8050)\nUpdating files:  92% (7406/8050)\nUpdating files:  93% (7487/8050)\nUpdating files:  94% (7567/8050)\nUpdating files:  95% (7648/8050)\nUpdating files:  96% (7728/8050)\nUpdating files:  97% (7809/8050)\nUpdating files:  98% (7889/8050)\nUpdating files:  99% (7970/8050)\nUpdating files: 100% (8050/8050)\nUpdating files: 100% (8050/8050), done.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "--single-branch",
+        "--branch",
+        "codex/web-lab-to-physical",
+        "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab"
+      ],
+      "startedAt": "2026-11-16T02:02:15.732841+00:00",
+      "finishedAt": "2026-11-16T02:02:31.156707+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/lab'...\nUpdating files:  51% (1121/2187)\nUpdating files:  52% (1138/2187)\nUpdating files:  53% (1160/2187)\nUpdating files:  54% (1181/2187)\nUpdating files:  55% (1203/2187)\nUpdating files:  56% (1225/2187)\nUpdating files:  57% (1247/2187)\nUpdating files:  58% (1269/2187)\nUpdating files:  59% (1291/2187)\nUpdating files:  60% (1313/2187)\nUpdating files:  61% (1335/2187)\nUpdating files:  62% (1356/2187)\nUpdating files:  63% (1378/2187)\nUpdating files:  64% (1400/2187)\nUpdating files:  65% (1422/2187)\nUpdating files:  66% (1444/2187)\nUpdating files:  67% (1466/2187)\nUpdating files:  68% (1488/2187)\nUpdating files:  69% (1510/2187)\nUpdating files:  70% (1531/2187)\nUpdating files:  71% (1553/2187)\nUpdating files:  72% (1575/2187)\nUpdating files:  73% (1597/2187)\nUpdating files:  74% (1619/2187)\nUpdating files:  75% (1641/2187)\nUpdating files:  76% (1663/2187)\nUpdating files:  77% (1684/2187)\nUpdating files:  78% (1706/2187)\nUpdating files:  79% (1728/2187)\nUpdating files:  80% (1750/2187)\nUpdating files:  81% (1772/2187)\nUpdating files:  82% (1794/2187)\nUpdating files:  83% (1816/2187)\nUpdating files:  83% (1837/2187)\nUpdating files:  84% (1838/2187)\nUpdating files:  85% (1859/2187)\nUpdating files:  86% (1881/2187)\nUpdating files:  87% (1903/2187)\nUpdating files:  88% (1925/2187)\nUpdating files:  89% (1947/2187)\nUpdating files:  90% (1969/2187)\nUpdating files:  91% (1991/2187)\nUpdating files:  92% (2013/2187)\nUpdating files:  93% (2034/2187)\nUpdating files:  94% (2056/2187)\nUpdating files:  95% (2078/2187)\nUpdating files:  96% (2100/2187)\nUpdating files:  97% (2122/2187)\nUpdating files:  98% (2144/2187)\nUpdating files:  99% (2166/2187)\nUpdating files: 100% (2187/2187)\nUpdating files: 100% (2187/2187), done.\n"
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "/Users/hoangpham/source/prv/robot/web",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web"
+      ],
+      "startedAt": "2026-11-16T02:02:31.190911+00:00",
+      "finishedAt": "2026-11-16T02:02:31.399224+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/web'...\n"
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "/Users/hoangpham/source/prv/robot/trial",
+        "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/trial"
+      ],
+      "startedAt": "2026-11-16T02:02:31.413766+00:00",
+      "finishedAt": "2026-11-16T02:02:32.227077+00:00",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Cloning into '/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/trial'...\n"
+    }
+  ],
+  "scope": "Actual ordinary sibling clones via local upload-pack (--no-local), no shared alternates, Source/Lab single shipped branch; web/trial readonly source clones, no origin mutation or remote availability claim.",
+  "refreshOperations": [
+    {
+      "argv": [
+        "git",
+        "fetch",
+        "--quiet",
+        "origin",
+        "codex/web-lab-to-physical"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "bfde031f552c4909941beae2df8a51e3af73c23d"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "updatedAt": "2026-11-16T02:05:01.004299+00:00"
+}

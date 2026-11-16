@@ -3371,8 +3371,8 @@
     {
       "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-recording-report.md",
       "destination": "docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md",
-      "bytes": 182384,
-      "sha256": "b8d2f99cdd07644bf09d34aee1355a5ce2f3f77ddd2dafff385971951404f9e4",
+      "bytes": 190669,
+      "sha256": "2ade80f00a46d04f29a8f55d8f3007f0fbfba13695dd8cbe618635c1e0d56984",
       "role": "Latest exact full append-only final report; initial root-audited report bytes and original index remain under snapshots/initial-readable."
     },
     {
@@ -3399,10 +3399,10 @@
     }
   ],
   "reportCount": 31,
-  "reportBytes": 1045112,
+  "reportBytes": 1053397,
   "reviewCount": 47,
   "reviewBytes": 507505,
   "legacyReviewLimitation": "B00/B01 have ledger-only standalone review records; no reports invented. Full net code goes to final reviewer.",
-  "updatedAt": "2026-11-16T01:58:25.400784+00:00",
+  "updatedAt": "2026-11-16T02:11:45.787614+00:00",
   "initialSnapshot": "snapshots/initial-readable/location-map.json"
 }

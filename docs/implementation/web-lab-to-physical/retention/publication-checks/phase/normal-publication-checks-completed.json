@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-16T02:02:55.871316+00:00",
+  "workspace": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni",
+  "heads": {
+    "source": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+    "lab": "affce0caa0d2bcdb9e5b1314ebe262a97916004a",
+    "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+    "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+  },
+  "checks": [
+    {
+      "id": "normal-clone-links-1",
+      "exitCode": 1
+    },
+    {
+      "id": "normal-clone-exactrefs-1",
+      "exitCode": 0
+    },
+    {
+      "id": "normal-clone-retention-1",
+      "exitCode": 1
+    },
+    {
+      "id": "normal-clone-pin-1",
+      "exitCode": 1
+    }
+  ],
+  "scope": "Actual ordinary clone publication boundaries, not new production measurement or native/hardware qualification."
+}

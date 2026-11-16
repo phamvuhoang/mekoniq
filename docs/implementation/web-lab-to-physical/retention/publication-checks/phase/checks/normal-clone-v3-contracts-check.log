@@ -1,0 +1,5 @@
+
+> mekoniq-platform@ contracts:check /private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source
+> node scripts/generate-contracts.mjs --check
+
+Contract generation matches schema.

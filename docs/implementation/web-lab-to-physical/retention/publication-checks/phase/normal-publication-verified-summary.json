@@ -1,0 +1,147 @@
+{
+  "at": "2026-11-16T02:10:28.048717+00:00",
+  "observedPublicationHeads": {
+    "source": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+    "lab": "bfde031f552c4909941beae2df8a51e3af73c23d",
+    "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+    "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+  },
+  "successfulChecks": [
+    {
+      "id": "normal-clone-links-2",
+      "receipt": "checks/normal-clone-links-2.receipt.json",
+      "receiptSha256": "34b06d2116891e5bc293eeed34c6524392bb54a3d2450b12c3e351aacbf0b499",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "5fa16cd7991d4ae51909b46c06f881647f84e0f2bda436a5dbd0128216a8d0ce"
+    },
+    {
+      "id": "normal-clone-exactrefs-2",
+      "receipt": "checks/normal-clone-exactrefs-2.receipt.json",
+      "receiptSha256": "06c00ebce35ee9fe167e4bf944f8700bb920f99cb54902c2086735791a2130e3",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "8cbefb88c43d4b1e7b99adb0ba31dc8f53069671c5e1afe03b700f3fcd42224e"
+    },
+    {
+      "id": "normal-clone-retention-2",
+      "receipt": "checks/normal-clone-retention-2.receipt.json",
+      "receiptSha256": "1d7e1f1cd97f8eca4a7bff14d6b6786aa0bc299736130025e05c1188dbd0f3f5",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "723e75528fecbe6f18f4bee9abe6ddbaf3a43a30acc6883eb0ae40668f3bcc6d"
+    },
+    {
+      "id": "normal-clone-v2-import-pin",
+      "receipt": "checks/normal-clone-v2-import-pin.receipt.json",
+      "receiptSha256": "2cb0ece95d120993a0544e72a4c01b8c48887b51d575718a44b0bd049210c871",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "f1dd39985dc6482fe52d4a11fd914750b5d7f653c5e183522c3444cacf180760"
+    },
+    {
+      "id": "normal-clone-v2-check-source",
+      "receipt": "checks/normal-clone-v2-check-source.receipt.json",
+      "receiptSha256": "bb9a6cb1a8569f6589063f258ef1cbc3d2be5cce78546a899ceebfed204843a0",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "cfbc08a3f643c3f58b3212c36bbc95a30d74ff401a3caf70c685c13255711d24"
+    },
+    {
+      "id": "normal-clone-v2-contract-bytes",
+      "receipt": "checks/normal-clone-v2-contract-bytes.receipt.json",
+      "receiptSha256": "1b9358984ba1dbb256c85f401e9b0096fd3ee2334d960455c2b538b10b7f9f77",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "741044d5071b73ecdf875d16233a3e9196942e969ef0f118a2d5144ad50f0621"
+    },
+    {
+      "id": "normal-clone-v3-portable-licenses",
+      "receipt": "checks/normal-clone-v3-portable-licenses.receipt.json",
+      "receiptSha256": "c930779a98b9547043d64500acc8cb8d7973c8b5f0a0deb8e7c7fff73524dba8",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "normal-clone-v3-closure-identity",
+      "receipt": "checks/normal-clone-v3-closure-identity.receipt.json",
+      "receiptSha256": "93413c682806407ced5e234b2bb86c53703f67ac865f75925efbdc5613494166",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "93b84b8ca95ea399ca7357b7d8fb5c934b0541ae40799d9d21f164054e6fa57b"
+    },
+    {
+      "id": "normal-clone-v3-contracts-check",
+      "receipt": "checks/normal-clone-v3-contracts-check.receipt.json",
+      "receiptSha256": "f4e9e71bf05965b3e535c41a5bfcd48365df6c2b1e4e3e9d2a3c6cf324a5ccbe",
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "59aabdf174df09f283e883519f733bf1ce5bc1005ba0adc7c71e74f3eda5cae0"
+    }
+  ],
+  "linkCounts": {
+    "links": 316,
+    "local": 270,
+    "exactGit": 7,
+    "externalUnverified": 39,
+    "failed": 0
+  },
+  "exactRefs": 12,
+  "retentionCounts": {
+    "at": "2026-11-16T02:05:19.103233+00:00",
+    "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni/source",
+    "publicationHead": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+    "archiveCount": 121,
+    "compressedBytes": 1068997604,
+    "indexedPublicMemberOccurrences": 41611,
+    "indexedPublicBytes": 2774918134,
+    "readableFiles": 484,
+    "readableBytes": 19409399,
+    "reviewCount": 47,
+    "reviewBytes": 507505,
+    "wholeRulingLines": 120,
+    "explicitRulingClauses": 121,
+    "privateRawExclusions": 4,
+    "initialReadableSnapshotFiles": 484,
+    "lateRootAuditFiles": 3,
+    "status": "verified"
+  },
+  "pinScope": {
+    "at": "2026-11-16T02:07:55.734426+00:00",
+    "workspace": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni",
+    "publicationHeads": {
+      "source": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+      "lab": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+      "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+    },
+    "installedRuntimeArtifact": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
+    "pinnedSource": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
+    "lockByteIdentity": true,
+    "nodeDependencyReuse": "normal-clone-layout-correction.json",
+    "pythonMetadataReuse": "normal-clone-python-metadata-reuse.json",
+    "successfulReceipts": [
+      "normal-clone-v2-import-pin",
+      "normal-clone-v2-check-source",
+      "normal-clone-v2-contract-bytes",
+      "normal-clone-v3-portable-licenses",
+      "normal-clone-v3-closure-identity",
+      "normal-clone-v3-contracts-check"
+    ],
+    "retainedSetupFailures": [
+      "normal-clone-pin-1",
+      "normal-clone-pin-2",
+      "normal-clone-v2-portable-licenses"
+    ],
+    "scope": "Ordinary publication pin/runtime/schema/generated contracts/native+portable byte closure and exact committed license inventories checked with explicit existing equal-lock Node/Python metadata reuse. Not a fresh-host install, new runtime export, productionBuildIdentity, engine/campaign/native/hardware qualification."
+  },
+  "initialFailuresPreserved": [
+    "normal-clone-links-1",
+    "normal-clone-retention-1",
+    "normal-clone-pin-1",
+    "normal-clone-pin-2",
+    "normal-clone-v2-portable-licenses"
+  ],
+  "scope": "Actual ordinary four-sibling clone checks at the observed heads. Final Source checkpoint may add these receipts/report append only; maintained docs, archive/index bytes and code/pin closure stay at these checked bytes. No fresh host, production identity, campaign, remote availability or acceptance inferred."
+}

@@ -1,0 +1,496 @@
+{
+  "at": "2026-11-16T02:11:46.030858+00:00",
+  "scope": "Files newly created or changed after the immutable safe recording-metadata snapshot. Earlier exact files remain in that archive; own archive-self/publication checks follow it and are retained here directly, avoiding recursive archive hashes. No excluded host context copied.",
+  "records": [
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/after-normal-clone-checks.py",
+      "path": "phase/after-normal-clone-checks.py",
+      "bytes": 1709,
+      "sha256": "a8b212d3b197d0beb33f2a58299a5c9d181abfe9f6532bca51e527734f00b697",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/assemble-publication-initial-failure.json",
+      "path": "phase/assemble-publication-initial-failure.json",
+      "bytes": 543,
+      "sha256": "08977aaafc173aacf0e0b0d823c7e9c2206d49be4ae37b65e4d10f696768cb91",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/assemble-publication-raw-v2.py",
+      "path": "phase/assemble-publication-raw-v2.py",
+      "bytes": 4382,
+      "sha256": "c4dfa931f771d53b86848484166937c2e513fe5de42d85bf9ce584c87eb77ec8",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/check-normal-publication-pin-v2.py",
+      "path": "phase/check-normal-publication-pin-v2.py",
+      "bytes": 3104,
+      "sha256": "d04585e130cd2c2a0afda42744d974c8469b4c8791db18238661d1fc5db08498",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/archive-safe-metadata.log",
+      "path": "phase/checks/archive-safe-metadata.log",
+      "bytes": 3486,
+      "sha256": "dc366ba7499422f5a127b1a7c24b8f5ceed66eacc31ce45367f848e372904f28",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/archive-safe-metadata.receipt.json",
+      "path": "phase/checks/archive-safe-metadata.receipt.json",
+      "bytes": 4681,
+      "sha256": "f31305b6b9cdcb57af66f7c515f94611fc650d5ac9e0374540839793ad1fbea3",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/assemble-publication-raw-v2.log",
+      "path": "phase/checks/assemble-publication-raw-v2.log",
+      "bytes": 91,
+      "sha256": "2048f929a25d870ee73b47c38485807903fd7342d31f4abd26113d57f1ff763d",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/assemble-publication-raw-v2.receipt.json",
+      "path": "phase/checks/assemble-publication-raw-v2.receipt.json",
+      "bytes": 4686,
+      "sha256": "29befddbce05e9a47d58acd6d85ea94261b4d41a905b97f859ab52387f3eb0d4",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/assemble-publication-raw.log",
+      "path": "phase/checks/assemble-publication-raw.log",
+      "bytes": 352,
+      "sha256": "7ae2752ecf5480e0d202ae87693accd789535230232d531bacad7a0f6401507f",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/assemble-publication-raw.receipt.json",
+      "path": "phase/checks/assemble-publication-raw.receipt.json",
+      "bytes": 4683,
+      "sha256": "930df3ad82819f143a4ccd4915876c832889766c0a1cec6f4045c85431d0c014",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/finish-normal-clone-pin.log",
+      "path": "phase/checks/finish-normal-clone-pin.log",
+      "bytes": 1770,
+      "sha256": "ebf9eb2407323a17658a60103440c75c11d61303135678ad640bba0ba83fb3de",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/finish-normal-clone-pin.receipt.json",
+      "path": "phase/checks/finish-normal-clone-pin.receipt.json",
+      "bytes": 4683,
+      "sha256": "c9a395a1e0984107f20b8fcbac12207d18e56ac0f2d1f7f9e883696481c3fd48",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-exactrefs-1.log",
+      "path": "phase/checks/normal-clone-exactrefs-1.log",
+      "bytes": 26,
+      "sha256": "8cbefb88c43d4b1e7b99adb0ba31dc8f53069671c5e1afe03b700f3fcd42224e",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-exactrefs-1.receipt.json",
+      "path": "phase/checks/normal-clone-exactrefs-1.receipt.json",
+      "bytes": 5251,
+      "sha256": "45c6f897506ea2ce1ad0eda41de8775e21205ba78f0d56a42c599039d8ee23c5",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-exactrefs-2.log",
+      "path": "phase/checks/normal-clone-exactrefs-2.log",
+      "bytes": 26,
+      "sha256": "8cbefb88c43d4b1e7b99adb0ba31dc8f53069671c5e1afe03b700f3fcd42224e",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-exactrefs-2.receipt.json",
+      "path": "phase/checks/normal-clone-exactrefs-2.receipt.json",
+      "bytes": 4998,
+      "sha256": "06c00ebce35ee9fe167e4bf944f8700bb920f99cb54902c2086735791a2130e3",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-links-1.log",
+      "path": "phase/checks/normal-clone-links-1.log",
+      "bytes": 83,
+      "sha256": "bafb9c170f6114ca15f002f4914d0e9404ee5245195f66d29c4486d2b3c49b89",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-links-1.receipt.json",
+      "path": "phase/checks/normal-clone-links-1.receipt.json",
+      "bytes": 5250,
+      "sha256": "8401a6a921ba2ed0c706f3d864042bcb12efd1ea1002396775013563202de874",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-links-2.log",
+      "path": "phase/checks/normal-clone-links-2.log",
+      "bytes": 83,
+      "sha256": "5fa16cd7991d4ae51909b46c06f881647f84e0f2bda436a5dbd0128216a8d0ce",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-links-2.receipt.json",
+      "path": "phase/checks/normal-clone-links-2.receipt.json",
+      "bytes": 4997,
+      "sha256": "34b06d2116891e5bc293eeed34c6524392bb54a3d2450b12c3e351aacbf0b499",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-pin-1.log",
+      "path": "phase/checks/normal-clone-pin-1.log",
+      "bytes": 2299,
+      "sha256": "bdb005e3e17531a3a04a894594b70a416da81691ff161c31e69331d6c2d0afef",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-pin-1.receipt.json",
+      "path": "phase/checks/normal-clone-pin-1.receipt.json",
+      "bytes": 4797,
+      "sha256": "4a6bd56d706da547802ef54bd94d91423694a5df4aa922487a032fa4ebc5671d",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-pin-2.log",
+      "path": "phase/checks/normal-clone-pin-2.log",
+      "bytes": 3392,
+      "sha256": "e524e794634e7e44a5f18551f929c7755da17fdc0dc85754a04faab3a3bbaa61",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-pin-2.receipt.json",
+      "path": "phase/checks/normal-clone-pin-2.receipt.json",
+      "bytes": 4691,
+      "sha256": "7d421afd367b584aa1d3acfe960f0f0a7aa6b1ed6981c5a510f222b0c05c1b8b",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-retention-1.log",
+      "path": "phase/checks/normal-clone-retention-1.log",
+      "bytes": 1651,
+      "sha256": "f41537f2531057b6184d68d5d6248939372e123dda85d8d3583984a96c2f17a9",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-retention-1.receipt.json",
+      "path": "phase/checks/normal-clone-retention-1.receipt.json",
+      "bytes": 5083,
+      "sha256": "efd81ebb807468328da5ba229141feb1bfbd445eca932969d5b6ffee0e0f8a49",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-retention-2.log",
+      "path": "phase/checks/normal-clone-retention-2.log",
+      "bytes": 606,
+      "sha256": "723e75528fecbe6f18f4bee9abe6ddbaf3a43a30acc6883eb0ae40668f3bcc6d",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-retention-2.receipt.json",
+      "path": "phase/checks/normal-clone-retention-2.receipt.json",
+      "bytes": 4902,
+      "sha256": "1d7e1f1cd97f8eca4a7bff14d6b6786aa0bc299736130025e05c1188dbd0f3f5",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-check-source.log",
+      "path": "phase/checks/normal-clone-v2-check-source.log",
+      "bytes": 326,
+      "sha256": "cfbc08a3f643c3f58b3212c36bbc95a30d74ff401a3caf70c685c13255711d24",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-check-source.receipt.json",
+      "path": "phase/checks/normal-clone-v2-check-source.receipt.json",
+      "bytes": 4753,
+      "sha256": "bb9a6cb1a8569f6589063f258ef1cbc3d2be5cce78546a899ceebfed204843a0",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-contract-bytes.log",
+      "path": "phase/checks/normal-clone-v2-contract-bytes.log",
+      "bytes": 36,
+      "sha256": "741044d5071b73ecdf875d16233a3e9196942e969ef0f118a2d5144ad50f0621",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-contract-bytes.receipt.json",
+      "path": "phase/checks/normal-clone-v2-contract-bytes.receipt.json",
+      "bytes": 4794,
+      "sha256": "1b9358984ba1dbb256c85f401e9b0096fd3ee2334d960455c2b538b10b7f9f77",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-import-pin.log",
+      "path": "phase/checks/normal-clone-v2-import-pin.log",
+      "bytes": 198,
+      "sha256": "f1dd39985dc6482fe52d4a11fd914750b5d7f653c5e183522c3444cacf180760",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-import-pin.receipt.json",
+      "path": "phase/checks/normal-clone-v2-import-pin.receipt.json",
+      "bytes": 4917,
+      "sha256": "2cb0ece95d120993a0544e72a4c01b8c48887b51d575718a44b0bd049210c871",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-portable-licenses.log",
+      "path": "phase/checks/normal-clone-v2-portable-licenses.log",
+      "bytes": 1942,
+      "sha256": "835b81e51edecb4e5511832467edfd560efd6cd544390d603cc6dc174a97b55c",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v2-portable-licenses.receipt.json",
+      "path": "phase/checks/normal-clone-v2-portable-licenses.receipt.json",
+      "bytes": 4788,
+      "sha256": "a58585a374ed72f58b306df3db4fd68844873957185475272927b7e493c1fb80",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-closure-identity.log",
+      "path": "phase/checks/normal-clone-v3-closure-identity.log",
+      "bytes": 194,
+      "sha256": "93b84b8ca95ea399ca7357b7d8fb5c934b0541ae40799d9d21f164054e6fa57b",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-closure-identity.receipt.json",
+      "path": "phase/checks/normal-clone-v3-closure-identity.receipt.json",
+      "bytes": 5297,
+      "sha256": "93413c682806407ced5e234b2bb86c53703f67ac865f75925efbdc5613494166",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-contracts-check.log",
+      "path": "phase/checks/normal-clone-v3-contracts-check.log",
+      "bytes": 223,
+      "sha256": "59aabdf174df09f283e883519f733bf1ce5bc1005ba0adc7c71e74f3eda5cae0",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-contracts-check.receipt.json",
+      "path": "phase/checks/normal-clone-v3-contracts-check.receipt.json",
+      "bytes": 4759,
+      "sha256": "f4e9e71bf05965b3e535c41a5bfcd48365df6c2b1e4e3e9d2a3c6cf324a5ccbe",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-portable-licenses.log",
+      "path": "phase/checks/normal-clone-v3-portable-licenses.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/normal-clone-v3-portable-licenses.receipt.json",
+      "path": "phase/checks/normal-clone-v3-portable-licenses.receipt.json",
+      "bytes": 4788,
+      "sha256": "c930779a98b9547043d64500acc8cb8d7973c8b5f0a0deb8e7c7fff73524dba8",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/prepare-normal-clone-python-metadata.log",
+      "path": "phase/checks/prepare-normal-clone-python-metadata.log",
+      "bytes": 50,
+      "sha256": "865e130531247234d8019a26bf6bcf94c4402dc6808436efd4a52145aa8df4db",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/prepare-normal-clone-python-metadata.receipt.json",
+      "path": "phase/checks/prepare-normal-clone-python-metadata.receipt.json",
+      "bytes": 4695,
+      "sha256": "73beaea34ae35ccff7b583961ec9f3daedeb93f7f54fac9e71adc83e7aec50d0",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/prepare-normal-publication-clones.log",
+      "path": "phase/checks/prepare-normal-publication-clones.log",
+      "bytes": 325,
+      "sha256": "f31b65a68f6318eac46edf45befdb8392e4a32ce9d24be56b27a321937f6f140",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/prepare-normal-publication-clones.receipt.json",
+      "path": "phase/checks/prepare-normal-publication-clones.receipt.json",
+      "bytes": 4693,
+      "sha256": "ffe0eeca95426fecf63c72fd5a693147c4ef884639a8531b6df9366685fd055f",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/stage-final-readable.log",
+      "path": "phase/checks/stage-final-readable.log",
+      "bytes": 139,
+      "sha256": "4a82a1f11e8dedee2c885234d30c5c41c7a900daa5155de6df10cc109d210cea",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/checks/stage-final-readable.receipt.json",
+      "path": "phase/checks/stage-final-readable.receipt.json",
+      "bytes": 4680,
+      "sha256": "2fa02934e6a139a0b96c9c527cc5a764af7e19048dfbbe5818074f239f8cf7b8",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/exact-ref-reachability-v2.py",
+      "path": "phase/exact-ref-reachability-v2.py",
+      "bytes": 1988,
+      "sha256": "c44894370168f06f2f3d7ba5fa999923d5fc3d02f45ad9e1d6b266fe7c461320",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/finish-normal-clone-pin.py",
+      "path": "phase/finish-normal-clone-pin.py",
+      "bytes": 2808,
+      "sha256": "7ef557c5b90e1d75a50dab1211666782a37b66d0c815cb1111d8ae7ae53e1e19",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-exact-ref-audit-1.json",
+      "path": "phase/normal-clone-exact-ref-audit-1.json",
+      "bytes": 31273,
+      "sha256": "9aaaf3f0693652099e82db60c8e6d4139c78b962f2392a3c644fc47ef9c7140f",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-exact-ref-audit-2.json",
+      "path": "phase/normal-clone-exact-ref-audit-2.json",
+      "bytes": 31273,
+      "sha256": "a7e640c904b4222efcde891c73d222deb92bc260126a8fb6cdb9ae15f4398e17",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-layout-correction.json",
+      "path": "phase/normal-clone-layout-correction.json",
+      "bytes": 1408,
+      "sha256": "f0ccbb8f03cb636561d96eeb37306d831a01ea692eb9c3c3a9903ade4fd56fab",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-link-audit-1.json",
+      "path": "phase/normal-clone-link-audit-1.json",
+      "bytes": 129981,
+      "sha256": "6685f65a4a2867cdf78cf4ea95f23033d33bb1ab7de5caf5f2f9d150ed2a5de7",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-link-audit-2.json",
+      "path": "phase/normal-clone-link-audit-2.json",
+      "bytes": 129311,
+      "sha256": "789df78979b88495d535fe3f450aba737e6d29ccdba979883c9a1bee5ec591e2",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-python-metadata-reuse.json",
+      "path": "phase/normal-clone-python-metadata-reuse.json",
+      "bytes": 14078,
+      "sha256": "2ef593a875b6ccdd8e3d89644f69a7c47bdd4073329c55eba28721bbfb9026f6",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-retention-audit-2.json",
+      "path": "phase/normal-clone-retention-audit-2.json",
+      "bytes": 37794,
+      "sha256": "f77e86734f7b3fe138c2ffef2963b065e8633f95f45401ce5be37b3d99634c9c",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-publication-checks-completed.json",
+      "path": "phase/normal-publication-checks-completed.json",
+      "bytes": 820,
+      "sha256": "8f61e12df675c7c6233ab3b60153bfad284052d10a43e35ec89e740887e696e0",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-publication-clones-after-lab-link.json",
+      "path": "phase/normal-publication-clones-after-lab-link.json",
+      "bytes": 7888,
+      "sha256": "056ebb6a6546ea2befddf7f36e98ceec7c9a6f6f13a9080b0cf6564871c0b907",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-publication-clones.json",
+      "path": "phase/normal-publication-clones.json",
+      "bytes": 7382,
+      "sha256": "3bf1819b21e0c4ce846644da8c30ba2a0a8a66e7a3670c73524269b97e69df71",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-publication-pin-checks.json",
+      "path": "phase/normal-publication-pin-checks.json",
+      "bytes": 1441,
+      "sha256": "eadd6e3cc98bae2772fb6f84cb0b5e8d4cab1ae66de6f058a68ac17bbdbd4a65",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-publication-verified-summary.json",
+      "path": "phase/normal-publication-verified-summary.json",
+      "bytes": 6309,
+      "sha256": "e0af4c3dab687ca73648632bb877bf3f31bb385dd7afe628822ce65c428e42ee",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/prepare-normal-clone-python-metadata.py",
+      "path": "phase/prepare-normal-clone-python-metadata.py",
+      "bytes": 2910,
+      "sha256": "0cc772d49b484de7c58ad56390e4771b10830957d51488e93a61d2b20e8c777b",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/publication-authored-whitespace-check.json",
+      "path": "phase/publication-authored-whitespace-check.json",
+      "bytes": 3116,
+      "sha256": "4eec2ad29a339f7778f95ab02a0509e322eae413e08e942d570a6ece521286ff",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/publication-copy-map-initial.json",
+      "path": "phase/publication-copy-map-initial.json",
+      "bytes": 360920,
+      "sha256": "d4094e60c36536bb97374ff96745a055628882c2318e39f516330e6873ce939c",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/publication-explicit-ignored-evidence-add.json",
+      "path": "phase/publication-explicit-ignored-evidence-add.json",
+      "bytes": 313,
+      "sha256": "287ab0511a6c2051ebe7be27960ca906eede30f56bcb5e0cae4a3ce28cbf41ae",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/published-exact-ref-scope.json",
+      "path": "phase/published-exact-ref-scope.json",
+      "bytes": 5515,
+      "sha256": "eceb4479ee7cabc7cafb21f3223e0d5a1e34df0f4c0d7553e2bc8ac9443d1b3f",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/retain-late-publication-checks.py",
+      "path": "phase/retain-late-publication-checks.py",
+      "bytes": 1747,
+      "sha256": "da3ed20e26a953c8bb67f05aaea41eaaa14dba0c13fc160236e36c6183d0c14e",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/verify-published-retention-v2.py",
+      "path": "phase/verify-published-retention-v2.py",
+      "bytes": 3981,
+      "sha256": "455b263b643896adbce8863a561add710a0e4b7fc317e956c7516319efb1760d",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/verify-published-retention-v3.py",
+      "path": "phase/verify-published-retention-v3.py",
+      "bytes": 4141,
+      "sha256": "bf01bd8cd8a837d3f85d9aebdff9ad1280eb907e67dfe1e1dbb46b7a8b0891cd",
+      "role": "Exact later metadata/check bytes; code snapshots use a mapped .txt extension to avoid treating retained code as authored lint input."
+    }
+  ]
+}
