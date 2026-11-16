@@ -82,7 +82,7 @@ The full R2b directory is split into four archives to keep each Git blob bounded
   suites/                         (carried by outer)
 ```
 
-From Source, with the published raw archives available at `/path/to/final-recording/raw`, use the same safe extraction helper for each new destination:
+The raw archives are no longer in the tree; [raw.REMOVED.md](../evidence/web-lab-to-physical/final-recording/raw.REMOVED.md) gives the commit and command to restore them. From Source, with the published raw archives available at `/path/to/final-recording/raw`, use the same safe extraction helper for each new destination:
 
 ```sh
 python3 docs/implementation/web-lab-to-physical/retention/tools/record-archive.py extract \
