@@ -172,8 +172,9 @@ test('paired Source world/context is consumed without racing a later independent
  const observer=internal as unknown as {worldRun:string;worldDrawing:Omit<import('../../src/twin/world-view').WorldDrawing,'record'>};observer.worldRun=paired.run.id;observer.worldDrawing=world;
  internal.rt.worldDisplayScene=async()=>({runId:paired.run.id,availability:'available',reason:null,scene:world.scene});
  internal.rt.worldDisplay=async()=>({version:1,runId:paired.run.id,revision:paired.run.runRevision,tick:8,simTimeNs:paired.simTimeNs,availability:'valid',reason:null,snapshot:{...world.record.snapshot,tick:8,simTimeNs:paired.simTimeNs},control:null,controlReason:'NOT_RECORDED_AT_TICK',view:paired});
+ const canvas=internal as unknown as {vs:{view:string};pacedLoop:boolean;paint3d(f:import('../../src/twin/scene').TwinFrame):void};canvas.pacedLoop=true;canvas.vs.view='3d';const painted=vi.spyOn(canvas,'paint3d').mockImplementation(()=>{});
  const get=vi.fn(async()=>({...paired,tick:9,simTimeNs:'180000000'}));internal.rt.get=get;internal.left=false;await internal.refreshWorld();
- expect(internal.world!.record.snapshot.tick).toBe(8);expect(internal.worldView!.tick).toBe(8);expect(get).not.toHaveBeenCalled();
+ expect(internal.world!.record.snapshot.tick).toBe(8);expect(internal.worldView!.tick).toBe(8);expect(get).not.toHaveBeenCalled();expect(painted).toHaveBeenCalledWith(expect.objectContaining({world:expect.objectContaining({sourceRevision:11}),view:expect.objectContaining({tick:8})}));await internal.refreshWorld();expect(painted).toHaveBeenCalledTimes(1);
 });
 test('cell Pause is admitted while its paced step is held and retains the admitted revision',async()=>{
  const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};

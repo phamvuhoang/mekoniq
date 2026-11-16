@@ -9,3 +9,12 @@ test('run boot revision, missing sample gap and prop membership invalidate inter
  const p=new WorldPlayback();p.feed('a','0',0,poses(0));p.feed('a','100000000',100,poses(1));p.feed('b','120000000',120,poses(8));expect(p.at(120)!.bodies.amr!.positionM[0]).toBe(8);
  p.feed('b','140000000',700,poses(10));expect(p.at(700)!.bodies.amr!.positionM[0]).toBe(10);const withoutCup={...poses(11),cups:{}};p.feed('b','160000000',720,withoutCup);expect(p.at(720)!.cups).toEqual({});p.clear();expect(p.at(721)).toBeNull();
 });
+
+test('alternating one/two committed ticks per poll never stalls a continuously moving received path',()=>{
+ const p=new WorldPlayback();let tick=0,previous=-1;
+ for(let wall=0;wall<=2000;wall+=10){if(wall%40===0){tick+=wall%80===0?1:2;p.feed('same-revision',String(tick*20000000),wall,poses(tick));}const x=p.at(wall)!.bodies.amr!.positionM[0];if(wall>200)expect(x).toBeGreaterThan(previous);previous=x;}
+});
+
+test('unchanged identity rejects older source or receipt time without extending freshness',()=>{
+ const p=new WorldPlayback();p.feed('a','100000000',100,poses(1));p.feed('a','80000000',700,poses(9));expect(p.at(701)).toBeNull();p.feed('a','120000000',90,poses(9));expect(p.at(200)!.bodies.amr!.positionM[0]).toBe(1);
+});
