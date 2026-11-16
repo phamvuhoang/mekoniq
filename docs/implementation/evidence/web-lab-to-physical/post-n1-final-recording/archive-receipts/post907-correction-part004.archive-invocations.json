@@ -1,0 +1,35 @@
+[
+  {
+    "argv": [
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/record-archive.py",
+      "pack",
+      "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part004",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.tar.gz",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.members.json"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "startedAt": "2026-11-16T07:07:10.925270+00:00",
+    "finishedAt": "2026-11-16T07:07:13.711066+00:00",
+    "exitCode": 0,
+    "stdout": "{\"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part004\", \"archive\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.tar.gz\", \"archiveBytes\": 37320142, \"archiveSha256\": \"7cbe6c82bba38fa9e4965a67e9d678dedaff19da643a551c3685e909581b7ccf\", \"memberCount\": 681, \"memberBytes\": 55584387}\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+      "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/record-archive.py",
+      "extract",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.tar.gz",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.members.json",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part004",
+      "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part004.extract.json"
+    ],
+    "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "startedAt": "2026-11-16T07:07:13.711784+00:00",
+    "finishedAt": "2026-11-16T07:07:14.661692+00:00",
+    "exitCode": 0,
+    "stdout": "{\"version\": 1, \"extractedAt\": \"2026-11-16T07:07:14.654971+00:00\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part004\", \"archive\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.tar.gz\", \"archiveSha256\": \"7cbe6c82bba38fa9e4965a67e9d678dedaff19da643a551c3685e909581b7ccf\", \"memberIndex\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.members.json\", \"memberIndexSha256\": \"363d3fcd67b9a00ff9fbb558999257055922af2c0926974d2fcd6d0b1910647e\", \"destination\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part004\", \"verifiedFiles\": 681, \"verifiedBytes\": 55584387, \"declaredSymlinksNotMaterialized\": [], \"status\": \"byte_verified_only; public readback receipt is separate\"}\n",
+    "stderr": ""
+  }
+]

@@ -1,6 +1,6 @@
 # MEKONIQ — Lab trên web và lộ trình tới máy thật sau R2a
 
-**Cập nhật ghi bằng chứng cuối16/11:** [trạng thái actual](../final-recording-status.md), [tái hiện](../reproduce-final-recording.md) và [disposition cụ thể](../final-deferred-dispositions.md) là nguồn hiện trạng. Phần dưới giữ snapshot chuẩn bị trước các lượt ghi cuối; không dùng trạng thái cũ để retag producer, nhận native/physical hoặc công bố live realtime.
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
 
 
 **Ngày thiết kế:** 2026-11-13 · **Trạng thái cập nhật 15/11:** đang implement trên hai worktree riêng theo yêu cầu người dùng, chưa nghiệm thu. Xem [tiến độ implementation](00-implementation-status.md) để phân biệt phần đã làm với kế hoạch còn lại.

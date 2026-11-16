@@ -1,0 +1,27 @@
+{
+  "id": "post-n1-cell-campaign-verify",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/lab-mujoco.mjs",
+    "verify",
+    "--input",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-cell-campaign"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:10:19.587144+00:00",
+  "finishedAt": "2026-11-16T07:11:01.550428+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "post-n1-cell-campaign-verify.log",
+  "logBytes": 89,
+  "logSha256": "feb1d6c24cc371a6b0435bea3ae55dba063016480d002e9d9cc4b45085c2d63b",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-cell-campaign",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

@@ -1,5 +1,7 @@
 # Readiness kỹ thuật cho pitch và demo — 16/11/2026
 
+**Hiện trạng sau N1, 16/11:** đọc [09 — readiness mới](09-post-n1-engineering-readiness.md) và [kết quả actual](../../implementation/web-lab-to-physical/post-n1-final-recording/status.md). Source `0d46403` / Lab `7c97b20`; capture mới invalid và bốn assertions mock chưa giải quyết, guided replay bốn phút khác live 1×, D0/native/phần cứng còn mở. Các số liệu và ghi chú trước đó bên dưới là snapshot theo ngày/tuple lịch sử.
+
 **Chỉ dùng tuyên bố có phạm vi dưới đây.** Bằng chứng mới được ghi local trên Source `981e234` / Lab `d4c3032`, runtime `8eb111…`, production build `2c1e9f30…`. Commit công bố tài liệu là identity khác. [Kết quả và giới hạn cuối](../../implementation/web-lab-to-physical/final-recording-status.md), [cách tái hiện](../../implementation/web-lab-to-physical/reproduce-final-recording.md), [full report](../../implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md) và [các disposition còn mở](../../implementation/web-lab-to-physical/final-deferred-dispositions.md) là nguồn hiện trạng. Các bảng nghiên cứu/claim cũ được giữ như snapshot của ngày/tuple đã ghi, không phải trạng thái triển khai mới.
 
 ## Những gì có thể nói từ bản ghi local

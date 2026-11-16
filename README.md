@@ -6,7 +6,7 @@ Nền tảng nhà hàng và robot phục vụ, được thiết kế lại từ 
 
 ## Web Lab → native và physical readiness
 
-[Bản ghi và hướng dẫn dùng web/shared cell/replay](docs/implementation/web-lab-to-physical/README.md) giữ producer Source `981e234` / Lab `d4c3032`, runtime pin và commit công bố riêng. [Lab README](../lab/README.md#shared-cell-final-recording) có lệnh public launcher, chọn thí nghiệm, xuất/import replay và offline mock. [Kết quả cuối](docs/implementation/web-lab-to-physical/final-recording-status.md) ghi đúng mục tiêu hiệu năng chưa đạt, các qualification thiếu/failed và sáu profile chỉ prepared; không suy thành Linux/native/hardware acceptance. [GTM đã cập nhật theo bằng chứng](docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md) giữ demo bốn phút là guided replay và D0 chưa mở.
+[Bàn giao local sau N1](docs/implementation/web-lab-to-physical/post-n1-final-recording/README.md) dùng producer Source `0d46403` / Lab `7c97b20`, tách với commit công bố tài liệu. [Lab README](../lab/README.md#shared-cell-final-recording) có lệnh chạy shared cell và replay. [Kết quả hiện tại](docs/implementation/web-lab-to-physical/post-n1-final-recording/status.md) giữ capture mới invalid và bốn assertions mock chưa giải quyết, browser/replay và campaign có scope riêng, qualification failed/not_run và sáu profile prepared; chưa nghiệm thu Linux/native/phần cứng. [Readiness GTM](docs/gtm/2026-11-14-web-simulation/09-post-n1-engineering-readiness.md) giữ demo bốn phút là guided replay và D0 chưa mở.
 
 ## Tài liệu trình bày tương tác
 

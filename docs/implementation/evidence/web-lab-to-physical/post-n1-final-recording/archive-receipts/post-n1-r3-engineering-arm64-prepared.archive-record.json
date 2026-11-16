@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-r3-engineering-arm64-prepared",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-arm64-prepared",
+  "archive": "post-n1-r3-engineering-arm64-prepared.tar.gz",
+  "archiveBytes": 2599450,
+  "archiveSha256": "0203321fc69173bc2e0e35202b0137d6e023f634dac9dbbdf2f6862a3e123d4e",
+  "memberIndex": "post-n1-r3-engineering-arm64-prepared.members.json",
+  "memberIndexSha256": "11ed5c214dcaa7c2fdc023b303874efdb11bbd38a3fb721fc275b0f4e05928d1",
+  "memberCount": 244,
+  "memberBytes": 10928881,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-engineering-arm64-prepared.extract.json",
+  "safeExtractionReceiptSha256": "514279fd1d41d810a99038b9e3a6cb311e24fb62b148269d57b7aa8e5d5cc7fa",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-engineering-arm64-prepared",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

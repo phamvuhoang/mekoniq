@@ -1,0 +1,1063 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:31.546256+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2a-supplemental-current-gui",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r2a-supplemental-current-gui.tar.gz",
+  "archiveBytes": 17755811,
+  "archiveSha256": "435a82262ccd1c577a6e679c3256016766f678a2dd6280d4234f136010623388",
+  "memberCount": 139,
+  "memberBytes": 18605194,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "default-copies/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812414943463087
+    },
+    {
+      "path": "default-copies/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812342839262962
+    },
+    {
+      "path": "default-copies/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812378212246894
+    },
+    {
+      "path": "default-copies/lab-e2e-webots-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812452258437633
+    },
+    {
+      "path": "default-originals/lab-e2e-irsim-journey/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812414943463168
+    },
+    {
+      "path": "default-originals/lab-e2e-mujoco-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812342839263067
+    },
+    {
+      "path": "default-originals/lab-e2e-mujoco-mesh-fallback/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812378212246967
+    },
+    {
+      "path": "default-originals/lab-e2e-webots-coffee/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812452258437536
+    },
+    {
+      "path": "execution-index.json",
+      "bytes": 47135,
+      "sha256": "46f2f4e3a4b5c25ae329615e28021d04df457093b2c0a0c41dbf9cbbce90be6a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812453378243716
+    },
+    {
+      "path": "lab-e2e-irsim-journey-default-map.json",
+      "bytes": 854,
+      "sha256": "0a854788db16eb20339c0a5a5d16db6db2468229cb1956fdde842a30a8dddb0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812415257877124
+    },
+    {
+      "path": "lab-e2e-mujoco-coffee-default-map.json",
+      "bytes": 854,
+      "sha256": "f22aa554da495f2749e46347d6252fcb160bb433150a2aa5e6d4cced255bffd6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812343222565782
+    },
+    {
+      "path": "lab-e2e-mujoco-mesh-fallback-default-map.json",
+      "bytes": 868,
+      "sha256": "a18e44fc977964612dfa628dd3235c76677f2752d7710f0dbb22b31b4c7deab8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812378594924975
+    },
+    {
+      "path": "lab-e2e-webots-coffee-default-map.json",
+      "bytes": 854,
+      "sha256": "595079dd0cc1a2fcd9e3661bf9803908e8fda5170ddbbace1d366c18df176934",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812453376324093
+    },
+    {
+      "path": "playwright/lab-e2e-arm-cell/arm-cell/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812281337640412
+    },
+    {
+      "path": "playwright/lab-e2e-arm-mesh/arm-mesh/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812270550261269
+    },
+    {
+      "path": "playwright/lab-e2e-brand-accessibility/brand-accessibility/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812259606053543
+    },
+    {
+      "path": "playwright/lab-e2e-remote-origin/remote-origin/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812181838265815
+    },
+    {
+      "path": "playwright/lab-e2e-twin-layout/twin-layout/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812210203562310
+    },
+    {
+      "path": "playwright/lab-e2e-twin-polish/twin-polish/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812218688412662
+    },
+    {
+      "path": "playwright/lab-e2e-twin-transport/twin-transport/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812237252258252
+    },
+    {
+      "path": "playwright/lab-e2e-twin-workspace/twin-workspace/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812249746467407
+    },
+    {
+      "path": "row-coverage.json",
+      "bytes": 796,
+      "sha256": "5c4f295cc137d197cd2840ae402792fda3bd90fe243b9dc23e67bf5d7e8f5a42",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812453381525962
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-fallback-problems.png",
+      "bytes": 92828,
+      "sha256": "0881ab1894343ce941b19209887e5d39f0c8a6242c3af20287b3a0843db2003c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812264205731005
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-mesh-home.png",
+      "bytes": 97842,
+      "sha256": "074999068ac3df3cc6b79c7eb8183586ce3d500b60960dcde44cbb64eed92fd8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812263187464093
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-mesh-pick-closed.png",
+      "bytes": 92877,
+      "sha256": "b18bd4919a028b9233cb0f5328fb322edf787b6a96fbc1f071e87a97f35f40dc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812263303048052
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-notes-only.png",
+      "bytes": 16450,
+      "sha256": "55e3ee3c88e9a29cd0f27982ce18fb5b2594cf62ff5393f18f8c6aae84df53f3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812269726909232
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-notes-panel.png",
+      "bytes": 45630,
+      "sha256": "6f9e581360dad602040049f0ea74bc764f465da2e13f55d72656617284ef78e8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812269800188904
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note-panel.png",
+      "bytes": 52341,
+      "sha256": "ad82935e40d5c096cde5fdb205a8fdde802230bcda0d0936e6d0ddac6ae5d661",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812269967355933
+    },
+    {
+      "path": "screens/lab-e2e-arm-mesh/U05-runbar-problem-and-note.png",
+      "bytes": 16514,
+      "sha256": "ea55d0eee5275386f4df19654b020049091534c51351e5edc2583d2c5ca2f3fa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812269876608239
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-en.png",
+      "bytes": 763379,
+      "sha256": "fd93a4a4d3d928ea62275b7bf53ecfe684720adbc9c40f5bda9f2a45fb07e40a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812387215131147
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-ja.png",
+      "bytes": 807530,
+      "sha256": "7186f8c75fd9a32a6538aefd30b230b98d12ca8b82b09474a32038589efcf642",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812386939484025
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-desktop-vi.png",
+      "bytes": 789523,
+      "sha256": "de2d7a6b6372cef821e523ce5c16460a4f24fe4801ae3ea0eb9a7a90cd144fe5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812386582557488
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-en.png",
+      "bytes": 755528,
+      "sha256": "f874682de6e1a7e419e48d4cb0bd07a7e1581641e905cb5b34fb46f80be076cd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812387924733014
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-ja.png",
+      "bytes": 794658,
+      "sha256": "d06e2f23597ed20648afe4472d70e4178d254e8bf9a8b6935434187c091c2de9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812387661175253
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-assembly-validated-tablet-vi.png",
+      "bytes": 779118,
+      "sha256": "8e4051bc97d29f053c6a50fc01d0ce49f122948e1fd60f45ca1cca5825d08561",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812387435363870
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-en.png",
+      "bytes": 150897,
+      "sha256": "01517d438ad21e9086e91e3ca979f48415277ed4fdfa6658b8fc61e250e6a438",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406655844890
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-ja.png",
+      "bytes": 158945,
+      "sha256": "988690c4f404385758d38f9036883959df545fd10ab7d6ca3f29e46623083ab0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406555416456
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-desktop-vi.png",
+      "bytes": 156884,
+      "sha256": "8cd49708d7c09c0e09427f38c5b9ad686f0a57d20ec3a2ca626c98fdc8b736b3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406457656477
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-en.png",
+      "bytes": 126976,
+      "sha256": "98c14c612a4ee2da89c3c82887f47b525c47714d6422751a0781d8c0ff6813cd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406984313957
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-ja.png",
+      "bytes": 136292,
+      "sha256": "1c09d9fe7c8f27782d482a3f167946f505dbc5bc0a83db5e37bb3ed12965d378",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406893494929
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-completed-tablet-vi.png",
+      "bytes": 130934,
+      "sha256": "18b7b67f84bf4a372de7df706bf2fb237ff23698800dce58012d70035b7cbf7e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812406773653724
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-en.png",
+      "bytes": 141318,
+      "sha256": "9d11cecb6aef0eeda4bac3651cfe28818b73b882cd8b860c639af5313adf6523",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407388642566
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-ja.png",
+      "bytes": 151077,
+      "sha256": "81972c3c5e04c6c3cccf894762ada7b84a697164b16dab21b8fbc67f1dd1327b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407289128506
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-desktop-vi.png",
+      "bytes": 147800,
+      "sha256": "71bb8d4bc0931c4179c73c77777526877616743e96a833d0e33d74b36301228a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407188346739
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-en.png",
+      "bytes": 136504,
+      "sha256": "2aea22bc69d0db740e017074670d12a272743832ba5acd888c30ec702c956f7b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407699903609
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-ja.png",
+      "bytes": 146435,
+      "sha256": "58629d6c93ff7eccbd0b50bbc95b97921e31a42647df2ce54bd2a06f0aeb23f9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407602920463
+    },
+    {
+      "path": "screens/lab-e2e-irsim-journey/irsim-twin-replay-tablet-vi.png",
+      "bytes": 140957,
+      "sha256": "4c0552c556360570d9bce5c0154be28d107c0f32a727272d1fede8a53a521c94",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812407501861279
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-loopback-blocked.png",
+      "bytes": 174238,
+      "sha256": "b22c016379fa16e134ec537bda520f088bc33192dd207675e4109a40c1da8fe3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812287973011034
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-pin-mismatch.png",
+      "bytes": 144308,
+      "sha256": "a11eb669e21381de3278491508d2ea9083705bd04bb211f108abe410a0d1104f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812287652877042
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-this-machine.png",
+      "bytes": 147598,
+      "sha256": "cd8904f6fa421de14df8ec2593cdf6e592e876caf14fca22c909c2a88be0a148",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812287321156604
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-box-web-page-initial.png",
+      "bytes": 148060,
+      "sha256": "c3c5cb6735a7f0502cf2b7941b50b1e865c20e6c3ace0807fff39a5b82b0f744",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812286740782933
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-fresh-mount.png",
+      "bytes": 218440,
+      "sha256": "742d2a197a55c02a7f77bcd4d2783790f829ca7d684764f7d288f28f8cf41700",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812291195038633
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-robot-left.png",
+      "bytes": 254810,
+      "sha256": "eabfa8f4675d5216b84c2251b7fcb313d4cfeb354c0d69ecee83dd642a5d5554",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812336347785830
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cell-start.png",
+      "bytes": 218201,
+      "sha256": "8d87b4d95d200c3f14ffa55018a591641b88b4d704fb30aa28266ec2319cceef",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812290935833285
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-cup-on-tray-robot-docked.png",
+      "bytes": 219568,
+      "sha256": "55206326d65755767ab733d10aef6784cec6bf00d949c11f4d51a19d693e8ecf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812322951681758
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-engineering-identity.png",
+      "bytes": 256369,
+      "sha256": "4e94b2f4007f718a53a327ba303aa0305527cd445416f8c4282b39811b2c2443",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812290219725799
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-engineering-joints.png",
+      "bytes": 283610,
+      "sha256": "71726a8458039733a224825768cb3fdb6fd86f8386d6e293e4fa3e5cc870b755",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812323272893581
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding-fit.png",
+      "bytes": 102095,
+      "sha256": "a79d6dbc705d2d24398e6b46aef7d8ee5bb5c589ee4706611b324605ae1cd4f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812319106616113
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-mujoco-1x-holding.png",
+      "bytes": 215237,
+      "sha256": "c4b3de4330fca427f5552a9dec11a0a049192673de469732b1906ec6f62d5017",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812319032038234
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/U06-report-plant.png",
+      "bytes": 291888,
+      "sha256": "05db2d0bb7ae2133fa983ce45a4d1737810ec122db320e9b0014020f446867d8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812336600782685
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/final-I6-replay-mid-pick.png",
+      "bytes": 215517,
+      "sha256": "c20c22eb6c09736d38d2387466b62e9931cb304cd3ebe60cbfd16ccbf208755d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812340732312025
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/final-I6-saved-report-mid-pick.png",
+      "bytes": 215510,
+      "sha256": "31e5c79d527a6ae3bc910df79a11131f8e6bb1f76f6aff7e9da564485c02fda1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812342433932582
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-coffee/screens/mujoco-coffee.png",
+      "bytes": 254324,
+      "sha256": "c681b8a872418472fe9616fa65017503eb8a6ae584691173d5fcb50726570173",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812336286147938
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/U06-mesh-fallback-notes.png",
+      "bytes": 225625,
+      "sha256": "dfa2568073e033b84d8531aba334313ff01c1e2ff2fa7eba6c3cd60b25d7b42b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812377052336872
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1024x700.png",
+      "bytes": 153159,
+      "sha256": "e2fe4c281561efcb44166660e2e84cfe8165f215014eac0a7c30ba19e952abb7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812377872514163
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1280x800.png",
+      "bytes": 198346,
+      "sha256": "51da4f76ea4a15584bbf27e8c97dfaf94b8f18cbc71a12a188d0371eb7b69096",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812377593391961
+    },
+    {
+      "path": "screens/lab-e2e-mujoco-mesh-fallback/final-I3-mujoco-completed-note-1440x900.png",
+      "bytes": 225814,
+      "sha256": "b19f4245728c24eb70c0b91303bab6e5708415c8cb41d9607b64567ab64cf575",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812377317460005
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-address-corrected.png",
+      "bytes": 149010,
+      "sha256": "c96b2d873231b81de89c736ec131216ea8028ea3b91a5eaf4837d6a8d5c0bd41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812154879656403
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-address-error.png",
+      "bytes": 155845,
+      "sha256": "33ab803b9331db98f45d676a153fe342668b31fe833e397eaf1cb01cbc56b845",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812154809371603
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-before-connect.png",
+      "bytes": 157437,
+      "sha256": "4bf4e4846d41b357552dcd3cd87b797183e37ff7bc90b4004fdeef2aa9a23c89",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812154637805160
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-completed.png",
+      "bytes": 196993,
+      "sha256": "84596cb3f232b9796c41456cd221d1f586cd0acdb389c81d608df324152d9705",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812173386119759
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-connected-run-bar.png",
+      "bytes": 122928,
+      "sha256": "a59c283ff724d944b565892ed2785dbdd625404a4e39add14689c47e3716e01a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812156444145481
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-final-report-loading.png",
+      "bytes": 196993,
+      "sha256": "84596cb3f232b9796c41456cd221d1f586cd0acdb389c81d608df324152d9705",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812173307669510
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-paced-1x.png",
+      "bytes": 158373,
+      "sha256": "496c85858f1b642adbf2a3e3bd4ffd6d48f0c657312796b0e0707b0146606d1b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812158068478287
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-paced-2d-click.png",
+      "bytes": 163871,
+      "sha256": "e017bb0946d8bfb174eea3f8b7e4c15b669373fcae93611430b1d0ba3c6fa95a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812163785129556
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-pair-form-filled.png",
+      "bytes": 149125,
+      "sha256": "b5559b42b815ad88a8c5d3de94c479e52ee356cd60d92f1df8c080777ce62b6d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812154943315168
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-paused.png",
+      "bytes": 167029,
+      "sha256": "d0222ad7f35b195b04c64da170d5cb66bbdcda41840b74b1a4f884c29a616eb1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812159580682338
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/N03-pausing.png",
+      "bytes": 164213,
+      "sha256": "063a0c3e543be5fce5377b812b87c5c76b3ca5d7c81540b79b48d33dbdba4e38",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812159249920733
+    },
+    {
+      "path": "screens/lab-e2e-remote-origin/final-I5-chip-not-connected.png",
+      "bytes": 150667,
+      "sha256": "e5c89d850eb3fe126b5ad8578fff78cd0fee670962bf3a1afc5c37749f92574f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812180533419918
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-caveat-desktop-vi.png",
+      "bytes": 287844,
+      "sha256": "83b93fcce36e7a7a55422cabeb5bf525d34c831a8dd417f601ec78b24e7757b1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812209014018372
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-completed-engineering-desktop-vi.png",
+      "bytes": 220517,
+      "sha256": "1486a1c0294b999142b05489928cb1c3dc6e43d4e7f710478f4b7f1c2bb6694c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812207210023299
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-completed-objects-desktop-vi.png",
+      "bytes": 181499,
+      "sha256": "8d50d788471f1ac092af220ad8ecf072821a594b87012475314503bd21e87e41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812207108665782
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-completed-report-desktop-vi.png",
+      "bytes": 216881,
+      "sha256": "8ff83d9f5b1ab14fa76e36f2cbf1e22910e44fdf39e68c960b6aa35d75e9924d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812207306845820
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-completed-setup-desktop-vi.png",
+      "bytes": 179952,
+      "sha256": "871589a7a898c371b32d5736f8e8b147ca4735265cf52d4337235e270268db4b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812207386719568
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-display-desktop-vi.png",
+      "bytes": 196179,
+      "sha256": "689e44d153859dfddb0d53960f52bd3ff800f5e6d32cecf4a994bf9ed013349c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812189178227934
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-engineering-desktop-vi.png",
+      "bytes": 185063,
+      "sha256": "037fd7ce2cf25f7dc238527c7e73275ac7884b40ef239e5b3d515c2b9c8fcf98",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812189736683879
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-first-open-desktop-vi.png",
+      "bytes": 147598,
+      "sha256": "cd8904f6fa421de14df8ec2593cdf6e592e876caf14fca22c909c2a88be0a148",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812187637676245
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-low-screen.png",
+      "bytes": 98413,
+      "sha256": "8df8fbd4f55fd0bad2488327dfc7ab295ed78c293aac28b0ad64150f3643fbea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812209892017226
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-objects-desktop-vi.png",
+      "bytes": 176534,
+      "sha256": "acbd0cf50624a58ef28b6653a6dc94058186e14ebb14032496e5bf5242a6b207",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812189594091656
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-objects-phone-vi.png",
+      "bytes": 45213,
+      "sha256": "b82d561dffe673499cde345dd8d119fa2339f1feef9b15b3a40b9a0ba40bf522",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812209780777387
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-picker-desktop-vi.png",
+      "bytes": 282193,
+      "sha256": "eb060072bad4b090c99b6ec008f5c0d267eba84d3b13ee569ed7b9f905149291",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812209110551560
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-problems-desktop-vi.png",
+      "bytes": 235746,
+      "sha256": "35deaa8f7695d313128a1d7d20995a6317ca0f3a2fdf188f92be28b17c0133fd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812208846730925
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-report-desktop-vi.png",
+      "bytes": 204617,
+      "sha256": "7be82f079fcc040eb983fcb2a05b009d6e18e52c58b1b15be693fbaca951fd7b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812189822261038
+    },
+    {
+      "path": "screens/lab-e2e-twin-layout/U01-setup-desktop-vi.png",
+      "bytes": 171781,
+      "sha256": "7a5b96ddba04f54847085a0a19470a575604033be04f8c3837c89ca8cc2d4209",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812187957619488
+    },
+    {
+      "path": "screens/lab-e2e-twin-polish/U07-1024x700-vi.png",
+      "bytes": 112731,
+      "sha256": "06e3b437588abf680ed6e9f0d50cbb4f2e0c64146c5199d361106497a8abc45b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812218397544681
+    },
+    {
+      "path": "screens/lab-e2e-twin-polish/U07-engineering-arm-desktop-vi.png",
+      "bytes": 208119,
+      "sha256": "c6c8eee13b0fe901f731068c69f81e48a2ebcc334ddb4b12254b2f603ace5c75",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812216492328967
+    },
+    {
+      "path": "screens/lab-e2e-twin-polish/U07-problems-desktop-vi.png",
+      "bytes": 175033,
+      "sha256": "0ffc38bee5b8d397406767498b4d0899096bcedbc52a43a704f7a9ef4cf6e92d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812216994614389
+    },
+    {
+      "path": "screens/lab-e2e-twin-polish/U07-replay-desktop-vi.png",
+      "bytes": 201907,
+      "sha256": "6a7e300b081897a062c46b294775b50376181913ff70a6a10524a375bacf0438",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812218113515360
+    },
+    {
+      "path": "screens/lab-e2e-twin-polish/U07-run-bar-problem-desktop-vi.png",
+      "bytes": 134171,
+      "sha256": "186381012772cc681670f5f1938df86b465ec77637f874ff29c9ff3943b548c5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812216834647310
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-replay-desktop-vi.png",
+      "bytes": 202317,
+      "sha256": "0caea8959fa6c4843452e0ad1410084b274b8665622618c955659c670a18b7d7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812234927542527
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-shortcuts-desktop-vi.png",
+      "bytes": 137759,
+      "sha256": "218ac55693aed9a6d367612a1eff6d670bd3c2679ab79176570519e53a4be172",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812226492176412
+    },
+    {
+      "path": "screens/lab-e2e-twin-transport/U03-watch-desktop.png",
+      "bytes": 82140,
+      "sha256": "48866c48ea83348b91cff083317e73c2ddd2d278fc3e1a4e4b5ee794315c1709",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812226662494438
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-desktop-vi.png",
+      "bytes": 143130,
+      "sha256": "397c038c5fa5905e83cf6577ce971269497567741b53405030265273c051d945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812244687422102
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-en.png",
+      "bytes": 74844,
+      "sha256": "444ec7f81aacfa8c4fcc32febd28713a0c23d816150e7e3841b43ae4ef40b959",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812249381195963
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-ja.png",
+      "bytes": 71069,
+      "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812249220650176
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-coffee-run-mobile-vi.png",
+      "bytes": 81891,
+      "sha256": "91dd434c45d9a95ca86d1c75ce171ad6547cbb3722ca23fec3fcd59954767fd4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812249138551472
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-en.png",
+      "bytes": 169967,
+      "sha256": "75b310763840d16289e68186f63be6cd7e3db2d45bd5cacca212dde93a37efe7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812248752669176
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-ja.png",
+      "bytes": 168382,
+      "sha256": "f7a00d9704dad03b403d99919c38366dd6838ee2167ddb93278ccfa53270ee94",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812248668831306
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-engineering-desktop-vi.png",
+      "bytes": 174137,
+      "sha256": "61973abef83596577dc672a3593ae62a45aa707be46188142cee4c789bf6c61b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812248513595139
+    },
+    {
+      "path": "screens/lab-e2e-twin-workspace/F05-webgl-disabled-reduced-motion-desktop-vi.png",
+      "bytes": 147452,
+      "sha256": "f44c2ae219a127562e28c71d3fd6a90e0d4c95ec617db4b5e9e87be068a997e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812242686627198
+    },
+    {
+      "path": "screens/lab-e2e-webots-coffee/webots-coffee.png",
+      "bytes": 196525,
+      "sha256": "f39ae9158a2da502dff8f73b1a2f2fa5527a77da2fb6d42a23bad494fc70d23c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812451451404565
+    },
+    {
+      "path": "suites/lab-arm-unit.json",
+      "bytes": 18855,
+      "sha256": "b5e37715c515169df0bc476ef8119f6ecf655e76887a8a07caab3aeff2408e7e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812148216597227
+    },
+    {
+      "path": "suites/lab-e2e-arm-cell-arm-cell.json",
+      "bytes": 10331,
+      "sha256": "d79fb76c4cebbb49b49bb88fe0abc1ab8c0d2d814b264a241b3841f9840c71ba",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812281337328995
+    },
+    {
+      "path": "suites/lab-e2e-arm-mesh-arm-mesh.json",
+      "bytes": 11810,
+      "sha256": "fbe813b52ed535b26170a068846e0808c00413eb8124e68ad53ef10e1beeaf73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812270549849769
+    },
+    {
+      "path": "suites/lab-e2e-brand-accessibility-brand-accessibility.json",
+      "bytes": 13275,
+      "sha256": "93008e6a8949326f70ebecd8be91e42d325108394c7de80c3b48cf8758509597",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812259605682377
+    },
+    {
+      "path": "suites/lab-e2e-irsim-journey.json",
+      "bytes": 4821,
+      "sha256": "70423c8d74bf7044407e3793c6564405440db8887ccd63634b53e84d5b42dbd2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812414943122460
+    },
+    {
+      "path": "suites/lab-e2e-mujoco-coffee.json",
+      "bytes": 5293,
+      "sha256": "c140f9e9780863dea1ffbedbaf2c422120c8140deec86c159e5ad20c3f2d2d4a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812342838940734
+    },
+    {
+      "path": "suites/lab-e2e-mujoco-mesh-fallback.json",
+      "bytes": 4834,
+      "sha256": "51840729c444f3a0d03a018ceb8a2bff07d056adb0f37a6b263d93542737a665",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812378211947884
+    },
+    {
+      "path": "suites/lab-e2e-remote-origin-remote-origin.json",
+      "bytes": 4970,
+      "sha256": "27c5e549eca231db6e38f265aafe115e987f09aebc044aa649f049ae06b9f7b1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812181837741816
+    },
+    {
+      "path": "suites/lab-e2e-twin-layout-twin-layout.json",
+      "bytes": 21882,
+      "sha256": "924c0cce4d1d178e5548f8cd7324d3604f91fc565063d6ba2564efd963a914fd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812210203079602
+    },
+    {
+      "path": "suites/lab-e2e-twin-polish-twin-polish.json",
+      "bytes": 24011,
+      "sha256": "091d37fae47ca4312fe350caa5ad23f252efcea582eaa97e5634cf536f451e09",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812218687889163
+    },
+    {
+      "path": "suites/lab-e2e-twin-transport-twin-transport.json",
+      "bytes": 16198,
+      "sha256": "6a361055880484bf4bda4451f5293a1885a78d22e63df59d69138129eb6a9f67",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812237251788836
+    },
+    {
+      "path": "suites/lab-e2e-twin-workspace-twin-workspace.json",
+      "bytes": 13040,
+      "sha256": "3f8309ceea2905daf18698f0e2af15ac0514d9c938d5b45039cdc43831c1e3e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812249745985074
+    },
+    {
+      "path": "suites/lab-e2e-webots-coffee.json",
+      "bytes": 4812,
+      "sha256": "3965c208302341d31d8fe152c627c54546883705e595a61117f4f853fb7bbe66",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812452257635037
+    },
+    {
+      "path": "suites/lab-rt-unit.json",
+      "bytes": 19140,
+      "sha256": "cc7e4ed376b77e20b0a861fa015597c1aaff63ff28752b4393f8656fb6201906",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812144598082968
+    },
+    {
+      "path": "suites/lab-ui-unit.json",
+      "bytes": 25646,
+      "sha256": "e6a41cfe53f0505ae6666c24e1e09851f8100bcb27e2cf2aadc2893027066b95",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812146572878900
+    },
+    {
+      "path": "suites/ma-bv01.json",
+      "bytes": 7342,
+      "sha256": "cf16ac9c1439847d094d20f2dd49eadfcbe34c3c3f3a1a2aa3e3ff13254360fd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811763876356373
+    },
+    {
+      "path": "suites/ma-contact.json",
+      "bytes": 17932,
+      "sha256": "7be3ab48269c3ccb1f7745e866ee42d75f050b7479c2bfa8327e03c3bd4fd53b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811666565271517
+    },
+    {
+      "path": "suites/ma-faults.json",
+      "bytes": 8580,
+      "sha256": "aee6966107cab8fa15b5ad3afeceec07eca94d9e6943ddca14d56e548dab9591",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811960691007104
+    },
+    {
+      "path": "suites/ma-ports.json",
+      "bytes": 7453,
+      "sha256": "db16abb301f0ee8d5507ea20661e716c29a5c20df83e99bf35a1165768cf53b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811658974860621
+    },
+    {
+      "path": "suites/ma-programs.json",
+      "bytes": 1536,
+      "sha256": "705a4865174295af1648a2b9bd24c2ea4d56817022a570cfad8afbd12db76ef4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811663814562745
+    },
+    {
+      "path": "suites/ma-py.xml",
+      "bytes": 16344,
+      "sha256": "2f93ea6205bc12ff7db42d01a8acf39a70dddf8a3c269ade71eb4fa7334680a6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811647292123802
+    },
+    {
+      "path": "suites/ma-rtb.json",
+      "bytes": 1091,
+      "sha256": "e420fca542ea677fd2194f664a1663fd2dfae5e57ee722b4d3edead6b43b0a3c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811632812703136
+    },
+    {
+      "path": "suites/ma-static.json",
+      "bytes": 14270,
+      "sha256": "0c1f8376de24c3f1f08362c1e0d808c05a5976c4029cc52cd15eb8bcc8845137",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811627908944247
+    },
+    {
+      "path": "suites/ma-worker.json",
+      "bytes": 1876,
+      "sha256": "cbfdefe4bc95fb35b4f85db36de353af8dc598cd71da257732c7d9a72d2f44a7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811650640911185
+    },
+    {
+      "path": "suites/regress.json",
+      "bytes": 22515,
+      "sha256": "4a844e68d4b14c1dbbdc42be145f3183122a233b0880d508d9e4f26554bf6c89",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812137229283381
+    },
+    {
+      "path": "suites/rt-paced.json",
+      "bytes": 5750,
+      "sha256": "fe3e31a647678cb5496378ee635aa4da8be131880c76bce0b3f18016f1095d12",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812096840938898
+    },
+    {
+      "path": "suites/rt-remote.json",
+      "bytes": 6005,
+      "sha256": "571c31d18af03b654326a89e40df89cb248775ef10616d476572c610e24c782b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811970451857834
+    },
+    {
+      "path": "table.json",
+      "bytes": 7459,
+      "sha256": "e9e44dce065f11f52d70152f4182317146d9277233dc537997721ccaa383ada7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811623225629455
+    }
+  ],
+  "directories": [
+    "default-copies",
+    "default-copies/lab-e2e-irsim-journey",
+    "default-copies/lab-e2e-mujoco-coffee",
+    "default-copies/lab-e2e-mujoco-mesh-fallback",
+    "default-copies/lab-e2e-webots-coffee",
+    "default-originals",
+    "default-originals/lab-e2e-irsim-journey",
+    "default-originals/lab-e2e-mujoco-coffee",
+    "default-originals/lab-e2e-mujoco-mesh-fallback",
+    "default-originals/lab-e2e-webots-coffee",
+    "playwright",
+    "playwright/lab-e2e-arm-cell",
+    "playwright/lab-e2e-arm-cell/arm-cell",
+    "playwright/lab-e2e-arm-mesh",
+    "playwright/lab-e2e-arm-mesh/arm-mesh",
+    "playwright/lab-e2e-brand-accessibility",
+    "playwright/lab-e2e-brand-accessibility/brand-accessibility",
+    "playwright/lab-e2e-remote-origin",
+    "playwright/lab-e2e-remote-origin/remote-origin",
+    "playwright/lab-e2e-twin-layout",
+    "playwright/lab-e2e-twin-layout/twin-layout",
+    "playwright/lab-e2e-twin-polish",
+    "playwright/lab-e2e-twin-polish/twin-polish",
+    "playwright/lab-e2e-twin-transport",
+    "playwright/lab-e2e-twin-transport/twin-transport",
+    "playwright/lab-e2e-twin-workspace",
+    "playwright/lab-e2e-twin-workspace/twin-workspace",
+    "pycache",
+    "screens",
+    "screens/lab-arm-unit",
+    "screens/lab-e2e-arm-cell",
+    "screens/lab-e2e-arm-mesh",
+    "screens/lab-e2e-brand-accessibility",
+    "screens/lab-e2e-irsim-journey",
+    "screens/lab-e2e-mujoco-coffee",
+    "screens/lab-e2e-mujoco-coffee/screens",
+    "screens/lab-e2e-mujoco-mesh-fallback",
+    "screens/lab-e2e-remote-origin",
+    "screens/lab-e2e-twin-layout",
+    "screens/lab-e2e-twin-polish",
+    "screens/lab-e2e-twin-transport",
+    "screens/lab-e2e-twin-workspace",
+    "screens/lab-e2e-webots-coffee",
+    "screens/lab-rt-unit",
+    "screens/lab-ui-unit",
+    "screens/ma-bv01",
+    "screens/ma-contact",
+    "screens/ma-faults",
+    "screens/ma-ports",
+    "screens/ma-programs",
+    "screens/ma-py",
+    "screens/ma-rtb",
+    "screens/ma-static",
+    "screens/ma-worker",
+    "screens/regress",
+    "screens/rt-paced",
+    "screens/rt-remote",
+    "suites"
+  ],
+  "declaredDependencySymlinks": []
+}

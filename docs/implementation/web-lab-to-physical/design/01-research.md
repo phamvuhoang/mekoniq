@@ -1,5 +1,7 @@
 # Nghiên cứu — từ implementation R2a tới web Lab và Linux
 
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
+
 **Kiểm ngày 2026-11-13.** Phân biệt ba loại: **quan sát repository**, **thông tin upstream**, **đề xuất/suy luận**. Lần này đọc code, Git, spec/plan, evidence và tài liệu chính thức; không chạy lại simulation, không đo FPS mới, không thử Linux và không deploy.
 
 ## Cập nhật bằng chứng R2a — 2026-11-14, 09:00 ICT

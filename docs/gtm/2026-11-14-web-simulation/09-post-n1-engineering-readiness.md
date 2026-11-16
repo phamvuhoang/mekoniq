@@ -1,0 +1,17 @@
+# Readiness kỹ thuật sau N1 — 16/11/2026
+
+Đây là bàn giao local trên hai worktree feature. Đọc [kết quả hiện tại](../../implementation/web-lab-to-physical/post-n1-final-recording/status.md), [hướng dẫn chạy/replay](../../implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md) và [phạm vi còn mở](../../implementation/web-lab-to-physical/post-n1-final-recording/dispositions.md) trước khi dùng pitch. Producer là Source `0d46403` / Lab `7c97b20`; commit tài liệu sau đó có identity riêng.
+
+Web/shared cell và replay có thể dùng local. Browser production 1 case, replay/story 5 case và public stock launcher có kết quả riêng; chúng không thay thế phép đo dài. Capture 185 giây mới bị public reader từ chối vì pause correlation, stream gap và render progression. Draw p95 18.3 ms, worker p95 7.20 ms và receipt khoảng 59.8 ms nằm trong từng ngưỡng, nhưng capture vẫn invalid. Tốc độ thực 0.366× khác lựa chọn 1×. Không quảng bá live realtime, hoàn tất hai cốc trong lượt live này, Linux/native hay phần cứng đã nghiệm thu.
+
+Case closed browser thực thi pass nhưng public artifact reader còn trả `WEB_BROWSER_INVOCATION`: producer ghi cờ output riêng, reader hiện đòi argv không có cờ đó. Không sửa argv/raw/guard để coi pass; đây là lỗi tương thích evidence riêng với failure capture.
+
+Demo bốn phút là **guided replay** với mốc đã chọn và dữ liệu ghi thật. Phần có thể trình bày: trạng thái công việc/cốc theo cursor, lỗi và lý do cần người xử lý, nguồn/horizon/model của bằng chứng, và các giới hạn `not_calibrated`/`not_run`. Giải thích rõ live có thời lượng riêng và kết quả campaign headless không được thay thành bằng chứng live. Capture cb5/fded từng pass là lịch sử trước N1, không retag thành producer mới.
+
+Lượt Webots R1 journey cũng thất bại: sau Run vẫn thấy “Simulation · not run” trong khi test đợi “Simulation · not calibrated”; fleet riêng pass. Điều này khác scope MuJoCo live/replay đã pass. R1 và lineage kế tiếp giữ failure/refusal thật. Hai file PNG/error-context của journey đã mất trước lần kiểm default đầu tiên sau internal reuse; JSON/log và ảnh trước Run còn, không thay thế hai original thiếu.
+
+Whole-branch review, sửa I1–I4, scoped review và ngoại lệ N1 giữ verdict lịch sử ở đúng tuple/phạm vi đã đọc; N1 đã qua follow-up ở scope hẹp. Capture mới và bốn assertions mock thất bại sau đó vẫn chưa được giải quyết; không nói mọi gate/issue đã đóng. Không gọi đây là sửa mọi replay/navigation path. Cả hai hướng xArm/ROS 2 và custom/PUMA/LinuxCNC có gói prepared và danh sách native cần thực chạy; một Linux host chưa đủ thay adapter/observer/TF/UUID, DEPSEC, restart/planning/contact, clock/synchrony/cartesian/terminal trust hoặc calibration/hardware.
+
+D0 chưa mở. Docker/image, host HTTPS, service regression, native/physical và chữ ký con người giữ gate riêng. Funnel, ngân sách, traction và Việt Nam/đối tác Nhật trong kế hoạch GTM vẫn là giả thuyết để founder duyệt; không có chiến dịch, spend, outreach hoặc analytics publication mới. Giữ CTA “Xem mô phỏng 4 phút” ở scope guided replay và CTA thương mại “Đánh giá luồng phục vụ của quán”, không hứa ROI hay thay nhân sự đã được đo.
+
+[Bộ GTM ban đầu](README.md) giữ các snapshot theo ngày. [Readiness thế hệ 981/d4](08-final-engineering-readiness.md) và toàn bộ archive/report cũ không bị viết lại. Bằng chứng mới giữ đủ kết quả thất bại/not_run và năm private-original exclusions; việc kiểm thành viên public không có nghĩa mọi dữ liệu host riêng tư đã được công bố.

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "readAt": "2026-11-16T02:47:48.597009+00:00",
+  "file": ".superpowers/sdd/README/task-final-whole-branch-review.md",
+  "bytes": 43287,
+  "sha256": "028367f2bd73fac034a28b1432e1f9177da9dffca815b0f99b5120625e25fe28",
+  "fullTextRead": true,
+  "lineRangesRead": [
+    [
+      1,
+      128
+    ],
+    [
+      129,
+      194
+    ]
+  ],
+  "spec": "R2b incomplete; R3 preparation only",
+  "quality": "request_changes",
+  "findings": {
+    "critical": 0,
+    "important": 4,
+    "minor": 4
+  },
+  "sourceBase": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+  "labBase": "bfde031f552c4909941beae2df8a51e3af73c23d",
+  "controllerChecks": [
+    "Read complete reclaim path and execution-time fences",
+    "Read complete R2b table and recorder/reader aggregate checking paths",
+    "Read complete assessCapture plus adopted spec 183; duration and actual cadence/pause separated"
+  ],
+  "execution": {
+    "newTests": false,
+    "newCampaigns": false,
+    "codeEdits": false
+  }
+}

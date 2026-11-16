@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:08:41.358741+00:00",
+  "id": "post-n1-loose",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/new-recording-loose",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "acceptance-irsim.json",
+        "bytes": 2689,
+        "sha256": "a48350c95f0c37f1c2d66f37e88e8e86954b22481a3937ff374e021823680892",
+        "mode": "0o644",
+        "mtimeNs": 1794809201412237624
+      },
+      {
+        "path": "acceptance-r1-external.json",
+        "bytes": 8317,
+        "sha256": "6d980df3b06c793d2c73c50aae11f67349906f2ea61a559aac336c77fef23de3",
+        "mode": "0o644",
+        "mtimeNs": 1794811426576254241
+      },
+      {
+        "path": "acceptance-r1-staged.json",
+        "bytes": 6754,
+        "sha256": "6499816ddb9d750e1249fab0c49a4856022c39cd84383009d1fc86d4e95b11dd",
+        "mode": "0o644",
+        "mtimeNs": 1794811450362116721
+      },
+      {
+        "path": "mj-evidence-result.json",
+        "bytes": 10658,
+        "sha256": "e709f810d4d3dcabea4cc63ee7cf46b52f09a2ed9bea760aec2986e966aebf47",
+        "mode": "0o644",
+        "mtimeNs": 1794804336954075578
+      },
+      {
+        "path": "mj-row-assessment.json",
+        "bytes": 426,
+        "sha256": "2486dbb3b6b9f3e22c880dd96224cd43324ea9b621ce3979b4c6d931f6fb60f4",
+        "mode": "0o644",
+        "mtimeNs": 1794804337532133137
+      },
+      {
+        "path": "mock-acceptance-tests.json",
+        "bytes": 17490,
+        "sha256": "8fa4a0128f8c51fbd49e68a3cca21c4923dc1af9847b3307f6ea8b0b12d501c3",
+        "mode": "0o644",
+        "mtimeNs": 1794807730922409792
+      },
+      {
+        "path": "semantic-study-tests.json",
+        "bytes": 1045,
+        "sha256": "226e1cb27a01f2f9fd58d571476dab840029e5df22d895686609e1755b593189",
+        "mode": "0o644",
+        "mtimeNs": 1794812511776894492
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-loose",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/new-recording-loose",
+      "archive": "post-n1-loose.tar.gz",
+      "archiveBytes": 7508,
+      "archiveSha256": "37d113306883f4a35b18950f5ec29466ec0f3d63a8d537c826ff05116927936d",
+      "memberIndex": "post-n1-loose.members.json",
+      "memberIndexSha256": "8950c9436afbe63ba1f304d0be682dbe90e750daa74f9af527d01e771892c351",
+      "memberCount": 7,
+      "memberBytes": 47379,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-loose.extract.json",
+      "safeExtractionReceiptSha256": "c9dc3c24f18f8c038dcbe7c73680af914b9b017d993300ece07c952e83e7f770",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-loose",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-loose",
+  "verifiedFiles": 7,
+  "verifiedBytes": 47379,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

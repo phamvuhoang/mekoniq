@@ -1,0 +1,27 @@
+{
+  "id": "post-n1-r1-q001",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {readFileSync,existsSync} from 'node:fs';import {join} from 'node:path';import {checkQualification} from './scripts/sim-extension-qualification.mjs';const d=process.argv[1],p=checkQualification(JSON.parse(readFileSync(join(d,'qualification.json'))),f=>existsSync(join(d,f))?readFileSync(join(d,f)):null);console.log(JSON.stringify(p));process.exit(p.length?1:0);",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-r1"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:10:12.201147+00:00",
+  "finishedAt": "2026-11-16T07:10:13.074170+00:00",
+  "exitCode": 1,
+  "signal": null,
+  "log": "post-n1-r1-q001.log",
+  "logBytes": 40,
+  "logSha256": "59f4ea61892ad45eace008ce751d5d1e8e14a9c9f1c39f2773bd733107547209",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-r1/qualification.json",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

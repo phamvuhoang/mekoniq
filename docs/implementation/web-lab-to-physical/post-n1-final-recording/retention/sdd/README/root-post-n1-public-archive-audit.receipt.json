@@ -1,0 +1,38 @@
+{
+  "startedAt": "2026-11-16T07:14:41.825259+00:00",
+  "finishedAt": "2026-11-16T07:14:58.334832+00:00",
+  "elapsedSeconds": 16.509711917024106,
+  "args": [
+    "perl",
+    "-e",
+    "alarm 900; exec @ARGV",
+    "/opt/homebrew/opt/python@3.15/bin/python3.15",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-public-archive-audit.py",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.json"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README",
+  "exitCode": 0,
+  "signal": null,
+  "auditor": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-public-archive-audit.py",
+    "bytes": 5564,
+    "sha256": "fe5c4c5928a01cadbe3ad838a411a78f31075b0f7dfaa5fd8c1fac52a1df99a4"
+  },
+  "freezeDescriptor": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/root-newstage-audit-ready.json",
+    "bytes": 1433,
+    "sha256": "60a08a75aa06ac00e471f31ca4719eec06d030f1edee1132c9827ceb8182bb64"
+  },
+  "log": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.log",
+    "bytes": 5096,
+    "sha256": "c31f6784097d3d989779fb0ea824ebbb3c016b49bd5d624892182af8b213e64e"
+  },
+  "scope": "ONE unchanged independent auditor over the64 frozen NEW archives only. Old121 not re-audited. Byte/integrity proof, not qualification pass. No engine, browser, extraction, code change or native operation.",
+  "audit": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-post-n1-public-archive-audit.json",
+    "bytes": 96239,
+    "sha256": "7f26f9c8d41a1e9e4f69ff0275f03959d05db9182e7b341409a906e545247ec8"
+  }
+}

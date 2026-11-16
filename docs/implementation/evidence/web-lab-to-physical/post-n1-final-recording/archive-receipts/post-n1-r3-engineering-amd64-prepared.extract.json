@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:32.921157+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-amd64-prepared",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-amd64-prepared.tar.gz",
+  "archiveSha256": "9679ab5896eb47c3e7fcfd7c9f94749c393cbcc742cb0f739328fa7462c468f4",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-amd64-prepared.members.json",
+  "memberIndexSha256": "0432a9909be5c23fe49cef07539fc8a7b7350f680b86b6073d9462e64c30054e",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-engineering-amd64-prepared",
+  "verifiedFiles": 244,
+  "verifiedBytes": 10928881,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

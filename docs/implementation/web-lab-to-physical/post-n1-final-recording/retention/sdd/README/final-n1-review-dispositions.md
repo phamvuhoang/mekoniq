@@ -1,0 +1,12 @@
+# N1 follow-up review disposition — code correction complete
+
+Root read the complete11082B task-final-n1-review.md/SHA5f680f51f6facc20f4e032afdd6f920cc645042720a91779d20e206669b2967c. N1 ADDRESSED; no new Critical/Important/Minor in the small delta. The new private callback separates authorized cached receipt lookup from a newly begun/uncertain control, and actual90case coverage preserves fresh/refused/lifecycle behavior. All six new regressions are meaningful; initial mistaken uncertainty expectation is preserved separately from the real N1 RED.
+
+N1 code task complete: Sourcecb5c86c..0d46403, Labfded4b2..7c97b20, narrow follow-up clean. The original I1–I4 scoped verdict remains addressed at its recordedcb5/fded scopes; new-subject actual production/browser/campaign/full qualification evidence remains pending and cannot inherit those measured outcomes by relabeling.
+
+Proceed with the prepared post-n1-final-recording-brief.md at exact entry supplied in post-n1-final-recording-entry.json. Existing final_recording_resume is the sole execution/publication owner; no helpers/broad reviewer. Reuse passing exact current checks/build/export, calculate/freeze the full R3 checker graph as the first preparation step, then record actual current capture/browser/payload/cell/regression/study/R3 preparations and retained normal-clone handoff. Root remains active through auditing that result. No new engineering scope or authority outside the worktrees is implied.
+
+Unchanged navigation replay yielding remains explicitly observed in its own inherited test and deferred; no platform-wide replay repair claim. M1–M4 remain their exact deferred dispositions. Full owned-service CI/R2a/R2b, image/container/HTTPS, assigned matching Linux/arm64/native adapters/observers/TF/UUID/contact/clock/terminaltrust/DEPSEC, hardware/calibration/site/installed-host/humanacceptance and all prior cannot-verify observations remain open as documented. The next actual record determines local tested/failed/not_run states; an external prerequisite failure is not a pass.
+
+Prior raw/report/review/probe bytes remain immutable. Retain the bounded cap exception and its cost, both follow-up reports, new fifth private full-host process exclusion and all root audit caller failures/corrections. No further broad review or speculative fix loop is started by this acceptance of N1. No main merge/push/deployment/provision/outreach/spend/physical/signature/workspace cleanup.
+

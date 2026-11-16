@@ -1,0 +1,27 @@
+{
+  "id": "post907-correction-capture025",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {readFileSync} from 'node:fs';import {assessCapture} from './scripts/browser-capture-clock.mjs';const v=assessCapture(JSON.parse(readFileSync(process.argv[1])));console.log(JSON.stringify(v));process.exit(v.valid&&v.meetsTargets?0:1);",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post907-correction/production-capture-ordered/actual-cell-production.json"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+  "sourceCommit": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:11:56.343562+00:00",
+  "finishedAt": "2026-11-16T07:11:56.704005+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "post907-correction-capture025.log",
+  "logBytes": 293,
+  "logSha256": "f875141a6e3e9934368f083a12d46338bbaa8769b6f2f1cbc547663db7dcb03c",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post907-correction/production-capture-ordered/actual-cell-production.json",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

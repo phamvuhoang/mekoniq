@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-production-replay-browser",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-replay-browser",
+  "archive": "post-n1-production-replay-browser.tar.gz",
+  "archiveBytes": 5484547,
+  "archiveSha256": "48c6395a8ca13adedd98ebc8762807935d41b6236cbb1e76a2877efaeb3fb8e5",
+  "memberIndex": "post-n1-production-replay-browser.members.json",
+  "memberIndexSha256": "f599661f5641caf645499de5a4a70b4f3506b23bd7c3066708ea64198ef4e104",
+  "memberCount": 20,
+  "memberBytes": 10133577,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-replay-browser.extract.json",
+  "safeExtractionReceiptSha256": "ecffd8ac85ad32a31d7e93af4e20796e717074a087a01f022f9691862b964bca",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-replay-browser",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

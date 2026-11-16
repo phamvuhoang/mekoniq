@@ -1,6 +1,6 @@
 # 04 — Digital marketing vận hành trong 90 ngày
 
-**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+**Hiện trạng sau N1, 16/11:** đọc [09 — readiness mới](09-post-n1-engineering-readiness.md) và [kết quả actual](../../implementation/web-lab-to-physical/post-n1-final-recording/status.md). Source `0d46403` / Lab `7c97b20`; capture mới invalid và bốn assertions mock chưa giải quyết, guided replay bốn phút khác live 1×, D0/native/phần cứng còn mở. Các số liệu và ghi chú trước đó bên dưới là snapshot theo ngày/tuple lịch sử.
 
 
 Mục tiêu: đưa đúng buyer đến một trải nghiệm giúp họ hiểu vấn đề và đồng ý bước đánh giá có phạm vi. Kế hoạch dùng **founder-led sales**, nội dung hỗ trợ quyết định và partner introductions. Mọi chương trình dưới đây là bản thiết kế; chưa có quảng cáo, email hay dữ liệu tracking nào được gửi ra ngoài.

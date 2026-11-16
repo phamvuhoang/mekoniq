@@ -1,0 +1,15 @@
+{
+  "id": "post907-correction-part003",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part003",
+  "archive": "post907-correction-part003.tar.gz",
+  "archiveBytes": 40075439,
+  "archiveSha256": "f4d7b7657cfe0e0e7b6dccd8944be8b78fe871b727a20858a27f6e033eecc799",
+  "memberIndex": "post907-correction-part003.members.json",
+  "memberIndexSha256": "a1e30490b878e4e7e9260565650d18d5821b25640078f0d5b2e5be2711bce409",
+  "memberCount": 887,
+  "memberBytes": 67029480,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part003.extract.json",
+  "safeExtractionReceiptSha256": "7e7d8994d495e31143f57f43d6a8bbbfc74038968b1517c9cbe5488d6201a457",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part003",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:37.208725+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-scoped-replay-probe-wqb9d5vv",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-probe.tar.gz",
+  "archiveSha256": "40141497a396e9b377139cb3bdfe5d62818f51359edb34582a4e9da6214e420d",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-probe.members.json",
+  "memberIndexSha256": "92a3b1a614065be5edc8a9a427cb27973fc0442d56f7569cb82a38322aa31751",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-probe",
+  "verifiedFiles": 3,
+  "verifiedBytes": 12353,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

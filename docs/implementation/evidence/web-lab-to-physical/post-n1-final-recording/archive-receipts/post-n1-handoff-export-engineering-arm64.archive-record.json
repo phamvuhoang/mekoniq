@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-handoff-export-engineering-arm64",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-arm64",
+  "archive": "post-n1-handoff-export-engineering-arm64.tar.gz",
+  "archiveBytes": 2584391,
+  "archiveSha256": "14d6239f210ad0a1540a9b6e0e9db9d26eb63ab24e3d2f55b2b9010abbd50626",
+  "memberIndex": "post-n1-handoff-export-engineering-arm64.members.json",
+  "memberIndexSha256": "b17f6ea6bc0cc3d8c2c75f559fc5e4e1e923e84975861a335f680b23f95a5231",
+  "memberCount": 243,
+  "memberBytes": 10869301,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-engineering-arm64.extract.json",
+  "safeExtractionReceiptSha256": "ff3b9e50c8875f3c8944aeb4b4378b3a328f30d6b4c397e25da15381f6f94e19",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-engineering-arm64",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

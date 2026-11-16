@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:45.967985+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part002",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part002.tar.gz",
+  "archiveSha256": "0b26aff32e4d92b899d75ac8e3deb5dd094a085cddc123b3448fcbba74c23b96",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part002.members.json",
+  "memberIndexSha256": "2b60ef5f325bad9d40d92887738b84ed86e940f4895eea3732117ea00f7a0420",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part002",
+  "verifiedFiles": 155,
+  "verifiedBytes": 66007208,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

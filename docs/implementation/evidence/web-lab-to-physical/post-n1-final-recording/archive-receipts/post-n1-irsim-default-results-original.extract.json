@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:03.700607+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-original",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-original.tar.gz",
+  "archiveSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-original.members.json",
+  "memberIndexSha256": "e32836fc773b3e4677720944b3af4bb24c5e616b5966ab844765809dc31f426f",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-default-results-original",
+  "verifiedFiles": 1,
+  "verifiedBytes": 45,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

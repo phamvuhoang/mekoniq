@@ -1,0 +1,718 @@
+# Review package: bfde031f552c4909941beae2df8a51e3af73c23d..fded4b26638eb412f3285d5fe37d415108f58f19
+
+## Commits
+fded4b2 fix: render paired world updates on a stable received timeline
+a1558f7 chore: record regenerated source contract provenance
+96e7aca fix: interpolate committed cell samples and pause promptly
+
+## Files changed
+ config/source-runtime.lock.json         |  4 +--
+ scripts/measure-cell-production.ts      | 27 ++++++++++++------
+ scripts/production-http-observer.ts     |  2 +-
+ src/scenarios/controls.ts               |  2 +-
+ src/shared/engineering.ts               |  2 +-
+ src/shared/navigation2d.ts              |  2 +-
+ src/twin/world-playback.ts              | 28 ++++++++++++++++++
+ src/ui/workspace.ts                     | 50 ++++++++++++++++++++++-----------
+ src/viewer/twin3d.ts                    |  8 +++---
+ tests/unit/workspace-generation.test.ts | 29 ++++++++++++++++++-
+ tests/unit/world-playback.test.ts       | 20 +++++++++++++
+ 11 files changed, 138 insertions(+), 36 deletions(-)
+
+## Diff
+diff --git a/config/source-runtime.lock.json b/config/source-runtime.lock.json
+index 648719a..12f196e 100644
+--- a/config/source-runtime.lock.json
++++ b/config/source-runtime.lock.json
+@@ -1,18 +1,18 @@
+ {
+   "dirty": false,
+   "packageVersion": "0.1.0",
+   "toolchain": {
+     "node": "v24.22.2"
+   },
+-  "sourceCommit": "981e234b1a0da8c72d220445daaf780b3bf65ae4",
++  "sourceCommit": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+   "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+   "protocolMajor": 2,
+   "protocolMajors": [
+     1,
+     2
+   ],
+   "nodeMajor": 24,
+-  "artifactSha256": "8eb11109765263e0b209ece7649bb511b8f67a0c0a035edba1d78b803d4ceec1",
++  "artifactSha256": "edd67efcd4094a93d95c5368e3bfe1294f6578a016a0241580d3697e2c373b14",
+   "entrypoint": "runtime.mjs",
+   "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+ }
+diff --git a/scripts/measure-cell-production.ts b/scripts/measure-cell-production.ts
+index 569ed8c..2504bdd 100644
+--- a/scripts/measure-cell-production.ts
++++ b/scripts/measure-cell-production.ts
+@@ -39,52 +39,63 @@ try{
+   const child=spawn(process.execPath,['--import',preload,runtime,'--port','4176','--data-dir',directory,'--engineering-catalog',catalog,'--engineering-simulation',join(source,'robotics/simulation'),'--engineering-python',join(source,'.venv-irsim/bin/python'),'--mujoco-python',join(source,'.venv-mujoco/bin/python'),'--mujoco-worker',root,'--mujoco-lock',join(root,'requirements.lock')],{cwd:lab,env:{...process.env,MEKONIQ_LAB_MUJOCO:'1',MEKONIQ_PERFORMANCE_ROOT:directory,MEKONIQ_PERFORMANCE_TIMINGS:join(output,'runtime-observer.ndjson')},stdio:['ignore','pipe','pipe']});
+   let stdout='',stderr='';child.stderr.on('data',b=>stderr=(stderr+b).slice(-32768));const exited=new Promise<{code:number|null;signal:NodeJS.Signals|null}>((r,reject)=>{child.once('exit',(code,signal)=>r({code,signal}));child.once('error',reject);});
+   stopExportedRuntime=async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill('SIGINT');let exit;try{exit=await bounded(exited,10000,'EXPORTED_RUNTIME_CLOSE_TIMEOUT');}catch(error){if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');await bounded(exited,10000,'EXPORTED_RUNTIME_KILL_TIMEOUT');throw error;}finally{await writeFile(join(output,'runtime-stderr.log'),stderr);}if(exit.code!==0||exit.signal)throw Error(`EXPORTED_RUNTIME_CLOSE_${exit.code}_${exit.signal}`);};
+   let onData:((b:Buffer)=>void)|undefined;
+   const ready=new Promise<string>((ok,fail)=>{onData=b=>{stdout+=b;const token=/Pairing token \(expires in 5 minutes; one use\): (\S+)/.exec(stdout);if(token)ok(token[1]!);};child.stdout.on('data',onData);void exited.then(exit=>fail(Error(`EXPORTED_RUNTIME_EXIT_${exit.code}_${exit.signal}: ${stderr}`)),fail);});
+   let token:string;try{token=await bounded(ready,45000,'EXPORTED_RUNTIME_BOOT_TIMEOUT');}finally{if(onData)child.stdout.off('data',onData);child.stdout.resume();}
+   gateway={url:'http://127.0.0.1:4176',pairingToken:token,close:stopExportedRuntime};
+  }
+  web=await preview({root:lab,configFile:join(lab,'vite.config.ts'),logLevel:'error',preview:{host:'127.0.0.1',port:4175,strictPort:true,proxy:{'/lab':{target:gateway.url,changeOrigin:false}}}});
+  if(process.argv.includes('--verify-browser')){
+-  const invocationId=randomUUID(),args=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'],startedAtEpochMs=Date.now();
++  const invocationId=randomUUID(),args=['exec','playwright','test','--config','playwright.b07b.config.ts','--output',join(output,'browser-artifacts'),'mujoco-cell.spec.ts'],startedAtEpochMs=Date.now();
+   await writeFile(join(output,'browser-invocation.json'),JSON.stringify({version:2,invocationId,before:buildIdentity,startedAtEpochMs}));
+   const child=spawn('pnpm',args,{cwd:lab,stdio:'inherit',env:{...process.env,LAB_TEST_PAIRING_TOKEN:gateway!.pairingToken,LAB_B07B_EVIDENCE:output,LAB_BROWSER_INVOCATION:invocationId,LAB_PW_JSON:join(output,'browser-result.json')}});
+   const exit=await new Promise<{code:number|null;signal:NodeJS.Signals|null}>((r,reject)=>{child.once('error',reject);child.once('exit',(code,signal)=>r({code,signal}));});
+   const after=await productionBuildIdentity(lab,source,lock),resultBytes=await readFile(join(output,'browser-result.json'));
+   await writeFile(join(output,'browser-runtime-identity.json'),JSON.stringify({version:2,invocationId,startedAtEpochMs,finishedAtEpochMs:Date.now(),before:buildIdentity,after,command:'pnpm',args,exitCode:exit.code,signal:exit.signal,exported,resultSha256:createHash('sha256').update(resultBytes).digest('hex')},null,2));
+   if(exit.code!==0||exit.signal)throw Error('NATIVE_BROWSER_FAILED_'+exit.code);if(JSON.stringify(after)!==JSON.stringify(buildIdentity))throw Error('PRODUCTION_BUILD_CHANGED');
+  }else{
+  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH??'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'});const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,reducedMotion:'no-preference'}),page=await context.newPage();activePage=page;page.setDefaultTimeout(30000);page.on('pageerror',e=>errors.push(e.message));
+  httpObserver=observeProductionHTTP(page,{responses,actions,exports,errors});
+  await page.addInitScript(()=>{(window as unknown as {__name:(target:unknown)=>unknown}).__name=target=>target;});console.log('BROWSER_BOOT');await page.goto('http://127.0.0.1:4175/#twin');await page.getByRole('button',{name:'EN',exact:true}).click();await page.locator('#twin-pair-token').fill(gateway.pairingToken);await page.locator('#twin-pair-form button[type="submit"]').click();await page.getByTestId('scenario-picker').click();await page.locator('[data-action="twin-preset"][data-value="mujoco-cell"]').click();
+  console.log('CELL_SELECTED');await page.locator('[data-action="twin-run"]').first().waitFor();await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled();const created=page.waitForResponse(r=>r.request().method()==='POST'&&r.url().endsWith('/lab/v2/runs'));await page.locator('[data-action="twin-run"]').first().click();const creationResponse=await created,creationRequest=creationResponse.request().postDataJSON(),creation=await bounded(creationResponse.json(),30000,'CREATION_BODY_TIMEOUT'),runId=creation.run.id;if(creationResponse.status()!==201||typeof runId!=='string'||!runId)throw Error('CREATION_RESPONSE_INVALID');
+  console.log('RUN_CREATED',runId);await expect(page.locator('[data-action="twin-play"]').first()).toBeEnabled();await expect(page.locator('#twin-transport-time')).toContainText('tick 0');await expect(page.locator('#twin-run-speed')).toHaveValue('1');await expect(page.locator('#twin-stage canvas')).toBeVisible();await page.locator('[data-action="twin-play"]').first().click();await page.waitForTimeout(warmup);await expect(page.locator('#twin-stage canvas')).toHaveAttribute('data-arm-supports','1');await expect(page.locator('#twin-stage canvas')).toHaveAttribute('data-world-quality','valid');
+  const admission=await page.evaluate(async id=>{const [observation,scene]=await Promise.all([fetch(`/lab/v2/runs/${id}/world-display`).then(r=>r.json()),fetch(`/lab/v2/runs/${id}/world-display/scene`).then(r=>r.json())]);return {observation,scene};},runId);if(admission.observation.availability!=='valid'||admission.scene.availability!=='available')throw Error('ACTUAL_WORLD_PREFLIGHT_UNAVAILABLE');console.log(`CAPTURE_START ${runId} ${duration}ms active production UI`);const startActions=actions.length;
+- const capture=await page.evaluate(async({duration,runId})=>{
+-  const samples:{at:number;interval:number;drawn:boolean;tick:number;worldTick:number|null;fullCell:boolean;drawCalls:number}[]=[],renders:number[]=[],renderEvents:{runId:string;atMs:number;durationMs:number;count:number;drawCalls:number;worldTick:number|null}[]=[],drawPoseSamples:unknown[]=[],tasks:number[]=[],canvas=document.querySelector('#twin-stage canvas') as HTMLCanvasElement,gl=canvas.getContext('webgl2')!,originals:Record<string,unknown>={};let draws=0,lastDraw=0,active=true,last=performance.now(),start=last;
++ const capturePromise=page.evaluate(async({duration,runId})=>{
++  const samples:{at:number;interval:number;drawn:boolean;tick:number;worldTick:number|null;fullCell:boolean;drawCalls:number;renderCount:number}[]=[],renders:number[]=[],renderEvents:{runId:string;atMs:number;durationMs:number;count:number;drawCalls:number;worldTick:number|null}[]=[],drawPoseSamples:unknown[]=[],tasks:number[]=[],canvas=document.querySelector('#twin-stage canvas') as HTMLCanvasElement,gl=canvas.getContext('webgl2')!,originals:Record<string,unknown>={};const startCount=Number(canvas.dataset.renderCount);if(!Number.isSafeInteger(startCount))throw Error('RENDER_COUNTER_MISSING');let draws=0,lastDraw=0,lastEventDraws=0,active=true,last=performance.now(),start=last;
+   for(const key of ['drawElements','drawArrays','drawElementsInstanced','drawArraysInstanced']){originals[key]=(gl as unknown as Record<string,unknown>)[key];(gl as unknown as Record<string,unknown>)[key]=function(this:WebGL2RenderingContext,...args:unknown[]){draws++;return (originals[key] as (...a:unknown[])=>unknown).apply(this,args);};}
+-  canvas.dataset.measureRender='1';const onRender=(event:Event)=>{if(renderEvents.length>=25000)throw Error('RENDER_SAMPLE_LIMIT');renderEvents.push({...((event as CustomEvent).detail),runId});};canvas.addEventListener('twin-render',onRender);const observer=new PerformanceObserver(list=>tasks.push(...list.getEntries().map(e=>e.duration)));observer.observe({entryTypes:['longtask']});
+-  const raf=(now:number)=>{if(!active)return;const text=document.querySelector('#twin-transport-time')?.textContent??'',tick=Number(/tick\s+(\d+)/.exec(text)?.[1]??0),drawn=draws>lastDraw;const fullCell=canvas.dataset.armSupports==='1'&&canvas.dataset.worldQuality==='valid'&&canvas.dataset.bodyPoses!=='{}',worldTick=canvas.dataset.worldTick?Number(canvas.dataset.worldTick):null;samples.push({at:now-start,interval:now-last,drawn,tick,worldTick,fullCell,drawCalls:draws-lastDraw});if(drawn){renders.push(now-last);drawPoseSamples.push({at:now-start,worldTick,bodies:JSON.parse(canvas.dataset.bodyPoses??'{}'),arms:JSON.parse(canvas.dataset.armPoses??'{}'),cups:JSON.parse(canvas.dataset.payloadPoses??'{}')});}lastDraw=draws;last=now;requestAnimationFrame(raf);};requestAnimationFrame(raf);
+-  await new Promise(r=>setTimeout(r,duration));active=false;observer.disconnect();canvas.removeEventListener('twin-render',onRender);delete canvas.dataset.measureRender;for(const [key,fn]of Object.entries(originals))(gl as unknown as Record<string,unknown>)[key]=fn;
+-  const ext=gl.getExtension('WEBGL_debug_renderer_info');const end=performance.now();return {clock:{browserTimeOriginEpochMs:performance.timeOrigin,browserStartMs:start,browserEndMs:end,startEpochMs:performance.timeOrigin+start,endEpochMs:performance.timeOrigin+end},elapsedMs:end-start,renderEvents,activeCellMs:samples.filter(s=>s.fullCell).reduce((n,s)=>n+s.interval,0),drawPoseSamples,samples,longTasks:tasks,drawCalls:draws,activeFrames:samples.filter(s=>s.drawn).length,fullCellFrames:samples.filter(s=>s.fullCell).length,fullCellDrawingFrames:samples.filter(s=>s.fullCell&&s.drawn).length,droppedFrames:samples.filter(s=>s.interval>33.34).length,startTick:samples[0]?.tick,endTick:samples.at(-1)?.tick,canvasGeometry:canvas.dataset.geometries,bodyPoses:canvas.dataset.bodyPoses,worldSupports:canvas.dataset.armSupports,browser:{userAgent:navigator.userAgent,dpr:devicePixelRatio,visibility:document.visibilityState,webglRenderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null}};
++  canvas.dataset.measureRender='1';const onRender=(event:Event)=>{if(renderEvents.length>=25000)throw Error('RENDER_SAMPLE_LIMIT');renderEvents.push({...((event as CustomEvent).detail),runId,drawCalls:draws-lastEventDraws});lastEventDraws=draws;};canvas.addEventListener('twin-render',onRender);const observer=new PerformanceObserver(list=>tasks.push(...list.getEntries().map(e=>e.duration)));observer.observe({entryTypes:['longtask']});
++  const raf=()=>{if(!active)return;const now=performance.now();const text=document.querySelector('#twin-transport-time')?.textContent??'',tick=Number(/tick\s+(\d+)/.exec(text)?.[1]??0),drawn=draws>lastDraw;const fullCell=canvas.dataset.armSupports==='1'&&canvas.dataset.worldQuality==='valid'&&canvas.dataset.bodyPoses!=='{}',worldTick=canvas.dataset.worldTick?Number(canvas.dataset.worldTick):null;samples.push({at:now-start,interval:now-last,drawn,tick,worldTick,fullCell,drawCalls:draws-lastDraw,renderCount:Number(canvas.dataset.renderCount)});if(drawn){renders.push(now-last);drawPoseSamples.push({at:now-start,worldTick,bodies:JSON.parse(canvas.dataset.bodyPoses??'{}'),arms:JSON.parse(canvas.dataset.armPoses??'{}'),cups:JSON.parse(canvas.dataset.payloadPoses??'{}')});}lastDraw=draws;last=now;requestAnimationFrame(raf);};requestAnimationFrame(raf);
++  await new Promise(r=>setTimeout(r,duration));const renderOrdering={version:1,startCount,endCount:Number(canvas.dataset.renderCount),tailDrawCalls:draws-lastDraw};active=false;observer.disconnect();canvas.removeEventListener('twin-render',onRender);delete canvas.dataset.measureRender;for(const [key,fn]of Object.entries(originals))(gl as unknown as Record<string,unknown>)[key]=fn;
++  const ext=gl.getExtension('WEBGL_debug_renderer_info');const end=performance.now();return {clock:{browserTimeOriginEpochMs:performance.timeOrigin,browserStartMs:start,browserEndMs:end,startEpochMs:performance.timeOrigin+start,endEpochMs:performance.timeOrigin+end},elapsedMs:end-start,renderOrdering,renderEvents,activeCellMs:samples.filter(s=>s.fullCell).reduce((n,s)=>n+s.interval,0),drawPoseSamples,samples,longTasks:tasks,drawCalls:draws,activeFrames:samples.filter(s=>s.drawn).length,fullCellFrames:samples.filter(s=>s.fullCell).length,fullCellDrawingFrames:samples.filter(s=>s.fullCell&&s.drawn).length,droppedFrames:samples.filter(s=>s.interval>33.34).length,startTick:samples[0]?.tick,endTick:samples.at(-1)?.tick,canvasGeometry:canvas.dataset.geometries,bodyPoses:canvas.dataset.bodyPoses,worldSupports:canvas.dataset.armSupports,browser:{userAgent:navigator.userAgent,dpr:devicePixelRatio,visibility:document.visibilityState,webglRenderer:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null}};
+  },{duration,runId});
++ const routeCameras:unknown[]=[];
++ const cameraEvidence=async(name:string)=>{await page.screenshot({path:join(output,`route-${name}.png`)});routeCameras.push(await page.evaluate(name=>({name,atEpochMs:performance.timeOrigin+performance.now(),phase:document.querySelector('.cell-story-bar>span')?.textContent,transport:document.querySelector('#twin-transport-time')?.textContent,canvas:{...((document.querySelector('#twin-stage canvas') as HTMLCanvasElement).dataset)}}),name));};
++ try{
++  await page.locator('[data-action="twin-story-camera"][data-value="overview"]').click();await page.waitForTimeout(1000);await cameraEvidence('overview');
++  await page.waitForFunction(()=>document.querySelector('.cell-story-bar>span')?.textContent?.includes('Delivering coffee'),{},{timeout:150000});
++  await page.locator('[data-action="twin-story-camera"][data-value="amr"]').click();await page.waitForTimeout(1000);await cameraEvidence('follow-amr');
++  await page.locator('[data-action="twin-phase-follow"]').click();await page.waitForTimeout(3000);await cameraEvidence('phase-follow');
++ }catch(error){errors.push('ROUTE_CAMERA_EVIDENCE:'+String(error));}
++ await writeFile(join(output,'route-camera-observations.json'),JSON.stringify(routeCameras,null,2));
++ const capture=await capturePromise;
+  const endEpoch=capture.clock.endEpochMs,endWall=endEpoch-performance.timeOrigin,activeStartWall=capture.clock.startEpochMs-performance.timeOrigin;await writeFile(join(output,'capture-raw.json'),JSON.stringify({capture,workerSamples,stageSamples,actions,responses},null,2));await page.screenshot({path:join(output,'production-active-cell.png')});
+  // Actual full-prefix export and Pause overlap: no held protocol doubles. User controls remain operable while materialization runs.
+  const completedDownload=page.waitForEvent('download',{timeout:90000}),exportStarted=page.waitForRequest(r=>r.method()==='POST'&&r.url().endsWith('/replay'));await page.locator('[data-action="twin-world-export"]').click();await exportStarted;await page.evaluate(()=>{document.addEventListener('click',event=>{if((event.target as Element).closest('[data-action="twin-pause"]'))(window as unknown as {__pauseClickEpochMs:number}).__pauseClickEpochMs=performance.timeOrigin+performance.now();},{capture:true,once:true});});const pauseStart=performance.now();await page.locator('[data-action="twin-pause"]').first().click();await expect(page.locator('[data-action="twin-resume"]').first()).toBeEnabled();const pauseEnd=performance.now(),pauseClickEpochMs=await page.evaluate(()=>(window as unknown as {__pauseClickEpochMs?:number}).__pauseClickEpochMs),final=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);await page.screenshot({path:join(output,'production-paused-during-export.png')});
+  await page.waitForTimeout(500);const stable=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(stable.tick!==final.tick)throw Error('PAUSE_DID_NOT_FREEZE_COMMITTED_TICK');const download=await completedDownload,downloadPath=join(output,'live-complete-prefix.zip');await download.saveAs(downloadPath);await expect(page.locator('[data-action="twin-world-export"]').first()).toBeEnabled({timeout:30000});const afterExportView=await page.evaluate(async id=>(await(await fetch(`/lab/v2/runs/${id}`)).json()),runId);if(afterExportView.tick!==final.tick||afterExportView.run.status!=='paused')throw Error('EXPORT_CHANGED_PAUSED_HORIZON');const downloadBytes=await readFile(downloadPath),completeExport={completed:true,postExportCommittedH:afterExportView.tick,path:downloadPath,bytes:downloadBytes.length,sha256:createHash('sha256').update(downloadBytes).digest('hex'),suggestedFilename:download.suggestedFilename(),finishedEpochMs:Date.now(),publications:exports};
+  if(exported){const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line));for(const row of rows)if(row.observerError)errors.push(row.observerError);workerSamples.push(...rows.filter(s=>s.kind==='worker_wire').map(s=>({...s,wallMs:s.atEpochMs-performance.timeOrigin})));for(const entry of await readdir(directory,{withFileTypes:true})){if(!entry.isDirectory())continue;const path=join(directory,entry.name);try{const checkpoint=JSON.parse(await readFile(join(path,'run.json'),'utf8'));if(checkpoint.runId===runId)runDirectories.set(runId,path);}catch{}}await writeFile(join(output,'post-window-source-event-loop.json'),JSON.stringify(rows.filter(s=>s.kind==='source_event_loop'&&s.atEpochMs>endEpoch),null,2));await writeFile(join(output,'source-event-loop.json'),JSON.stringify(rows.filter(s=>s.kind==='source_event_loop'&&s.atEpochMs>=capture.clock.startEpochMs&&s.atEpochMs<=endEpoch),null,2));await writeFile(join(output,'io-diagnostic.json'),JSON.stringify(rows.filter(s=>s.kind==='fs'&&s.atEpochMs>=capture.clock.startEpochMs&&s.atEpochMs<=endEpoch),null,2));}
+  // Freeze HTTP admission after the final paused/export view; drain before closing the target.
+  await httpObserver.finish();await writeFile(join(output,'http-observations.json'),JSON.stringify({responses,actions,exports,errors},null,2));if(errors.length)throw Error('HTTP_OR_PAGE_OBSERVATION_FAILED:'+errors.join(';'));if(exports.length!==1||exports[0]!.status!==201||exports[0]!.runId!==runId)throw Error('LIVE_EXPORT_PUBLICATION_NOT_CONFIRMED');if(responses.filter(r=>r.method==='DELETE'&&r.runId===runId&&r.exportId===exports[0]!.exportId&&r.outcome==='completed'&&r.status===200).length!==1)throw Error('LIVE_EXPORT_RELEASE_NOT_CONFIRMED');const pauseClickWall=pauseClickEpochMs===undefined?pauseStart:pauseClickEpochMs-performance.timeOrigin,poseEvents=capture.renderEvents.filter((s,i,a)=>i===0||s.worldTick!==a[i-1]!.worldTick);
+  const allWorkers=(workerSamples as {op:string;elapsedMs:number;runId:string;targetTick:number;wallMs:number}[]).filter(s=>s.runId===runId&&s.op==='step'),used=allWorkers.filter(s=>s.wallMs>=activeStartWall&&s.wallMs<=endWall),steps=actions.slice(startActions).filter(a=>a.kind==='step'&&Number(a.observedAtEpochMs)>=capture.clock.startEpochMs&&Number(a.observedAtEpochMs)<=capture.clock.endEpochMs),intervals=capture.samples.map(s=>s.interval),drawing=capture.samples.filter(s=>s.drawn).map(s=>s.interval),simSeconds=((capture.endTick??0)-(capture.startTick??0))*.02;
++ const distinctDraws=capture.renderEvents.filter((e,i,a)=>!i||e.atMs!==a[i-1]!.atMs),drawIntervals=distinctDraws.slice(1).map((e,i)=>e.atMs-distinctDraws[i]!.atMs);
+  const clock={nodeTimeOriginEpochMs:performance.timeOrigin,...capture.clock};const correlationProblems=checkCaptureClock({runId,clock,actions,responses});if(correlationProblems.length)throw Error(correlationProblems.join(';'));
+- const result={version:2,clock,workload:'production Vite build; real Source gateway, shared MuJoCo worker, Source durability and world display polling; active live cell only',sourceCommit:lock.sourceCommit,runtimeArtifact:lock.artifactSha256,buildIdentity,creationRequest,admissionIdentity:{runId,bootId:admission.observation.snapshot.bootId,sceneDigest:admission.observation.snapshot.sceneDigest,initialCommittedH:admission.observation.tick,initialRevision:admission.observation.revision,worldStep:admission.observation.snapshot.worldStep,scene:admission.scene.scene},sourceExecution:exported?'unchanged hash-verified exported runtime CLI with external owned-child wire/IO observer; production-built browser assets':'tsx same committed Source modules with operator timing observer and pass-through world stage timers; production-built browser assets',runId,directory,selectedRate:1,warmupMs:warmup,requestedDurationMs:duration,wallMs:capture.elapsedMs,activeSourceStepWindowMs:Math.max(0,...steps.map(s=>Number(s.receivedAt)-activeStartWall)),sourceReceiptTailGapMs:endWall-Math.max(activeStartWall,...steps.map(s=>Number(s.receivedAt))),simSeconds,achievedRate:simSeconds/(capture.elapsedMs/1000),network:'Chrome -> Vite production preview 127.0.0.1:4175 /lab proxy -> Source HTTP 127.0.0.1:4176 -> stdio worker',host:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,memoryGiB:os.totalmem()/2**30},browserVersion:browser.version(),capture,displayRAFIntervals:summary(intervals),drawingRAFIntervals:summary(drawing),actualRenderIntervals:summary(capture.renderEvents.slice(1).map((s,i)=>s.atMs-capture.renderEvents[i]!.atMs)),actualRenderDuration:summary(capture.renderEvents.map(s=>s.durationMs)),worldPoseUpdateIntervals:summary(poseEvents.slice(1).map((s,i)=>s.atMs-poseEvents[i]!.atMs)),distinctWorldH: new Set(capture.renderEvents.map(s=>s.worldTick).filter(t=>t!==null)).size,workerIPC:summary(used.map(s=>s.elapsedMs)),sourceStepHTTP:summary(steps.map(s=>Number(s.responseMs))),pause:{actionId:actions.find(a=>a.kind==='pause')?.actionId,finalView:final,stableView:stable,afterExportView,wallMs:pauseEnd-pauseStart,ackUILatencyFromClickMs:pauseEnd-pauseClickWall,clickEpochMs:pauseClickEpochMs,uiObservedAtEpochMs:performance.timeOrigin+pauseEnd,conservativeRequestStartEpochMs:performance.timeOrigin+pauseStart,lastCommittedBoundary:'browser-observed Source step receipt upper bound; wire ACK is not commit',toLastCommittedMs:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall)),stableAfterTick:stable.tick,lastCommittedTick:final.tick,status:final.run.status,exportConcurrent:true},wireTimingBoundary:exported?'complete matching JSON wire ACK receipt before Source validation; Source committed horizon separate':'Source accepted worker ACK validation boundary',observerSha256:createHash('sha256').update(await readFile(join(lab,'scripts/performance-runtime-observer.mjs'))).digest('hex'),workerRaw:used,workerOutsideWindow:{before:allWorkers.filter(s=>s.wallMs<activeStartWall),after:allWorkers.filter(s=>s.wallMs>endWall)},stageRaw:stageSamples.filter(s=>s.runId===runId&&s.wallMs>=activeStartWall&&s.wallMs<=endWall),stageCosts:Object.fromEntries(['prepare','commit','evidence_append'].map(stage=>[stage,summary(stageSamples.filter(s=>s.runId===runId&&s.stage===stage&&s.wallMs>=activeStartWall&&s.wallMs<=endWall).map(s=>s.elapsedMs))])),actions,responses,errors,harnessEventLoop:{p95Ms:loop.percentile(95)/1e6,maxMs:loop.max/1e6,scope:exported?'benchmark/Vite host, not Source CLI':'module-composed Source and benchmark same process'},completeExport,postWindowHTTP:responses.filter(r=>Number(r.startTime)>endEpoch),checkpointBytes:(await stat(join(runDirectories.get(runId)!,'run.json'))).size,accepted:false,targets:{durationMet:capture.elapsedMs>=180000&&capture.activeCellMs>=180000,displayMet:(summary(capture.renderEvents.slice(1).map((s,i)=>s.atMs-capture.renderEvents[i]!.atMs)).p95??Infinity)<=33,workerMet:(summary(used.map(s=>s.elapsedMs)).p95??Infinity)<=15,pauseMet:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall))<=500}};
++ const result={version:2,clock,workload:'production Vite build; real Source gateway, shared MuJoCo worker, Source durability and world display polling; active live cell only',sourceCommit:lock.sourceCommit,runtimeArtifact:lock.artifactSha256,buildIdentity,creationRequest,admissionIdentity:{runId,bootId:admission.observation.snapshot.bootId,sceneDigest:admission.observation.snapshot.sceneDigest,initialCommittedH:admission.observation.tick,initialRevision:admission.observation.revision,worldStep:admission.observation.snapshot.worldStep,scene:admission.scene.scene},sourceExecution:exported?'unchanged hash-verified exported runtime CLI with external owned-child wire/IO observer; production-built browser assets':'tsx same committed Source modules with operator timing observer and pass-through world stage timers; production-built browser assets',runId,directory,selectedRate:1,warmupMs:warmup,requestedDurationMs:duration,wallMs:capture.elapsedMs,activeSourceStepWindowMs:Math.max(0,...steps.map(s=>Number(s.receivedAt)-activeStartWall)),sourceReceiptTailGapMs:endWall-Math.max(activeStartWall,...steps.map(s=>Number(s.receivedAt))),simSeconds,achievedRate:simSeconds/(capture.elapsedMs/1000),network:'Chrome -> Vite production preview 127.0.0.1:4175 /lab proxy -> Source HTTP 127.0.0.1:4176 -> stdio worker',host:{platform:os.platform(),release:os.release(),arch:os.arch(),cpu:os.cpus()[0]?.model,memoryGiB:os.totalmem()/2**30},browserVersion:browser.version(),capture,displayRAFIntervals:summary(intervals),drawingRAFIntervals:summary(drawing),renderCadenceConvention:'intervals between distinct browser-clock timestamp groups; raw event/draw counts retained',actualRenderIntervals:summary(drawIntervals),actualRenderDuration:summary(capture.renderEvents.map(s=>s.durationMs)),worldPoseUpdateIntervals:summary(poseEvents.slice(1).map((s,i)=>s.atMs-poseEvents[i]!.atMs)),distinctWorldH: new Set(capture.renderEvents.map(s=>s.worldTick).filter(t=>t!==null)).size,workerIPC:summary(used.map(s=>s.elapsedMs)),sourceStepHTTP:summary(steps.map(s=>Number(s.responseMs))),pause:{actionId:actions.find(a=>a.kind==='pause')?.actionId,finalView:final,stableView:stable,afterExportView,wallMs:pauseEnd-pauseStart,ackUILatencyFromClickMs:pauseEnd-pauseClickWall,clickEpochMs:pauseClickEpochMs,uiObservedAtEpochMs:performance.timeOrigin+pauseEnd,conservativeRequestStartEpochMs:performance.timeOrigin+pauseStart,lastCommittedBoundary:'browser-observed Source step receipt upper bound; wire ACK is not commit',toLastCommittedMs:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall)),stableAfterTick:stable.tick,lastCommittedTick:final.tick,status:final.run.status,exportConcurrent:true},wireTimingBoundary:exported?'complete matching JSON wire ACK receipt before Source validation; Source committed horizon separate':'Source accepted worker ACK validation boundary',observerSha256:createHash('sha256').update(await readFile(join(lab,'scripts/performance-runtime-observer.mjs'))).digest('hex'),workerRaw:used,workerOutsideWindow:{before:allWorkers.filter(s=>s.wallMs<activeStartWall),after:allWorkers.filter(s=>s.wallMs>endWall)},stageRaw:stageSamples.filter(s=>s.runId===runId&&s.wallMs>=activeStartWall&&s.wallMs<=endWall),stageCosts:Object.fromEntries(['prepare','commit','evidence_append'].map(stage=>[stage,summary(stageSamples.filter(s=>s.runId===runId&&s.stage===stage&&s.wallMs>=activeStartWall&&s.wallMs<=endWall).map(s=>s.elapsedMs))])),actions,responses,errors,harnessEventLoop:{p95Ms:loop.percentile(95)/1e6,maxMs:loop.max/1e6,scope:exported?'benchmark/Vite host, not Source CLI':'module-composed Source and benchmark same process'},completeExport,postWindowHTTP:responses.filter(r=>Number(r.startTime)>endEpoch),checkpointBytes:(await stat(join(runDirectories.get(runId)!,'run.json'))).size,accepted:false,targets:{durationMet:capture.elapsedMs>=180000&&capture.activeCellMs>=180000,displayMet:(summary(drawIntervals).p95??Infinity)<=33,workerMet:(summary(used.map(s=>s.elapsedMs)).p95??Infinity)<=15,pauseMet:Math.max(0,...actions.filter(a=>a.kind==='step').map(a=>Number(a.receivedAt)-pauseClickWall))<=500}};
+  await writeFile(join(output,'actual-cell-production.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({runId,achievedRate:result.achievedRate,raf:result.displayRAFIntervals,renderIntervals:result.actualRenderIntervals,renderCPU:result.actualRenderDuration,worker:result.workerIPC,sourceHTTP:result.sourceStepHTTP,pause:result.pause,targets:result.targets,errors}));await context.close();
+ }
+ }catch(e){httpObserver?.dispose();await writeFile(join(output,'http-observations.json'),JSON.stringify({responses,actions,exports,errors},null,2));await writeFile(join(output,'error.txt'),String((e as Error).stack??e));await activePage?.screenshot({path:join(output,'failure.png')}).catch(()=>{});if(activePage)await writeFile(join(output,'failure-body.txt'),await activePage.locator('body').innerText().catch(()=>''));throw e;}finally{
+  httpObserver?.dispose();loop.disable();const cleanupErrors:unknown[]=[];
+  // Attempt every owned cleanup even if an earlier close fails; boot failure still owns the exported child.
+  for(const close of [async()=>{await browser?.close();},async()=>{if(web){if('closeAllConnections' in web.httpServer)web.httpServer.closeAllConnections();await new Promise<void>(r=>web!.httpServer.close(()=>r()));}},async()=>{if(gateway)await gateway.close();else await stopExportedRuntime?.();}]){try{await bounded(close(),30000,'OWNED_CLOSE_TIMEOUT');}catch(error){cleanupErrors.push(error);}}
+  if(exported){try{const rows=(await readFile(join(output,'runtime-observer.ndjson'),'utf8')).split('\n').filter(Boolean).map(line=>JSON.parse(line)),end=rows.at(-1);await writeFile(join(output,'observer-summary.json'),JSON.stringify(end,null,2));if(end?.kind!=='observer_end'||end.overflow||end.observerFailure)throw Error('OBSERVER_INCOMPLETE');}catch(error){cleanupErrors.push(error);}}
+  try{if(owned.processes().length)throw Error('OWNED_WORKERS_REMAIN');}catch(error){cleanupErrors.push(error);}
+  await writeFile(join(output,'cleanup.json'),JSON.stringify({completed:cleanupErrors.length===0,errors:cleanupErrors.map(String)},null,2));if(cleanupErrors.length)throw new AggregateError(cleanupErrors,'PRODUCTION_CLEANUP_FAILED');console.log('OWNED_CLEANUP_DONE');
+ }
+diff --git a/scripts/production-http-observer.ts b/scripts/production-http-observer.ts
+index 95a9b97..7cfb6ad 100644
+--- a/scripts/production-http-observer.ts
++++ b/scripts/production-http-observer.ts
+@@ -32,21 +32,21 @@ export function observeProductionHTTP(page:Page,data:{responses:Row[];actions:Ro
+   void (async()=>{
+    const response=entry.response;if(!response)throw Error('RESPONSE_MISSING');
+    const path=new URL(request.url()).pathname,timing=request.timing(),status=response.status(),runId=path.split('/').at(-2);
+    if(status<200||status>=300)throw Error(`HTTP_STATUS_${status}`);
+    if(!Number.isFinite(timing.startTime)||timing.startTime<0||!Number.isFinite(timing.responseEnd)||timing.responseEnd<0)throw Error('TERMINAL_TIMING_MISSING');
+    if(request.method()==='POST'&&path.endsWith('/actions')){
+     const body=request.postDataJSON(),receipt=await response.json();
+     if(status!==200||typeof body?.actionId!=='string'||!body.actionId||typeof body.kind!=='string'||receipt?.run?.id!==runId||!Number.isSafeInteger(receipt.tick)||receipt.tick<0||!Number.isSafeInteger(receipt.run.runRevision)||typeof receipt.run.status!=='string')throw Error('ACTION_RECEIPT_INVALID');
+     if(!pending.has(request))return;
+     const correlation={runId,actionId:body.actionId,tick:receipt.tick,requestStartEpochMs:timing.startTime,responseEndEpochMs:timing.startTime+timing.responseEnd};
+-    data.actions.push({...correlation,kind:body.kind,payload:body.payload,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt.run.runRevision,status:receipt.run.status});settle(entry,'completed',undefined,correlation);
++    data.actions.push({...correlation,kind:body.kind,payload:body.payload,expectedRevision:body.expectedRevision,responseMs:timing.responseEnd,receivedAt:performance.now(),observedAtEpochMs:performance.timeOrigin+performance.now(),revision:receipt.run.runRevision,status:receipt.run.status});settle(entry,'completed',undefined,correlation);
+    }else if(request.method()==='POST'&&path.endsWith('/replay')){
+     const publication=await response.json(),manifest=publication?.manifest;
+     if(status!==201||typeof publication?.exportId!=='string'||!publication.exportId||manifest?.runId!==runId||manifest.documentType!=='web-replay-package'||!Number.isSafeInteger(manifest.horizon?.tick)||manifest.horizon.tick<0)throw Error('REPLAY_PUBLICATION_INVALID');
+     if(!pending.has(request))return;
+     data.exports.push({runId,status,startEpochMs:timing.startTime,responseMs:timing.responseEnd,receivedAt:performance.now(),exportId:publication.exportId,manifest});settle(entry,'completed',undefined,{runId,exportId:publication.exportId,tick:manifest.horizon.tick});
+    }else if(request.method()==='DELETE'&&/^\/lab\/v2\/runs\/[^/]+\/replay\/[^/]+$/.test(path)){
+     const ack=await response.json(),releaseRunId=path.split('/').at(-3),exportId=path.split('/').at(-1);
+     if(status!==200||ack?.deleted!==true)throw Error('REPLAY_RELEASE_INVALID');
+     // The recorder joins release/publication identity after drain; JSON observers may finish out of order.
+     settle(entry,'completed',undefined,{runId:releaseRunId,exportId});
+diff --git a/src/scenarios/controls.ts b/src/scenarios/controls.ts
+index 5385d51..817e397 100644
+--- a/src/scenarios/controls.ts
++++ b/src/scenarios/controls.ts
+@@ -91,21 +91,21 @@ export function engineeringRefFor(project:EngineeringProject,receipt:BundleRecei
+  return {bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest};
+ }
+ /** Reset is a new run from what the chosen run was created with, never from the open draft or preset. */
+ export function requestFromLocked(locked:LockedInput):CreateRun {
+  const {sourceCommit:_c,engineering,...rest}=locked as LockedInput&{runtimeIdentity?:unknown};void _c;
+  const {project,runtimeIdentity:_r,...base}=rest as LegacyCreateRun&{runtimeIdentity?:unknown};void _r;
+  return engineering?{...base,engineeringRef:engineering.ref}:{...base,project:structuredClone(project)};
+ }
+ export type ActionKind='start'|'pause'|'resume'|'cancel'|'step'|'confirm'|'injectFault'|'reconcile'|'restoreCup';
+ export interface EngineeringManifest {schemaVersion:1;projectDigest:string;assemblyDigest:string;sceneDigest:string;profile:string;compilerVersion:string;files:{path:string;sha256:string;sizeBytes:number}[]}
+-export interface WorldDisplay {version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
++export interface WorldDisplay {view?:RunView;version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
+ export interface TwinRuntime {
+  exportReplay?(id:string,signal:AbortSignal):Promise<{reader:import('../reports/replay-package').ReplayReader;release():Promise<void>}>;
+  worldDisplay?(id:string,signal?:AbortSignal):Promise<WorldDisplay>;
+  worldDisplayScene?(id:string,signal?:AbortSignal):Promise<{runId:string;availability:string;reason:string|null;scene:import('../shared/navigation2d').LabWorldSceneV1|null}>;
+  readiness?(scenarioId:string,backendSetId:string,project?:LabProjectV2,engineeringRef?:EngineeringRef):Promise<ReadinessSnapshot>;
+  /** Present only against a runtime that advertises engineering_bundle_v1. */
+  compileEngineering?(project:EngineeringProject):Promise<BundleReceipt>;
+  /** Read access to a bundle this session compiled (or reclaimed): its manifest and content-addressed blobs. */
+  engineeringManifest?(bundleDigest:string):Promise<EngineeringManifest>;
+  engineeringBlob?(sha256:string):Promise<Uint8Array>;
+diff --git a/src/shared/engineering.ts b/src/shared/engineering.ts
+index 2f79741..ec39da8 100644
+--- a/src/shared/engineering.ts
++++ b/src/shared/engineering.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/engineering.ts @ 981e234b1a0da8c72d220445daaf780b3bf65ae4 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/engineering.ts @ cb5c86cf9ee5db06cdacc38a2146f6f312b2c503 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
+ import type {LabProjectV2,AssetRevision} from './types';
+ export type CoffeeRecipe=Record<string,unknown>;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+  * via the `definition` "Digest".
+  */
+ export type Digest = string;
+ /**
+  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+diff --git a/src/shared/navigation2d.ts b/src/shared/navigation2d.ts
+index 7f99280..b782998 100644
+--- a/src/shared/navigation2d.ts
++++ b/src/shared/navigation2d.ts
+@@ -1,11 +1,11 @@
+-// Synced from source packages/contracts/generated/navigation2d.ts @ 981e234b1a0da8c72d220445daaf780b3bf65ae4 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
++// Synced from source packages/contracts/generated/navigation2d.ts @ cb5c86cf9ee5db06cdacc38a2146f6f312b2c503 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+ /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
+ import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+ /**
+  * @minItems 2
+  * @maxItems 2
+  *
+  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+  * via the `definition` "Vec2".
+  */
+ export type Vec2 = number[];
+diff --git a/src/twin/world-playback.ts b/src/twin/world-playback.ts
+new file mode 100644
+index 0000000..9a73440
+--- /dev/null
++++ b/src/twin/world-playback.ts
+@@ -0,0 +1,28 @@
++// A bounded display-only buffer. Every component comes from the same received,
++// committed world pair. Never advances past the latest observation or across identity/gaps.
++import type {TwinPoses} from '../viewer/twin3d';
++import {lerpJoints,lerpPlace} from './sample-buffer';
++const place=(a:NonNullable<TwinPoses['cups']>[string],b:NonNullable<TwinPoses['cups']>[string],u:number)=>{const p=lerpPlace([...a.positionM,...a.quaternionXyzw],[...b.positionM,...b.quaternionXyzw],u);return {positionM:p.slice(0,3) as [number,number,number],quaternionXyzw:p.slice(3) as [number,number,number,number]};};
++const interpolate=(a:TwinPoses,b:TwinPoses,u:number):TwinPoses=>({
++ arms:Object.fromEntries(Object.entries(a.arms).map(([id,p])=>[id,{jointsRad:lerpJoints(p.jointsRad,b.arms[id]!.jointsRad,u),gripperOpeningM:p.gripperOpeningM===null||b.arms[id]!.gripperOpeningM===null?p.gripperOpeningM:p.gripperOpeningM+(b.arms[id]!.gripperOpeningM!-p.gripperOpeningM)*u}])),
++ bodies:Object.fromEntries(Object.entries(a.bodies).map(([id,p])=>[id,place(p,b.bodies[id]!,u)])),cups:Object.fromEntries(Object.entries(a.cups??{}).map(([id,p])=>[id,place(p,b.cups![id]!,u)]))});
++export class WorldPlayback {
++ private samples:{sim:bigint;wall:number;poses:TwinPoses}[]=[];private identity='';private received=-Infinity;private sim=-1n;
++ feed(identity:string,simNs:string,receivedMs:number,poses:TwinPoses):void{
++  const key=identity+JSON.stringify([Object.keys(poses.arms).sort(),Object.keys(poses.bodies).sort(),Object.keys(poses.cups??{}).sort()]);
++  const sim=BigInt(simNs);if(key===this.identity&&(sim<=this.sim||receivedMs<this.received))return;
++  if(key!==this.identity||receivedMs-this.received>500){this.clear();this.identity=key;}
++  this.sim=sim;this.received=receivedMs;
++  if(this.samples.at(-1)?.wall===receivedMs)this.samples.pop();
++  this.samples.push({sim,wall:receivedMs,poses:structuredClone(poses)});if(this.samples.length>32)this.samples.shift();
++ }
++ clear():void{this.samples=[];this.identity='';this.received=-Infinity;this.sim=-1n;}
++ at(nowMs:number):TwinPoses|null{
++  if(nowMs-this.received>500||!this.samples.length)return null;
++  // Delay the received wall timeline, not a rate inferred anew from each poll.
++  // Uneven committed tick counts must not move the playback target backwards.
++  const target=nowMs-150;let i=this.samples.length-1;while(i>0&&this.samples[i-1]!.wall>target)i--;
++  const b=this.samples[i]!,a=this.samples[i-1];if(!a||target>=b.wall)return b.poses;
++  return b.sim-a.sim>1000000000n?a.poses:interpolate(a.poses,b.poses,(target-a.wall)/(b.wall-a.wall));
++ }
++}
+diff --git a/src/ui/workspace.ts b/src/ui/workspace.ts
+index b5c5ea1..60530a3 100644
+--- a/src/ui/workspace.ts
++++ b/src/ui/workspace.ts
+@@ -1,10 +1,11 @@
++import {WorldPlayback} from '../twin/world-playback';
+ import {comparisonTabs,semanticStudyHtml,parseSemanticStudy,type SemanticStudyView} from '../reports/compare';
+ import {CELL_SET,WORLD_EXPERIMENTS,worldExperimentLabel,knownWorldDrawing} from '../twin/cell';
+ import {worldPhase,type WorldDrawing} from '../twin/world-view';
+ import {storyCameraTransition,type StoryCameraState,type StoryCamera} from '../twin/story-camera';
+ import {physicsHtml,physicsTimeline} from '../reports/physics';
+ import {loadPayloadBundle,selectPayloadExperiment,PAYLOAD_EXPERIMENT_IDS,experimentLabel,MUJOCO_MOBILE_SET,type PayloadBundle} from '../twin/payload';
+ import {faultScheduleEditor,draftEntry,type ScheduleDraft} from './fault-schedule';
+ import {editSchedule} from '../scenarios/fault-schedule';
+ import {ProjectStore} from '../project/store';
+ // Twin workspace: run bar, viewport (2D plan or optional 3D, Display menu with layers + legend), transport bar and a details inspector
+@@ -79,21 +80,21 @@ export class TwinWorkspace {
+  private rerender(){if(!this.left)this.render();}
+  private readiness:ReadinessSnapshot|null=null;private readinessRequest=0;private readinessExpiry:ReturnType<typeof setTimeout>|undefined;
+  private health:TwinHealth|null=null;private healthChecked=false;private probing=false;
+  private preset:TwinPreset=presets[0]!;
+  /** Inputs locked at creation; the scene and bar show the run's preset, not whatever is selected afterwards. */
+  private runPreset:TwinPreset|null=null;
+  private view:RunView|null=null;private report:RunReport|null=null;private seen:Record<string,number>={};
+  private vs:ViewState={view:innerWidth<768?'2d':'3d',layers:defaultLayers(),selected:null};
+  private webglFailed=false;private viewer:Twin3d|null=null;private mounting=false;private v3d:typeof import('../viewer/twin3d')|null=null;
+  /** D58: live playback of the 3D view (twin/live-playback); `exact` are the newest frame's poses it overrides. */
+- private playback=new LivePlayback({reducedMotion:()=>matchMedia('(prefers-reduced-motion: reduce)').matches,fresh:(id,now)=>freshness(this.store.entity(id),this.link,now).state==='live'});private exact:TwinPoses|null=null;private raf=0;
++ private playback=new LivePlayback({reducedMotion:()=>matchMedia('(prefers-reduced-motion: reduce)').matches,fresh:(id,now)=>freshness(this.store.entity(id),this.link,now).state==='live'});private exact:TwinPoses|null=null;private raf=0;private worldPlayback=new WorldPlayback();private shownWorldPose='';
+  /** Telemetry (lossy) lives in the store; the durable view only changes from action receipts, resets and polled snapshots. */
+  private store=new TwinStore();private link:Link={state:'closed',lastHeartbeatMs:null,paused:false};private streams:ReturnType<typeof openRunStreams>|null=null;private streamRun='';
+  private business=0;private ticker:ReturnType<typeof setInterval>|undefined;private painted='';private refreshing=false;
+  private study:SemanticStudyView|null=null;private studyTab:'run'|'study'='run';
+  private replayPending=false;private replay:ReplayState|null=null;private replayTimer:ReturnType<typeof setInterval>|undefined;private previous:RunReport|null=null;
+  private scheduleOpen=false;private scheduleDraft:ScheduleDraft={faultId:'reboot',targetId:'',trigger:'elapsed_sim_ms',value:'1000',durationMs:'1000'};private projects=new ProjectStore();
+  /** IR-SIM runs: the run bundle's compiled navigation scene, loaded once per run from the bundle the runtime locked. */
+  private exportBusy=false;private exportAbort:AbortController|null=null;private world:WorldDrawing|null=null;private worldView:RunView|null=null;private worldReceived=0;private worldBusy=false;private worldAbort:AbortController|null=null;private worldDrawing:Omit<WorldDrawing,'record'>|null=null;private worldRun='';private worldBoot='';private worldReason='';private storyPhase='';private storyCamera:StoryCameraState={camera:'overview',follow:false,phaseFollow:false,instant:false};
+  private payloadBundle:PayloadBundle|null=null;private navigation:NavigationSceneV1|null=null;private sceneLoad=0;
+  /** The scene this frame may draw: bound to the shown report's own evidence (an opened report is never live). */
+@@ -122,20 +123,21 @@ export class TwinWorkspace {
+   const [toggle,k]=open;if(!t.closest('.twin-shell')||t.closest(`#${BOX_IDS[k]},[data-action="${toggle}"]`))return;
+   this.ui={...this.ui,[k]:false};this.liveRender();
+  };
+  private runSpeed=16;private evidenceStore=new EvidenceStore();private saved:SavedEvidence[]=[];private savedLoaded=false;private archived=false;
+  /** The runtime box's address field (the saved address until edited); `runtimeError`: the code of the last failed connect (INVALID_RUNTIME_URL is shown at the field);
+   * `pinMismatch`: [runtime, pin] short commits after a create refused RUNTIME_PIN_MISMATCH; `pinExpected`: the Lab's pin (served beside the page), '' until read. */
+  private addressDraft='';private whereChoice:'here'|'other'='here';private runtimeError:string|null=null;private pinMismatch:string[]|null=null;private pinExpected='';private pinRead=false;
+  /** Paced auto-run (features.pacedStep): stopped by a hidden tab (resumes when shown); `speedLog` [wall ms, sim s] of the last 2 s gives `measuredSpeed` (U06 shows it). */
+  private hiddenStop=false;private speedLog:[number,number][]=[];private measuredSpeed:number|undefined;
+  /** One Pause press during a paced run: the loop stops, the in-flight step returns, then `pause` goes with that step's revision. */
++ private inFlightCell:RunView|null=null;private priorityPause:Promise<unknown>|null=null;
+  private pausing=false;private payloadStopping=false;private payloadStopPause=false;private payloadCancelPaused=false;
+  /** The address that failed validation: the error stays only while the field still holds it. */
+  private failedAddress='';
+  /** Report refresh off the paced loop's critical path: at most one request in flight, at most once a second, `reportAgain` = one more when it lands. */
+  private reportBusy=false;private reportDue=0;private reportAgain=false;
+  /** Every report request gets a number; an answer is shown only if no later-asked one is shown already (the runtime makes a report when asked). */
+  private reportSeq=0;private reportShown=0;
+  /** An action waits for the report that matches the view (save, export, replay, a new run): the page says it is loading meanwhile. */
+  private reportLoading=false;
+  /** The paced loop is running: re-renders keep the elements the user can act on (paint()). */
+@@ -156,21 +158,21 @@ export class TwinWorkspace {
+  private resolve(p:TwinPreset):TwinPreset{
+   if(!p.engineering)return p;
+   const input=this.engineeringInput();
+   return input&&[IRSIM_PROFILE,WEBOTS_PROFILE].includes(input.project.requestedProfile)&&input.project.requestedProfile===p.engineering.project.requestedProfile?{...p,engineering:{project:input.project,receipt:input.receipt},project:structuredClone(input.project.runtimeProject)}:p;
+  }
+  private refOf(p:TwinPreset){try{return p.engineering?engineeringRefFor(p.engineering.project,p.engineering.receipt):undefined;}catch{return null;}}
+  private clock(){return this.view?clockControls(this.view,this.health):undefined;}
+  private target(){return this.rt.target??SAME_ORIGIN;}
+  private frame():TwinFrame {
+   const paired=!this.replay&&!this.replayPending&&this.world&&this.worldView&&this.world.record.snapshot.runId===this.view?.run.id&&performance.now()-this.worldReceived<=500;const v=paired?this.worldView:this.view,base={preset:this.runPreset??this.resolve(this.preset),report:this.report,world:undefined as WorldDrawing|undefined,payloadBundle:this.payloadBundle?.scene.sceneDigest===this.scene().scene?.sceneDigest?this.payloadBundle:null,navigation:this.scene().scene};
+-  if(!this.replay&&!this.replayPending&&this.world&&this.world.record.snapshot.runId===v?.run.id&&this.world.record.snapshot.tick===v?.tick&&this.world.sourceRevision===v.run.runRevision){base.world=this.world;base.navigation=this.world.scene.navigation;base.payloadBundle={scene:this.world.scene.navigation,physical:this.world.physical,load:this.world.load,physicalSha256:this.world.scene.models.mobilePhysical.sha256,loadSha256:this.world.scene.models.emptyLoad.sha256};}
++  if(paired&&this.world&&this.world.record.snapshot.runId===v?.run.id&&this.world.record.snapshot.tick===v?.tick&&this.world.sourceRevision===v.run.runRevision){base.world=this.world;base.navigation=this.world.scene.navigation;base.payloadBundle={scene:this.world.scene.navigation,physical:this.world.physical,load:this.world.load,physicalSha256:this.world.scene.models.mobilePhysical.sha256,loadSha256:this.world.scene.models.emptyLoad.sha256};}
+   if(!v)return {...base,view:v};
+   if(this.replay){const r=this.replay,projection=r.rp.project(this.view!,r.tick);if(base.preset.id==='mujoco-cell'){const report:RunReport&{worldSweep?:unknown}={...projection.report};delete report.arm;delete report.worldSweep;delete report.physicsEvidence;return {...base,...projection,report,world:undefined,navigation:null,payloadBundle:null,samples:{}};}return {...base,...projection};}
+   if(base.world)return {...base,report:this.report&&this.report.outcome.tick<=v.tick?this.report:null,view:v,samples:Object.fromEntries(this.store.entities().filter(s=>s.simTimeNs===null||BigInt(s.simTimeNs)<=BigInt(v.simTimeNs)).map(s=>[s.entityId,s])),nowMs:performance.now()};
+   const now=performance.now();
+   return {...base,samples:Object.fromEntries(this.store.entities().map(s=>[s.entityId,s])),nowMs:now,view:{...v,entities:v.entities.filter(e=>e.kind==='amr').map(e=>{const s=this.store.entity(e.id),o=s?.observed;if(!s||!o||typeof o.xM!=='number')return e;
+    const fresh=freshness(s,this.link,now),newer=s.simTimeNs!==null&&BigInt(s.simTimeNs)>=BigInt(v.simTimeNs)&&(v.run.telemetryCursor===null||BigInt(s.seq)>=BigInt(v.run.telemetryCursor));
+    return {...e,...newer?{pose:{x:o.xM as number,y:o.yM as number,yawRad:o.yawRad as number,...pose3dOf(o)},moving:typeof o.moving==='boolean'?o.moving:e.moving,hold:typeof o.hold==='string'?o.hold:null}:{},sampleAgeMs:fresh.ageMs??undefined,quality:fresh.state==='live'||fresh.state==='frozen_sim'?newer?(s.quality==='valid'?'valid':'stale'):e.quality:'stale'};})}};
+  }
+  /** Plain text (escaped where it is written). */
+  private linkText(){
+@@ -180,30 +182,32 @@ export class TwinWorkspace {
+   const g=this.store.gaps.length,d=this.store.stats.gapDropped+this.store.stats.dropped;
+   return `${label[l]} · ${id??'—'} ${state}${f.ageMs===null?'':` ${(f.ageMs/1000).toFixed(1)} s`}${f.reason&&f.state!=='live'?` (${f.reason})`:''}${g||d?` · gap ${g} · drop ${d}`:''}`;
+  }
+  private async exportWorld(){
+   if(this.exportBusy||!this.view||!this.rt.exportReplay)return;const id=this.view.run.id,epoch=this.gen,abort=new AbortController();this.exportAbort=abort;this.exportBusy=true;this.paint();
+   let capture:Awaited<ReturnType<NonNullable<TwinRuntime['exportReplay']>>>|undefined;
+   try{capture=await this.rt.exportReplay(id,abort.signal);const {replayZip}=await import('../reports/replay-save'),blob=await replayZip(capture.reader,abort.signal);if(epoch!==this.gen||this.view?.run.id!==id||abort.signal.aborted)return;const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`replay-${id}.zip`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);this.notice=tr('Đã xuất snapshot bất biến; giải nén ZIP rồi nhập tại Xem mẫu.','不変スナップショットを出力しました。ZIPを展開し「サンプルを見る」で読み込んでください。','Immutable snapshot exported; extract the ZIP and import it in Explore recordings.');}
+   catch(e){if(epoch===this.gen)this.notice=abort.signal.aborted?tr('Đã hủy xuất gói.','出力を中止しました。','Export cancelled.'):String(e);}
+   finally{capture?.reader.close();await capture?.release().catch(e=>{if(epoch===this.gen)this.notice=String(e);});if(this.exportAbort===abort)this.exportAbort=null;this.exportBusy=false;this.paint();}
+  }
+- private clearWorld(){this.replayPending=false;this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';this.worldReason='';this.worldBoot='';this.storyPhase='';this.playback.clear();}
++ private clearWorld(){this.worldPlayback.clear();this.shownWorldPose='';this.replayPending=false;this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';this.worldReason='';this.worldBoot='';this.storyPhase='';this.playback.clear();}
+  private async refreshWorld(){
+   const v=this.view;if(this.worldBusy||this.replayPending||!v||v.run.backendSetId!==CELL_SET||this.archived||this.replay||!this.rt.worldDisplay||!this.rt.worldDisplayScene)return;
+   const epoch=this.gen,id=v.run.id,abort=new AbortController();this.worldAbort=abort;this.worldBusy=true;
+   try{if(this.worldRun!==id){this.world=null;this.worldDrawing=null;this.worldRun=id;this.playback.clear();const meta=await this.rt.worldDisplayScene(id,abort.signal);if(this.left||epoch!==this.gen||this.view?.run.id!==id)return;this.worldDrawing=meta.scene?knownWorldDrawing(meta.scene):null;this.worldReason=meta.reason??(this.worldDrawing?'':'WORLD_MODEL_PROXY_UNAVAILABLE');}
+    const observation=await this.rt.worldDisplay(id,abort.signal);if(this.left||epoch!==this.gen||this.view?.run.id!==id||observation.runId!==id)return;
+-   if(observation.tick!==this.view.tick||observation.revision!==this.view.run.runRevision){const context=await this.rt.get(id,abort.signal);if(this.left||epoch!==this.gen||this.view?.run.id!==id||context.run.id!==id)return;if(context.run.runRevision>=this.view.run.runRevision)this.applyView(context);if(observation.tick!==this.view.tick||observation.revision!==this.view.run.runRevision){this.worldReason='WORLD_VIEW_HORIZON_MISMATCH';return;}}
+-   if(observation.availability==='unknown'||!observation.snapshot||!this.worldDrawing||observation.snapshot.sceneDigest!==this.worldDrawing.scene.sceneDigest){this.world=null;this.worldReason=observation.reason??'WORLD_SCENE_IDENTITY_MISMATCH';return;}
+-   if(this.worldBoot&&this.worldBoot!==observation.snapshot.bootId){this.world=null;this.worldView=null;this.worldReason='WORLD_BOOT_CHANGED_REQUIRES_NEW_RUN';return;}this.worldBoot=observation.snapshot.bootId;this.worldView=structuredClone(this.view);this.worldReceived=performance.now();this.world={...this.worldDrawing,sourceRevision:observation.revision,quality:observation.availability,record:{snapshot:observation.snapshot,command:observation.control as WorldDrawing['record']['command'],interactions:[]}};this.worldReason=observation.reason??'';const phase=worldPhase(this.world.record);if(phase.id!==this.storyPhase){this.storyPhase=phase.id;this.storyCamera=storyCameraTransition(this.storyCamera,{type:'phase',camera:phase.camera,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});if(this.storyCamera.phaseFollow)this.viewer?.camera(this.storyCamera.camera);}this.playback.clear();this.paint();
+-  }catch(e){if(epoch===this.gen&&!abort.signal.aborted){this.world=null;this.worldReason=String(e);}}finally{if(this.worldAbort===abort){this.worldBusy=false;this.worldAbort=null;}}
++   const context=observation.view??this.view;
++   if(context.run.id!==id||observation.tick!==context.tick||observation.revision!==context.run.runRevision||observation.simTimeNs!==context.simTimeNs){this.worldPlayback.clear();this.worldReason='WORLD_VIEW_HORIZON_MISMATCH';return;}
++   if(context.run.runRevision>=this.view.run.runRevision&&context.tick>=this.view.tick)this.applyView(context);
++   if(observation.availability==='unknown'||!observation.snapshot||!this.worldDrawing||observation.snapshot.sceneDigest!==this.worldDrawing.scene.sceneDigest){this.world=null;this.worldPlayback.clear();this.worldReason=observation.reason??'WORLD_SCENE_IDENTITY_MISMATCH';return;}
++   if(this.worldBoot&&this.worldBoot!==observation.snapshot.bootId){this.world=null;this.worldView=null;this.worldPlayback.clear();this.worldReason='WORLD_BOOT_CHANGED_REQUIRES_NEW_RUN';return;}this.worldBoot=observation.snapshot.bootId;const newWorld=this.world?.record.snapshot.tick!==observation.tick||this.world.sourceRevision!==observation.revision;if(newWorld||context.run.status==='paused')this.worldReceived=performance.now();this.worldView=structuredClone(context);this.world={...this.worldDrawing,sourceRevision:observation.revision,quality:observation.availability,record:{snapshot:observation.snapshot,command:observation.control as WorldDrawing['record']['command'],interactions:[]}};this.worldReason=observation.reason??'';const phase=worldPhase(this.world.record);if(phase.id!==this.storyPhase){this.storyPhase=phase.id;this.storyCamera=storyCameraTransition(this.storyCamera,{type:'phase',camera:phase.camera,reducedMotion:matchMedia('(prefers-reduced-motion: reduce)').matches});if(this.storyCamera.phaseFollow)this.viewer?.camera(this.storyCamera.camera);}this.playback.clear();if(this.v3d&&this.world.quality==='valid'&&observation.revision===this.view.run.runRevision)this.worldPlayback.feed([id,this.worldBoot,observation.revision,observation.snapshot.sceneDigest].join('/'),observation.simTimeNs,this.worldReceived,this.v3d.posesOf(this.frame()));else this.worldPlayback.clear();this.paint();if(newWorld&&this.pacedLoop&&this.vs.view==='3d')this.paint3d(this.frame());
++  }catch(e){if(epoch===this.gen&&!abort.signal.aborted){this.world=null;this.worldPlayback.clear();this.worldReason=String(e);}}finally{if(this.worldAbort===abort){this.worldBusy=false;this.worldAbort=null;}}
+  }
+  private fresh(){/* the sample the link detail and the runtime word speak for: the selected entity's, else the run's first */const id=this.vs.selected&&this.store.entity(this.vs.selected)?this.vs.selected:this.view?.entities[0]?.id;return {id,f:freshness(id?this.store.entity(id):undefined,this.link,performance.now())};}
+  /** Telemetry repaint without a full re-render: the runtime word, the link detail (Engineering tab, runtime box), and the 2D plan or 3D view when samples changed. */
+  private tick(){
+   if(!this.left)void this.refreshWorld();
+   const t=this.linkText(),state=this.replay?'recorded':this.fresh().f.state,w=this.runtimeState(),chip=document.getElementById('twin-runtime-chip'),word=document.getElementById('twin-runtime-word');
+   for(const id of ['twin-telemetry','twin-telemetry-box']){const el=document.getElementById(id);if(el){el.textContent=t;el.dataset.state=state;}}if(chip)chip.dataset.state=w.state;if(word)word.textContent=w.label;
+   // replay: its cursor is part of what is painted (nothing is repainted while it stands still)
+   const now=performance.now(),n=JSON.stringify([this.store.stats.applied,this.store.stats.epochResets,this.link.state,this.link.paused,this.vs.selected,this.store.entities().map(s=>{const f=freshness(s,this.link,now);return [s.entityId,f.state,f.reason];}),this.replay&&[this.replay.tick,this.replay.playing]]);
+   if(n===this.painted)return;this.painted=n;
+@@ -213,43 +217,53 @@ export class TwinWorkspace {
+   morphInner(document.getElementById('twin-inspector'),engineeringInspection(inspect(f,this.vs.selected,f.seen??this.seen)));
+   if(this.replay){
+    // in place (morph), as for the paced run: a press spanning an update, focus and an open box's scroll survive
+    for(const [id,html] of [['twin-run-bar',this.bar(f)],['twin-objects',this.objects(f)],['twin-identity',this.identity(f)],['twin-next',this.strip(f)]] as const)morphOuter(document.getElementById(id),html);
+    morphInner(document.getElementById('twin-entity-list'),this.entityList(f));
+    const time=document.getElementById('twin-transport-time');if(time)time.textContent=transportTime(this.replay.tick*this.replay.rp.range.tickMs/1000,this.replay.tick,this.replay.rp.range.toTick);
+    if(f.report)morphOuter(document.getElementById('twin-report-summary'),reportSummary(f.report,this.business));
+   }
+  }
+  private animating(now:number){return !this.world&&this.vs.view==='3d'&&!!this.viewer&&this.playback.animating(now,{live:this.link.state==='live',replay:!!this.replay});}
+- private loop=()=>{this.raf=0;const now=performance.now();if(!this.exact||!this.animating(now))return;this.viewer!.pose(this.playback.poses(this.exact,now));this.raf=requestAnimationFrame(this.loop);};
+- /** Structure and the frame's exact poses, then (same task, so the newest sample never flashes) the played-back poses while animating. Replay: exact only. */
+- private paint3d(f:TwinFrame){const v=this.viewer;if(!v||!this.v3d)return;v.update(f,this.vs);if(f.world&&this.storyCamera.follow)v.camera('amr');this.exact=this.replay?null:this.v3d.posesOf(f);const now=performance.now();if(this.exact&&this.animating(now)){v.pose(this.playback.poses(this.exact,now));this.raf||=requestAnimationFrame(this.loop);}}
++ private loop=()=>{this.raf=0;const now=performance.now();
++  if(this.world&&!this.replay&&this.viewer&&this.vs.view==='3d'){
++   const poses=this.worldPlayback.at(now);if(!poses||performance.now()-this.worldReceived>500||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
++   const key=JSON.stringify(poses);if(key!==this.shownWorldPose){this.shownWorldPose=key;this.viewer.pose(poses);}this.raf=requestAnimationFrame(this.loop);return;
++  }
++  if(!this.exact||!this.animating(now))return;this.viewer!.pose(this.playback.poses(this.exact,now));this.raf=requestAnimationFrame(this.loop);
++ };
++ /** Scene and poses are installed in one draw; world interpolation uses only received pairs. */
++ private paint3d(f:TwinFrame){const v=this.viewer;if(!v||!this.v3d)return;
++  const now=performance.now(),worldPoses=f.world&&!this.replay&&!matchMedia('(prefers-reduced-motion: reduce)').matches?this.worldPlayback.at(now):null;
++  v.update(f,this.vs,worldPoses??undefined);if(f.world&&this.storyCamera.follow)v.camera('amr');this.exact=this.replay?null:this.v3d.posesOf(f);
++  if(worldPoses){this.shownWorldPose=JSON.stringify(worldPoses);this.raf||=requestAnimationFrame(this.loop);}else if(this.exact&&this.animating(now)){v.pose(this.playback.poses(this.exact,now));this.raf||=requestAnimationFrame(this.loop);}
++ }
+  private openStreams(v:RunView){
+   if(this.streamRun===v.run.id&&this.streams&&!['session_lost','run_lost','closed'].includes(this.streams.state))return;
+   this.streams?.close();this.store=new TwinStore();this.playback.clear();this.business=0;this.streamRun=v.run.id;this.link={state:'connecting',lastHeartbeatMs:null,paused:false};
+   // a stream of an older page state (a poll answer landing after close) says nothing about what is shown now
+   const handlers:StreamHandlers<RunView,Parameters<TwinStore['apply']>[0]>={
+-   onSample:s=>{const r=this.store.apply(s);if(r==='applied'||r==='epoch_reset'){this.playback.feed(this.store.entity(s.entityId)!,r==='epoch_reset');if(!this.raf&&this.exact&&this.animating(performance.now()))this.raf=requestAnimationFrame(this.loop);}},onGap:g=>{this.store.gap(g as never);this.playback.clear();},
++   onSample:s=>{const r=this.store.apply(s);if(r==='applied'||r==='epoch_reset'){this.playback.feed(this.store.entity(s.entityId)!,r==='epoch_reset');if(!this.raf&&this.exact&&this.animating(performance.now()))this.raf=requestAnimationFrame(this.loop);}},onGap:g=>{this.store.gap(g as never);this.playback.clear();this.worldPlayback.clear();},
+    onHeartbeat:h=>{this.link={...this.link,lastHeartbeatMs:performance.now(),paused:h.paused};if(!this.busy&&!this.refreshing&&this.view&&h.runRevision!==this.view.run.runRevision)void this.refresh();},
+    onBusiness:e=>{this.business++;const c=this.view?.run.eventCursor;if(!this.busy&&!this.refreshing&&this.view&&(c==null||BigInt(e.sequence)>BigInt(c)))void this.refresh();},
+    onReset:(snap,reason)=>{this.notice=`${tr('Đồng bộ lại từ snapshot','スナップショットから再同期','Resynchronised from a snapshot')}: ${reason}`;if(!this.busy)void this.apply(snap).then(()=>this.rerender(),()=>{});},
+    onSnapshot:snap=>{if(!this.busy&&snap.run.runRevision!==this.view?.run.runRevision)void this.apply(snap).then(()=>this.rerender(),()=>{});},
+    onState:st=>{this.link={...this.link,state:st};
+     // telemetry is not replayed after a drop: the hole is recorded as an explicit local gap
+-    if(st==='reconnecting'||st==='runtime_lost'){this.store.gap({reason:`LINK_${st.toUpperCase()}`});this.playback.clear();}
++    if(st==='reconnecting'||st==='runtime_lost'){this.store.gap({reason:`LINK_${st.toUpperCase()}`});this.playback.clear();this.worldPlayback.clear();}
+     if(st==='session_lost'){this.rt.forget();this.playing=false;this.ui.runtimeOpen=true;this.notice=tr('Runtime đã mất phiên (khởi động lại?). Ghép nối lại; lần chạy trong bộ nhớ không mở lại được, báo cáo cuối vẫn xem được.','ランタイムのセッションが失われました(再起動?)。再ペアリングしてください。メモリ上の実行は再開できませんが、最後のレポートは閲覧できます。','The runtime lost the session (restarted?). Pair again; the in-memory run cannot be reopened, the last report stays viewable.');this.rerender();}
+     else if(st==='run_lost'||st==='runtime_lost'){this.playing=false;this.rerender();}
+     else this.tick();}};
+   const g=this.gen,mine=Object.fromEntries(Object.entries(handlers).map(([k,f])=>[k,(...a:unknown[])=>{if(g===this.gen)(f as (...a:unknown[])=>void)(...a);}])) as typeof handlers;
+   this.streams=openRunStreams(v.run.id,v.run.eventCursor,mine,
+    {...this.rt.streamDeps?.()??{EventSource:globalThis.EventSource},...this.health?.features?.sse===false?{EventSource:undefined}:{}});
+-  clearInterval(this.ticker);this.ticker=setInterval(()=>this.tick(),100);
++  clearInterval(this.ticker);this.ticker=setInterval(()=>this.tick(),v.run.backendSetId===CELL_SET?40:100);
+  }
+  /** Durable events arrived that this view does not reflect yet (e.g. another tab acted): re-read the snapshot. */
+  private async refresh(){this.refreshing=true;try{if(this.view)await this.apply(await this.current(this.rt.get(this.view.run.id)));this.rerender();}catch{/* keep the last snapshot; an answer for another page state is dropped */}finally{this.refreshing=false;}}
+  /** Evidence is the report of the run as shown, never an older one (finalReport). */
+  private async saveEvidence(){if(!this.runPreset||typeof indexedDB==='undefined'||!this.report&&!this.view)return;const report=await this.finalReport();await this.evidenceStore.save(captureEvidence(report,this.runPreset.project,this.payloadBundle));this.saved=await this.evidenceStore.list();}
+  /** Does this report describe the run exactly as the view shows it (same run, tick and status)? */
+  /** A request is on its way for a finished or paused run whose report does not describe it yet (or an action is fetching that report). */
+  private reportPending(){const v=this.view;return this.reportLoading||this.reportBusy&&!!v&&!this.replay&&!this.archived&&['completed','failed','cancelled','paused'].includes(v.run.status)&&!this.reportFits();}
+  private reportFits(r=this.report){const v=this.view;return !!r&&!!v&&r.manifest.runId===v.run.id&&r.outcome.tick===v.tick&&r.outcome.status===v.run.status;}
+  /** The report as a record of the run as shown: the one held if it matches the view, otherwise fetched now; one that still does not match,
+@@ -455,21 +469,21 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
+     :e instanceof TwinRuntimeError&&e.code==='RUNTIME_UNREACHABLE'||e instanceof TypeError&&/fetch|network|load failed/i.test(e.message)?(a=>`RUNTIME_UNREACHABLE: ${tr(`Không có trả lời từ runtime tại ${a} (runtime đã dừng hoặc mạng bị ngắt). Lần chạy giữ trạng thái runtime báo lần cuối; thử lại khi runtime trả lời.`,`${a} のランタイムから応答がありません(停止しているか、ネットワークが切れています)。実行はランタイムが最後に報告した状態のままです。応答が戻ったら再試行してください。`,`No answer from the runtime at ${a} (it stopped, or the network is down). The run stays as the runtime last reported it; try again once it answers.`)}`)(targetAddress(this.target())||`${o}/lab/v2`)
+     :e instanceof TwinRuntimeError?`${tr('Runtime từ chối','ランタイムが拒否','Runtime refused')}: ${e.message}`:e instanceof Error?e.message:String(e);
+    // a refused action leaves the run as the runtime has it: re-read instead of guessing
+    // (the run first; its report follows off this path, so a failed report never holds the page twice)
+    // after a report that timed out, no new report is asked by itself (the user's next action asks)
+    if(this.view)try{this.applyView(await this.current(this.rt.get(this.view.run.id)));if(!(e instanceof TwinRuntimeError&&e.code==='REPORT_TIMEOUT'))this.refreshReport(true);}catch{/* keep the last snapshot */}
+   }finally{this.busy=false;this.rerender();}
+  }
+  private async apply(v:RunView){this.applyView(v);const seq=++this.reportSeq;let r:RunReport|null=null;try{r=await this.fetchReport(v.run.id);}catch(e){if(stale(e))throw e;/* shown as no report */}this.takeReport(v.run.id,seq,r,false);}
+  /** The run snapshot only (the action receipt is the pause acknowledgement; heartbeats only refresh it between receipts, e.g. another tab). */
+- private applyView(v:RunView){if(v.run.status==='failed'||v.attention?.some(a=>/WORLD_UNKNOWN|WORLD_RESTART|ENGINE_|WORKER_|PLANT_|PHYSICAL_UNKNOWN/.test(a.reason)))this.clearWorld();if(this.world?.record.snapshot.runId!==v.run.id){this.world=null;this.worldView=null;}if(v.run.runRevision!==this.view?.run.runRevision)this.playback.clear();if(v.run.id!==this.view?.run.id)this.payloadCancelPaused=false;this.view=v;this.track(v);this.link={...this.link,paused:v.run.status==='paused'};}
++ private applyView(v:RunView){if(v.run.status==='failed'||v.attention?.some(a=>/WORLD_UNKNOWN|WORLD_RESTART|ENGINE_|WORKER_|PLANT_|PHYSICAL_UNKNOWN/.test(a.reason)))this.clearWorld();if(this.world?.record.snapshot.runId!==v.run.id){this.world=null;this.worldView=null;}if(v.run.runRevision!==this.view?.run.runRevision){this.playback.clear();this.worldPlayback.clear();}if(v.run.id!==this.view?.run.id)this.payloadCancelPaused=false;this.view=v;this.track(v);this.link={...this.link,paused:v.run.status==='paused'};}
+  /** The report (trail, summary, caveats) may lag the live picture, which comes from the streams. Never on the paced loop's path:
+   * one request at a time, the newest answer wins, at most once per second unless `final` (then queued behind one in flight). */
+  private refreshReport(final=false){
+   const v=this.view;if(!v)return;
+   if(v.run.backendSetId===CELL_SET&&this.playing&&!final&&!(this.ui.inspectorOpen&&this.ui.tab==='report'))return;
+   if(this.reportBusy){this.reportAgain||=final;return;}
+   if(!final&&performance.now()<this.reportDue)return;
+   this.reportBusy=true;this.reportDue=performance.now()+1000;const id=v.run.id,seq=++this.reportSeq;
+   void this.fetchReport(id).then(r=>this.takeReport(id,seq,r),()=>{/* keep the last report */})
+    .finally(()=>{this.reportBusy=false;if(this.reportAgain){this.reportAgain=false;this.refreshReport(true);}});
+@@ -565,41 +579,43 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
+   if(this.busy||this.pausing||!this.view||!this.health?.features?.pacedStep||!clockControls(this.view,this.health).play)return;
+   this.playing=true;this.hiddenStop=false;
+   const live=()=>this.playing&&!!this.view&&['running','awaiting_confirmation'].includes(this.view.run.status);
+   await this.call(async()=>{
+    // one paced step in flight; the next goes when it returns, with its revision. The runtime holds each step at real time × factor:
+    // no client timer paces anything, and a run nobody steps stands still (a hidden tab sends nothing after the step in flight)
+    this.speedLog=[];this.measuredSpeed=undefined;
+    this.pacedLoop=true;
+    try{while(live()){if(document.visibilityState==='hidden'){this.hiddenStop=true;document.addEventListener('visibilitychange',this.onVisible);break;}await this.pacedStep();this.paint();}}
+    finally{this.pacedLoop=false;this.refreshReport(true);}// the loop ended for any reason: one report for where the run stands
++   const priority=await this.priorityPause;this.priorityPause=null;if(priority&&!(priority instanceof TwinRuntimeError&&priority.code==='REVISION_CONFLICT'))throw priority;
+    // one press of Pause: the in-flight step has returned (this.view is its receipt), so pause carries the revision it returned
+    if(this.pausing&&this.view&&['running','awaiting_confirmation'].includes(this.view.run.status)){
+     await this.act('pause');this.pausing=false;// landed: the next render shows Resume
+     // the pause control the user pressed becomes Resume: focus goes there, not to the page
+     const a=typeof document.querySelector==='function'?document.activeElement as HTMLElement|null:null;if(!a||a===document.body||a.dataset?.action==='twin-pause')this.focusTo='#transport-twin-resume';
+    }
+   });
+   this.playing=false;this.pausing=false;this.rerender();
+  }
+  /** The tab is shown again: auto-run resumes if it stopped only because the tab was hidden (a user's stop clears hiddenStop). */
+  private onVisible=()=>{if(document.visibilityState==='hidden')return;document.removeEventListener('visibilitychange',this.onVisible);if(this.hiddenStop){this.hiddenStop=false;void this.play();}};
+  /** One `step{ticks:20,pace:{factor}}` (the factor read now, so a change applies to the next step). A lost response is resent once with the same
+   * actionId and body: the runtime returns the stored receipt instead of stepping again. A second failure stops the loop (call() shows it). */
+  /** A step with no answer after STEP_TIMEOUT_MS is aborted and reported as lost (PACED_STEP_TIMEOUT). */
+  private async stepOnce(v:RunView,payload:Record<string,unknown>,actionId:string){
+   const c=new AbortController(),t=setTimeout(()=>c.abort(),STEP_TIMEOUT_MS);
+   try{return await this.current(this.rt.action(v,'step',payload,actionId,c.signal));}catch(e){if(c.signal.aborted)throw new TwinRuntimeError('PACED_STEP_TIMEOUT',[],0);throw e;}finally{clearTimeout(t);}
+  }
+  private async pacedStep(){
+-  const v=this.view!,payload={ticks:v.run.backendSetId===CELL_SET?5:PACED_TICKS,pace:{factor:this.runSpeed}},actionId=crypto.randomUUID();
+-  let next:RunView;try{next=await this.stepOnce(v,payload,actionId);}catch(e){if(this.view?.run.backendSetId===CELL_SET||stale(e)||!lostResponse(e))throw e;next=await this.stepOnce(v,payload,actionId);}
++  const v=this.view!,payload={ticks:v.run.backendSetId===CELL_SET?50:PACED_TICKS,pace:{factor:this.runSpeed}},actionId=crypto.randomUUID();
++  this.inFlightCell=v.run.backendSetId===CELL_SET?v:null;
++  let next:RunView;try{next=await this.stepOnce(v,payload,actionId);}catch(e){if(this.view?.run.backendSetId===CELL_SET||stale(e)||!lostResponse(e))throw e;next=await this.stepOnce(v,payload,actionId);}finally{this.inFlightCell=null;}
+   // the receipt is the view; the next step goes at once (the runtime re-anchors after 250 ms idle) and the report follows off this path
+   this.applyView(next);this.refreshReport();
+   // measured rate: simulated time advanced over wall time in the last 2 s (a slow plant or link shows here, never hidden behind the factor)
+   const now=performance.now();this.speedLog=[...this.speedLog.filter(([t])=>now-t<=2000),[now,Number(next.simTimeNs)/1e9]];
+   const [t0,s0]=this.speedLog[0]!,dt=(now-t0)/1000;this.measuredSpeed=dt>0?(Number(next.simTimeNs)/1e9-s0)/dt:undefined;
+  }
+  click(action:string,value?:string):void{
+   // following a problem to its object hands the view back to the viewport: the problems box closes
+   if((action==='twin-select'||action==='twin-pick')&&value){const was=this.ui.problemsOpen;this.ui={...this.ui,problemsOpen:false};if(value===selectedEntity()&&was)this.rerender();return selectEntity(value);}
+   // panels and boxes are view state: they never reach the runtime
+@@ -671,21 +687,21 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
+   if(action==='twin-reset')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!,false)):undefined;
+   if(action==='twin-start')return void this.call(()=>this.act('start'));
+   if(action==='twin-rerun')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!)):undefined;
+   if(!this.view)return;
+   if(this.view.controlAccess==='view_reconcile'&&!['twin-reconcile','twin-confirm-cancel','twin-confirm-ok'].includes(action))return;
+   if(action==='twin-step'&&this.clock()?.step)return void this.call(()=>this.act('step',{ticks:STEP_TICKS}));
+   if(action==='twin-play')return void this.play();
+   if(action==='twin-stop'){this.playing=false;this.hiddenStop=false;return this.rerender();}
+   if(action==='twin-cancel')return void this.call(()=>this.cancelPayload());
+   if(action==='twin-pause'&&this.payloadStopping){this.payloadStopPause=true;return this.paint();}
+-  if(action==='twin-pause'&&(this.playing||this.pausing)){if(this.playing&&this.health?.features?.pacedStep&&!this.pausing){this.pausing=true;this.playing=false;this.hiddenStop=false;this.paint();}return;}
++  if(action==='twin-pause'&&(this.playing||this.pausing)){if(this.playing&&this.health?.features?.pacedStep&&!this.pausing){this.pausing=true;this.playing=false;this.hiddenStop=false;if(this.inFlightCell){const admitted=this.inFlightCell;this.priorityPause=this.current(this.rt.action(admitted,'pause',{},crypto.randomUUID())).then(v=>{if(this.view&&v.run.runRevision>=this.view.run.runRevision)this.applyView(v);this.paint();return null;},e=>e);}this.paint();}return;}
+   if(action==='twin-pause')return void this.call(()=>this.act('pause'));
+   if(action==='twin-resume')return void this.call(async()=>{await this.act('resume');this.payloadCancelPaused=false;});
+   if(action==='twin-fault')return void this.call(()=>this.act('injectFault',{faultId:this.fault}));
+   if(action==='twin-restore-cup'){this.reconcileTargets=[];this.confirming=this.view.coffee?.jobs.find(j=>j.canRestoreCup)?.jobId??null;this.confirmationKind='restoreCup';return this.rerender();}
+   if(action==='twin-reconcile'){this.confirmationKind='reconcile';this.reconcileTargets=this.knownReconciliationTargets();this.confirming=this.reconcileTargets.length===1?this.reconcileTargets[0]!:null;return this.rerender();}
+   if(action==='twin-confirm-cancel'){this.confirming=null;this.reconcileTargets=[];return this.rerender();}
+   if(action==='twin-confirm-ok'&&this.confirming){const subjectId=this.confirming;this.confirming=null;this.reconcileTargets=[];if(this.confirmationKind==='reconcile'&&!this.knownReconciliationTargets().includes(subjectId))return this.rerender();return void this.call(()=>this.act(this.confirmationKind,{subjectId}));}
+  }
+  /** Leaving a runtime (Disconnect, another address): its streams close and its run goes with it; that run can be reclaimed after reconnecting to it. */
+  private dropRuntime(){
+diff --git a/src/viewer/twin3d.ts b/src/viewer/twin3d.ts
+index 2400870..caf54cc 100644
+--- a/src/viewer/twin3d.ts
++++ b/src/viewer/twin3d.ts
+@@ -22,21 +22,21 @@ import xarmComponent from '../../fixtures/engineering/xarm6-g2-v1/component.json
+ import xarmPhysics from '../../fixtures/engineering/xarm6-g2-v1/physics.json' with {type:'json'};
+ import xarmManifest from '../../fixtures/engineering/xarm6-g2-v1/manifest.json' with {type:'json'};
+ import xarmLayout from '../../fixtures/engineering/xarm6-g2-v1/cell-layout.json' with {type:'json'};
+ const XARM='xarm6-g2-v1',JOINTS:Record<ReturnType<typeof armModelFor>,ArmJointDef[]>={'arm-ref-3d-v1':armComponent.joints as unknown as ArmJointDef[],[XARM]:armJoints(xarmComponent,xarmPhysics)};
+ /** The Lab serves the meshes from its own origin (public/, beside the vendor NOTICE), never from the runtime. */
+ const XARM_BLOBS='/fixtures/xarm6-g2-v1/blobs/';
+ type Pose7={positionM:[number,number,number];quaternionXyzw:[number,number,number,number]};
+ /** Transforms only. `bodies`: an AMR's base origin in the ROS map (z up; z 0 for a planar plant) and its ROS orientation. `arms`: the joints shown and the
+  * measured gripper opening. `cups`: the cups drawn where the plant reports them (map frame, cup centre). */
+ export interface TwinPoses {arms:Record<string,{jointsRad:number[];gripperOpeningM:number|null}>;bodies:Record<string,Pose7>;cups?:Record<string,Pose7>}
+-export interface Twin3d {canvas:HTMLCanvasElement;/** Move into a re-rendered stage and size from it. */attach(host:HTMLElement):void;update(f:TwinFrame,vs:ViewState):void;pose(p:TwinPoses):void;
++export interface Twin3d {canvas:HTMLCanvasElement;/** Move into a re-rendered stage and size from it. */attach(host:HTMLElement):void;update(f:TwinFrame,vs:ViewState,displayPoses?:TwinPoses):void;pose(p:TwinPoses):void;
+  /** Camera back to the preset's home framing: its arm cell (homeRegion), else the whole floor. */home():void;/** Frame one object, or the whole scene for null or an object not drawn. */fit(entityId:string|null):void;camera(mode:'overview'|'cell'|'amr'):void;dispose():void}
+ const LIME=0xb4f375,NAVY=0x182a33;
+ const COLOR:Record<string,number>={footprint:0x9dccff,safety:0xf0b45a,observed:0x5ad1c6};
+ export interface OverlayShape {layer:'path'|'footprint'|'safety'|'observed';entityId:string;loop:boolean;z:number;points:[number,number][]}
+ /** The plan overlays of the 3D view, from the same frame data and helpers the 2D plan uses (no data of its own). Pure: what update() draws. */
+ export function overlayShapes(f:TwinFrame,vs:ViewState):OverlayShape[]{
+  const out:OverlayShape[]=[];
+  for(const r of f.view?.entities.filter(e=>e.kind==='amr')??[]){
+   if(vs.layers.path&&r.path.length)out.push({layer:'path',entityId:r.id,loop:false,z:0.02,points:[[r.pose.x,r.pose.y],...r.path.map(([x,y])=>[x!,y!] as [number,number])]});
+   // IR-SIM runs: the compiled footprint on the drive frame (T_map_base x T_base_drive); other runs: the Lab asset footprint
+@@ -178,21 +178,21 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
+  /** For tests and evidence: what the cell draws, as axis-aligned boxes in the map frame (scene (x, y, z) is map (x, z, -y)). */
+  const toMap=(b:THREE.Box3):MapBox=>({min:[b.min.x,-b.max.z,b.min.y],max:[b.max.x,-b.min.z,b.max.y]});
+  const drawnCell=()=>{
+   scene.updateMatrixWorld();const supports:(MapBox&{id:string})[]=[];let mount:MapBox|null=null;const cups:Record<string,MapBox>={};
+   const legs:(MapBox&{id:string})[]=[];
+   world.traverse(o=>{if(o.userData.support)supports.push({id:o.userData.support as string,...toMap(new THREE.Box3().setFromObject(o))});if(o.userData.mount)mount=toMap(new THREE.Box3().setFromObject(o));if(o.userData.leg)legs.push({id:o.userData.leg as string,...toMap(new THREE.Box3().setFromObject(o))});});
+   for(const [id,o] of objs)if(o.obj.userData.plant)cups[id]=toMap(new THREE.Box3().setFromObject(o.obj));
+   return {supports,mount,legs,cups};
+  };
+  Object.assign(canvas,{twinFraming:framing,twinDrawn:drawnCell});
+- let renderCount=0;const render=()=>{const measured=canvas.dataset.measureRender==='1',start=measured?performance.now():0;renderer.render(scene,camera);put('camera',camera.position.toArray().map(v=>v.toFixed(3)).join(','));put('geometries',String(renderer.info.memory.geometries));renderCount++;if(measured)canvas.dispatchEvent(new CustomEvent('twin-render',{detail:{atMs:performance.now(),durationMs:performance.now()-start,count:renderCount,drawCalls:renderer.info.render.calls,worldTick:lf?.world?.record.snapshot.tick??null,revision:lf?.world?.sourceRevision??null,quality:lf?.world?.quality??null}}));};
++ let renderCount=0;const render=()=>{const measured=canvas.dataset.measureRender==='1',start=measured?performance.now():0;renderer.render(scene,camera);put('camera',camera.position.toArray().map(v=>v.toFixed(3)).join(','));put('geometries',String(renderer.info.memory.geometries));renderCount++;put('renderCount',String(renderCount));if(measured)canvas.dispatchEvent(new CustomEvent('twin-render',{detail:{atMs:performance.now(),durationMs:performance.now()-start,count:renderCount,drawCalls:renderer.info.render.calls,worldTick:lf?.world?.record.snapshot.tick??null,revision:lf?.world?.sourceRevision??null,quality:lf?.world?.quality??null}}));};
+  // size from wherever the canvas lives now: the stage element is replaced on every workspace render
+  // a new size re-applies the home framing (it depends on the viewport's shape) unless the user has moved the camera since: a fresh mount frames at its real size
+  const resize=()=>{const p=canvas.parentElement,w=p?.clientWidth||640,h=p?.clientHeight||420;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();if(floor&&!userMoved)home();else render();};
+  const ro=new ResizeObserver(resize);ro.observe(host);controls.addEventListener('change',render);
+  // the user's own orbit, pan or zoom: from then on the camera is the user's until home is pressed or the floor or preset changes. Only an interaction
+  // that moved the camera counts (OrbitControls starts one on any pointer-down or wheel: a plain click to select moves nothing)
+  const cameraPose=()=>[...camera.position.toArray(),...controls.target.toArray()].map(v=>v.toFixed(6)).join(',');let atStart='';
+  controls.addEventListener('start',()=>{atStart=cameraPose();});controls.addEventListener('end',()=>{if(cameraPose()!==atStart){userMoved=true;onManualOrbit();}});
+  const pick=(e:PointerEvent)=>{const r=canvas.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),camera);
+   const hit=ray.intersectObjects(world.children,true).find(h=>h.object.userData.entityId);if(hit)onSelect(String(hit.object.userData.entityId));};
+@@ -330,35 +330,35 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
+   if(r){// the same viewing direction, moved in until every corner of the region's boxes just fits (98 % of the viewport)
+    const corners=r.flatMap(q=>[0,1,2,3,4,5,6,7].map(i=>at(i&1?q.max[0]:q.min[0],i&2?q.max[1]:q.min[1],i&4?q.max[2]:q.min[2])));
+    const box=new THREE.Box3().setFromPoints(corners),c=box.getCenter(new THREE.Vector3()),dir=camera.position.clone().sub(controls.target).normalize();
+    const fits=(d:number)=>{camera.position.copy(c).addScaledVector(dir,d);camera.lookAt(c);camera.updateMatrixWorld();return corners.every(p=>{const q=p.clone().project(camera);return Math.abs(q.x)<=0.98&&Math.abs(q.y)<=0.98&&q.z<1;});};
+    let lo=0.5,hi=box.getBoundingSphere(new THREE.Sphere()).radius/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2)*2/Math.min(1,camera.aspect);for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(fits(mid))hi=mid;else lo=mid;}
+    fits(hi);controls.target.copy(c);
+   }
+   userMoved=false;controls.update();render();};
+  return {canvas,pose,home,
+   attach(next){if(canvas.parentElement!==next)next.replaceChildren(canvas);ro.disconnect();ro.observe(next);resize();},
+-  update(f,vs){
++  update(f,vs,displayPoses){
+    lf=f;canvas.setAttribute('aria-label',tr('Bản sao 3D. Chọn vật thể từ danh sách.','3Dツイン。物体リストから選択できます。','3D twin view. Use the entity list to select objects.'));put('worldTick',f.world?String(f.world.record.snapshot.tick):'');put('worldQuality',f.world?.quality??(f.world?'valid':''));put('plantCupsDropped',String(droppedPlantCups(f).length));
+    const k=sceneKey(f,vs),o=objectKeys(f);
+    if(k!==key){key=k;okeys=o;build(f,vs);}
+    else{// the scene stands: only an object whose drawing changed is redrawn (a cup entering the plant's report, a source going stale)
+     const changed=[...new Set([...okeys.keys(),...o.keys()])].filter(id=>okeys.get(id)!==o.get(id));okeys=o;
+     if(changed.length){for(const id of changed){const x=objs.get(id);if(x){freeOne(x.obj);objs.delete(id);}}
+      for(const d of drawn(f))if(changed.includes(d.e.id)){drawOne(d,f,vs);objs.get(d.e.id)?.obj.traverse(m=>{if((m as THREE.Mesh).isMesh){m.castShadow=true;m.receiveShadow=true;}});}
+      canvas.dataset.redraws=String(redraws+=changed.length);fallback();status();}
+    }
+    // the home framing on a new floor or a preset that frames something else (its arm cell)
+    const w=f.preset.project.world,size=`${w.width}x${w.height} ${f.preset.view??''}`;if(size!==floor){floor=size;home();}
+    // objects without a pose of their own (cups, a cylinder arm, machines) move with the frame
+    for(const {e} of drawn(f)){const o=objs.get(e.id);if(o&&e.kind!=='amr'&&!o.arm&&!e.plant)o.obj.position.copy(at(e.x,e.y,heightOf(e)));}
+-   drawOverlays(f,vs);pose(posesOf(f));
++   drawOverlays(f,vs);pose(displayPoses??posesOf(f));
+   },
+   camera(mode){explicitCamera=mode;if(!lf)return;if(mode==='overview'){const original=lf;lf={...lf,preset:{...lf.preset,view:undefined}};home();lf=original;}else if(mode==='cell'){const original=lf;lf={...lf,preset:{...lf.preset,view:'arm_cell'}};home();lf=original;}else this.fit(lf.preset.project.entities.find(e=>e.kind==='amr')?.id??null);},
+   fit(id){
+    const o=id?objs.get(id)?.obj:undefined,box=new THREE.Box3().setFromObject(o??world);if(box.isEmpty())return;
+    const s=box.getBoundingSphere(new THREE.Sphere()),d=Math.max(s.radius,0.3)/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2),dir=camera.position.clone().sub(controls.target).normalize();
+    if(id?.startsWith('payload:')){dir.y=0.22;dir.normalize();}// see the cup between trays through the existing one-click Fit action
+    controls.target.copy(s.center);camera.position.copy(s.center).addScaledVector(dir,d);userMoved=true;controls.update();render();
+   },
+   // the shared geometry stays parsed in the page cache, but its GPU buffers (and this renderer's dispose listeners on it) go with this view; a later view re-uploads it
+   dispose(){gone=true;loads.get(XARM)?.set?.group.traverse(o=>(o as THREE.Mesh).geometry?.dispose());free(world);free(overlays);objs.clear();anchors.clear();heads.clear();sun.dispose();ro.disconnect();controls.dispose();renderer.dispose();canvas.remove();},
+diff --git a/tests/unit/workspace-generation.test.ts b/tests/unit/workspace-generation.test.ts
+index 90bff62..ded0203 100644
+--- a/tests/unit/workspace-generation.test.ts
++++ b/tests/unit/workspace-generation.test.ts
+@@ -1,19 +1,20 @@
+ // I2: an answer is applied only to the page state it was asked for. Opening saved evidence and starting replay wait for the page (busy); dropping or
+ // retargeting the runtime drops the answers still in flight; nothing a completion does renders a page the user has left.
+ import {afterEach,expect,test,vi} from 'vitest';
+ vi.stubGlobal('localStorage',{getItem:()=>'en',setItem:()=>{},removeItem:()=>{}});
+ vi.stubGlobal('innerWidth',600);
+ vi.stubGlobal('matchMedia',()=>({matches:false}));
+ vi.stubGlobal('document',{getElementById:()=>null,querySelector:()=>null,activeElement:null,addEventListener(){},removeEventListener(){}});
+ vi.stubGlobal('location',{origin:'http://127.0.0.1:4175',hostname:'127.0.0.1'});
+ import type {RunReport,RunView,TwinHealth,TwinRuntime,ReadinessSnapshot} from '../../src/scenarios/controls';
++import {TwinRuntimeError} from '../../src/scenarios/controls';
+ import type {RuntimeTarget} from '../../src/runtime/target';
+ import {coffeeReplay,at} from '../support/coffee-replay';
+ const {TwinWorkspace}=await import('../../src/ui/workspace');
+ const {presetById}=await import('../../src/scenarios/catalog');
+ const {captureEvidence}=await import('../../src/reports/evidence');
+ const workspaces:InstanceType<typeof TwinWorkspace>[]=[];
+ afterEach(()=>{for(const w of workspaces.splice(0))w.leave();});
+ const deferred=<T,>()=>{let resolve!:(v:T)=>void;const promise=new Promise<T>(r=>{resolve=r;});return {promise,resolve};};
+ const health:TwinHealth={protocolMajors:[2],sourceCommit:'d'.repeat(40),schemaHash:'a'.repeat(64),scenarioIds:['BV01'],features:{readiness:true},
+  backends:['mock_amr','mock_coffee','mock_arm'].map(id=>({id,modes:['mock'],installed:true,compatible:true,reachable:true,commissioned:true,enabled:true})),backendSets:[{id:'mock-default',mode:'mock',access:'simulated',backends:['mock_amr','mock_coffee','mock_arm']}]};
+@@ -124,21 +125,21 @@ test('registered world stress selection keeps base-composition readiness and nev
+  const {w,h}=setup(),internal=w as unknown as {preset:unknown;rt:TwinRuntime};h.health={...health,capabilities:['sim3d_world_experiments_v1'],worldExperiments:[{id:'world-cup-fall-v1',requiresNewRun:true}]};internal.preset=presetById('mujoco-cell');const readiness={checkedAt:'x',expiresAt:'2099-01-01',scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',checks:[],canStart:true};h.readiness=readiness;const probe=vi.fn();internal.rt.readiness=probe;
+  w.change('twin-world-experiment','world-cup-fall-v1');expect(h.readiness).toBe(readiness);expect(probe).not.toHaveBeenCalled();
+ });
+ 
+ test('failed/unknown physical authority immediately discards a retained current-valid frame',()=>{
+  const {w,h}=setup(),internal=w as unknown as {world:unknown;worldView:RunView|null;applyView(v:RunView):void};internal.world={record:{snapshot:{runId:h.view!.run.id,tick:h.view!.tick}}};internal.worldView=structuredClone(h.view!);internal.applyView({...h.view!,run:{...h.view!.run,status:'needs_attention'},attention:[{tick:h.view!.tick,reason:'WORLD_UNKNOWN'}]});expect(internal.world).toBeNull();expect(internal.worldView).toBeNull();
+ });
+ 
+ test('a newer owner-scoped world observation refreshes matching Source context and repaints its displayed horizon',async()=>{
+  const {w,h,renders}=setup(),internal=w as unknown as {rt:TwinRuntime;left:boolean;refreshWorld():Promise<void>};const scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1;h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.tick=0;h.view!.simTimeNs='0';internal.left=false;const current={...structuredClone(h.view!),tick:7,simTimeNs:'140000000',run:{...h.view!.run,runRevision:h.view!.run.runRevision+1}};
+- internal.rt.worldDisplayScene=async()=>({runId:current.run.id,availability:'available',reason:null,scene});internal.rt.worldDisplay=async()=>({version:1,runId:current.run.id,tick:7,revision:current.run.runRevision,simTimeNs:current.simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',snapshot:{runId:current.run.id,bootId:'one-boot',sceneDigest:scene.sceneDigest,tick:7,simTimeNs:current.simTimeNs,arms:[],robots:[],props:[]} as unknown as import('../../src/shared/navigation2d').Sim3DSnapshotV1});internal.rt.get=async()=>current;
++ internal.rt.worldDisplayScene=async()=>({runId:current.run.id,availability:'available',reason:null,scene});internal.rt.worldDisplay=async()=>({version:1,runId:current.run.id,tick:7,revision:current.run.runRevision,simTimeNs:current.simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',view:current,snapshot:{runId:current.run.id,bootId:'one-boot',sceneDigest:scene.sceneDigest,tick:7,simTimeNs:current.simTimeNs,arms:[],robots:[],props:[]} as unknown as import('../../src/shared/navigation2d').Sim3DSnapshotV1});internal.rt.get=async()=>current;
+  const before=renders();await internal.refreshWorld();expect(h.view!.tick).toBe(7);expect(renders()).toBeGreaterThan(before);
+ });
+ 
+ 
+ type CellBoundary={world:import('../../src/twin/world-view').WorldDrawing|null;worldView:RunView|null;worldReceived:number;worldAbort:AbortController|null;gen:number;replay:{tick:number}|null;rt:TwinRuntime;left:boolean;playing:boolean;frame():import('../../src/twin/scene').TwinFrame;applyView(v:RunView):void;refreshWorld():Promise<void>;playback:{clear():void};current<T>(p:Promise<T>):Promise<T>};
+ async function cellBoundary(status:RunView['run']['status']='running'){
+  const base=setup(),{w,h}=base,internal=w as unknown as CellBoundary,{knownWorldDrawing}=await import('../../src/twin/cell'),scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1;
+  const preset=presetById('mujoco-cell')!;Object.assign(h,{preset,runPreset:preset});Object.assign(h.view!,{tick:7,simTimeNs:'140000000',served:'1'});Object.assign(h.view!.run,{backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',status,runRevision:11});h.view!.coffee!.cups[0]!.ownerId='LIVE_TERMINAL_OWNER';
+  h.health={...health,features:{...health.features,pacedStep:true},backendSets:[...health.backendSets,{id:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',backends:['mujoco_3d','mujoco_arm','mock_coffee'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1]}}]};
+  h.report={...h.report!,manifest:{...h.report!.manifest,backendSetId:'engineering-mujoco-cell-v1'},outcome:{...h.report!.outcome,tick:7,simTimeNs:'140000000',status},businessEvents:[...h.report!.businessEvents.filter(e=>Date.parse(e.at)<=Date.parse(at(0))),{sequence:'8',at:at(7),type:'CupTransferConfirmed',kind:'cup',id:'cup-1',state:{cupId:'cup-1',ownerKind:'customer',ownerId:'LIVE_TERMINAL_OWNER'}}],telemetry:{...h.report!.telemetry!,samples:h.report!.telemetry!.samples.filter(s=>BigInt(s.simTimeNs!)<=140000000n)}};
+@@ -158,10 +159,36 @@ test('even a late retained world cannot override report replay projection',async
+ test('acknowledged live Pause and Resume render current controls while the retained H7 context stays coherent',async()=>{
+  const {w,h,internal}=await cellBoundary('running'),previous=structuredClone(h.view!);internal.applyView({...previous,run:{...previous.run,status:'paused',runRevision:12}});expect(internal.frame().view!.run.status).toBe('running');expect(internal.frame().world!.sourceRevision).toBe(11);expect(w.html()).toMatch(/data-testid="primary-action" data-action="twin-resume"(?![^>]*disabled)/);expect(transportButton(w.html(),'twin-resume')).not.toContain('disabled');expect(transportButton(w.html(),'twin-resume')).not.toBe('');
+  internal.worldView=structuredClone(h.view!);internal.world!.sourceRevision=12;internal.worldReceived=performance.now();internal.applyView({...h.view!,run:{...h.view!.run,status:'running',runRevision:13}});expect(internal.frame().view!.run.status).toBe('paused');expect(internal.frame().world!.sourceRevision).toBe(12);expect(w.html()).toMatch(/data-testid="primary-action" data-action="twin-play"(?![^>]*disabled)/);expect(transportButton(w.html(),'twin-play')).not.toContain('disabled');expect(transportButton(w.html(),'twin-resume')).toBe('');expect(transportButton(w.html(),'twin-pause')).not.toContain('disabled');
+ });
+ for(const transition of ['readonly','attention','unknown'] as const)test(`current ${transition} policy never inherits retained running controls`,async()=>{const {w,h,internal}=await cellBoundary('running');internal.playing=true;const current={...structuredClone(h.view!),run:{...h.view!.run,runRevision:12,status:transition==='readonly'?'paused' as const:'needs_attention' as const},...transition==='readonly'?{controlAccess:'view_reconcile' as const}:{attention:[{tick:7,reason:transition==='unknown'?'WORLD_UNKNOWN':'TEST_ATTENTION'}]}};internal.applyView(current);expect(transportButton(w.html(),'twin-play')).toBe('');expect(transportButton(w.html(),transition==='readonly'?'twin-resume':'twin-pause')).toContain('disabled');expect(w.html()).not.toMatch(/data-testid="primary-action" data-action="twin-(play|pause|resume)"/);if(transition==='unknown')expect(internal.world).toBeNull();else {expect(internal.frame().world!.sourceRevision).toBe(11);expect(internal.frame().view!.run.status).toBe('running');}});
+ 
+ test('same-H newer revision expires the retained pair without attaching old geometry to current context',async()=>{const {h,internal}=await cellBoundary('running');internal.applyView({...h.view!,run:{...h.view!.run,status:'paused',runRevision:12}});expect(internal.frame().world!.sourceRevision).toBe(11);expect(internal.frame().view!.run.runRevision).toBe(11);internal.worldReceived-=501;expect(internal.frame().view!.run.runRevision).toBe(12);expect(internal.frame().world).toBeUndefined();internal.worldView=structuredClone(h.view!);internal.world!.sourceRevision=12;internal.worldReceived=performance.now();expect(internal.frame().world!.sourceRevision).toBe(12);});
+ test('an ignored-abort late world response cannot repopulate report replay after its generation reset',async()=>{const {w,h,internal}=await cellBoundary('paused'),late=deferred<import('../../src/scenarios/controls').WorldDisplay>(),drawing=internal.world!,observer=internal as unknown as {worldRun:string;worldDrawing:Omit<import('../../src/twin/world-view').WorldDrawing,'record'>};observer.worldRun=h.view!.run.id;observer.worldDrawing=drawing;internal.rt.worldDisplayScene=async()=>({runId:h.view!.run.id,availability:'available',reason:null,scene:drawing.scene});internal.rt.worldDisplay=()=>late.promise;internal.left=false;const read=internal.refreshWorld(),abort=internal.worldAbort;w.click('twin-replay');expect(abort!.signal.aborted).toBe(true);late.resolve({version:1,runId:h.view!.run.id,tick:7,revision:11,simTimeNs:'140000000',availability:'valid',reason:null,snapshot:drawing.record.snapshot,control:null,controlReason:'NOT_RECORDED_AT_TICK'});await read;await settle();expect(internal.world).toBeNull();expect(internal.worldView).toBeNull();expect(internal.frame().view!.tick).toBe(0);});
+ 
+ test('a Resume selected against retained running geometry sends the current acknowledged revision',async()=>{const {w,h,internal}=await cellBoundary('running');internal.applyView({...h.view!,run:{...h.view!.run,status:'paused',runRevision:12}});const action=vi.fn(async(v:RunView)=>({...v,run:{...v.run,status:'running' as const,runRevision:13}}));internal.rt.action=action;w.click('twin-resume');await vi.waitFor(()=>expect(h.busy).toBe(false));expect(action.mock.calls[0]![0].run.runRevision).toBe(12);expect(internal.world!.sourceRevision).toBe(11);});
++
++test('paired Source world/context is consumed without racing a later independent GET',async()=>{
++ const {h,internal}=await cellBoundary('running'),world=internal.world!,paired={...structuredClone(h.view!),tick:8,simTimeNs:'160000000'};
++ const observer=internal as unknown as {worldRun:string;worldDrawing:Omit<import('../../src/twin/world-view').WorldDrawing,'record'>};observer.worldRun=paired.run.id;observer.worldDrawing=world;
++ internal.rt.worldDisplayScene=async()=>({runId:paired.run.id,availability:'available',reason:null,scene:world.scene});
++ internal.rt.worldDisplay=async()=>({version:1,runId:paired.run.id,revision:paired.run.runRevision,tick:8,simTimeNs:paired.simTimeNs,availability:'valid',reason:null,snapshot:{...world.record.snapshot,tick:8,simTimeNs:paired.simTimeNs},control:null,controlReason:'NOT_RECORDED_AT_TICK',view:paired});
++ const canvas=internal as unknown as {vs:{view:string};pacedLoop:boolean;paint3d(f:import('../../src/twin/scene').TwinFrame):void};canvas.pacedLoop=true;canvas.vs.view='3d';const painted=vi.spyOn(canvas,'paint3d').mockImplementation(()=>{});
++ const get=vi.fn(async()=>({...paired,tick:9,simTimeNs:'180000000'}));internal.rt.get=get;internal.left=false;await internal.refreshWorld();
++ expect(internal.world!.record.snapshot.tick).toBe(8);expect(internal.worldView!.tick).toBe(8);expect(get).not.toHaveBeenCalled();expect(painted).toHaveBeenCalledWith(expect.objectContaining({world:expect.objectContaining({sourceRevision:11}),view:expect.objectContaining({tick:8})}));await internal.refreshWorld();expect(painted).toHaveBeenCalledTimes(1);
++});
++test('cell Pause is admitted while its paced step is held and retains the admitted revision',async()=>{
++ const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};
++ const held=deferred<RunView>(),started=deferred<void>(),calls:{kind:string;revision:number}[]=[],before=structuredClone(h.view!);
++ internal.rt.action=async(v,kind)=>{calls.push({kind,revision:v.run.runRevision});if(kind==='step'){started.resolve();return held.promise;}return {...before,run:{...before.run,status:'paused',runRevision:12}};};
++ w.click('twin-play');await started.promise;w.click('twin-pause');await settle();
++ try{expect(calls).toContainEqual({kind:'pause',revision:11});}finally{held.resolve({...before,run:{...before.run,status:'paused',runRevision:13}});await vi.waitFor(()=>expect(h.busy).toBe(false));}
++ expect(h.view!.run.runRevision).toBe(13);expect(calls.filter(c=>c.kind==='pause')).toHaveLength(1);
++});
++
++for(const code of ['REVISION_CONFLICT','NETWORK_ERROR'])test(`cell priority Pause ${code} preserves definite versus unknown mutation semantics`,async()=>{
++ const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};
++ const held=deferred<RunView>(),started=deferred<void>(),before=structuredClone(h.view!),calls:{kind:string;revision:number;id:string|undefined}[]=[];
++ internal.rt.action=async(v,kind,_payload,id)=>{calls.push({kind,revision:v.run.runRevision,id});if(kind==='step'){started.resolve();return held.promise;}if(calls.filter(c=>c.kind==='pause').length===1)throw new TwinRuntimeError(code,[],code==='REVISION_CONFLICT'?409:0);return {...before,run:{...before.run,status:'paused',runRevision:13}};};
++ w.click('twin-play');await started.promise;w.click('twin-pause');await settle();held.resolve({...before,run:{...before.run,runRevision:12}});await vi.waitFor(()=>expect(h.busy).toBe(false));
++ const pauses=calls.filter(c=>c.kind==='pause');expect(pauses.map(c=>c.revision)).toEqual(code==='REVISION_CONFLICT'?[11,12]:[11]);if(pauses.length===2)expect(pauses[1]!.id).not.toBe(pauses[0]!.id);expect(h.view!.run.status).toBe(code==='REVISION_CONFLICT'?'paused':'running');
++});
+diff --git a/tests/unit/world-playback.test.ts b/tests/unit/world-playback.test.ts
+new file mode 100644
+index 0000000..1459547
+--- /dev/null
++++ b/tests/unit/world-playback.test.ts
+@@ -0,0 +1,20 @@
++import {expect,test} from 'vitest';
++import {WorldPlayback} from '../../src/twin/world-playback';
++const poses=(x:number)=>({arms:{arm:{jointsRad:[x],gripperOpeningM:x}},bodies:{amr:{positionM:[x,0,0] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}},cups:{cup:{positionM:[x,0,1] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}}});
++test('received committed world endpoints interpolate together, stop at newest, and expire',()=>{
++ const p=new WorldPlayback();p.feed('run/boot/rev/scene','0',0,poses(0));p.feed('run/boot/rev/scene','100000000',100,poses(1));
++ const a=p.at(200)!;expect(a).toMatchObject({bodies:{amr:{positionM:[.5,0,0]}}});expect(a.bodies.amr!.positionM[0]).toBeCloseTo(.5);expect(a.arms.arm!.jointsRad[0]).toBeCloseTo(.5);expect(a.cups!.cup!.positionM[0]).toBeCloseTo(.5);expect(p.at(400)!.bodies.amr!.positionM[0]).toBe(1);expect(p.at(601)).toBeNull();
++});
++test('run boot revision, missing sample gap and prop membership invalidate interpolation',()=>{
++ const p=new WorldPlayback();p.feed('a','0',0,poses(0));p.feed('a','100000000',100,poses(1));p.feed('b','120000000',120,poses(8));expect(p.at(120)!.bodies.amr!.positionM[0]).toBe(8);
++ p.feed('b','140000000',700,poses(10));expect(p.at(700)!.bodies.amr!.positionM[0]).toBe(10);const withoutCup={...poses(11),cups:{}};p.feed('b','160000000',720,withoutCup);expect(p.at(720)!.cups).toEqual({});p.clear();expect(p.at(721)).toBeNull();
++});
++
++test('alternating one/two committed ticks per poll never stalls a continuously moving received path',()=>{
++ const p=new WorldPlayback();let tick=0,previous=-1;
++ for(let wall=0;wall<=2000;wall+=10){if(wall%40===0){tick+=wall%80===0?1:2;p.feed('same-revision',String(tick*20000000),wall,poses(tick));}const x=p.at(wall)!.bodies.amr!.positionM[0];if(wall>200)expect(x).toBeGreaterThan(previous);previous=x;}
++});
++
++test('unchanged identity rejects older source or receipt time without extending freshness',()=>{
++ const p=new WorldPlayback();p.feed('a','100000000',100,poses(1));p.feed('a','80000000',700,poses(9));expect(p.at(701)).toBeNull();p.feed('a','120000000',90,poses(9));expect(p.at(200)!.bodies.amr!.positionM[0]).toBe(1);
++});

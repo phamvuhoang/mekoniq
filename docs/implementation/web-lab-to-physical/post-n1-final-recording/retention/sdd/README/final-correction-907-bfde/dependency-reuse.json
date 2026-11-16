@@ -1,0 +1,19 @@
+{
+  "node_modules": {
+    "symlink": false,
+    "realpath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/node_modules"
+  },
+  ".venv-mujoco": {
+    "symlink": false,
+    "realpath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-mujoco"
+  },
+  ".venv-irsim": {
+    "symlink": false,
+    "realpath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim"
+  },
+  "../lab/node_modules": {
+    "symlink": false,
+    "realpath": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/node_modules"
+  },
+  "pnpm-lock-sha256": "ce094c95fc4cbbaf868ae5ac29172a92a236a7296328f8c21bd6f9d7dcde8ec4"
+}

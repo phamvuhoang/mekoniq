@@ -1,0 +1,1802 @@
+{
+  "at": "2026-11-16T03:53:49.050895+00:00",
+  "scope": "Independent read-only current correction audit; report may still append, final campaign pending. Does not replace scoped review/full qualification.",
+  "heads": {
+    "source": {
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "tree": "b6796a8b53ffb3eec4e055011f0b2f81aa6877ee",
+      "status": ""
+    },
+    "lab": {
+      "head": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "tree": "e62eff604b5685f5a57bfdc9b0e31794294200be",
+      "status": ""
+    }
+  },
+  "lock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "edd67efcd4094a93d95c5368e3bfe1294f6578a016a0241580d3697e2c373b14",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+  },
+  "identity": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/subject-identity-ordered.json",
+    "bytes": 43496,
+    "sha256": "5b5702206979ea543c657d69cc2f39fb71b1f099f60bd908bfca31b39b4cfe78"
+  },
+  "buildSha256": "c3824f5ae8670e47361124e9e1fb2377a9b6dc7b6402cdbbe409572aaf5db274",
+  "buildFiles": 200,
+  "selectedCheckerFileSet": "e90053d6d0dfdcb64475af48bff26d0cab0a69a50f2595cd48c77d4f4bf7feb4",
+  "selectedCheckerIsFullR3Graph": false,
+  "receipts": [
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-green-corrected.json",
+        "bytes": 2405,
+        "sha256": "b310ed03597ed4f130a4ff08c17535158810e718fadb6291e316f93f480b6ff5"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-green-corrected.log",
+        "bytes": 255,
+        "sha256": "07a5a4ae7b034a5b856c8736df0ccc004dcd55dae1b5262ffdecff2f6c3c9583"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:32:27.267051",
+      "end": "2026-11-16T10:32:29.981330",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-green.json",
+        "bytes": 2395,
+        "sha256": "ece62078e5e1000113c7441ee14ee7f32b88c3f61ec25223221cfcd727ed584f"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-green.log",
+        "bytes": 876,
+        "sha256": "38a07e69591f09ae990f0f1d55bf6ceb45ceadb7ce139b6f0e35aee543d32842"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:31:29.589951",
+      "end": "2026-11-16T10:31:32.160283",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-red.json",
+        "bytes": 1753,
+        "sha256": "e3e6b2ed9ef8b18b419f68e0fc7bdd16da2417eb38d2d595ef253f41b1f6f027"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/cadence-red.log",
+        "bytes": 1373,
+        "sha256": "ba04c84849c9c9d631475fcdc431105a6c2f90405f666075a4a1587d1e361d2a"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:30:55.900374",
+      "end": "2026-11-16T10:30:57.463536",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/capture-ordered-readback.json",
+        "bytes": 1146,
+        "sha256": "bc09143ab0be3d0edf377c4312eba0928f0f7b1aee8514e59eadfcd1d6a2e504"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/capture-ordered-readback.log",
+        "bytes": 293,
+        "sha256": "f875141a6e3e9934368f083a12d46338bbaa8769b6f2f1cbc547663db7dcb03c"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:44:30.579993",
+      "end": "2026-11-16T10:44:30.949811",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/capture-readback.json",
+        "bytes": 1122,
+        "sha256": "768227c77af075faa2dfce39f4a0dce9d6aab282a7d5b2bb54fdfd287682f4f3"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/capture-readback.log",
+        "bytes": 390,
+        "sha256": "92c33c40ff30df00009fd7003fddfc744a82b24507e2553911195a59ac8ba786"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:26:46.939922",
+      "end": "2026-11-16T10:26:47.287624",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-closed-browser.json",
+        "bytes": 1036,
+        "sha256": "245110cb948ea7dcee145d28f44ed0713aa43f4179a00b940cfeb183f9b30878"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-closed-browser.log",
+        "bytes": 411,
+        "sha256": "e66b9bd9d0840f68282912f4591652c355d948f0cf51f3969cddb69783318a14"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:44:50.210255",
+      "end": "2026-11-16T10:45:38.165524",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-identity.json",
+        "bytes": 988,
+        "sha256": "530be49493fae904c8b5ecd4167f559a9d02538f001c23cc9f6b6b14c0b4dd5f"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-identity.log",
+        "bytes": 1586,
+        "sha256": "d4bb009d5f3fc7b0feec8e0010bb8d87d7068bd0bc858b0a80e7fe0d7ca2c4f2"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:15:11.826926",
+      "end": "2026-11-16T10:15:12.688420",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-payload-campaign.json",
+        "bytes": 996,
+        "sha256": "c9c024e6173e85d4cafe8ee02cd465f8109d2423e86e09a723452610d9100f0a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-payload-campaign.log",
+        "bytes": 380,
+        "sha256": "8905a586d3873a62782fc84653b1f9aba8e928ca05e788aec1d2f9da8481f1c7"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:46:15.544827",
+      "end": "2026-11-16T10:53:04.628956",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-replay-browser.json",
+        "bytes": 1011,
+        "sha256": "35b066b47ac94a9622437beeef4ee27bf3972dc8fb62391019850e0ac849911b"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-replay-browser.log",
+        "bytes": 705,
+        "sha256": "1e2ede2139c2819558c54eefae34b77b5793e05838b1cab965a2b1a5413572c1"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:45:38.378378",
+      "end": "2026-11-16T10:45:55.916333",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-buffer-red.json",
+        "bytes": 2405,
+        "sha256": "8ee375018e0615bfd114ad58d180b7359d2040608b06fb29bee2f384530010e2"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-buffer-red.log",
+        "bytes": 1623,
+        "sha256": "979ad6baf592195f61316a35f6e3325b5b7268bbceaa1633c0aa81cbcae6e2fb"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:58:50.166142",
+      "end": "2026-11-16T09:58:51.776415",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-lab-green.json",
+        "bytes": 3512,
+        "sha256": "ffd27c0c3e58b1610ff798b90e39f92d7d484e94d520bcc21d24404f5e836384"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-lab-green.log",
+        "bytes": 255,
+        "sha256": "8f5064bec6fa6d923aeffe0f0480552216bcf735412084eb97b16a0d6c569350"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T09:59:45.400993",
+      "end": "2026-11-16T09:59:47.994654",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-lab-red.json",
+        "bytes": 1730,
+        "sha256": "8ae7cc88074718d2eb5800e1a0e6bc15671f487672484bfa95128895852f526d"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-lab-red.log",
+        "bytes": 1461,
+        "sha256": "783af42e4c7fab11a8a92e17a93e7f18f113ed1a9d367e1293b360c6e230a596"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:58:04.299166",
+      "end": "2026-11-16T09:58:05.955000",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M tests/unit/workspace-generation.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M tests/unit/workspace-generation.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-prefix-red.json",
+        "bytes": 5605,
+        "sha256": "19af0452057202910dbfa64b22be07baa333c8edaaeee5f92c0ea0ec2ce2a5cf"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-prefix-red.log",
+        "bytes": 2835,
+        "sha256": "a7db0aa0e4aa40c33cacbf5eb618c309f711b79212d4095170e49af4836712ee"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:01:19.187447",
+      "end": "2026-11-16T10:01:20.173018",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-green.json",
+        "bytes": 5404,
+        "sha256": "e6022d08407ab314b607290d8f57cbb85a557b4df62d7043fad9c1b5a85cc262"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-green.log",
+        "bytes": 611,
+        "sha256": "7bc0e9c937ae1439094e92840e6fa12788255cfe796118cf5e8b2f4d6c961928"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T09:57:03.336904",
+      "end": "2026-11-16T09:57:12.424552",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-red-valid.json",
+        "bytes": 4504,
+        "sha256": "34f52d605a255fabf3ea2caf5f60ad2eb2d309bfa71e127e88e9ee9b4361e51d"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-red-valid.log",
+        "bytes": 3893,
+        "sha256": "933fd05dba36a9f10e5945d28a52b8018fac857ba1052dffa461b4e33e64b8d5"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:56:09.982679",
+      "end": "2026-11-16T09:56:14.700824",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-red.json",
+        "bytes": 1613,
+        "sha256": "e66b7eb167253d50e41194e319d7f60f7a8c4282213fa43380f937230f6ef3d8"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i1-source-red.log",
+        "bytes": 88,
+        "sha256": "0f673f9f4c98d1f5d4aed11ab04a7e918de174e5c2a030d058b309dcc2e66062"
+      },
+      "binding": true,
+      "exit": -15,
+      "start": "2026-11-16T09:54:44.074087",
+      "end": "2026-11-16T09:56:09.827534",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-green.json",
+        "bytes": 1061,
+        "sha256": "7b8fae5987b591c51008e767626ab7955407d4c0ddae9d0d4f5394351c98d04c"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-green.log",
+        "bytes": 388,
+        "sha256": "0a2651f0f6f77f43e8666ac220eb1a04fbacc20b04266adde3e79fc1e32e2dbf"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T09:50:25.052780",
+      "end": "2026-11-16T09:50:29.617167",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-prefix-green.json",
+        "bytes": 5863,
+        "sha256": "12a9552a4bb689af9a94f3459ce7e885de9462d2f9fda67f72af0ef568d336a9"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-prefix-green.log",
+        "bytes": 451,
+        "sha256": "686fa986a1148ffed1b9ce24545dbf62064aa6737fac437fd35c6056b87e9380"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:02:03.336526",
+      "end": "2026-11-16T10:02:07.237312",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-red.json",
+        "bytes": 930,
+        "sha256": "118684d34fd66bfa5c1bf40b578b1af187d7fe839b60a06c8d76176780a42ae5"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-red.log",
+        "bytes": 31792,
+        "sha256": "c319b015bf66550432d6047919daef917a898ddaeed817728ffbf19f84e1b30b"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:49:57.915631",
+      "end": "2026-11-16T09:50:00.696591",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": "?? tests/security/lab-reclaim-authorization.test.ts\n",
+      "afterStatus": "?? tests/security/lab-reclaim-authorization.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-writable-red.json",
+        "bytes": 5816,
+        "sha256": "2cbd5d79d1989991c13629fcf81e369f8be620a32fab543d76056740862a99ed"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i2-writable-red.log",
+        "bytes": 1763,
+        "sha256": "c00f2bbcad3f5836151051f0fb9d40d8a3d7f374650d19c82814bed56caa081b"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:01:20.244214",
+      "end": "2026-11-16T10:01:22.402058",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i3-green.json",
+        "bytes": 1448,
+        "sha256": "362dd6fc623f2e26bc2f2fe8df1e1c90658a157110919174d264924f16686262"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i3-green.log",
+        "bytes": 3460,
+        "sha256": "2c7a055677c91932fc8876a04647c17c57c9cc8589fd2aefd61f11e6e0fb7b23"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T09:51:49.521808",
+      "end": "2026-11-16T09:52:12.582119",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i3-red.json",
+        "bytes": 1088,
+        "sha256": "24e186dccecb0cc65a5633c074ea811ed36d3888ef7af55e837aef267f982928"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i3-red.log",
+        "bytes": 2467,
+        "sha256": "d65808fdbd6173a572f060557e2b06a903cea9f4cfd86811c3534a2da92c568c"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:51:11.584791",
+      "end": "2026-11-16T09:51:12.607208",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-frozen-window-red.json",
+        "bytes": 6722,
+        "sha256": "e89fd97f8a635050c87a0504a1acc586dafa0ff070db0d6177c68bdd8da3ea7a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-frozen-window-red.log",
+        "bytes": 3228,
+        "sha256": "ab7863e0395e58f1efec87283260e1d444df6f482883acd273d18b1d3f17a3bb"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:07:36.872638",
+      "end": "2026-11-16T10:07:37.808945",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-green.json",
+        "bytes": 1527,
+        "sha256": "2b871243ab3eed935205bcf3963dc644eebcebc855afc726887d9a2b08017c1e"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-green.log",
+        "bytes": 382,
+        "sha256": "3dc9d17e492caa8442d21a1d1be8d09ce8651e9e2b5477f1bfcd6b85e2405e67"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T09:52:34.727925",
+      "end": "2026-11-16T09:52:36.452905",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-progress-green.json",
+        "bytes": 6729,
+        "sha256": "9bfe82005fd9a792dec35473e3da1b43a605e5affdd175b0ac2af3018fdb3699"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-progress-green.log",
+        "bytes": 496,
+        "sha256": "8b1400d83439dcc26d27f901457b70f887fcc0e63c69d5227c4844fbce02d95a"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:07:49.021666",
+      "end": "2026-11-16T10:07:53.930720",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-red.json",
+        "bytes": 1403,
+        "sha256": "e623615ac018057f4d93195ceafcf837dc7ac9eab920ab1c4f65c96a6fad6836"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/i4-red.log",
+        "bytes": 3536,
+        "sha256": "a90c38a0d8b2f6250ba6f354df8ff14c409c05c23e488e13bde2298737f70c3d"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T09:52:15.031848",
+      "end": "2026-11-16T09:52:15.782326",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/unit/browser-capture-clock.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": false
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build-ordered.json",
+        "bytes": 802,
+        "sha256": "fc2d8c0c31b6f4a6b26fab093c62199226a9853a72b6af73ae9558e07ce67166"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build-ordered.log",
+        "bytes": 1605,
+        "sha256": "e54f9ba25bb4a17d5c0f64dbd6b414f13b980e3584625d9cd65070fe1ee896ea"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:39:35.098588",
+      "end": "2026-11-16T10:39:39.890711",
+      "head": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build-settled.json",
+        "bytes": 802,
+        "sha256": "4960ba82ffa65b78f31e3db844058fb54283ebca5056fc12b49840a9d7cb9da9"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build-settled.log",
+        "bytes": 1605,
+        "sha256": "765f0545d5efa741341044ad50d521ffde73206da2656da05badde9cea7022c8"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:14:14.915790",
+      "end": "2026-11-16T10:14:19.902215",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build.json",
+        "bytes": 1510,
+        "sha256": "240bbc9addc2ffdd67c9c8d21ebf96b278b84f17a4f82d31d887dba74db4f684"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-build.log",
+        "bytes": 1605,
+        "sha256": "6e6e0272d1399abc7ed8312ef53bd880aba2a1d9dfcdf02ce7f4e2f405920e49"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:58.473280",
+      "end": "2026-11-16T10:13:03.721538",
+      "head": "96e7aca378b6c96d371d3909c5b9d520a6e0e3ce",
+      "beforeStatus": " M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+      "afterStatus": " M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-cadence-final.json",
+        "bytes": 3240,
+        "sha256": "ae09eb5b694b32a53090ec35702b3cf208736babc522678f910163c756f9d70c"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-cadence-final.log",
+        "bytes": 255,
+        "sha256": "c48217ecadb010f3ac668053fa0851d7664dfa725a74123212d2f1912465627f"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:35:46.915649",
+      "end": "2026-11-16T10:35:49.182117",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-affected.json",
+        "bytes": 3903,
+        "sha256": "88ae1aa244b7346472f4d6582f152435b7a8e3ab9dabb266692eaa467a6508c1"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-affected.log",
+        "bytes": 255,
+        "sha256": "c7ae0b2936e8625c44f72132e3fc35002a45fafcdab0effa0b88e89ea83e049c"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:11:57.281679",
+      "end": "2026-11-16T10:11:59.520343",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-typecheck.json",
+        "bytes": 3763,
+        "sha256": "d564c9bc7b35a7b8c442ab6e0dec29e19365ac79f44c47466e2264570da7ba7c"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-typecheck.log",
+        "bytes": 122,
+        "sha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:11:59.671016",
+      "end": "2026-11-16T10:12:02.448723",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-unit.json",
+        "bytes": 3778,
+        "sha256": "ed8a3bcf40b0b5aeb2e599fcff45caf35c0cc73afbc2667973a9f3e2cb760ccd"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-final-unit.log",
+        "bytes": 289,
+        "sha256": "e58df86b1ef65dccc984734b14de42595b4b30d710bcb081af7ab70031a4f9ab"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:04:48.526713",
+      "end": "2026-11-16T10:05:19.226085",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-import-ordered.json",
+        "bytes": 3329,
+        "sha256": "13ab532531337794a71c335ef2d6eeda784a430c8aad2c34ab63fc926f4b6c31"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-import-ordered.log",
+        "bytes": 198,
+        "sha256": "98a15d97e186de545b1f2202e4058d99b6dfa3fd7c1b7752a2587a8507fc83d4"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:39:24.707870",
+      "end": "2026-11-16T10:39:25.426054",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-import.json",
+        "bytes": 4059,
+        "sha256": "d12c6da7d2f3243d9daba0ebe575f7984278138b34c3cec6b82baf799e0375cb"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-import.log",
+        "bytes": 198,
+        "sha256": "96d363cf7e1a989048d735483b895b209205c3f76b2f95669d432f3140f73c83"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:40.781321",
+      "end": "2026-11-16T10:12:41.339662",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-ordered-typecheck.json",
+        "bytes": 3019,
+        "sha256": "d8134c23c9689f425dd9f3a5c28de3204d8e7328763108b5f5e4447eba265deb"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-ordered-typecheck.log",
+        "bytes": 122,
+        "sha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:35:49.337069",
+      "end": "2026-11-16T10:35:52.258824",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-pin-ordered.json",
+        "bytes": 4102,
+        "sha256": "00adc59a1677e2b6a8c6e59032b76e8f723ad4e41551f6644b60df32221892da"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-pin-ordered.log",
+        "bytes": 295,
+        "sha256": "113ddf3f6450d3efa3e6b7c462cc1e4f38defe7d277295c0eebfb45485bd9cdb"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:39:26.028486",
+      "end": "2026-11-16T10:39:26.341465",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-pin.json",
+        "bytes": 4840,
+        "sha256": "fe3b15d1e51d63fd0f41e70bc06f646ede75fe88d1d317044e18b0c9389b80b7"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-pin.log",
+        "bytes": 295,
+        "sha256": "925fa49ce47faea09494371c75f14ac5721debf7c7b2975438f0439fb16d3bec"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:41.943101",
+      "end": "2026-11-16T10:12:42.274207",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-sync-ordered.json",
+        "bytes": 3773,
+        "sha256": "678e5074e376bbee371960f60c1565d964cd234ed025be3d2fb97c96e7a82760"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-sync-ordered.log",
+        "bytes": 220,
+        "sha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:39:25.584912",
+      "end": "2026-11-16T10:39:25.780321",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-sync.json",
+        "bytes": 4511,
+        "sha256": "9bbcc0a9959a068f2fd1a8eddd71f3f5ab4c18cdf2dd47b02c783f997eb43887"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-sync.log",
+        "bytes": 220,
+        "sha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:41.500928",
+      "end": "2026-11-16T10:12:41.701501",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M config/source-runtime.lock.json\n M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/shared/engineering.ts\n M src/shared/navigation2d.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-typecheck-dev.json",
+        "bytes": 3761,
+        "sha256": "c24d602560eb612dce203c12d744f3cb1937504c93e7c4d003cdeeaea7c362f4"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-typecheck-dev.log",
+        "bytes": 122,
+        "sha256": "b78fdb43e4fadead7db30a196fdaa214d80de2ea9a3bf53245a231b6ba98d881"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:02:53.400334",
+      "end": "2026-11-16T10:02:56.898969",
+      "head": "bfde031f552c4909941beae2df8a51e3af73c23d",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M scripts/production-http-observer.ts\n M src/scenarios/controls.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n?? src/twin/world-playback.ts\n?? tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-unit-ordered.json",
+        "bytes": 3034,
+        "sha256": "e0b4515ad54171fda2e376cf416289f573a420b58559fc0b8977a67f82479e6c"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/lab-unit-ordered.log",
+        "bytes": 289,
+        "sha256": "cc7aabc3b6d7ee89543efa6d26c7f81e10595082a03bcd24f35487412d3b1ca0"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:37:17.581949",
+      "end": "2026-11-16T10:37:49.820153",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M scripts/measure-cell-production.ts\n M src/twin/world-playback.ts\n M src/ui/workspace.ts\n M src/viewer/twin3d.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/mj-evidence.json",
+        "bytes": 1215,
+        "sha256": "94b64e7d0da21567f7cefa442b6800564753bee30727334424fab634daeb6abe"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/mj-evidence.log",
+        "bytes": 126,
+        "sha256": "9c5a99dbe326382449fb9936e71aadeb742753cf2e9f5473115ff5b3af9946b3"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:20:01.397686",
+      "end": "2026-11-16T10:20:53.656187",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/mj-row-readback.json",
+        "bytes": 1082,
+        "sha256": "b4cb3d4e55b84a1daba430fa7ecc64f5ca4840573b37bdda67e66e33a83e0b21"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/mj-row-readback.log",
+        "bytes": 332,
+        "sha256": "24ebe8f02821de06aa65d5235d7613079e2392bc2fc63002480c1d64082f9e42"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:21:39.720379",
+      "end": "2026-11-16T10:21:39.950693",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-burst-final.json",
+        "bytes": 2284,
+        "sha256": "5d7403b4cc6952ca3a47649218dbbc33130dae5427078ce4441e131453c7120f"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-burst-final.log",
+        "bytes": 342,
+        "sha256": "60115c420ca0c42d9be7a93f31837a4b41f6984ad2476e21a809aa28c72da2c3"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:37:16.478666",
+      "end": "2026-11-16T10:37:17.377633",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-clock-green.json",
+        "bytes": 1729,
+        "sha256": "9fc9e096d4016f6c569af00efab0823d77bd69e8178cae690d6da9598528fe76"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-clock-green.log",
+        "bytes": 496,
+        "sha256": "b01caed225b93696d36c205e8f9ed37a4ce0548c728f4a157de47a459da57b07"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:35:06.659372",
+      "end": "2026-11-16T10:35:12.107263",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-clock-red.json",
+        "bytes": 1336,
+        "sha256": "ea3de995ef8122c6fb6a74efa1cc84e5546ca71637ddb60978b50e6fbc66125e"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-clock-red.log",
+        "bytes": 4148,
+        "sha256": "4168edad58d2ca1acb8280d3f2c01e9dc9995bb1f36abee8fe338f5ab9bdbe3b"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:33:54.527764",
+      "end": "2026-11-16T10:33:55.437237",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-final-tests.json",
+        "bytes": 2328,
+        "sha256": "1bdb3a5cd92059e69032c32c2f8c161b8575325bb3d2ef755262d075d93bb74a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-final-tests.log",
+        "bytes": 554,
+        "sha256": "869b92c3b7382738d2d0be3e6dfde8fa808bcac6c4da15b4f9bd1c864c816168"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:36:33.446837",
+      "end": "2026-11-16T10:36:39.331796",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-lint.json",
+        "bytes": 2224,
+        "sha256": "3f894ca51b702115fabb67c7623e8b23df4beffd915cd60e4bc66c25763cf363"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-lint.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:36:48.880001",
+      "end": "2026-11-16T10:36:56.274263",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-typecheck.json",
+        "bytes": 2166,
+        "sha256": "e2125ee24ca41123ac53b139a464a1dbfe43871f8a661aa04f667b2e21b16130"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/ordered-typecheck.log",
+        "bytes": 232,
+        "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:36:39.559865",
+      "end": "2026-11-16T10:36:48.661981",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/paired-canvas-red.json",
+        "bytes": 2057,
+        "sha256": "21615a6da9832371e604fe98625c81ead90df200fd1c6880366b026afc4cdb90"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/paired-canvas-red.log",
+        "bytes": 878,
+        "sha256": "1b705b340e904868e07802880b5914dbdb5ab2283b7e7910a53928572e86fbde"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:32:04.253287",
+      "end": "2026-11-16T10:32:05.859407",
+      "head": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "beforeStatus": " M src/twin/world-playback.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "afterStatus": " M src/twin/world-playback.ts\n M tests/unit/workspace-generation.test.ts\n M tests/unit/world-playback.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/payload-campaign.json",
+        "bytes": 984,
+        "sha256": "fc4db86692f52c8551c7994e8c2a5178370d3d7da95ba0e2b8cd7fa61e22aead"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/payload-campaign.log",
+        "bytes": 380,
+        "sha256": "8905a586d3873a62782fc84653b1f9aba8e928ca05e788aec1d2f9da8481f1c7"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:39.730951",
+      "end": "2026-11-16T10:19:45.625072",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/prepare-retained.json",
+        "bytes": 6853,
+        "sha256": "b827368477177a7ab4ec20570d0472af70890f1313d0f1681a75cd6bf6659f99"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/prepare-retained.log",
+        "bytes": 237,
+        "sha256": "904a79a0ecf3a7fa1a01e5445ee52b8224ab70841155c83be504534c1b58aa2a"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:08:45.286967",
+      "end": "2026-11-16T10:08:45.754672",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture-ordered.json",
+        "bytes": 1053,
+        "sha256": "9866c46743fdfef7fc685f9f33a2e9bea033c710b558608435dd210e570b786a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture-ordered.log",
+        "bytes": 5950,
+        "sha256": "56c8940b4ce5168f7b3c0a39a0fe35d5b5f1ae1c3d1cbdcd4195fa0953886193"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:40:24.634777",
+      "end": "2026-11-16T10:44:05.551774",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture.json",
+        "bytes": 1037,
+        "sha256": "637216bb0568b10eccae4902e5cc320b22ac12a57227f552d4f0ffc6d3bde7e9"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture.log",
+        "bytes": 5956,
+        "sha256": "73d378214816b8fa646aa9e1e9c22a15ebe40a65ec1655d9f2fe3b864dd878d9"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:21:54.007720",
+      "end": "2026-11-16T10:25:41.846168",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-closed-browser.json",
+        "bytes": 1046,
+        "sha256": "9efec6f680fd88dfe136a3e7a634acafb4ac14d72deb2f003bd503bb90f853e6"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-closed-browser.log",
+        "bytes": 411,
+        "sha256": "687f44a8511c1ba74b588b9d95fd885b09da2c688aa2326ddb622e22ab446cb0"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:15:53.720838",
+      "end": "2026-11-16T10:16:25.609267",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-replay-browser.json",
+        "bytes": 1021,
+        "sha256": "0e07b967655f1a153789b17d83c7ca3ae15c47c935a1b012d7ff6169f3a5dfaf"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-replay-browser.log",
+        "bytes": 753,
+        "sha256": "5ee3523e58488a72c069751de87f04693250eb3bdb2b3f75c3f614d6f5fc648e"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:13:49.687482",
+      "end": "2026-11-16T10:13:50.818584",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-replay-settled.json",
+        "bytes": 1021,
+        "sha256": "8e63def7aadc3fc7909bbb67fbec1d40431930de308ce179bd5a947d37593cbd"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-replay-settled.log",
+        "bytes": 701,
+        "sha256": "40337a2e4912049506eb210a9cde51c7ea8a00cfcc8468c44485c4f77657d337"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:14:35.919655",
+      "end": "2026-11-16T10:14:55.201778",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-build-ordered.json",
+        "bytes": 2166,
+        "sha256": "bb341f803e59f53bbbfac147a54ac316514bdb851a22deff7438cd29e2bb6af8"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-build-ordered.log",
+        "bytes": 7357,
+        "sha256": "01e60d91553d05df445577db383442016327778b1f431d3b62ee3c29fec4e163"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:37:17.581285",
+      "end": "2026-11-16T10:37:56.430975",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M scripts/browser-capture-clock.mjs\n M tests/unit/browser-capture-clock.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-build.json",
+        "bytes": 6606,
+        "sha256": "b94b758a97ccca3ea30c44e3daff1069b83446e5eaf964e2da7cd45f241f8c7a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-build.log",
+        "bytes": 7359,
+        "sha256": "bbe7ff7b99d622ff8fef4626f001d9b6cadc6e4e103d2f30c447e831b4b64162"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:08:46.303309",
+      "end": "2026-11-16T10:09:17.992476",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-export-ordered.json",
+        "bytes": 945,
+        "sha256": "4cee2592f6377c10a88ddb13c24b7e7fe08e03c65a9b722e75075202c579d431"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-export-ordered.log",
+        "bytes": 103315,
+        "sha256": "811d958fc6c06b36014fa782333fd300868d199fde4bf90c0d02332f23e9bbc5"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:39:13.018611",
+      "end": "2026-11-16T10:39:14.043908",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-export.json",
+        "bytes": 929,
+        "sha256": "bfb2235d84c30e355df4f9b88da31641f21e57cffb29bf5d6b14e1a8c9b8b629"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-export.log",
+        "bytes": 103307,
+        "sha256": "babf1a35b258624be8b6bf4d74732b9fedf4c6617a00d0f48e5095220a989d47"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:12:18.741757",
+      "end": "2026-11-16T10:12:19.717612",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-affected.json",
+        "bytes": 7021,
+        "sha256": "6f274e6fbf8f8fd6b7748429952dcacde51744d3c41d12c797fb6c3e676564d5"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-affected.log",
+        "bytes": 9243,
+        "sha256": "52fe65154df62911372accfe9be159cf5af640d8375a1ac4c3286c922cfe902f"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:05:06.967300",
+      "end": "2026-11-16T10:06:19.137412",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-contracts.json",
+        "bytes": 6261,
+        "sha256": "220ffecd80311ce94e68175f6fd0750703f7c9612fdfa5dc18863b7e3454e254"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-contracts.log",
+        "bytes": 192,
+        "sha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:04:19.551876",
+      "end": "2026-11-16T10:04:20.508138",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-lint-authored.json",
+        "bytes": 6686,
+        "sha256": "95e3fe07df73862eb79a463330ebe78f98f26c90e9462d334dfd8329483d2848"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-lint-authored.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:07:54.142904",
+      "end": "2026-11-16T10:08:05.887485",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-lint.json",
+        "bytes": 6248,
+        "sha256": "739f271c6d6af373bed8491e40daba864f723ff292c0626b2a1b80efbbb96774"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-lint.log",
+        "bytes": 407131,
+        "sha256": "395b3df6f9e1094a2655e10bd4d5f2e8a00ee5323c68820971f74cf078ae61d8"
+      },
+      "binding": true,
+      "exit": 1,
+      "start": "2026-11-16T10:04:31.434785",
+      "end": "2026-11-16T10:05:43.040405",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-replay.json",
+        "bytes": 7118,
+        "sha256": "31cc0e781550ebc8a105198ccf06940388b88309ca37a1ca285ccb703f83e043"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-replay.log",
+        "bytes": 2049,
+        "sha256": "b7ecfed5c8c304414b8eb3724bc7208ae457ebb8e6917db3ee6a212e9ffbcd16"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:08:45.968093",
+      "end": "2026-11-16T10:10:21.537637",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/support/r2b-capture.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-typecheck.json",
+        "bytes": 6255,
+        "sha256": "9bcad5169dfddc233f8b72054a2b57585707632a52e5ba47775179fe2d302ea0"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-final-typecheck.log",
+        "bytes": 232,
+        "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:04:20.707476",
+      "end": "2026-11-16T10:04:31.201567",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md\n M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-settled-guards.json",
+        "bytes": 1266,
+        "sha256": "766f43ff48bb95967d2025ac2e4c28624b45fc52bf9d83916d2227041d16ddb8"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-settled-guards.log",
+        "bytes": 3843,
+        "sha256": "8befb397460e1e70d2d9f35339e9fced422408fed9fe6d8469455329fb35952f"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:14:53.171508",
+      "end": "2026-11-16T10:15:28.145630",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-typecheck-dev.json",
+        "bytes": 5699,
+        "sha256": "a78cb6413fcad27e031fe43787f64672d999b52e6626f16b2c13f378317bf57e"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/source-typecheck-dev.log",
+        "bytes": 878,
+        "sha256": "4bf0839422fb358ad0f4ae7141a0647abe987eb5c68810f59c2979b3a465aa9b"
+      },
+      "binding": true,
+      "exit": 2,
+      "start": "2026-11-16T10:02:52.392032",
+      "end": "2026-11-16T10:03:02.720095",
+      "head": "907087c4f2a4d6bc1348f50177c19143d956e9d9",
+      "beforeStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "afterStatus": " M packages/lab-runtime/src/v2/gateway.ts\n M packages/lab-runtime/src/v2/scenario-runner.ts\n M packages/lab-runtime/src/v2/simulation3d/world-display.ts\n M scripts/browser-capture-clock.mjs\n M scripts/irsim-qualification.mjs\n M scripts/record-sim-extension-r2b.mjs\n M scripts/sim-extension-r2b.mjs\n M tests/security/lab-run-writer.test.ts\n M tests/unit/browser-capture-clock.test.ts\n M tests/unit/world-runner.test.ts\n?? tests/security/lab-reclaim-authorization.test.ts\n?? tests/unit/r2b-suite-coverage.test.ts\n",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/subject-identity-check.json",
+        "bytes": 998,
+        "sha256": "47dc7f3b33d390684fbc8789237ce6d5a3bc0dc217f91a30a7a96c3d056170d0"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/subject-identity-check.log",
+        "bytes": 1586,
+        "sha256": "d4bb009d5f3fc7b0feec8e0010bb8d87d7068bd0bc858b0a80e7fe0d7ca2c4f2"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:15:22.309392",
+      "end": "2026-11-16T10:15:23.280400",
+      "head": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/subject-identity-ordered-check.json",
+        "bytes": 1014,
+        "sha256": "f388bf7a7c00d82ed76233d24b4086a82c099272df7d931a2b5099d3837f3d5a"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/subject-identity-ordered-check.log",
+        "bytes": 1587,
+        "sha256": "f159140def798c0626d4a616627e1de47b590ee668d7dfb4ec98d37f3d895d98"
+      },
+      "binding": true,
+      "exit": 0,
+      "start": "2026-11-16T10:40:05.669693",
+      "end": "2026-11-16T10:40:06.692308",
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "beforeStatus": "",
+      "afterStatus": "",
+      "hasDirtyByteMaps": true
+    }
+  ],
+  "finalByteChecks": [
+    {
+      "check": "ordered-final-tests",
+      "coveredCommittedHead": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "files": [
+        {
+          "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "scripts/browser-capture-clock.mjs",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/browser-capture-clock.test.ts",
+          "matchesBeforeAfterAndCommit": false
+        }
+      ]
+    },
+    {
+      "check": "ordered-burst-final",
+      "coveredCommittedHead": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "files": [
+        {
+          "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "scripts/browser-capture-clock.mjs",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/browser-capture-clock.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        }
+      ]
+    },
+    {
+      "check": "ordered-typecheck",
+      "coveredCommittedHead": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "files": [
+        {
+          "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "scripts/browser-capture-clock.mjs",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/browser-capture-clock.test.ts",
+          "matchesBeforeAfterAndCommit": false
+        }
+      ]
+    },
+    {
+      "check": "ordered-lint",
+      "coveredCommittedHead": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "files": [
+        {
+          "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "scripts/browser-capture-clock.mjs",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/browser-capture-clock.test.ts",
+          "matchesBeforeAfterAndCommit": false
+        }
+      ]
+    },
+    {
+      "check": "source-build-ordered",
+      "coveredCommittedHead": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "files": [
+        {
+          "path": "docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "scripts/browser-capture-clock.mjs",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/browser-capture-clock.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        }
+      ]
+    },
+    {
+      "check": "lab-unit-ordered",
+      "coveredCommittedHead": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "files": [
+        {
+          "path": "scripts/measure-cell-production.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/twin/world-playback.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/ui/workspace.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/viewer/twin3d.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/workspace-generation.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/world-playback.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        }
+      ]
+    },
+    {
+      "check": "lab-ordered-typecheck",
+      "coveredCommittedHead": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "files": [
+        {
+          "path": "scripts/measure-cell-production.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/twin/world-playback.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/ui/workspace.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "src/viewer/twin3d.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/workspace-generation.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        },
+        {
+          "path": "tests/unit/world-playback.test.ts",
+          "matchesBeforeAfterAndCommit": true
+        }
+      ]
+    }
+  ],
+  "capture": {
+    "raw": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture-ordered/actual-cell-production.json",
+      "bytes": 28643348,
+      "sha256": "1a27b144bd7281e4fd0ee697f97bd549083ae608f1b59edf745c8f73872f86a9"
+    },
+    "assessment": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture-ordered/assessment.json",
+      "bytes": 355,
+      "sha256": "fd6725c8491b53b766f86a6c86c9b853a7fd064f1b07b5f270ec3bd472418119"
+    },
+    "runId": "d8cc956b-1629-4f3b-86b7-6d457a0d6fae",
+    "computed": {
+      "renderIntervalP95Ms": 17.799999713897705,
+      "workerP95Ms": 4.868333,
+      "activeCellMs": 184974.19999980927
+    },
+    "readerMetrics": {
+      "renderIntervalP95Ms": 17.799999713897705,
+      "workerP95Ms": 4.868333,
+      "lastStepReceiptMs": 60.883544921875,
+      "pauseAckUiMs": 61.522216796875,
+      "activeCellMs": 184974.19999980927,
+      "fullCellDrawingMs": 175509.69999456406,
+      "fullCellDrawingFrames": 10515
+    },
+    "elapsedMs": 185002.59999990463,
+    "achievedRate": 0.4990200137730367,
+    "renderEvents": 20320,
+    "clockGroups": 19183,
+    "equalTimePairs": 1137,
+    "maxRenderIntervalMs": 182.7999997138977,
+    "orderedWindow": {
+      "version": 1,
+      "startCount": 788,
+      "endCount": 21108,
+      "tailDrawCalls": 49
+    },
+    "allocationErrors": [],
+    "totalDrawCalls": 1125207,
+    "actualWorkerTicks": 4804,
+    "activeWorkerTicks": 4617,
+    "finalRequestedTicks": 50,
+    "finalActualTicks": 4,
+    "finalH": 4804,
+    "drawPoseSamples": 10515,
+    "distinctBodyPoseMaps": 10251,
+    "accepted": false
+  },
+  "cleanup": {
+    "production-capture-ordered": {
+      "completed": true,
+      "errors": []
+    },
+    "final-closed-browser": {
+      "completed": true,
+      "errors": []
+    },
+    "final-replay-browser": {
+      "port": 4175,
+      "listening": false,
+      "closedAt": "2026-11-16T03:45:55.880Z",
+      "ownership": "exact server created by this invocation",
+      "otherResourcesStopped": false
+    }
+  },
+  "browsers": {
+    "final-closed-browser": {
+      "result": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-closed-browser/browser-result.json",
+        "bytes": 5047,
+        "sha256": "f6a84bfba05e2d9aa18b323a274fac759eee3cfa8ddad171fbf3d298dd78dd85"
+      },
+      "stats": {
+        "startTime": "2026-11-16T03:44:54.060Z",
+        "duration": 43607.303,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": [],
+      "invocationKeys": [
+        "version",
+        "invocationId",
+        "before",
+        "startedAtEpochMs"
+      ]
+    },
+    "final-replay-browser": {
+      "result": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-replay-browser/result.json",
+        "bytes": 12751,
+        "sha256": "d445e4efd7f3c2bbabf9e66e2aa35b851dc3d108847a0dd9b701cf5f9f7b0ac8"
+      },
+      "stats": {
+        "startTime": "2026-11-16T03:45:39.704Z",
+        "duration": 15961.166000000001,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": [],
+      "invocationKeys": [
+        "version",
+        "invocationId",
+        "before",
+        "startedAtEpochMs"
+      ]
+    }
+  },
+  "reportReadCheckpoint": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-correction-report.md",
+    "bytes": 49728,
+    "sha256": "28f4084c08f95309cf27c272aad5228d31ac4a0a74afe0b6a628d89a51971139"
+  },
+  "issues": [],
+  "scopeNotes": [
+    {
+      "check": "ordered-final-tests",
+      "path": "tests/unit/browser-capture-clock.test.ts",
+      "recorded": {
+        "bytes": 12434,
+        "sha256": "97328e32655df53bfa57bdd78b4298bf595ed67037de0b3418169e58bcfb186f"
+      },
+      "committed": {
+        "bytes": 12583,
+        "sha256": "5d93858e1e95de2d51bcc4205ceff7ac3159896b9739f3c765ad1b4bfaebe1ca"
+      },
+      "scope": "Precedes documented burst fixture narrowing; product bytes match final commit. Exact final burst case has its own focused receipt; do not claim the earlier entire test file was final bytes."
+    },
+    {
+      "check": "ordered-typecheck",
+      "path": "tests/unit/browser-capture-clock.test.ts",
+      "recorded": {
+        "bytes": 12434,
+        "sha256": "97328e32655df53bfa57bdd78b4298bf595ed67037de0b3418169e58bcfb186f"
+      },
+      "committed": {
+        "bytes": 12583,
+        "sha256": "5d93858e1e95de2d51bcc4205ceff7ac3159896b9739f3c765ad1b4bfaebe1ca"
+      },
+      "scope": "Precedes documented burst fixture narrowing; product bytes match final commit. Exact final burst case has its own focused receipt; do not claim the earlier entire test file was final bytes."
+    },
+    {
+      "check": "ordered-lint",
+      "path": "tests/unit/browser-capture-clock.test.ts",
+      "recorded": {
+        "bytes": 12434,
+        "sha256": "97328e32655df53bfa57bdd78b4298bf595ed67037de0b3418169e58bcfb186f"
+      },
+      "committed": {
+        "bytes": 12583,
+        "sha256": "5d93858e1e95de2d51bcc4205ceff7ac3159896b9739f3c765ad1b4bfaebe1ca"
+      },
+      "scope": "Precedes documented burst fixture narrowing; product bytes match final commit. Exact final burst case has its own focused receipt; do not claim the earlier entire test file was final bytes."
+    }
+  ],
+  "supersedesAuditAssumptionsOnly": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-correction-audit-cb5-fded.json",
+    "bytes": 98327,
+    "sha256": "233d4babe43373df54f75b1509fc1265b2eb1f430a6abe20163760a76eab0224"
+  },
+  "auditCorrection": "Initial audit incorrectly required final bytes for a documented pre-narrowing test fixture and assumed preview cleanup used completed:true. Actual fixture-specific receipt and listening:false/closedAt schema are retained; no product, test or evidence output changed."
+}

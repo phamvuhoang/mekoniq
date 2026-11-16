@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-16T01:55:56.992557+00:00",
+  "scope": "Independent readable SDD and safe metadata mapping verification; no original edits. Raw private exclusions were hashed only, not printed or engine-opened.",
+  "readableFiles": 484,
+  "readableBytes": 19407166,
+  "reports": {
+    "count": 31,
+    "bytes": 1042879
+  },
+  "reviews": {
+    "count": 47,
+    "bytes": 507505
+  },
+  "literalRulings": {
+    "physicalLines": 120,
+    "explicitClauses": 121,
+    "ledgers": [
+      "README/progress.md",
+      "01-r2b-mobility/progress.md",
+      "02-r2b-cell-and-web/progress.md",
+      "03-r3-linux-readiness/progress.md"
+    ],
+    "duplicatesPreserved": true
+  },
+  "laterPreservedAppendOrPrepend": [],
+  "safeMetadataFiles": 1791,
+  "safeMetadataBytes": 103557662,
+  "verifiedPrivateExclusions": [
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/2bd66e6/checks/host-sleep-observation.log",
+      "bytes": 364283,
+      "sha256": "a2d24ff4c814389491e76e5d097611adec0fd1fad3b20e5c64bea45eba523965",
+      "disposition": "External private original retained; marked derivative/exclusion descriptor only is public"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/r1-invocation-boundary.json",
+      "bytes": 171502,
+      "sha256": "12211da696749f3b113183b857f7379c076934e2e244718d22a212feea64b6cf",
+      "disposition": "External private original retained; marked derivative/exclusion descriptor only is public"
+    },
+    {
+      "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/takeover-owned-state-and-path.json",
+      "bytes": 173796,
+      "sha256": "082c68fe5ab67681933caba1ca6238b298d5381124a72d5fc34d4ce7f9189b8b",
+      "disposition": "External private original retained; marked derivative/exclusion descriptor only is public"
+    }
+  ],
+  "legacyReviewLimitation": "B00/B01 have ledger-only standalone review records; no reports invented. Full net code goes to final reviewer."
+}

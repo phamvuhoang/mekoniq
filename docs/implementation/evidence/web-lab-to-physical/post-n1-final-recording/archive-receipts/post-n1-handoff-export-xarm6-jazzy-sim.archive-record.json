@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-handoff-export-xarm6-jazzy-sim",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-xarm6-jazzy-sim",
+  "archive": "post-n1-handoff-export-xarm6-jazzy-sim.tar.gz",
+  "archiveBytes": 2585198,
+  "archiveSha256": "fdf8e464673e5d95b28e0ea2184fcf0dc1cadd994852daf4684c7c04f230de06",
+  "memberIndex": "post-n1-handoff-export-xarm6-jazzy-sim.members.json",
+  "memberIndexSha256": "5be089c822976add0d34b8af1654d3639d43de1b2f23c7b2bc96dca71e6ce163",
+  "memberCount": 243,
+  "memberBytes": 10883986,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.extract.json",
+  "safeExtractionReceiptSha256": "79362b02fc9f9291ad22e2b0680f8510c11e99dae188fb850028d703d9a08b9d",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-xarm6-jazzy-sim",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-measured-lab-dist",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/dist"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-measured-lab-dist\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/dist\", \"archive\": \"post-n1-measured-lab-dist.tar.gz\", \"archiveBytes\": 21165138, \"archiveSha256\": \"5af4f9a13c09da86487f6c1c7bd73e5097e48f0ec12128dbfd58698dfbc4a67b\", \"memberIndex\": \"post-n1-measured-lab-dist.members.json\", \"memberIndexSha256\": \"32e7cfbf447600292fd80052cd60e76da15aa56a1d1bd444d848659bd204a1f7\", \"memberCount\": 200, \"memberBytes\": 36173473, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-measured-lab-dist.extract.json\", \"safeExtractionReceiptSha256\": \"3aa4fd2ab1d6c87961c71dc56d83f6cd5e819dbdc9c77b9f4d8f6fe11169312a\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-measured-lab-dist\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-measured-lab-dist\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-measured-lab-dist\", \"verifiedFiles\": 200, \"verifiedBytes\": 36173473}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:41.860521+00:00"
+}

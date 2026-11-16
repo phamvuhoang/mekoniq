@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:38.780196+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/stock-launcher-web-active",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-stock-launcher-web-active.tar.gz",
+  "archiveSha256": "d153adb7e101e92419e426fd421c1409f45745e7f38cfd86091eed748b63b13f",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-stock-launcher-web-active.members.json",
+  "memberIndexSha256": "f869e184a3b261a962ea162e922e36e834e8645f1aae19a0be0f50ee11a6fac6",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-stock-launcher-web-active",
+  "verifiedFiles": 62,
+  "verifiedBytes": 14447348,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

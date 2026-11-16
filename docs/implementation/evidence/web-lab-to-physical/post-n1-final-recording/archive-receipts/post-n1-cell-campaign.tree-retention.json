@@ -1,0 +1,3424 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:07:48.395665+00:00",
+  "id": "post-n1-cell-campaign",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/cell-campaign",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "campaign.json",
+        "bytes": 2636,
+        "sha256": "b2d3c7f60b465900367427c68a7eb59645bdb661ba79fbaec3d6b4d82a2e5d0b",
+        "mode": "0o644",
+        "mtimeNs": 1794804338997212322
+      },
+      {
+        "path": "cancel-held/case.json",
+        "bytes": 8761,
+        "sha256": "630458617ad73be2a35a49a505abce28f4e67bd9180e40cdaf4c13036879dc0f",
+        "mode": "0o644",
+        "mtimeNs": 1794806063857682312
+      },
+      {
+        "path": "cancel-held/controller-state.json",
+        "bytes": 147917,
+        "sha256": "c1db39f434661fd446174def165aa9541382bd59448aaef8fa1fbadf9fadee4c",
+        "mode": "0o644",
+        "mtimeNs": 1794806063690054171
+      },
+      {
+        "path": "cancel-held/fault-before.json",
+        "bytes": 29562,
+        "sha256": "2b952e676bd363ed7dd6e67f2ac52ba4dc1483b98727b7b436166aa332aa0dc7",
+        "mode": "0o644",
+        "mtimeNs": 1794806061654158110
+      },
+      {
+        "path": "cancel-held/physical-custody.json",
+        "bytes": 187,
+        "sha256": "bdd3621fc3c822dd70747795cdce966d2fe6eeff0b227854d35f2db346b726a8",
+        "mode": "0o644",
+        "mtimeNs": 1794806063690843218
+      },
+      {
+        "path": "cancel-held/report.json",
+        "bytes": 1888559,
+        "sha256": "9541b31e88c4ca8fb6aeb2d390e8e6925e3e4acca4deeff5fd0c8ded99531f11",
+        "mode": "0o644",
+        "mtimeNs": 1794806063668304648
+      },
+      {
+        "path": "cancel-held/run/arm-props-trace-34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b.json",
+        "bytes": 458016,
+        "sha256": "34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b",
+        "mode": "0o600",
+        "mtimeNs": 1794806063652326456
+      },
+      {
+        "path": "cancel-held/run/arm-trace-504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063.json",
+        "bytes": 501529,
+        "sha256": "504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063",
+        "mode": "0o600",
+        "mtimeNs": 1794806063633156159
+      },
+      {
+        "path": "cancel-held/run/cup-ledger.sqlite",
+        "bytes": 45056,
+        "sha256": "74ed37c2ca7d117744ddb0a8f73092fd16f4ffceee8ea10b8a0b3b63bc094932",
+        "mode": "0o644",
+        "mtimeNs": 1794806063695286498
+      },
+      {
+        "path": "cancel-held/run/journal.db",
+        "bytes": 925696,
+        "sha256": "1b069a5ee777d2f54f4b6963f00861fedb965a77b282ba057c08c41d22eb236e",
+        "mode": "0o644",
+        "mtimeNs": 1794806063830808462
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321034037
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321191122
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321981877
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794805967322216129
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794805967322697215
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805967324041683
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794805967324541853
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794805967325054148
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794805967326162489
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794805967326346657
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794805967326809785
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794805967326974661
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794805967327579374
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794805967328153586
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794805967328471463
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794805967329241135
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321728542
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794805967320862495
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14123,
+        "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+        "mode": "0o644",
+        "mtimeNs": 1794805967329520470
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321586624
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805967321383581
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794805967320672702
+      },
+      {
+        "path": "cancel-held/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794805967320422492
+      },
+      {
+        "path": "cancel-held/run/run.json",
+        "bytes": 181888,
+        "sha256": "7f7f98b595282671cc2a4c1963596cfb75ed56854ddbbe65690e71ae41b837bc",
+        "mode": "0o600",
+        "mtimeNs": 1794806061694671094
+      },
+      {
+        "path": "cancel-held/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "d1c75ed205fcf6b68c3e533e0aade42d701bbb42f7a575d418eba61d73555f7f",
+        "mode": "0o600",
+        "mtimeNs": 1794805967978011633
+      },
+      {
+        "path": "cancel-held/run/world-evidence/manifest.json",
+        "bytes": 1540,
+        "sha256": "a9df4d73699c967429bf27e362bf04f8b1f4da05f359485765f0cb6eb016dc64",
+        "mode": "0o600",
+        "mtimeNs": 1794806063745325589
+      },
+      {
+        "path": "cancel-held/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794806063740577057
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000000-57943d80.ndjson.gz",
+        "bytes": 212614,
+        "sha256": "3a41c229bb534fa2f35a92b3ec0a79a0e7ed6d5a670e847d11a394a97b0b21ce",
+        "mode": "0o600",
+        "mtimeNs": 1794805978083838562
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000001-a6fee43c.ndjson.gz",
+        "bytes": 215914,
+        "sha256": "be0da5021abb3374e1bd84b83b9c645d3743ae4c55b7878cfa779882e0bb86c4",
+        "mode": "0o600",
+        "mtimeNs": 1794805990860061869
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000002-cc16fe43.ndjson.gz",
+        "bytes": 221189,
+        "sha256": "5abc4f94f2e1b8e60885f3013256b065adb8836f85b5ea481f06335d88ef1d37",
+        "mode": "0o600",
+        "mtimeNs": 1794806002436476263
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000003-fe764927.ndjson.gz",
+        "bytes": 225663,
+        "sha256": "849f1d9c60e88035b97ad80845d605bcbcfee48a42a645d8b82eca59196a4c5d",
+        "mode": "0o600",
+        "mtimeNs": 1794806024205216257
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000004-a092a3d2.ndjson.gz",
+        "bytes": 229630,
+        "sha256": "7be6407ae3874e32644ab52f002ca4b8f07c8f21fe95aa73ca784d571e050ccc",
+        "mode": "0o600",
+        "mtimeNs": 1794806036914341441
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000005-1a797236.ndjson.gz",
+        "bytes": 234130,
+        "sha256": "a37ed91960cf5c5c46982398ad41ac4fcb3cb580cf060a761a38a22f69fa48cd",
+        "mode": "0o600",
+        "mtimeNs": 1794806052520027834
+      },
+      {
+        "path": "cancel-held/run/world-evidence/world-000006-7d46d111.ndjson.gz",
+        "bytes": 218451,
+        "sha256": "71db28632a8c420e605fb206728ac17f136c1db04e2755a33681f6de3a9ed8ac",
+        "mode": "0o600",
+        "mtimeNs": 1794806063730117277
+      },
+      {
+        "path": "cancel-held/source-journal.json",
+        "bytes": 450734,
+        "sha256": "8be37980c764f69bf39c408563bddab76ed3242061d647a16dcfc09d66c3b726",
+        "mode": "0o644",
+        "mtimeNs": 1794806063685676808
+      },
+      {
+        "path": "cancel-held/trace.json",
+        "bytes": 351909,
+        "sha256": "56c7d8208ded5f2139c6bca0470229611d34ae21067725d90e35dac9cff2d188",
+        "mode": "0o644",
+        "mtimeNs": 1794806063837256173
+      },
+      {
+        "path": "cup-fall/case.json",
+        "bytes": 9164,
+        "sha256": "e769e0a217b8042034d3f76720bdf8aece42259a02dbbfa3cfef005cb0088e1f",
+        "mode": "0o644",
+        "mtimeNs": 1794805967297265667
+      },
+      {
+        "path": "cup-fall/controller-state.json",
+        "bytes": 140892,
+        "sha256": "3b02a0b9cbeb3b0fbf2c46c13154e5efb3e2c7d7d5e4644256d2a17e53025c20",
+        "mode": "0o644",
+        "mtimeNs": 1794805967146229015
+      },
+      {
+        "path": "cup-fall/physical-custody.json",
+        "bytes": 175,
+        "sha256": "4788d114821ae2e6b1dd4c28f1a3c1f3f55d3f2b272d8bec1df527a88c22b27b",
+        "mode": "0o644",
+        "mtimeNs": 1794805967154326486
+      },
+      {
+        "path": "cup-fall/report.json",
+        "bytes": 2725366,
+        "sha256": "4931d0db2c4b537dbfa1c5a4d651df8b0b613d7e4c0855b3b7157a510b5f1747",
+        "mode": "0o644",
+        "mtimeNs": 1794805967139567636
+      },
+      {
+        "path": "cup-fall/run/arm-props-trace-eaaa826d5a85a0fda7babaa3d5dfbbb9a79c85d044b54e01142a141049441432.json",
+        "bytes": 796236,
+        "sha256": "eaaa826d5a85a0fda7babaa3d5dfbbb9a79c85d044b54e01142a141049441432",
+        "mode": "0o600",
+        "mtimeNs": 1794805967125458082
+      },
+      {
+        "path": "cup-fall/run/arm-trace-058c1a8ff0ea383ab08d3188302f562b03d696fd702a1dbccbd39cd5f458f3ad.json",
+        "bytes": 707396,
+        "sha256": "058c1a8ff0ea383ab08d3188302f562b03d696fd702a1dbccbd39cd5f458f3ad",
+        "mode": "0o600",
+        "mtimeNs": 1794805967103983852
+      },
+      {
+        "path": "cup-fall/run/cup-ledger.sqlite",
+        "bytes": 53248,
+        "sha256": "17076e7564bb988ab5a040b8c7baef708c53f4faf4e74ab5037593fad51023d3",
+        "mode": "0o644",
+        "mtimeNs": 1794805967155437744
+      },
+      {
+        "path": "cup-fall/run/journal.db",
+        "bytes": 1150976,
+        "sha256": "d41c36d1447a2a4bd51c5a88182359184e9298da9638e8e6c33ae64c4fdf2d5e",
+        "mode": "0o644",
+        "mtimeNs": 1794805967269861856
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794805877605589885
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794805877605803178
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794805877606527141
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794805877606758643
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794805877607065186
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805877607284605
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794805877607721441
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794805877608209653
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794805877608639572
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794805877608849365
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794805877609667537
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794805877609889331
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794805877610945796
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794805877611800052
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794805877612662141
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794805877613533814
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794805877606298181
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794805877605371008
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14240,
+        "sha256": "85b3d459d738a99a230e39c73a9989ff61901d341c1e32ac7ef183deccf41014",
+        "mode": "0o644",
+        "mtimeNs": 1794805877613795566
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794805877606136597
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805877605971429
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794805877605208216
+      },
+      {
+        "path": "cup-fall/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794805877604997464
+      },
+      {
+        "path": "cup-fall/run/run.json",
+        "bytes": 218122,
+        "sha256": "3265d9de1027d2cbaee613762b6f1e7b837b325b0a69221852ec803d478e810d",
+        "mode": "0o600",
+        "mtimeNs": 1794805965230606480
+      },
+      {
+        "path": "cup-fall/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "37dd823f6670e4e65393da557eb1ffb8a9c2b5810e72350a4dba0c198d6f7c28",
+        "mode": "0o600",
+        "mtimeNs": 1794805878545017568
+      },
+      {
+        "path": "cup-fall/run/world-evidence/manifest.json",
+        "bytes": 2041,
+        "sha256": "f7821dff8d18f057a5fc19bcb5d5f9ffd06f31b33665223b4b21f0c4167caf5f",
+        "mode": "0o600",
+        "mtimeNs": 1794805967192168577
+      },
+      {
+        "path": "cup-fall/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794805967186711082
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000000-178d73db.ndjson.gz",
+        "bytes": 212601,
+        "sha256": "a4cfed3561bb52b560c689c26b81f03f7d642ccf293ba3b825127ca412addf4c",
+        "mode": "0o600",
+        "mtimeNs": 1794805887567030998
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000001-dbe37e46.ndjson.gz",
+        "bytes": 215900,
+        "sha256": "4045e12de58a850992b97b5117615ce457dbda19d77cd3f5902deed592d4332c",
+        "mode": "0o600",
+        "mtimeNs": 1794805897091985475
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000002-bd7d8cd2.ndjson.gz",
+        "bytes": 221182,
+        "sha256": "f509a17b27f6c95296e7d820706e56515584e2d427f69972dfdc23e49baf286c",
+        "mode": "0o600",
+        "mtimeNs": 1794805906020845520
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000003-281972ad.ndjson.gz",
+        "bytes": 225638,
+        "sha256": "52c7f424248d34c85c175fd7add1da468bcd8bc135373060de57684fc1214df0",
+        "mode": "0o600",
+        "mtimeNs": 1794805913985216462
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000004-f3ab0ec5.ndjson.gz",
+        "bytes": 229634,
+        "sha256": "7b33e0422263b21dd517a6fef0c025b86138db25bc02495bb9e28e7d74c23f1f",
+        "mode": "0o600",
+        "mtimeNs": 1794805922583148256
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000005-f1f8f63c.ndjson.gz",
+        "bytes": 234132,
+        "sha256": "8e18f0f44dc3193db5ed62240529d0cb5182a672ed2cb8b3ed09932062fe3e91",
+        "mode": "0o600",
+        "mtimeNs": 1794805930951202485
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000006-dfdbbd26.ndjson.gz",
+        "bytes": 284854,
+        "sha256": "c5916cde4785a099949ba31be1f7ef8047b63cfdf84147cc6b50d2d02cee6a6f",
+        "mode": "0o600",
+        "mtimeNs": 1794805940526456304
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000007-821a1b6f.ndjson.gz",
+        "bytes": 338233,
+        "sha256": "c702ab7f797a586cb433f4dcf941e1792c90bbb28f79cd4632b7547a26068984",
+        "mode": "0o600",
+        "mtimeNs": 1794805950681619944
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000008-42ccb1ab.ndjson.gz",
+        "bytes": 342742,
+        "sha256": "25e2fbfe60a7febcbc42571d82d108fc71c03b07c765b760acf6f13c24185640",
+        "mode": "0o600",
+        "mtimeNs": 1794805960870822274
+      },
+      {
+        "path": "cup-fall/run/world-evidence/world-000009-51f2917d.ndjson.gz",
+        "bytes": 175339,
+        "sha256": "62d323d622d8df68a10e3f84396caa8d3958e275f6868cefa6fa76398aff328c",
+        "mode": "0o600",
+        "mtimeNs": 1794805967172418026
+      },
+      {
+        "path": "cup-fall/source-journal.json",
+        "bytes": 559582,
+        "sha256": "868577764d12cb80b3bf5a12b8aa05b0e82f31e533f216e67c74534824e31d97",
+        "mode": "0o644",
+        "mtimeNs": 1794805967145410009
+      },
+      {
+        "path": "cup-fall/trace.json",
+        "bytes": 492308,
+        "sha256": "e500be02a77fad6f638f0b7e73bf28de9d3991031daeeeca5f627af4db78ad61",
+        "mode": "0o644",
+        "mtimeNs": 1794805967277230489
+      },
+      {
+        "path": "dock-drift/case.json",
+        "bytes": 8606,
+        "sha256": "a1db44cfda5ff840979c736135142188378a66a3ef5848bd7a430726063d992b",
+        "mode": "0o644",
+        "mtimeNs": 1794805877571199317
+      },
+      {
+        "path": "dock-drift/controller-state.json",
+        "bytes": 147530,
+        "sha256": "c04501e9602fe7105927363389393aaa75678f88ecb2a3e6ffd30ef9011344a8",
+        "mode": "0o644",
+        "mtimeNs": 1794805877344689026
+      },
+      {
+        "path": "dock-drift/physical-custody.json",
+        "bytes": 187,
+        "sha256": "fdc23ba0da82d06666ae674a1fabdd4f3a5849d153adcee8306e19bc6e4669b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805877344978236
+      },
+      {
+        "path": "dock-drift/report.json",
+        "bytes": 1871101,
+        "sha256": "c6ba6fa126ff64ab0943b3774b6d2985c39bc611136cfac0840a846eea763152",
+        "mode": "0o644",
+        "mtimeNs": 1794805877340444997
+      },
+      {
+        "path": "dock-drift/run/arm-props-trace-d5160db691069b986dcf8c4119ccbdf26d1f5453a0d33ca7a141edcad65bb3e9.json",
+        "bytes": 458019,
+        "sha256": "d5160db691069b986dcf8c4119ccbdf26d1f5453a0d33ca7a141edcad65bb3e9",
+        "mode": "0o600",
+        "mtimeNs": 1794805877322765252
+      },
+      {
+        "path": "dock-drift/run/arm-trace-8a8e6d97271ef91f9fb0979bcaf4393616f4bd85efcc5f9321e734e5282ae6e1.json",
+        "bytes": 501511,
+        "sha256": "8a8e6d97271ef91f9fb0979bcaf4393616f4bd85efcc5f9321e734e5282ae6e1",
+        "mode": "0o600",
+        "mtimeNs": 1794805877309580829
+      },
+      {
+        "path": "dock-drift/run/cup-ledger.sqlite",
+        "bytes": 45056,
+        "sha256": "f34c99453b85ebae0a5b685090bdd488fd8896f48fdbaee1f803230633d741cf",
+        "mode": "0o644",
+        "mtimeNs": 1794805877345441115
+      },
+      {
+        "path": "dock-drift/run/journal.db",
+        "bytes": 888832,
+        "sha256": "7873390e5a406ae2aefcf897b6930ef56e69cfdd352f7377e2ffad982d290b45",
+        "mode": "0o644",
+        "mtimeNs": 1794805877544839013
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979093439
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979232857
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979794319
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979930320
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794805815980124904
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805815980408406
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794805815980569657
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794805815981263870
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794805815981554664
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794805815981709998
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794805815982691422
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794805815982842964
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794805815984454809
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794805815984974062
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794805815985689776
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794805815986411697
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979613984
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794805815978946855
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14247,
+        "sha256": "673e03b32ae551bfd9c076936d562d353d131800ad500819a5552f9e0b6c23a3",
+        "mode": "0o644",
+        "mtimeNs": 1794805815986696782
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979492483
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805815979370691
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794805815978816354
+      },
+      {
+        "path": "dock-drift/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794805815978642894
+      },
+      {
+        "path": "dock-drift/run/run.json",
+        "bytes": 179971,
+        "sha256": "0837e27d0bd430f7e61d0f262a06e87c9a049084687b8d42327ce7e5f3a1dcee",
+        "mode": "0o600",
+        "mtimeNs": 1794805875970505842
+      },
+      {
+        "path": "dock-drift/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "57625611cd0510ea1badc7c5ad322915044a6d56885d2b51c1b835e79651151c",
+        "mode": "0o600",
+        "mtimeNs": 1794805816624443872
+      },
+      {
+        "path": "dock-drift/run/world-evidence/manifest.json",
+        "bytes": 1540,
+        "sha256": "5dfaf7900823080b9d88ea20599d3859ddf6485d3177f9a0ef20e48e2bcfd280",
+        "mode": "0o600",
+        "mtimeNs": 1794805877399602233
+      },
+      {
+        "path": "dock-drift/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794805877391195426
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000000-67b00632.ndjson.gz",
+        "bytes": 212600,
+        "sha256": "bfd0c5c48ed3c8fd9d279e43bf9fdc600c92995371f33cf303676c9e42c5f53d",
+        "mode": "0o600",
+        "mtimeNs": 1794805825721642146
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000001-0c71a1a0.ndjson.gz",
+        "bytes": 215908,
+        "sha256": "4d969c33360077d8c90bb294ec4e0100ce6a885026b0554fb9079022f8a7adfa",
+        "mode": "0o600",
+        "mtimeNs": 1794805833327628899
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000002-86539088.ndjson.gz",
+        "bytes": 221186,
+        "sha256": "e6eb1623ce51f9a1ac5b7d1bb95551a03b58e28411c873bbedd1212ce62f27de",
+        "mode": "0o600",
+        "mtimeNs": 1794805841122611396
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000003-a11ed64c.ndjson.gz",
+        "bytes": 225651,
+        "sha256": "21fd2d69edd8874ab8ba99400b708c2bc015478bffa626d95d12f0fb85b78e31",
+        "mode": "0o600",
+        "mtimeNs": 1794805850545773513
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000004-59f09166.ndjson.gz",
+        "bytes": 229640,
+        "sha256": "bd8d985a9ee6fde9a56019e1ea09ebf407c0d0b18e9c79496d31658caa2d9cfe",
+        "mode": "0o600",
+        "mtimeNs": 1794805858781019798
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000005-c6f0f0dd.ndjson.gz",
+        "bytes": 234128,
+        "sha256": "65d6044a97ffe42a8dc5a9b46bba6584b5d377b2d191da85617d39d6365e3128",
+        "mode": "0o600",
+        "mtimeNs": 1794805867764891718
+      },
+      {
+        "path": "dock-drift/run/world-evidence/world-000006-3a2d1f3d.ndjson.gz",
+        "bytes": 222540,
+        "sha256": "5caeccfce81cb90a876a2194c2659885aca23813dd026e1d343371f2338af231",
+        "mode": "0o600",
+        "mtimeNs": 1794805877372121671
+      },
+      {
+        "path": "dock-drift/source-journal.json",
+        "bytes": 418190,
+        "sha256": "044c19867f88ecbd64d39bce4f3951b8314d00d1a91f5b7dae3d0568d628c5ea",
+        "mode": "0o644",
+        "mtimeNs": 1794805877343722603
+      },
+      {
+        "path": "dock-drift/trace.json",
+        "bytes": 351909,
+        "sha256": "e3e50725d93c9b22c38b5a38b0489ddf47051c6894b2ecb26d52b6697f6ba999",
+        "mode": "0o644",
+        "mtimeNs": 1794805877551933520
+      },
+      {
+        "path": "lost-ack/case.json",
+        "bytes": 8920,
+        "sha256": "2b5a5329e3b877d060e4b7ea31354cf7de3d33f2ef6288f0d9e29639d42831bd",
+        "mode": "0o644",
+        "mtimeNs": 1794806207867013341
+      },
+      {
+        "path": "lost-ack/controller-state.json",
+        "bytes": 146833,
+        "sha256": "8d5a2491e7bc04b140efaf846aa36135245bf1d3c0b8b855757a7f4aa8839202",
+        "mode": "0o644",
+        "mtimeNs": 1794806207704996750
+      },
+      {
+        "path": "lost-ack/fault-before.json",
+        "bytes": 29562,
+        "sha256": "40fe56d431615c9ef096e79a8a1fff3bed6593ec1fb7bf7afc1e6a6ed352d4fd",
+        "mode": "0o644",
+        "mtimeNs": 1794806206426781704
+      },
+      {
+        "path": "lost-ack/lost-ack-native-response.json",
+        "bytes": 31219,
+        "sha256": "800bb85ca53b9b1a04c8454e549d7d172b50d1eebbc707fcf9344ed377b33e91",
+        "mode": "0o644",
+        "mtimeNs": 1794806206450559839
+      },
+      {
+        "path": "lost-ack/physical-custody.json",
+        "bytes": 178,
+        "sha256": "5856236c44fc41f94bc35cca7745673f1b711525a7687e0144bc5fecb5888b44",
+        "mode": "0o644",
+        "mtimeNs": 1794806207705630591
+      },
+      {
+        "path": "lost-ack/report.json",
+        "bytes": 1872375,
+        "sha256": "c781d00fc9566f0591cc901b6f3eab2001fb4ca46ab6a28fe41176348ff1e705",
+        "mode": "0o644",
+        "mtimeNs": 1794806207700768913
+      },
+      {
+        "path": "lost-ack/run/arm-props-trace-34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b.json",
+        "bytes": 458016,
+        "sha256": "34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b",
+        "mode": "0o600",
+        "mtimeNs": 1794806207690048588
+      },
+      {
+        "path": "lost-ack/run/arm-trace-504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063.json",
+        "bytes": 501529,
+        "sha256": "504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063",
+        "mode": "0o600",
+        "mtimeNs": 1794806207682402380
+      },
+      {
+        "path": "lost-ack/run/cup-ledger.sqlite",
+        "bytes": 45056,
+        "sha256": "0be570e4bca072219b4ff5f4e508766dd00609c802d3f37226baab972e2e1098",
+        "mode": "0o644",
+        "mtimeNs": 1794806207706079054
+      },
+      {
+        "path": "lost-ack/run/journal.db",
+        "bytes": 880640,
+        "sha256": "bfa709a52ad99c296d735cbc261db18647aebc079b0ca4bca2100e1b8e71cc77",
+        "mode": "0o644",
+        "mtimeNs": 1794806207821054592
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794806142168833333
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794806142169054636
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794806142169958598
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794806142170173109
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794806142170498292
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794806142170765848
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794806142172912207
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794806142174547623
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794806142175102568
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794806142175360164
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794806142185589226
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794806142186490813
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794806142187636372
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794806142188293905
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794806142189418295
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794806142191532903
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794806142169687209
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794806142168620405
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14123,
+        "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+        "mode": "0o644",
+        "mtimeNs": 1794806142192073472
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794806142169481032
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794806142169281231
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794806142168407978
+      },
+      {
+        "path": "lost-ack/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794806142168110671
+      },
+      {
+        "path": "lost-ack/run/run.json",
+        "bytes": 180663,
+        "sha256": "0a4e143a3e62d6bd439ecf307fff108cf586172275d82b4e50aacfc124222236",
+        "mode": "0o600",
+        "mtimeNs": 1794806207851828801
+      },
+      {
+        "path": "lost-ack/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "fff95512b46d3a2a479115b6cc43b28c49f914fced36b65ce9ab50760dc77835",
+        "mode": "0o600",
+        "mtimeNs": 1794806143750832625
+      },
+      {
+        "path": "lost-ack/run/world-evidence/manifest.json",
+        "bytes": 1754,
+        "sha256": "66f758b1d06d817933af15475ab5f1759f0d7d7ac029374e948efaf08d628fd4",
+        "mode": "0o600",
+        "mtimeNs": 1794806207751827092
+      },
+      {
+        "path": "lost-ack/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794806207745801360
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000000-6d9bd150.ndjson.gz",
+        "bytes": 212603,
+        "sha256": "dc5a78c51abfaa4ae882a86cf19f0b305292df82bfa9f608f98a00fe46ba8fbf",
+        "mode": "0o600",
+        "mtimeNs": 1794806155102330878
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000001-2c56d377.ndjson.gz",
+        "bytes": 215907,
+        "sha256": "9e7fdb92c2d6340bd74c90efd9e116e53a5b770d86ad3c456215798cbe9ae411",
+        "mode": "0o600",
+        "mtimeNs": 1794806163396613192
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000002-006b10e2.ndjson.gz",
+        "bytes": 221185,
+        "sha256": "80db0abefe263992e885cbf9b29740db13a7d1f13a6b7e19bc3857719cea96bb",
+        "mode": "0o600",
+        "mtimeNs": 1794806172346152634
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000003-e6cdb6a6.ndjson.gz",
+        "bytes": 225651,
+        "sha256": "adb8e9c1ff585fea72004a0ce3c1a3bf8a122977b0e8f6633dd80b77c0e843da",
+        "mode": "0o600",
+        "mtimeNs": 1794806180813789822
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000004-065b26fa.ndjson.gz",
+        "bytes": 229622,
+        "sha256": "e7048dbcb71a6d5975306a7254ecb6d252edc92c5794a3b935b5f862b6537aca",
+        "mode": "0o600",
+        "mtimeNs": 1794806189110018233
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000005-f199e942.ndjson.gz",
+        "bytes": 234125,
+        "sha256": "81e880818821912c88264f6263b13a5773da6c24c400181b3a3e4c36a6a92a31",
+        "mode": "0o600",
+        "mtimeNs": 1794806199287034083
+      },
+      {
+        "path": "lost-ack/run/world-evidence/world-000006-edbda351.ndjson.gz",
+        "bytes": 218435,
+        "sha256": "040108cbdb9b6d0b3858ac6d00a9f9d751635de869f4f23d4912c35f980eef49",
+        "mode": "0o600",
+        "mtimeNs": 1794806207734531196
+      },
+      {
+        "path": "lost-ack/source-journal.json",
+        "bytes": 418474,
+        "sha256": "9a8a0aa144e38d55478a5f1b0028c73d9ae6810fd38b322b30daca21b97d5ed9",
+        "mode": "0o644",
+        "mtimeNs": 1794806207703756070
+      },
+      {
+        "path": "lost-ack/trace.json",
+        "bytes": 352118,
+        "sha256": "ddfa1c0d34203526f5347f271f11234c3cee518940a2f2a09ba6f7439f508002",
+        "mode": "0o644",
+        "mtimeNs": 1794806207827225118
+      },
+      {
+        "path": "nominal-42/case.json",
+        "bytes": 15528,
+        "sha256": "66e56d044340bbf73079b84b102329eb08194227a92bdeed892c52749bd7f300",
+        "mode": "0o644",
+        "mtimeNs": 1794805342296971619
+      },
+      {
+        "path": "nominal-42/controller-state.json",
+        "bytes": 126169,
+        "sha256": "150f706c6175b8eba79be4fbf1c81754b8a51d2976ea86a1ab0a38370868cf4d",
+        "mode": "0o644",
+        "mtimeNs": 1794805341924164666
+      },
+      {
+        "path": "nominal-42/physical-custody.json",
+        "bytes": 373,
+        "sha256": "97d2d9a40b4b5994ac9cfac078856e542358a8f479d5619ed57b870b0939c22f",
+        "mode": "0o644",
+        "mtimeNs": 1794805341924702003
+      },
+      {
+        "path": "nominal-42/report.json",
+        "bytes": 10342110,
+        "sha256": "a6b89dee91fc3370b03b81d1fcc492be84ec02348a24b15751cecf95619912c0",
+        "mode": "0o644",
+        "mtimeNs": 1794805341885381944
+      },
+      {
+        "path": "nominal-42/run/arm-props-trace-b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123.json",
+        "bytes": 2596028,
+        "sha256": "b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123",
+        "mode": "0o600",
+        "mtimeNs": 1794805341814547670
+      },
+      {
+        "path": "nominal-42/run/arm-trace-64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c.json",
+        "bytes": 3200984,
+        "sha256": "64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c",
+        "mode": "0o600",
+        "mtimeNs": 1794805341782660787
+      },
+      {
+        "path": "nominal-42/run/cup-ledger.sqlite",
+        "bytes": 57344,
+        "sha256": "ffd1843821a4266d45a7cc9db807be49b1de27230a409696a03a953f5a186dcf",
+        "mode": "0o644",
+        "mtimeNs": 1794805341926086346
+      },
+      {
+        "path": "nominal-42/run/journal.db",
+        "bytes": 3559424,
+        "sha256": "60798c18ac344b65233a651c707afd07c4d0e65ab6c03e626d463aeba8e6989d",
+        "mode": "0o644",
+        "mtimeNs": 1794805342126151082
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756249614
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756382490
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756943577
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794804787757090911
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794804787757675791
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794804787758052085
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794804787758208503
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794804787758590964
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794804787764057127
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794804787764507839
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794804787765909932
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794804787767420901
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794804787767948572
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794804787768475784
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794804787771280054
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794804787771570556
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756752118
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756104321
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14124,
+        "sha256": "9b8ca9521e12cd27b8310b54f5c22e259dbb6461c61015865536037954793893",
+        "mode": "0o644",
+        "mtimeNs": 1794804787771817016
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756639200
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794804787756521116
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794804787755948487
+      },
+      {
+        "path": "nominal-42/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794804787755764110
+      },
+      {
+        "path": "nominal-42/run/run.json",
+        "bytes": 753926,
+        "sha256": "43d0a5cb65c1544ae1cc906602024b9ea562f3dd71696538e81c3c0c2aefa4f1",
+        "mode": "0o600",
+        "mtimeNs": 1794805333492801215
+      },
+      {
+        "path": "nominal-42/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "a0bbd8639ef6eb0394ccf212760fedecb8222ba072e5fb1df24743eb7862d381",
+        "mode": "0o600",
+        "mtimeNs": 1794804788417097260
+      },
+      {
+        "path": "nominal-42/run/world-evidence/manifest.json",
+        "bytes": 7727,
+        "sha256": "c5253476916911b28d11f3d9f306a92db53e6da25353c12bd83f34a4060f5e5b",
+        "mode": "0o600",
+        "mtimeNs": 1794805341962892513
+      },
+      {
+        "path": "nominal-42/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794805341956087550
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000000-47102411.ndjson.gz",
+        "bytes": 212604,
+        "sha256": "e3a9804ee1c8d4df91d69440dd3bc673d96097a1c118ff08ae062e5dd5953fb5",
+        "mode": "0o600",
+        "mtimeNs": 1794804796068995748
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000001-2f1a28d1.ndjson.gz",
+        "bytes": 215886,
+        "sha256": "0030e6dcc4ea9666d4c312f3ea877d8405020e2f1e303b852559c98fdde82f3a",
+        "mode": "0o600",
+        "mtimeNs": 1794804804180288244
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000002-a2c6a434.ndjson.gz",
+        "bytes": 221174,
+        "sha256": "361620e6d9b37de5d6f9f0c98fbdc5b44fce2a4dc3c5074e6a72eb61115e3106",
+        "mode": "0o600",
+        "mtimeNs": 1794804812485362074
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000003-15bd0d44.ndjson.gz",
+        "bytes": 225642,
+        "sha256": "c8ea167662bb2e905caf74ec16befce3dd4697603bd47e09b37f837e768a1a81",
+        "mode": "0o600",
+        "mtimeNs": 1794804820822127252
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000004-f8090194.ndjson.gz",
+        "bytes": 229610,
+        "sha256": "bbadd0bd003f42cf98b30ac100ab63a27e7b096e6d177e14a5f48bfb202b6286",
+        "mode": "0o600",
+        "mtimeNs": 1794804828857676503
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000005-be7363ad.ndjson.gz",
+        "bytes": 234135,
+        "sha256": "dddc0c6427c3ca96d5776d5dbb194be9f9be4ee92a642a00c89e5f3109dade9e",
+        "mode": "0o600",
+        "mtimeNs": 1794804837543616326
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000006-86023e4a.ndjson.gz",
+        "bytes": 284853,
+        "sha256": "809bffea2de730bb40c353fbb78ef67823e138c5c3bcee9d93b9dc9ad7d547fa",
+        "mode": "0o600",
+        "mtimeNs": 1794804846584183456
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000007-8f1e27a0.ndjson.gz",
+        "bytes": 338237,
+        "sha256": "d3f8b21e2176eec5dc8c2322e274e74cb1d58379b77e5039ad3239db1893e557",
+        "mode": "0o600",
+        "mtimeNs": 1794804855427440770
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000008-941de3dd.ndjson.gz",
+        "bytes": 342750,
+        "sha256": "3d8b7c78181f9e2392b2d2c1d227dbc6d1c5151315051db3296396296b7f0f2b",
+        "mode": "0o600",
+        "mtimeNs": 1794804864749456895
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000009-52643725.ndjson.gz",
+        "bytes": 350206,
+        "sha256": "fece737ddd79e2e66f3d0d7b5e413293e209c7e133fc0447d1e277c363980778",
+        "mode": "0o600",
+        "mtimeNs": 1794804873303916578
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000010-f6a458ba.ndjson.gz",
+        "bytes": 344981,
+        "sha256": "23f5f42fda597c2df093d2f455e406399ffbd8752696d279d319d06f03036d27",
+        "mode": "0o600",
+        "mtimeNs": 1794804881870639096
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000011-2a404b13.ndjson.gz",
+        "bytes": 343511,
+        "sha256": "8400fa410b0f5fa909681344bd9fb59d48f2276fb16ad9aeca0fc64b25d86850",
+        "mode": "0o600",
+        "mtimeNs": 1794804890448692862
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000012-da53f58b.ndjson.gz",
+        "bytes": 345659,
+        "sha256": "a95732450fbc8ae9b89248889d2187e4c51e03d6cb79c236c3aecf88d2b26332",
+        "mode": "0o600",
+        "mtimeNs": 1794804904381884698
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000013-48d00f43.ndjson.gz",
+        "bytes": 270626,
+        "sha256": "c45c9be328b2b788bbb103ed2354d9b7f94c7120ebc66ba8836f0ffc8f76e58b",
+        "mode": "0o600",
+        "mtimeNs": 1794804914149395776
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000014-faa92702.ndjson.gz",
+        "bytes": 258797,
+        "sha256": "07f7ad543fbb3f72536f64c43fd26df4d505857f1c7a56d30f243360099c1c0c",
+        "mode": "0o600",
+        "mtimeNs": 1794804925532373939
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000015-dc787973.ndjson.gz",
+        "bytes": 258766,
+        "sha256": "74648c79c3270b26a7c886972c2b38c36ebd648f65a8a524372d09eaa1c6d59a",
+        "mode": "0o600",
+        "mtimeNs": 1794804938619177605
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000016-28679ade.ndjson.gz",
+        "bytes": 259622,
+        "sha256": "2235ed50e9d7ab7c0c12fa76bda29885a6405d286510973b3fdc845d6642e19f",
+        "mode": "0o600",
+        "mtimeNs": 1794804952471884661
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000017-60c024a6.ndjson.gz",
+        "bytes": 261053,
+        "sha256": "954127712320f6b913b271de722984948d9ffd7e991451f9c2f557a8ab527a49",
+        "mode": "0o600",
+        "mtimeNs": 1794804965455365844
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000018-ad63f286.ndjson.gz",
+        "bytes": 265067,
+        "sha256": "604538d9523ca35479bc41855382ac7e9f8dc1efce37c89ed4df578eada2db54",
+        "mode": "0o600",
+        "mtimeNs": 1794804979400043595
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000019-01632307.ndjson.gz",
+        "bytes": 259600,
+        "sha256": "82e9835e126238ea616d2a5a5a5d1ee6271fb5e93f4b957e2db62bedc332d103",
+        "mode": "0o600",
+        "mtimeNs": 1794804992870333897
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000020-1b10a2ad.ndjson.gz",
+        "bytes": 268968,
+        "sha256": "73893ee437361bd132b2fb2a90fdd1ea405fc9117e3c78639e09393e7a4b7c0d",
+        "mode": "0o600",
+        "mtimeNs": 1794805006251655318
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000021-3ff7c0e9.ndjson.gz",
+        "bytes": 264116,
+        "sha256": "c9c5d4451470c517e6096a4350eec9fc12a6a5d5e5a16b463e34d046244ad861",
+        "mode": "0o600",
+        "mtimeNs": 1794805020818394940
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000022-16f104b6.ndjson.gz",
+        "bytes": 265125,
+        "sha256": "2339a3cd5b39b1a450a1c7cce50f265d48fb5cc30c2076498df25c7e5f0c804b",
+        "mode": "0o600",
+        "mtimeNs": 1794805035557023657
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000023-6668d427.ndjson.gz",
+        "bytes": 266250,
+        "sha256": "46d44d09e0f75d22426889de6e12d3665d9b1d41ba4bb422bcf602c3ce8fe578",
+        "mode": "0o600",
+        "mtimeNs": 1794805049597998424
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000024-aaa7c2d2.ndjson.gz",
+        "bytes": 258557,
+        "sha256": "e59ee4ddb02c50869b9ce63dd975a7e2d84a942f05cc05d4627f67e52bd302c7",
+        "mode": "0o600",
+        "mtimeNs": 1794805062766576835
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000025-fe6e8643.ndjson.gz",
+        "bytes": 275037,
+        "sha256": "840f7e97e5a293e53e5dbcf767ee8f65b3f89969c900d6018d9d2fa4f9a18f38",
+        "mode": "0o600",
+        "mtimeNs": 1794805076484196893
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000026-d425c645.ndjson.gz",
+        "bytes": 262211,
+        "sha256": "4402d4f369224f574811be04cc52aede53fdf9d56eb062d859b52f0895e03ff8",
+        "mode": "0o600",
+        "mtimeNs": 1794805089666301068
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000027-4fe0626d.ndjson.gz",
+        "bytes": 266038,
+        "sha256": "b4d1e290a6d69fc76ad54d8be4d68c189602c5a65e72bac9de724404fc697460",
+        "mode": "0o600",
+        "mtimeNs": 1794805103515386807
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000028-a9de7fe0.ndjson.gz",
+        "bytes": 273147,
+        "sha256": "794519fbbe949ca6c9abdefc1d287c71bf4d3a4494e8926b805df2ede18c8681",
+        "mode": "0o600",
+        "mtimeNs": 1794805116095479420
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000029-9c63d470.ndjson.gz",
+        "bytes": 267927,
+        "sha256": "c28505ff1efcc039f0c5693e692810e2ad3d462e1fc9c838c6ed3aec3e0882e1",
+        "mode": "0o600",
+        "mtimeNs": 1794805129182667963
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000030-fe877f44.ndjson.gz",
+        "bytes": 267236,
+        "sha256": "d34419ac2c04988f40cdde2c64be7fa42e26ccdccd57677a5a264890931334d0",
+        "mode": "0o600",
+        "mtimeNs": 1794805143185731842
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000031-cc99ae6a.ndjson.gz",
+        "bytes": 266164,
+        "sha256": "f8bbf3eb3b057f657c2634009aa95b7283d69eb97782567ba68e7955dd1f11f4",
+        "mode": "0o600",
+        "mtimeNs": 1794805156576480228
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000032-aea9a471.ndjson.gz",
+        "bytes": 189565,
+        "sha256": "2f010485614f0c9fc59c83851d0d2e4f08378d1ffcaa03996377801a92e2de33",
+        "mode": "0o600",
+        "mtimeNs": 1794805171138833608
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000033-a0cb7cf4.ndjson.gz",
+        "bytes": 181749,
+        "sha256": "8b1ec9ab188ab9b938bfec50adff88f4ba85e8f4ac031b2fc45ce52c84990031",
+        "mode": "0o600",
+        "mtimeNs": 1794805188689384405
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000034-b9a66388.ndjson.gz",
+        "bytes": 182301,
+        "sha256": "5dd87a72d87bc1b6b5533ccaf51f106a737b35494705abcb2c7feecbad0bcde7",
+        "mode": "0o600",
+        "mtimeNs": 1794805202922422412
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000035-90790ea7.ndjson.gz",
+        "bytes": 182567,
+        "sha256": "ea20d3289b25e600ac3ffb0fd91e9264cc7a8e6a03ba8500a7eb74a41dfb668a",
+        "mode": "0o600",
+        "mtimeNs": 1794805216664360965
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000036-974245aa.ndjson.gz",
+        "bytes": 185487,
+        "sha256": "20ef1d43e1d6d54a4802aefd964a37fa28b5437c384299254d4871f8beefafdd",
+        "mode": "0o600",
+        "mtimeNs": 1794805231940599080
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000037-7e7f517c.ndjson.gz",
+        "bytes": 189369,
+        "sha256": "4efc1a9ee8faa9a26b35d8457429acb3e9b3094335051f5574e4f656b7481842",
+        "mode": "0o600",
+        "mtimeNs": 1794805247002707556
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000038-4ec9930a.ndjson.gz",
+        "bytes": 183337,
+        "sha256": "e37b1e7b006f3bf12c51d1a528ef8b48a0acf53037932beab8761051d2971c5a",
+        "mode": "0o600",
+        "mtimeNs": 1794805262850724906
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000039-a477b23c.ndjson.gz",
+        "bytes": 193897,
+        "sha256": "8b0097e0a28e6243bac4b6832f941c431403d847bcd08b48ac66d411d88549f6",
+        "mode": "0o600",
+        "mtimeNs": 1794805276900085153
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000040-1ee0583b.ndjson.gz",
+        "bytes": 187667,
+        "sha256": "cc502f2e86dfd0ec4d63d672bf7d12e654925d46aab6da2197e3b2ce798d5286",
+        "mode": "0o600",
+        "mtimeNs": 1794805290946024528
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000041-fb697834.ndjson.gz",
+        "bytes": 188470,
+        "sha256": "16645df58f5babfbc0082fec5a92281d04aa7b490da6c04d78f51fed7a9353f2",
+        "mode": "0o600",
+        "mtimeNs": 1794805304899096473
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000042-5dd44593.ndjson.gz",
+        "bytes": 189927,
+        "sha256": "cefdb846b6745ea6d123e07b905e20d3ddfcb16656deaf4aee5f558629de7b5b",
+        "mode": "0o600",
+        "mtimeNs": 1794805324245022380
+      },
+      {
+        "path": "nominal-42/run/world-evidence/world-000043-8c996412.ndjson.gz",
+        "bytes": 75627,
+        "sha256": "0a223f80934fbc484afe879d6786548e58fc8b479122616af568b768933e1d36",
+        "mode": "0o600",
+        "mtimeNs": 1794805341942305456
+      },
+      {
+        "path": "nominal-42/source-journal.json",
+        "bytes": 1801650,
+        "sha256": "f3725d15a160022c6c1f8d427d18ccd340e70c79baa8ee4774ea542518658e5a",
+        "mode": "0o644",
+        "mtimeNs": 1794805341918838297
+      },
+      {
+        "path": "nominal-42/trace.json",
+        "bytes": 2256813,
+        "sha256": "eecd339d6b17f70532f00f675ccc4ce2dcf59e1eaf6157eae9dcd0b9cd414e92",
+        "mode": "0o644",
+        "mtimeNs": 1794805342226992643
+      },
+      {
+        "path": "nominal-7/case.json",
+        "bytes": 15526,
+        "sha256": "403305fdd8e60bcd35898a42afa0564d92c64b66740444ba1eb19adc8d412233",
+        "mode": "0o644",
+        "mtimeNs": 1794804787719776773
+      },
+      {
+        "path": "nominal-7/controller-state.json",
+        "bytes": 126169,
+        "sha256": "1272ff6a5f5ca576759009359b3edc18eadbbbc3c78c2fd4f41d952bf211fd2f",
+        "mode": "0o644",
+        "mtimeNs": 1794804787556208321
+      },
+      {
+        "path": "nominal-7/physical-custody.json",
+        "bytes": 373,
+        "sha256": "fe717d1136ac4267df4686dbcd07013ecb030f663a9c8357a74b0d0d164d2e5b",
+        "mode": "0o644",
+        "mtimeNs": 1794804787556463156
+      },
+      {
+        "path": "nominal-7/report.json",
+        "bytes": 10342109,
+        "sha256": "94dd97fe435192acadd3ca2fac8d824589b4fab7e67585097d677bc030d7c2d8",
+        "mode": "0o644",
+        "mtimeNs": 1794804787531550104
+      },
+      {
+        "path": "nominal-7/run/arm-props-trace-b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123.json",
+        "bytes": 2596028,
+        "sha256": "b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123",
+        "mode": "0o600",
+        "mtimeNs": 1794804787444810239
+      },
+      {
+        "path": "nominal-7/run/arm-trace-64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c.json",
+        "bytes": 3200984,
+        "sha256": "64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c",
+        "mode": "0o600",
+        "mtimeNs": 1794804787390948398
+      },
+      {
+        "path": "nominal-7/run/cup-ledger.sqlite",
+        "bytes": 57344,
+        "sha256": "0c08d9161315def870bbc248dac59a1cd4b655f433ccc2e1e5fe8e379cd8615f",
+        "mode": "0o644",
+        "mtimeNs": 1794804787557606705
+      },
+      {
+        "path": "nominal-7/run/journal.db",
+        "bytes": 3559424,
+        "sha256": "3447e638607aa2c9eee4ea17157f6bd1786bc223c192ab93337de20660c85da0",
+        "mode": "0o644",
+        "mtimeNs": 1794804787651003160
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794804339062952955
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794804339063112665
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794804339063893879
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794804339064152255
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794804339064421632
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794804339064622592
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794804339064807677
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794804339065232680
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794804339065460098
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794804339065663891
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794804339065884184
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794804339066208770
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794804339066510064
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794804339066905483
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794804339067194319
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794804339067456195
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794804339063613043
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794804339062779871
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14123,
+        "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+        "mode": "0o644",
+        "mtimeNs": 1794804339067759406
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794804339063429167
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794804339063262499
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794804339062609286
+      },
+      {
+        "path": "nominal-7/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794804339062448535
+      },
+      {
+        "path": "nominal-7/run/run.json",
+        "bytes": 753490,
+        "sha256": "9de6453d25084896df394f7be31723be5ec5a12b9dadd750f8afd57f2b50b49e",
+        "mode": "0o600",
+        "mtimeNs": 1794804780195416356
+      },
+      {
+        "path": "nominal-7/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "797c99c3d80a0736872185e484c9ce1fe6496b9a993c6c0d66c6bb03c32fd8de",
+        "mode": "0o600",
+        "mtimeNs": 1794804339642144356
+      },
+      {
+        "path": "nominal-7/run/world-evidence/manifest.json",
+        "bytes": 7727,
+        "sha256": "fdf78c37deea06c0e04143d7cd362d1056a45f4f1d84348ca113b5269b8d05ea",
+        "mode": "0o600",
+        "mtimeNs": 1794804787598859248
+      },
+      {
+        "path": "nominal-7/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794804787590875733
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000000-c7229c56.ndjson.gz",
+        "bytes": 212603,
+        "sha256": "f330025e86aef2d1a9678d5141c8dcc7f9a3e219e0913e93e27d6534f3ffa302",
+        "mode": "0o600",
+        "mtimeNs": 1794804347089083601
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000001-0667b258.ndjson.gz",
+        "bytes": 215903,
+        "sha256": "05b3aaa8488817d8ba3bb404024baf9b5f26c16d75ab1f527d24f86cd1e3bef7",
+        "mode": "0o600",
+        "mtimeNs": 1794804354708867448
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000002-25e35377.ndjson.gz",
+        "bytes": 221193,
+        "sha256": "65b854a3747cfddd8f5db3611836701a44e29132c06968fceaa0112e3ba385d8",
+        "mode": "0o600",
+        "mtimeNs": 1794804362283143638
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000003-7fce1fac.ndjson.gz",
+        "bytes": 225644,
+        "sha256": "ea7f6539564d920bd9442043555561f8af2e8afff1407adf799e53c4c1a41da0",
+        "mode": "0o600",
+        "mtimeNs": 1794804369845711454
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000004-c94b3cb7.ndjson.gz",
+        "bytes": 229622,
+        "sha256": "e2717de002759a620bf5f6c9fc738e0ffe746f1399a1df0bb4f5ceb494832eba",
+        "mode": "0o600",
+        "mtimeNs": 1794804377731999275
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000005-561b4b1a.ndjson.gz",
+        "bytes": 234129,
+        "sha256": "ea5dd1391f6d17e8b45166c694d56fb7159828c32e3af607f4dfda9ee7e22a09",
+        "mode": "0o600",
+        "mtimeNs": 1794804386491109370
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000006-11af15bc.ndjson.gz",
+        "bytes": 284863,
+        "sha256": "cb79e628ff29fe68c596598cbdb23f9cc9ee54e196b0cd930b1ce313f05717e4",
+        "mode": "0o600",
+        "mtimeNs": 1794804395867114258
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000007-112e6348.ndjson.gz",
+        "bytes": 338235,
+        "sha256": "4895e5d47aff117f010ad77130ce83612f113989dddd63e635b54a3c627cb8bc",
+        "mode": "0o600",
+        "mtimeNs": 1794804403850303474
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000008-18d16a6d.ndjson.gz",
+        "bytes": 342755,
+        "sha256": "d107fb83985cee411b3d861cb8d2b11f3d59d1297d4d75c76221b8bd139b6608",
+        "mode": "0o600",
+        "mtimeNs": 1794804412445058612
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000009-a619ca8d.ndjson.gz",
+        "bytes": 350178,
+        "sha256": "57bbb5036aba93d4e5ef1818583425ff5da102d344d88c9941eb9afd184ad90b",
+        "mode": "0o600",
+        "mtimeNs": 1794804421008373527
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000010-3e90de21.ndjson.gz",
+        "bytes": 344993,
+        "sha256": "45e43647b4638613f2bf351c4229f426749d7dcd4b7580b0ebd79d1c949955f1",
+        "mode": "0o600",
+        "mtimeNs": 1794804429410961845
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000011-b7a8d055.ndjson.gz",
+        "bytes": 343520,
+        "sha256": "16d5efd69c41c3fc9c7563ce4cc3685332dbe561ad36dd3e65f369872fb703dd",
+        "mode": "0o600",
+        "mtimeNs": 1794804439578659223
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000012-324131be.ndjson.gz",
+        "bytes": 345643,
+        "sha256": "82fe46d977f7e6083fe1397be2ced6df2caa0481baa8e751faf5cf6190e904a6",
+        "mode": "0o600",
+        "mtimeNs": 1794804448308552863
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000013-ffced720.ndjson.gz",
+        "bytes": 270638,
+        "sha256": "441ff802e826df2ffb18917c9e8fd4099324a0072eab2116240ac7089b32aa64",
+        "mode": "0o600",
+        "mtimeNs": 1794804456872078570
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000014-a020f10e.ndjson.gz",
+        "bytes": 258812,
+        "sha256": "d52855218b3dd2753812821d62468e68608439578f4146be7e5f0e309596852d",
+        "mode": "0o600",
+        "mtimeNs": 1794804465274614927
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000015-5dd3e5a8.ndjson.gz",
+        "bytes": 258771,
+        "sha256": "1ff974443dde6227c3d881b8d0ae254c2421a5fbd5acab735948d7c92e7eab86",
+        "mode": "0o600",
+        "mtimeNs": 1794804473750665681
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000016-42e3ea2b.ndjson.gz",
+        "bytes": 259610,
+        "sha256": "7b9073dc76518d58ccd8774d1b74a7382ac082d877256edaa2efcf7bb31c1797",
+        "mode": "0o600",
+        "mtimeNs": 1794804481682835037
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000017-27f68c1f.ndjson.gz",
+        "bytes": 261068,
+        "sha256": "86d886aac017811162e6789a24054708216f05257c7b85ed0ada1cac4dadfd9d",
+        "mode": "0o600",
+        "mtimeNs": 1794804489974418148
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000018-3413ed89.ndjson.gz",
+        "bytes": 265079,
+        "sha256": "11772255a9d3b7302bac91c6dddeefb745eac6058a60a8378ab1685d9ce90b7a",
+        "mode": "0o600",
+        "mtimeNs": 1794804500702690172
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000019-1a48cc97.ndjson.gz",
+        "bytes": 259601,
+        "sha256": "4e8eac2e78a0da96b9e254a12c4060be6e9e5f5f00b032f3b3874b29d2a82840",
+        "mode": "0o600",
+        "mtimeNs": 1794804511088941855
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000020-965705c1.ndjson.gz",
+        "bytes": 268980,
+        "sha256": "2fbb208f4858ee0b038ceadf69d2502ed0e00207ccba3e184fefcef1fa2363fd",
+        "mode": "0o600",
+        "mtimeNs": 1794804519548031615
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000021-0b95f634.ndjson.gz",
+        "bytes": 264125,
+        "sha256": "3bc8eb34b5ba41e8041516842faad7185a321fa84cd0b58ef0d2a1b39ea4769b",
+        "mode": "0o600",
+        "mtimeNs": 1794804528032309634
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000022-a8f8cfef.ndjson.gz",
+        "bytes": 265127,
+        "sha256": "58f1862af2219856422480396c964b1f7c9c1af359d551bb5426f6c380d76149",
+        "mode": "0o600",
+        "mtimeNs": 1794804536352107655
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000023-e361a4a3.ndjson.gz",
+        "bytes": 266254,
+        "sha256": "c7e8cf6ec9f14ec39f309f43355fff5d0cb1a3f884ec0ded8735ce2a77ccc3b4",
+        "mode": "0o600",
+        "mtimeNs": 1794804545505182920
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000024-569510aa.ndjson.gz",
+        "bytes": 258549,
+        "sha256": "2e0b037252ecd1ab6ef463b065712627d7d9e6e4a29b766cff27369ebe54c4a5",
+        "mode": "0o600",
+        "mtimeNs": 1794804554033249875
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000025-307f16a0.ndjson.gz",
+        "bytes": 275045,
+        "sha256": "09e2702405a40a536ff85f2bd551d48c3fff175c467561704607bbf304a78d03",
+        "mode": "0o600",
+        "mtimeNs": 1794804563294340365
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000026-103ae481.ndjson.gz",
+        "bytes": 262205,
+        "sha256": "8822b4decdd4e77a5df2e7876821a68081c969168f051f84991e59d60e780d31",
+        "mode": "0o600",
+        "mtimeNs": 1794804572858421796
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000027-afa30aec.ndjson.gz",
+        "bytes": 266038,
+        "sha256": "8d23d0ac4f1fd3e41288a7fc89a67a8f20170f693e401e95fe1c2c517d4a91c7",
+        "mode": "0o600",
+        "mtimeNs": 1794804586583481079
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000028-abbb0660.ndjson.gz",
+        "bytes": 273140,
+        "sha256": "1573d3ae2b850723a2fea1e766aae35f0293111d0614fff93195b23a7514fe47",
+        "mode": "0o600",
+        "mtimeNs": 1794804595392723987
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000029-aa62a546.ndjson.gz",
+        "bytes": 267919,
+        "sha256": "766d71d1be425e8e1e49970bb375b23da90264f19f2cde4868d6c233d458b11a",
+        "mode": "0o600",
+        "mtimeNs": 1794804604101586014
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000030-8717e1ac.ndjson.gz",
+        "bytes": 267253,
+        "sha256": "78631c8dce798a4bbb519af42d8b42806d44a5666512459a7a1a367239552553",
+        "mode": "0o600",
+        "mtimeNs": 1794804612972729983
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000031-83e44248.ndjson.gz",
+        "bytes": 266173,
+        "sha256": "9facb69c0754188b97f0f1a2a4d3fc1c9bee289056c19fbd25658ff8efdb0122",
+        "mode": "0o600",
+        "mtimeNs": 1794804622335718151
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000032-2430034c.ndjson.gz",
+        "bytes": 189585,
+        "sha256": "d557627e0ae03c79d14c42937b206b33f1c2711167952af928d07f893d3f1281",
+        "mode": "0o600",
+        "mtimeNs": 1794804633148487477
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000033-22611dea.ndjson.gz",
+        "bytes": 181740,
+        "sha256": "6bde5c02a94e337283ad263f8da182d5edad908ccd8a7718f794b4489af06feb",
+        "mode": "0o600",
+        "mtimeNs": 1794804643392941897
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000034-598ed809.ndjson.gz",
+        "bytes": 182300,
+        "sha256": "b7e2d6dd51fdff5a9f31522db351b301f3c85cc22a5f2153b39da84a80976ea8",
+        "mode": "0o600",
+        "mtimeNs": 1794804652406937505
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000035-7ee3ada6.ndjson.gz",
+        "bytes": 182565,
+        "sha256": "56e82fabdf4a69b7cde61edbb222949a5ab6f05f20083fa776c36136520fe179",
+        "mode": "0o600",
+        "mtimeNs": 1794804661854140519
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000036-78b01e32.ndjson.gz",
+        "bytes": 185506,
+        "sha256": "13afbac5660c3e10da9a6f16779dae0577cfc028e35fdeab034149f0d9fe8448",
+        "mode": "0o600",
+        "mtimeNs": 1794804673256384235
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000037-11d7ce61.ndjson.gz",
+        "bytes": 189362,
+        "sha256": "944c0672f2b4ace66d9b16092193d275d5ac9bbc91679cc96e53c934152c86d7",
+        "mode": "0o600",
+        "mtimeNs": 1794804688458470905
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000038-5f29b7f8.ndjson.gz",
+        "bytes": 183328,
+        "sha256": "d9f310b2b570b74335792796e5d532cd45801fd0c3207ddf8980ceaa061c7310",
+        "mode": "0o600",
+        "mtimeNs": 1794804702423464717
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000039-7c45df13.ndjson.gz",
+        "bytes": 193895,
+        "sha256": "94adcc54266fa636a09bea1d3b432d9b9e589e24e3443142e592fa841bc70d43",
+        "mode": "0o600",
+        "mtimeNs": 1794804725782769084
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000040-263404bb.ndjson.gz",
+        "bytes": 187673,
+        "sha256": "9c7fc7ed922641a79cefcf34d4ebac7e7272df76bab607f0627a4f549a75b1d2",
+        "mode": "0o600",
+        "mtimeNs": 1794804743618773272
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000041-e7cc5281.ndjson.gz",
+        "bytes": 188478,
+        "sha256": "4294b400ed9d6c20921ab73573b4fe702a7ba497d4dcc671ecd6b7c3935d8207",
+        "mode": "0o600",
+        "mtimeNs": 1794804758765311506
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000042-820fd22e.ndjson.gz",
+        "bytes": 189936,
+        "sha256": "22b77d219cb00e2efaaecc6679c211e5dc93c0ab5d7d65603e59e920353f003f",
+        "mode": "0o600",
+        "mtimeNs": 1794804774505399119
+      },
+      {
+        "path": "nominal-7/run/world-evidence/world-000043-b0bcef43.ndjson.gz",
+        "bytes": 75633,
+        "sha256": "51ac5ffe6429bebaefe5f45e952f740c5e4a7248724fafefbbfc51909247fdb0",
+        "mode": "0o600",
+        "mtimeNs": 1794804787578978274
+      },
+      {
+        "path": "nominal-7/source-journal.json",
+        "bytes": 1801650,
+        "sha256": "2ee7aae03c7dac03dcb221afa788a492036bc73e4cedcb9e40ce20e7bb3bdd71",
+        "mode": "0o644",
+        "mtimeNs": 1794804787550542197
+      },
+      {
+        "path": "nominal-7/trace.json",
+        "bytes": 2256809,
+        "sha256": "b159c93cb7c606df8a21fadb10a281be94e333de2baad16999b90161aaea61ac",
+        "mode": "0o644",
+        "mtimeNs": 1794804787662960120
+      },
+      {
+        "path": "nominal-99/case.json",
+        "bytes": 15528,
+        "sha256": "13cf04b197a54413aee00dd108b02797891b2872bcb679316aafe885f0a32dc1",
+        "mode": "0o644",
+        "mtimeNs": 1794805815946512300
+      },
+      {
+        "path": "nominal-99/controller-state.json",
+        "bytes": 126169,
+        "sha256": "df9cf129ecd315fc93a43b9477e40b6fd79700ed2874539e48597d9e446afecc",
+        "mode": "0o644",
+        "mtimeNs": 1794805815719036586
+      },
+      {
+        "path": "nominal-99/physical-custody.json",
+        "bytes": 373,
+        "sha256": "9bc5a9a7b4361ec1fdcadeff54a4270b155c7d425dea64f41fb6d7f8b2383962",
+        "mode": "0o644",
+        "mtimeNs": 1794805815719289130
+      },
+      {
+        "path": "nominal-99/report.json",
+        "bytes": 10342110,
+        "sha256": "18daff99e759ddfc6a06420d557fdd92b835759f87ffa147a85aaae93f151b5e",
+        "mode": "0o644",
+        "mtimeNs": 1794805815700631878
+      },
+      {
+        "path": "nominal-99/run/arm-props-trace-b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123.json",
+        "bytes": 2596028,
+        "sha256": "b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123",
+        "mode": "0o600",
+        "mtimeNs": 1794805815649161986
+      },
+      {
+        "path": "nominal-99/run/arm-trace-64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c.json",
+        "bytes": 3200984,
+        "sha256": "64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c",
+        "mode": "0o600",
+        "mtimeNs": 1794805815620177372
+      },
+      {
+        "path": "nominal-99/run/cup-ledger.sqlite",
+        "bytes": 57344,
+        "sha256": "1a133c4f121d9aa951a03704acd21a50a811857cc0db2932e3d57ddf03e76c41",
+        "mode": "0o644",
+        "mtimeNs": 1794805815721365185
+      },
+      {
+        "path": "nominal-99/run/journal.db",
+        "bytes": 3559424,
+        "sha256": "0cb835dccb53a15c38e67e746ecd4435d46f9fb0b041fe2c6b0e9427a212a4a6",
+        "mode": "0o644",
+        "mtimeNs": 1794805815868535437
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794805342349240725
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794805342349448935
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794805342351041362
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794805342351320489
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794805342351632450
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805342357279530
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794805342357765158
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794805342358580372
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794805342360666136
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794805342360916679
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794805342361295182
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794805342361896561
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794805342362587983
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794805342363314696
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794805342363731199
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794805342364339661
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794805342350619359
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794805342349065974
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14124,
+        "sha256": "297a97296a228b6f1850d75dbd6b3e7d006c2f9cf3d43e3b9c653426abbcd14d",
+        "mode": "0o644",
+        "mtimeNs": 1794805342364628871
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794805342349762937
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794805342349612352
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794805342348894264
+      },
+      {
+        "path": "nominal-99/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794805342348668555
+      },
+      {
+        "path": "nominal-99/run/run.json",
+        "bytes": 753926,
+        "sha256": "5a02055bae09a0aea0281a6b61e7e5c79b5d6b807a38b0f8a495acc271e932b2",
+        "mode": "0o600",
+        "mtimeNs": 1794805807730234603
+      },
+      {
+        "path": "nominal-99/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "568187cc643ad8264e65b1a9a4d22637ee492764ae5fef70d0960c00ea57ca73",
+        "mode": "0o600",
+        "mtimeNs": 1794805343115539106
+      },
+      {
+        "path": "nominal-99/run/world-evidence/manifest.json",
+        "bytes": 7727,
+        "sha256": "21caa5446a8d15c4ba256b28835fb7e4225ae440c851d2bc9f32f06d406e843f",
+        "mode": "0o600",
+        "mtimeNs": 1794805815757066428
+      },
+      {
+        "path": "nominal-99/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794805815750925386
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000000-02d33156.ndjson.gz",
+        "bytes": 212600,
+        "sha256": "db30ec616b011cfc611b6d530162f2dfe31d4b44b18889d7f340359ae4f43372",
+        "mode": "0o600",
+        "mtimeNs": 1794805351175406904
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000001-ff54ab0a.ndjson.gz",
+        "bytes": 215897,
+        "sha256": "404e2cf1c644ace7042d4af11caf4a81a0d6fe77eba68df5735d21488ef74872",
+        "mode": "0o600",
+        "mtimeNs": 1794805358667810217
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000002-2e62f947.ndjson.gz",
+        "bytes": 221171,
+        "sha256": "a3bde9f5d14698745cd0f450954b7db506ab16db72abb1a35b488a191e3024c5",
+        "mode": "0o600",
+        "mtimeNs": 1794805366757462927
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000003-9d91920e.ndjson.gz",
+        "bytes": 225645,
+        "sha256": "e1791d8bdd9f7a557d04ae4f2af98d212aea2614d903ce7ecf355e8a5ec54e48",
+        "mode": "0o600",
+        "mtimeNs": 1794805374906461208
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000004-b0ed89fc.ndjson.gz",
+        "bytes": 229627,
+        "sha256": "03209f8e74e11f51472f9a7934e8684cf2404f7ad6ece10bb8667e68d937033a",
+        "mode": "0o600",
+        "mtimeNs": 1794805382787562374
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000005-309ae1be.ndjson.gz",
+        "bytes": 234118,
+        "sha256": "7ff943cd6c8cfc7d7fd5728737486a58af4d119cbbc6055f0c9bf1deb36c9cbb",
+        "mode": "0o600",
+        "mtimeNs": 1794805390742912462
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000006-6dd112c1.ndjson.gz",
+        "bytes": 284864,
+        "sha256": "350fd4250fd40a95e4b1dce325fb5ef49ce0467bfcf546c8a465c2c1a5327676",
+        "mode": "0o600",
+        "mtimeNs": 1794805399517916085
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000007-87d43df2.ndjson.gz",
+        "bytes": 338224,
+        "sha256": "a858a1e79cb6120d7835c79e213c03dc8cf0306b1c95a16780c163dbbae0729e",
+        "mode": "0o600",
+        "mtimeNs": 1794805407686735667
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000008-0b2635b5.ndjson.gz",
+        "bytes": 342718,
+        "sha256": "17208d66d1fa37790fe3df8ecb51de30131ecb818113ed18c104b27982645531",
+        "mode": "0o600",
+        "mtimeNs": 1794805415946800370
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000009-32ef5971.ndjson.gz",
+        "bytes": 350190,
+        "sha256": "a3d38bf0c669cf21dcf93e177f628bcffd8e14053ecb506153072f834f86950b",
+        "mode": "0o600",
+        "mtimeNs": 1794805424078822827
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000010-237d51ad.ndjson.gz",
+        "bytes": 344981,
+        "sha256": "9a75ecec1bccf2f21bdab7326472a23c4f6b25335af39641f125a5af252eea30",
+        "mode": "0o600",
+        "mtimeNs": 1794805431909853528
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000011-f89fed8b.ndjson.gz",
+        "bytes": 343507,
+        "sha256": "e879f82c28de21f35d5b7305d53b8888f43e7f31a76c2ecfc1b588a33ffec329",
+        "mode": "0o600",
+        "mtimeNs": 1794805439902179284
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000012-bf877834.ndjson.gz",
+        "bytes": 345641,
+        "sha256": "6171b5d26b33ef24f1a0c36f4181506f4017b79d1e9859602a3aa79627532046",
+        "mode": "0o600",
+        "mtimeNs": 1794805447979975080
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000013-826c0447.ndjson.gz",
+        "bytes": 270642,
+        "sha256": "ea90ea78a71c5fd6e4980a8787cfaa53f1ad271ab8c5849d9c2ac6b43a41ff62",
+        "mode": "0o600",
+        "mtimeNs": 1794805456093969039
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000014-75aa12e5.ndjson.gz",
+        "bytes": 258810,
+        "sha256": "9fcfcf24d9d999e5952ffba541088fc96e17e796a744c01d472553889e8e8b27",
+        "mode": "0o600",
+        "mtimeNs": 1794805464422046288
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000015-a0464b89.ndjson.gz",
+        "bytes": 258759,
+        "sha256": "d6d68ccf3d33e533e7dc11bfbc600f6401756ac993ffbc0b47d6b70361093a21",
+        "mode": "0o600",
+        "mtimeNs": 1794805472816125320
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000016-3da59588.ndjson.gz",
+        "bytes": 259615,
+        "sha256": "085913a542cd21b50d73ae8fcf25af62a55a369bdb9accc9ee6a67f78a20471b",
+        "mode": "0o600",
+        "mtimeNs": 1794805481074183384
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000017-976c323d.ndjson.gz",
+        "bytes": 261053,
+        "sha256": "0f54bf51e68eca90390f47cf29b9fda1080e10b1627d909f061b743470b64951",
+        "mode": "0o600",
+        "mtimeNs": 1794805489554952881
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000018-18c8f268.ndjson.gz",
+        "bytes": 265066,
+        "sha256": "a2983d7b207d66075aa31ccb4f90a41c28552bd035c0a956884a6a61da52e699",
+        "mode": "0o600",
+        "mtimeNs": 1794805497944244838
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000019-f2c70f19.ndjson.gz",
+        "bytes": 259598,
+        "sha256": "e1558d0e70bd59c7d1aa80d48d9dc597b6e648dfee4f11efc26b564eed2accea",
+        "mode": "0o600",
+        "mtimeNs": 1794805506348323646
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000020-7045fda5.ndjson.gz",
+        "bytes": 268947,
+        "sha256": "ee3c2ce20fee2a55736f44f99c5ea5095ce9b6ab130ded6adb21a9edf13ba853",
+        "mode": "0o600",
+        "mtimeNs": 1794805514723448882
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000021-cb94f01d.ndjson.gz",
+        "bytes": 264120,
+        "sha256": "ef083ac9ba04d5735e144c51b2c8e97f87122e1c31c0e3cef1250566793a83fa",
+        "mode": "0o600",
+        "mtimeNs": 1794805523887141817
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000022-2e3a7d6e.ndjson.gz",
+        "bytes": 265119,
+        "sha256": "6996a6301e08c9d80aec69d1e7fda82ea01e012975e753e4de36673f4d46135e",
+        "mode": "0o600",
+        "mtimeNs": 1794805532517554748
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000023-3532361e.ndjson.gz",
+        "bytes": 266260,
+        "sha256": "e7fdef70d30fddbcb16826fc195255234a7040f5d3383248e831ee1d95eb5bb7",
+        "mode": "0o600",
+        "mtimeNs": 1794805541092531302
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000024-b3c6847d.ndjson.gz",
+        "bytes": 258547,
+        "sha256": "48d8960a1dc9847a52317d02d1c2adf6ddfe5059cb3f28ba7d13a11f19bb42c9",
+        "mode": "0o600",
+        "mtimeNs": 1794805549805701422
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000025-f9c74421.ndjson.gz",
+        "bytes": 275054,
+        "sha256": "db0f9c22fe2d2038809252de46470a91cc1e4911a914f3c74aeed8aa1c41fccc",
+        "mode": "0o600",
+        "mtimeNs": 1794805558488703586
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000026-2b27b57a.ndjson.gz",
+        "bytes": 262200,
+        "sha256": "564c31b0b747c71d680dd1bd57250dc866a8a9931ccecae2189180356bba08e2",
+        "mode": "0o600",
+        "mtimeNs": 1794805568517895243
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000027-d080cf64.ndjson.gz",
+        "bytes": 266053,
+        "sha256": "7fe688ef797fc18a35a10f248cba8430401880688356e26240d42783be711076",
+        "mode": "0o600",
+        "mtimeNs": 1794805581465013963
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000028-d5208802.ndjson.gz",
+        "bytes": 273130,
+        "sha256": "4f7a8b5e5b3fd64026fc25212dccd22788cc8248163a36bb530925126feef0a4",
+        "mode": "0o600",
+        "mtimeNs": 1794805594746114330
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000029-e096ac7b.ndjson.gz",
+        "bytes": 267923,
+        "sha256": "6a18e34ab7632a81452ce794fd3883d19aa87b21fdace8e05dca3b9473354c47",
+        "mode": "0o600",
+        "mtimeNs": 1794805607839193043
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000030-18e584c5.ndjson.gz",
+        "bytes": 267241,
+        "sha256": "77fc82f642a8ad5c998f6e5cc027e5482350f674343348f3b96481734b70f467",
+        "mode": "0o600",
+        "mtimeNs": 1794805620635329943
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000031-4b8151a5.ndjson.gz",
+        "bytes": 266163,
+        "sha256": "0334cd96580a4c83f6fc206352dff8ae520e319a323bc623778e09e751f447a7",
+        "mode": "0o600",
+        "mtimeNs": 1794805633762471555
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000032-59aaf626.ndjson.gz",
+        "bytes": 189579,
+        "sha256": "c590a4d3ebf4907eac77f45d008278ec936e0d24b41ad31b3a9a73225bc3d963",
+        "mode": "0o600",
+        "mtimeNs": 1794805647248476816
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000033-bdccf4f2.ndjson.gz",
+        "bytes": 181738,
+        "sha256": "ea6c28082008ebdecb8ef20ae43fec56374035f592f7ca27cd418023671f6c1a",
+        "mode": "0o600",
+        "mtimeNs": 1794805659678532809
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000034-38bd27da.ndjson.gz",
+        "bytes": 182294,
+        "sha256": "4f9eeb3039a959a65a7f463a65bb39fb6fde6d96da3fd803ce84ac0ef4070409",
+        "mode": "0o600",
+        "mtimeNs": 1794805672505666088
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000035-9e1d3447.ndjson.gz",
+        "bytes": 182567,
+        "sha256": "6d386014fb3a5807ebd22ebff1d472f9f7fe310e8412358ef3dbca48aebf21a4",
+        "mode": "0o600",
+        "mtimeNs": 1794805687162754985
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000036-3711698a.ndjson.gz",
+        "bytes": 185489,
+        "sha256": "05ccd3489da8ec7e6b7b75899b58fc6752db6116833abae50dc3dbe00f7045b8",
+        "mode": "0o600",
+        "mtimeNs": 1794805704646336030
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000037-1e6c811b.ndjson.gz",
+        "bytes": 189365,
+        "sha256": "02e6f337364474b1354efef6b8e5e39c1e5eb2959b7886583dabaa6f32655520",
+        "mode": "0o600",
+        "mtimeNs": 1794805720038093551
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000038-ab13111b.ndjson.gz",
+        "bytes": 183324,
+        "sha256": "3777ef923bbf6e427a9c6871a19026326f582daa27f8a4b4713cce747093c992",
+        "mode": "0o600",
+        "mtimeNs": 1794805733633172097
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000039-3a87e6ed.ndjson.gz",
+        "bytes": 193897,
+        "sha256": "a3589b412a5147e69379ea492ff327f96a7894077c0dc789c9f90d4bcbfc0b97",
+        "mode": "0o600",
+        "mtimeNs": 1794805747661274172
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000040-cca0665e.ndjson.gz",
+        "bytes": 187666,
+        "sha256": "57c487b10dc99b229497ae2c467848386aaee7cd77933c939a8bd584fb80a61d",
+        "mode": "0o600",
+        "mtimeNs": 1794805764109892259
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000041-65552a77.ndjson.gz",
+        "bytes": 188482,
+        "sha256": "fb142d5eb31c418c0142602a1d38c4b883c46acfe1de4188b9e39e4d02ce1495",
+        "mode": "0o600",
+        "mtimeNs": 1794805784667523638
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000042-7e60059a.ndjson.gz",
+        "bytes": 189930,
+        "sha256": "91cbdbd2d73bf997db89d90c896926140cbc5c4f9e3899158e54d991c261fd71",
+        "mode": "0o600",
+        "mtimeNs": 1794805800745518203
+      },
+      {
+        "path": "nominal-99/run/world-evidence/world-000043-5b27da93.ndjson.gz",
+        "bytes": 75634,
+        "sha256": "fed87aea068bb09b70d1e92c0493760f7754baeedd1e7e522b79e870c7c23059",
+        "mode": "0o600",
+        "mtimeNs": 1794805815738055090
+      },
+      {
+        "path": "nominal-99/source-journal.json",
+        "bytes": 1801650,
+        "sha256": "7f5d890551c8b27f0d132b1b6f8d17587eeab38e5eadb60f269e9a509e25b6c3",
+        "mode": "0o644",
+        "mtimeNs": 1794805815717835411
+      },
+      {
+        "path": "nominal-99/trace.json",
+        "bytes": 2256814,
+        "sha256": "64e323000ff23d6a3ffc564ba78bf0c51e861a154c28c7dac566f154148599db",
+        "mode": "0o644",
+        "mtimeNs": 1794805815886266307
+      },
+      {
+        "path": "summary.json",
+        "bytes": 110,
+        "sha256": "3dda3382a494ab8904a8fe87ebe50ecbee7ac00e2bcbfb5b0b467c8f964ba5c3",
+        "mode": "0o644",
+        "mtimeNs": 1794806250835069290
+      },
+      {
+        "path": "worker-loss/case.json",
+        "bytes": 8761,
+        "sha256": "799e1225c6b31034ca9a090f9cf536721b920f8c885af5764d99f725b2450240",
+        "mode": "0o644",
+        "mtimeNs": 1794806142090127625
+      },
+      {
+        "path": "worker-loss/controller-state.json",
+        "bytes": 146833,
+        "sha256": "52e62528675f6a18f3e4d192667c4abbb39b4fade5b1e632f2937cddaf38ba15",
+        "mode": "0o644",
+        "mtimeNs": 1794806141651755212
+      },
+      {
+        "path": "worker-loss/fault-before.json",
+        "bytes": 29562,
+        "sha256": "4a89c1cebd154257fc99e1e14489ec50b80f8ddaf7ef7ea5054fb0ec06caffd9",
+        "mode": "0o644",
+        "mtimeNs": 1794806140353655572
+      },
+      {
+        "path": "worker-loss/physical-custody.json",
+        "bytes": 178,
+        "sha256": "1fdcb94cb94062af3cd135f264d70341ed98bd1e308de45bfccf819c5a65d453",
+        "mode": "0o644",
+        "mtimeNs": 1794806141652188652
+      },
+      {
+        "path": "worker-loss/report.json",
+        "bytes": 1872411,
+        "sha256": "c84dd8e778bc25a637d3def36038b8a4aed5fe058ac3c1c387fc440bd5eafde6",
+        "mode": "0o644",
+        "mtimeNs": 1794806141640324225
+      },
+      {
+        "path": "worker-loss/run/arm-props-trace-34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b.json",
+        "bytes": 458016,
+        "sha256": "34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b",
+        "mode": "0o600",
+        "mtimeNs": 1794806141607594182
+      },
+      {
+        "path": "worker-loss/run/arm-trace-504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063.json",
+        "bytes": 501529,
+        "sha256": "504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063",
+        "mode": "0o600",
+        "mtimeNs": 1794806141570784045
+      },
+      {
+        "path": "worker-loss/run/cup-ledger.sqlite",
+        "bytes": 45056,
+        "sha256": "fdaab9537e192dc30f2d47c3a7f4da4fd8f1309659680410d037a7406fb33a6f",
+        "mode": "0o644",
+        "mtimeNs": 1794806141653262793
+      },
+      {
+        "path": "worker-loss/run/journal.db",
+        "bytes": 880640,
+        "sha256": "3f71ef7e83c166151a8a36d916d05cfac65c21b78b89e887a5b79e763fb7a4ca",
+        "mode": "0o644",
+        "mtimeNs": 1794806141820039568
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/arm-component.json",
+        "bytes": 69507,
+        "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+        "mode": "0o644",
+        "mtimeNs": 1794806063907822194
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/arm-physics.json",
+        "bytes": 3930,
+        "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908031821
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+        "bytes": 22284,
+        "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908790784
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+        "bytes": 242684,
+        "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908992369
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+        "bytes": 563584,
+        "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+        "mode": "0o644",
+        "mtimeNs": 1794806063909331913
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+        "bytes": 290784,
+        "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+        "mode": "0o644",
+        "mtimeNs": 1794806063909601165
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+        "bytes": 243084,
+        "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+        "mode": "0o644",
+        "mtimeNs": 1794806063909866042
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+        "bytes": 2505834,
+        "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+        "mode": "0o644",
+        "mtimeNs": 1794806063910439337
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+        "bytes": 150084,
+        "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+        "mode": "0o644",
+        "mtimeNs": 1794806063910780631
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+        "bytes": 340884,
+        "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+        "mode": "0o644",
+        "mtimeNs": 1794806063911051966
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+        "bytes": 202384,
+        "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+        "mode": "0o644",
+        "mtimeNs": 1794806063911326552
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+        "bytes": 242684,
+        "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+        "mode": "0o644",
+        "mtimeNs": 1794806063911615137
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+        "bytes": 366284,
+        "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+        "mode": "0o644",
+        "mtimeNs": 1794806063912078432
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+        "bytes": 291584,
+        "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+        "mode": "0o644",
+        "mtimeNs": 1794806063913098605
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+        "bytes": 366284,
+        "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+        "mode": "0o644",
+        "mtimeNs": 1794806063913614525
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+        "bytes": 22284,
+        "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+        "mode": "0o644",
+        "mtimeNs": 1794806063914282030
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/empty-load.json",
+        "bytes": 1474,
+        "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908576950
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/handoff-policy.json",
+        "bytes": 809,
+        "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+        "mode": "0o644",
+        "mtimeNs": 1794806063907575609
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/lab-world-scene.json",
+        "bytes": 14123,
+        "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+        "mode": "0o644",
+        "mtimeNs": 1794806063914606574
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/mobile-drive.json",
+        "bytes": 3092,
+        "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908414157
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/mobile-physical.json",
+        "bytes": 47385,
+        "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+        "mode": "0o644",
+        "mtimeNs": 1794806063908250989
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/programs.json",
+        "bytes": 7591,
+        "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+        "mode": "0o644",
+        "mtimeNs": 1794806063907372025
+      },
+      {
+        "path": "worker-loss/run/mujoco-world/bundle/project.json",
+        "bytes": 2676,
+        "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+        "mode": "0o644",
+        "mtimeNs": 1794806063907102481
+      },
+      {
+        "path": "worker-loss/run/run.json",
+        "bytes": 180663,
+        "sha256": "5447ffc897183fe5c17d5485009348c952c98a4df8d88a485f96b650c0dbd50b",
+        "mode": "0o600",
+        "mtimeNs": 1794806142032699749
+      },
+      {
+        "path": "worker-loss/run/signing-key.json",
+        "bytes": 176,
+        "sha256": "9ecdbb3af21340bf2a1645581f92545e5b4bb4eddf3be07e1710e1bedc602f51",
+        "mode": "0o600",
+        "mtimeNs": 1794806064577050581
+      },
+      {
+        "path": "worker-loss/run/world-evidence/manifest.json",
+        "bytes": 1772,
+        "sha256": "17a63f73f808377c4f6dbba90e314b543650e94458dac17cde9cc0bb698666ea",
+        "mode": "0o600",
+        "mtimeNs": 1794806141783947442
+      },
+      {
+        "path": "worker-loss/run/world-evidence/pending.ndjson",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794806141759944556
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000000-22ecf178.ndjson.gz",
+        "bytes": 212597,
+        "sha256": "3bb87a94c999902271c0cb86fc462a419b3d2cf6cfb6a3722276c793139a05c1",
+        "mode": "0o600",
+        "mtimeNs": 1794806077781577970
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000001-d11cbc34.ndjson.gz",
+        "bytes": 215899,
+        "sha256": "5c25ca7965fb99afc47980da0c3eb0e3bc77fdfeb7c305459e4ff7110723c533",
+        "mode": "0o600",
+        "mtimeNs": 1794806085652275107
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000002-f0151fe6.ndjson.gz",
+        "bytes": 221179,
+        "sha256": "5cb3938187a846158ba2834f49d7853e2fd60f2846ff32628bda35a26a5d2e99",
+        "mode": "0o600",
+        "mtimeNs": 1794806093698599119
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000003-038d2952.ndjson.gz",
+        "bytes": 225657,
+        "sha256": "7b3ebdb4473d14c4404fbc5b7601316fd0dc8dd35566c40837d150138f05d4dc",
+        "mode": "0o600",
+        "mtimeNs": 1794806102267751228
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000004-30159db5.ndjson.gz",
+        "bytes": 229626,
+        "sha256": "27060475fa0dc99c65319b75d2951876e8381d78ed686b7d75364a64c24cfbfc",
+        "mode": "0o600",
+        "mtimeNs": 1794806114630680940
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000005-0be0f86d.ndjson.gz",
+        "bytes": 234119,
+        "sha256": "2a929c246cce5ab452165077b58ee404ce07fecc708d41323455aa031432f862",
+        "mode": "0o600",
+        "mtimeNs": 1794806129070012582
+      },
+      {
+        "path": "worker-loss/run/world-evidence/world-000006-445592d8.ndjson.gz",
+        "bytes": 218422,
+        "sha256": "2ca0ed20a0614d14ab2c15703aca8946d2925a8bfec2a6704b9001cdd836d1d1",
+        "mode": "0o600",
+        "mtimeNs": 1794806141704484112
+      },
+      {
+        "path": "worker-loss/source-journal.json",
+        "bytes": 418474,
+        "sha256": "5172a80434d4e8a97e756eb33f4d0f71b915d4beae568da07808f90d1a51f26e",
+        "mode": "0o644",
+        "mtimeNs": 1794806141644725252
+      },
+      {
+        "path": "worker-loss/trace.json",
+        "bytes": 352026,
+        "sha256": "d1a474a1e0ef8b97143a0c78e19f3c7edbfba14c4905faa41c96bacd42eaec4a",
+        "mode": "0o644",
+        "mtimeNs": 1794806141919289611
+      }
+    ],
+    "directories": [
+      "cancel-held",
+      "cancel-held/run",
+      "cancel-held/run/mujoco-world",
+      "cancel-held/run/mujoco-world/bundle",
+      "cancel-held/run/mujoco-world/bundle/blobs",
+      "cancel-held/run/mujoco-world/run",
+      "cancel-held/run/world-evidence",
+      "cup-fall",
+      "cup-fall/run",
+      "cup-fall/run/mujoco-world",
+      "cup-fall/run/mujoco-world/bundle",
+      "cup-fall/run/mujoco-world/bundle/blobs",
+      "cup-fall/run/mujoco-world/run",
+      "cup-fall/run/world-evidence",
+      "dock-drift",
+      "dock-drift/run",
+      "dock-drift/run/mujoco-world",
+      "dock-drift/run/mujoco-world/bundle",
+      "dock-drift/run/mujoco-world/bundle/blobs",
+      "dock-drift/run/mujoco-world/run",
+      "dock-drift/run/world-evidence",
+      "lost-ack",
+      "lost-ack/run",
+      "lost-ack/run/mujoco-world",
+      "lost-ack/run/mujoco-world/bundle",
+      "lost-ack/run/mujoco-world/bundle/blobs",
+      "lost-ack/run/mujoco-world/run",
+      "lost-ack/run/world-evidence",
+      "nominal-42",
+      "nominal-42/run",
+      "nominal-42/run/mujoco-world",
+      "nominal-42/run/mujoco-world/bundle",
+      "nominal-42/run/mujoco-world/bundle/blobs",
+      "nominal-42/run/mujoco-world/run",
+      "nominal-42/run/world-evidence",
+      "nominal-7",
+      "nominal-7/run",
+      "nominal-7/run/mujoco-world",
+      "nominal-7/run/mujoco-world/bundle",
+      "nominal-7/run/mujoco-world/bundle/blobs",
+      "nominal-7/run/mujoco-world/run",
+      "nominal-7/run/world-evidence",
+      "nominal-99",
+      "nominal-99/run",
+      "nominal-99/run/mujoco-world",
+      "nominal-99/run/mujoco-world/bundle",
+      "nominal-99/run/mujoco-world/bundle/blobs",
+      "nominal-99/run/mujoco-world/run",
+      "nominal-99/run/world-evidence",
+      "worker-loss",
+      "worker-loss/run",
+      "worker-loss/run/mujoco-world",
+      "worker-loss/run/mujoco-world/bundle",
+      "worker-loss/run/mujoco-world/bundle/blobs",
+      "worker-loss/run/mujoco-world/run",
+      "worker-loss/run/world-evidence"
+    ],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-cell-campaign-part001",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part001",
+      "archive": "post-n1-cell-campaign-part001.tar.gz",
+      "archiveBytes": 16892430,
+      "archiveSha256": "8354716c9b33c6dead228e682f1d17f586c17232da39da664055bdbd04bbcabe",
+      "memberIndex": "post-n1-cell-campaign-part001.members.json",
+      "memberIndexSha256": "ae851d1f684e833888c7d6f05c03a3eda0f5f996854a71be06f6f6692fd0aa80",
+      "memberCount": 188,
+      "memberBytes": 65892717,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part001.extract.json",
+      "safeExtractionReceiptSha256": "f145816db98ccb78391f2519e26236f9e1c27d8b55165735bd767aa8518c2379",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part001",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    },
+    {
+      "id": "post-n1-cell-campaign-part002",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part002",
+      "archive": "post-n1-cell-campaign-part002.tar.gz",
+      "archiveBytes": 27841584,
+      "archiveSha256": "0b26aff32e4d92b899d75ac8e3deb5dd094a085cddc123b3448fcbba74c23b96",
+      "memberIndex": "post-n1-cell-campaign-part002.members.json",
+      "memberIndexSha256": "2b60ef5f325bad9d40d92887738b84ed86e940f4895eea3732117ea00f7a0420",
+      "memberCount": 155,
+      "memberBytes": 66007208,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part002.extract.json",
+      "safeExtractionReceiptSha256": "5c5ec77dcec78adbb53180e1d0f1065e76626dd29cde4a85e573faf3016080b3",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part002",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    },
+    {
+      "id": "post-n1-cell-campaign-part003",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part003",
+      "archive": "post-n1-cell-campaign-part003.tar.gz",
+      "archiveBytes": 19143047,
+      "archiveSha256": "19f1db77dece95b2b4b907941140cef738604a7335c72df7223defc0be7f49d9",
+      "memberIndex": "post-n1-cell-campaign-part003.members.json",
+      "memberIndexSha256": "1d1defccb0a95cf828e6bc16f79349349d230db0cd6d8704d4567ff8b27bb6f1",
+      "memberCount": 129,
+      "memberBytes": 58086493,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part003.extract.json",
+      "safeExtractionReceiptSha256": "e9893f6901cc7ef769b51acdef7cebf97561673c0cb7fd8be31530a423b2f2fd",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part003",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-cell-campaign",
+  "verifiedFiles": 472,
+  "verifiedBytes": 189986418,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:08:38.181959+00:00",
+  "id": "post-n1-semantic-study-process",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "process.json",
+        "bytes": 808,
+        "sha256": "572deecf0ae7535dcba3ffbc0b3edc99788dc06ef606e2cfdba71b5769340910",
+        "mode": "0o600",
+        "mtimeNs": 1794812511839829008
+      },
+      {
+        "path": "stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o600",
+        "mtimeNs": 1794812454003080716
+      },
+      {
+        "path": "stdout.log",
+        "bytes": 2313,
+        "sha256": "eda529d0cd8da14855486028d7d71309dd5652874003692dddcd9422742fcd8f",
+        "mode": "0o600",
+        "mtimeNs": 1794812511776984325
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-semantic-study-process",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process",
+      "archive": "post-n1-semantic-study-process.tar.gz",
+      "archiveBytes": 1308,
+      "archiveSha256": "b5af93188d519c39e2a659278683623480313616c4df58dcf51b03ce99afd9ae",
+      "memberIndex": "post-n1-semantic-study-process.members.json",
+      "memberIndexSha256": "ba512a8b718edae46917262e1e7fa1d8bb9fbb13c6a064c21b859c0f15a4b914",
+      "memberCount": 3,
+      "memberBytes": 3121,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-semantic-study-process.extract.json",
+      "safeExtractionReceiptSha256": "42000f2c38a845a2c9ac86be8b6f94b8bb5367d5c827fbe19513314b1768ae3b",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study-process",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study-process",
+  "verifiedFiles": 3,
+  "verifiedBytes": 3121,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

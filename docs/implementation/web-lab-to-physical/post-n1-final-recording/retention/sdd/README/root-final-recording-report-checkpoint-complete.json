@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-16T02:21:23.831205+00:00",
+  "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-recording-report.md",
+  "bytes": 190669,
+  "sha256": "2ade80f00a46d04f29a8f55d8f3007f0fbfba13695dd8cbe618635c1e0d56984",
+  "scope": "Controller fully read the entire report across successive append-only checkpoints, including the final publication handoff; original prefixes verified."
+}

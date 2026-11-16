@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "at": "2026-11-16T03:35:15.995464+00:00",
+  "scope": "Read-only verification of one adjacent quantized-boundary example, not all four allocation issues or entire final fix",
+  "input": {
+    "file": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/production-capture/actual-cell-production.json",
+    "bytes": 22634077,
+    "sha256": "987d1c27c90c9c08aca9fcdf18378950f743d6f0f09a92aed3f986d83d796b34"
+  },
+  "rows": [
+    {
+      "sampleIndex": 6057,
+      "previousAbsoluteAt": 119187.40000009537,
+      "absoluteAt": 119204.80000019073,
+      "sample": {
+        "at": 100960.2000002861,
+        "interval": 17.40000009536743,
+        "drawn": true,
+        "tick": 3189,
+        "worldTick": 3189,
+        "fullCell": true,
+        "drawCalls": 204
+      },
+      "timestampSelectedEvents": [
+        {
+          "index": 5174,
+          "atMs": 119187.59999990463,
+          "durationMs": 0.09999990463256836,
+          "count": 6228,
+          "drawCalls": 51,
+          "worldTick": 3184,
+          "revision": 64,
+          "quality": "valid",
+          "runId": "0dff4d24-f1b8-4341-bcba-5782c01475af"
+        },
+        {
+          "index": 5175,
+          "atMs": 119203.90000009537,
+          "durationMs": 0.20000028610229492,
+          "count": 6229,
+          "drawCalls": 51,
+          "worldTick": 3189,
+          "revision": 64,
+          "quality": "valid",
+          "runId": "0dff4d24-f1b8-4341-bcba-5782c01475af"
+        },
+        {
+          "index": 5176,
+          "atMs": 119204,
+          "durationMs": 0.09999990463256836,
+          "count": 6230,
+          "drawCalls": 51,
+          "worldTick": 3189,
+          "revision": 64,
+          "quality": "valid",
+          "runId": "0dff4d24-f1b8-4341-bcba-5782c01475af"
+        },
+        {
+          "index": 5177,
+          "atMs": 119204.09999990463,
+          "durationMs": 0.09999990463256836,
+          "count": 6231,
+          "drawCalls": 51,
+          "worldTick": 3189,
+          "revision": 64,
+          "quality": "valid",
+          "runId": "0dff4d24-f1b8-4341-bcba-5782c01475af"
+        },
+        {
+          "index": 5178,
+          "atMs": 119204.80000019073,
+          "durationMs": 0,
+          "count": 6232,
+          "drawCalls": 51,
+          "worldTick": 3189,
+          "revision": 64,
+          "quality": "valid",
+          "runId": "0dff4d24-f1b8-4341-bcba-5782c01475af"
+        }
+      ],
+      "timestampSelectedCalls": 255
+    },
+    {
+      "sampleIndex": 6058,
+      "previousAbsoluteAt": 119204.80000019073,
+      "absoluteAt": 119222.40000009537,
+      "sample": {
+        "at": 100977.80000019073,
+        "interval": 17.59999990463257,
+        "drawn": true,
+        "tick": 3190,
+        "worldTick": 3189,
+        "fullCell": true,
+        "drawCalls": 51
+      },
+      "timestampSelectedEvents": [],
+      "timestampSelectedCalls": 0
+    }
+  ],
+  "equalTimeAdjacentEventPairs": 239,
+  "nonConsecutiveEventCounts": 0,
+  "interpretation": "Timestamp-only allocation cannot determine which same-clock event occurred before the sample; original sample has no render-count cursor, so prospective ordered format needs actual new producer fields. No original value changed; actual slow cadence remains failed."
+}

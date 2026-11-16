@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:10.280056+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-payload-campaign-part002",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part002.tar.gz",
+  "archiveSha256": "1ba98bc7ce6fa8a7b24664e9d4b0b8c94ea08b3c75b5a595fcc4f8e6fd818520",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part002.members.json",
+  "memberIndexSha256": "4e4c27ab5f56e51aa2cc206aadc26b4f7993d1595a30e44bc808b10ba6d31d2d",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-payload-campaign-part002",
+  "verifiedFiles": 563,
+  "verifiedBytes": 45441237,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

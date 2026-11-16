@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:13.770536+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part002",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part002.tar.gz",
+  "archiveBytes": 7404393,
+  "archiveSha256": "257df0d9e238cbdd7179ea380ca122d3309d4ebd7d0390a19a182d6e01ed1492",
+  "memberCount": 12,
+  "memberBytes": 19572225,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "live-complete-prefix.zip",
+      "bytes": 10621052,
+      "sha256": "0936d9aa3e75456ae845277d4c129771161c355558bf6fd25f5d87153c59757b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803326748676653
+    },
+    {
+      "path": "observer-summary.json",
+      "bytes": 141,
+      "sha256": "ffae80d51eca29b9ce75d5e9a8ff351d2186b682d862e73a4c60dc1894d727fa",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803329796498648
+    },
+    {
+      "path": "post-window-source-event-loop.json",
+      "bytes": 2438,
+      "sha256": "e1fe7875afa841a206b73172e62361a18721951f1a56dc105ad4561e16afe067",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803326912133449
+    },
+    {
+      "path": "production-active-cell.png",
+      "bytes": 141682,
+      "sha256": "0c3d6f95c0ce060cc6522646a7d9ea89d227095fdf3af1c6cdc46e20164d04b2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803313479272387
+    },
+    {
+      "path": "production-paused-during-export.png",
+      "bytes": 144509,
+      "sha256": "826ad604b6e09bfa249c5870b6508f4fce619e84d9101d4a855d91d05788afb9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803313778912068
+    },
+    {
+      "path": "route-camera-observations.json",
+      "bytes": 4962,
+      "sha256": "16cd88dc0e02f6ad594b4bfc299fba47a5079f79b321683dab2b5340272fc10d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803239812530806
+    },
+    {
+      "path": "route-follow-amr.png",
+      "bytes": 172361,
+      "sha256": "3a83b901e0bdb71f795a8d1bc9ee1bb2e6210ed46e63e7d9ba7ea8ad38706f90",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803236632291570
+    },
+    {
+      "path": "route-overview.png",
+      "bytes": 126257,
+      "sha256": "0b81d6b826a7d8af7929b27cde22dafd04defdb2ee57190da7604bdec5d84637",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803125878920518
+    },
+    {
+      "path": "route-phase-follow.png",
+      "bytes": 176931,
+      "sha256": "9aed40b7d83874ce8957b2a63fd7cd35b7e729692cdf5efd9dd97267d376f72f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803239766691012
+    },
+    {
+      "path": "runtime-observer.ndjson",
+      "bytes": 8155460,
+      "sha256": "157b098bf6b99756df92152841e8299b52ce6fc32b21510b9e88fc0105890f51",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803329664299803
+    },
+    {
+      "path": "runtime-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803329765678444
+    },
+    {
+      "path": "source-event-loop.json",
+      "bytes": 26432,
+      "sha256": "9f3104216663af0506421ad48bde166256a9fb2c17adbdf1b936b7f51e489307",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803326913115425
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

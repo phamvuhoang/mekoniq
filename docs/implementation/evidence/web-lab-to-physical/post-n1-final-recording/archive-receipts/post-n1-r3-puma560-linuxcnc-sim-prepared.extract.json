@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:36.330245+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-puma560-linuxcnc-sim-prepared",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.tar.gz",
+  "archiveSha256": "eb014bb02f98e0ceabb916372d3063bcd874e05684600cc73dc8110feb5be79c",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.members.json",
+  "memberIndexSha256": "2ac81835bbaf8d5acb4aa92967f229e08038469e45706fbe00f96c912cd758e8",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-puma560-linuxcnc-sim-prepared",
+  "verifiedFiles": 388,
+  "verifiedBytes": 11707606,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

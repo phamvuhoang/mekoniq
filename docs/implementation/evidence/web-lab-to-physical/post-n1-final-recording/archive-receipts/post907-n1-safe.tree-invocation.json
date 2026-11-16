@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post907-n1-safe",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-n1-original"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post907-n1-safe\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-n1-original\", \"archive\": \"post907-n1-safe.tar.gz\", \"archiveBytes\": 705136, \"archiveSha256\": \"86c41d88d5af78953c0af3ea489504103a07c7bb4512d1dd0f61f5c40225cbef\", \"memberIndex\": \"post907-n1-safe.members.json\", \"memberIndexSha256\": \"2038fd4dcf669ce4b6968d26e1e611cdf58efaf574755d4765fb3538460a7a7e\", \"memberCount\": 88, \"memberBytes\": 3386264, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-n1-safe.extract.json\", \"safeExtractionReceiptSha256\": \"b8da2b289377d65afbe7762b939e92b014204dfa9230cef4b7ac55f7242eef9d\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-safe\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post907-n1-safe\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-safe\", \"verifiedFiles\": 88, \"verifiedBytes\": 3386264}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:37.584517+00:00"
+}

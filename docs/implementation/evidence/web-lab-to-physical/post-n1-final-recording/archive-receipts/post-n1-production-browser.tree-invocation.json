@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-production-browser",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-browser"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-production-browser\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-browser\", \"archive\": \"post-n1-production-browser.tar.gz\", \"archiveBytes\": 5381264, \"archiveSha256\": \"a09c832e762a00c512edfecd48d4d69574b47d0c4bcfe4e87de45bbd4f60f2fd\", \"memberIndex\": \"post-n1-production-browser.members.json\", \"memberIndexSha256\": \"2370e834cea0b3fa7e1430e0f9c8f9aa76cd2bb721e5e4f1318e63de2a06faf5\", \"memberCount\": 61, \"memberBytes\": 14570182, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-browser.extract.json\", \"safeExtractionReceiptSha256\": \"846dd556a17f39dc4f556cb142630aac232c74631cdd2bc4a4c679192be6a326\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-browser\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-production-browser\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-browser\", \"verifiedFiles\": 61, \"verifiedBytes\": 14570182}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:11.905711+00:00"
+}

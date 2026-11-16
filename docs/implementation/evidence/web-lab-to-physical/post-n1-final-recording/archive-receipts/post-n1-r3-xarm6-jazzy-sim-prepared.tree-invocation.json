@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-r3-xarm6-jazzy-sim-prepared",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-xarm6-jazzy-sim-prepared"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-r3-xarm6-jazzy-sim-prepared\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-xarm6-jazzy-sim-prepared\", \"archive\": \"post-n1-r3-xarm6-jazzy-sim-prepared.tar.gz\", \"archiveBytes\": 2600021, \"archiveSha256\": \"33d76a6cce44da042b966f3846d056e8fba9fc26ac84341a915ead85072cea4f\", \"memberIndex\": \"post-n1-r3-xarm6-jazzy-sim-prepared.members.json\", \"memberIndexSha256\": \"17d1c743ce1b48375fc83679cd8f5794a0ed03df7c4f8cffe4f0b504fae1cdf3\", \"memberCount\": 244, \"memberBytes\": 10942514, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.extract.json\", \"safeExtractionReceiptSha256\": \"7e23e28ce44aa4b4d93379f64696ab0ba5e75803c2eddad9a3f59af367eec460\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-xarm6-jazzy-sim-prepared\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-r3-xarm6-jazzy-sim-prepared\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-xarm6-jazzy-sim-prepared\", \"verifiedFiles\": 244, \"verifiedBytes\": 10942514}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:37.074393+00:00"
+}

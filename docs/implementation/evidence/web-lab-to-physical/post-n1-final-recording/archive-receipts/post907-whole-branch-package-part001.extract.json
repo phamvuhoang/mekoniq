@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:38.150442+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part001",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part001.tar.gz",
+  "archiveSha256": "5fb1976a8c261a0bf9fa039abd53483d381990ca6a151217ab3befe0f3a78d69",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part001.members.json",
+  "memberIndexSha256": "f8145ce856f06daf5722113f36bb10b37c5f5544fa5104ee445798d82c7aa65a",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-whole-branch-package-part001",
+  "verifiedFiles": 13,
+  "verifiedBytes": 10434701,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-r2a-supplemental-current-gui",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2a-supplemental-current-gui"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-r2a-supplemental-current-gui\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2a-supplemental-current-gui\", \"archive\": \"post-n1-r2a-supplemental-current-gui.tar.gz\", \"archiveBytes\": 17755811, \"archiveSha256\": \"435a82262ccd1c577a6e679c3256016766f678a2dd6280d4234f136010623388\", \"memberIndex\": \"post-n1-r2a-supplemental-current-gui.members.json\", \"memberIndexSha256\": \"792c7847d0e5d402d07f39fc9f6c88c02ccbe23b82c99898e2e3d7bb2821cb11\", \"memberCount\": 139, \"memberBytes\": 18605194, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r2a-supplemental-current-gui.extract.json\", \"safeExtractionReceiptSha256\": \"9b9aac2e5be68b061a3bdde7c6fd2f0b4320b87181c47d04f5bd8c81cafed053\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r2a-supplemental-current-gui\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-r2a-supplemental-current-gui\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r2a-supplemental-current-gui\", \"verifiedFiles\": 139, \"verifiedBytes\": 18605194}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:32.081549+00:00"
+}

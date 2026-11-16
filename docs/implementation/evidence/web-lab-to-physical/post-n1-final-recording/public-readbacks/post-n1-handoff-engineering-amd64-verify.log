@@ -1,0 +1,46 @@
+{
+  "prepared": true,
+  "nativeReady": false,
+  "issues": [
+    {
+      "code": "NATIVE_ENGINE_MAPPING_UNRESOLVED",
+      "path": "/profile/documents",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "PACKAGE_LOCK_UNRESOLVED",
+      "path": "/profile/requiredPackages/0",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "SOURCE_LOCK_UNRESOLVED",
+      "path": "/profile/installation/sources",
+      "severity": "prerequisite"
+    },
+    {
+      "code": "HOST_INVENTORY_MISSING",
+      "path": "/inventory",
+      "severity": "prerequisite"
+    }
+  ],
+  "subject": {
+    "id": "post-n1-prepared-lab7c97b20-engineering-amd64",
+    "executionKind": "ros2_native",
+    "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "labCommit": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "portableClosureHash": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+    "nativeClosureHash": null,
+    "runtimeArtifactSha256": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "profileSha256": "12322ca11ec22fe9abd93f79def1b0397b6d22f840b8e5644a329ca928ba79b4",
+    "image": null
+  },
+  "checker": {
+    "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "toolSha256": "d346b48d8c0af721dcfbdd3fcac6153b869d161552df9e85da197d568a28d2f3"
+  },
+  "inventoryAssessment": "supplied_records_only",
+  "qualification": "not_run",
+  "accepted": false,
+  "dynamics": "not_calibrated"
+}

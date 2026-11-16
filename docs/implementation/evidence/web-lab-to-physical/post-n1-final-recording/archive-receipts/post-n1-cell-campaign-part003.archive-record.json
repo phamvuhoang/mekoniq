@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-cell-campaign-part003",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part003",
+  "archive": "post-n1-cell-campaign-part003.tar.gz",
+  "archiveBytes": 19143047,
+  "archiveSha256": "19f1db77dece95b2b4b907941140cef738604a7335c72df7223defc0be7f49d9",
+  "memberIndex": "post-n1-cell-campaign-part003.members.json",
+  "memberIndexSha256": "1d1defccb0a95cf828e6bc16f79349349d230db0cd6d8704d4567ff8b27bb6f1",
+  "memberCount": 129,
+  "memberBytes": 58086493,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part003.extract.json",
+  "safeExtractionReceiptSha256": "e9893f6901cc7ef769b51acdef7cebf97561673c0cb7fd8be31530a423b2f2fd",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part003",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

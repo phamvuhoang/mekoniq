@@ -1,0 +1,27 @@
+{
+  "id": "current-web-complete-readback",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {readFileSync} from 'node:fs';import {join} from 'node:path';import {assessCapture,checkCaptureClock} from './scripts/browser-capture-clock.mjs';import {verifyBrowserArtifacts} from './scripts/browser-evidence-readback.mjs';const root=process.argv[1],c=JSON.parse(readFileSync(join(root,'actual-cell-production.json'))),tuple={sourceCommit:c.sourceCommit,labCommit:c.buildIdentity.labHead,artifactSha256:c.runtimeArtifact,schemaHash:c.buildIdentity.schemaHash};const v={clock:checkCaptureClock(c),capture:assessCapture(c),browser:verifyBrowserArtifacts(p=>readFileSync(join(root,p)),c,tuple)};console.log(JSON.stringify(v));process.exit(v.capture.valid&&v.capture.meetsTargets&&!v.browser.length?0:1);",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-web-record"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:11:56.706089+00:00",
+  "finishedAt": "2026-11-16T07:11:57.000899+00:00",
+  "exitCode": 1,
+  "signal": null,
+  "log": "current-web-complete-readback.log",
+  "logBytes": 427,
+  "logSha256": "1f5d8c2c2426f742369a118b3a172584eb5b79f819d1c795b6952ca688a6304b",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-web-record",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

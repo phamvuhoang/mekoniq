@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:13.062331+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part001",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part001.tar.gz",
+  "archiveBytes": 6071974,
+  "archiveSha256": "4ee5e3356ec676db9cf67b40f0dde73f26c6dd48c118ed560a6d709cfcc71625",
+  "memberCount": 7,
+  "memberBytes": 64855464,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "actual-cell-production.json",
+      "bytes": 27601216,
+      "sha256": "d4281f2859375eac4b757fcf6ebb4687b2c0d3e02fdd2efb41b0fae6d6b9b1b7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803327248238160
+    },
+    {
+      "path": "assessment.json",
+      "bytes": 447,
+      "sha256": "6153acf3903dd28840eb32c4fb69ff4eeaa95bf55d2aa978cd0cc84959321d18",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803441200082007
+    },
+    {
+      "path": "build-identity.json",
+      "bytes": 39681,
+      "sha256": "84ad715183f2671f0208bf8e763fa42cfab0fe8a5c48982180f2f0e28e3bfe1b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803102862922959
+    },
+    {
+      "path": "capture-raw.json",
+      "bytes": 25350262,
+      "sha256": "cacfe764fd3ba88afe16812dde5976e2db135213132c8ce24076848804b9afbe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803313433064067
+    },
+    {
+      "path": "cleanup.json",
+      "bytes": 39,
+      "sha256": "09c2fa28b975b6143610ceec51c063e26eb1a375ee12c00df41e0a3c87a685b4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803330397161615
+    },
+    {
+      "path": "http-observations.json",
+      "bytes": 3236270,
+      "sha256": "63c1477d03b738d9d93d246b0a219b5063aface6e138a31d72cd1343d30e6b70",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803327025947842
+    },
+    {
+      "path": "io-diagnostic.json",
+      "bytes": 8627549,
+      "sha256": "21f431ddf7ec17d77a1238e8f8bfce47ad92c6677e33a9adf0442e5ce48f9584",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803326976910991
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

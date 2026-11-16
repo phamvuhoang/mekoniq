@@ -1,0 +1,1404 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:07:43.720991+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part001",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part001.tar.gz",
+  "archiveBytes": 16892430,
+  "archiveSha256": "8354716c9b33c6dead228e682f1d17f586c17232da39da664055bdbd04bbcabe",
+  "memberCount": 188,
+  "memberBytes": 65892717,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "campaign.json",
+      "bytes": 2636,
+      "sha256": "b2d3c7f60b465900367427c68a7eb59645bdb661ba79fbaec3d6b4d82a2e5d0b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804338997212322
+    },
+    {
+      "path": "cancel-held/case.json",
+      "bytes": 8761,
+      "sha256": "630458617ad73be2a35a49a505abce28f4e67bd9180e40cdaf4c13036879dc0f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063857682312
+    },
+    {
+      "path": "cancel-held/controller-state.json",
+      "bytes": 147917,
+      "sha256": "c1db39f434661fd446174def165aa9541382bd59448aaef8fa1fbadf9fadee4c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063690054171
+    },
+    {
+      "path": "cancel-held/fault-before.json",
+      "bytes": 29562,
+      "sha256": "2b952e676bd363ed7dd6e67f2ac52ba4dc1483b98727b7b436166aa332aa0dc7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806061654158110
+    },
+    {
+      "path": "cancel-held/physical-custody.json",
+      "bytes": 187,
+      "sha256": "bdd3621fc3c822dd70747795cdce966d2fe6eeff0b227854d35f2db346b726a8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063690843218
+    },
+    {
+      "path": "cancel-held/report.json",
+      "bytes": 1888559,
+      "sha256": "9541b31e88c4ca8fb6aeb2d390e8e6925e3e4acca4deeff5fd0c8ded99531f11",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063668304648
+    },
+    {
+      "path": "cancel-held/run/arm-props-trace-34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b.json",
+      "bytes": 458016,
+      "sha256": "34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806063652326456
+    },
+    {
+      "path": "cancel-held/run/arm-trace-504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063.json",
+      "bytes": 501529,
+      "sha256": "504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806063633156159
+    },
+    {
+      "path": "cancel-held/run/cup-ledger.sqlite",
+      "bytes": 45056,
+      "sha256": "74ed37c2ca7d117744ddb0a8f73092fd16f4ffceee8ea10b8a0b3b63bc094932",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063695286498
+    },
+    {
+      "path": "cancel-held/run/journal.db",
+      "bytes": 925696,
+      "sha256": "1b069a5ee777d2f54f4b6963f00861fedb965a77b282ba057c08c41d22eb236e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063830808462
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321034037
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321191122
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321981877
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967322216129
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967322697215
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967324041683
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967324541853
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967325054148
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967326162489
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967326346657
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967326809785
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967326974661
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967327579374
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967328153586
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967328471463
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967329241135
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321728542
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967320862495
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14123,
+      "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967329520470
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321586624
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967321383581
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967320672702
+    },
+    {
+      "path": "cancel-held/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967320422492
+    },
+    {
+      "path": "cancel-held/run/run.json",
+      "bytes": 181888,
+      "sha256": "7f7f98b595282671cc2a4c1963596cfb75ed56854ddbbe65690e71ae41b837bc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806061694671094
+    },
+    {
+      "path": "cancel-held/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "d1c75ed205fcf6b68c3e533e0aade42d701bbb42f7a575d418eba61d73555f7f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967978011633
+    },
+    {
+      "path": "cancel-held/run/world-evidence/manifest.json",
+      "bytes": 1540,
+      "sha256": "a9df4d73699c967429bf27e362bf04f8b1f4da05f359485765f0cb6eb016dc64",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806063745325589
+    },
+    {
+      "path": "cancel-held/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806063740577057
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000000-57943d80.ndjson.gz",
+      "bytes": 212614,
+      "sha256": "3a41c229bb534fa2f35a92b3ec0a79a0e7ed6d5a670e847d11a394a97b0b21ce",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805978083838562
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000001-a6fee43c.ndjson.gz",
+      "bytes": 215914,
+      "sha256": "be0da5021abb3374e1bd84b83b9c645d3743ae4c55b7878cfa779882e0bb86c4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805990860061869
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000002-cc16fe43.ndjson.gz",
+      "bytes": 221189,
+      "sha256": "5abc4f94f2e1b8e60885f3013256b065adb8836f85b5ea481f06335d88ef1d37",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806002436476263
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000003-fe764927.ndjson.gz",
+      "bytes": 225663,
+      "sha256": "849f1d9c60e88035b97ad80845d605bcbcfee48a42a645d8b82eca59196a4c5d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806024205216257
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000004-a092a3d2.ndjson.gz",
+      "bytes": 229630,
+      "sha256": "7be6407ae3874e32644ab52f002ca4b8f07c8f21fe95aa73ca784d571e050ccc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806036914341441
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000005-1a797236.ndjson.gz",
+      "bytes": 234130,
+      "sha256": "a37ed91960cf5c5c46982398ad41ac4fcb3cb580cf060a761a38a22f69fa48cd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806052520027834
+    },
+    {
+      "path": "cancel-held/run/world-evidence/world-000006-7d46d111.ndjson.gz",
+      "bytes": 218451,
+      "sha256": "71db28632a8c420e605fb206728ac17f136c1db04e2755a33681f6de3a9ed8ac",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806063730117277
+    },
+    {
+      "path": "cancel-held/source-journal.json",
+      "bytes": 450734,
+      "sha256": "8be37980c764f69bf39c408563bddab76ed3242061d647a16dcfc09d66c3b726",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063685676808
+    },
+    {
+      "path": "cancel-held/trace.json",
+      "bytes": 351909,
+      "sha256": "56c7d8208ded5f2139c6bca0470229611d34ae21067725d90e35dac9cff2d188",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806063837256173
+    },
+    {
+      "path": "cup-fall/case.json",
+      "bytes": 9164,
+      "sha256": "e769e0a217b8042034d3f76720bdf8aece42259a02dbbfa3cfef005cb0088e1f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967297265667
+    },
+    {
+      "path": "cup-fall/controller-state.json",
+      "bytes": 140892,
+      "sha256": "3b02a0b9cbeb3b0fbf2c46c13154e5efb3e2c7d7d5e4644256d2a17e53025c20",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967146229015
+    },
+    {
+      "path": "cup-fall/physical-custody.json",
+      "bytes": 175,
+      "sha256": "4788d114821ae2e6b1dd4c28f1a3c1f3f55d3f2b272d8bec1df527a88c22b27b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967154326486
+    },
+    {
+      "path": "cup-fall/report.json",
+      "bytes": 2725366,
+      "sha256": "4931d0db2c4b537dbfa1c5a4d651df8b0b613d7e4c0855b3b7157a510b5f1747",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967139567636
+    },
+    {
+      "path": "cup-fall/run/arm-props-trace-eaaa826d5a85a0fda7babaa3d5dfbbb9a79c85d044b54e01142a141049441432.json",
+      "bytes": 796236,
+      "sha256": "eaaa826d5a85a0fda7babaa3d5dfbbb9a79c85d044b54e01142a141049441432",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967125458082
+    },
+    {
+      "path": "cup-fall/run/arm-trace-058c1a8ff0ea383ab08d3188302f562b03d696fd702a1dbccbd39cd5f458f3ad.json",
+      "bytes": 707396,
+      "sha256": "058c1a8ff0ea383ab08d3188302f562b03d696fd702a1dbccbd39cd5f458f3ad",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967103983852
+    },
+    {
+      "path": "cup-fall/run/cup-ledger.sqlite",
+      "bytes": 53248,
+      "sha256": "17076e7564bb988ab5a040b8c7baef708c53f4faf4e74ab5037593fad51023d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967155437744
+    },
+    {
+      "path": "cup-fall/run/journal.db",
+      "bytes": 1150976,
+      "sha256": "d41c36d1447a2a4bd51c5a88182359184e9298da9638e8e6c33ae64c4fdf2d5e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967269861856
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877605589885
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877605803178
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877606527141
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877606758643
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877607065186
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877607284605
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877607721441
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877608209653
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877608639572
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877608849365
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877609667537
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877609889331
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877610945796
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877611800052
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877612662141
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877613533814
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877606298181
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877605371008
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14240,
+      "sha256": "85b3d459d738a99a230e39c73a9989ff61901d341c1e32ac7ef183deccf41014",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877613795566
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877606136597
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877605971429
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877605208216
+    },
+    {
+      "path": "cup-fall/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877604997464
+    },
+    {
+      "path": "cup-fall/run/run.json",
+      "bytes": 218122,
+      "sha256": "3265d9de1027d2cbaee613762b6f1e7b837b325b0a69221852ec803d478e810d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805965230606480
+    },
+    {
+      "path": "cup-fall/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "37dd823f6670e4e65393da557eb1ffb8a9c2b5810e72350a4dba0c198d6f7c28",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805878545017568
+    },
+    {
+      "path": "cup-fall/run/world-evidence/manifest.json",
+      "bytes": 2041,
+      "sha256": "f7821dff8d18f057a5fc19bcb5d5f9ffd06f31b33665223b4b21f0c4167caf5f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967192168577
+    },
+    {
+      "path": "cup-fall/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967186711082
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000000-178d73db.ndjson.gz",
+      "bytes": 212601,
+      "sha256": "a4cfed3561bb52b560c689c26b81f03f7d642ccf293ba3b825127ca412addf4c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805887567030998
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000001-dbe37e46.ndjson.gz",
+      "bytes": 215900,
+      "sha256": "4045e12de58a850992b97b5117615ce457dbda19d77cd3f5902deed592d4332c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805897091985475
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000002-bd7d8cd2.ndjson.gz",
+      "bytes": 221182,
+      "sha256": "f509a17b27f6c95296e7d820706e56515584e2d427f69972dfdc23e49baf286c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805906020845520
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000003-281972ad.ndjson.gz",
+      "bytes": 225638,
+      "sha256": "52c7f424248d34c85c175fd7add1da468bcd8bc135373060de57684fc1214df0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805913985216462
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000004-f3ab0ec5.ndjson.gz",
+      "bytes": 229634,
+      "sha256": "7b33e0422263b21dd517a6fef0c025b86138db25bc02495bb9e28e7d74c23f1f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805922583148256
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000005-f1f8f63c.ndjson.gz",
+      "bytes": 234132,
+      "sha256": "8e18f0f44dc3193db5ed62240529d0cb5182a672ed2cb8b3ed09932062fe3e91",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805930951202485
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000006-dfdbbd26.ndjson.gz",
+      "bytes": 284854,
+      "sha256": "c5916cde4785a099949ba31be1f7ef8047b63cfdf84147cc6b50d2d02cee6a6f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805940526456304
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000007-821a1b6f.ndjson.gz",
+      "bytes": 338233,
+      "sha256": "c702ab7f797a586cb433f4dcf941e1792c90bbb28f79cd4632b7547a26068984",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805950681619944
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000008-42ccb1ab.ndjson.gz",
+      "bytes": 342742,
+      "sha256": "25e2fbfe60a7febcbc42571d82d108fc71c03b07c765b760acf6f13c24185640",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805960870822274
+    },
+    {
+      "path": "cup-fall/run/world-evidence/world-000009-51f2917d.ndjson.gz",
+      "bytes": 175339,
+      "sha256": "62d323d622d8df68a10e3f84396caa8d3958e275f6868cefa6fa76398aff328c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805967172418026
+    },
+    {
+      "path": "cup-fall/source-journal.json",
+      "bytes": 559582,
+      "sha256": "868577764d12cb80b3bf5a12b8aa05b0e82f31e533f216e67c74534824e31d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967145410009
+    },
+    {
+      "path": "cup-fall/trace.json",
+      "bytes": 492308,
+      "sha256": "e500be02a77fad6f638f0b7e73bf28de9d3991031daeeeca5f627af4db78ad61",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805967277230489
+    },
+    {
+      "path": "dock-drift/case.json",
+      "bytes": 8606,
+      "sha256": "a1db44cfda5ff840979c736135142188378a66a3ef5848bd7a430726063d992b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877571199317
+    },
+    {
+      "path": "dock-drift/controller-state.json",
+      "bytes": 147530,
+      "sha256": "c04501e9602fe7105927363389393aaa75678f88ecb2a3e6ffd30ef9011344a8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877344689026
+    },
+    {
+      "path": "dock-drift/physical-custody.json",
+      "bytes": 187,
+      "sha256": "fdc23ba0da82d06666ae674a1fabdd4f3a5849d153adcee8306e19bc6e4669b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877344978236
+    },
+    {
+      "path": "dock-drift/report.json",
+      "bytes": 1871101,
+      "sha256": "c6ba6fa126ff64ab0943b3774b6d2985c39bc611136cfac0840a846eea763152",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877340444997
+    },
+    {
+      "path": "dock-drift/run/arm-props-trace-d5160db691069b986dcf8c4119ccbdf26d1f5453a0d33ca7a141edcad65bb3e9.json",
+      "bytes": 458019,
+      "sha256": "d5160db691069b986dcf8c4119ccbdf26d1f5453a0d33ca7a141edcad65bb3e9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805877322765252
+    },
+    {
+      "path": "dock-drift/run/arm-trace-8a8e6d97271ef91f9fb0979bcaf4393616f4bd85efcc5f9321e734e5282ae6e1.json",
+      "bytes": 501511,
+      "sha256": "8a8e6d97271ef91f9fb0979bcaf4393616f4bd85efcc5f9321e734e5282ae6e1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805877309580829
+    },
+    {
+      "path": "dock-drift/run/cup-ledger.sqlite",
+      "bytes": 45056,
+      "sha256": "f34c99453b85ebae0a5b685090bdd488fd8896f48fdbaee1f803230633d741cf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877345441115
+    },
+    {
+      "path": "dock-drift/run/journal.db",
+      "bytes": 888832,
+      "sha256": "7873390e5a406ae2aefcf897b6930ef56e69cfdd352f7377e2ffad982d290b45",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877544839013
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979093439
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979232857
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979794319
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979930320
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815980124904
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815980408406
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815980569657
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815981263870
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815981554664
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815981709998
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815982691422
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815982842964
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815984454809
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815984974062
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815985689776
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815986411697
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979613984
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815978946855
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14247,
+      "sha256": "673e03b32ae551bfd9c076936d562d353d131800ad500819a5552f9e0b6c23a3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815986696782
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979492483
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815979370691
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815978816354
+    },
+    {
+      "path": "dock-drift/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805815978642894
+    },
+    {
+      "path": "dock-drift/run/run.json",
+      "bytes": 179971,
+      "sha256": "0837e27d0bd430f7e61d0f262a06e87c9a049084687b8d42327ce7e5f3a1dcee",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805875970505842
+    },
+    {
+      "path": "dock-drift/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "57625611cd0510ea1badc7c5ad322915044a6d56885d2b51c1b835e79651151c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805816624443872
+    },
+    {
+      "path": "dock-drift/run/world-evidence/manifest.json",
+      "bytes": 1540,
+      "sha256": "5dfaf7900823080b9d88ea20599d3859ddf6485d3177f9a0ef20e48e2bcfd280",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805877399602233
+    },
+    {
+      "path": "dock-drift/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805877391195426
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000000-67b00632.ndjson.gz",
+      "bytes": 212600,
+      "sha256": "bfd0c5c48ed3c8fd9d279e43bf9fdc600c92995371f33cf303676c9e42c5f53d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805825721642146
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000001-0c71a1a0.ndjson.gz",
+      "bytes": 215908,
+      "sha256": "4d969c33360077d8c90bb294ec4e0100ce6a885026b0554fb9079022f8a7adfa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805833327628899
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000002-86539088.ndjson.gz",
+      "bytes": 221186,
+      "sha256": "e6eb1623ce51f9a1ac5b7d1bb95551a03b58e28411c873bbedd1212ce62f27de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805841122611396
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000003-a11ed64c.ndjson.gz",
+      "bytes": 225651,
+      "sha256": "21fd2d69edd8874ab8ba99400b708c2bc015478bffa626d95d12f0fb85b78e31",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805850545773513
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000004-59f09166.ndjson.gz",
+      "bytes": 229640,
+      "sha256": "bd8d985a9ee6fde9a56019e1ea09ebf407c0d0b18e9c79496d31658caa2d9cfe",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805858781019798
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000005-c6f0f0dd.ndjson.gz",
+      "bytes": 234128,
+      "sha256": "65d6044a97ffe42a8dc5a9b46bba6584b5d377b2d191da85617d39d6365e3128",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805867764891718
+    },
+    {
+      "path": "dock-drift/run/world-evidence/world-000006-3a2d1f3d.ndjson.gz",
+      "bytes": 222540,
+      "sha256": "5caeccfce81cb90a876a2194c2659885aca23813dd026e1d343371f2338af231",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805877372121671
+    },
+    {
+      "path": "dock-drift/source-journal.json",
+      "bytes": 418190,
+      "sha256": "044c19867f88ecbd64d39bce4f3951b8314d00d1a91f5b7dae3d0568d628c5ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877343722603
+    },
+    {
+      "path": "dock-drift/trace.json",
+      "bytes": 351909,
+      "sha256": "e3e50725d93c9b22c38b5a38b0489ddf47051c6894b2ecb26d52b6697f6ba999",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805877551933520
+    },
+    {
+      "path": "lost-ack/case.json",
+      "bytes": 8920,
+      "sha256": "2b5a5329e3b877d060e4b7ea31354cf7de3d33f2ef6288f0d9e29639d42831bd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207867013341
+    },
+    {
+      "path": "lost-ack/controller-state.json",
+      "bytes": 146833,
+      "sha256": "8d5a2491e7bc04b140efaf846aa36135245bf1d3c0b8b855757a7f4aa8839202",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207704996750
+    },
+    {
+      "path": "lost-ack/fault-before.json",
+      "bytes": 29562,
+      "sha256": "40fe56d431615c9ef096e79a8a1fff3bed6593ec1fb7bf7afc1e6a6ed352d4fd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806206426781704
+    },
+    {
+      "path": "lost-ack/lost-ack-native-response.json",
+      "bytes": 31219,
+      "sha256": "800bb85ca53b9b1a04c8454e549d7d172b50d1eebbc707fcf9344ed377b33e91",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806206450559839
+    },
+    {
+      "path": "lost-ack/physical-custody.json",
+      "bytes": 178,
+      "sha256": "5856236c44fc41f94bc35cca7745673f1b711525a7687e0144bc5fecb5888b44",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207705630591
+    },
+    {
+      "path": "lost-ack/report.json",
+      "bytes": 1872375,
+      "sha256": "c781d00fc9566f0591cc901b6f3eab2001fb4ca46ab6a28fe41176348ff1e705",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207700768913
+    },
+    {
+      "path": "lost-ack/run/arm-props-trace-34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b.json",
+      "bytes": 458016,
+      "sha256": "34cf14c47452d097779d2c6854e1f6af12c6af6036359639d46d853a3104960b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207690048588
+    },
+    {
+      "path": "lost-ack/run/arm-trace-504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063.json",
+      "bytes": 501529,
+      "sha256": "504d950d91afe0581cb83817dc69ec2fd469cc71d733a9173a2c61ba08cd8063",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207682402380
+    },
+    {
+      "path": "lost-ack/run/cup-ledger.sqlite",
+      "bytes": 45056,
+      "sha256": "0be570e4bca072219b4ff5f4e508766dd00609c802d3f37226baab972e2e1098",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207706079054
+    },
+    {
+      "path": "lost-ack/run/journal.db",
+      "bytes": 880640,
+      "sha256": "bfa709a52ad99c296d735cbc261db18647aebc079b0ca4bca2100e1b8e71cc77",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207821054592
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142168833333
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142169054636
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142169958598
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142170173109
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142170498292
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142170765848
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142172912207
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142174547623
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142175102568
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142175360164
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142185589226
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142186490813
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142187636372
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142188293905
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142189418295
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142191532903
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142169687209
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142168620405
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14123,
+      "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142192073472
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142169481032
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142169281231
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142168407978
+    },
+    {
+      "path": "lost-ack/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806142168110671
+    },
+    {
+      "path": "lost-ack/run/run.json",
+      "bytes": 180663,
+      "sha256": "0a4e143a3e62d6bd439ecf307fff108cf586172275d82b4e50aacfc124222236",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207851828801
+    },
+    {
+      "path": "lost-ack/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "fff95512b46d3a2a479115b6cc43b28c49f914fced36b65ce9ab50760dc77835",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806143750832625
+    },
+    {
+      "path": "lost-ack/run/world-evidence/manifest.json",
+      "bytes": 1754,
+      "sha256": "66f758b1d06d817933af15475ab5f1759f0d7d7ac029374e948efaf08d628fd4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207751827092
+    },
+    {
+      "path": "lost-ack/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207745801360
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000000-6d9bd150.ndjson.gz",
+      "bytes": 212603,
+      "sha256": "dc5a78c51abfaa4ae882a86cf19f0b305292df82bfa9f608f98a00fe46ba8fbf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806155102330878
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000001-2c56d377.ndjson.gz",
+      "bytes": 215907,
+      "sha256": "9e7fdb92c2d6340bd74c90efd9e116e53a5b770d86ad3c456215798cbe9ae411",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806163396613192
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000002-006b10e2.ndjson.gz",
+      "bytes": 221185,
+      "sha256": "80db0abefe263992e885cbf9b29740db13a7d1f13a6b7e19bc3857719cea96bb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806172346152634
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000003-e6cdb6a6.ndjson.gz",
+      "bytes": 225651,
+      "sha256": "adb8e9c1ff585fea72004a0ce3c1a3bf8a122977b0e8f6633dd80b77c0e843da",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806180813789822
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000004-065b26fa.ndjson.gz",
+      "bytes": 229622,
+      "sha256": "e7048dbcb71a6d5975306a7254ecb6d252edc92c5794a3b935b5f862b6537aca",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806189110018233
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000005-f199e942.ndjson.gz",
+      "bytes": 234125,
+      "sha256": "81e880818821912c88264f6263b13a5773da6c24c400181b3a3e4c36a6a92a31",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806199287034083
+    },
+    {
+      "path": "lost-ack/run/world-evidence/world-000006-edbda351.ndjson.gz",
+      "bytes": 218435,
+      "sha256": "040108cbdb9b6d0b3858ac6d00a9f9d751635de869f4f23d4912c35f980eef49",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794806207734531196
+    },
+    {
+      "path": "lost-ack/source-journal.json",
+      "bytes": 418474,
+      "sha256": "9a8a0aa144e38d55478a5f1b0028c73d9ae6810fd38b322b30daca21b97d5ed9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207703756070
+    },
+    {
+      "path": "lost-ack/trace.json",
+      "bytes": 352118,
+      "sha256": "ddfa1c0d34203526f5347f271f11234c3cee518940a2f2a09ba6f7439f508002",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794806207827225118
+    },
+    {
+      "path": "nominal-42/case.json",
+      "bytes": 15528,
+      "sha256": "66e56d044340bbf73079b84b102329eb08194227a92bdeed892c52749bd7f300",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805342296971619
+    },
+    {
+      "path": "nominal-42/controller-state.json",
+      "bytes": 126169,
+      "sha256": "150f706c6175b8eba79be4fbf1c81754b8a51d2976ea86a1ab0a38370868cf4d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805341924164666
+    },
+    {
+      "path": "nominal-42/physical-custody.json",
+      "bytes": 373,
+      "sha256": "97d2d9a40b4b5994ac9cfac078856e542358a8f479d5619ed57b870b0939c22f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805341924702003
+    },
+    {
+      "path": "nominal-42/report.json",
+      "bytes": 10342110,
+      "sha256": "a6b89dee91fc3370b03b81d1fcc492be84ec02348a24b15751cecf95619912c0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805341885381944
+    },
+    {
+      "path": "nominal-42/run/arm-props-trace-b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123.json",
+      "bytes": 2596028,
+      "sha256": "b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805341814547670
+    }
+  ],
+  "directories": [
+    "cancel-held",
+    "cancel-held/run",
+    "cancel-held/run/mujoco-world",
+    "cancel-held/run/mujoco-world/bundle",
+    "cancel-held/run/mujoco-world/bundle/blobs",
+    "cancel-held/run/mujoco-world/run",
+    "cancel-held/run/world-evidence",
+    "cup-fall",
+    "cup-fall/run",
+    "cup-fall/run/mujoco-world",
+    "cup-fall/run/mujoco-world/bundle",
+    "cup-fall/run/mujoco-world/bundle/blobs",
+    "cup-fall/run/mujoco-world/run",
+    "cup-fall/run/world-evidence",
+    "dock-drift",
+    "dock-drift/run",
+    "dock-drift/run/mujoco-world",
+    "dock-drift/run/mujoco-world/bundle",
+    "dock-drift/run/mujoco-world/bundle/blobs",
+    "dock-drift/run/mujoco-world/run",
+    "dock-drift/run/world-evidence",
+    "lost-ack",
+    "lost-ack/run",
+    "lost-ack/run/mujoco-world",
+    "lost-ack/run/mujoco-world/bundle",
+    "lost-ack/run/mujoco-world/bundle/blobs",
+    "lost-ack/run/mujoco-world/run",
+    "lost-ack/run/world-evidence",
+    "nominal-42",
+    "nominal-42/run",
+    "nominal-42/run/mujoco-world",
+    "nominal-42/run/mujoco-world/bundle",
+    "nominal-42/run/mujoco-world/bundle/blobs",
+    "nominal-42/run/mujoco-world/run",
+    "nominal-42/run/world-evidence",
+    "nominal-7",
+    "nominal-7/run",
+    "nominal-7/run/mujoco-world",
+    "nominal-7/run/mujoco-world/bundle",
+    "nominal-7/run/mujoco-world/bundle/blobs",
+    "nominal-7/run/mujoco-world/run",
+    "nominal-7/run/world-evidence",
+    "nominal-99",
+    "nominal-99/run",
+    "nominal-99/run/mujoco-world",
+    "nominal-99/run/mujoco-world/bundle",
+    "nominal-99/run/mujoco-world/bundle/blobs",
+    "nominal-99/run/mujoco-world/run",
+    "nominal-99/run/world-evidence",
+    "worker-loss",
+    "worker-loss/run",
+    "worker-loss/run/mujoco-world",
+    "worker-loss/run/mujoco-world/bundle",
+    "worker-loss/run/mujoco-world/bundle/blobs",
+    "worker-loss/run/mujoco-world/run",
+    "worker-loss/run/world-evidence"
+  ],
+  "declaredDependencySymlinks": []
+}

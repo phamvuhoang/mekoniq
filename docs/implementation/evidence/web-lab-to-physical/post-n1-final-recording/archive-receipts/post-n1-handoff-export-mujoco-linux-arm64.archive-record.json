@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-handoff-export-mujoco-linux-arm64",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-mujoco-linux-arm64",
+  "archive": "post-n1-handoff-export-mujoco-linux-arm64.tar.gz",
+  "archiveBytes": 2585133,
+  "archiveSha256": "c5ab4bc1b31270094208f29a70f76f558f3d055a950b9b902657eb1d1c8d4a78",
+  "memberIndex": "post-n1-handoff-export-mujoco-linux-arm64.members.json",
+  "memberIndexSha256": "f6b3ef5fde6982e2b2aae3b5ca1b1dd7c086f6691493770f25c714667fcdacaa",
+  "memberCount": 243,
+  "memberBytes": 10883555,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.extract.json",
+  "safeExtractionReceiptSha256": "a6858efcd96f50f0ed55bd4daf5c5c9d6c1928ea07e21a70f39637e689e5e176",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-mujoco-linux-arm64",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

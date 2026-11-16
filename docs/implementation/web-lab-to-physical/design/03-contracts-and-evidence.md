@@ -1,5 +1,7 @@
 # Contracts, đo lường và bằng chứng cho R2b/R3
 
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
+
 **Trạng thái:** tài liệu thiết kế có cập nhật implementation ngày 14/11/2026. `LoadProfileV1` và `PhysicsEvidenceV1` đã được triển khai trong B01–B04. `LabWorldSceneV1`, `WorldEvidenceV1` và world ports đã có trong B05, qua review tại commit `9f68476`. B06 đã qua review tại Source `0624b5a` / Lab `4fabc5a`; B07a web replay package đã qua review tại Source `5e09a48` / Lab `be01048`; B07b UI/live display đang triển khai. Semantic study và contract R3 vẫn thuộc các bước tiếp theo nếu chưa có ghi chú riêng. JSON Schema/code đã version là authority cho tên và shape thực tế; không sửa generated types hoặc file sync của Lab bằng tay.
 
 ## 1. Identity và tương thích

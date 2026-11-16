@@ -1,0 +1,26 @@
+# Current correction and deferred dispositions
+
+The historical whole-branch, consolidated correction, scoped review, bounded N1 correction and follow-up review are retained at their explicit tuples/scopes through the [current readable map](retention/current-readable-location-map.json). The [whole literal rulings](retention/rulings-whole-lines.md) preserve the exception, its cost, intentional duplicates and the exact navigation boundary. Subsequent current capture and four mock assertion failures remain unresolved; review completion does not mean all quality gates or issues closed. Earlier deferred findings remain in the [complete original ledger](../retention/sdd/deferred-findings.md); new current ledger bytes are mapped without rewriting the old snapshot.
+
+| Finding | Actual disposition |
+|---|---|
+| I1 shared-cell display/control | Immutable paired committed world publication, received-endpoint interpolation and priority control at existing tick/durability boundaries were reviewed. The new capture still fails three coherence predicates; no full live performance qualification is inferred. |
+| I2 reclaim authority | Exact session expiry/revocation is rechecked after each await, with persisted safety/epoch ordering. Reviewed deterministic cases are retained; no real host/device authorization claim. |
+| I3 physical table/result provenance | Exact two-file physical evidence selector and per-file result validation were corrected. Generic cloud payload remains required in regression. Targeted current row and normal full recorder are separate actual runs. |
+| I4 capture duration/coherence | Full active wall duration is separate from draw-bearing RAF slices; cadence, source progression, correlation and gaps stay independent unchanged gates. Current raw capture fails three predicates and remains failed. |
+| N1 repeated shared-world control receipt | The bounded fix separates authorized receipt lookup from a new control start. Same reviewer addressed N1 with no new scoped breakage. Earlier probe/failures and the exception/cost remain preserved. |
+| Unchanged navigation admission | Existing test explicitly observes a cached control affecting a later two-tick IR-SIM batch. Unchanged and out of N1 scope; do not claim platform-wide replay repair. |
+| Current capture | Three unchanged reader failures remain unresolved; bounded persistence/clock observations are follow-up pointers, not a cause proof or correction. |
+| Current browser invocation evidence | The functional closed case passed, but public artifact readback rejects producer argv with explicit --output against exact expected argv without it. Original args/hash remain unchanged; not an accepted evidence bundle. |
+| Current complete mock | Four actual Source assertions failed (two bounded child-output tests, two native-provider transport-double tests); full mock guard failed. No flaky/pass reclassification or timing relaxation. |
+| Current R1 journey/lineage | Mode badge remained not_run after Run, while the separate fleet passed. R1 INT11/REG01 failed, gates G-INT2/G-REG1 not_run; R1.1 and later inputs preserve genuine refusals/missing lineage. No underlying browser admission cause assigned. |
+| Missing journey failure attachments | PNG and error-context absent at first inspection after internal default reuse; after-whole-recorder preservation missed them. Exact references and unknown bytes/hash gap retained. Six pre-Run images are not replacements; no rerun/reconstruction. |
+| M1–M4 | Negative-zero native normalization, oversized PUMA traces, untouched negative-fixture precision and inherited malformed JUnit remain deferred. JSON/process receipts support current results; no XML repair or broad native refactor was added. |
+| R2a/regression admission | Current R2a admission refused and produced no candidate. Independent passing rows do not synthesize a partial candidate; failed upstream guards, skipped scopes and owned-service prerequisites retain their actual boundaries. |
+| WEB05/WEB06 | Container/image and assigned HTTPS prerequisites remain separate, unavailable/unassigned; no repeated probe, provisioning or deployment. |
+
+For xArm, assign Ubuntu 24.04 / ROS 2 Jazzy / Gazebo Harmonic, then implement/admit the actual adapter, native observer, TF/UUID and DEPSEC provenance. Collect restart recovery, planning and G2 contact evidence on that exact host/profile; check arm64 adapter availability separately. A Linux machine alone does not produce those missing proofs.
+
+For a custom arm, keep the PUMA reference distinct from the future physical model. Assign the Debian 12 / LinuxCNC profile and produce controller-clock/synchrony, joint/cartesian, terminal trust and ALG04 traces; then bind the actual machine geometry, limits, calibration, stop/E-stop and supervised commissioning evidence. Do not substitute xArm/ROS results or the reference PUMA model for an unselected custom robot.
+
+Six prepared packages have no image/native record, `nativeReady:false` and `accepted:false`. Security/licensing/toolchain contracts, calibration and human signatures remain required before native/physical acceptance. Lab has no robot-control route. No extra engineering review/fix wave, hardware action, deployment, spend or outreach is part of this publication.

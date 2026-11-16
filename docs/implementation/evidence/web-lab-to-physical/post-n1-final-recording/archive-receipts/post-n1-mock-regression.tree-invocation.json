@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-mock-regression",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/mock-regression"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-mock-regression\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/mock-regression\", \"archive\": \"post-n1-mock-regression.tar.gz\", \"archiveBytes\": 9652069, \"archiveSha256\": \"0e6a140a6df365c243eafb2145fdf41a01eb1a911d8bb17559ab161782168466\", \"memberIndex\": \"post-n1-mock-regression.members.json\", \"memberIndexSha256\": \"19242dcb8b54352eaa34f7e68e6d899df2a3055966e7452f11c84a0876cc1341\", \"memberCount\": 116, \"memberBytes\": 11183819, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-mock-regression.extract.json\", \"safeExtractionReceiptSha256\": \"0d5967623a474c6ebae1ae4f18373270c30248fe6d90b82f56c3bd09075abda5\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-mock-regression\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-mock-regression\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-mock-regression\", \"verifiedFiles\": 116, \"verifiedBytes\": 11183819}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:04.496710+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-r3-mujoco-linux-amd64-prepared",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-amd64-prepared"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-r3-mujoco-linux-amd64-prepared\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-amd64-prepared\", \"archive\": \"post-n1-r3-mujoco-linux-amd64-prepared.tar.gz\", \"archiveBytes\": 2599809, \"archiveSha256\": \"301b6c586c37dee262f150c53f1277705999079c409a6c5810bb8c65def7a214\", \"memberIndex\": \"post-n1-r3-mujoco-linux-amd64-prepared.members.json\", \"memberIndexSha256\": \"a5dda88ab5c3ef456393d68cf84bef5ef61147a423f999c6430ef5f22c7377bf\", \"memberCount\": 244, \"memberBytes\": 10940111, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.extract.json\", \"safeExtractionReceiptSha256\": \"4bdd2e05e16b3fa60f0087f5150aa9cd70470cc23f4c00cf75c30c355204714f\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-mujoco-linux-amd64-prepared\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-r3-mujoco-linux-amd64-prepared\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-mujoco-linux-amd64-prepared\", \"verifiedFiles\": 244, \"verifiedBytes\": 10940111}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:34.252827+00:00"
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:13:30.615456+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-post-n1-phase-metadata",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-phase-metadata.tar.gz",
+  "archiveSha256": "8395bb20a608185cf59f6685ecbbbd97a952521a53f74d5f1ec8a0f4925ba0e4",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-phase-metadata.members.json",
+  "memberIndexSha256": "3dac6c0c87f03d869cce62ed833c77adc8580340587001d3bb71c5cb8b703b3e",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-phase-metadata",
+  "verifiedFiles": 288,
+  "verifiedBytes": 14166476,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

@@ -1,0 +1,31 @@
+{
+  "at": "2026-11-16T04:00:04.862613+00:00",
+  "index": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/artifact-index.json",
+    "bytes": 726024,
+    "sha256": "fcde7b16de072f66ec6214664fa213940ecedba4800a2a519051780895eca12a"
+  },
+  "files": 3512,
+  "bytes": 501064898,
+  "exactRegularFileSet": true,
+  "receiptsChecked": 75,
+  "settlement": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3/final-settlement.json",
+    "bytes": 8693,
+    "sha256": "6e5370add637ad518ca79a80bd6d8d692043a36224bc767fe49bf120baba9224"
+  },
+  "heads": {
+    "source": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+    "lab": "fded4b26638eb412f3285d5fe37d415108f58f19"
+  },
+  "statuses": {
+    "source": "",
+    "lab": ""
+  },
+  "report": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-correction-report.md",
+    "bytes": 57452,
+    "sha256": "d39e858f16b5b67f5fe2d11ebdc2cbaf3ba61b522633042f9bf467aac6788da3"
+  },
+  "issues": []
+}

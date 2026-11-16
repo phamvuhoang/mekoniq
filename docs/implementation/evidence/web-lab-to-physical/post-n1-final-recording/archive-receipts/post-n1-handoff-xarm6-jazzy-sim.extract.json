@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:57.719247+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-xarm6-jazzy-sim",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-xarm6-jazzy-sim.tar.gz",
+  "archiveSha256": "03931a7b822436a43c4bafb2e7ac9e0eeb41f36abb3adde61a37577929a4fec4",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-xarm6-jazzy-sim.members.json",
+  "memberIndexSha256": "4e89415e9b42bb8bdd9f7981e382f840b5bf2e5837fc2e910b8547b1e56a55e9",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-xarm6-jazzy-sim",
+  "verifiedFiles": 243,
+  "verifiedBytes": 10883986,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

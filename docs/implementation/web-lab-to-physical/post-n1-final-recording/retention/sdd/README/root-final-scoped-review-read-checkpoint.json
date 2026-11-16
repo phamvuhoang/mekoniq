@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-16T04:08:39.837383+00:00",
+  "fullyRead": {
+    "path": ".superpowers/sdd/README/task-final-scoped-review.md",
+    "bytes": 22575,
+    "sha256": "098a5e95587f55995143cb5e722f44092c3b33d76c232fe40e7fc9d3d65d23f3"
+  },
+  "dispositionAndNewBrief": [
+    {
+      "path": ".superpowers/sdd/README/final-scoped-review-dispositions.md",
+      "bytes": 3233,
+      "sha256": "9541340785f67783d845ae2ba7dc366e68167e44bec53208422aea6c42629bfe"
+    },
+    {
+      "path": ".superpowers/sdd/README/task-final-n1-correction-brief.md",
+      "bytes": 4502,
+      "sha256": "4cf74d962dc62bf1c83667d8c7523622972750a49a60b95fda99281c8643fcea"
+    }
+  ]
+}

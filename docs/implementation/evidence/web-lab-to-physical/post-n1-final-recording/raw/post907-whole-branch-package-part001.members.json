@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:07:38.065923+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part001",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part001.tar.gz",
+  "archiveBytes": 2216939,
+  "archiveSha256": "5fb1976a8c261a0bf9fa039abd53483d381990ca6a151217ab3befe0f3a78d69",
+  "memberCount": 13,
+  "memberBytes": 10434701,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "lab-commits.txt",
+      "bytes": 18425,
+      "sha256": "4602081686be180c53c6c255b9b6bb348c116b1acff3c29a1f4796719fcfb83d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795270330095403
+    },
+    {
+      "path": "lab-implementation-and-build-inputs.diff",
+      "bytes": 1345162,
+      "sha256": "5c3b4d3e94e0ff446460ea5d3aefd0e4559164e16c36ba8ac15761664d735432",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380890273366
+    },
+    {
+      "path": "lab-maintained-documents.diff",
+      "bytes": 28571,
+      "sha256": "f87393db726f4be1a2385deaf0c69a9f0b211a2a54eb3598013b37ea6338b7ae",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380889642542
+    },
+    {
+      "path": "lab-stat.txt",
+      "bytes": 16515,
+      "sha256": "85bc28ffaa932e7637a6dd660488191f7c3e4d132908efd566c161f79afaa176",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795270408319932
+    },
+    {
+      "path": "lab-tests-and-fixtures.diff",
+      "bytes": 156490,
+      "sha256": "952f40ff031c3598f453f7df0e91bfc55ddf4d6006e35bab8683af204fb1e158",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380894567260
+    },
+    {
+      "path": "lab.diff",
+      "bytes": 1530223,
+      "sha256": "c187d11d64659463259320a48bd13ca7182f92975ae986e3106b9db16fcacb81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795270307496326
+    },
+    {
+      "path": "package-index.json",
+      "bytes": 1075632,
+      "sha256": "154b9b913fdcd80f5022738a4aadd0c6c01c25310bc86fea8361cc47c8b075e2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795270470363664
+    },
+    {
+      "path": "review-pass-index.json",
+      "bytes": 1681574,
+      "sha256": "7597daabbf47e77a27eac2b5f2afda3a8bec5dbb172a88c51596a86b9dfdad81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380899258814
+    },
+    {
+      "path": "source-commits.txt",
+      "bytes": 21268,
+      "sha256": "7bc8502417767d70dbd61a4b7ad871604468edcefd6c63059e7b8de6d293bc5c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795266645295308
+    },
+    {
+      "path": "source-implementation-and-build-inputs.diff",
+      "bytes": 2462859,
+      "sha256": "414aaa8f49568e2509ef5bb78c34d63638b95f0ff0e0db9f53965bca6a1b5286",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380859024712
+    },
+    {
+      "path": "source-maintained-documents.diff",
+      "bytes": 1133021,
+      "sha256": "d32cf14e130929a1fcafef5a889ebbbe5a340d55258a27c8e963e32a481c9ef6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380853122384
+    },
+    {
+      "path": "source-stat.txt",
+      "bytes": 124980,
+      "sha256": "2bb7bd25eb3a4d4d562a0d0ee746f60bfe27edd2dbcf567c6e25fd223c3c8fc5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795269627469283
+    },
+    {
+      "path": "source-tests-and-fixtures.diff",
+      "bytes": 839981,
+      "sha256": "8d7bca18deee6ce3208cbf520c7ba826b61568c7ef20cde9bf3ded6de9e634c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794795380873753365
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:08:30.596679+00:00",
+  "id": "post-n1-r1-default-results-copy",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-copy",
+  "originalInventory": {
+    "files": [
+      {
+        "path": ".last-run.json",
+        "bytes": 45,
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+        "mode": "0o644",
+        "mtimeNs": 1794811403194092872
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-r1-default-results-copy",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-copy",
+      "archive": "post-n1-r1-default-results-copy.tar.gz",
+      "archiveBytes": 153,
+      "archiveSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "memberIndex": "post-n1-r1-default-results-copy.members.json",
+      "memberIndexSha256": "87257d6c88d1d65a290251d0675f3ea1955a9ec9f80ad8e9eded20b07d83262b",
+      "memberCount": 1,
+      "memberBytes": 45,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-default-results-copy.extract.json",
+      "safeExtractionReceiptSha256": "554498d02f5d758fb0919950e007791c8903c29023d9ce66b2298c3812fe5c1d",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-default-results-copy",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-default-results-copy",
+  "verifiedFiles": 1,
+  "verifiedBytes": 45,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

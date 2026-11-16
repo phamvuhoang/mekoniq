@@ -1,0 +1,1485 @@
+{
+  "at": "2026-11-16T07:14:58.313358+00:00",
+  "scope": "All indexed public archives in this settled staging snapshot: streaming archive bytes/member integrity, exact safe name/type/neutral metadata, original source bytes/modes/mtimes, extracted bytes/modes/directories, own extraction receipt bindings. No source engine or extraction was executed.",
+  "limits": "Explicitly excluded private originals and descriptor-only symlink dependencies are not archive members. This verifies bytes and extraction, not semantic qualification or remote deployment.",
+  "archives": [
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part001.members.json",
+        "bytes": 55570,
+        "sha256": "ae851d1f684e833888c7d6f05c03a3eda0f5f996854a71be06f6f6692fd0aa80"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part001.tar.gz",
+        "bytes": 16892430,
+        "sha256": "8354716c9b33c6dead228e682f1d17f586c17232da39da664055bdbd04bbcabe"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part001.extract.json",
+        "bytes": 1153,
+        "sha256": "f145816db98ccb78391f2519e26236f9e1c27d8b55165735bd767aa8518c2379"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part001",
+      "verifiedFiles": 188,
+      "verifiedBytes": 65892717,
+      "verifiedDirectories": 56,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part002.members.json",
+        "bytes": 46607,
+        "sha256": "2b60ef5f325bad9d40d92887738b84ed86e940f4895eea3732117ea00f7a0420"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part002.tar.gz",
+        "bytes": 27841584,
+        "sha256": "0b26aff32e4d92b899d75ac8e3deb5dd094a085cddc123b3448fcbba74c23b96"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part002.extract.json",
+        "bytes": 1153,
+        "sha256": "5c5ec77dcec78adbb53180e1d0f1065e76626dd29cde4a85e573faf3016080b3"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part002",
+      "verifiedFiles": 155,
+      "verifiedBytes": 66007208,
+      "verifiedDirectories": 56,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part003.members.json",
+        "bytes": 39353,
+        "sha256": "1d1defccb0a95cf828e6bc16f79349349d230db0cd6d8704d4567ff8b27bb6f1"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part003.tar.gz",
+        "bytes": 19143047,
+        "sha256": "19f1db77dece95b2b4b907941140cef738604a7335c72df7223defc0be7f49d9"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-cell-campaign-part003.extract.json",
+        "bytes": 1153,
+        "sha256": "e9893f6901cc7ef769b51acdef7cebf97561673c0cb7fd8be31530a423b2f2fd"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part003",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-cell-campaign-part003",
+      "verifiedFiles": 129,
+      "verifiedBytes": 58086493,
+      "verifiedDirectories": 56,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-engineering-amd64.members.json",
+        "bytes": 68663,
+        "sha256": "1aff25f0ae506041f3349b97647394b1d7487bd5dd30cf09b7b32befd5f7405b"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-engineering-amd64.tar.gz",
+        "bytes": 2584409,
+        "sha256": "c4e03a321ee693962e502dc3720c2bc6c6568e188265754faa92d020c4874ae8"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-engineering-amd64.extract.json",
+        "bytes": 1128,
+        "sha256": "62cef73a6dd64db8985906ccc85ab85bd84c74b7f7d6e37fff1b8e67931efa4c"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-amd64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-engineering-amd64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10869301,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-engineering-arm64.members.json",
+        "bytes": 68663,
+        "sha256": "7bc326f14be60c5238e12b8d89694ccdc0d2cca844a5396b188e989ff1738aa6"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-engineering-arm64.tar.gz",
+        "bytes": 2584410,
+        "sha256": "b609cfee608242b3603914f369e89988c3047d874a4e199d6d06b872f5ff1af0"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-engineering-arm64.extract.json",
+        "bytes": 1128,
+        "sha256": "89f1252a94605e075cfb529c9fc81bd2088890ee26e07ae27fd4c7eedd3e93ab"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-arm64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-engineering-arm64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10869301,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-amd64.members.json",
+        "bytes": 68677,
+        "sha256": "aabb651343469b3efcd2dbc180dfb10269bc10234c968ade33192f26c7fa233b"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-amd64.tar.gz",
+        "bytes": 2584374,
+        "sha256": "b22e4c3e8fa8c65a13b5e569b36c655d09eef51ad5f34b300ea8f493b9fc3884"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-engineering-amd64.extract.json",
+        "bytes": 1156,
+        "sha256": "c59a090a178e4fbacc58420d2b3a31dea8e1ef089d439ee1a392aafb840eb33a"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-amd64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-engineering-amd64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10869301,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-arm64.members.json",
+        "bytes": 68677,
+        "sha256": "b17f6ea6bc0cc3d8c2c75f559fc5e4e1e923e84975861a335f680b23f95a5231"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-arm64.tar.gz",
+        "bytes": 2584391,
+        "sha256": "14d6239f210ad0a1540a9b6e0e9db9d26eb63ab24e3d2f55b2b9010abbd50626"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-engineering-arm64.extract.json",
+        "bytes": 1156,
+        "sha256": "ff3b9e50c8875f3c8944aeb4b4378b3a328f30d6b4c397e25da15381f6f94e19"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-arm64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-engineering-arm64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10869301,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-mujoco-linux-amd64.members.json",
+        "bytes": 68681,
+        "sha256": "4de02caae027512320a346c38159e3e38123014760824033af97f1444c56e422"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-mujoco-linux-amd64.tar.gz",
+        "bytes": 2585142,
+        "sha256": "e1602fe16dae1efd37ae8296d1924a216d56fff724dae51cc0a1d87a0d90b818"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-mujoco-linux-amd64.extract.json",
+        "bytes": 1160,
+        "sha256": "73b3d0002472712ac44afb2ceac42d7fc03352a9312269e02641ca7a9c0f28df"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-mujoco-linux-amd64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-mujoco-linux-amd64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883555,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-mujoco-linux-arm64.members.json",
+        "bytes": 68681,
+        "sha256": "f6b3ef5fde6982e2b2aae3b5ca1b1dd7c086f6691493770f25c714667fcdacaa"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-mujoco-linux-arm64.tar.gz",
+        "bytes": 2585133,
+        "sha256": "c5ab4bc1b31270094208f29a70f76f558f3d055a950b9b902657eb1d1c8d4a78"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-mujoco-linux-arm64.extract.json",
+        "bytes": 1160,
+        "sha256": "a6858efcd96f50f0ed55bd4daf5c5c9d6c1928ea07e21a70f39637e689e5e176"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-mujoco-linux-arm64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-mujoco-linux-arm64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883555,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-puma560-linuxcnc-sim.members.json",
+        "bytes": 110018,
+        "sha256": "fa9e121c0e807a0452249b9332069b0c1e947e2c880b9a6599ff399df18b28d9"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-puma560-linuxcnc-sim.tar.gz",
+        "bytes": 2764276,
+        "sha256": "18444cc30fbcbfde1005c8943f4065b43d175e0a9b610590b9089d23c060c061"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.extract.json",
+        "bytes": 1168,
+        "sha256": "716531c466facfb51c72357a2c2354cc67ffc543a0a99cac7bca9d9101f8fd03"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-puma560-linuxcnc-sim",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-puma560-linuxcnc-sim",
+      "verifiedFiles": 387,
+      "verifiedBytes": 11617970,
+      "verifiedDirectories": 87,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-xarm6-jazzy-sim.members.json",
+        "bytes": 68675,
+        "sha256": "5be089c822976add0d34b8af1654d3639d43de1b2f23c7b2bc96dca71e6ce163"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-xarm6-jazzy-sim.tar.gz",
+        "bytes": 2585198,
+        "sha256": "fdf8e464673e5d95b28e0ea2184fcf0dc1cadd994852daf4684c7c04f230de06"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-xarm6-jazzy-sim.extract.json",
+        "bytes": 1148,
+        "sha256": "79362b02fc9f9291ad22e2b0680f8510c11e99dae188fb850028d703d9a08b9d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-xarm6-jazzy-sim",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-xarm6-jazzy-sim",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883986,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-mujoco-linux-amd64.members.json",
+        "bytes": 68667,
+        "sha256": "5b23969cfeb127b660ee4e5245331314efe26dfa314550db1da9437d6345fc39"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-mujoco-linux-amd64.tar.gz",
+        "bytes": 2585157,
+        "sha256": "48795627940bbce4b1992f75a11ab5d47a95b01518973348a444525fa5135804"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-mujoco-linux-amd64.extract.json",
+        "bytes": 1132,
+        "sha256": "28d9c4c37d4500e311092df79ec8b4c3e790efd1517615dd73faab70d937219f"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-mujoco-linux-amd64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-mujoco-linux-amd64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883555,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-mujoco-linux-arm64.members.json",
+        "bytes": 68667,
+        "sha256": "6eda5a57d4a7f9ef991e3db5d44b796586a938134a00e1b2af120226781bdfa6"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-mujoco-linux-arm64.tar.gz",
+        "bytes": 2585155,
+        "sha256": "70680799dd9e7fc79d7de95510d1d510ae5a85db20e84629138587bf8dccd6ba"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-mujoco-linux-arm64.extract.json",
+        "bytes": 1132,
+        "sha256": "78d805250ad2ea1b5a9dea9f750b9bd4fc8670cba1c0cfc18b8bd5399475ef28"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-mujoco-linux-arm64",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-mujoco-linux-arm64",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883555,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-puma560-linuxcnc-sim.members.json",
+        "bytes": 110004,
+        "sha256": "dbf4368ca4ad372bb39bf5156c27cbfca30729a2d14d4011302a70a7701da18f"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-puma560-linuxcnc-sim.tar.gz",
+        "bytes": 2764327,
+        "sha256": "01cb80abd576415a6871e1d28194b90c81819ffb849e538c08179a57897e526d"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.extract.json",
+        "bytes": 1140,
+        "sha256": "af8f1ef27cf5a2417ebcf0b64cb3443898643ba6adb6464ba4813ce076758876"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-puma560-linuxcnc-sim",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-puma560-linuxcnc-sim",
+      "verifiedFiles": 387,
+      "verifiedBytes": 11617970,
+      "verifiedDirectories": 87,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-xarm6-jazzy-sim.members.json",
+        "bytes": 68661,
+        "sha256": "4e89415e9b42bb8bdd9f7981e382f840b5bf2e5837fc2e910b8547b1e56a55e9"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-xarm6-jazzy-sim.tar.gz",
+        "bytes": 2585227,
+        "sha256": "03931a7b822436a43c4bafb2e7ac9e0eeb41f36abb3adde61a37577929a4fec4"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.extract.json",
+        "bytes": 1120,
+        "sha256": "2d19d8520522f37feb400287b188442301c430fffad3a5ecb0a7a622a914bbaf"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-xarm6-jazzy-sim",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-xarm6-jazzy-sim",
+      "verifiedFiles": 243,
+      "verifiedBytes": 10883986,
+      "verifiedDirectories": 34,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-installed-runtime.members.json",
+        "bytes": 16714,
+        "sha256": "a9007a4157911fdfd8ed542b1fa4a3c99242c1f1d32946a8793fe9143c675ed8"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-installed-runtime.tar.gz",
+        "bytes": 654830,
+        "sha256": "c8dd0c4becb6a94c938569f954985b080e704c1b960bdf28136f00a030ddc8c7"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-installed-runtime.extract.json",
+        "bytes": 1150,
+        "sha256": "46c70e84290839e7cf16de33a4d945f9af6fb935d5deaf5e59545ff32ca178a1"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/.runtime/73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-installed-runtime",
+      "verifiedFiles": 60,
+      "verifiedBytes": 3195087,
+      "verifiedDirectories": 1,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-copy.members.json",
+        "bytes": 2265,
+        "sha256": "2367806998b03ad51968add395c08c47c1738c438be8477956e16386773ffabd"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-copy.tar.gz",
+        "bytes": 153,
+        "sha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-default-results-copy.extract.json",
+        "bytes": 1124,
+        "sha256": "3119e0489479cdd2b8c6d40987651a882ab99ac9ec9eea0352d374408dc5d2e0"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-copy",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-default-results-copy",
+      "verifiedFiles": 1,
+      "verifiedBytes": 45,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-original.members.json",
+        "bytes": 2273,
+        "sha256": "e32836fc773b3e4677720944b3af4bb24c5e616b5966ab844765809dc31f426f"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-default-results-original.tar.gz",
+        "bytes": 153,
+        "sha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-default-results-original.extract.json",
+        "bytes": 1140,
+        "sha256": "cf3871d9929b61e9d872867ae6ba732cfa77ee9f56ed8af0d72dd4fb65f92d06"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-original",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-default-results-original",
+      "verifiedFiles": 1,
+      "verifiedBytes": 45,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-part001.members.json",
+        "bytes": 479903,
+        "sha256": "359df105cd368f673645f704042a2ca0ba0b7d245200994e10d07013c79ee72e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-part001.tar.gz",
+        "bytes": 39780595,
+        "sha256": "7f6909efd48d7c2d76e200d377d18a3d897b5796ce8a7e5b9b055ae5aceaec12"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-part001.extract.json",
+        "bytes": 1122,
+        "sha256": "99d1318878e501a52cdc29336a0200bc5e40d835028c2c3d06a6138bee2a0f9d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-irsim-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-part001",
+      "verifiedFiles": 1562,
+      "verifiedBytes": 66594203,
+      "verifiedDirectories": 172,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-part002.members.json",
+        "bytes": 22504,
+        "sha256": "665ac479048cbd3d503170276c7e82dd30f3e3f963c2891258fb4e50abf726de"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-irsim-part002.tar.gz",
+        "bytes": 3144694,
+        "sha256": "b7bd266cb0aba98f1da2daa720327e531d841eea8fb8224d3f572ebfd5a3b6de"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-part002.extract.json",
+        "bytes": 1119,
+        "sha256": "564323f56dd32631fd0eb1350f3f99bf6502ffe0f0c1b296490d043b9e5587b0"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-irsim-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-part002",
+      "verifiedFiles": 41,
+      "verifiedBytes": 3433342,
+      "verifiedDirectories": 172,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-loose.members.json",
+        "bytes": 3667,
+        "sha256": "8950c9436afbe63ba1f304d0be682dbe90e750daa74f9af527d01e771892c351"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-loose.tar.gz",
+        "bytes": 7508,
+        "sha256": "37d113306883f4a35b18950f5ec29466ec0f3d63a8d537c826ff05116927936d"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-loose.extract.json",
+        "bytes": 1077,
+        "sha256": "c9dc3c24f18f8c038dcbe7c73680af914b9b017d993300ece07c952e83e7f770"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/new-recording-loose",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-loose",
+      "verifiedFiles": 7,
+      "verifiedBytes": 47379,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-measured-lab-dist.members.json",
+        "bytes": 56606,
+        "sha256": "32e7cfbf447600292fd80052cd60e76da15aa56a1d1bd444d848659bd204a1f7"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-measured-lab-dist.tar.gz",
+        "bytes": 21165138,
+        "sha256": "5af4f9a13c09da86487f6c1c7bd73e5097e48f0ec12128dbfd58698dfbc4a67b"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-measured-lab-dist.extract.json",
+        "bytes": 1083,
+        "sha256": "3aa4fd2ab1d6c87961c71dc56d83f6cd5e819dbdc9c77b9f4d8f6fe11169312a"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/dist",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-measured-lab-dist",
+      "verifiedFiles": 200,
+      "verifiedBytes": 36173473,
+      "verifiedDirectories": 25,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-mock-regression.members.json",
+        "bytes": 32504,
+        "sha256": "19242dcb8b54352eaa34f7e68e6d899df2a3055966e7452f11c84a0876cc1341"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-mock-regression.tar.gz",
+        "bytes": 9652069,
+        "sha256": "0e6a140a6df365c243eafb2145fdf41a01eb1a911d8bb17559ab161782168466"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-mock-regression.extract.json",
+        "bytes": 1088,
+        "sha256": "0d5967623a474c6ebae1ae4f18373270c30248fe6d90b82f56c3bd09075abda5"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/mock-regression",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-mock-regression",
+      "verifiedFiles": 116,
+      "verifiedBytes": 11183819,
+      "verifiedDirectories": 32,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-native-empty.members.json",
+        "bytes": 2013,
+        "sha256": "0770a10c254d8618d3e562f647700f72771f859d92ef72254b845066c1358eb4"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-native-empty.tar.gz",
+        "bytes": 45,
+        "sha256": "b94b4d079a0a84bdf416bc4a472ccff4775bb999858da78e854446f0d5221b84"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-native-empty.extract.json",
+        "bytes": 1067,
+        "sha256": "6c5b880c6acf6c226dcc0719fe048e65e5509fa6615e22cdee4e73aec0842f0b"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/native-empty",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-native-empty",
+      "verifiedFiles": 0,
+      "verifiedBytes": 0,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part001.members.json",
+        "bytes": 244236,
+        "sha256": "a719c69edadd76df06d76e864ee34adda9c15aa3755876fd06cfabd24ca106fb"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part001.tar.gz",
+        "bytes": 41547532,
+        "sha256": "470b7675d4c6b8fc96edf15235ad764703b6d83667d3cb442b1a17dda2787aed"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-payload-campaign-part001.extract.json",
+        "bytes": 1165,
+        "sha256": "b8348cc7729dd4c601ce1bb3cf0506cec2115286ba7cab4aa88e8b4d98ca7005"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-payload-campaign-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-payload-campaign-part001",
+      "verifiedFiles": 890,
+      "verifiedBytes": 66991246,
+      "verifiedDirectories": 190,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part002.members.json",
+        "bytes": 156723,
+        "sha256": "4e4c27ab5f56e51aa2cc206aadc26b4f7993d1595a30e44bc808b10ba6d31d2d"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part002.tar.gz",
+        "bytes": 30434510,
+        "sha256": "1ba98bc7ce6fa8a7b24664e9d4b0b8c94ea08b3c75b5a595fcc4f8e6fd818520"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-payload-campaign-part002.extract.json",
+        "bytes": 1165,
+        "sha256": "521b41151650ff6d2237ce4fad7555e3d51d5f8c2f80483ddeebac28c18b6076"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-payload-campaign-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-payload-campaign-part002",
+      "verifiedFiles": 563,
+      "verifiedBytes": 45441237,
+      "verifiedDirectories": 190,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-phase-metadata.members.json",
+        "bytes": 72562,
+        "sha256": "3dac6c0c87f03d869cce62ed833c77adc8580340587001d3bb71c5cb8b703b3e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-phase-metadata.tar.gz",
+        "bytes": 2065223,
+        "sha256": "8395bb20a608185cf59f6685ecbbbd97a952521a53f74d5f1ec8a0f4925ba0e4"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-phase-metadata.extract.json",
+        "bytes": 1117,
+        "sha256": "9ac5b5f21092ee47c28a8f3097959db7e9bc422c1310e40f17191aadfee689ed"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-post-n1-phase-metadata",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-phase-metadata",
+      "verifiedFiles": 288,
+      "verifiedBytes": 14166476,
+      "verifiedDirectories": 2,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-browser.members.json",
+        "bytes": 17479,
+        "sha256": "2370e834cea0b3fa7e1430e0f9c8f9aa76cd2bb721e5e4f1318e63de2a06faf5"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-browser.tar.gz",
+        "bytes": 5381264,
+        "sha256": "a09c832e762a00c512edfecd48d4d69574b47d0c4bcfe4e87de45bbd4f60f2fd"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-browser.extract.json",
+        "bytes": 1099,
+        "sha256": "846dd556a17f39dc4f556cb142630aac232c74631cdd2bc4a4c679192be6a326"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-browser",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-browser",
+      "verifiedFiles": 61,
+      "verifiedBytes": 14570182,
+      "verifiedDirectories": 6,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part001.members.json",
+        "bytes": 3701,
+        "sha256": "d38bcbf1ac8db45227e628488b143c54efb47c5ddd360bd3ee92839e9a94e92c"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part001.tar.gz",
+        "bytes": 6071974,
+        "sha256": "4ee5e3356ec676db9cf67b40f0dde73f26c6dd48c118ed560a6d709cfcc71625"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-performance-part001.extract.json",
+        "bytes": 1187,
+        "sha256": "32b4dadfc2a324376a8a0d89eadd7655c764597565184700eeac42cbbf5806a8"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-performance-part001",
+      "verifiedFiles": 7,
+      "verifiedBytes": 64855464,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part002.members.json",
+        "bytes": 4908,
+        "sha256": "a492722ea5817c0c8ec9bbdad1915017bbbd204f5f5d120343886447e4c61046"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-performance-part002.tar.gz",
+        "bytes": 7404393,
+        "sha256": "257df0d9e238cbdd7179ea380ca122d3309d4ebd7d0390a19a182d6e01ed1492"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-performance-part002.extract.json",
+        "bytes": 1188,
+        "sha256": "65773b5444f3e8b61125eb6f612e0fe07c69e521caee09928a914da4822a0487"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-performance-part002",
+      "verifiedFiles": 12,
+      "verifiedBytes": 19572225,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-replay-browser.members.json",
+        "bytes": 6854,
+        "sha256": "f599661f5641caf645499de5a4a70b4f3506b23bd7c3066708ea64198ef4e104"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-production-replay-browser.tar.gz",
+        "bytes": 5484547,
+        "sha256": "48c6395a8ca13adedd98ebc8762807935d41b6236cbb1e76a2877efaeb3fb8e5"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-replay-browser.extract.json",
+        "bytes": 1127,
+        "sha256": "ecffd8ac85ad32a31d7e93af4e20796e717074a087a01f022f9691862b964bca"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-replay-browser",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-replay-browser",
+      "verifiedFiles": 20,
+      "verifiedBytes": 10133577,
+      "verifiedDirectories": 4,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-default-results-copy.members.json",
+        "bytes": 2259,
+        "sha256": "87257d6c88d1d65a290251d0675f3ea1955a9ec9f80ad8e9eded20b07d83262b"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-default-results-copy.tar.gz",
+        "bytes": 153,
+        "sha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-default-results-copy.extract.json",
+        "bytes": 1112,
+        "sha256": "554498d02f5d758fb0919950e007791c8903c29023d9ce66b2298c3812fe5c1d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-copy",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-default-results-copy",
+      "verifiedFiles": 1,
+      "verifiedBytes": 45,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-default-results-original.members.json",
+        "bytes": 2267,
+        "sha256": "01840aceb3e4cf91e9f137cfec655634548380dee861717f9a88df775528180e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-default-results-original.tar.gz",
+        "bytes": 153,
+        "sha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-default-results-original.extract.json",
+        "bytes": 1128,
+        "sha256": "7d6460f098423d1c0960e8e2bbd3b5b7bea8e25cfd2c475b6ae8f1406b3be268"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-original",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-default-results-original",
+      "verifiedFiles": 1,
+      "verifiedBytes": 45,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part001.members.json",
+        "bytes": 475081,
+        "sha256": "a4533d8e6f4af31ef22e7f3f5e0ed4fa2f4f6e358dc89aef26491fa4c7d5699f"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part001.tar.gz",
+        "bytes": 42644296,
+        "sha256": "e70e473deffc8a57cf279e462296333918d05422b35af4bd96c8498b0eceaa1b"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-part001.extract.json",
+        "bytes": 1110,
+        "sha256": "818f4f70d9399be4395e62f80a78e4cab3099466032db4d7d4a2f150aaa885a3"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-r1-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-part001",
+      "verifiedFiles": 1545,
+      "verifiedBytes": 67028727,
+      "verifiedDirectories": 140,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part002.members.json",
+        "bytes": 312268,
+        "sha256": "be76fed51dd76c9cc3a7e795015094be8e91e3696ddf26025ab0008c9d6214f0"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part002.tar.gz",
+        "bytes": 39266686,
+        "sha256": "3b01a6a5083fe18227d34cc43245e5c6a8a80c18fd68bcaad8d1c377f70303e2"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-part002.extract.json",
+        "bytes": 1109,
+        "sha256": "fe72a55ba31e0e3ecc6b3f6e128363a78eecd8504b574f2a6a7c496dc9369a60"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-r1-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-part002",
+      "verifiedFiles": 993,
+      "verifiedBytes": 67088696,
+      "verifiedDirectories": 140,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part003.members.json",
+        "bytes": 19696,
+        "sha256": "84d8dd59d68eb348daf17f8a8cb35e21eb7e407ee6763d9eb762955f75d3a562"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r1-part003.tar.gz",
+        "bytes": 3041007,
+        "sha256": "8c9875bf7d5162c70736b8eb93ba34fc490c604a02e00af485cce8197e40ed52"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r1-part003.extract.json",
+        "bytes": 1107,
+        "sha256": "fe9110c773fc72460f9e9130545b4b7cbcf16466f07614ff837cacc9c30dabb9"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-r1-part003",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r1-part003",
+      "verifiedFiles": 38,
+      "verifiedBytes": 3339269,
+      "verifiedDirectories": 140,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r2a-supplemental-current-gui.members.json",
+        "bytes": 40315,
+        "sha256": "792c7847d0e5d402d07f39fc9f6c88c02ccbe23b82c99898e2e3d7bb2821cb11"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r2a-supplemental-current-gui.tar.gz",
+        "bytes": 17755811,
+        "sha256": "435a82262ccd1c577a6e679c3256016766f678a2dd6280d4234f136010623388"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r2a-supplemental-current-gui.extract.json",
+        "bytes": 1140,
+        "sha256": "9b9aac2e5be68b061a3bdde7c6fd2f0b4320b87181c47d04f5bd8c81cafed053"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2a-supplemental-current-gui",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r2a-supplemental-current-gui",
+      "verifiedFiles": 139,
+      "verifiedBytes": 18605194,
+      "verifiedDirectories": 58,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r2b.members.json",
+        "bytes": 2026,
+        "sha256": "0d2c8b45c0bb672321ada3c706146d5fda740d79bf220a41cafed8932eca30ff"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r2b.tar.gz",
+        "bytes": 106,
+        "sha256": "56db4bbfb1dbe70578a61d32934cc1713ac5fa4cbbf151bfd5c7f528977d14ad"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r2b.extract.json",
+        "bytes": 1031,
+        "sha256": "4b138f329b96e81b0375e039988219d9831c5598b16e3588e8e7a14e1b0f1b64"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2b",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r2b",
+      "verifiedFiles": 0,
+      "verifiedBytes": 0,
+      "verifiedDirectories": 2,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-amd64-prepared.members.json",
+        "bytes": 73110,
+        "sha256": "0432a9909be5c23fe49cef07539fc8a7b7350f680b86b6073d9462e64c30054e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-amd64-prepared.tar.gz",
+        "bytes": 2599448,
+        "sha256": "9679ab5896eb47c3e7fcfd7c9f94749c393cbcc742cb0f739328fa7462c468f4"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-engineering-amd64-prepared.extract.json",
+        "bytes": 1144,
+        "sha256": "ca0e3507fbb37e205d1ccf1c604488cebc55b3869273c3e48c9feeeb0b2db1b3"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-amd64-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-engineering-amd64-prepared",
+      "verifiedFiles": 244,
+      "verifiedBytes": 10928881,
+      "verifiedDirectories": 37,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-arm64-prepared.members.json",
+        "bytes": 73110,
+        "sha256": "11ed5c214dcaa7c2fdc023b303874efdb11bbd38a3fb721fc275b0f4e05928d1"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-engineering-arm64-prepared.tar.gz",
+        "bytes": 2599450,
+        "sha256": "0203321fc69173bc2e0e35202b0137d6e023f634dac9dbbdf2f6862a3e123d4e"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-engineering-arm64-prepared.extract.json",
+        "bytes": 1144,
+        "sha256": "514279fd1d41d810a99038b9e3a6cb311e24fb62b148269d57b7aa8e5d5cc7fa"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-arm64-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-engineering-arm64-prepared",
+      "verifiedFiles": 244,
+      "verifiedBytes": 10928881,
+      "verifiedDirectories": 37,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-amd64-prepared.members.json",
+        "bytes": 73114,
+        "sha256": "a5dda88ab5c3ef456393d68cf84bef5ef61147a423f999c6430ef5f22c7377bf"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-amd64-prepared.tar.gz",
+        "bytes": 2599809,
+        "sha256": "301b6c586c37dee262f150c53f1277705999079c409a6c5810bb8c65def7a214"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-mujoco-linux-amd64-prepared.extract.json",
+        "bytes": 1148,
+        "sha256": "4bdd2e05e16b3fa60f0087f5150aa9cd70470cc23f4c00cf75c30c355204714f"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-amd64-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-mujoco-linux-amd64-prepared",
+      "verifiedFiles": 244,
+      "verifiedBytes": 10940111,
+      "verifiedDirectories": 37,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-arm64-prepared.members.json",
+        "bytes": 73114,
+        "sha256": "7c3e4d7668a0bb373be36a81a14f8e75d7034889c165a738b99ba46a19bebf8f"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-arm64-prepared.tar.gz",
+        "bytes": 2599819,
+        "sha256": "693f2b4fdd89b53689d0f8c836348b7978d736e473e9b2184f183d691b6b8aaa"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-mujoco-linux-arm64-prepared.extract.json",
+        "bytes": 1148,
+        "sha256": "e38cf36dd2861f4062699829912d80e93c17c8a2594eec859f664cfb867a1898"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-arm64-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-mujoco-linux-arm64-prepared",
+      "verifiedFiles": 244,
+      "verifiedBytes": 10940352,
+      "verifiedDirectories": 37,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.members.json",
+        "bytes": 117406,
+        "sha256": "2ac81835bbaf8d5acb4aa92967f229e08038469e45706fbe00f96c912cd758e8"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-puma560-linuxcnc-sim-prepared.tar.gz",
+        "bytes": 2787944,
+        "sha256": "eb014bb02f98e0ceabb916372d3063bcd874e05684600cc73dc8110feb5be79c"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.extract.json",
+        "bytes": 1156,
+        "sha256": "92f083966899b659126d0dce308209f146a063a7932947b63a35b17db40ed3d1"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-puma560-linuxcnc-sim-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-puma560-linuxcnc-sim-prepared",
+      "verifiedFiles": 388,
+      "verifiedBytes": 11707606,
+      "verifiedDirectories": 90,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-xarm6-jazzy-sim-prepared.members.json",
+        "bytes": 73108,
+        "sha256": "17d1c743ce1b48375fc83679cd8f5794a0ed03df7c4f8cffe4f0b504fae1cdf3"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-xarm6-jazzy-sim-prepared.tar.gz",
+        "bytes": 2600021,
+        "sha256": "33d76a6cce44da042b966f3846d056e8fba9fc26ac84341a915ead85072cea4f"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-xarm6-jazzy-sim-prepared.extract.json",
+        "bytes": 1136,
+        "sha256": "7e23e28ce44aa4b4d93379f64696ab0ba5e75803c2eddad9a3f59af367eec460"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-xarm6-jazzy-sim-prepared",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-xarm6-jazzy-sim-prepared",
+      "verifiedFiles": 244,
+      "verifiedBytes": 10942514,
+      "verifiedDirectories": 37,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study-process.members.json",
+        "bytes": 2692,
+        "sha256": "ba512a8b718edae46917262e1e7fa1d8bb9fbb13c6a064c21b859c0f15a4b914"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study-process.tar.gz",
+        "bytes": 1308,
+        "sha256": "b5af93188d519c39e2a659278683623480313616c4df58dcf51b03ce99afd9ae"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-semantic-study-process.extract.json",
+        "bytes": 1110,
+        "sha256": "42000f2c38a845a2c9ac86be8b6f94b8bb5367d5c827fbe19513314b1768ae3b"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study-process",
+      "verifiedFiles": 3,
+      "verifiedBytes": 3121,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study.members.json",
+        "bytes": 56853,
+        "sha256": "1f718fa7ca4ab5fa7f6a877473edc6cf1705b830151a5086719af9ac3b1836fd"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study.tar.gz",
+        "bytes": 13209190,
+        "sha256": "cd97c0eba9cc76537bbcb103e31e8548c6cde1292efd32a7ff51bb19f1b5278f"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-semantic-study.extract.json",
+        "bytes": 1084,
+        "sha256": "1c35fa033e4c6c1bfae72ca13cafb6c14f24dad9d68e5065c271ec6306ee5da7"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study",
+      "verifiedFiles": 210,
+      "verifiedBytes": 22299055,
+      "verifiedDirectories": 30,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-stock-launcher-web-active.members.json",
+        "bytes": 17720,
+        "sha256": "f869e184a3b261a962ea162e922e36e834e8645f1aae19a0be0f50ee11a6fac6"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-stock-launcher-web-active.tar.gz",
+        "bytes": 5356758,
+        "sha256": "d153adb7e101e92419e426fd421c1409f45745e7f38cfd86091eed748b63b13f"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-stock-launcher-web-active.extract.json",
+        "bytes": 1127,
+        "sha256": "2f01aeda06881752186941d100002a36ffbfb0b82874048ac8104dc302d909c5"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/stock-launcher-web-active",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-stock-launcher-web-active",
+      "verifiedFiles": 62,
+      "verifiedBytes": 14447348,
+      "verifiedDirectories": 7,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-web-record-part001.members.json",
+        "bytes": 19721,
+        "sha256": "e8bb23339d5604b9c72b04d067917acbe9b426f50f507525e06ef0f0fa6aecb6"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-web-record-part001.tar.gz",
+        "bytes": 8202498,
+        "sha256": "e006a5b1f9bcfe48221280662f633e4c2a31b1c2164ddb878989f75773c63133"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-web-record-part001.extract.json",
+        "bytes": 1140,
+        "sha256": "5dcf7baa9a56f63fb2c1fcb584f4ce3a6e0f56924b022189d334fa46ae157841"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-web-record-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-web-record-part001",
+      "verifiedFiles": 67,
+      "verifiedBytes": 42301200,
+      "verifiedDirectories": 7,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-web-record-part002.members.json",
+        "bytes": 6770,
+        "sha256": "d742ab35ed47c8e64171e76002793c15a405f9d1bb7b51c68d6108e139cf7cb6"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-web-record-part002.tar.gz",
+        "bytes": 10749428,
+        "sha256": "9dfd4dd51085862aff4fdcb8a28a0f627eaabaf99df5bf7bc2dab5e822d0de3c"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-web-record-part002.extract.json",
+        "bytes": 1140,
+        "sha256": "a85f3cfaf21275d88a151621e19b11c90f461d9a7ed947cf715b797c51dc2cf1"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-web-record-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-web-record-part002",
+      "verifiedFiles": 19,
+      "verifiedBytes": 56897864,
+      "verifiedDirectories": 7,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part001.members.json",
+        "bytes": 255421,
+        "sha256": "8fcaf5736c92a243b56c1b4a6205517a9757500448552fb71ea79aa73697ae53"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part001.tar.gz",
+        "bytes": 37207927,
+        "sha256": "a7779def6d6ede3cc4f0a50eb96945a00a2eb131fa2e2202f648450943fbb36e"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part001.extract.json",
+        "bytes": 1141,
+        "sha256": "0a8185263792acba5c4ec8079582e9b6e962e4767233bbb24799ea51103549f3"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part001",
+      "verifiedFiles": 807,
+      "verifiedBytes": 67052818,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part002.members.json",
+        "bytes": 235601,
+        "sha256": "b4b8e196ce9b0212a7f5078dfb22625b8b61d4281806801c209f3d4739e25b86"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part002.tar.gz",
+        "bytes": 40452771,
+        "sha256": "fe63f5f97f4a03cd522e7a1c0dab5ffc83f73739890467ae334ecc97dc48b29d"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part002.extract.json",
+        "bytes": 1141,
+        "sha256": "d82d7ac70d5129aae55e67cbbc1514d86c68b62f8f1b16ecc06146faec10ff59"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part002",
+      "verifiedFiles": 735,
+      "verifiedBytes": 60943723,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part003.members.json",
+        "bytes": 269568,
+        "sha256": "a1e30490b878e4e7e9260565650d18d5821b25640078f0d5b2e5be2711bce409"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part003.tar.gz",
+        "bytes": 40075439,
+        "sha256": "f4d7b7657cfe0e0e7b6dccd8944be8b78fe871b727a20858a27f6e033eecc799"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part003.extract.json",
+        "bytes": 1141,
+        "sha256": "7e7d8994d495e31143f57f43d6a8bbbfc74038968b1517c9cbe5488d6201a457"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part003",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part003",
+      "verifiedFiles": 887,
+      "verifiedBytes": 67029480,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.members.json",
+        "bytes": 216076,
+        "sha256": "363d3fcd67b9a00ff9fbb558999257055922af2c0926974d2fcd6d0b1910647e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part004.tar.gz",
+        "bytes": 37320142,
+        "sha256": "7cbe6c82bba38fa9e4965a67e9d678dedaff19da643a551c3685e909581b7ccf"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part004.extract.json",
+        "bytes": 1141,
+        "sha256": "d4fcfab24dbb036bc45cd983feadd1d15c0db85462e51d34025ceab066366471"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part004",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part004",
+      "verifiedFiles": 681,
+      "verifiedBytes": 55584387,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part005.members.json",
+        "bytes": 27068,
+        "sha256": "4f14938caed9043aef8dfb5a85d420eb13a85b3bbb21afc99172ff93c1ab31a0"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part005.tar.gz",
+        "bytes": 5654126,
+        "sha256": "e95eda660093b1bba5fc78187e5a5687ee3d5d5fdcd2275b754dab72eba446ef"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part005.extract.json",
+        "bytes": 1139,
+        "sha256": "df663eec53a1e39301494a72139bfd4531e6fe2cb1a9ee654fcba168947746f9"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part005",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part005",
+      "verifiedFiles": 6,
+      "verifiedBytes": 57592486,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part006.members.json",
+        "bytes": 30132,
+        "sha256": "c3c1200ad4c46b1ed7b8f8187fd5ce6b891f5887f4355bbda10d686a0dd4d76a"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part006.tar.gz",
+        "bytes": 12042211,
+        "sha256": "a94a9ce7f5214281683aef57adb5a5fb8241ea9c364cfd37bf2bd9cad772444a"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part006.extract.json",
+        "bytes": 1140,
+        "sha256": "cc3e95393398431cb2f204cb4051e2b94b197c088c7822caf1d9c16ee69a2e37"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part006",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part006",
+      "verifiedFiles": 18,
+      "verifiedBytes": 58383699,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part007.members.json",
+        "bytes": 33611,
+        "sha256": "ce38fa2864b56d7aabf256b218726c603443f302089985d42c71b82776a3f934"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part007.tar.gz",
+        "bytes": 14005097,
+        "sha256": "7f17bf7e6bc8fc1a90dace776ec361421e32e3f27464137a218877a183aa1a93"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part007.extract.json",
+        "bytes": 1140,
+        "sha256": "1393e90355c085d654a99e2e7fb98e26c47cb4fa27782d491ef4c98ef912e92e"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part007",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part007",
+      "verifiedFiles": 32,
+      "verifiedBytes": 64020909,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part008.members.json",
+        "bytes": 95050,
+        "sha256": "6e119621a473ec2cde3f283f1f124b851798297c5dc9b3bb8132a684ee71f03f"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part008.tar.gz",
+        "bytes": 25791954,
+        "sha256": "eaa39918fd4c645ecccf97accb34e49fd30c12b3ad52eae889cd79cc6636d4ac"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part008.extract.json",
+        "bytes": 1141,
+        "sha256": "200a956b8f6e312d9ea6f9497a1570bc2df6ec1c26b220fe6efb7fd2efc7a10d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part008",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part008",
+      "verifiedFiles": 251,
+      "verifiedBytes": 67089229,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part009.members.json",
+        "bytes": 49617,
+        "sha256": "95570d7e41d613d5743c4cb70439fdf0e099f0c6953ee748bb80243895f154ce"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-part009.tar.gz",
+        "bytes": 768516,
+        "sha256": "5a9b37f26dbb8fef386537ee4b192d5a40b62ea11a8376effc62d227bd4bb2b1"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part009.extract.json",
+        "bytes": 1139,
+        "sha256": "df3d463f064fc401275237256a837ef791182288e620cfaeb0294d541cfe1f39"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part009",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part009",
+      "verifiedFiles": 96,
+      "verifiedBytes": 4094191,
+      "verifiedDirectories": 430,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-static-package.members.json",
+        "bytes": 4775,
+        "sha256": "1f9322dbb04fe245d2ff68faa9823c8544f0dcf0806d09755e8b1cd0730ea7d1"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-correction-static-package.tar.gz",
+        "bytes": 110207,
+        "sha256": "2d2a1f75105401f9b4f60def925f1bef2c40099c3033fd89711acb7e0c5db489"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-static-package.extract.json",
+        "bytes": 1117,
+        "sha256": "a1458b0e697c313b8561c4f4c5b9e3aca265ebc04982a9949d18413cded29175"
+      },
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-correction-907-bfde",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-static-package",
+      "verifiedFiles": 12,
+      "verifiedBytes": 379617,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-probe.members.json",
+        "bytes": 2643,
+        "sha256": "92a3b1a614065be5edc8a9a427cb27973fc0442d56f7569cb82a38322aa31751"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-probe.tar.gz",
+        "bytes": 4708,
+        "sha256": "40141497a396e9b377139cb3bdfe5d62818f51359edb34582a4e9da6214e420d"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-n1-probe.extract.json",
+        "bytes": 1032,
+        "sha256": "8d53fb193231dcc0283fb11f994cfc44ede81f8d3fd950c507f86c07b1168892"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-scoped-replay-probe-wqb9d5vv",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-probe",
+      "verifiedFiles": 3,
+      "verifiedBytes": 12353,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-safe.members.json",
+        "bytes": 23845,
+        "sha256": "2038fd4dcf669ce4b6968d26e1e611cdf58efaf574755d4765fb3538460a7a7e"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-safe.tar.gz",
+        "bytes": 705136,
+        "sha256": "86c41d88d5af78953c0af3ea489504103a07c7bb4512d1dd0f61f5c40225cbef"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-n1-safe.extract.json",
+        "bytes": 1083,
+        "sha256": "b8da2b289377d65afbe7762b939e92b014204dfa9230cef4b7ac55f7242eef9d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-n1-original",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-safe",
+      "verifiedFiles": 88,
+      "verifiedBytes": 3386264,
+      "verifiedDirectories": 2,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-static-package.members.json",
+        "bytes": 3363,
+        "sha256": "d3ddd626b618507198acb1f869fb0f0e3d976c63c65400fca805d8195100d93c"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-n1-static-package.tar.gz",
+        "bytes": 7665,
+        "sha256": "cc35de7d6f2e0ff3ae72f5cb8af581c0ffc5db9099cfa8aa3cdc9aac7dee10c8"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-n1-static-package.extract.json",
+        "bytes": 1085,
+        "sha256": "667f63f8c91d2c7ac956811e6145782cee750a716dba97c29939094ff38ab606"
+      },
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-n1-correction",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-static-package",
+      "verifiedFiles": 6,
+      "verifiedBytes": 21347,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part001.members.json",
+        "bytes": 5142,
+        "sha256": "f8145ce856f06daf5722113f36bb10b37c5f5544fa5104ee445798d82c7aa65a"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part001.tar.gz",
+        "bytes": 2216939,
+        "sha256": "5fb1976a8c261a0bf9fa039abd53483d381990ca6a151217ab3befe0f3a78d69"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-whole-branch-package-part001.extract.json",
+        "bytes": 1180,
+        "sha256": "d54dbde665681a9f86f2b91e72e0dda0ebac16b86a7aec47efda0f4994a5df1d"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part001",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-whole-branch-package-part001",
+      "verifiedFiles": 13,
+      "verifiedBytes": 10434701,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    },
+    {
+      "index": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part002.members.json",
+        "bytes": 2324,
+        "sha256": "3fadc134bca77a260fb2ae86f23fc6d3a3f827cf9effad960b3aaf8a5fc42bbd"
+      },
+      "archive": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post907-whole-branch-package-part002.tar.gz",
+        "bytes": 12673150,
+        "sha256": "398807748363b44d6209480a45b59279b4def244a11665a421ef4461a792bae7"
+      },
+      "extractionReceipt": {
+        "path": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-whole-branch-package-part002.extract.json",
+        "bytes": 1179,
+        "sha256": "34f6e6cd7ef6081f4aff7767a4162e9706ebe2153866a7fd11f7c10a4514f301"
+      },
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part002",
+      "extracted": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-whole-branch-package-part002",
+      "verifiedFiles": 1,
+      "verifiedBytes": 72766053,
+      "verifiedDirectories": 0,
+      "declaredDependencySymlinks": []
+    }
+  ],
+  "totals": {
+    "archives": 64,
+    "compressedBytes": 653098761,
+    "files": 15827,
+    "uncompressedBytes": 1625549720
+  }
+}

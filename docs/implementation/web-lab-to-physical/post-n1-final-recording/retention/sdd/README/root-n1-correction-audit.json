@@ -1,0 +1,295 @@
+{
+  "at": "2026-11-16T04:17:54.464641+00:00",
+  "source": {
+    "head": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "tree": "4ffba2273ba527ec06969cc34d02d44ca9414a2e",
+    "status": ""
+  },
+  "lab": {
+    "head": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "tree": "fe1b269b07a31033671c79b406244b32a446c96c",
+    "status": ""
+  },
+  "lock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+  },
+  "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+  "buildFiles": 200,
+  "selectedCheckerNotFullR3Graph": "e90053d6d0dfdcb64475af48bff26d0cab0a69a50f2595cd48c77d4f4bf7feb4",
+  "reportFullyRead": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-n1-correction-report.md",
+    "bytes": 13849,
+    "sha256": "270f70431de9d44498dd63025ded4c178acd5a7a51808b3e563f3c5e6ec4be55"
+  },
+  "receipts": [
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-build.json",
+        "bytes": 1608,
+        "sha256": "418bc981f71aa23354994d98a3e2e565cf5daf663015c37e7fa179d67fd4e8f7"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-build.log",
+        "bytes": 7365,
+        "sha256": "ec39a8e42d1618d2e606efa80b9ac8439b5a0fc0207ec58066f838956628bf60"
+      },
+      "exit": 0,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": [
+        {
+          "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+          "verified": true
+        },
+        {
+          "path": "tests/unit/world-runner.test.ts",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-check-source.json",
+        "bytes": 1888,
+        "sha256": "156c5df8a05fc81808c843ebed9d0b1f6962cfee86570bb54d0a4d0264a8589b"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-check-source.log",
+        "bytes": 295,
+        "sha256": "5838995e022f0f3c6777db1207fbab2b09930e621f394dfb088b6ef30120d3fe"
+      },
+      "exit": 0,
+      "head": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-contracts.json",
+        "bytes": 1621,
+        "sha256": "3566fa6d108b31fea557056c369e5833a3af8eb6e703b5e8e33bbce7c54eba22"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-contracts.log",
+        "bytes": 192,
+        "sha256": "b01efc8275af27aef1593ccbccacf369a068c21bf75222530690ef4d51d5633c"
+      },
+      "exit": 0,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": [
+        {
+          "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+          "verified": true
+        },
+        {
+          "path": "tests/unit/world-runner.test.ts",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-export.json",
+        "bytes": 909,
+        "sha256": "ba9432035cd64066c5a5bd16ebb92b35c26d76afad0d4489a1c4a1de13a8c95d"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-export.log",
+        "bytes": 103299,
+        "sha256": "ea5f9f2b47c75ce3b26973d8dc307622a9c12f94665b4b70ccb38c462cb24e2c"
+      },
+      "exit": 0,
+      "head": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-green.json",
+        "bytes": 1872,
+        "sha256": "b0b9987383d5c624577e9dc496ce60362860ce36e169887797e7081f562b8dad"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-green.log",
+        "bytes": 2768,
+        "sha256": "7c171bf8291c01196252737069ef2fcc01c240225d59ffa85dc5f4d51878dc9b"
+      },
+      "exit": 0,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": [
+        {
+          "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+          "verified": true
+        },
+        {
+          "path": "tests/unit/world-runner.test.ts",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-identity-check.json",
+        "bytes": 971,
+        "sha256": "cdba31291eec8bdb90df5a688721e5e3f6b3e4b3f1815c0723c652b081741bba"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-identity-check.log",
+        "bytes": 1587,
+        "sha256": "280611573091657816e4dd64f2bfea66c20e02fd4f4a78aa92116266d47c305a"
+      },
+      "exit": 0,
+      "head": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-import.json",
+        "bytes": 1088,
+        "sha256": "f0bf3218b79d20a69aefba1f4429a17ea4d9ad1f53e640612d960fbbc3283f09"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-import.log",
+        "bytes": 198,
+        "sha256": "69d5dbd141d8149bf0c77238107ecbe3564783aab3b3b23f7e3cdb5cbb4ef0d3"
+      },
+      "exit": 0,
+      "head": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-lab-build.json",
+        "bytes": 789,
+        "sha256": "a88d321bef27e1674b5dfd8bd4f8bc257e440da2ba2bdb08c683e2c043a234a2"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-lab-build.log",
+        "bytes": 1605,
+        "sha256": "b622abe24da9eedd37c8e9ecf6a88ef0122ef5e74894d9a5a561d669c34d01af"
+      },
+      "exit": 0,
+      "head": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-lint.json",
+        "bytes": 1673,
+        "sha256": "66da02a9443278ef0825e7dde9c9784bbb18d228e6472fa8405a7da010623275"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-lint.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit": 0,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": [
+        {
+          "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+          "verified": true
+        },
+        {
+          "path": "tests/unit/world-runner.test.ts",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-red.json",
+        "bytes": 1289,
+        "sha256": "3393c76a914c54c9a618b4e64ee3bf59628b1b28323fe2ff787db9489f033f71"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-red.log",
+        "bytes": 4945,
+        "sha256": "b978b458c83b315c1963951d25802e80728b51ddcf7652ce3de356328ed7df68"
+      },
+      "exit": 1,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-sync.json",
+        "bytes": 1550,
+        "sha256": "f588af6f64082a84ef870fc2d353b8ce0de11ecc1bbb0113096e377b4423ec91"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-sync.log",
+        "bytes": 220,
+        "sha256": "84731b62ae9a5141c2b86ed05a6c5786c87be631f44b35181ea6b2e089481837"
+      },
+      "exit": 0,
+      "head": "fded4b26638eb412f3285d5fe37d415108f58f19",
+      "committedBytes": []
+    },
+    {
+      "receipt": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-typecheck.json",
+        "bytes": 1615,
+        "sha256": "73e04fe0aa48052b4af223daba20dca7a34ed6fb9adff0e399cb7b847ee4e6d7"
+      },
+      "log": {
+        "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/n1-typecheck.log",
+        "bytes": 232,
+        "sha256": "a38cf93675b24c7612ead396f6cdc68f544441355db12bccc212ffe3f6e07db5"
+      },
+      "exit": 0,
+      "head": "cb5c86cf9ee5db06cdacc38a2146f6f312b2c503",
+      "committedBytes": [
+        {
+          "path": "packages/lab-runtime/src/v2/scenario-runner.ts",
+          "verified": true
+        },
+        {
+          "path": "tests/unit/world-runner.test.ts",
+          "verified": true
+        }
+      ]
+    }
+  ],
+  "inventory": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/artifact-index.json",
+    "bytes": 21725,
+    "sha256": "1ace45e52c62bca303159a8cff9b30dc6f9633d002acae20e8e39d7cadfdecb2"
+  },
+  "inventoryFiles": 88,
+  "inventoryBytes": 3535886,
+  "settlement": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/settlement.json",
+    "bytes": 10719,
+    "sha256": "d4ee6e45825f771be8a03f0d23a5949b1338f7c0f220d13f4dffabd0bacbff73"
+  },
+  "privateOriginal": {
+    "documentType": "private-evidence-boundary",
+    "original": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/settlement-processes.txt",
+      "bytes": 171347,
+      "sha256": "0d6a4906c04b7242a484fd0de0ea277143542f974ec2458a2bd8b201302a5b41"
+    },
+    "publicDisposition": "external_private_original",
+    "reason": "Full host process snapshot includes unrelated process command context; exact original remains external and unchanged.",
+    "publicDerivative": "This descriptor and the retained settlement.json receipt/reference, not a publication of original process lines.",
+    "verificationScope": "Root verified full original bytes/hash and settlement reference; no new host-wide process-absence inference. Implementer reports owned work settled; port check remains separately recorded.",
+    "historicalBoundary": "Additional fifth private original after the four previously recorded exclusions; historical four-item documents remain scoped to their earlier subjects."
+  },
+  "newSubjectPerformanceAndCampaigns": "not_run; required next recording after N1 follow-up review",
+  "issues": [
+    "inventory-set"
+  ]
+}

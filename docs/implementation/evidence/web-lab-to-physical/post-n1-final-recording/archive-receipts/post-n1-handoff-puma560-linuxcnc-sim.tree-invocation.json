@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-handoff-puma560-linuxcnc-sim",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-puma560-linuxcnc-sim"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-handoff-puma560-linuxcnc-sim\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-puma560-linuxcnc-sim\", \"archive\": \"post-n1-handoff-puma560-linuxcnc-sim.tar.gz\", \"archiveBytes\": 2764327, \"archiveSha256\": \"01cb80abd576415a6871e1d28194b90c81819ffb849e538c08179a57897e526d\", \"memberIndex\": \"post-n1-handoff-puma560-linuxcnc-sim.members.json\", \"memberIndexSha256\": \"dbf4368ca4ad372bb39bf5156c27cbfca30729a2d14d4011302a70a7701da18f\", \"memberCount\": 387, \"memberBytes\": 11617970, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-puma560-linuxcnc-sim.extract.json\", \"safeExtractionReceiptSha256\": \"af8f1ef27cf5a2417ebcf0b64cb3443898643ba6adb6464ba4813ce076758876\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-puma560-linuxcnc-sim\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-handoff-puma560-linuxcnc-sim\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-puma560-linuxcnc-sim\", \"verifiedFiles\": 387, \"verifiedBytes\": 11617970}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:57.075882+00:00"
+}

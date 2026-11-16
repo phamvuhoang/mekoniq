@@ -1,0 +1,23 @@
+{
+  "started": {
+    "current_time": "2026-11-16 03:52:45 UTC"
+  },
+  "args": {
+    "cmd": "perl -e 'alarm 120; exec @ARGV' python3 .superpowers/sdd/README/root-final-correction-audit.py",
+    "workdir": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "max_output_tokens": 2500,
+    "yield_time_ms": 1000
+  },
+  "chunk_id": "f009df",
+  "wall_time_seconds": 1.001813583,
+  "session_id": 4349,
+  "original_token_count": 0,
+  "output": "",
+  "completion": {
+    "chunk_id": "127d98",
+    "wall_time_seconds": 0.000009417,
+    "exit_code": 1,
+    "original_token_count": 249,
+    "output": "{\"audit\": {\"path\": \"/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-correction-audit-cb5-fded.json\", \"bytes\": 98327, \"sha256\": \"233d4babe43373df54f75b1509fc1265b2eb1f430a6abe20163760a76eab0224\"}, \"issues\": [\"final-check-bytes:ordered-final-tests:tests/unit/browser-capture-clock.test.ts\", \"final-check-bytes:ordered-typecheck:tests/unit/browser-capture-clock.test.ts\", \"final-check-bytes:ordered-lint:tests/unit/browser-capture-clock.test.ts\", \"cleanup:final-replay-browser\"], \"receipts\": 71, \"computed\": {\"renderIntervalP95Ms\": 17.799999713897705, \"workerP95Ms\": 4.868333, \"activeCellMs\": 184974.19999980927}, \"browserStats\": {\"final-closed-browser\": {\"startTime\": \"2026-11-16T03:44:54.060Z\", \"duration\": 43607.303, \"expected\": 1, \"skipped\": 0, \"unexpected\": 0, \"flaky\": 0}, \"final-replay-browser\": {\"startTime\": \"2026-11-16T03:45:39.704Z\", \"duration\": 15961.166000000001, \"expected\": 5, \"skipped\": 0, \"unexpected\": 0, \"flaky\": 0}}}\n"
+  }
+}

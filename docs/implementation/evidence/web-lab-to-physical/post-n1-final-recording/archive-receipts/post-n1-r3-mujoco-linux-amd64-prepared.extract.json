@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:08:34.195972+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-amd64-prepared",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-amd64-prepared.tar.gz",
+  "archiveSha256": "301b6c586c37dee262f150c53f1277705999079c409a6c5810bb8c65def7a214",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-r3-mujoco-linux-amd64-prepared.members.json",
+  "memberIndexSha256": "a5dda88ab5c3ef456393d68cf84bef5ef61147a423f999c6430ef5f22c7377bf",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-mujoco-linux-amd64-prepared",
+  "verifiedFiles": 244,
+  "verifiedBytes": 10940111,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

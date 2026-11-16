@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:50.694546+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-amd64",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-amd64.tar.gz",
+  "archiveSha256": "b22e4c3e8fa8c65a13b5e569b36c655d09eef51ad5f34b300ea8f493b9fc3884",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-engineering-amd64.members.json",
+  "memberIndexSha256": "aabb651343469b3efcd2dbc180dfb10269bc10234c968ade33192f26c7fa233b",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-engineering-amd64",
+  "verifiedFiles": 243,
+  "verifiedBytes": 10869301,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

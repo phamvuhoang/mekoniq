@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-handoff-export-puma560-linuxcnc-sim",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-puma560-linuxcnc-sim"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-handoff-export-puma560-linuxcnc-sim\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-puma560-linuxcnc-sim\", \"archive\": \"post-n1-handoff-export-puma560-linuxcnc-sim.tar.gz\", \"archiveBytes\": 2764276, \"archiveSha256\": \"18444cc30fbcbfde1005c8943f4065b43d175e0a9b610590b9089d23c060c061\", \"memberIndex\": \"post-n1-handoff-export-puma560-linuxcnc-sim.members.json\", \"memberIndexSha256\": \"fa9e121c0e807a0452249b9332069b0c1e947e2c880b9a6599ff399df18b28d9\", \"memberCount\": 387, \"memberBytes\": 11617970, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-export-puma560-linuxcnc-sim.extract.json\", \"safeExtractionReceiptSha256\": \"716531c466facfb51c72357a2c2354cc67ffc543a0a99cac7bca9d9101f8fd03\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-puma560-linuxcnc-sim\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-handoff-export-puma560-linuxcnc-sim\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-puma560-linuxcnc-sim\", \"verifiedFiles\": 387, \"verifiedBytes\": 11617970}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:53.874774+00:00"
+}

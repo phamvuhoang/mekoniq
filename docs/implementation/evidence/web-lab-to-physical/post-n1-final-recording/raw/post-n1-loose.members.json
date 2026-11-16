@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:41.297012+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/new-recording-loose",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-loose.tar.gz",
+  "archiveBytes": 7508,
+  "archiveSha256": "37d113306883f4a35b18950f5ec29466ec0f3d63a8d537c826ff05116927936d",
+  "memberCount": 7,
+  "memberBytes": 47379,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "acceptance-irsim.json",
+      "bytes": 2689,
+      "sha256": "a48350c95f0c37f1c2d66f37e88e8e86954b22481a3937ff374e021823680892",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794809201412237624
+    },
+    {
+      "path": "acceptance-r1-external.json",
+      "bytes": 8317,
+      "sha256": "6d980df3b06c793d2c73c50aae11f67349906f2ea61a559aac336c77fef23de3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811426576254241
+    },
+    {
+      "path": "acceptance-r1-staged.json",
+      "bytes": 6754,
+      "sha256": "6499816ddb9d750e1249fab0c49a4856022c39cd84383009d1fc86d4e95b11dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794811450362116721
+    },
+    {
+      "path": "mj-evidence-result.json",
+      "bytes": 10658,
+      "sha256": "e709f810d4d3dcabea4cc63ee7cf46b52f09a2ed9bea760aec2986e966aebf47",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804336954075578
+    },
+    {
+      "path": "mj-row-assessment.json",
+      "bytes": 426,
+      "sha256": "2486dbb3b6b9f3e22c880dd96224cd43324ea9b621ce3979b4c6d931f6fb60f4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804337532133137
+    },
+    {
+      "path": "mock-acceptance-tests.json",
+      "bytes": 17490,
+      "sha256": "8fa4a0128f8c51fbd49e68a3cca21c4923dc1af9847b3307f6ea8b0b12d501c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794807730922409792
+    },
+    {
+      "path": "semantic-study-tests.json",
+      "bytes": 1045,
+      "sha256": "226e1cb27a01f2f9fd58d571476dab840029e5df22d895686609e1755b593189",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511776894492
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

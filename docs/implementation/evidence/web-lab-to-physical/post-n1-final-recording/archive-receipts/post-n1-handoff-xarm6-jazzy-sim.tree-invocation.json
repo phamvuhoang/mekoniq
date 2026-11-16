@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-handoff-xarm6-jazzy-sim",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-xarm6-jazzy-sim"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-handoff-xarm6-jazzy-sim\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-xarm6-jazzy-sim\", \"archive\": \"post-n1-handoff-xarm6-jazzy-sim.tar.gz\", \"archiveBytes\": 2585227, \"archiveSha256\": \"03931a7b822436a43c4bafb2e7ac9e0eeb41f36abb3adde61a37577929a4fec4\", \"memberIndex\": \"post-n1-handoff-xarm6-jazzy-sim.members.json\", \"memberIndexSha256\": \"4e89415e9b42bb8bdd9f7981e382f840b5bf2e5837fc2e910b8547b1e56a55e9\", \"memberCount\": 243, \"memberBytes\": 10883986, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-xarm6-jazzy-sim.extract.json\", \"safeExtractionReceiptSha256\": \"2d19d8520522f37feb400287b188442301c430fffad3a5ecb0a7a622a914bbaf\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-xarm6-jazzy-sim\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-handoff-xarm6-jazzy-sim\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-xarm6-jazzy-sim\", \"verifiedFiles\": 243, \"verifiedBytes\": 10883986}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:57.769271+00:00"
+}

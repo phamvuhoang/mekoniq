@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:53.791559+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-puma560-linuxcnc-sim",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-puma560-linuxcnc-sim.tar.gz",
+  "archiveSha256": "18444cc30fbcbfde1005c8943f4065b43d175e0a9b610590b9089d23c060c061",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-handoff-export-puma560-linuxcnc-sim.members.json",
+  "memberIndexSha256": "fa9e121c0e807a0452249b9332069b0c1e947e2c880b9a6599ff399df18b28d9",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-export-puma560-linuxcnc-sim",
+  "verifiedFiles": 387,
+  "verifiedBytes": 11617970,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

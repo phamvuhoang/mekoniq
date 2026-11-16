@@ -1,0 +1,453 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:07:42.062322+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/.runtime/73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-installed-runtime.tar.gz",
+  "archiveBytes": 654830,
+  "archiveSha256": "c8dd0c4becb6a94c938569f954985b080e704c1b960bdf28136f00a030ddc8c7",
+  "memberCount": 60,
+  "memberBytes": 3195087,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "manifest.json",
+      "bytes": 103198,
+      "sha256": "7f0015e98312ee5bbb9a2592b7013fc05548fe2d267d235d7f3490635f4b416c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501241417
+    },
+    {
+      "path": "runtime.mjs",
+      "bytes": 2572285,
+      "sha256": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476499514633
+    },
+    {
+      "path": "schemas/algorithm-result-v1.schema.json",
+      "bytes": 1665,
+      "sha256": "3f8e662764289df06a6024d538e27c4b238830d731fa3e6cd42a35aace477842",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501388794
+    },
+    {
+      "path": "schemas/arm-cell-scene-v1.schema.json",
+      "bytes": 5768,
+      "sha256": "c5acf75b8194cb306fee9714c2b9f3e24d1d55b7851b507c249607731f38901e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501533089
+    },
+    {
+      "path": "schemas/arm-command.schema.json",
+      "bytes": 10216,
+      "sha256": "d0651b4c2b6426e61959d79256375de4b6694fa1def29d906bfacfec51f3089e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501672217
+    },
+    {
+      "path": "schemas/arm-observation.schema.json",
+      "bytes": 19608,
+      "sha256": "ac79ea556862be1d1de4366a96c5f889179f7ac9e0ffa6847c803fab6914336e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501794594
+    },
+    {
+      "path": "schemas/arm-scene-3d-v1.schema.json",
+      "bytes": 4374,
+      "sha256": "5ce0150cfbcb61c0da229d8fccb15812500bbd4c80b236e7af3945bb20df5255",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476501928097
+    },
+    {
+      "path": "schemas/asset-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "df1bb9f365c767f9ae2cc3108a54162fa3fa2bd05cb78e1b7b700147fe4829b8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502051224
+    },
+    {
+      "path": "schemas/asset-revision.schema.json",
+      "bytes": 8139,
+      "sha256": "ff741ad719244d9f16cd971b9fc8dc4e9a9462270e130cfd6f89f679c741721d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502186560
+    },
+    {
+      "path": "schemas/authority-provision.schema.json",
+      "bytes": 208,
+      "sha256": "2e1da90406d1c13452f41788346f819960d614506d0f1ec0b2ac9390c2390b3b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502303645
+    },
+    {
+      "path": "schemas/cell-command.schema.json",
+      "bytes": 20421,
+      "sha256": "45d327b86a8b7afd2cf482caf7a6cd552f8958fd597d9355866a17b6def8a7be",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502416189
+    },
+    {
+      "path": "schemas/cell-observation.schema.json",
+      "bytes": 1986,
+      "sha256": "79282ad4053a8b600929ce6e6706d6a371ee3a4595c8f1b3bf78a01eae6db616",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502551609
+    },
+    {
+      "path": "schemas/coffee-recipe.schema.json",
+      "bytes": 9624,
+      "sha256": "e9ff88cb242ea4dad6beeea5e75f33601b40a411590a88ce8a72c17f07a53873",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502675278
+    },
+    {
+      "path": "schemas/command.schema.json",
+      "bytes": 178,
+      "sha256": "98c4b1b65f35902a716ef4edabd0c0df9b4d1c9a4cf3867ffa8731290a201313",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502774488
+    },
+    {
+      "path": "schemas/commit-batch.schema.json",
+      "bytes": 175,
+      "sha256": "7e8695e3d7a2617955b769267b515eac6308b534379d117380e520ad613b1c8b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502865948
+    },
+    {
+      "path": "schemas/engineering-bundle.schema.json",
+      "bytes": 23448,
+      "sha256": "11cb042eefd50874c6933edbdc4eccb559a433075eba5efb042c39f4781374ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476502957075
+    },
+    {
+      "path": "schemas/engineering-calibration.schema.json",
+      "bytes": 9378,
+      "sha256": "b4758ae46ca512a01ca917b7824659198c5f8bed4d4b23d76ecf8a69dd9fa90f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503084119
+    },
+    {
+      "path": "schemas/engineering-candidate.schema.json",
+      "bytes": 3345,
+      "sha256": "95db9205a1cef4aea9d5eb5458d4d4a50fff6e5358c3098d1c842aaf78938427",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503187788
+    },
+    {
+      "path": "schemas/engineering-component.schema.json",
+      "bytes": 24517,
+      "sha256": "5e535859cfe6afa3f04fd46d137370b3b6d776762a657ba957f5c5ad041eae55",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503281706
+    },
+    {
+      "path": "schemas/engineering-evidence.schema.json",
+      "bytes": 9358,
+      "sha256": "faaef3034432a8c21f3187b512fa1097c41e1721c9af30556033b3a59a958e7e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503412000
+    },
+    {
+      "path": "schemas/engineering-project-archive.schema.json",
+      "bytes": 2470,
+      "sha256": "bb8c52729792f85b7b274684bc645da2e345440161a81da55e7fbadfd0e985af",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503512377
+    },
+    {
+      "path": "schemas/engineering-project.schema.json",
+      "bytes": 4096,
+      "sha256": "75479e84f684727f9df84bfb2b75693dff41431416349f685efdb432fa608644",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503605546
+    },
+    {
+      "path": "schemas/grant-return.schema.json",
+      "bytes": 185,
+      "sha256": "358827d5aceaa449a3784d0b13db45dd87dcd5694befc51dfd4d14d3831c9494",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503717256
+    },
+    {
+      "path": "schemas/irsim-worker-v1.schema.json",
+      "bytes": 18478,
+      "sha256": "fa0dd48a828f4c38327af0c49fa9104ed4798a879ca2fe8f1f5498ba8d44d1f6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503823800
+    },
+    {
+      "path": "schemas/journal.schema.json",
+      "bytes": 172,
+      "sha256": "ba4b8962bbad02633eb49ad239beb926ed18de35612028357ac01019b293844b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476503998720
+    },
+    {
+      "path": "schemas/lab-action-v2.schema.json",
+      "bytes": 9066,
+      "sha256": "75c0d8380699e5e9120505a45d47221cc37f2e687631d910bffaf5a6f7680c1f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504129931
+    },
+    {
+      "path": "schemas/lab-arm-collision-evidence.schema.json",
+      "bytes": 8628,
+      "sha256": "f9dec2ad4b6f372a9d82a3f2bad5a6ad42c6aad7c7c1d495cd31a074e50fd8ee",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504275309
+    },
+    {
+      "path": "schemas/lab-deployment.schema.json",
+      "bytes": 13270,
+      "sha256": "12d180b9c8c4dca598fd8711d1ecde913674726c86535871b4a8e7d9e4e98679",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504401353
+    },
+    {
+      "path": "schemas/lab-evidence-v2.schema.json",
+      "bytes": 4569,
+      "sha256": "b9ebf24647539f91a6b9d112210282f46f5d568a739be77603b9ff19ef1c77e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504526272
+    },
+    {
+      "path": "schemas/lab-fault-schedule.schema.json",
+      "bytes": 1582,
+      "sha256": "bdfac85d58c0b0887ad9cda85d3881480039a81a5d6226a55e5f5738db5e1062",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504630982
+    },
+    {
+      "path": "schemas/lab-project-v2.schema.json",
+      "bytes": 10046,
+      "sha256": "29737e456a2fc664d174e03c4dc501a369341d893ef7f9e0a099e15a5a77bd22",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504745359
+    },
+    {
+      "path": "schemas/lab-project.schema.json",
+      "bytes": 4638,
+      "sha256": "d6dda9f63e3ded3421004444a64a32cb0b7d4ccf1e139901ebc76c8e021a97ea",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504857570
+    },
+    {
+      "path": "schemas/lab-run-v2.schema.json",
+      "bytes": 5101,
+      "sha256": "ea869a0d09cc6f98dc9279906ef088ac62b94cdaba125c34d7c0cdf76dbead73",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476504975072
+    },
+    {
+      "path": "schemas/lab-run-verification.schema.json",
+      "bytes": 3619,
+      "sha256": "0ec157ef4060da1447992256d7c71d463d3b5835ef758dc5420524d59cafe90d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505077616
+    },
+    {
+      "path": "schemas/lab-run.schema.json",
+      "bytes": 2573,
+      "sha256": "f2063867b11ee8e144cfe9f0785cb39fc5622e3dc2c9f060780fba851d139059",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505176618
+    },
+    {
+      "path": "schemas/lab-transfer-evidence.schema.json",
+      "bytes": 7292,
+      "sha256": "d489a7967128503a13b6cd6a54552461a2c78aaf3f239498e21cbf3477bd89bf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505315204
+    },
+    {
+      "path": "schemas/lab-world-scene-v1.schema.json",
+      "bytes": 16636,
+      "sha256": "ff031beef27431e0ee78a4996bdab03f64ff0e0ed80f8c6ae9f7dbddedc7647b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505443248
+    },
+    {
+      "path": "schemas/load-profile-v1.schema.json",
+      "bytes": 9501,
+      "sha256": "3e633510e058471a0e268574821e7001f6a538250ef06c2c232050f92a1c3e70",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505627668
+    },
+    {
+      "path": "schemas/model-validation-report-v1.schema.json",
+      "bytes": 6172,
+      "sha256": "4b1c8a3cfa70e6f65688c87c265a51d2b74b1ea9c4c01ef94988f2be69bff314",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505821214
+    },
+    {
+      "path": "schemas/money.schema.json",
+      "bytes": 156,
+      "sha256": "b0ed9c5f9681da5fe247795bab29d77a72a8779d49cacbe4f8e48cf6f26db383",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476505936841
+    },
+    {
+      "path": "schemas/native-handoff-v1.schema.json",
+      "bytes": 17820,
+      "sha256": "7667ef0332a64e5f8cf930af558c93ba4ba3fc45428a963328393405d7131543",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506038926
+    },
+    {
+      "path": "schemas/navigation-model-2d-v1.schema.json",
+      "bytes": 6499,
+      "sha256": "2b35b6d79bd21cc9b1d16bf7ddd49c27d051267c90d60f7ba39118a6044ac119",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506172970
+    },
+    {
+      "path": "schemas/navigation-run-evidence-v1.schema.json",
+      "bytes": 26618,
+      "sha256": "7ba4164a7291a3e4771f3994500323afdbeae85da3c58341e0bfc633cadf118e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506269847
+    },
+    {
+      "path": "schemas/navigation-scene-v1.schema.json",
+      "bytes": 20181,
+      "sha256": "8773cddcce70d27dcca50877e1bbab58e6a6af24e939b37ad932efa859b2a979",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506369891
+    },
+    {
+      "path": "schemas/offline-grant.schema.json",
+      "bytes": 190,
+      "sha256": "a3d48413cbdb9a5ed793f3633e7a4e5a73b30359c2974019a251a4eb70251bb8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506672355
+    },
+    {
+      "path": "schemas/ownership-grant.schema.json",
+      "bytes": 184,
+      "sha256": "f495946471e5ad00b01e70257f0b7974fef6640749cbb8231626a3148e7704e3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506779232
+    },
+    {
+      "path": "schemas/pairing-grant.schema.json",
+      "bytes": 190,
+      "sha256": "d36ef1da07f93cac9c30000da20bf89d80e9731f7d51c9b543fdf0a8db25b8e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476506897360
+    },
+    {
+      "path": "schemas/physical-target-dossier-v1.schema.json",
+      "bytes": 7731,
+      "sha256": "9706849a8ab13fda2a23c22db0e66ed8bbcf2414c08aec5ad8433a08c6a67dbc",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507028279
+    },
+    {
+      "path": "schemas/physics-evidence-v1.schema.json",
+      "bytes": 13126,
+      "sha256": "2341e8ba2dfad329fe496ab109c5f2ee8bf6445fc53aee7756743f2c96f266c3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507151031
+    },
+    {
+      "path": "schemas/robot-command.schema.json",
+      "bytes": 178,
+      "sha256": "9a39142ea1cbc4087dc04fc4af2204e6431e826d33d82321375b0206d985bc06",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507280409
+    },
+    {
+      "path": "schemas/robot-manifest.schema.json",
+      "bytes": 181,
+      "sha256": "63660819ee65df2ff0d005ddcc61fdd34dcfde116cbd586677487655507953f5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507393494
+    },
+    {
+      "path": "schemas/robot-physical-model-v1.schema.json",
+      "bytes": 6793,
+      "sha256": "3ff41bbf5b4c57dc66cbfa0e64556704a6a5ab5e6473b095b7ceb45dec8cb6ab",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507507038
+    },
+    {
+      "path": "schemas/semantic-study-v1.schema.json",
+      "bytes": 9732,
+      "sha256": "8eb0babb54ab2407f5e275b5692bf57298b2c78532dcd16071951611ef88e4e6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507635165
+    },
+    {
+      "path": "schemas/settlement-grant.schema.json",
+      "bytes": 187,
+      "sha256": "3b82f3ac830b6fe6a542cd3de54ab75a9ca96f9923e580105892004837c1ba4b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507739793
+    },
+    {
+      "path": "schemas/sim3d-worker-v1.schema.json",
+      "bytes": 39618,
+      "sha256": "5295ede3c31be80d7241bcdf1367aa5c8f8e7fb06ecf96c08c96fb3817eadd11",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507857545
+    },
+    {
+      "path": "schemas/sync-ack.schema.json",
+      "bytes": 163,
+      "sha256": "cec00df823d37bb6d1503721d95b68032d9c85da6df01e9d32d1c410e4a922e5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476507982630
+    },
+    {
+      "path": "schemas/twin-sample-v2.schema.json",
+      "bytes": 14535,
+      "sha256": "3b465a07c80e57b7684cdd97f3eaf4c45e127c648b03383f9f493c562bf4faa6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476508118300
+    },
+    {
+      "path": "schemas/web-replay-package-v1.schema.json",
+      "bytes": 12015,
+      "sha256": "8caeb00a928d8ccf14bd11a0479241258f27a6c5fb54754072d55e2bc324d089",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476508280261
+    },
+    {
+      "path": "schemas/wire.schema.json",
+      "bytes": 49136,
+      "sha256": "4e0985c9db08871ddca853774c18bf4ef2f3f7fed6affed9654c50b0eddfb523",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476508396847
+    },
+    {
+      "path": "schemas/world-evidence-v1.schema.json",
+      "bytes": 13688,
+      "sha256": "bdf391fc3ee9ef2f26beff4e333a58e839ccbce8baf18de7d0758d969530a20a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794802476508522766
+    }
+  ],
+  "directories": [
+    "schemas"
+  ],
+  "declaredDependencySymlinks": []
+}

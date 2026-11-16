@@ -1,0 +1,195 @@
+{
+  "at": "2026-11-16T07:06:56.736142+00:00",
+  "plans": [
+    {
+      "id": "post907-correction",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-correction-u3e2_ph3"
+    },
+    {
+      "id": "post907-n1-probe",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-scoped-replay-probe-wqb9d5vv"
+    },
+    {
+      "id": "post907-n1-safe",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/safe-n1-original"
+    },
+    {
+      "id": "post907-whole-branch-package",
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-whole-branch-package-907087c-bfde031"
+    },
+    {
+      "id": "post907-correction-static-package",
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-correction-907-bfde"
+    },
+    {
+      "id": "post907-n1-static-package",
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-n1-correction"
+    },
+    {
+      "id": "post-n1-measured-lab-dist",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/dist"
+    },
+    {
+      "id": "post-n1-installed-runtime",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/.runtime/73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508"
+    },
+    {
+      "id": "post-n1-cell-campaign",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/cell-campaign"
+    },
+    {
+      "id": "post-n1-handoff-engineering-amd64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-amd64"
+    },
+    {
+      "id": "post-n1-handoff-engineering-arm64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-arm64"
+    },
+    {
+      "id": "post-n1-handoff-export-engineering-amd64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-amd64"
+    },
+    {
+      "id": "post-n1-handoff-export-engineering-arm64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-engineering-arm64"
+    },
+    {
+      "id": "post-n1-handoff-export-mujoco-linux-amd64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-mujoco-linux-amd64"
+    },
+    {
+      "id": "post-n1-handoff-export-mujoco-linux-arm64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-mujoco-linux-arm64"
+    },
+    {
+      "id": "post-n1-handoff-export-puma560-linuxcnc-sim",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-puma560-linuxcnc-sim"
+    },
+    {
+      "id": "post-n1-handoff-export-xarm6-jazzy-sim",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-export-xarm6-jazzy-sim"
+    },
+    {
+      "id": "post-n1-handoff-mujoco-linux-amd64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-mujoco-linux-amd64"
+    },
+    {
+      "id": "post-n1-handoff-mujoco-linux-arm64",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-mujoco-linux-arm64"
+    },
+    {
+      "id": "post-n1-handoff-puma560-linuxcnc-sim",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-puma560-linuxcnc-sim"
+    },
+    {
+      "id": "post-n1-handoff-xarm6-jazzy-sim",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-xarm6-jazzy-sim"
+    },
+    {
+      "id": "post-n1-irsim",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim"
+    },
+    {
+      "id": "post-n1-irsim-default-results-copy",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-copy"
+    },
+    {
+      "id": "post-n1-irsim-default-results-original",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-original"
+    },
+    {
+      "id": "post-n1-mock-regression",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/mock-regression"
+    },
+    {
+      "id": "post-n1-native-empty",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/native-empty"
+    },
+    {
+      "id": "post-n1-payload-campaign",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/payload-campaign"
+    },
+    {
+      "id": "post-n1-production-browser",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-browser"
+    },
+    {
+      "id": "post-n1-production-performance",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance"
+    },
+    {
+      "id": "post-n1-production-replay-browser",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-replay-browser"
+    },
+    {
+      "id": "post-n1-r1",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1"
+    },
+    {
+      "id": "post-n1-r1-default-results-copy",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-copy"
+    },
+    {
+      "id": "post-n1-r1-default-results-original",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r1-default-results-original"
+    },
+    {
+      "id": "post-n1-r2a-supplemental-current-gui",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2a-supplemental-current-gui"
+    },
+    {
+      "id": "post-n1-r2b",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r2b"
+    },
+    {
+      "id": "post-n1-r3-engineering-amd64-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-amd64-prepared"
+    },
+    {
+      "id": "post-n1-r3-engineering-arm64-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-engineering-arm64-prepared"
+    },
+    {
+      "id": "post-n1-r3-mujoco-linux-amd64-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-amd64-prepared"
+    },
+    {
+      "id": "post-n1-r3-mujoco-linux-arm64-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-mujoco-linux-arm64-prepared"
+    },
+    {
+      "id": "post-n1-r3-puma560-linuxcnc-sim-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-puma560-linuxcnc-sim-prepared"
+    },
+    {
+      "id": "post-n1-r3-xarm6-jazzy-sim-prepared",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-xarm6-jazzy-sim-prepared"
+    },
+    {
+      "id": "post-n1-semantic-study",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study"
+    },
+    {
+      "id": "post-n1-semantic-study-process",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process"
+    },
+    {
+      "id": "post-n1-stock-launcher-web-active",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/stock-launcher-web-active"
+    },
+    {
+      "id": "post-n1-web-record",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/web-record"
+    },
+    {
+      "id": "post-n1-loose",
+      "source": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/new-recording-loose"
+    }
+  ],
+  "excludedCurrentPreparedCorpus": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/retained-inputs",
+    "selectorSha256": "30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f",
+    "reason": "Public tool prepared same historical corpus; prior121 historical-retained-inputs archive remains unchanged and is referenced with its member index. No duplicate archive or new-current campaign identity assigned."
+  },
+  "scope": "Every current settled E child and loose file except publication machinery/prepared duplicate corpus; complete post907 correction/probe/safeN1/wholebranchpackage. Separate safe metadata/readable freeze retains all new owner receipts/scripts/root records."
+}

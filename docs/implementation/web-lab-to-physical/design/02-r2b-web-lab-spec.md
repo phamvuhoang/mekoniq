@@ -1,5 +1,7 @@
 # Spec R2b — Lab web có tải và hành trình cà phê liên tục
 
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
+
 **Mã:** MKQ-SIM-R2B-02 · **Trạng thái:** đề xuất sau R2a, chưa được thực thi.
 
 Đọc cùng [nghiên cứu](01-research.md), [contracts/evidence](03-contracts-and-evidence.md) và [plan](plans/README.md). Các quyết định chỉ áp dụng cho set/fixture mới; không đổi hành vi R2a đang phát triển.

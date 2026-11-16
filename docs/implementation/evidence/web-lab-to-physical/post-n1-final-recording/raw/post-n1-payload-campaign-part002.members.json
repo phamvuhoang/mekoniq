@@ -1,0 +1,4163 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:09.831246+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-payload-campaign-part002",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-payload-campaign-part002.tar.gz",
+  "archiveBytes": 30434510,
+  "archiveSha256": "1ba98bc7ce6fa8a7b24664e9d4b0b8c94ea08b3c75b5a595fcc4f8e6fd818520",
+  "memberCount": 563,
+  "memberBytes": 45441237,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "turn-center-s7/run/physics/physics-000003-cd75d0b2.ndjson.gz",
+      "bytes": 192551,
+      "sha256": "e92c73471c1ca4ea584473e6cbe9158ba77ed753a8a7b05f8996bba011cc76a0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803887183760336
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000004-24dbe0b1.ndjson.gz",
+      "bytes": 188251,
+      "sha256": "5018c85d45cfec640520fc581727cf622c73835dcf3596c61ec7ffa5f3f6fa79",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803888707082120
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000005-3fe02440.ndjson.gz",
+      "bytes": 190016,
+      "sha256": "1b5cc8b770fc2f15d9baf784e9b1cd507f2f6841d5721710392966f8de0bfb21",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803890246789943
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000006-ce7bc651.ndjson.gz",
+      "bytes": 192545,
+      "sha256": "7f2caaf98fab3eb146ef2de53bc07e3700e58823c2de3a02b12d8eb6e1c7bcb0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803892040849940
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000007-199cf349.ndjson.gz",
+      "bytes": 197300,
+      "sha256": "5bf1e8bba39140343d66a8995dea0e089af032ac7d551f1adbad68b19e589947",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803893509791551
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000008-24866def.ndjson.gz",
+      "bytes": 189128,
+      "sha256": "ad08384ff9a5e6f68c7b2ddc4173023cc367f4f4d482cfde31a3e47e15ffd558",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803895028087537
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000009-e2b93ed3.ndjson.gz",
+      "bytes": 189755,
+      "sha256": "c7fdccf2db6dc391f53a6d3c35bc9df8b73e9ec062df21d83462647c34c2ab1d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803896520936656
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000010-22b39561.ndjson.gz",
+      "bytes": 192746,
+      "sha256": "19a5f541041937fc987486f0589838d61b555e89aba2705b79c244da59c6d1ef",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803898007917878
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000011-a53fe553.ndjson.gz",
+      "bytes": 196664,
+      "sha256": "1f4b31291a8330d048d1e5a0429bbd0e55750790bfc767c8e6bd7b8b4910f0a4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803900370069483
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000012-8f4c18b8.ndjson.gz",
+      "bytes": 195328,
+      "sha256": "2b904bda4915ee3af3b4e328d9077959f5c6ef512ea2714fc9e5ca9f62beeff2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803902942013680
+    },
+    {
+      "path": "turn-center-s7/run/physics/physics-000013-ef41f64c.ndjson.gz",
+      "bytes": 149238,
+      "sha256": "7c68321fe620b8cc696da6e957d7a892a94617e1ca912f9dd2936ea08915b331",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905128384836
+    },
+    {
+      "path": "turn-center-s7/run/run.json",
+      "bytes": 46321,
+      "sha256": "64bc1d324770ca318d6ad5bd8a397f7415c902662a0c5bef77db32a3a3e46469",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905148730780
+    },
+    {
+      "path": "turn-center-s7/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "07ef15cd53add59125b00ee38fec0705c082131c4c4092d9260f0e01a00d9656",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803878582837771
+    },
+    {
+      "path": "turn-center-s7/trace.json",
+      "bytes": 304388,
+      "sha256": "3a5f9a9107b52aebf25868a9ee61b109b99de8f3c2f3c5df49c5d14256ff933a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905924056893
+    },
+    {
+      "path": "turn-empty-s19/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935567376597
+    },
+    {
+      "path": "turn-empty-s19/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935568081068
+    },
+    {
+      "path": "turn-empty-s19/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935570591863
+    },
+    {
+      "path": "turn-empty-s19/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935571383918
+    },
+    {
+      "path": "turn-empty-s19/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935571694507
+    },
+    {
+      "path": "turn-empty-s19/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935572025680
+    },
+    {
+      "path": "turn-empty-s19/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935572319393
+    },
+    {
+      "path": "turn-empty-s19/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935564822302
+    },
+    {
+      "path": "turn-empty-s19/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935574557558
+    },
+    {
+      "path": "turn-empty-s19/case.json",
+      "bytes": 15866,
+      "sha256": "f0640e47aa1d55f4522ade5212187025829d591dda5a4061b89efbcd0f37ec91",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803961396420467
+    },
+    {
+      "path": "turn-empty-s19/input.json",
+      "bytes": 12053,
+      "sha256": "6c1b269ba4b5367e5cbc7989aa1dee7a1e7b085af7e1ac74ba3dac19bd973afb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935574762562
+    },
+    {
+      "path": "turn-empty-s19/report.json",
+      "bytes": 832337,
+      "sha256": "806eaf3d69e84d01b3e7f554be310cdd685b0ec981ade9d2aaa7d531a74e1e45",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803961373226889
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581350553
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581506056
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581635892
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581776186
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581893604
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935582014523
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935582127734
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935581144800
+    },
+    {
+      "path": "turn-empty-s19/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935586650147
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000001-6be0e103.ndjson.gz",
+      "bytes": 2697,
+      "sha256": "fd10bc3534e836d60a29990ec9378c657eb5948b51b9de46e42196e33865d4ba",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803939454720685
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000002-3d85327a.ndjson.gz",
+      "bytes": 4602,
+      "sha256": "f21353a375f018d9879606b2c63a1a84b6d9b2a94e165d666ea811eccf6038a5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803941680940423
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000003-2d7fdc3c.ndjson.gz",
+      "bytes": 4468,
+      "sha256": "6136b33d32a44ea063b55bde106467d9202f5c4e77cf2f825abf4dc5ed99425d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803943171870882
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000004-bdd51092.ndjson.gz",
+      "bytes": 2998,
+      "sha256": "a65455b695b1f4aaa799d180259c8be3d2793b02153d6f12e8b9573b67bfe9ad",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803944524244219
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000005-ccc0c7ce.ndjson.gz",
+      "bytes": 2258,
+      "sha256": "41f8939b6f89c1e944dc2873aafab55e987ea081f15f1d15efb112b222cbef14",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803946070877999
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000006-e138f4a2.ndjson.gz",
+      "bytes": 2656,
+      "sha256": "05a4d9cd864a569dddaa33e07d3a8c65847c25853fb04bdb9cc4253e05fd43fb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803947434854501
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000007-a3b3cd70.ndjson.gz",
+      "bytes": 4354,
+      "sha256": "21147b545378c50783455be329362053f2b6e67450ca5daa9289704877762c6f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803948790097431
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000008-76965cfa.ndjson.gz",
+      "bytes": 4050,
+      "sha256": "2d1180679000c7cef79aaf7e2c47581fa62b300b641c0ae9cfaf3545b41d5f9c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803950106493589
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000009-13b1aa4e.ndjson.gz",
+      "bytes": 2263,
+      "sha256": "9e944022a6aa580965eab27517637799f323cc0a891624a90520cdddc088e72f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803951461908480
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000010-629b5dde.ndjson.gz",
+      "bytes": 3160,
+      "sha256": "7af176c20aaf74343f96d657781973fce55020ae1928a8043cf00c4fc0e5bcb5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803952943548983
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000011-8c0f5906.ndjson.gz",
+      "bytes": 4501,
+      "sha256": "060c9f98d515cf5f6f3f835b0c342ca52d27632a91c543ec5818c0f39bb38632",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803954333196190
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000012-5608472b.ndjson.gz",
+      "bytes": 4157,
+      "sha256": "caf7c57292547a75ad7e037bf7bb137ba77c5371d265abbd57205c86b8711478",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803956632360053
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000013-98d9fb61.ndjson.gz",
+      "bytes": 3754,
+      "sha256": "d6b7bbef469c33054847d302fefd5783d129b639215f3327b4c17cc34773a984",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960253988599
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/control-000014-ee506f28.ndjson.gz",
+      "bytes": 410,
+      "sha256": "66e5ea4a6eab723f67b693dc43cb03830b31dbbb97e0842911e1ac0970f38e23",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960615013330
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/manifest.json",
+      "bytes": 7551,
+      "sha256": "eeafa234b1cf90e441e1561ef450cba264154d16d9a9ec13c91fa6b7987351d5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960621188189
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000001-dd1cc90b.ndjson.gz",
+      "bytes": 114647,
+      "sha256": "dd4708cae39db00a64e446adfd2deae2d3de3ceca702701969bcbfe2a8f95337",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803939448765204
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000002-75edeb34.ndjson.gz",
+      "bytes": 142335,
+      "sha256": "1765e039181d0822f75504f692acc7d95b70bd6c2ee40ab94996dd2576ca1dbb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803941676718598
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000003-340199fc.ndjson.gz",
+      "bytes": 143260,
+      "sha256": "5ec7e1808ae1e8415b93446f9f5fadfde737299b4c0a6f470d937e58e5ffba3b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803943165790524
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000004-86ce7f20.ndjson.gz",
+      "bytes": 133543,
+      "sha256": "1a79dc6cdfdc7a71a29134e413870702ccc409bd2cbd4249a80c7dc8ccb6aa12",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803944519681555
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000005-1aa106cb.ndjson.gz",
+      "bytes": 144192,
+      "sha256": "98fc2acb6189aca254b37e9a8e4e9713712578e753f03987630555c776318e29",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803946064743349
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000006-038eff68.ndjson.gz",
+      "bytes": 144256,
+      "sha256": "25e7b4898711faac20b3fe075010dc55e6eee4c3c46fb285aad52ddfcc482126",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803947428840977
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000007-5a28966b.ndjson.gz",
+      "bytes": 143658,
+      "sha256": "39824f48311a2b25ba421f9937365362cd39fbd2993971119bf1d3727dd26956",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803948786427532
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000008-5f566e87.ndjson.gz",
+      "bytes": 141521,
+      "sha256": "b7572b9579ec269f3cf35c3aec669e57bf9c419a2e7035b029a1050c8f9ef5c0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803950102903942
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000009-454d834d.ndjson.gz",
+      "bytes": 129939,
+      "sha256": "66edad6dbe2dc53b373aeda4a220ef4e29351f937d8317448f6b066017cbeaa6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803951456015584
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000010-85c23f7a.ndjson.gz",
+      "bytes": 140294,
+      "sha256": "b84152f6762db4a2f3a82d1552fa55c3722c133490f92cad5d9ab380dd6bb012",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803952939008820
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000011-359959aa.ndjson.gz",
+      "bytes": 141467,
+      "sha256": "dbb187384821195c3644c7a9664ea863cac407b0d9f68581b6587fa9b3b6a292",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803954328887988
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000012-208af20f.ndjson.gz",
+      "bytes": 145565,
+      "sha256": "e5ea50372fd0ee73dab77b471ceb73a07f9735c39aa27aa55bbc78c09e59b6b2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803956627923642
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000013-21e45908.ndjson.gz",
+      "bytes": 139664,
+      "sha256": "752e1b336a4565358bcf2637724f0f805db9dfd1bf127dcc99a8288ef6a1f1ff",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960242618190
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/sensors-000014-1bb8b740.ndjson.gz",
+      "bytes": 14322,
+      "sha256": "5f46dd5349433adef16c2bd9ecad51442997c44dbaf09728a8833e0adc190cd3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960609213935
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000001-7896eb29.ndjson.gz",
+      "bytes": 20249,
+      "sha256": "b6cb262dd216aa3fe9bf6ec7c02da1385788a3c52ac5eb34496ee918de6e4fc1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803939442630971
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000002-5af583ab.ndjson.gz",
+      "bytes": 20899,
+      "sha256": "49ae426052e0fe3cfb238b3ba10e15a53c875194c5cd28f2cb2abc3e5e6aedb8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803941670669366
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000003-c885d13b.ndjson.gz",
+      "bytes": 20882,
+      "sha256": "d4d8b5cc4dbb4fda452d52a395fc3ea1cb3a878e005cf0d96c2705c379b9f6dc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803943160022172
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000004-e67e466c.ndjson.gz",
+      "bytes": 20472,
+      "sha256": "03c422d1fd3802a338ad2d787368c779debd416752c1f7485317c1c8128c3b25",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803944513179065
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000005-9f6a48a4.ndjson.gz",
+      "bytes": 21092,
+      "sha256": "f05eb5d41090162b7a73811ac507228453106e4d75926546645c98defdd937c6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803946058751201
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000006-68129858.ndjson.gz",
+      "bytes": 21028,
+      "sha256": "edb3635459b4f699978fcff2e083f4eecd91ed20bea5385f5840082cce062b81",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803947421922938
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000007-54aee2a8.ndjson.gz",
+      "bytes": 21258,
+      "sha256": "f989961ad7cd7158b6252089c68ab47a351ad8fe6ef6db7c71ff26a6af7bef97",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803948783864570
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000008-687fb0e7.ndjson.gz",
+      "bytes": 21297,
+      "sha256": "b48f9cfe1cae087907eec4b773ccfe54b1d759f63ef91d33127de3ba737d60b4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803950096858960
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000009-1cb43e6b.ndjson.gz",
+      "bytes": 20406,
+      "sha256": "28c0db377d1d1250809f331bc729c06eb7201038d7e6d625813ecf5e26a85633",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803951449910768
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000010-ca79008d.ndjson.gz",
+      "bytes": 21084,
+      "sha256": "88d5d49e9afe63e2b17da2c0a4355db567b110ce39635bbf62c447e3626e2983",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803952932051572
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000011-ad465fc1.ndjson.gz",
+      "bytes": 21269,
+      "sha256": "3313eedca29175f4a6f1a18bb46bbd2d9a3f4366f8b3efe81582c1a62c34e62e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803954323091677
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000012-6389fd1e.ndjson.gz",
+      "bytes": 21344,
+      "sha256": "457e6e7831d387952859b5f425e5ac19d99ee5ebfe23180b9c0d7ce0d7e9de53",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803956621039561
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000013-a7bc91d9.ndjson.gz",
+      "bytes": 21381,
+      "sha256": "4bf015749135ef36d9e61cf3550a1daa36563d64bae9d58baade838523a06a8f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960232074544
+    },
+    {
+      "path": "turn-empty-s19/run/evidence/trajectory-000014-7f17a4f2.ndjson.gz",
+      "bytes": 1893,
+      "sha256": "46e396d85fa6f9548b62a7c70ff449a0a1d8624de955061dd3bd5c5489669be9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960603028367
+    },
+    {
+      "path": "turn-empty-s19/run/journal.db",
+      "bytes": 548864,
+      "sha256": "10d8bcdf59cb73fda1f9b1172b31df6460c60e0e625cc2aaf27a8755d3c4ee50",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803961369830538
+    },
+    {
+      "path": "turn-empty-s19/run/physics/manifest.json",
+      "bytes": 2807,
+      "sha256": "1e54ffe55abe7d32eb16fd268f4b5271b36eda779f6beb17989611bfc557e687",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960639624849
+    },
+    {
+      "path": "turn-empty-s19/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960642932200
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000000-72b98045.ndjson.gz",
+      "bytes": 112480,
+      "sha256": "b2f78e342dfd655da654d3f8c9f8c8b2420e3a2b8d40ca1580b21be93701e9ee",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803939407693810
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000001-02a36d42.ndjson.gz",
+      "bytes": 122729,
+      "sha256": "74c05e4a48763ad00465bda147fb5a744ed457077661aa2bff0c6c4be0bec8c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803941639785110
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000002-4e0a1116.ndjson.gz",
+      "bytes": 122505,
+      "sha256": "5789bbe249cbc7b4545e47bf4cc2b0b957833aa1f17e5df425d632c1491bdce9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803943126964461
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000003-df177ae1.ndjson.gz",
+      "bytes": 116949,
+      "sha256": "ba6de6a9e6f43b1044cdb372d596db4ee79876a2857bd2869d7a28354c09f745",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803944483857754
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000004-be81cfee.ndjson.gz",
+      "bytes": 119774,
+      "sha256": "df5a45d86a33fd437b4e6bce244db55f989f099baf882f392ed7782b795a4fca",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803946027899446
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000005-b6c6055a.ndjson.gz",
+      "bytes": 119894,
+      "sha256": "18ce30372d3323cdf04905534e938c19acd632998f6c1c241581b86e6dc2b9c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803947387104988
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000006-b6c6693b.ndjson.gz",
+      "bytes": 126208,
+      "sha256": "0d40d3504df5b6c4ea43f13bc7d492a25a079f2870af43c802ef1855a5ca9cb8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803948751351078
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000007-69282e5c.ndjson.gz",
+      "bytes": 125389,
+      "sha256": "5e4433d59522714e95599968a50f6f891467ac77c3bcf455607c0e1811ce5de6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803950065040563
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000008-9bd75139.ndjson.gz",
+      "bytes": 114269,
+      "sha256": "e616a95d10d3060a22989ad27a2ad91ab7ff51266abea7cb6bb3a46415488921",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803951419095180
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000009-b72aaf47.ndjson.gz",
+      "bytes": 121433,
+      "sha256": "cb089d6491a068cc4b7e95a8e14344ecc33739e96891606d3df9c8f3a00f9d34",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803952898153262
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000010-f64bb170.ndjson.gz",
+      "bytes": 125005,
+      "sha256": "34a786fa736dc1b8f0854f57c8e15b369ca1e38d7ef2c8279c9cb0d59b6ceab0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803954292167796
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000011-fe8cb687.ndjson.gz",
+      "bytes": 125912,
+      "sha256": "fa4e9009cce4520d7774eb2a7dd7a0950b69560e6f944641785aaf47d16c47d6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803956591113989
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000012-86cd1c93.ndjson.gz",
+      "bytes": 122217,
+      "sha256": "e78bd9824fb1b66985929a2b362e8ce998394da7a5e81e15a8beced17de61fdf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960196260702
+    },
+    {
+      "path": "turn-empty-s19/run/physics/physics-000013-48f80f7d.ndjson.gz",
+      "bytes": 10768,
+      "sha256": "e8e5fa3b2be533bbc3425208599e3e222917a5075b425ce845a421e49659c9fe",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960635339940
+    },
+    {
+      "path": "turn-empty-s19/run/run.json",
+      "bytes": 34911,
+      "sha256": "32c4dc27ac810429b6cff5f378285a5c46dc5ba21fda3f3d7140065d07a91731",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803960650245788
+    },
+    {
+      "path": "turn-empty-s19/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "0f0659e9019ab7370619d38eeeec1f95b7d4789c89e821aff3b2a865d24b40e6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803935610961495
+    },
+    {
+      "path": "turn-empty-s19/trace.json",
+      "bytes": 288991,
+      "sha256": "c71360181045622ccf66b3717947c5f80168b3cd13ae619235def6cd50a93d43",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803961374461453
+    },
+    {
+      "path": "turn-empty-s41/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015731846854
+    },
+    {
+      "path": "turn-empty-s41/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015732556950
+    },
+    {
+      "path": "turn-empty-s41/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015733087376
+    },
+    {
+      "path": "turn-empty-s41/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015733872140
+    },
+    {
+      "path": "turn-empty-s41/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015734262230
+    },
+    {
+      "path": "turn-empty-s41/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015734602820
+    },
+    {
+      "path": "turn-empty-s41/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015734928367
+    },
+    {
+      "path": "turn-empty-s41/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015731196426
+    },
+    {
+      "path": "turn-empty-s41/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015735509211
+    },
+    {
+      "path": "turn-empty-s41/case.json",
+      "bytes": 15866,
+      "sha256": "296fe6a2119e66e20c0fbe15fc05c7abc936b37bd57eb94d27b4ebbadc7296fd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804041455833404
+    },
+    {
+      "path": "turn-empty-s41/input.json",
+      "bytes": 12053,
+      "sha256": "6c1b269ba4b5367e5cbc7989aa1dee7a1e7b085af7e1ac74ba3dac19bd973afb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015735692547
+    },
+    {
+      "path": "turn-empty-s41/report.json",
+      "bytes": 835066,
+      "sha256": "80d5cdbb5a8536b3dcafbb222e4436b9dba249bd813d01852f1dfe3a87b5ee2b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804041433982475
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015743466935
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015743610646
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015743764815
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015743900026
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015744037987
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015744545246
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015744942294
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015743300974
+    },
+    {
+      "path": "turn-empty-s41/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015745126381
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000001-8190c4e4.ndjson.gz",
+      "bytes": 2504,
+      "sha256": "dc43066e39648581d8b48bbcc2d41f53afef2e3a0f89ab9fbc9b761a4a1b8f1d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804018775403657
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000002-c4c872b4.ndjson.gz",
+      "bytes": 4645,
+      "sha256": "6edde030a1cb1849963c78ad59d0a38ce98b1ed4bd394a35c1a68dd591995f81",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804022564630340
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000003-0aafd256.ndjson.gz",
+      "bytes": 4456,
+      "sha256": "32075a862d9879f45b1523045416816b6e8c16b38d308a2e3dab3bfe5fd71305",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804024129675821
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000004-322add93.ndjson.gz",
+      "bytes": 3151,
+      "sha256": "9a8438d71963aee871b24dc0e73bbf5c5426739c68d8e7c3197578d60633d674",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804025475559501
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000005-36ec1ccb.ndjson.gz",
+      "bytes": 2260,
+      "sha256": "0799cfbfd04e3fae897c3be92f8d3f6722caa97b60c4f5399393920c2de930c3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804026783488760
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000006-f96b6eb8.ndjson.gz",
+      "bytes": 2685,
+      "sha256": "7d1d41f8364286bb946b163284ed21d6abe46e6c01e54bb3a5e7f5fc0bfecf8f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804028347551182
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000007-0486ce90.ndjson.gz",
+      "bytes": 4246,
+      "sha256": "739ce4d20c8ceb419e009c642ec8227760911721fb37c13f097dce0f060e448a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804029701592216
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000008-c38db36a.ndjson.gz",
+      "bytes": 4170,
+      "sha256": "5d8528e5745c5091107542ced7d2c0815efbf5b097d9c27284a601d4834185c3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804031185979059
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000009-a29e90d4.ndjson.gz",
+      "bytes": 2194,
+      "sha256": "a3e38c6938fc95fe57ffd09d3243dbfd69c9e4d4b8fb814894ac6c6a2bdec28e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804032641535433
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000010-f95bc0c4.ndjson.gz",
+      "bytes": 3005,
+      "sha256": "1433eb6919c43e097d6cf9fc5e4827a3af8396a9f3bd7304abeb64a51222cc11",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804033983527253
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000011-9bf81363.ndjson.gz",
+      "bytes": 4531,
+      "sha256": "631078b5ba9ebbba9a12b3a838aa58d9747101e2355c65a265f619b979405926",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804035385796433
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000012-72f4d2ec.ndjson.gz",
+      "bytes": 4131,
+      "sha256": "6b2dff09ebc1a8efd4e24baeca7561cd9c8071e25d02ae04f79b215914c19fd1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804037639975500
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000013-1d90f7f3.ndjson.gz",
+      "bytes": 3769,
+      "sha256": "ac4d8d534c471bc0fcdedd5af83e9abe096364b3a38cc59ac4a8d44f9929fa94",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040175678679
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/control-000014-dcda731c.ndjson.gz",
+      "bytes": 678,
+      "sha256": "9bcb9600a48972bff3dd0c3429afd53a93abf6596739da60e4bdf469d212e721",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040706594628
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/manifest.json",
+      "bytes": 7551,
+      "sha256": "fc6d7c68e522f3124055f87bdce3454f0ea94f993983e23b1044f9128f0d7fad",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040710688034
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000001-345bf653.ndjson.gz",
+      "bytes": 108164,
+      "sha256": "25987b81819e6ffb39128bd7babb11dba6240cb314d73fbfbdc0856a2d2388cc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804018769454719
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000002-6647dc9d.ndjson.gz",
+      "bytes": 141883,
+      "sha256": "abbfbb6a5018f87ae33fba22efebed98f7398f480fa12be669c9793984ae9584",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804022560397098
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000003-125f0237.ndjson.gz",
+      "bytes": 143215,
+      "sha256": "2e1309179f60e530ce31ae6ecf440281629b2f4878ef34561d92e593ad379191",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804024123338708
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000004-9296b331.ndjson.gz",
+      "bytes": 134814,
+      "sha256": "9fec3dc97576c9cbf47df4d1ef4f8a2db5a54045c0e385e73443012272e10186",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804025469457393
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000005-2d46636e.ndjson.gz",
+      "bytes": 144383,
+      "sha256": "04d1f708cdd797b3f5f6b989e5512b97c7f14f6da385075d3be1395124e2b10d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804026777391735
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000006-52e38c93.ndjson.gz",
+      "bytes": 144228,
+      "sha256": "9bc48c6086d945397fcc51eac34f29c002435c3fd8aecb153fee1e657e55d843",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804028338533980
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000007-8df6dfdc.ndjson.gz",
+      "bytes": 143727,
+      "sha256": "3df6fbb03b325d26d37b0a76cbeefac9910f2327865012d98bf30787398801d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804029695444148
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000008-5156761f.ndjson.gz",
+      "bytes": 141692,
+      "sha256": "f0586cc200e8a374b35535bf7c61f819d79507bbae0e60a6c1813f66cd0c0b36",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804031177482200
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000009-81cd70da.ndjson.gz",
+      "bytes": 130206,
+      "sha256": "a860282bbd1f338fd2f2fd8ea71366ced7160ba49b082a35fcc13fd6828691ae",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804032636957810
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000010-29801e5d.ndjson.gz",
+      "bytes": 140532,
+      "sha256": "c043f097b920ef8dc5d53598d47d263ae39bbc64b4688eb4a180797ef45d541c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804033979465764
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000011-0cd4a883.ndjson.gz",
+      "bytes": 140855,
+      "sha256": "f5d7767c19c321c2f832426eba8394a45c949489d3d7a34505f8364f090c6357",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804035381743445
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000012-3cfd1c89.ndjson.gz",
+      "bytes": 145643,
+      "sha256": "03adee8b8ff2c3131e1f61f41a7578562bb7b0fcf41b07c951a1445fe4d04efa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804037633371299
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000013-30276f25.ndjson.gz",
+      "bytes": 140131,
+      "sha256": "3e1cc12ddaffa1dd5cb3c40cec804d158264d587775bee26fa28b2ab8153aa5d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040168796099
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/sensors-000014-0e13f363.ndjson.gz",
+      "bytes": 22875,
+      "sha256": "14767ae58853ded008bebe4e32433576f4316433fa2ed1beb5106b8bc294229c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040702572099
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000001-848528fd.ndjson.gz",
+      "bytes": 19932,
+      "sha256": "7c888071152aa637cc86395364bb3108fe5618499aa68ff483b133e0bb295be9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804018766560417
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000002-1837b710.ndjson.gz",
+      "bytes": 20904,
+      "sha256": "65f4d99816027c5495a9d215f01f6d4054da5d3721037f5e1016990da6f23b92",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804022554627621
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000003-88fa6c2e.ndjson.gz",
+      "bytes": 20831,
+      "sha256": "609166e1cc983b4f970f235b5d3f8e7f56938a2d8794dfa273d96b0e5c19184c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804024118394329
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000004-09867745.ndjson.gz",
+      "bytes": 20565,
+      "sha256": "e126b3abc73f22f08adfb2bba76d147ebdfa3db91eef96573958d8f60b01342b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804025463921587
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000005-3b7e6ca7.ndjson.gz",
+      "bytes": 21149,
+      "sha256": "163b56771f0640d9cb68abc10bc4b37195fde9fe9291cea9669b3aadb7b2c209",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804026771392004
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000006-300f8dab.ndjson.gz",
+      "bytes": 20997,
+      "sha256": "e0518a6499927c416f5869d39f9bfd7b581d6a09f6dbf5be52a9ad84827477a0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804028331491272
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000007-041ceea9.ndjson.gz",
+      "bytes": 21345,
+      "sha256": "35ab7f51d8b7efc09c2e5086ab00271d4afb7a8378b2a0abf3cae2071381335b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804029691510245
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000008-9a374685.ndjson.gz",
+      "bytes": 21284,
+      "sha256": "86c5e759ef403850fd08dae234485aaefa24f72fa6a964b6ac41a375460d6abd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804031170474867
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000009-30b31b6b.ndjson.gz",
+      "bytes": 20416,
+      "sha256": "4ddfce88ccd3c3d825b828290146ed15d2e2f4f830e2ec5dd4441cc07adb8ebf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804032630503196
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000010-7a118926.ndjson.gz",
+      "bytes": 21087,
+      "sha256": "026b0c96a9ab6ecfa79a32dc290ef0476747ad51a806ccf1002ae7b225529bfe",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804033972559684
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000011-a8058129.ndjson.gz",
+      "bytes": 21250,
+      "sha256": "e53103f5e178138a5027abe04801fb1d76d867d67fd0e2f3dbdf0ec3588692af",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804035374609485
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000012-7904709e.ndjson.gz",
+      "bytes": 21320,
+      "sha256": "06328686e61e10e42db4aac38ae9df76a407e1996267afbc5f13b1b6f86c70d2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804037629951030
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000013-a78bed30.ndjson.gz",
+      "bytes": 21384,
+      "sha256": "5453d12585f7e3048303c8f2a8669d03f6f267e72cab26c0bc8697c3f4f834ed",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040160982002
+    },
+    {
+      "path": "turn-empty-s41/run/evidence/trajectory-000014-8215cd6f.ndjson.gz",
+      "bytes": 3392,
+      "sha256": "8a8f457d7341e7140e98da03cf4b255b8137dbcd86f7ccea1439faeaacb3e260",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040697426841
+    },
+    {
+      "path": "turn-empty-s41/run/journal.db",
+      "bytes": 548864,
+      "sha256": "3f83899d2847d04f933f80f5ad7d2c096bcd88396403629f9a41cf8d9c078ba5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804041430635499
+    },
+    {
+      "path": "turn-empty-s41/run/physics/manifest.json",
+      "bytes": 2807,
+      "sha256": "2583e1f7e3d62af959391fe19a97907dd6bc443298749e88f7a6ebb75c95d248",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040733870112
+    },
+    {
+      "path": "turn-empty-s41/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040740747233
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000000-54f2a3f3.ndjson.gz",
+      "bytes": 109194,
+      "sha256": "af1423a1850f154803267960b2db54b9f2c90f8349e7213a6dd16baa3a59c4fb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804018741574308
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000001-5e9d5c46.ndjson.gz",
+      "bytes": 122787,
+      "sha256": "102e5ed7a6ffc7ea35fadb88c4385ab9d5ded25a3f633c2bc17b023cb14c7771",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804022521055693
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000002-a2c05570.ndjson.gz",
+      "bytes": 122482,
+      "sha256": "430ea64c0e9dc969ecac4b2b8bfc04a5f602ae49de01b60781bb8e56aca4fdb2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804024086502889
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000003-11cab7a3.ndjson.gz",
+      "bytes": 117422,
+      "sha256": "bc0dbbc2a9206c0a3dacb7c3647e4073e0f4a016d63b475e8509e952b9f9a1de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804025429640563
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000004-aea94414.ndjson.gz",
+      "bytes": 119644,
+      "sha256": "fcb7bafd105c09c943913183a4fff17e98d0d285ae8aebfa0b3678d79adad610",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804026740507123
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000005-f105e9f3.ndjson.gz",
+      "bytes": 120023,
+      "sha256": "a73935c73e8e550991bf661b382505980c8395dccc8c43ba8ff235ada13e49ce",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804028293701852
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000006-e877edd7.ndjson.gz",
+      "bytes": 125769,
+      "sha256": "f86d0d076e80b3fbc906a55cf330f973e9b0097cbc26e64ace05886c49a6f58d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804029658537161
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000007-55ffc4d9.ndjson.gz",
+      "bytes": 125911,
+      "sha256": "c3cf39dacdad2502d5e6ba3564e03c7747bf1c5c4203432aab490142714e5d55",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804031136705644
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000008-9186dabb.ndjson.gz",
+      "bytes": 113905,
+      "sha256": "52dd870972d28e860ad7b358ed3df36c428b9b87717a3e89c4f33a6e44767cc1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804032597767991
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000009-d40f0c24.ndjson.gz",
+      "bytes": 121408,
+      "sha256": "47d72a4e35957ea1f60d88b3b74ae0921dcc3f37c765ea04cfeebfec0dc61f19",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804033942619070
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000010-8adecd41.ndjson.gz",
+      "bytes": 124702,
+      "sha256": "5513e69e9afb9e5c78756f6eeca01a21f57a4f09e296ac7969a7f5c1aa05fd27",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804035342899881
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000011-5af1c6ac.ndjson.gz",
+      "bytes": 126334,
+      "sha256": "8d6bd6ac1d96c873273843ed608ab9a1ee5eb85a282e2e46880a66703571c7e3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804037598770061
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000012-ba823e5b.ndjson.gz",
+      "bytes": 121908,
+      "sha256": "ab60ff906794831e07b318f7303a50d5ad17b0f96553810515188a24bdd0392f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040125738044
+    },
+    {
+      "path": "turn-empty-s41/run/physics/physics-000013-09e4eaab.ndjson.gz",
+      "bytes": 19696,
+      "sha256": "bd8a05a0ccaca79d37a8b2e46ee011b93ad42cfeabb53c5c959636f49fc00eb5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040727767253
+    },
+    {
+      "path": "turn-empty-s41/run/run.json",
+      "bytes": 34928,
+      "sha256": "bd818cdae9e50720de4d8339f7f95380d32131920ef8c6e801cace7c0c8bb90c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804040746555295
+    },
+    {
+      "path": "turn-empty-s41/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "402832094d224948034c235844e3e8847614cee68bbb1a87ded4bfef60b3628c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804015751842542
+    },
+    {
+      "path": "turn-empty-s41/trace.json",
+      "bytes": 290593,
+      "sha256": "bc871b3951284b0cf65bb01b4ef96a872c8403d7cc76873fc6c38a2f39715832",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804041435301290
+    },
+    {
+      "path": "turn-empty-s7/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852894538312
+    },
+    {
+      "path": "turn-empty-s7/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852894897193
+    },
+    {
+      "path": "turn-empty-s7/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852895209282
+    },
+    {
+      "path": "turn-empty-s7/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852895521580
+    },
+    {
+      "path": "turn-empty-s7/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852895840418
+    },
+    {
+      "path": "turn-empty-s7/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852896161466
+    },
+    {
+      "path": "turn-empty-s7/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852896465054
+    },
+    {
+      "path": "turn-empty-s7/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852894193848
+    },
+    {
+      "path": "turn-empty-s7/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852896879937
+    },
+    {
+      "path": "turn-empty-s7/case.json",
+      "bytes": 15865,
+      "sha256": "fe6493e1640ef1090fd4103a195b4cacc93984cc863c0e39c20e616557df6d45",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803878551738512
+    },
+    {
+      "path": "turn-empty-s7/input.json",
+      "bytes": 12053,
+      "sha256": "6c1b269ba4b5367e5cbc7989aa1dee7a1e7b085af7e1ac74ba3dac19bd973afb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803852897029190
+    },
+    {
+      "path": "turn-empty-s7/report.json",
+      "bytes": 864571,
+      "sha256": "4c2ce96e098e7b897968d0a9023d613be96e19c9e17b81e8ec46d2d119ec346e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803878529795289
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907101701
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907256704
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907380998
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907503542
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907671295
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852907909632
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852908129178
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852906928740
+    },
+    {
+      "path": "turn-empty-s7/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852908378057
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000001-72e750a2.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803855133288230
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000002-0e0856a5.ndjson.gz",
+      "bytes": 3695,
+      "sha256": "dc9a57cfbc24dc2f4efc65f1b2e1d14d01cfa58bd92e68e9d2d550265c586d7e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803857982957765
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000003-5622e523.ndjson.gz",
+      "bytes": 4301,
+      "sha256": "6988511364d8d4fb5bc55d32bdee767025c56a3543cd662f522d6cdff3b41dcd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803860074073275
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000004-625233ca.ndjson.gz",
+      "bytes": 4198,
+      "sha256": "6890e8f1b8caf462bf869e5296ed467c269aa823b98b668abc4f73ed9eb11329",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803861852795792
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000005-1abe32ed.ndjson.gz",
+      "bytes": 2669,
+      "sha256": "df2c39edfc116b4a9a6a85fb12624ced88a9c7e8bbedaf4a17acd41d7f762230",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803863301743007
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000006-0e6d4e65.ndjson.gz",
+      "bytes": 2187,
+      "sha256": "1a0c48c58ed4f0c22ca35ee9f2a8897e885933d265477e63e4b73ce895a8c8c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803864623879726
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000007-80e3c2e8.ndjson.gz",
+      "bytes": 3091,
+      "sha256": "2a4536026363a18594b0e5cd48a07ee53fff84c7f44e5c8e35ae3c838c57c537",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803866004899821
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000008-e3f6417b.ndjson.gz",
+      "bytes": 4549,
+      "sha256": "605c47e54f87e4050539d9a2a053c055f0a09cee8f2c9820da51d6bae1c071c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803867426392592
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000009-a605b915.ndjson.gz",
+      "bytes": 3466,
+      "sha256": "6ef6decf565f8b9ae014c765f7efc6b13434ecf2198c5e3eb215fab6c26af6c0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803868851891475
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000010-48f76362.ndjson.gz",
+      "bytes": 2337,
+      "sha256": "575f0ac6fbd60d0e1abf93e514d37ff3760b0ab34c72755b58d0653f25420791",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803870408966648
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000011-4a93819e.ndjson.gz",
+      "bytes": 3929,
+      "sha256": "cf479f33d1d8d98eec4e6ede9551d8d9cb8cedb12b8b5c33dae342668b5ce0c9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803871762032581
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000012-3cd745dc.ndjson.gz",
+      "bytes": 4314,
+      "sha256": "4a1ecba592245728d968d6daf2a2890317d83bf117b0fbc7729c25775ac6d26f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803873263788440
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000013-29750774.ndjson.gz",
+      "bytes": 4286,
+      "sha256": "d328cd08383a9c0f50f9e3efcafef8f72466fd4dbd399adcbc5fff2d23fa3a67",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803875636720611
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/control-000014-21021bd6.ndjson.gz",
+      "bytes": 2757,
+      "sha256": "a8c73e88925dfe8f52e79ca3738776c115b75c7a5ffac52977fc4cd29549545e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877727188318
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/manifest.json",
+      "bytes": 7553,
+      "sha256": "c2cfdf6bbee211ff8e1dbcb6e79b48bc0f635ac527b202b207f9529294090cb0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877733264551
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000001-a4927a96.ndjson.gz",
+      "bytes": 35336,
+      "sha256": "d31904b46013bc002088af65587f786943ead7e266c349da1fdf92bad55d4387",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803855127386542
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000002-2581e4ed.ndjson.gz",
+      "bytes": 139292,
+      "sha256": "bec8bb7951d701f13a640492ef3753489dd6c53a5668c96c6af8ca330316e424",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803857978346433
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000003-cd8822f5.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "0dff6b1561a0f64648b12cdad2194c66de47776ee63f57baf646c607d62add6a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803860066593226
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000004-b3824d23.ndjson.gz",
+      "bytes": 143632,
+      "sha256": "3f4ba141d59762ae524ad9fdf52ff1eae807a54fc427ab64e51b81431d6772de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803861844775150
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000005-4e07b66e.ndjson.gz",
+      "bytes": 134023,
+      "sha256": "ac2fa738eb01f0cad44b21d447a81f01ee0bc077a964596f1ece3a0da5fb7456",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803863295116807
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000006-ca215647.ndjson.gz",
+      "bytes": 144246,
+      "sha256": "87bdf18cf4a11f51e79739d3f18e0f02b4d8edbc9a231ddc40f61ce1efb6713b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803864618857929
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000007-d6cba493.ndjson.gz",
+      "bytes": 144276,
+      "sha256": "2711f6eb9f1d2f75457570b085ff8bd9c5f2922a21b2977243d2f64629b5cea4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803866000461201
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000008-95dc8dbd.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "7bad14ab111ce4133a45b1c6bad5e019dfc90e33ef3675a0d1bc37dbad500cfa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803867421564714
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000009-9c1e850c.ndjson.gz",
+      "bytes": 131046,
+      "sha256": "340c8034adfcbb3ba268357a266f2cfded51e4cd4f6c5da403abf19751e053f0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803868847529273
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000010-82f0749e.ndjson.gz",
+      "bytes": 140737,
+      "sha256": "6f380030bbfefc800fa04ba243cf4360f3ed2812cbbfd1674c6d30d2703b5a45",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803870405544712
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000011-91869cac.ndjson.gz",
+      "bytes": 140180,
+      "sha256": "470084f5092cd23ad52ee234b655cce3db8bbe9d63e755e21e50bc8963590070",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803871757718796
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000012-f794e6cb.ndjson.gz",
+      "bytes": 144082,
+      "sha256": "87b151af8fc0ee78f13ade95b2ccbbbbedb96edff49e474d085ac9f94ac428f7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803873257634123
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000013-840dbfcb.ndjson.gz",
+      "bytes": 143092,
+      "sha256": "d2071c6aa2af332535a28ee76396ec5d44f66f77bf7e2dd965a8d11c67ecb0ac",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803875630587544
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/sensors-000014-476b7cce.ndjson.gz",
+      "bytes": 114347,
+      "sha256": "b791a4e8eccd8083e4f138549436505d28b0e83128cec8e727cbd00c209070c6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877722797449
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000001-87862a49.ndjson.gz",
+      "bytes": 16370,
+      "sha256": "b9f0aabe159737abd16aee758f6e5e989d5e246e7dc42f3283081da6c38d602d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803855122692626
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000002-39f506b6.ndjson.gz",
+      "bytes": 21099,
+      "sha256": "d8d263c1e1bfc30ff9da97ee22f820090012d1cbcc5875306e8e26fee5eab801",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803857971419769
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000003-cb5cbc62.ndjson.gz",
+      "bytes": 20844,
+      "sha256": "1c6f19ac5b983431232dc2d2d3df7860a129b838e412564b755cbe1a54f07987",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803860061890893
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000004-ef1b9f36.ndjson.gz",
+      "bytes": 20973,
+      "sha256": "42cddb128e52a5024393210426242a06b3c60b55ac58670680879e72d7b73654",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803861839189676
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000005-e0d5f1d8.ndjson.gz",
+      "bytes": 20489,
+      "sha256": "50a450f1d731c099f1bee0abc1b4fda3bbacd1cadd2ea5f2b0d32149d920b641",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803863290600852
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000006-01e7f161.ndjson.gz",
+      "bytes": 21032,
+      "sha256": "d7c2ed047817c3beb634ec42d9f98577a6dfb701982edcc19a4e7b45a7a4ad45",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803864612107184
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000007-80e64a83.ndjson.gz",
+      "bytes": 21022,
+      "sha256": "ffd1674ba6e3b5da1d7fa43a44a0fa21d79300094756fb16800fbec182f3e531",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803865995485821
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000008-e210d91a.ndjson.gz",
+      "bytes": 21291,
+      "sha256": "68096cd197506e6471244322ba1a4c1c640652394068985246a6b93d7c901434",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803867415663110
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000009-3e5729cf.ndjson.gz",
+      "bytes": 20634,
+      "sha256": "6c7f4fbfb3794a895064a9396673a24bf4bcd303bcd505c6fb6cac69d6f8629c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803868841446373
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000010-a075c376.ndjson.gz",
+      "bytes": 21097,
+      "sha256": "fb65bf34b93404d054a9d72e238a8553a61fa3f4282a017d56ca52633f4a4d9b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803870398805593
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000011-60f9393b.ndjson.gz",
+      "bytes": 21140,
+      "sha256": "1f93587ae0854956163ce5ef1d974d01ec537d97094e0226c4d6cbd9e3c2c985",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803871750593920
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000012-04fdfc68.ndjson.gz",
+      "bytes": 21289,
+      "sha256": "01ace41cd7965544eaea7e094811976d1bbecc2fc02382b346fe4e478f691330",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803873251621350
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000013-a15f2a03.ndjson.gz",
+      "bytes": 21427,
+      "sha256": "d57641d305274d91f0ae09a579dbd54fe5805b45f1ed83a6e727b918b1bb27ab",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803875625638123
+    },
+    {
+      "path": "turn-empty-s7/run/evidence/trajectory-000014-f4d1f8f7.ndjson.gz",
+      "bytes": 17387,
+      "sha256": "64953532880d22c8b09ccba072626dd794f275297d0b9467f95f15b59617a7cf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877716681632
+    },
+    {
+      "path": "turn-empty-s7/run/journal.db",
+      "bytes": 548864,
+      "sha256": "de000b742d3a4d377bf193decadbd46e6e13bf5ea8f2f90a4ae9076a510d13bd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803878526771028
+    },
+    {
+      "path": "turn-empty-s7/run/physics/manifest.json",
+      "bytes": 2806,
+      "sha256": "4711b7b901737dd6f552f293b98c961d1124215468c523c63f84a996aac8ea5f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877802980036
+    },
+    {
+      "path": "turn-empty-s7/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877806899772
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000000-a123c6de.ndjson.gz",
+      "bytes": 78675,
+      "sha256": "caeba91bba87d0e786ef84512cfbc6ecfb7d4648c56079e2c729bd59cf05e56a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803855093384231
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000001-a983aa9f.ndjson.gz",
+      "bytes": 122780,
+      "sha256": "c4fde424b392986f49cbef69010f013af496781d375b3b680c7ad2abbf12782e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803857936000808
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000002-10ac8f79.ndjson.gz",
+      "bytes": 122469,
+      "sha256": "7c19549656895a2420c3bd7225a6c6d776bf05ed8203e0d3194f1f8c88f74a5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803860023984471
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000003-d3c765f9.ndjson.gz",
+      "bytes": 122259,
+      "sha256": "1bd23f0ef001156139a8712c539d6f4cb6ee08680783996c53249dedbec58201",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803861802026393
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000004-bb5b1171.ndjson.gz",
+      "bytes": 116529,
+      "sha256": "ea9880a22133af3b219d8ac5b2b762b4d0d1fe74ed6e15fffe416909ba6e75eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803863257724978
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000005-0fb59056.ndjson.gz",
+      "bytes": 119050,
+      "sha256": "83a05545722f676257d6c65fad09f36af1131ed18779ab21203c1e92bcdd56de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803864576968561
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000006-9fdabf3b.ndjson.gz",
+      "bytes": 121270,
+      "sha256": "c6d0a727fbafebe7c623b013d37c5664d4e18ead74777c0b7ea18e4d9e78d29e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803865963675382
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000007-e5d8b523.ndjson.gz",
+      "bytes": 127886,
+      "sha256": "6391e09e9ab5d1c941951a9a8476eeb3ecbcdfe8beabd91805b6beddec23cf42",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803867383786503
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000008-94a9f58e.ndjson.gz",
+      "bytes": 118323,
+      "sha256": "32b74719fcd589cfc24c9bb0df4eacadc8be0d01463bd4791321399a402b3406",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803868807642233
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000009-17e8e002.ndjson.gz",
+      "bytes": 119528,
+      "sha256": "9b70581f172af92db80be2f5f97b049b01dd937d04797ab90cb4384bf85e4ff3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803870367753167
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000010-775c15c8.ndjson.gz",
+      "bytes": 122184,
+      "sha256": "e877b3d60edb9425f3bbec43a509935bb486f4df94059e5b05a8a45946cb381b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803871718983693
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000011-c2359f89.ndjson.gz",
+      "bytes": 126104,
+      "sha256": "53775a144d2f7093492e7ba5503cdb3256b23cdf4a152220d4f8916692ae3c2a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803873223757356
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000012-28637f59.ndjson.gz",
+      "bytes": 124750,
+      "sha256": "f91292a0d5d651e24bca4304ea603721ef142f6eb106fb74320918b65550b816",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803875596913447
+    },
+    {
+      "path": "turn-empty-s7/run/physics/physics-000013-4546987e.ndjson.gz",
+      "bytes": 98534,
+      "sha256": "aeb2022e2d710aeb223d31a5d7a5fae7a79ecefe6d7007af63b5069ee8b9cf19",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877797060348
+    },
+    {
+      "path": "turn-empty-s7/run/run.json",
+      "bytes": 34932,
+      "sha256": "ab181801faf0f1f057a43c134556a5912f2a8641f3e75c2c0d46d55d13b31aee",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803877812786877
+    },
+    {
+      "path": "turn-empty-s7/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "2b829c3af500903751fcdca288f4eb37658ef73091dcc89fc598c8279ff9b0af",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803852956776165
+    },
+    {
+      "path": "turn-empty-s7/trace.json",
+      "bytes": 305100,
+      "sha256": "f3b0dbafe1f59daeb0f3ecb8ff6c54a9ccbac2177bcb7de5b38da9a35d8a95da",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803878531493695
+    },
+    {
+      "path": "turn-offset-s19/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986878784819
+    },
+    {
+      "path": "turn-offset-s19/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986879287328
+    },
+    {
+      "path": "turn-offset-s19/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986879727377
+    },
+    {
+      "path": "turn-offset-s19/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986880206428
+    },
+    {
+      "path": "turn-offset-s19/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986880575976
+    },
+    {
+      "path": "turn-offset-s19/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986881042317
+    },
+    {
+      "path": "turn-offset-s19/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986881875707
+    },
+    {
+      "path": "turn-offset-s19/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986877980555
+    },
+    {
+      "path": "turn-offset-s19/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986882542844
+    },
+    {
+      "path": "turn-offset-s19/case.json",
+      "bytes": 15883,
+      "sha256": "ccc5be10059d65aa5d795fc8791fd2db9cdcd65d905d50efb2ad8d0b7390f3c5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015725957500
+    },
+    {
+      "path": "turn-offset-s19/input.json",
+      "bytes": 12054,
+      "sha256": "1281f5fdac6a5acb6ec759a84e979ce9684490de6365ec7a7285e080d1a5ad2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803986883288232
+    },
+    {
+      "path": "turn-offset-s19/report.json",
+      "bytes": 1828167,
+      "sha256": "7f8d67d165aed6768ad06093eef10f3ce933b536345b91961a48e7de0f9478d8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015699377779
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986891687923
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986891832217
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986891957761
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986892134680
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986892264058
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986892386310
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986892506687
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986891538503
+    },
+    {
+      "path": "turn-offset-s19/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986892701982
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000001-8b161138.ndjson.gz",
+      "bytes": 2335,
+      "sha256": "98d02b36f716fc9374e1cc24f78976b46a437bcf0520443d16646ea513934838",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803989784711350
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000002-093367ef.ndjson.gz",
+      "bytes": 2612,
+      "sha256": "17cf96f690cc19ceb3199aa83c626519c6c2f62e96e8020c784457ae2e53313e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803992609474110
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000003-65ec1ab7.ndjson.gz",
+      "bytes": 4660,
+      "sha256": "c1a25ee13cf77cace6511b3d1454c4f3ff9253e47af54d920866a530fa8d1f20",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803994832670169
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000004-d7010992.ndjson.gz",
+      "bytes": 4463,
+      "sha256": "05ef1db65de8619e3be59c4bfb7968b65c57d9a5ec53a513b52072f9e7f6d2c9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803996671687130
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000005-1213f766.ndjson.gz",
+      "bytes": 3003,
+      "sha256": "8e158b0979ecba7a3cf61d2780d58bffcf7483e86fbdb9ff42b0723d401cb836",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803998141449922
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000006-fee69837.ndjson.gz",
+      "bytes": 2236,
+      "sha256": "d4fc573aeddea62545910ace7a1274328090de29793cc2c50ae030592b5576ec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803999531726056
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000007-42c3670e.ndjson.gz",
+      "bytes": 2971,
+      "sha256": "6efa1f796b82eb971edbae9fff02a5d1631be41269e0eb782fb76ef94139d95f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804001126579357
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000008-a46b59e2.ndjson.gz",
+      "bytes": 4653,
+      "sha256": "5a8abccc7b11c4d1120756e5717999a37ad66128b2595de99f7aa3b808a93f23",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804002691773840
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000009-c2f91491.ndjson.gz",
+      "bytes": 3573,
+      "sha256": "08b6db8347794d9a29653bdca7b38f6e7b11130e04da067d3a3c1be957226c06",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804004230578690
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000010-ce2ce4cc.ndjson.gz",
+      "bytes": 2414,
+      "sha256": "0b3bc9d8f6f4b5cd041d6ee0c68addbf59a86e17a83c64a77c274708cf80c1f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804005882223705
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000011-a6ababd3.ndjson.gz",
+      "bytes": 3769,
+      "sha256": "599c7abbe1d6fde3a406735000844705b45294a67eeeebd467a4c047bda368f9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804007835598108
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000012-b4589d94.ndjson.gz",
+      "bytes": 4259,
+      "sha256": "b467d6a006adb0be122270bf87b114e99d84de3a2aabc04fe40ad4ccf739a121",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804009525711430
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000013-ea16bf11.ndjson.gz",
+      "bytes": 4273,
+      "sha256": "bf101a713d1d4d46554eca4dbf0fc5642664f96e99423850015ff292a783a63b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804012164870318
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/control-000014-77fac608.ndjson.gz",
+      "bytes": 2978,
+      "sha256": "3565db6161e5e9346d06281aa04db7b37e1aaa16c689b8ebecaaed1c47fa44f3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014789770995
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/manifest.json",
+      "bytes": 7554,
+      "sha256": "c6d08b36d1fc056080912228599b08b0c54c554ce544f1894f037d299fa30f99",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014795907020
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000001-b3549adb.ndjson.gz",
+      "bytes": 130507,
+      "sha256": "b0c08bb18c3cd606fb22ef724d508acd82d75318a9044da16e9596d1065cfdb4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803989777149050
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000002-f4b9e488.ndjson.gz",
+      "bytes": 139187,
+      "sha256": "773870b2694a23d151bd9970f8e4013f794a373990c544cd6a5470b30cdc2cbf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803992604725984
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000003-b9261ccc.ndjson.gz",
+      "bytes": 142298,
+      "sha256": "2face93f8c058989f48228b53d1dae132735602c7f8a4b435f202771099d8930",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803994828112755
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000004-6a575e36.ndjson.gz",
+      "bytes": 143171,
+      "sha256": "608063e1930045edb52793f3592333c20f3ca85e488046c67bc597f0622eda5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803996665471978
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000005-6078c27c.ndjson.gz",
+      "bytes": 137731,
+      "sha256": "9b662a0355804ed84b2a47458a59eeb99140ff3ad57bd4da5db535f6d1aecf60",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803998137668855
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000006-a53dec67.ndjson.gz",
+      "bytes": 144437,
+      "sha256": "e51120347e91cf448ccbedef6e1654597f9a90e1ea53c55560b1f4886dec2243",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803999525480112
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000007-7406deb9.ndjson.gz",
+      "bytes": 144356,
+      "sha256": "5768f71982e248ebcce88af5b861946dee9eada33067f06153bf4ecfe9203e69",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804001118946638
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000008-666b3103.ndjson.gz",
+      "bytes": 143100,
+      "sha256": "bfd42bd9dff99941a54dcbfdca5b3113f505bfeab0637f9ac2f8242585b5d39e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804002685386352
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000009-5add87d0.ndjson.gz",
+      "bytes": 134813,
+      "sha256": "7fb52dfa1c1f2b9d0dd8f161cde823204eef1d6fbafd4ef00539deadcbc8dbd6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804004224493498
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000010-33cba740.ndjson.gz",
+      "bytes": 140720,
+      "sha256": "2341361c563ee5e01bdd049117d94de5f7bbaf65fbe97ea6130aa5b5411eaf1e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804005876960112
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000011-eccca9f5.ndjson.gz",
+      "bytes": 140294,
+      "sha256": "13ade51392886501b6c965e549681aa3405c30c81eae452e12d6a9f1f929f121",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804007830574644
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000012-493acbd5.ndjson.gz",
+      "bytes": 143579,
+      "sha256": "4c5a15c073cc6e9789725417c324676442a05d2479d029493a17392ef40db92d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804009521609274
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000013-f8e0e3dd.ndjson.gz",
+      "bytes": 143809,
+      "sha256": "627d39ed1c3593cc8326ff440145336f767077a9ef3e6b7e751939df2e71cead",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804012158986880
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/sensors-000014-b63441fa.ndjson.gz",
+      "bytes": 119953,
+      "sha256": "a12761f31407b81f958aa7567692bd2f405a37be77110ee54fe1268d20c94626",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014783320422
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000001-1b2f436f.ndjson.gz",
+      "bytes": 20682,
+      "sha256": "fce833639162ba4694c8939edcbe1aa041aba0cbf1ce3fab94685714294e2784",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803989769275660
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000002-4e8a33a4.ndjson.gz",
+      "bytes": 21099,
+      "sha256": "fb8a6f9f17cf3e8bfbb6a8f5cfec1d186bbeb2c2ceeafc3cb5d35cd61fdcfd24",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803992599718062
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000003-441236a8.ndjson.gz",
+      "bytes": 21004,
+      "sha256": "a4e7d6b2cc588a03781959772c5f5272a022e566cb68d57154f21608324b09b2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803994825424583
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000004-72832e4a.ndjson.gz",
+      "bytes": 20962,
+      "sha256": "1e87f34e610c1a59eb64aac863e487a93b1218b765f4f39ce3e9c7309918da18",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803996659545290
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000005-d74a7b92.ndjson.gz",
+      "bytes": 20589,
+      "sha256": "a9d39e8e50c53e8209bd1da4d4afdc956d0defa88a2a670c5ec07da89d05153e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803998133117150
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000006-74537b50.ndjson.gz",
+      "bytes": 20977,
+      "sha256": "6ce86d0ca7e8556bd0c6fb7c57be5014601d631b7658c874c0f74d4f1bf60f7f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803999518815577
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000007-9180113c.ndjson.gz",
+      "bytes": 21053,
+      "sha256": "f6d01c7f124b355bc2342feefed22a239285ca8a95dd92a02a71a5026d259c1b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804001115592412
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000008-0a73ed14.ndjson.gz",
+      "bytes": 21346,
+      "sha256": "1dfec5ba7c62693518bc9ff48b5aa81d345f2526ac91cfa70cbdf7124842cc4b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804002679618667
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000009-2ddcca5a.ndjson.gz",
+      "bytes": 20872,
+      "sha256": "35176eecb036b6151deb5946a349c7ed7f4c177325e9fa514c1b896bc6c36d69",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804004218557352
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000010-e75a76ed.ndjson.gz",
+      "bytes": 20988,
+      "sha256": "fcd48f3d161143d8c310764c5de362906abde23085eb1a40213374e2619a05b2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804005870538040
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000011-7a1c267e.ndjson.gz",
+      "bytes": 21135,
+      "sha256": "3f9e9590a9e433cd28d08783beb2d20ec858d29509841de20ab5a33fca681f48",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804007823618688
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000012-5493f91f.ndjson.gz",
+      "bytes": 21305,
+      "sha256": "f393b1b52c615a6c8866752a63da2e602679a4c73681751d76228f7ceeb1424c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804009514610067
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000013-502514ce.ndjson.gz",
+      "bytes": 21356,
+      "sha256": "7f9f00a883635f8de75baf3459b67869189c9efab995db65ded227b2d8f743ce",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804012154743722
+    },
+    {
+      "path": "turn-offset-s19/run/evidence/trajectory-000014-96f213f8.ndjson.gz",
+      "bytes": 18244,
+      "sha256": "f8917b72abb11055758d2cb67430534175948672101171e94ab9e9a898541aaa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014776783182
+    },
+    {
+      "path": "turn-offset-s19/run/journal.db",
+      "bytes": 548864,
+      "sha256": "cd818fd2c712f6df8974198916d5d448f42a650ed5a15b1416a19c00050bb86e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015691573641
+    },
+    {
+      "path": "turn-offset-s19/run/physics/manifest.json",
+      "bytes": 2808,
+      "sha256": "66c9c110caad31ca967149aa99dbd9fac6d3273e2df743e1d12f2df0186af68f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014852199184
+    },
+    {
+      "path": "turn-offset-s19/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014857781325
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000000-b048b01e.ndjson.gz",
+      "bytes": 183308,
+      "sha256": "e30d79b2e18c3bbea54a2d0a47d5054853ecbba04168097bbce05e146e82f8ec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803989743349618
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000001-496b9bc8.ndjson.gz",
+      "bytes": 191745,
+      "sha256": "c51022ca05ecd70fb8db5cdcf9cc03f8bfdd6192d93268a1a82b2cad5f356ee3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803992566676768
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000002-2a994d8e.ndjson.gz",
+      "bytes": 193509,
+      "sha256": "092945ba7241c9df960c8b7b6b48b896cb6ce82fd395d4c5b3af933d030fc887",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803994792665002
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000003-b4dec05a.ndjson.gz",
+      "bytes": 192379,
+      "sha256": "a173f707a8470b0f5608447e8035496d9640b6507878c8897c0b78a09b10bbf9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803996627439012
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000004-50003fb5.ndjson.gz",
+      "bytes": 184003,
+      "sha256": "1e1a87755bd6366f66dbdc09a8cd9c8c25b6d3136dbf0cdaf1c758ec0a3d0557",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803998101619008
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000005-fc5e136d.ndjson.gz",
+      "bytes": 190179,
+      "sha256": "f982c091a0fbfe7d667d7be6a07103b3ef70aae0c03673525de718329f9980fe",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803999485524904
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000006-b3781960.ndjson.gz",
+      "bytes": 191455,
+      "sha256": "89e66c08088aa1f6d404707132f47c3911fc445d86a2d1fa258adcd75ff4d799",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804001082601578
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000007-29784885.ndjson.gz",
+      "bytes": 198207,
+      "sha256": "2c02f3693add13033396546deaf08befb66ef7a0a692f3b070c3ff879b0c5afa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804002646593790
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000008-28667a73.ndjson.gz",
+      "bytes": 186451,
+      "sha256": "c061e0502675f7e8ddbfbc8d75bf031d807a8f8ab13cf8ab67372ed509080b5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804004181614072
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000009-894d704f.ndjson.gz",
+      "bytes": 190611,
+      "sha256": "f1a102687037f599dec1c1b8ad90d46c786e89f4864450f8aac6a8f41613f28d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804005837654082
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000010-1048489e.ndjson.gz",
+      "bytes": 191739,
+      "sha256": "365ac76156a90f5a7f7b67960cd38580677a3b0e0ef2b76293c2f8b1dd4cb503",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804007791707497
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000011-5b8ffa0a.ndjson.gz",
+      "bytes": 196191,
+      "sha256": "9358255ab6aaff6228f51735974de4e9e89b5461f3d253852edfcf50e440b814",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804009486846658
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000012-0e450439.ndjson.gz",
+      "bytes": 195088,
+      "sha256": "3579768e4e4d9ee515e8cef17e5ea5fbc36ba29871c1523a04e0122e4e55bf8a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804012121576092
+    },
+    {
+      "path": "turn-offset-s19/run/physics/physics-000013-c86e1a75.ndjson.gz",
+      "bytes": 162999,
+      "sha256": "4d2319644521a245ccbad8f70f3f588f480c799ee97b65b2b637720243e04d8e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014846599127
+    },
+    {
+      "path": "turn-offset-s19/run/run.json",
+      "bytes": 46366,
+      "sha256": "f6915b412c8afb8549a1425ba91e74c15cffeab08ff30ddda262442167cbf531",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804014863639429
+    },
+    {
+      "path": "turn-offset-s19/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "f69f5dd52ffd363816a59be688147be643deacb7a342dd821e4b3c51ce0dd233",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803986903255836
+    },
+    {
+      "path": "turn-offset-s19/trace.json",
+      "bytes": 305990,
+      "sha256": "5504c7068218ee42ce9b5c2fba3b36a2a4e16935178cf82ffaaeb9ae462f595d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804015701271812
+    },
+    {
+      "path": "turn-offset-s41/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068486006681
+    },
+    {
+      "path": "turn-offset-s41/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068486968573
+    },
+    {
+      "path": "turn-offset-s41/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068487564542
+    },
+    {
+      "path": "turn-offset-s41/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068488627977
+    },
+    {
+      "path": "turn-offset-s41/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068488993942
+    },
+    {
+      "path": "turn-offset-s41/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068489329615
+    },
+    {
+      "path": "turn-offset-s41/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068489649412
+    },
+    {
+      "path": "turn-offset-s41/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068485022080
+    },
+    {
+      "path": "turn-offset-s41/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068490403259
+    },
+    {
+      "path": "turn-offset-s41/case.json",
+      "bytes": 15883,
+      "sha256": "6d1a7a0d79bf4cd810ac69d704d299185b6048c0eb90fe65a909885633619748",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804100014314202
+    },
+    {
+      "path": "turn-offset-s41/input.json",
+      "bytes": 12054,
+      "sha256": "1281f5fdac6a5acb6ec759a84e979ce9684490de6365ec7a7285e080d1a5ad2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804068490628805
+    },
+    {
+      "path": "turn-offset-s41/report.json",
+      "bytes": 1827873,
+      "sha256": "9a0a4a107739d1e3ee5a672238a67f3c00033ee023e64aa1b7c645088bfc7515",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804099967975131
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498098937
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498233148
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498353233
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498469443
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498586946
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498704739
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498818866
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068497960768
+    },
+    {
+      "path": "turn-offset-s41/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068498990620
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000001-0a88583f.ndjson.gz",
+      "bytes": 2294,
+      "sha256": "5d52732b9e40876c08480edd0e87809e0277566b4d7c0865f6bfa4dffb943d59",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804071382493712
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000002-1ed67b54.ndjson.gz",
+      "bytes": 2448,
+      "sha256": "a1d4548e8233e72d94a4d856e137c4ad665866c44330b3b073bd070078d98e7e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804074998324239
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000003-f8addd99.ndjson.gz",
+      "bytes": 4630,
+      "sha256": "f0f43f5261439c4e9a20398bf34953fb2bbdfd8334d10881218716fc7c2154d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804077404089824
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000004-61c7ba42.ndjson.gz",
+      "bytes": 4476,
+      "sha256": "5e91040f6e805a854987030a8649cf14255bd01eb6963e1a34844bd71871a6d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804079267637678
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000005-cb038cf4.ndjson.gz",
+      "bytes": 3140,
+      "sha256": "20fb225c8c0ee1dfcbd9695859e35025b54cf43fe871fced7e911fc8f00e7e04",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804081011527994
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000006-813ea2fa.ndjson.gz",
+      "bytes": 2324,
+      "sha256": "2737dfe249c47fea48d234d8cf6e0d2a82516ae99fac9268b59e6fd0c221588c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804082538650470
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000007-44ef920e.ndjson.gz",
+      "bytes": 3003,
+      "sha256": "3538608e7556819e67338b0e895fb6b0dce75449687dced461fadbd13b555e79",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804084174428662
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000008-21997bea.ndjson.gz",
+      "bytes": 4608,
+      "sha256": "f65a93bbbb5bde54208d44033a55ece8c55ac0508d8aabc144790feedd87299f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804086237864307
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000009-cf0d678a.ndjson.gz",
+      "bytes": 3605,
+      "sha256": "b35f819af7a0353bcaa2453eb1d12a4f5c8d0c1ded401b88bb34cb2d6778ae2b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804088689610124
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000010-7712f994.ndjson.gz",
+      "bytes": 2421,
+      "sha256": "4db16a9e5ca0daf718b8f2179a75d135ee7a99fb683c37fc8b71e50512a03ded",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804090310800808
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000011-89aa47d5.ndjson.gz",
+      "bytes": 3820,
+      "sha256": "5a2c5a738cbb19607c48b25e9ca73cdcc7d673518bd56f424e40d978cd1f05b5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804092104559258
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000012-e190917e.ndjson.gz",
+      "bytes": 4247,
+      "sha256": "4da8f72e90cf4748976b513b09085e2f8943bb6cbb03c97e63458b63c820255a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804093750804261
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000013-3e64e9ed.ndjson.gz",
+      "bytes": 4222,
+      "sha256": "2bfb1c4449dee652fa7f8de5c618b99a16a556614f7d5ae8d13b3ef1a6fd0923",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804096798838519
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/control-000014-d8f4585c.ndjson.gz",
+      "bytes": 3011,
+      "sha256": "8392235c1ce76f461133b2c0dadfa0b13982d62cd0c350b21f91e1a4aa08fddb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099127757576
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/manifest.json",
+      "bytes": 7554,
+      "sha256": "e80ca13001e08d0a2bd634016438bb61da3a524b410a52fa4db0a16d8d653581",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099130461124
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000001-a88da504.ndjson.gz",
+      "bytes": 127994,
+      "sha256": "1b7a396634d007a91895c22fa8b6c03235e90b7845bc72cb3c7f2d9e58727cf4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804071378431348
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000002-29008c67.ndjson.gz",
+      "bytes": 139178,
+      "sha256": "a9d8d6a0609699a924408609318b9d053638b0e0eb640874d6052e32227610a9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804074992361550
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000003-8ac5b5c1.ndjson.gz",
+      "bytes": 141933,
+      "sha256": "b07c1a6f57aa1f922f694594d72da40db791d3d5177134f99c80bb37d7108e7a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804077401273066
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000004-9c46365f.ndjson.gz",
+      "bytes": 143046,
+      "sha256": "5119133fb8d0941bc3c2676d2fbeeed8a4b2b1f56d42963ce8bc99f880f81a2f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804079261620988
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000005-7802611d.ndjson.gz",
+      "bytes": 138557,
+      "sha256": "059f033b9b262179432765f6818f476282166c8c65586420528fac46bd371d5d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804081007657926
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000006-526ea1a7.ndjson.gz",
+      "bytes": 144482,
+      "sha256": "1c373cce33e74ef5ba546602f77137f53d070e77a5a250ba7544414a092cecbd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804082532778866
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000007-ae08e547.ndjson.gz",
+      "bytes": 144441,
+      "sha256": "cca6a925265da1e1fb027d11142e5853ceb07b96c39f6f8a556c20e22aa3fc61",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804084168412056
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000008-bdf6f867.ndjson.gz",
+      "bytes": 143107,
+      "sha256": "135c5f5de531c62fe7895f4d585889d832bfe1da5337d7fe110a526c40cf3e3c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804086232499879
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000009-a72a092f.ndjson.gz",
+      "bytes": 134563,
+      "sha256": "0c8aaecbe9885273f32d61fca7a23223575836f96f8ee3c60db510166819c849",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804088683563309
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000010-198bc754.ndjson.gz",
+      "bytes": 140810,
+      "sha256": "a85c5da8b5705b7c13f1040af13388ee6262b3ccc5171833f04f1b65ca304b2f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804090306615067
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000011-aaf2d336.ndjson.gz",
+      "bytes": 140385,
+      "sha256": "8f8ed0dde6b20eca064d1194828d213afd24d6406309bc3ace40a74dd35a1ae3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804092098501276
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000012-9d1ae586.ndjson.gz",
+      "bytes": 143752,
+      "sha256": "251e81f95332be94e73310b1c5128680b58d1dd12f3c69814c7fcc72f8dcdb55",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804093744700236
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000013-986d6194.ndjson.gz",
+      "bytes": 143595,
+      "sha256": "7d5e70d689298ab5c2027d81601c007f1544e0407cb7eadd10d014684c3f6654",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804096792866622
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/sensors-000014-b2633900.ndjson.gz",
+      "bytes": 119956,
+      "sha256": "c23bfcdf5c4c172ddb9f2d162ae71cc36be47cffe370016bdb46e26f13eb51ad",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099123683921
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000001-f721fa87.ndjson.gz",
+      "bytes": 20532,
+      "sha256": "414458a9d46867696946af42f7a7efecd5c9459c22c01f04a5cb6b0a2003723c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804071372460576
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000002-0569dc6a.ndjson.gz",
+      "bytes": 21038,
+      "sha256": "5015815ad084f509b96a11b6f3d0b586f52daa46f20c8929db64ce9d0876b39a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804074986033354
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000003-7fbc5cb9.ndjson.gz",
+      "bytes": 21042,
+      "sha256": "d995f3027af80d0048aed4388c1f6f9fe204736ff520084b4bd712174f63d2a7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804077395306752
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000004-8fcf5bc5.ndjson.gz",
+      "bytes": 20834,
+      "sha256": "a91691e7c6af059daab934d7c9df661c36d5d15fed471f9ceac667875a7f22f7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804079255994346
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000005-457cea9c.ndjson.gz",
+      "bytes": 20784,
+      "sha256": "1afeb003f7013ec67ca251082545aa382e32da4f3e10e79899e12a890a12b8f6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804081003386100
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000006-f367cc6f.ndjson.gz",
+      "bytes": 21036,
+      "sha256": "6eea2b8e37774908761e6299193be2656049b39f60a9737ff37c85a0a015d53e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804082528334662
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000007-37aa3506.ndjson.gz",
+      "bytes": 21058,
+      "sha256": "0f9054d42d4acc6f8eed35c8a1e815ea0e6990d6f834ed7e9c38163d4b4a95c8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804084162245821
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000008-04ce4aa6.ndjson.gz",
+      "bytes": 21343,
+      "sha256": "bc7088452ce0b99fdd68c5a3b627d4c5f1ef03006f145663c834cd7cd906ebc3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804086226487731
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000009-083e3391.ndjson.gz",
+      "bytes": 20806,
+      "sha256": "1368ba49d1193c65242d10ec7915241130a293f4f3c47f96b7fe40c0d0f5da95",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804088677781081
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000010-ffe75ee6.ndjson.gz",
+      "bytes": 21075,
+      "sha256": "36280165a05ad78fa204532fa4311b2e663bd3b70f006c77195fbde6e6c38b20",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804090300557168
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000011-504d05bb.ndjson.gz",
+      "bytes": 21153,
+      "sha256": "9ddc6ba33e1992181f3e5d9241608976380ec290d6fdf250aaa02ec3b730c160",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804092093566147
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000012-fdb079c1.ndjson.gz",
+      "bytes": 21346,
+      "sha256": "ca3b25b07bcdaefa8cc368c28bbbb7d702450f944fcd5025dd167a770521cbcd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804093738269789
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000013-f223b98d.ndjson.gz",
+      "bytes": 21393,
+      "sha256": "e5a25524b6eff5d260a2c8c5fbeff22ad5e25802afb23d6ffa2782d53e08f06c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804096788616088
+    },
+    {
+      "path": "turn-offset-s41/run/evidence/trajectory-000014-e928746f.ndjson.gz",
+      "bytes": 18463,
+      "sha256": "e970439142feef40a5e75f6613040bbf91940156204fcd33a616df83126d003e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099117751358
+    },
+    {
+      "path": "turn-offset-s41/run/journal.db",
+      "bytes": 548864,
+      "sha256": "1594231bb3211ee0866c8c669cb42515c7f78db5d0ba7664b7b275d5bfae8d55",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804099960407622
+    },
+    {
+      "path": "turn-offset-s41/run/physics/manifest.json",
+      "bytes": 2808,
+      "sha256": "322847f6e924e19ba2bec2362b67c4f7b83bf6bfe231bad44389a605321e27c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099186841707
+    },
+    {
+      "path": "turn-offset-s41/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099192724269
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000000-3f9be6d2.ndjson.gz",
+      "bytes": 180566,
+      "sha256": "e80aef4ba9e7820a0b50c9721b6d4b29319a0ce9925cd628fc761cd7c2d08d19",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804071340345048
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000001-ee230923.ndjson.gz",
+      "bytes": 191387,
+      "sha256": "0d12e5c4a0f70ef7a80bd3d7d9740de3ef4ea690c4365f4e6b1fbad0c30f217b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804074956423538
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000002-b0438785.ndjson.gz",
+      "bytes": 192947,
+      "sha256": "38442fd65de904953b6c59fe471689d268fe6562d53ba2d790ad081094001752",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804077365470848
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000003-34818167.ndjson.gz",
+      "bytes": 192303,
+      "sha256": "1ed9130859f4dad601923227ae8cebb703984c3c424821d28a97fde5b93c4592",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804079215688466
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000004-11179b9d.ndjson.gz",
+      "bytes": 185410,
+      "sha256": "040122aece3215ac2e7be8ba7e3d41fb0d9e4fd71b345e2a412aa99bbbe25eff",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804080972610471
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000005-2b9faca2.ndjson.gz",
+      "bytes": 190063,
+      "sha256": "ad5bdd60da9ff2e78da6be47427badcb50974d9567f7599c29c671d58ab4dc20",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804082495584290
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000006-76f62dab.ndjson.gz",
+      "bytes": 190971,
+      "sha256": "4e246b2ce666858c94f9fd4fe62191cc33777f4047b27cefc6ced2ae5a8bd2e2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804084130493675
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000007-f4253f7a.ndjson.gz",
+      "bytes": 197557,
+      "sha256": "1a8bfd015369330c959732ce97a4e7fdf1bdb657dce1861ab63065d596155127",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804086196926248
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000008-3abab761.ndjson.gz",
+      "bytes": 186058,
+      "sha256": "7e842a6b9f3a69fd8b2fae1503cff6e4ee402806bb8d702e86de0ebeaf1e42a4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804088632918287
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000009-9c334e19.ndjson.gz",
+      "bytes": 190611,
+      "sha256": "f6a0d302a81c202229ed4472192d7981cf016fe4122d3557e2b11befb65881e5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804090270973811
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000010-4a98c11a.ndjson.gz",
+      "bytes": 192110,
+      "sha256": "7200b1dc7e03c0b62f568d2b2438b46963eac3e1d575f5ac26478aaa7962253d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804092061589164
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000011-597011ff.ndjson.gz",
+      "bytes": 196417,
+      "sha256": "de4f7d4e9d6b7cd8e121de0d27e3b0a8210f70da7f4f1521bb54768799cb2160",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804093706347557
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000012-34021d40.ndjson.gz",
+      "bytes": 195415,
+      "sha256": "74dbb19dd8bab9cbade2a2e9bb561583f1aae64bbd9fbfd2a3d76b6985d1ed55",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804096759784244
+    },
+    {
+      "path": "turn-offset-s41/run/physics/physics-000013-e49a9dae.ndjson.gz",
+      "bytes": 165004,
+      "sha256": "f091ea396ba8f2cfbde1a625186b2958c2fa1959212decfe15f1220e1aec6e3d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099180652639
+    },
+    {
+      "path": "turn-offset-s41/run/run.json",
+      "bytes": 46354,
+      "sha256": "491351db7fb6d443324f502ba21285bab658508adebedfa3658ecd870bb3b3b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804099200779079
+    },
+    {
+      "path": "turn-offset-s41/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "54eed1e820b44d01198f56225374104b057b55e5583ddc7b5ca328293d9423f0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804068508697875
+    },
+    {
+      "path": "turn-offset-s41/trace.json",
+      "bytes": 306168,
+      "sha256": "d3fa8d05d42a947cbba2fd14abf2cfdba7860b55ab2867e82d6c93f48c27b596",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804099973611314
+    },
+    {
+      "path": "turn-offset-s7/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905944895221
+    },
+    {
+      "path": "turn-offset-s7/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905945432480
+    },
+    {
+      "path": "turn-offset-s7/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905945803195
+    },
+    {
+      "path": "turn-offset-s7/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905946284204
+    },
+    {
+      "path": "turn-offset-s7/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905946601043
+    },
+    {
+      "path": "turn-offset-s7/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905946899340
+    },
+    {
+      "path": "turn-offset-s7/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905947197553
+    },
+    {
+      "path": "turn-offset-s7/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905944521297
+    },
+    {
+      "path": "turn-offset-s7/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905947842440
+    },
+    {
+      "path": "turn-offset-s7/case.json",
+      "bytes": 16611,
+      "sha256": "0ead3291a98f0118e1538e79ebebcf27f3fc60edbb19fe7dfb5d38d483cd8661",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935561354616
+    },
+    {
+      "path": "turn-offset-s7/input.json",
+      "bytes": 12054,
+      "sha256": "1281f5fdac6a5acb6ec759a84e979ce9684490de6365ec7a7285e080d1a5ad2e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803905947990525
+    },
+    {
+      "path": "turn-offset-s7/report.json",
+      "bytes": 1924905,
+      "sha256": "5a08746365535e399d52577cd7cf2872f60d57699d414096e659e6b14a506a87",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935503417297
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905953960090
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954088967
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954208761
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/cup-offset.json",
+      "bytes": 4191,
+      "sha256": "70b65bfc4f8f6cde0cc6b0be9f8520db42dc0940054d311c16fca96f54276fdd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954382764
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954504516
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954614518
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954759395
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "59eb1106a0bf35c1884455952f23915e60548b1b09f555e78e1ca3bcbb5a1bec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905953829421
+    },
+    {
+      "path": "turn-offset-s7/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "c8967916576c4bf765427337559252a1ffec9b3a144a4d6fe7e8c0f14aec0652",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905954919357
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000001-db6c23c1.ndjson.gz",
+      "bytes": 1531,
+      "sha256": "1b37d05a4308a80717c00575894d33d0dacc9ff2f9b25d74b609a936a255e463",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803907968237864
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000002-aea3f39e.ndjson.gz",
+      "bytes": 2276,
+      "sha256": "8467d869d5d5418c7d8414d734528fa40b0511cec9b60449c12bd30a4978c5da",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803910681222351
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000003-37943cc0.ndjson.gz",
+      "bytes": 3559,
+      "sha256": "d16645a9a614235b310a558f06dba3b8f9a703fd5375152217c5d7e7b55e8fe0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803913334225776
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000004-122db887.ndjson.gz",
+      "bytes": 4300,
+      "sha256": "3678cb3d2b951b3eda497a0e12166bbffcc8be1746e2a67247b9291b2494ea96",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803915484368916
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000005-cdb43f4e.ndjson.gz",
+      "bytes": 4179,
+      "sha256": "16a0c04535ab26dc525834b14cbd83bca098e40d5f094c2c21edcc6b7526ab22",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803916984791918
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000006-3c48fbda.ndjson.gz",
+      "bytes": 2683,
+      "sha256": "4792bb03b58535249943d65381d4471749e586a6b59e7c0e94b28776e76e7cf4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803918507440023
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000007-184f05bc.ndjson.gz",
+      "bytes": 2278,
+      "sha256": "257bd42473e4c1c680b42e3ff340b460522b79e2842d72dd215d2ef98f628dbd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803919903447092
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000008-a8029a6e.ndjson.gz",
+      "bytes": 3475,
+      "sha256": "f87fabbdd46e0d4eba3710e98763db90e8d235822b05d096a6e15c0176fb50a5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803921480480202
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000009-b9e47c85.ndjson.gz",
+      "bytes": 4460,
+      "sha256": "1b47d31c8b636f07824abfa108e83238d884093155f6336a24a5ff8f72829a4d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803923303700882
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000010-6e4b44b1.ndjson.gz",
+      "bytes": 3234,
+      "sha256": "ec508f34a460f9c094a58e01392e81fd88bb64f1d9f4013dc3c58e1ff107adf5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803925153799164
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000011-173bbd34.ndjson.gz",
+      "bytes": 2305,
+      "sha256": "f53c416b945c3378a371664176870aa500686158e971f080bf85a1aa72b118ad",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803926690407558
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000012-56d6070b.ndjson.gz",
+      "bytes": 3968,
+      "sha256": "23fb1edeadcecf734fbdc34a3654c63dc8944454a93089b9e12445de1bf0c0ba",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803928273557151
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000013-d7d70a49.ndjson.gz",
+      "bytes": 4579,
+      "sha256": "d946071c2dacd79a9ae7e9d25ab443d30105d7f5daacfc4376787566a80ce096",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803930027787442
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000014-3a5bef85.ndjson.gz",
+      "bytes": 4399,
+      "sha256": "3acc6f8dcb0bfa78a990c122687884292c442f499f85827e9d81492a91bb74e0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803932833974040
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/control-000015-d878c08e.ndjson.gz",
+      "bytes": 2088,
+      "sha256": "edcaea6fed5ce8c40bf8de7feae60be5417d88f6c61be87d37ae80f89d883c92",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934584513307
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/manifest.json",
+      "bytes": 8060,
+      "sha256": "cdf513daa3e24aab242226f8af6389cfba0603954e1d602d32e1c39f42c728ff",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934590680000
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000001-c48f7f9a.ndjson.gz",
+      "bytes": 100291,
+      "sha256": "a281e474a0129e757216c5b8df4b69b58cf0f0cdcd96dc5528255da43de36683",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803907962383885
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000002-705ab8f0.ndjson.gz",
+      "bytes": 139475,
+      "sha256": "1e02e7a3d95a9bbca1da12db0427b4ffd02ce3e20044ffb35496d5d31d264ab7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803910675161077
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000003-7b43a8fd.ndjson.gz",
+      "bytes": 139149,
+      "sha256": "cdd0e7516eef8f54f84a240e8881e3c5faec731a253f672c73a1deeea36dbc1e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803913328395215
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000004-2b80d9cd.ndjson.gz",
+      "bytes": 143338,
+      "sha256": "5fc6aa1377f54602401a3ac62a08155c8655373214d63d622c32579b0e8c085a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803915478583022
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000005-a62e4386.ndjson.gz",
+      "bytes": 143687,
+      "sha256": "ad5d0feb142ddad669c101db4064c4d17f537d7f7326e8f4676eb67f2098bbc4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803916980777847
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000006-8d6a7529.ndjson.gz",
+      "bytes": 137895,
+      "sha256": "5d98c6951b548b484f05dd8b1e037db8766a1f965ca28771b191c1d3df4fa3bb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803918501377124
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000007-696d6438.ndjson.gz",
+      "bytes": 144182,
+      "sha256": "d54b38a5506ddd9fddee4d5a54da734899dae26c2e0f6a75343191e2c485c4b0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803919900341370
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000008-cfb2da2a.ndjson.gz",
+      "bytes": 144267,
+      "sha256": "f8035dbdb995ee9259b68a1d3cfb766222f850ee966272dcc5605723443dd401",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803921473921794
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000009-d5d77c09.ndjson.gz",
+      "bytes": 142579,
+      "sha256": "e7ac8e1d59254108e180fdc6ea291de203587dba4af519666e43753e9432c5fd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803923291426873
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000010-00d85a7b.ndjson.gz",
+      "bytes": 134363,
+      "sha256": "5849d5012014d23e60217ce468ee0847faca7fd7840287f0402d5add172389df",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803925147510011
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000011-75e78b4c.ndjson.gz",
+      "bytes": 140583,
+      "sha256": "193a965fb7e95e6d0c063287e1c0d6f9e857ea8c9385c9b41b246ad5a9720419",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803926683951693
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000012-02c11ad8.ndjson.gz",
+      "bytes": 140452,
+      "sha256": "de1299609448df81e789836389386f72ae433d737f2e2d864efd96cb0180250b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803928267730423
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000013-a9660769.ndjson.gz",
+      "bytes": 144659,
+      "sha256": "4f590d4366d19ba35cc5635db7f57d1cbaa8ae73ba6e1bc3510a2127305cc738",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803930022121425
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000014-f00572f9.ndjson.gz",
+      "bytes": 142191,
+      "sha256": "c108560276ca48976a433de90cb73fce3adf1f878a60cdd289641d9ee32f0ca4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803932830800192
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/sensors-000015-5c92cf4b.ndjson.gz",
+      "bytes": 95157,
+      "sha256": "66274bfb79754bda9ab678503f6687a35343dd598149e365c3e57281d68c8353",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934581565088
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000001-daa32209.ndjson.gz",
+      "bytes": 18275,
+      "sha256": "1df84c7d13c780299dfb1168331c74707ddc17936ea975df524a5989731cbe52",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803907955082589
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000002-36c1e8c7.ndjson.gz",
+      "bytes": 21104,
+      "sha256": "8730f894e3a05208e9bc27f25d7ad76f251baf2e67348ffd1f06863c7e9bda68",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803910668825507
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000003-83c4636a.ndjson.gz",
+      "bytes": 21130,
+      "sha256": "e828118560e1f56527b21142ace967fea854a0d69567792a622032c0bc537a0c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803913324257850
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000004-5b293e21.ndjson.gz",
+      "bytes": 20974,
+      "sha256": "22362b7f7a09dcab2b67fe9ae4778eb8b48848239710edee3041417519188aaa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803915474274237
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000005-8613ebbf.ndjson.gz",
+      "bytes": 21048,
+      "sha256": "4e8f92124dfdf4ddad42ccc62102e197fbb82fc5d8e881a09ab78f4ea6f0233b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803916973838099
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000006-16227453.ndjson.gz",
+      "bytes": 20650,
+      "sha256": "9d8d3995bd9d48e09f70d34c2b4971280ccc17f52f65340b505ba2099537d240",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803918495671189
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000007-4359e8a0.ndjson.gz",
+      "bytes": 20952,
+      "sha256": "898758ad637f94b0589e91004c539683cb69b6110aedcf069ef78a62e462f626",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803919893381705
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000008-a5d05385.ndjson.gz",
+      "bytes": 21181,
+      "sha256": "e20019557f8af2331885d13f735d9b8391c8d3c468ca31cde9c7412466661e01",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803921467444888
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000009-1c9b1152.ndjson.gz",
+      "bytes": 21208,
+      "sha256": "e415236d641ca0378fdf456868f7fb4c0d53e2fd423c88cf2a0dc80019e7667c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803923248638323
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000010-c18e7f9f.ndjson.gz",
+      "bytes": 20817,
+      "sha256": "8b6bebf9bd9fc6870ec72a317cea690ac1237b0af05a0894e95043d877db7ed5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803925141024938
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000011-02eb604c.ndjson.gz",
+      "bytes": 20980,
+      "sha256": "f896e5c3c3fcb5146bbab351916fcc0a3153accae5fb7e8b42661fe28fd1e9ac",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803926676095221
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000012-4460c61f.ndjson.gz",
+      "bytes": 21173,
+      "sha256": "d30e190f7f293b5807e6921d91d91a344a0456f4f3eff1be12d2b68f69edb072",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803928263826228
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000013-2e9373f9.ndjson.gz",
+      "bytes": 21285,
+      "sha256": "6b8172bf908e59d70121b9e88acdd3167e54731029737246ba13dec22e83509c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803930018402234
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000014-72f40ebd.ndjson.gz",
+      "bytes": 21419,
+      "sha256": "8537737915474c0cbca2529b582f9ce3001e55991fc30c34ce312c0c68161ade",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803932824556956
+    },
+    {
+      "path": "turn-offset-s7/run/evidence/trajectory-000015-1de7e005.ndjson.gz",
+      "bytes": 14357,
+      "sha256": "e8fa1bb4177611487a72e5879079ec25a358f55f35a1205e1b0428129a2fd0e9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934577702520
+    },
+    {
+      "path": "turn-offset-s7/run/journal.db",
+      "bytes": 548864,
+      "sha256": "226d18b3c95457796668885f056b2c0b9b4c089a064efb7fbec800e66bd668b1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935492882319
+    },
+    {
+      "path": "turn-offset-s7/run/physics/manifest.json",
+      "bytes": 2944,
+      "sha256": "9e5892eb1ce1e30f6af4398a0e63bd86f2cd9bb86012ade45fd566570c29199a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934646245526
+    },
+    {
+      "path": "turn-offset-s7/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934652646723
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000000-76ec6221.ndjson.gz",
+      "bytes": 155113,
+      "sha256": "03b64fe49e2ddbd527d1130ba1c492d4a3993adc73faa7f7c928a32a6f0e70f0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803907919367998
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000001-1dbd1c0e.ndjson.gz",
+      "bytes": 191155,
+      "sha256": "bb2eda0982b40e4d2506c2859d5b90331ff4e7b6357948c74c82e3c017cabda7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803910640155374
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000002-4e19770e.ndjson.gz",
+      "bytes": 192990,
+      "sha256": "41b98a09563ba565d94cea498ad6e6f7a8e24d7ec951a8553cf1f085f4efadc1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803913298273848
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000003-d6c85c86.ndjson.gz",
+      "bytes": 192949,
+      "sha256": "5579ff92f6fa2c7d34021b0165bd14d3c3adc11825585f2dd276d5c00ca6c70f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803915443050559
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000004-f7628f56.ndjson.gz",
+      "bytes": 192325,
+      "sha256": "ee29e4a9b1e2239e44f65a65180f3f7443fe43a97d72f2617aeebeaa5375b8c2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803916937966964
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000005-f046e05c.ndjson.gz",
+      "bytes": 183807,
+      "sha256": "1c4e121dd0ecaf58c749942b0cc7fdea91a9d4efa848b2d08754f60ae7c6076c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803918455666564
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000006-4a78e328.ndjson.gz",
+      "bytes": 190279,
+      "sha256": "55dee75d25240e89c34574603dfb283dc61beb7fd0cd6e154f60a91b7ec1f1a6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803919860425872
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000007-a91cf8f7.ndjson.gz",
+      "bytes": 193183,
+      "sha256": "c0349282785e7542d86453184f721091b8275953115b3365f5973dd8e205e4c1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803921434423136
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000008-e4c13d9a.ndjson.gz",
+      "bytes": 197435,
+      "sha256": "e9d4e48958525818539aa84dc6790eaed89e49abc69db6592beba80885dcf538",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803923191597271
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000009-93dbf62b.ndjson.gz",
+      "bytes": 183708,
+      "sha256": "eee24b5164742a355766c45e0e9f7c09f4f403cfa5fca3bb5076fa081ef84c5f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803925107631138
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000010-fbb01a7d.ndjson.gz",
+      "bytes": 190317,
+      "sha256": "348228f1337ae653290a71c980098464f3659e4d643435b079939f7b91dd5745",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803926635267289
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000011-55570415.ndjson.gz",
+      "bytes": 192729,
+      "sha256": "53fee89545754d812c8b5d0d17126af2dfac613acd380c0747af1205355f11f4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803928234629253
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000012-c358830c.ndjson.gz",
+      "bytes": 197078,
+      "sha256": "e0cc2d7b80c46173569ec119b13997b3d32d07965847169c3b353af8409ca9a7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803929986507461
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000013-f0eb6db3.ndjson.gz",
+      "bytes": 195010,
+      "sha256": "2ff70db188dc9d5c5b80def0a4f43daa30e652e5858d89025524ce872dc845a5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803932791735625
+    },
+    {
+      "path": "turn-offset-s7/run/physics/physics-000014-f6443406.ndjson.gz",
+      "bytes": 128317,
+      "sha256": "8d23f5065e63eb8c48d22374f33fada05436394b0469757d7a7029cf166989db",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934641804781
+    },
+    {
+      "path": "turn-offset-s7/run/run.json",
+      "bytes": 48190,
+      "sha256": "568523bf57360b466522dab8f80bbff949bd3df8b8348614b72e37ed6169d5a0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803934660567071
+    },
+    {
+      "path": "turn-offset-s7/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "bd85468d75f211cc3d07bb741a60f240afb7c59727d028b4bfbd12b09663855d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794803905962423323
+    },
+    {
+      "path": "turn-offset-s7/trace.json",
+      "bytes": 324235,
+      "sha256": "450a25a85c806d2888aca0a0ca1d8bf953668c1537b606c7a07f23be8d0f3b49",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794803935512654419
+    },
+    {
+      "path": "worker-kill/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252792318689
+    },
+    {
+      "path": "worker-kill/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252792939902
+    },
+    {
+      "path": "worker-kill/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252793416905
+    },
+    {
+      "path": "worker-kill/bundle/cup-center.json",
+      "bytes": 4188,
+      "sha256": "0290f280969726aadde1137c502f128738912e4b08c9328b1af4fd6c914ecfc5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252793964575
+    },
+    {
+      "path": "worker-kill/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252794414371
+    },
+    {
+      "path": "worker-kill/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252794864040
+    },
+    {
+      "path": "worker-kill/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252795245876
+    },
+    {
+      "path": "worker-kill/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "2b6d210787d8fc67950c3364fbdb735f11c5a11e55b30b8d57332135f71fda1c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252791728351
+    },
+    {
+      "path": "worker-kill/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9a416e1c783c01627c402171ef4ccbaf60e05d4d67a2d04724bd71d90d262a41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252795997257
+    },
+    {
+      "path": "worker-kill/case.json",
+      "bytes": 8006,
+      "sha256": "69a6407c11e08323f4a6b83835e6ac8d152f101036c4cc2c6f9cd5e29d6014da",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804257629172713
+    },
+    {
+      "path": "worker-kill/injected-ack.json",
+      "bytes": 26236,
+      "sha256": "eedc9e56f6da37cb772ffb18a2b4ceb22d45354b5f43e45d5af5d31d81d69a55",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804257441054753
+    },
+    {
+      "path": "worker-kill/input.json",
+      "bytes": 12054,
+      "sha256": "6a95fd7f5f9f0c923a2dafb239487e8376c16e2339b27b99d9611c1b69450776",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804252796196758
+    },
+    {
+      "path": "worker-kill/report.json",
+      "bytes": 295350,
+      "sha256": "e9cf44abbbcbd8917d834a3d9f393b78618d971414ce2005f41e2156adf8f773",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804257622160830
+    },
+    {
+      "path": "worker-kill/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252802972639
+    },
+    {
+      "path": "worker-kill/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803117307
+    },
+    {
+      "path": "worker-kill/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803244516
+    },
+    {
+      "path": "worker-kill/run/bundle/cup-center.json",
+      "bytes": 4188,
+      "sha256": "0290f280969726aadde1137c502f128738912e4b08c9328b1af4fd6c914ecfc5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803421976
+    },
+    {
+      "path": "worker-kill/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803550435
+    },
+    {
+      "path": "worker-kill/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803680853
+    },
+    {
+      "path": "worker-kill/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803794562
+    },
+    {
+      "path": "worker-kill/run/bundle/navigation-scene.json",
+      "bytes": 15283,
+      "sha256": "2b6d210787d8fc67950c3364fbdb735f11c5a11e55b30b8d57332135f71fda1c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252802819847
+    },
+    {
+      "path": "worker-kill/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9a416e1c783c01627c402171ef4ccbaf60e05d4d67a2d04724bd71d90d262a41",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252803986813
+    },
+    {
+      "path": "worker-kill/run/evidence/control-000001-4e1e3999.ndjson.gz",
+      "bytes": 1531,
+      "sha256": "1b37d05a4308a80717c00575894d33d0dacc9ff2f9b25d74b609a936a255e463",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804254788195099
+    },
+    {
+      "path": "worker-kill/run/evidence/control-000002-da42320f.ndjson.gz",
+      "bytes": 3423,
+      "sha256": "a123352636fc70d5081b218be65b79cccf830ad94243522689aed0e04a04112f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257410122492
+    },
+    {
+      "path": "worker-kill/run/evidence/control-000003-af24fd7f.ndjson.gz",
+      "bytes": 153,
+      "sha256": "ecab59c5b494e023859eefc54c185826ec5df248818c3371449f2e0807cbbe99",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257500159298
+    },
+    {
+      "path": "worker-kill/run/evidence/manifest.json",
+      "bytes": 2030,
+      "sha256": "d6bb62b9bf21d2eec81541100067e8a671c9b019e0d7dedcaa93f963a4fb3e52",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257506049048
+    },
+    {
+      "path": "worker-kill/run/evidence/sensors-000001-f6dd3076.ndjson.gz",
+      "bytes": 98822,
+      "sha256": "989d84b1306223f82a17bd4ff5c7989a7c92f5fcfd3bea46ec6bbc4b10ed8dd2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804254782114181
+    },
+    {
+      "path": "worker-kill/run/evidence/sensors-000002-45c414fe.ndjson.gz",
+      "bytes": 138924,
+      "sha256": "5641e3a62e1dbcd7633d3b3d6a0ae63fe1e0cc3821bbbe85801fcb6595435f83",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257404057908
+    },
+    {
+      "path": "worker-kill/run/evidence/sensors-000003-c551cc76.ndjson.gz",
+      "bytes": 2918,
+      "sha256": "9b4a25b4fc09747a38db2970a72d795757bf48e089d312e04205ec5922c699b0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257494170589
+    },
+    {
+      "path": "worker-kill/run/evidence/trajectory-000001-5e84f337.ndjson.gz",
+      "bytes": 18831,
+      "sha256": "bd94a4bfeffc91dc0e55ed9f2616af14f8b29182c104d4511b844eaa27343e26",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804254776136556
+    },
+    {
+      "path": "worker-kill/run/evidence/trajectory-000002-e107ef1d.ndjson.gz",
+      "bytes": 21131,
+      "sha256": "cb14590c8c07b23c858591a15b643bf96e9a0600a77244250cbad875e83dcd28",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257399113414
+    },
+    {
+      "path": "worker-kill/run/evidence/trajectory-000003-6b8e4f2d.ndjson.gz",
+      "bytes": 251,
+      "sha256": "dfbd2b56049189ccc2c4670d7144ba219c1838fba62f3faa06ca9742902fd7f3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257488026295
+    },
+    {
+      "path": "worker-kill/run/journal.db",
+      "bytes": 270336,
+      "sha256": "1994efca91476ae68b32fa213f426e62ce960d6850ac2d817e0e3b0377e42958",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804257620385109
+    },
+    {
+      "path": "worker-kill/run/physics/manifest.json",
+      "bytes": 1378,
+      "sha256": "f8aa7a63e619740f4ed1d582973beb6a4b056e768504f0b023e768c6ca009e27",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257478734188
+    },
+    {
+      "path": "worker-kill/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257474087446
+    },
+    {
+      "path": "worker-kill/run/physics/physics-000000-57f47f4c.ndjson.gz",
+      "bytes": 172439,
+      "sha256": "d7acce9234ca465933f982e410eede959a91faa1125938350741bc8a67e60858",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804254750225205
+    },
+    {
+      "path": "worker-kill/run/physics/physics-000001-fd5dfdd9.ndjson.gz",
+      "bytes": 193112,
+      "sha256": "e0a138abd212f8a8c8e25a2aa41ee4be72abdfbd295270c78ce625bf50b1142d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257367099604
+    },
+    {
+      "path": "worker-kill/run/physics/physics-000002-8e90792e.ndjson.gz",
+      "bytes": 1282,
+      "sha256": "ae4d3c3164230584cf1cc3948df0e18cbc6fb124985fbfa8e3120600daac2905",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257464087792
+    },
+    {
+      "path": "worker-kill/run/run.json",
+      "bytes": 24360,
+      "sha256": "fa37d87922c767d527e8a7b5f790b4554373da29d74c162005cd2886c0d8e442",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804257518149759
+    },
+    {
+      "path": "worker-kill/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "99ec9416f48dc58f119c6e6b8df68bd73a2f4e636516d9ad1f32db1211001e23",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804252811952578
+    },
+    {
+      "path": "worker-kill/trace.json",
+      "bytes": 43805,
+      "sha256": "e0dc4ba99adc97ed2d30cadf1d78cb41cfb09a153b543b0f1fcc0228d9f1f12e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804257622437874
+    }
+  ],
+  "directories": [
+    "ack-loss",
+    "ack-loss/bundle",
+    "ack-loss/bundle/physical-model",
+    "ack-loss/run",
+    "ack-loss/run/bundle",
+    "ack-loss/run/bundle/physical-model",
+    "ack-loss/run/evidence",
+    "ack-loss/run/physics",
+    "ack-loss/run/worker",
+    "brake-fast",
+    "brake-fast/bundle",
+    "brake-fast/bundle/physical-model",
+    "brake-fast/run",
+    "brake-fast/run/bundle",
+    "brake-fast/run/bundle/physical-model",
+    "brake-fast/run/evidence",
+    "brake-fast/run/physics",
+    "brake-fast/run/worker",
+    "brake-slow",
+    "brake-slow/bundle",
+    "brake-slow/bundle/physical-model",
+    "brake-slow/run",
+    "brake-slow/run/bundle",
+    "brake-slow/run/bundle/physical-model",
+    "brake-slow/run/evidence",
+    "brake-slow/run/physics",
+    "brake-slow/run/worker",
+    "catalog",
+    "catalog/components",
+    "catalog/documents",
+    "catalog/models",
+    "cup-fall",
+    "cup-fall/bundle",
+    "cup-fall/bundle/physical-model",
+    "cup-fall/run",
+    "cup-fall/run/bundle",
+    "cup-fall/run/bundle/physical-model",
+    "cup-fall/run/evidence",
+    "cup-fall/run/physics",
+    "cup-fall/run/worker",
+    "engineering",
+    "engineering/blobs",
+    "engineering/bundles",
+    "engineering/bundles/34e0b1b9ec3e3120f4c5067325c9fb3cdb4fb61e89bb741e9e3b9d14f258648d",
+    "engineering/bundles/36d9b9b6454c26a91a967078ffd8df021abb923fb685666a9b2d7358f1b4d966",
+    "engineering/bundles/6bda693b914366f3f23a9afb9d249de6a803513004625ef1fcf7687a841eca7e",
+    "engineering/bundles/aae209859fff2ee353d9bb6a140080900afc9de5612e426cdf82ac92c40f4f76",
+    "engineering/bundles/bb58c68e70247e65238e1714180162032c667d90ab16cd6f7c0afcc875fb1ba0",
+    "engineering/bundles/be061271d966a0e7d48d30fa8ef7af3e90f29e23650637658f3bce81132e4de1",
+    "engineering/bundles/fafa6571d2fc052a06bde596d66740ee8cec62cb0831005434c41daf41717b26",
+    "engineering/staging",
+    "engineering/validations",
+    "engineering/validations/artifacts",
+    "engineering/validations/cache",
+    "engineering/validations/reports",
+    "friction-high",
+    "friction-high/bundle",
+    "friction-high/bundle/physical-model",
+    "friction-high/run",
+    "friction-high/run/bundle",
+    "friction-high/run/bundle/physical-model",
+    "friction-high/run/evidence",
+    "friction-high/run/physics",
+    "friction-high/run/worker",
+    "friction-low",
+    "friction-low/bundle",
+    "friction-low/bundle/physical-model",
+    "friction-low/run",
+    "friction-low/run/bundle",
+    "friction-low/run/bundle/physical-model",
+    "friction-low/run/evidence",
+    "friction-low/run/physics",
+    "friction-low/run/worker",
+    "repeat-center-s7-r1",
+    "repeat-center-s7-r1/bundle",
+    "repeat-center-s7-r1/bundle/physical-model",
+    "repeat-center-s7-r1/run",
+    "repeat-center-s7-r1/run/bundle",
+    "repeat-center-s7-r1/run/bundle/physical-model",
+    "repeat-center-s7-r1/run/evidence",
+    "repeat-center-s7-r1/run/physics",
+    "repeat-center-s7-r1/run/worker",
+    "repeat-center-s7-r2",
+    "repeat-center-s7-r2/bundle",
+    "repeat-center-s7-r2/bundle/physical-model",
+    "repeat-center-s7-r2/run",
+    "repeat-center-s7-r2/run/bundle",
+    "repeat-center-s7-r2/run/bundle/physical-model",
+    "repeat-center-s7-r2/run/evidence",
+    "repeat-center-s7-r2/run/physics",
+    "repeat-center-s7-r2/run/worker",
+    "repeat-center-s7-r3",
+    "repeat-center-s7-r3/bundle",
+    "repeat-center-s7-r3/bundle/physical-model",
+    "repeat-center-s7-r3/run",
+    "repeat-center-s7-r3/run/bundle",
+    "repeat-center-s7-r3/run/bundle/physical-model",
+    "repeat-center-s7-r3/run/evidence",
+    "repeat-center-s7-r3/run/physics",
+    "repeat-center-s7-r3/run/worker",
+    "turn-center-s19",
+    "turn-center-s19/bundle",
+    "turn-center-s19/bundle/physical-model",
+    "turn-center-s19/run",
+    "turn-center-s19/run/bundle",
+    "turn-center-s19/run/bundle/physical-model",
+    "turn-center-s19/run/evidence",
+    "turn-center-s19/run/physics",
+    "turn-center-s19/run/worker",
+    "turn-center-s41",
+    "turn-center-s41/bundle",
+    "turn-center-s41/bundle/physical-model",
+    "turn-center-s41/run",
+    "turn-center-s41/run/bundle",
+    "turn-center-s41/run/bundle/physical-model",
+    "turn-center-s41/run/evidence",
+    "turn-center-s41/run/physics",
+    "turn-center-s41/run/worker",
+    "turn-center-s7",
+    "turn-center-s7/bundle",
+    "turn-center-s7/bundle/physical-model",
+    "turn-center-s7/run",
+    "turn-center-s7/run/bundle",
+    "turn-center-s7/run/bundle/physical-model",
+    "turn-center-s7/run/evidence",
+    "turn-center-s7/run/physics",
+    "turn-center-s7/run/worker",
+    "turn-empty-s19",
+    "turn-empty-s19/bundle",
+    "turn-empty-s19/bundle/physical-model",
+    "turn-empty-s19/run",
+    "turn-empty-s19/run/bundle",
+    "turn-empty-s19/run/bundle/physical-model",
+    "turn-empty-s19/run/evidence",
+    "turn-empty-s19/run/physics",
+    "turn-empty-s19/run/worker",
+    "turn-empty-s41",
+    "turn-empty-s41/bundle",
+    "turn-empty-s41/bundle/physical-model",
+    "turn-empty-s41/run",
+    "turn-empty-s41/run/bundle",
+    "turn-empty-s41/run/bundle/physical-model",
+    "turn-empty-s41/run/evidence",
+    "turn-empty-s41/run/physics",
+    "turn-empty-s41/run/worker",
+    "turn-empty-s7",
+    "turn-empty-s7/bundle",
+    "turn-empty-s7/bundle/physical-model",
+    "turn-empty-s7/run",
+    "turn-empty-s7/run/bundle",
+    "turn-empty-s7/run/bundle/physical-model",
+    "turn-empty-s7/run/evidence",
+    "turn-empty-s7/run/physics",
+    "turn-empty-s7/run/worker",
+    "turn-offset-s19",
+    "turn-offset-s19/bundle",
+    "turn-offset-s19/bundle/physical-model",
+    "turn-offset-s19/run",
+    "turn-offset-s19/run/bundle",
+    "turn-offset-s19/run/bundle/physical-model",
+    "turn-offset-s19/run/evidence",
+    "turn-offset-s19/run/physics",
+    "turn-offset-s19/run/worker",
+    "turn-offset-s41",
+    "turn-offset-s41/bundle",
+    "turn-offset-s41/bundle/physical-model",
+    "turn-offset-s41/run",
+    "turn-offset-s41/run/bundle",
+    "turn-offset-s41/run/bundle/physical-model",
+    "turn-offset-s41/run/evidence",
+    "turn-offset-s41/run/physics",
+    "turn-offset-s41/run/worker",
+    "turn-offset-s7",
+    "turn-offset-s7/bundle",
+    "turn-offset-s7/bundle/physical-model",
+    "turn-offset-s7/run",
+    "turn-offset-s7/run/bundle",
+    "turn-offset-s7/run/bundle/physical-model",
+    "turn-offset-s7/run/evidence",
+    "turn-offset-s7/run/physics",
+    "turn-offset-s7/run/worker",
+    "worker-kill",
+    "worker-kill/bundle",
+    "worker-kill/bundle/physical-model",
+    "worker-kill/run",
+    "worker-kill/run/bundle",
+    "worker-kill/run/bundle/physical-model",
+    "worker-kill/run/evidence",
+    "worker-kill/run/physics",
+    "worker-kill/run/worker"
+  ],
+  "declaredDependencySymlinks": []
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:08:03.712850+00:00",
+  "id": "post-n1-irsim-default-results-original",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-original",
+  "originalInventory": {
+    "files": [
+      {
+        "path": ".last-run.json",
+        "bytes": 45,
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+        "mode": "0o644",
+        "mtimeNs": 1794809170539328395
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-irsim-default-results-original",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/irsim-default-results-original",
+      "archive": "post-n1-irsim-default-results-original.tar.gz",
+      "archiveBytes": 153,
+      "archiveSha256": "7ed74f81a8b1586119d8f603fcbe447432898897285047ab63c8abbcaadeaaa0",
+      "memberIndex": "post-n1-irsim-default-results-original.members.json",
+      "memberIndexSha256": "e32836fc773b3e4677720944b3af4bb24c5e616b5966ab844765809dc31f426f",
+      "memberCount": 1,
+      "memberBytes": 45,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-default-results-original.extract.json",
+      "safeExtractionReceiptSha256": "cf3871d9929b61e9d872867ae6ba732cfa77ee9f56ed8af0d72dd4fb65f92d06",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-default-results-original",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-default-results-original",
+  "verifiedFiles": 1,
+  "verifiedBytes": 45,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

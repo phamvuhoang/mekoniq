@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-r3-puma560-linuxcnc-sim-prepared",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/r3-puma560-linuxcnc-sim-prepared",
+  "archive": "post-n1-r3-puma560-linuxcnc-sim-prepared.tar.gz",
+  "archiveBytes": 2787944,
+  "archiveSha256": "eb014bb02f98e0ceabb916372d3063bcd874e05684600cc73dc8110feb5be79c",
+  "memberIndex": "post-n1-r3-puma560-linuxcnc-sim-prepared.members.json",
+  "memberIndexSha256": "2ac81835bbaf8d5acb4aa92967f229e08038469e45706fbe00f96c912cd758e8",
+  "memberCount": 388,
+  "memberBytes": 11707606,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-r3-puma560-linuxcnc-sim-prepared.extract.json",
+  "safeExtractionReceiptSha256": "92f083966899b659126d0dce308209f146a063a7932947b63a35b17db40ed3d1",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-puma560-linuxcnc-sim-prepared",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

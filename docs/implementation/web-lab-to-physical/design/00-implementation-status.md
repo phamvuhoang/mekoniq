@@ -1,6 +1,6 @@
 # Tiến độ implementation trên worktree riêng
 
-**Cập nhật ghi bằng chứng cuối16/11:** [trạng thái actual](../final-recording-status.md), [tái hiện](../reproduce-final-recording.md) và [disposition cụ thể](../final-deferred-dispositions.md) là nguồn hiện trạng. Phần dưới giữ snapshot chuẩn bị trước các lượt ghi cuối; không dùng trạng thái cũ để retag producer, nhận native/physical hoặc công bố live realtime.
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
 
 
 Cập nhật: 2026-11-15. B09, import B00R2, code chuẩn bị L00–L05 và tooling B10/L06 đã qua review. L06 đã sửa và qua review lại ba lỗi đọc timestamp X1, mốc clock độc lập và inventory xArm. Giai đoạn CI/recording cuối bắt đầu từ cặp commit đã chốt bên dưới. Native xArm/PUMA, WEB05 và phép đo web mới vẫn chưa được qualification. Đây chưa phải bàn giao cuối R2b/R3; các Minor và giới hạn thực thi vẫn được giữ cho bước cuối.

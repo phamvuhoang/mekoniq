@@ -1,6 +1,6 @@
 # MEKONIQ — Kế hoạch pitch, digital marketing và GTM sau web simulation
 
-**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+**Hiện trạng sau N1, 16/11:** đọc [09 — readiness mới](09-post-n1-engineering-readiness.md) và [kết quả actual](../../implementation/web-lab-to-physical/post-n1-final-recording/status.md). Source `0d46403` / Lab `7c97b20`; capture mới invalid và bốn assertions mock chưa giải quyết, guided replay bốn phút khác live 1×, D0/native/phần cứng còn mở. Các số liệu và ghi chú trước đó bên dưới là snapshot theo ngày/tuple lịch sử.
 
 
 Ngày lập: **14/11/2026**. Bản nội bộ để founder duyệt và giao việc; chưa phải chiến dịch đã chạy, báo giá, dự báo doanh thu hay tuyên bố ra mắt. Nghiên cứu công khai được kiểm ngày 14/11; bằng chứng kỹ thuật khóa theo snapshot được dẫn trong [01](01-research-and-evidence.md). Không có phỏng vấn khách hàng nào được thực hiện trong công việc lập kế hoạch này.

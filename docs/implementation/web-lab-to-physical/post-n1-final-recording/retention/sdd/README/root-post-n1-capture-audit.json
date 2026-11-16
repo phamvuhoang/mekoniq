@@ -1,0 +1,129 @@
+{
+  "at": "2026-11-16T04:35:37.137439+00:00",
+  "scope": "Read-only root audit of existing final capture, independent raw metric/predicate calculations and receipt/log bindings. No new producer or reader execution. A successful audit verifies the observed qualification failure; it does not turn it into a pass.",
+  "producer": {
+    "source": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "lab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtime": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "build": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "runId": "ca244351-461e-40e2-95e9-d4eb90a40b65"
+  },
+  "raw": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance/actual-cell-production.json",
+    "bytes": 27601216,
+    "sha256": "d4281f2859375eac4b757fcf6ebb4687b2c0d3e02fdd2efb41b0fae6d6b9b1b7"
+  },
+  "assessment": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance/assessment.json",
+    "bytes": 447,
+    "sha256": "6153acf3903dd28840eb32c4fb69ff4eeaa95bf55d2aa978cd0cc84959321d18"
+  },
+  "diagnostic": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/capture-predicate-diagnostic.json",
+    "bytes": 3057,
+    "sha256": "4c4a37d048b5f8b9afc7b582e40007199498d8017703e473f38edc0b914cccd4"
+  },
+  "receipts": [
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/production-performance.receipt.json",
+        "bytes": 4845,
+        "sha256": "c1d2dc29b8d6951ae8d97ef11c4162849ae9c9a0c6e756cef9c66d2aef5ee375"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/production-performance.log",
+        "bytes": 5945,
+        "sha256": "a275727c6f6e656652bfc97008aff28bed64c022cf0e3e23a0cc47b8508b167b"
+      },
+      "exitCode": 0,
+      "startedAt": "2026-11-16T04:25:00.528Z",
+      "finishedAt": "2026-11-16T04:28:50.626Z",
+      "unchangedCleanSource": true
+    },
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/capture-readback.receipt.json",
+        "bytes": 4969,
+        "sha256": "860ff0ff3c2cdd57ae82e750e35f795fc2e72daed81a0cfdb9b2df7ef12ddb79"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/capture-readback.log",
+        "bytes": 367,
+        "sha256": "eee7a559b2c90636cbf3ffec2b684a4b537cd50683eae1ea43bcdf7c1149f1bf"
+      },
+      "exitCode": 1,
+      "startedAt": "2026-11-16T04:30:41.035Z",
+      "finishedAt": "2026-11-16T04:30:41.216Z",
+      "unchangedCleanSource": true
+    },
+    {
+      "receipt": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/full-r3-checker.receipt.json",
+        "bytes": 4759,
+        "sha256": "4a9c58994387743600e6dda00e33800761adc7d9a90b5b1de06941d678d99e4d"
+      },
+      "log": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/checks/full-r3-checker.log",
+        "bytes": 140,
+        "sha256": "110cd2133adba51aa9d7338de47299702e00f0ee4ec7429174950b15fc614870"
+      },
+      "exitCode": 0,
+      "startedAt": "2026-11-16T04:24:41.773Z",
+      "finishedAt": "2026-11-16T04:24:42.415Z",
+      "unchangedCleanSource": true
+    }
+  ],
+  "metricsRecomputed": {
+    "renderIntervalP95Ms": 18.300000190734863,
+    "workerP95Ms": 7.198542,
+    "lastStepReceiptMs": 59.788818359375,
+    "pauseAckUiMs": 91.4765625,
+    "activeCellMs": 184975.90000009537
+  },
+  "counts": {
+    "renderEvents": 17101,
+    "distinctTimestampGroups": 16617,
+    "samples": 11100,
+    "workerActive": 3389,
+    "drawCalls": 1037389,
+    "renderOrdering": {
+      "version": 1,
+      "startCount": 715,
+      "endCount": 17816,
+      "tailDrawCalls": 49
+    }
+  },
+  "actualIssues": [
+    "CAPTURE_PAUSE_CORRELATION",
+    "CAPTURE_STREAM_GAP",
+    "CAPTURE_RENDER_PROGRESSION"
+  ],
+  "pauseRequestMinusBrowserClickMs": -5.21484375,
+  "maxActualRenderGapMs": 716.4000000953674,
+  "maxWorldProgressionGapMs": 869.8000001907349,
+  "worldProgressionSpanMs": 184943.59999990463,
+  "achievedRate": 0.3663754077669641,
+  "selectedRate": 1,
+  "finalCommittedH": 3454,
+  "fullR3Checker": {
+    "publicToolResult": {
+      "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+      "toolSha256": "6f464a9b4968f9270435a393539a16c42dbbfa4c9890a45cea62a7d8894392c3"
+    },
+    "scope": "Successful actual checkedCheckerIdentity receipt and unchanged clean Source; root verifies its binding, not an independent rerun of the full graph."
+  },
+  "cleanup": {
+    "completed": true,
+    "errors": []
+  },
+  "imageInspection": [
+    "route-overview.png"
+  ],
+  "auditPassed": true,
+  "qualificationPassed": false,
+  "limitations": [
+    "No assignment of the underlying host/scheduling/instrumentation cause.",
+    "No changed threshold, retry, recapture or retrospective relabel of intermediate cb5 evidence.",
+    "Real-time 1x is unmet; this is one host run, not a calibrated or statistical benchmark."
+  ]
+}

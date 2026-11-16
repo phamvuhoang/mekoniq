@@ -1,0 +1,1641 @@
+{
+  "at": "2026-11-16T02:06:56.178322+00:00",
+  "scope": "Read-only independent exact-case/tracked-path check of every resolved local link and current document hashes in the actual ordinary sibling clones; case-insensitive Mac filesystem existence alone is insufficient. Fragment semantics/owned Git ancestry are separately bound in the original audit; remote availability not asserted.",
+  "input": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/normal-clone-link-audit-2.json",
+    "bytes": 129311,
+    "sha256": "789df78979b88495d535fe3f450aba737e6d29ccdba979883c9a1bee5ec591e2"
+  },
+  "workspace": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-normal-siblings-_se4l_ni",
+  "heads": {
+    "source": "838ac2c3c85ce335e32869a37ae6c91cb6be4b52",
+    "lab": "bfde031f552c4909941beae2df8a51e3af73c23d",
+    "web": "e8d763906bab6a010c3b018813c60f2d043cfcf4",
+    "trial": "35f424d15b4bd13b87bec475938141dd1c3d2d56"
+  },
+  "documentsVerified": 28,
+  "localTargetsVerified": 270,
+  "targets": [
+    {
+      "file": "source/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/evidence",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/gates/A-continuity.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 9,
+      "target": "source/docs/implementation/web-lab-to-physical/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 9,
+      "target": "lab/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 9,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 9,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 13,
+      "target": "source/artifacts/engineering.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 14,
+      "target": "source/artifacts/business-plan.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 15,
+      "target": "source/artifacts/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 21,
+      "target": "source/docs/superpowers/specs/2026-11-08-linkforge-irsim/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 21,
+      "target": "source/docs/research/2026-11-08-linkforge-irsim.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 21,
+      "target": "source/docs/superpowers/plans/2026-11-08-linkforge-irsim/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 21,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 25,
+      "target": "source/docs/research/2026-10-30-trial-and-platform-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 26,
+      "target": "source/docs/superpowers/specs/2026-10-30-production-platform-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-10-30-offline-continuity-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 28,
+      "target": "source/docs/product/2026-10-30-capability-matrix.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 29,
+      "target": "source/docs/superpowers/plans/2026-10-30-production-implementation-plan.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 30,
+      "target": "source/docs/superpowers/plans/2026-10-30-plan-index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 31,
+      "target": "source/docs/superpowers/specs/2026-10-30-vercel-supabase-free-stack.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 43,
+      "target": "source/docs/superpowers/plans/2026-10-30-production-implementation-plan.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/README.md",
+      "line": 43,
+      "target": "source/docs/superpowers/plans/2026-10-30-plan-index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 63,
+      "target": "source/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 64,
+      "target": "source/docs/product/2026-10-30-capability-matrix.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 65,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 66,
+      "target": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 67,
+      "target": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 68,
+      "target": "source/artifacts/src/business-plan.js",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 69,
+      "target": "web/index.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 70,
+      "target": "source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 71,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 71,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/browser-smoke.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 72,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 73,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 74,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "line": 74,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "line": 6,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "line": 59,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "line": 59,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "line": 84,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "line": 107,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "line": 120,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "line": 84,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "line": 6,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "line": 15,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "line": 94,
+      "target": "source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "line": 94,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "line": 102,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "line": 6,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "line": 28,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 6,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 8,
+      "target": "source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 8,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 8,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 8,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 10,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 19,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 45,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 55,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 55,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/budget.csv",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 63,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/01-research-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 64,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/02-pitch-and-demo.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 65,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/03-gtm-and-commercial.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 66,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/04-digital-marketing.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 67,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/05-ready-to-use-content.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 68,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/06-measurement-and-launch.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 69,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/07-calendar-and-weekly-checklist.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 70,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/budget.csv",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 70,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/funnel.csv",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 70,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/economics.csv",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 71,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "line": 72,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "line": 3,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "line": 76,
+      "target": "source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "line": 76,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/gtm/2026-11-14-web-simulation/REVIEW.md",
+      "line": 76,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 5,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/08-final-engineering-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/review-index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/rulings-whole-lines.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/deferred-findings.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/snapshots/initial-readable/location-map.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 7,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/late-root-audits/index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 9,
+      "target": "source/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/README.md",
+      "line": 9,
+      "target": "lab/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 93,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 95,
+      "target": "source/docs/gtm/2026-11-14-web-simulation/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "line": 95,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 9,
+      "target": "source/docs/implementation/evidence/cloud-run/mekoniq-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 10,
+      "target": "source/docs/implementation/evidence/production/r2a-2026-11-14/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 10,
+      "target": "source/artifacts/mekoniq-r2a-demo-guide.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 16,
+      "target": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 20,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 21,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 22,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-08-linkforge-irsim/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-08-linkforge-irsim/contracts.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-08-linkforge-irsim/workers-runtime.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-08-linkforge-irsim/verification.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/plans/2026-11-08-linkforge-irsim/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/plans/2026-11-10-simulation-extension/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-10-webots-arm-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/plans/2026-11-10-webots-arm/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 27,
+      "target": "source/docs/superpowers/plans/2026-11-12-realistic-arm-web-ui/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 33,
+      "target": "source/packages/lab-runtime/src/v2/navigation2d/plant.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 33,
+      "target": "source/packages/lab-runtime/src/v2/navigation2d/readiness.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 34,
+      "target": "source/robotics/simulation-mujoco/mujoco_worker/engine.py",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 35,
+      "target": "source/packages/contracts/schemas/sim3d-worker-v1.schema.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 36,
+      "target": "source/packages/lab-runtime/src/v2/simulation3d/mujoco-arm-ports.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 37,
+      "target": "source/packages/lab-runtime/src/v2/navigation2d/evidence.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 38,
+      "target": "source/packages/lab-runtime/src/v2/comparison.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 38,
+      "target": "source/packages/lab-runtime/src/v2/residuals.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 39,
+      "target": "source/packages/lab-runtime/src/v2/control/pid.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 40,
+      "target": "source/robotics/simulation-mujoco/requirements.in",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 40,
+      "target": "source/docs/research/2026-11-mujoco-arm-spike.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 40,
+      "target": "source/deploy/lab-runtime/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 41,
+      "target": "source/deploy/lab-runtime/build.sh",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 42,
+      "target": "lab/src/runtime/target.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 42,
+      "target": "lab/src/runtime/fetch-event-source.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 42,
+      "target": "lab/src/twin/sample-buffer.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 42,
+      "target": "lab/src/viewer/twin3d.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 43,
+      "target": "lab/src/reports/replay.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 43,
+      "target": "lab/src/reports/evidence.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 44,
+      "target": "source/packages/lab-runtime/src/v2/sil/native-providers.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 44,
+      "target": "source/packages/lab-runtime/src/v2/sil/cli.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 45,
+      "target": "source/packages/lab-runtime/src/v2/capabilities.ts",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 45,
+      "target": "source/robotics/manipulation/vendor.lock.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 46,
+      "target": "source/robotics/simulation/profiles/engineering-amd64.lock.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 46,
+      "target": "source/docs/engineering-lab/native-environment.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 47,
+      "target": "source/docs/operations/robot-commissioning.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "line": 47,
+      "target": "source/docs/engineering-lab/calibration-protocol.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 5,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 52,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 111,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "line": 128,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "line": 134,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "line": 229,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "line": 236,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "line": 238,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "line": 288,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 61,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 63,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 157,
+      "target": "source/docs/engineering-lab/calibration-protocol.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 195,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 205,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 207,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "line": 209,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "line": 313,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions-ledger.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 6,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 16,
+      "target": "source/docs/implementation/web-lab-to-physical/design/00-implementation-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 17,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 18,
+      "target": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 19,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 20,
+      "target": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 21,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 22,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 23,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 24,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 25,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 31,
+      "target": "source/docs/superpowers/specs/2026-11-12-realistic-arm-web-ui-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 33,
+      "target": "source/docs/superpowers/specs/2026-11-10-simulation-extension-design.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 33,
+      "target": "source/docs/superpowers/plans/2026-11-10-simulation-extension/02-release-2-3.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/README.md",
+      "line": 51,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "line": 9,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "line": 15,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "line": 9,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "line": 15,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "line": 102,
+      "target": "source/docs/implementation/web-lab-to-physical/design/05-implementation-decisions.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "line": 9,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "line": 15,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/02-r2b-web-lab-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/04-r3-linux-physical-readiness-spec.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 11,
+      "target": "source/docs/implementation/web-lab-to-physical/design/01-research.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 33,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/01-r2b-mobility.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 34,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/02-r2b-cell-and-web.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/design/plans/README.md",
+      "line": 35,
+      "target": "source/docs/implementation/web-lab-to-physical/design/plans/03-r3-linux-readiness.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/deferred-findings.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "line": 46,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-deferred-dispositions.md",
+      "line": 46,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 3,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 9,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/images/production-performance/production-active-cell.png",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 9,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/images/production-performance/production-paused-during-export.png",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 48,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/late-root-audits/root-final-public-archive-audit-complete121.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "line": 48,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/snapshots/initial-readable/location-map.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "line": 3,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/index.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/retention/sdd/README/task-final-recording-report.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "line": 30,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/privacy-exclusions.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "line": 71,
+      "target": "source/docs/implementation/evidence/web-lab-to-physical/final-recording/archive-receipts/r2b-split-assembly.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 3,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 48,
+      "target": "source/docs/operations/physical-target-selection.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 48,
+      "target": "source/docs/operations/arm-commissioning-preparation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 83,
+      "target": "source/docs/operations/native-simulation-handoff.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 85,
+      "target": "source/docs/operations/mujoco-native-probe.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 85,
+      "target": "source/docs/operations/r2b-qualification.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 85,
+      "target": "source/docs/operations/engineering-native-navigation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 85,
+      "target": "source/docs/operations/xarm-native-sim.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "source/docs/operations/native-profile-case-matrix.md",
+      "line": 85,
+      "target": "source/docs/operations/linuxcnc-native-sim-handoff.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 3,
+      "target": "lab/public/business-plan.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 7,
+      "target": "lab/docs/reviews/2026-11-05-plan-01-remediation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 7,
+      "target": "lab/docs/implementation/evidence/digital-twin-v2/mock-report.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 11,
+      "target": "lab/config/source-runtime.lock.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 19,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 19,
+      "target": "source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 19,
+      "target": "source/docs/operations/native-profile-case-matrix.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 102,
+      "target": "lab/docs/implementation/evidence/digital-twin-v2/F07-launcher.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 161,
+      "target": "lab/docs/implementation/evidence/digital-twin-v2/plan01-offline-release.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 171,
+      "target": "lab/docs/simulation-compatibility.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 175,
+      "target": "lab/config/source-runtime.lock.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 197,
+      "target": "lab/config/source-runtime.lock.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 197,
+      "target": "lab/docs/implementation/evidence/bv01-native-simulation/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 197,
+      "target": "lab/docs/reviews/2026-11-05-plan-01-remediation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 214,
+      "target": "source/packages/lab-runtime/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 214,
+      "target": "lab/docs/implementation/evidence/2026-11-04-source-w11.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 237,
+      "target": "lab/docs/implementation/progress.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 237,
+      "target": "lab/docs/reviews/2026-11-05-plan-01-remediation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 237,
+      "target": "lab/docs/simulation-compatibility.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 241,
+      "target": "lab/docs/plans/2026-11-08-linkforge-irsim.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 241,
+      "target": "source/docs/implementation/web-lab-to-physical/final-recording-status.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 242,
+      "target": "lab/docs/specs/2026-11-06-physical-robot-lab/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 242,
+      "target": "lab/docs/plans/2026-11-06-physical-robot-lab/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 242,
+      "target": "lab/docs/implementation/evidence/physical-robot-lab/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 243,
+      "target": "lab/docs/reviews/2026-11-05-plan-01-remediation.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 244,
+      "target": "lab/docs/simulation-compatibility.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 244,
+      "target": "lab/config/simulation-compatibility.json",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 246,
+      "target": "lab/docs/specs/2026-11-05-digital-twin/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 246,
+      "target": "lab/docs/plans/2026-11-05-digital-twin/README.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 248,
+      "target": "source/artifacts/robot-lab.html",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 249,
+      "target": "lab/docs/research/2026-11-01-baseline-and-references.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 250,
+      "target": "lab/docs/specs/2026-11-01-mekoniq-robot-lab.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 251,
+      "target": "lab/docs/specs/2026-11-01-source-integration.md",
+      "caseExactTrackedTarget": true
+    },
+    {
+      "file": "lab/README.md",
+      "line": 252,
+      "target": "lab/docs/plans/2026-11-01-mekoniq-robot-lab.md",
+      "caseExactTrackedTarget": true
+    }
+  ],
+  "failures": []
+}

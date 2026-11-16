@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "at": "2026-11-16T03:16:07.150173+00:00",
+  "scope": "Intermediate correction freeze before actual production measurement/scoped review; not final approval",
+  "states": {
+    "source": {
+      "commit": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+      "tree": "88ff069b8d84e5e97146bbd16e3132524646b728",
+      "status": ""
+    },
+    "lab": {
+      "commit": "a1558f7075cb1ef2fd86692e451220065423f2e6",
+      "tree": "7e45249b39974e83d8c544124de9d6feddbbc1f4",
+      "status": ""
+    }
+  },
+  "labPin": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "89e2fd68178647bcafa484f4dfdfcb37b801fc14",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "3e16de4a7e458b090d216cd47c7b00131c570ed1e04a7a65ecbf5ebd0432ea7a",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+  },
+  "pinBytes": 534,
+  "pinSha256": "c77e4c2d9e34ce0cb96786c4c176d7e9a3d618bbfb7416a37080d441a478cc18",
+  "activeAgent": "/root/final_correction",
+  "rootOwnedProcesses": []
+}

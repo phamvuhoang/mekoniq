@@ -1,5 +1,7 @@
 # Quyết định khi triển khai R2b/R3
 
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
+
 Snapshot ngày 15/11/2026: B06 đã qua review sau matrix 3+5 và sửa race report; B07a package/export và B07b UI/replay đã qua review sau các vòng sửa. B08, implementation B09 và import B00R2 đã qua review; code chuẩn bị L00–L05 đã review; B10 tooling đang triển khai; WEB05 container, hiệu năng và qualification cuối vẫn mở. Đây là các quyết định đã dùng hoặc đã lên lịch; trạng thái hoàn thành nằm ở [00](00-implementation-status.md). Danh sách được gom theo thứ tự thực hiện, gộp các dòng trùng của hai ledger.
 
 **01. Worktree riêng cho hai repository.** Tạo hai Git worktree dưới `.worktrees/web-lab-to-physical/`, vì workspace gốc không phải repository và công cụ tạo worktree không nhận repo đích. Không đổi `.gitignore` của main.

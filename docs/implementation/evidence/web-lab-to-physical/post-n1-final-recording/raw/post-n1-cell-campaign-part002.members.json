@@ -1,0 +1,1173 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:07:45.619842+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-cell-campaign-part002",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-cell-campaign-part002.tar.gz",
+  "archiveBytes": 27841584,
+  "archiveSha256": "0b26aff32e4d92b899d75ac8e3deb5dd094a085cddc123b3448fcbba74c23b96",
+  "memberCount": 155,
+  "memberBytes": 66007208,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "nominal-42/run/arm-trace-64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c.json",
+      "bytes": 3200984,
+      "sha256": "64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805341782660787
+    },
+    {
+      "path": "nominal-42/run/cup-ledger.sqlite",
+      "bytes": 57344,
+      "sha256": "ffd1843821a4266d45a7cc9db807be49b1de27230a409696a03a953f5a186dcf",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805341926086346
+    },
+    {
+      "path": "nominal-42/run/journal.db",
+      "bytes": 3559424,
+      "sha256": "60798c18ac344b65233a651c707afd07c4d0e65ab6c03e626d463aeba8e6989d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805342126151082
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756249614
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756382490
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756943577
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787757090911
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787757675791
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787758052085
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787758208503
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787758590964
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787764057127
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787764507839
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787765909932
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787767420901
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787767948572
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787768475784
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787771280054
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787771570556
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756752118
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756104321
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14124,
+      "sha256": "9b8ca9521e12cd27b8310b54f5c22e259dbb6461c61015865536037954793893",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787771817016
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756639200
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787756521116
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787755948487
+    },
+    {
+      "path": "nominal-42/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787755764110
+    },
+    {
+      "path": "nominal-42/run/run.json",
+      "bytes": 753926,
+      "sha256": "43d0a5cb65c1544ae1cc906602024b9ea562f3dd71696538e81c3c0c2aefa4f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805333492801215
+    },
+    {
+      "path": "nominal-42/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "a0bbd8639ef6eb0394ccf212760fedecb8222ba072e5fb1df24743eb7862d381",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804788417097260
+    },
+    {
+      "path": "nominal-42/run/world-evidence/manifest.json",
+      "bytes": 7727,
+      "sha256": "c5253476916911b28d11f3d9f306a92db53e6da25353c12bd83f34a4060f5e5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805341962892513
+    },
+    {
+      "path": "nominal-42/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805341956087550
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000000-47102411.ndjson.gz",
+      "bytes": 212604,
+      "sha256": "e3a9804ee1c8d4df91d69440dd3bc673d96097a1c118ff08ae062e5dd5953fb5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804796068995748
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000001-2f1a28d1.ndjson.gz",
+      "bytes": 215886,
+      "sha256": "0030e6dcc4ea9666d4c312f3ea877d8405020e2f1e303b852559c98fdde82f3a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804804180288244
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000002-a2c6a434.ndjson.gz",
+      "bytes": 221174,
+      "sha256": "361620e6d9b37de5d6f9f0c98fbdc5b44fce2a4dc3c5074e6a72eb61115e3106",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804812485362074
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000003-15bd0d44.ndjson.gz",
+      "bytes": 225642,
+      "sha256": "c8ea167662bb2e905caf74ec16befce3dd4697603bd47e09b37f837e768a1a81",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804820822127252
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000004-f8090194.ndjson.gz",
+      "bytes": 229610,
+      "sha256": "bbadd0bd003f42cf98b30ac100ab63a27e7b096e6d177e14a5f48bfb202b6286",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804828857676503
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000005-be7363ad.ndjson.gz",
+      "bytes": 234135,
+      "sha256": "dddc0c6427c3ca96d5776d5dbb194be9f9be4ee92a642a00c89e5f3109dade9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804837543616326
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000006-86023e4a.ndjson.gz",
+      "bytes": 284853,
+      "sha256": "809bffea2de730bb40c353fbb78ef67823e138c5c3bcee9d93b9dc9ad7d547fa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804846584183456
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000007-8f1e27a0.ndjson.gz",
+      "bytes": 338237,
+      "sha256": "d3f8b21e2176eec5dc8c2322e274e74cb1d58379b77e5039ad3239db1893e557",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804855427440770
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000008-941de3dd.ndjson.gz",
+      "bytes": 342750,
+      "sha256": "3d8b7c78181f9e2392b2d2c1d227dbc6d1c5151315051db3296396296b7f0f2b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804864749456895
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000009-52643725.ndjson.gz",
+      "bytes": 350206,
+      "sha256": "fece737ddd79e2e66f3d0d7b5e413293e209c7e133fc0447d1e277c363980778",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804873303916578
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000010-f6a458ba.ndjson.gz",
+      "bytes": 344981,
+      "sha256": "23f5f42fda597c2df093d2f455e406399ffbd8752696d279d319d06f03036d27",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804881870639096
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000011-2a404b13.ndjson.gz",
+      "bytes": 343511,
+      "sha256": "8400fa410b0f5fa909681344bd9fb59d48f2276fb16ad9aeca0fc64b25d86850",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804890448692862
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000012-da53f58b.ndjson.gz",
+      "bytes": 345659,
+      "sha256": "a95732450fbc8ae9b89248889d2187e4c51e03d6cb79c236c3aecf88d2b26332",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804904381884698
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000013-48d00f43.ndjson.gz",
+      "bytes": 270626,
+      "sha256": "c45c9be328b2b788bbb103ed2354d9b7f94c7120ebc66ba8836f0ffc8f76e58b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804914149395776
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000014-faa92702.ndjson.gz",
+      "bytes": 258797,
+      "sha256": "07f7ad543fbb3f72536f64c43fd26df4d505857f1c7a56d30f243360099c1c0c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804925532373939
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000015-dc787973.ndjson.gz",
+      "bytes": 258766,
+      "sha256": "74648c79c3270b26a7c886972c2b38c36ebd648f65a8a524372d09eaa1c6d59a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804938619177605
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000016-28679ade.ndjson.gz",
+      "bytes": 259622,
+      "sha256": "2235ed50e9d7ab7c0c12fa76bda29885a6405d286510973b3fdc845d6642e19f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804952471884661
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000017-60c024a6.ndjson.gz",
+      "bytes": 261053,
+      "sha256": "954127712320f6b913b271de722984948d9ffd7e991451f9c2f557a8ab527a49",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804965455365844
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000018-ad63f286.ndjson.gz",
+      "bytes": 265067,
+      "sha256": "604538d9523ca35479bc41855382ac7e9f8dc1efce37c89ed4df578eada2db54",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804979400043595
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000019-01632307.ndjson.gz",
+      "bytes": 259600,
+      "sha256": "82e9835e126238ea616d2a5a5a5d1ee6271fb5e93f4b957e2db62bedc332d103",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804992870333897
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000020-1b10a2ad.ndjson.gz",
+      "bytes": 268968,
+      "sha256": "73893ee437361bd132b2fb2a90fdd1ea405fc9117e3c78639e09393e7a4b7c0d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805006251655318
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000021-3ff7c0e9.ndjson.gz",
+      "bytes": 264116,
+      "sha256": "c9c5d4451470c517e6096a4350eec9fc12a6a5d5e5a16b463e34d046244ad861",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805020818394940
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000022-16f104b6.ndjson.gz",
+      "bytes": 265125,
+      "sha256": "2339a3cd5b39b1a450a1c7cce50f265d48fb5cc30c2076498df25c7e5f0c804b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805035557023657
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000023-6668d427.ndjson.gz",
+      "bytes": 266250,
+      "sha256": "46d44d09e0f75d22426889de6e12d3665d9b1d41ba4bb422bcf602c3ce8fe578",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805049597998424
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000024-aaa7c2d2.ndjson.gz",
+      "bytes": 258557,
+      "sha256": "e59ee4ddb02c50869b9ce63dd975a7e2d84a942f05cc05d4627f67e52bd302c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805062766576835
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000025-fe6e8643.ndjson.gz",
+      "bytes": 275037,
+      "sha256": "840f7e97e5a293e53e5dbcf767ee8f65b3f89969c900d6018d9d2fa4f9a18f38",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805076484196893
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000026-d425c645.ndjson.gz",
+      "bytes": 262211,
+      "sha256": "4402d4f369224f574811be04cc52aede53fdf9d56eb062d859b52f0895e03ff8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805089666301068
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000027-4fe0626d.ndjson.gz",
+      "bytes": 266038,
+      "sha256": "b4d1e290a6d69fc76ad54d8be4d68c189602c5a65e72bac9de724404fc697460",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805103515386807
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000028-a9de7fe0.ndjson.gz",
+      "bytes": 273147,
+      "sha256": "794519fbbe949ca6c9abdefc1d287c71bf4d3a4494e8926b805df2ede18c8681",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805116095479420
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000029-9c63d470.ndjson.gz",
+      "bytes": 267927,
+      "sha256": "c28505ff1efcc039f0c5693e692810e2ad3d462e1fc9c838c6ed3aec3e0882e1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805129182667963
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000030-fe877f44.ndjson.gz",
+      "bytes": 267236,
+      "sha256": "d34419ac2c04988f40cdde2c64be7fa42e26ccdccd57677a5a264890931334d0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805143185731842
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000031-cc99ae6a.ndjson.gz",
+      "bytes": 266164,
+      "sha256": "f8bbf3eb3b057f657c2634009aa95b7283d69eb97782567ba68e7955dd1f11f4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805156576480228
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000032-aea9a471.ndjson.gz",
+      "bytes": 189565,
+      "sha256": "2f010485614f0c9fc59c83851d0d2e4f08378d1ffcaa03996377801a92e2de33",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805171138833608
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000033-a0cb7cf4.ndjson.gz",
+      "bytes": 181749,
+      "sha256": "8b1ec9ab188ab9b938bfec50adff88f4ba85e8f4ac031b2fc45ce52c84990031",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805188689384405
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000034-b9a66388.ndjson.gz",
+      "bytes": 182301,
+      "sha256": "5dd87a72d87bc1b6b5533ccaf51f106a737b35494705abcb2c7feecbad0bcde7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805202922422412
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000035-90790ea7.ndjson.gz",
+      "bytes": 182567,
+      "sha256": "ea20d3289b25e600ac3ffb0fd91e9264cc7a8e6a03ba8500a7eb74a41dfb668a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805216664360965
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000036-974245aa.ndjson.gz",
+      "bytes": 185487,
+      "sha256": "20ef1d43e1d6d54a4802aefd964a37fa28b5437c384299254d4871f8beefafdd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805231940599080
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000037-7e7f517c.ndjson.gz",
+      "bytes": 189369,
+      "sha256": "4efc1a9ee8faa9a26b35d8457429acb3e9b3094335051f5574e4f656b7481842",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805247002707556
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000038-4ec9930a.ndjson.gz",
+      "bytes": 183337,
+      "sha256": "e37b1e7b006f3bf12c51d1a528ef8b48a0acf53037932beab8761051d2971c5a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805262850724906
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000039-a477b23c.ndjson.gz",
+      "bytes": 193897,
+      "sha256": "8b0097e0a28e6243bac4b6832f941c431403d847bcd08b48ac66d411d88549f6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805276900085153
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000040-1ee0583b.ndjson.gz",
+      "bytes": 187667,
+      "sha256": "cc502f2e86dfd0ec4d63d672bf7d12e654925d46aab6da2197e3b2ce798d5286",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805290946024528
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000041-fb697834.ndjson.gz",
+      "bytes": 188470,
+      "sha256": "16645df58f5babfbc0082fec5a92281d04aa7b490da6c04d78f51fed7a9353f2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805304899096473
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000042-5dd44593.ndjson.gz",
+      "bytes": 189927,
+      "sha256": "cefdb846b6745ea6d123e07b905e20d3ddfcb16656deaf4aee5f558629de7b5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805324245022380
+    },
+    {
+      "path": "nominal-42/run/world-evidence/world-000043-8c996412.ndjson.gz",
+      "bytes": 75627,
+      "sha256": "0a223f80934fbc484afe879d6786548e58fc8b479122616af568b768933e1d36",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794805341942305456
+    },
+    {
+      "path": "nominal-42/source-journal.json",
+      "bytes": 1801650,
+      "sha256": "f3725d15a160022c6c1f8d427d18ccd340e70c79baa8ee4774ea542518658e5a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805341918838297
+    },
+    {
+      "path": "nominal-42/trace.json",
+      "bytes": 2256813,
+      "sha256": "eecd339d6b17f70532f00f675ccc4ce2dcf59e1eaf6157eae9dcd0b9cd414e92",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794805342226992643
+    },
+    {
+      "path": "nominal-7/case.json",
+      "bytes": 15526,
+      "sha256": "403305fdd8e60bcd35898a42afa0564d92c64b66740444ba1eb19adc8d412233",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787719776773
+    },
+    {
+      "path": "nominal-7/controller-state.json",
+      "bytes": 126169,
+      "sha256": "1272ff6a5f5ca576759009359b3edc18eadbbbc3c78c2fd4f41d952bf211fd2f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787556208321
+    },
+    {
+      "path": "nominal-7/physical-custody.json",
+      "bytes": 373,
+      "sha256": "fe717d1136ac4267df4686dbcd07013ecb030f663a9c8357a74b0d0d164d2e5b",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787556463156
+    },
+    {
+      "path": "nominal-7/report.json",
+      "bytes": 10342109,
+      "sha256": "94dd97fe435192acadd3ca2fac8d824589b4fab7e67585097d677bc030d7c2d8",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787531550104
+    },
+    {
+      "path": "nominal-7/run/arm-props-trace-b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123.json",
+      "bytes": 2596028,
+      "sha256": "b001afaa893b5d423117492a4db7b877a8e5838ed99cd79d72307fbcea794123",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804787444810239
+    },
+    {
+      "path": "nominal-7/run/arm-trace-64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c.json",
+      "bytes": 3200984,
+      "sha256": "64f10abcdecb1fbc9bb760c7237a085a55cbb9f5751915cff9131b0f8e1be00c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804787390948398
+    },
+    {
+      "path": "nominal-7/run/cup-ledger.sqlite",
+      "bytes": 57344,
+      "sha256": "0c08d9161315def870bbc248dac59a1cd4b655f433ccc2e1e5fe8e379cd8615f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787557606705
+    },
+    {
+      "path": "nominal-7/run/journal.db",
+      "bytes": 3559424,
+      "sha256": "3447e638607aa2c9eee4ea17157f6bd1786bc223c192ab93337de20660c85da0",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804787651003160
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/arm-component.json",
+      "bytes": 69507,
+      "sha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339062952955
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/arm-physics.json",
+      "bytes": 3930,
+      "sha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339063112665
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7.stl",
+      "bytes": 22284,
+      "sha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339063893879
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060.stl",
+      "bytes": 242684,
+      "sha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339064152255
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771.stl",
+      "bytes": 563584,
+      "sha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339064421632
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9.stl",
+      "bytes": 290784,
+      "sha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339064622592
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943.stl",
+      "bytes": 243084,
+      "sha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339064807677
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621.stl",
+      "bytes": 2505834,
+      "sha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339065232680
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28.stl",
+      "bytes": 150084,
+      "sha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339065460098
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81.stl",
+      "bytes": 340884,
+      "sha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339065663891
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f.stl",
+      "bytes": 202384,
+      "sha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339065884184
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9.stl",
+      "bytes": 242684,
+      "sha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339066208770
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5.stl",
+      "bytes": 366284,
+      "sha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339066510064
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82.stl",
+      "bytes": 291584,
+      "sha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339066905483
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344.stl",
+      "bytes": 366284,
+      "sha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339067194319
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/blobs/fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97.stl",
+      "bytes": 22284,
+      "sha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339067456195
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/empty-load.json",
+      "bytes": 1474,
+      "sha256": "58251fa7d1f98e32bb3807d30bdd849c897edee21709f98baf3fa125ea68f682",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339063613043
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/handoff-policy.json",
+      "bytes": 809,
+      "sha256": "b6566897ea9ece2edf8c6a2dda88be4e668666367f87fdf9bc7665213ee04157",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339062779871
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/lab-world-scene.json",
+      "bytes": 14123,
+      "sha256": "18da6e36a071854f1154dafe13d784b487df1c1c2e5f4e11439bac402b235c8d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339067759406
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/mobile-drive.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339063429167
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/mobile-physical.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339063262499
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/programs.json",
+      "bytes": 7591,
+      "sha256": "076e79f74516ee6bfd8eb4c9392a957576968460cf3a7684019bbb02e813448d",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339062609286
+    },
+    {
+      "path": "nominal-7/run/mujoco-world/bundle/project.json",
+      "bytes": 2676,
+      "sha256": "8002c8d87a462b201a2651b062411da3d29237aba5013c3c805fa64975164654",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794804339062448535
+    },
+    {
+      "path": "nominal-7/run/run.json",
+      "bytes": 753490,
+      "sha256": "9de6453d25084896df394f7be31723be5ec5a12b9dadd750f8afd57f2b50b49e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804780195416356
+    },
+    {
+      "path": "nominal-7/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "797c99c3d80a0736872185e484c9ce1fe6496b9a993c6c0d66c6bb03c32fd8de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804339642144356
+    },
+    {
+      "path": "nominal-7/run/world-evidence/manifest.json",
+      "bytes": 7727,
+      "sha256": "fdf78c37deea06c0e04143d7cd362d1056a45f4f1d84348ca113b5269b8d05ea",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804787598859248
+    },
+    {
+      "path": "nominal-7/run/world-evidence/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804787590875733
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000000-c7229c56.ndjson.gz",
+      "bytes": 212603,
+      "sha256": "f330025e86aef2d1a9678d5141c8dcc7f9a3e219e0913e93e27d6534f3ffa302",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804347089083601
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000001-0667b258.ndjson.gz",
+      "bytes": 215903,
+      "sha256": "05b3aaa8488817d8ba3bb404024baf9b5f26c16d75ab1f527d24f86cd1e3bef7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804354708867448
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000002-25e35377.ndjson.gz",
+      "bytes": 221193,
+      "sha256": "65b854a3747cfddd8f5db3611836701a44e29132c06968fceaa0112e3ba385d8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804362283143638
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000003-7fce1fac.ndjson.gz",
+      "bytes": 225644,
+      "sha256": "ea7f6539564d920bd9442043555561f8af2e8afff1407adf799e53c4c1a41da0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804369845711454
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000004-c94b3cb7.ndjson.gz",
+      "bytes": 229622,
+      "sha256": "e2717de002759a620bf5f6c9fc738e0ffe746f1399a1df0bb4f5ceb494832eba",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804377731999275
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000005-561b4b1a.ndjson.gz",
+      "bytes": 234129,
+      "sha256": "ea5dd1391f6d17e8b45166c694d56fb7159828c32e3af607f4dfda9ee7e22a09",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804386491109370
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000006-11af15bc.ndjson.gz",
+      "bytes": 284863,
+      "sha256": "cb79e628ff29fe68c596598cbdb23f9cc9ee54e196b0cd930b1ce313f05717e4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804395867114258
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000007-112e6348.ndjson.gz",
+      "bytes": 338235,
+      "sha256": "4895e5d47aff117f010ad77130ce83612f113989dddd63e635b54a3c627cb8bc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804403850303474
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000008-18d16a6d.ndjson.gz",
+      "bytes": 342755,
+      "sha256": "d107fb83985cee411b3d861cb8d2b11f3d59d1297d4d75c76221b8bd139b6608",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804412445058612
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000009-a619ca8d.ndjson.gz",
+      "bytes": 350178,
+      "sha256": "57bbb5036aba93d4e5ef1818583425ff5da102d344d88c9941eb9afd184ad90b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804421008373527
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000010-3e90de21.ndjson.gz",
+      "bytes": 344993,
+      "sha256": "45e43647b4638613f2bf351c4229f426749d7dcd4b7580b0ebd79d1c949955f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804429410961845
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000011-b7a8d055.ndjson.gz",
+      "bytes": 343520,
+      "sha256": "16d5efd69c41c3fc9c7563ce4cc3685332dbe561ad36dd3e65f369872fb703dd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804439578659223
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000012-324131be.ndjson.gz",
+      "bytes": 345643,
+      "sha256": "82fe46d977f7e6083fe1397be2ced6df2caa0481baa8e751faf5cf6190e904a6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804448308552863
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000013-ffced720.ndjson.gz",
+      "bytes": 270638,
+      "sha256": "441ff802e826df2ffb18917c9e8fd4099324a0072eab2116240ac7089b32aa64",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804456872078570
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000014-a020f10e.ndjson.gz",
+      "bytes": 258812,
+      "sha256": "d52855218b3dd2753812821d62468e68608439578f4146be7e5f0e309596852d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804465274614927
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000015-5dd3e5a8.ndjson.gz",
+      "bytes": 258771,
+      "sha256": "1ff974443dde6227c3d881b8d0ae254c2421a5fbd5acab735948d7c92e7eab86",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804473750665681
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000016-42e3ea2b.ndjson.gz",
+      "bytes": 259610,
+      "sha256": "7b9073dc76518d58ccd8774d1b74a7382ac082d877256edaa2efcf7bb31c1797",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804481682835037
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000017-27f68c1f.ndjson.gz",
+      "bytes": 261068,
+      "sha256": "86d886aac017811162e6789a24054708216f05257c7b85ed0ada1cac4dadfd9d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804489974418148
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000018-3413ed89.ndjson.gz",
+      "bytes": 265079,
+      "sha256": "11772255a9d3b7302bac91c6dddeefb745eac6058a60a8378ab1685d9ce90b7a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804500702690172
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000019-1a48cc97.ndjson.gz",
+      "bytes": 259601,
+      "sha256": "4e8eac2e78a0da96b9e254a12c4060be6e9e5f5f00b032f3b3874b29d2a82840",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804511088941855
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000020-965705c1.ndjson.gz",
+      "bytes": 268980,
+      "sha256": "2fbb208f4858ee0b038ceadf69d2502ed0e00207ccba3e184fefcef1fa2363fd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804519548031615
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000021-0b95f634.ndjson.gz",
+      "bytes": 264125,
+      "sha256": "3bc8eb34b5ba41e8041516842faad7185a321fa84cd0b58ef0d2a1b39ea4769b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804528032309634
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000022-a8f8cfef.ndjson.gz",
+      "bytes": 265127,
+      "sha256": "58f1862af2219856422480396c964b1f7c9c1af359d551bb5426f6c380d76149",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804536352107655
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000023-e361a4a3.ndjson.gz",
+      "bytes": 266254,
+      "sha256": "c7e8cf6ec9f14ec39f309f43355fff5d0cb1a3f884ec0ded8735ce2a77ccc3b4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804545505182920
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000024-569510aa.ndjson.gz",
+      "bytes": 258549,
+      "sha256": "2e0b037252ecd1ab6ef463b065712627d7d9e6e4a29b766cff27369ebe54c4a5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804554033249875
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000025-307f16a0.ndjson.gz",
+      "bytes": 275045,
+      "sha256": "09e2702405a40a536ff85f2bd551d48c3fff175c467561704607bbf304a78d03",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804563294340365
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000026-103ae481.ndjson.gz",
+      "bytes": 262205,
+      "sha256": "8822b4decdd4e77a5df2e7876821a68081c969168f051f84991e59d60e780d31",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804572858421796
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000027-afa30aec.ndjson.gz",
+      "bytes": 266038,
+      "sha256": "8d23d0ac4f1fd3e41288a7fc89a67a8f20170f693e401e95fe1c2c517d4a91c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804586583481079
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000028-abbb0660.ndjson.gz",
+      "bytes": 273140,
+      "sha256": "1573d3ae2b850723a2fea1e766aae35f0293111d0614fff93195b23a7514fe47",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804595392723987
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000029-aa62a546.ndjson.gz",
+      "bytes": 267919,
+      "sha256": "766d71d1be425e8e1e49970bb375b23da90264f19f2cde4868d6c233d458b11a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804604101586014
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000030-8717e1ac.ndjson.gz",
+      "bytes": 267253,
+      "sha256": "78631c8dce798a4bbb519af42d8b42806d44a5666512459a7a1a367239552553",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804612972729983
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000031-83e44248.ndjson.gz",
+      "bytes": 266173,
+      "sha256": "9facb69c0754188b97f0f1a2a4d3fc1c9bee289056c19fbd25658ff8efdb0122",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804622335718151
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000032-2430034c.ndjson.gz",
+      "bytes": 189585,
+      "sha256": "d557627e0ae03c79d14c42937b206b33f1c2711167952af928d07f893d3f1281",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804633148487477
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000033-22611dea.ndjson.gz",
+      "bytes": 181740,
+      "sha256": "6bde5c02a94e337283ad263f8da182d5edad908ccd8a7718f794b4489af06feb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804643392941897
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000034-598ed809.ndjson.gz",
+      "bytes": 182300,
+      "sha256": "b7e2d6dd51fdff5a9f31522db351b301f3c85cc22a5f2153b39da84a80976ea8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804652406937505
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000035-7ee3ada6.ndjson.gz",
+      "bytes": 182565,
+      "sha256": "56e82fabdf4a69b7cde61edbb222949a5ab6f05f20083fa776c36136520fe179",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804661854140519
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000036-78b01e32.ndjson.gz",
+      "bytes": 185506,
+      "sha256": "13afbac5660c3e10da9a6f16779dae0577cfc028e35fdeab034149f0d9fe8448",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804673256384235
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000037-11d7ce61.ndjson.gz",
+      "bytes": 189362,
+      "sha256": "944c0672f2b4ace66d9b16092193d275d5ac9bbc91679cc96e53c934152c86d7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804688458470905
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000038-5f29b7f8.ndjson.gz",
+      "bytes": 183328,
+      "sha256": "d9f310b2b570b74335792796e5d532cd45801fd0c3207ddf8980ceaa061c7310",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804702423464717
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000039-7c45df13.ndjson.gz",
+      "bytes": 193895,
+      "sha256": "94adcc54266fa636a09bea1d3b432d9b9e589e24e3443142e592fa841bc70d43",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804725782769084
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000040-263404bb.ndjson.gz",
+      "bytes": 187673,
+      "sha256": "9c7fc7ed922641a79cefcf34d4ebac7e7272df76bab607f0627a4f549a75b1d2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804743618773272
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000041-e7cc5281.ndjson.gz",
+      "bytes": 188478,
+      "sha256": "4294b400ed9d6c20921ab73573b4fe702a7ba497d4dcc671ecd6b7c3935d8207",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804758765311506
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000042-820fd22e.ndjson.gz",
+      "bytes": 189936,
+      "sha256": "22b77d219cb00e2efaaecc6679c211e5dc93c0ab5d7d65603e59e920353f003f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804774505399119
+    },
+    {
+      "path": "nominal-7/run/world-evidence/world-000043-b0bcef43.ndjson.gz",
+      "bytes": 75633,
+      "sha256": "51ac5ffe6429bebaefe5f45e952f740c5e4a7248724fafefbbfc51909247fdb0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794804787578978274
+    }
+  ],
+  "directories": [
+    "cancel-held",
+    "cancel-held/run",
+    "cancel-held/run/mujoco-world",
+    "cancel-held/run/mujoco-world/bundle",
+    "cancel-held/run/mujoco-world/bundle/blobs",
+    "cancel-held/run/mujoco-world/run",
+    "cancel-held/run/world-evidence",
+    "cup-fall",
+    "cup-fall/run",
+    "cup-fall/run/mujoco-world",
+    "cup-fall/run/mujoco-world/bundle",
+    "cup-fall/run/mujoco-world/bundle/blobs",
+    "cup-fall/run/mujoco-world/run",
+    "cup-fall/run/world-evidence",
+    "dock-drift",
+    "dock-drift/run",
+    "dock-drift/run/mujoco-world",
+    "dock-drift/run/mujoco-world/bundle",
+    "dock-drift/run/mujoco-world/bundle/blobs",
+    "dock-drift/run/mujoco-world/run",
+    "dock-drift/run/world-evidence",
+    "lost-ack",
+    "lost-ack/run",
+    "lost-ack/run/mujoco-world",
+    "lost-ack/run/mujoco-world/bundle",
+    "lost-ack/run/mujoco-world/bundle/blobs",
+    "lost-ack/run/mujoco-world/run",
+    "lost-ack/run/world-evidence",
+    "nominal-42",
+    "nominal-42/run",
+    "nominal-42/run/mujoco-world",
+    "nominal-42/run/mujoco-world/bundle",
+    "nominal-42/run/mujoco-world/bundle/blobs",
+    "nominal-42/run/mujoco-world/run",
+    "nominal-42/run/world-evidence",
+    "nominal-7",
+    "nominal-7/run",
+    "nominal-7/run/mujoco-world",
+    "nominal-7/run/mujoco-world/bundle",
+    "nominal-7/run/mujoco-world/bundle/blobs",
+    "nominal-7/run/mujoco-world/run",
+    "nominal-7/run/world-evidence",
+    "nominal-99",
+    "nominal-99/run",
+    "nominal-99/run/mujoco-world",
+    "nominal-99/run/mujoco-world/bundle",
+    "nominal-99/run/mujoco-world/bundle/blobs",
+    "nominal-99/run/mujoco-world/run",
+    "nominal-99/run/world-evidence",
+    "worker-loss",
+    "worker-loss/run",
+    "worker-loss/run/mujoco-world",
+    "worker-loss/run/mujoco-world/bundle",
+    "worker-loss/run/mujoco-world/bundle/blobs",
+    "worker-loss/run/mujoco-world/run",
+    "worker-loss/run/world-evidence"
+  ],
+  "declaredDependencySymlinks": []
+}

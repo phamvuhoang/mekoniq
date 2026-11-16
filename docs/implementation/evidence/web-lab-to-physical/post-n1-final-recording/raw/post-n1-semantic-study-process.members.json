@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:38.132599+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study-process.tar.gz",
+  "archiveBytes": 1308,
+  "archiveSha256": "b5af93188d519c39e2a659278683623480313616c4df58dcf51b03ce99afd9ae",
+  "memberCount": 3,
+  "memberBytes": 3121,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "process.json",
+      "bytes": 808,
+      "sha256": "572deecf0ae7535dcba3ffbc0b3edc99788dc06ef606e2cfdba71b5769340910",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812511839829008
+    },
+    {
+      "path": "stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812454003080716
+    },
+    {
+      "path": "stdout.log",
+      "bytes": 2313,
+      "sha256": "eda529d0cd8da14855486028d7d71309dd5652874003692dddcd9422742fcd8f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812511776984325
+    }
+  ],
+  "directories": [],
+  "declaredDependencySymlinks": []
+}

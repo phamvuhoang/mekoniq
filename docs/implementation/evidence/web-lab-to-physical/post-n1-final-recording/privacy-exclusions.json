@@ -1,0 +1,83 @@
+{
+  "scope": "Cumulative five exact external private originals. The historical four-item record remains unchanged at its earlier boundary. All raw inventory/receipt log hashes still attribute originals, never derivatives. Public-member verification excludes these exact originals.",
+  "exclusions": [
+    {
+      "path": "takeover-owned-state-and-path.json",
+      "originalBytes": 173796,
+      "originalSha256": "082c68fe5ab67681933caba1ca6238b298d5381124a72d5fc34d4ce7f9189b8b",
+      "reason": "Unfiltered full-host process context",
+      "derivative": "public-metadata-derivatives/takeover-task-scope-public.json",
+      "derivativeBytes": 1368,
+      "derivativeSha256": "c740d5f1abae8ed5382ec192e6e712e1582224cda7be8bc246c64517b5859d03",
+      "originalPath": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/takeover-owned-state-and-path.json",
+      "privateRetainedCopyPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-private-retention-v_qn_gpq/0-takeover-owned-state-and-path.json"
+    },
+    {
+      "path": "r1-invocation-boundary.json",
+      "originalBytes": 171502,
+      "originalSha256": "12211da696749f3b113183b857f7379c076934e2e244718d22a212feea64b6cf",
+      "reason": "Unfiltered full-host process context",
+      "derivative": "public-metadata-derivatives/r1-task-scope-public.json",
+      "derivativeBytes": 924,
+      "derivativeSha256": "6f937335edceeceac3e5b264399688086e5fa9d055fc1ea00b04bcc0185a3411",
+      "originalPath": ".superpowers/sdd/README/evidence-final-recording/981e234-lab-d4c3032/r1-invocation-boundary.json",
+      "privateRetainedCopyPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-private-retention-v_qn_gpq/1-r1-invocation-boundary.json"
+    },
+    {
+      "originalPath": ".superpowers/sdd/README/evidence-final-recording/2bd66e6/checks/host-sleep-observation.log",
+      "originalBytes": 364283,
+      "originalSha256": "a2d24ff4c814389491e76e5d097611adec0fd1fad3b20e5c64bea45eba523965",
+      "reason": "Unfiltered historical host power/OS activity context outside narrow recorded Sleep/DarkWake events",
+      "derivative": "public-metadata-derivatives/host-sleep-events-only.json",
+      "derivativeBytes": 1381,
+      "derivativeSha256": "e265fe7675aa33396e76b7018e4b8f9c4b22ac6dd89159a317ccddeb5b678f6f",
+      "privateRetainedCopyPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-private-retention-v_qn_gpq/2-host-sleep-observation.log"
+    },
+    {
+      "originalPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix3-n4t809l_/brand-focus-diagnostic/owned-runtime/.runtime-owner.sqlite",
+      "originalBytes": 8192,
+      "originalSha256": "46969b5eb25857a2e7b3fcf6b9c627de44990493adb429dca19178438d454b1d",
+      "reason": "Private runtime authority. Original externally retained and untouched; bytes never in public archive.",
+      "derivative": null,
+      "privateRetainedCopyPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-final-fix3-n4t809l_/brand-focus-diagnostic/owned-runtime/.runtime-owner.sqlite"
+    },
+    {
+      "originalPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/settlement-processes.txt",
+      "originalBytes": 171347,
+      "originalSha256": "0d6a4906c04b7242a484fd0de0ea277143542f974ec2458a2bd8b201302a5b41",
+      "reason": "Full host process snapshot includes unrelated process command context; exact original remains external and unchanged.",
+      "derivative": "n1-private-settlement-disposition.json and exact safe settlement.json reference",
+      "privateRetainedCopyPath": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/settlement-processes.txt",
+      "historicalBoundary": "Additional fifth private original after the four previously recorded exclusions; historical four-item documents remain scoped to their earlier subjects."
+    }
+  ],
+  "privateCopyPolicy": "Additional exact private copies outside both repositories, mode0600 in own0700 directory. Original files never deleted/rewritten; no SQLite engine used. Neither original nor private-copy bytes are public archive inputs.",
+  "publishedDerivatives": [
+    {
+      "excludedOriginalSha256": "082c68fe5ab67681933caba1ca6238b298d5381124a72d5fc34d4ce7f9189b8b",
+      "path": "privacy-derivatives/takeover-task-scope-public.json",
+      "bytes": 1368,
+      "sha256": "c740d5f1abae8ed5382ec192e6e712e1582224cda7be8bc246c64517b5859d03",
+      "role": "Distinct marked derivative, not original raw bytes or rebound receipt log"
+    },
+    {
+      "excludedOriginalSha256": "12211da696749f3b113183b857f7379c076934e2e244718d22a212feea64b6cf",
+      "path": "privacy-derivatives/r1-task-scope-public.json",
+      "bytes": 924,
+      "sha256": "6f937335edceeceac3e5b264399688086e5fa9d055fc1ea00b04bcc0185a3411",
+      "role": "Distinct marked derivative, not original raw bytes or rebound receipt log"
+    },
+    {
+      "excludedOriginalSha256": "a2d24ff4c814389491e76e5d097611adec0fd1fad3b20e5c64bea45eba523965",
+      "path": "privacy-derivatives/host-sleep-events-only.json",
+      "bytes": 1381,
+      "sha256": "e265fe7675aa33396e76b7018e4b8f9c4b22ac6dd89159a317ccddeb5b678f6f",
+      "role": "Distinct marked derivative, not original raw bytes or rebound receipt log"
+    }
+  ],
+  "priorFourItemDescriptor": {
+    "path": "docs/implementation/evidence/web-lab-to-physical/final-recording/privacy-exclusions.json",
+    "bytes": 4487,
+    "sha256": "23d3071f9d07531c2aae3a4c49251b9c3a5f969e9edcd9961b14b3450b6d51d8"
+  }
+}

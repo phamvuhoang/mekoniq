@@ -1,0 +1,1532 @@
+{
+  "version": 1,
+  "packedAt": "2026-11-16T07:08:37.784211+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-semantic-study.tar.gz",
+  "archiveBytes": 13209190,
+  "archiveSha256": "cd97c0eba9cc76537bbcb103e31e8548c6cde1292efd32a7ff51bb19f1b5278f",
+  "memberCount": 210,
+  "memberBytes": 22299055,
+  "policy": "Exact regular-file bytes and executable/mode bits; deterministic neutral owner/time tar metadata; empty directories preserved; dependency symlinks retained only as descriptors, not followed/materialized; no engine opens sources",
+  "packagingObserver": {
+    "root": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh",
+    "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "lab": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab",
+    "producerSource": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "producerLab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "runtimeArtifact": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+    "reuseIdentityFile": {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+      "bytes": 43496,
+      "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+    },
+    "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export"
+  },
+  "attribution": "Packaging observer is separate from the raw producer/subject/checker identities preserved in the indexed qualification/manifest/campaign members; no reattribution by compression",
+  "files": [
+    {
+      "path": "irsim_2d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456502534130
+    },
+    {
+      "path": "irsim_2d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456502754838
+    },
+    {
+      "path": "irsim_2d/compiled/engineering-project.json",
+      "bytes": 5783,
+      "sha256": "ddfecfb4f2eda7dab8f7ee5fd192888b1333d0338047b71efc5a0109fd004df6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456503014088
+    },
+    {
+      "path": "irsim_2d/compiled/irsim/name-map.json",
+      "bytes": 298,
+      "sha256": "10338e69d11ab0dcfbf0d6c606ccac58ee07b305bd658a29d0988f371e6d195e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456503313671
+    },
+    {
+      "path": "irsim_2d/compiled/irsim/world.yaml",
+      "bytes": 2671,
+      "sha256": "55a50661163c61d98ab72a90dcf1a9ce0751d862f4c0606acaa6ee3697fae2b2",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456503509629
+    },
+    {
+      "path": "irsim_2d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "c8de40ede63777f155b37e6df1704a561091a3c7cb47054cdbad15f680278f57",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456503704962
+    },
+    {
+      "path": "irsim_2d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456503866087
+    },
+    {
+      "path": "irsim_2d/compiled/navigation-scene.json",
+      "bytes": 13292,
+      "sha256": "015e5da05119a9ece05022d470fe8c902bdabf4c4802e99d0b3a28dafd6415b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504053753
+    },
+    {
+      "path": "irsim_2d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "82817033d23cc4e1d86dc69536acf03f803d0ea9b3af31699004406a8bd4b6b4",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504251753
+    },
+    {
+      "path": "irsim_2d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504392295
+    },
+    {
+      "path": "irsim_2d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504535378
+    },
+    {
+      "path": "irsim_2d/compiled/robots/amr-1.urdf",
+      "bytes": 8857,
+      "sha256": "a1f77b69284b23cca573b493fb497896cf743b508ca6ea5794f0c3d4a58a3688",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504750003
+    },
+    {
+      "path": "irsim_2d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456504900127
+    },
+    {
+      "path": "irsim_2d/compiled/scene.json",
+      "bytes": 47789,
+      "sha256": "3e13251e27774773e30920d4be6bfa41e655c5f3ba7c874b2de16ca2af690391",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812456505069961
+    },
+    {
+      "path": "irsim_2d/report.json",
+      "bytes": 658510,
+      "sha256": "f200e241d2338c273bf783abf9d10ecb5da997e20af332180791ba966b64fc1f",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466616759040
+    },
+    {
+      "path": "irsim_2d/run/bundle/irsim/name-map.json",
+      "bytes": 298,
+      "sha256": "10338e69d11ab0dcfbf0d6c606ccac58ee07b305bd658a29d0988f371e6d195e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812456512049953
+    },
+    {
+      "path": "irsim_2d/run/bundle/irsim/world.yaml",
+      "bytes": 2671,
+      "sha256": "55a50661163c61d98ab72a90dcf1a9ce0751d862f4c0606acaa6ee3697fae2b2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812456512213245
+    },
+    {
+      "path": "irsim_2d/run/bundle/navigation-scene.json",
+      "bytes": 13292,
+      "sha256": "015e5da05119a9ece05022d470fe8c902bdabf4c4802e99d0b3a28dafd6415b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812456511473787
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000001-db026476.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459013496200
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000002-d1f51384.ndjson.gz",
+      "bytes": 3629,
+      "sha256": "5a0e4b2bb23a72b210e79485dd98a27dfcedda2eb2667cda31ed27cc89a7a871",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459964434060
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000003-7bda32f1.ndjson.gz",
+      "bytes": 2094,
+      "sha256": "dacce81aa6b6b1c8afc0a0a45ad65ae8f7cbea97aa12ceb30865423cc9ba9df2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812460803287956
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000004-9693681b.ndjson.gz",
+      "bytes": 3142,
+      "sha256": "9199199975e6593f6cf8292c50b8e5a344ddb7a3ff22d909202ac70a68b8cf78",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461375477428
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000005-d9f14f03.ndjson.gz",
+      "bytes": 2304,
+      "sha256": "0390a58e14190e0e05221b1fb06474819e77c3c5346fb119cd9e38fb468c7a7f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461935362955
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000006-d0662281.ndjson.gz",
+      "bytes": 3103,
+      "sha256": "66ce3710a4a643723c0d8252a3a50ebc9a934c0823a166497e4148563ace3aef",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462465305431
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000007-77ab7c3c.ndjson.gz",
+      "bytes": 2878,
+      "sha256": "4ad3c0fa5da0c1270db69402e500972e34a5627a73180de17259a1dca8f437b0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462955352991
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000008-821f498f.ndjson.gz",
+      "bytes": 2764,
+      "sha256": "0191b192c00a5a2b1045e8bf9709b5cba933d3e2772f4d7cef313dd056958455",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812463530223835
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000009-c38bd589.ndjson.gz",
+      "bytes": 3275,
+      "sha256": "9b560f30e32f4e8a3812ff2d98834a893efb320ba7ef6aa1cb8c88eeaebeea8d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464042847413
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000010-0d824b3d.ndjson.gz",
+      "bytes": 3912,
+      "sha256": "0ac35f38fb9894790463de777ddd3000d527b505e4eef1fc14b4a1cb47e7fa0f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464609985599
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000011-b9a997a4.ndjson.gz",
+      "bytes": 3638,
+      "sha256": "b6c824d21343082739fdb257191c754414b68aace1b6608fb2aa3cdd82206b84",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812465616156233
+    },
+    {
+      "path": "irsim_2d/run/evidence/control-000012-4ebcecd7.ndjson.gz",
+      "bytes": 1935,
+      "sha256": "9f603336e64cf64035f9f8f266a65b779d41e4d7748dd168df55f3b0782a036d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812466208194310
+    },
+    {
+      "path": "irsim_2d/run/evidence/manifest.json",
+      "bytes": 6525,
+      "sha256": "b3b4accebd2b82009db947bf8fc4f22c169f23e9444cf8a67a120b7081110fda",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812466214606636
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000001-4075a7c2.ndjson.gz",
+      "bytes": 9880,
+      "sha256": "2845c3f3678587a2db5b66fc1521644612f2fd6e5601698c4537ca9bca049d81",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459009085871
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000002-6fc7953f.ndjson.gz",
+      "bytes": 133660,
+      "sha256": "c833c389fa2f30253c8e7802808926a51a1b1ee907c7b14bb180c96f818aa07d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459940969126
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000003-d8262257.ndjson.gz",
+      "bytes": 131308,
+      "sha256": "a3b2a7b926a6a011ec36a30ae71134d534277f69bed5bf8850150dd697bbdde3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812460799238002
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000004-e02e50ad.ndjson.gz",
+      "bytes": 135579,
+      "sha256": "d3bd4b61d8d3c35991cfd93151e6731b545d34c44e4fc9654b42288a1693a6de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461369490392
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000005-64f3cf49.ndjson.gz",
+      "bytes": 113473,
+      "sha256": "7bddbdcdc9b0948f540b1b0a5125bdbd2dc449df12b3c00b63f11cfa786f1485",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461929367087
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000006-d36b4571.ndjson.gz",
+      "bytes": 139806,
+      "sha256": "535182f92608775e57cf07cbdf3031176be19ab9a17b65d6d662122e34d5b9cd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462458895312
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000007-8b97b6ce.ndjson.gz",
+      "bytes": 137257,
+      "sha256": "2f3e101d3ec757cabdc7780db76c9e8a4934eeb2ab1c835f952b3b2ed6cc2ad2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462951088204
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000008-abf6e307.ndjson.gz",
+      "bytes": 111349,
+      "sha256": "145921c1ee3b38c893b49ca18c84920f9375bd9216c5688d7ef04931648b9da7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812463526234840
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000009-b8bcde88.ndjson.gz",
+      "bytes": 136121,
+      "sha256": "65129fdac074f9a109b184b1eecd4292a41e610ef4d741ef10169c96d04ad921",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464036734128
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000010-4d86315e.ndjson.gz",
+      "bytes": 139233,
+      "sha256": "07db48db37799f2e7ea030725e40df6759c03a9ab97f88ec0cdb561d6d7f849b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464605689354
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000011-f89b629a.ndjson.gz",
+      "bytes": 136960,
+      "sha256": "c5472b5a1da0b3f38a7dc342b6acee94d8da977d80ff6741ee6e6f09ebe44dd1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812465610149156
+    },
+    {
+      "path": "irsim_2d/run/evidence/sensors-000012-31583937.ndjson.gz",
+      "bytes": 81528,
+      "sha256": "f7ca9f81f3653355fe95087f91cb615f9db1f8389585b5939ddc8c3ff2b10f80",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812466203520773
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000001-5f5454cd.ndjson.gz",
+      "bytes": 1605,
+      "sha256": "339d936a81c7b0a6c3537886a8b7d2145f093226fcc8b791f7921e424a06c893",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459005365000
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000002-789ad67f.ndjson.gz",
+      "bytes": 7537,
+      "sha256": "f9f40fecdd09da4caeb53ccf38a0024b55ac810fbad16be6938cfab322aefcce",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812459914419529
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000003-33100b8c.ndjson.gz",
+      "bytes": 6117,
+      "sha256": "dd0405ff5f3fba1cd8c772cc25ea100b5315aa1b9998942c42d7790fa818423e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812460793293966
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000004-8b473c5e.ndjson.gz",
+      "bytes": 7491,
+      "sha256": "59e0f1c6d5727c1f63355b9009509194d5326deb1f2ae527ff258b0f84867e64",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461364533189
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000005-7a359585.ndjson.gz",
+      "bytes": 4092,
+      "sha256": "e00804f50e0fefe5a1afeb2b566b45354e7c43a1d8d2b2d508deb5d4c4373458",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812461925367424
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000006-60a8069b.ndjson.gz",
+      "bytes": 6496,
+      "sha256": "275cebd12bb0a63bcf08159785267310c1353c74a3eb68caab6e6040cfe6f60a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462454248234
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000007-a7f9b653.ndjson.gz",
+      "bytes": 8687,
+      "sha256": "25380c5495311950d36457ac119a703a05c4b9500de87feaa4e562f499fa4d0b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812462945673293
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000008-f454bdb7.ndjson.gz",
+      "bytes": 5228,
+      "sha256": "f79091e5653a355dad341a5595a1a50eeab79126218428c1aec6cb1fdf8df49c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812463520213888
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000009-4be846bf.ndjson.gz",
+      "bytes": 6890,
+      "sha256": "d7f1e06afa59448106c4fefd1e40a43ac893b83b90242a04261363304a6aca6a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464030852301
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000010-2c22581c.ndjson.gz",
+      "bytes": 9307,
+      "sha256": "8913ea022e48d818920b16f7d2b4410eefa098cf3161e61930cfe2201e940f2c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812464602001982
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000011-002ea3b5.ndjson.gz",
+      "bytes": 8604,
+      "sha256": "57f9d6684a9d9cf58a3b74517f0f56c1a7cc9ac2fe21dd616583994dce214a2b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812465604287579
+    },
+    {
+      "path": "irsim_2d/run/evidence/trajectory-000012-cbf97f69.ndjson.gz",
+      "bytes": 3905,
+      "sha256": "240274be5186a91b01ca4def4adcac79b850177e1b77d52cb2fb9f296c76ee7c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812466197627196
+    },
+    {
+      "path": "irsim_2d/run/journal.db",
+      "bytes": 548864,
+      "sha256": "695de1642e2300aa3f3a1815e9de74542d7150f351d83cb8bdcd565482f61529",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466664810363
+    },
+    {
+      "path": "irsim_2d/run/run.json",
+      "bytes": 30239,
+      "sha256": "6ff6e233f9ab1a95689f3c0bc2e3427bb13ec7896eba41dcd3887f0d569262ba",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812466353223405
+    },
+    {
+      "path": "irsim_2d/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "c9cc600e7f9eb6abff088f9806b87821636ce3d4d3b70d9c153c6a4e82a2f5a1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812456532767139
+    },
+    {
+      "path": "mujoco_3d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484085147140
+    },
+    {
+      "path": "mujoco_3d/compiled/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484085357598
+    },
+    {
+      "path": "mujoco_3d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484085550306
+    },
+    {
+      "path": "mujoco_3d/compiled/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484085716223
+    },
+    {
+      "path": "mujoco_3d/compiled/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484085888556
+    },
+    {
+      "path": "mujoco_3d/compiled/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086033723
+    },
+    {
+      "path": "mujoco_3d/compiled/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086167014
+    },
+    {
+      "path": "mujoco_3d/compiled/engineering-project.json",
+      "bytes": 5824,
+      "sha256": "7f37ce2f85f4df8a656f3775519c43975359106e7861c77dd3a5ddd02f564c91",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086319347
+    },
+    {
+      "path": "mujoco_3d/compiled/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086451472
+    },
+    {
+      "path": "mujoco_3d/compiled/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086589305
+    },
+    {
+      "path": "mujoco_3d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "a7e89706d2bfb3a999af30ec55873b05b06c99c091b7d5ef50f172d3bec015a7",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086759222
+    },
+    {
+      "path": "mujoco_3d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484086907180
+    },
+    {
+      "path": "mujoco_3d/compiled/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484087059846
+    },
+    {
+      "path": "mujoco_3d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484087308679
+    },
+    {
+      "path": "mujoco_3d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484087543221
+    },
+    {
+      "path": "mujoco_3d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484087799804
+    },
+    {
+      "path": "mujoco_3d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484088005179
+    },
+    {
+      "path": "mujoco_3d/compiled/scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812484088182512
+    },
+    {
+      "path": "mujoco_3d/report.json",
+      "bytes": 864571,
+      "sha256": "9d9427a4cf63985350d08b69982898693a28e355f1ac5223d4fdf663a58a2e2a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511092305431
+    },
+    {
+      "path": "mujoco_3d/run/bundle/assumptions.json",
+      "bytes": 869,
+      "sha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484097402877
+    },
+    {
+      "path": "mujoco_3d/run/bundle/canonical-physical-model.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484097557877
+    },
+    {
+      "path": "mujoco_3d/run/bundle/cell-layout.json",
+      "bytes": 967,
+      "sha256": "6cf6f92a0f06fba166af911d04aa764e62fcea61e276e3384a32c15a63b631f1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484097746210
+    },
+    {
+      "path": "mujoco_3d/run/bundle/drive-contact-profile.json",
+      "bytes": 3092,
+      "sha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484098272793
+    },
+    {
+      "path": "mujoco_3d/run/bundle/empty.json",
+      "bytes": 1479,
+      "sha256": "93b12965a96bdbf8fa7f26fa65a4a968879927129069ccb50a32765ad30a0b9a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484098519626
+    },
+    {
+      "path": "mujoco_3d/run/bundle/mobile-controller-policy.json",
+      "bytes": 644,
+      "sha256": "2a2909801f809ea9d76e122c4b1a2104afbcdeccbf467767198a217fad2513eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484098653417
+    },
+    {
+      "path": "mujoco_3d/run/bundle/mobile-stop-policy.json",
+      "bytes": 438,
+      "sha256": "a7d4495eaa110bc617c8ca0ecc4ef78fa1bc7a54e89a3d24041efc3e5072281c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484098787917
+    },
+    {
+      "path": "mujoco_3d/run/bundle/navigation-scene.json",
+      "bytes": 15268,
+      "sha256": "ebd431d2f526bb85f9d0cef1d8195734bf7ab4d07a8c0d8d1dcda327b0ba7b41",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484097230627
+    },
+    {
+      "path": "mujoco_3d/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "9d935e14f2c17b941dff819021116bde5293d8765974cf9c3c2defbda956c402",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484098966167
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000001-87da7ee3.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812487052405389
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000002-40f83435.ndjson.gz",
+      "bytes": 3695,
+      "sha256": "dc9a57cfbc24dc2f4efc65f1b2e1d14d01cfa58bd92e68e9d2d550265c586d7e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812489924051781
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000003-9b61d752.ndjson.gz",
+      "bytes": 4301,
+      "sha256": "6988511364d8d4fb5bc55d32bdee767025c56a3543cd662f522d6cdff3b41dcd",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812491821719297
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000004-a4fb55eb.ndjson.gz",
+      "bytes": 4198,
+      "sha256": "6890e8f1b8caf462bf869e5296ed467c269aa823b98b668abc4f73ed9eb11329",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812493450101266
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000005-0d936a30.ndjson.gz",
+      "bytes": 2669,
+      "sha256": "df2c39edfc116b4a9a6a85fb12624ced88a9c7e8bbedaf4a17acd41d7f762230",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812495233625029
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000006-c73f575d.ndjson.gz",
+      "bytes": 2187,
+      "sha256": "1a0c48c58ed4f0c22ca35ee9f2a8897e885933d265477e63e4b73ce895a8c8c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812497092611086
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000007-d75b276d.ndjson.gz",
+      "bytes": 3091,
+      "sha256": "2a4536026363a18594b0e5cd48a07ee53fff84c7f44e5c8e35ae3c838c57c537",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812498598522644
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000008-8e3b12b3.ndjson.gz",
+      "bytes": 4549,
+      "sha256": "605c47e54f87e4050539d9a2a053c055f0a09cee8f2c9820da51d6bae1c071c7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812500030883199
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000009-df4b277c.ndjson.gz",
+      "bytes": 3466,
+      "sha256": "6ef6decf565f8b9ae014c765f7efc6b13434ecf2198c5e3eb215fab6c26af6c0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812501718104272
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000010-20746336.ndjson.gz",
+      "bytes": 2337,
+      "sha256": "575f0ac6fbd60d0e1abf93e514d37ff3760b0ab34c72755b58d0653f25420791",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812503409986299
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000011-b34e34ca.ndjson.gz",
+      "bytes": 3929,
+      "sha256": "cf479f33d1d8d98eec4e6ede9551d8d9cb8cedb12b8b5c33dae342668b5ce0c9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812504968506052
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000012-9401efcd.ndjson.gz",
+      "bytes": 4314,
+      "sha256": "4a1ecba592245728d968d6daf2a2890317d83bf117b0fbc7729c25775ac6d26f",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812506626920656
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000013-9ea3137e.ndjson.gz",
+      "bytes": 4286,
+      "sha256": "d328cd08383a9c0f50f9e3efcafef8f72466fd4dbd399adcbc5fff2d23fa3a67",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812508640625131
+    },
+    {
+      "path": "mujoco_3d/run/evidence/control-000014-2375e3fc.ndjson.gz",
+      "bytes": 2757,
+      "sha256": "a8c73e88925dfe8f52e79ca3738776c115b75c7a5ffac52977fc4cd29549545e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510631515631
+    },
+    {
+      "path": "mujoco_3d/run/evidence/manifest.json",
+      "bytes": 7553,
+      "sha256": "8da67d50a7059e9b8ef7960506299c727a7706467c188cfcb97769cc15079cb2",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510637968415
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000001-cf1a9093.ndjson.gz",
+      "bytes": 35336,
+      "sha256": "d31904b46013bc002088af65587f786943ead7e266c349da1fdf92bad55d4387",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812487047760769
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000002-f532548f.ndjson.gz",
+      "bytes": 139292,
+      "sha256": "bec8bb7951d701f13a640492ef3753489dd6c53a5668c96c6af8ca330316e424",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812489919848911
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000003-dc4dcc62.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "0dff6b1561a0f64648b12cdad2194c66de47776ee63f57baf646c607d62add6a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812491815650470
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000004-b402bf92.ndjson.gz",
+      "bytes": 143632,
+      "sha256": "3f4ba141d59762ae524ad9fdf52ff1eae807a54fc427ab64e51b81431d6772de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812493444087189
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000005-ea7bee22.ndjson.gz",
+      "bytes": 134023,
+      "sha256": "ac2fa738eb01f0cad44b21d447a81f01ee0bc077a964596f1ece3a0da5fb7456",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812495226017037
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000006-cda471f8.ndjson.gz",
+      "bytes": 144246,
+      "sha256": "87bdf18cf4a11f51e79739d3f18e0f02b4d8edbc9a231ddc40f61ce1efb6713b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812497086915384
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000007-5c4c8e7d.ndjson.gz",
+      "bytes": 144276,
+      "sha256": "2711f6eb9f1d2f75457570b085ff8bd9c5f2922a21b2977243d2f64629b5cea4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812498592550317
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000008-0e0ed14d.ndjson.gz",
+      "bytes": 143116,
+      "sha256": "7bad14ab111ce4133a45b1c6bad5e019dfc90e33ef3675a0d1bc37dbad500cfa",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812500024823289
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000009-17b1d103.ndjson.gz",
+      "bytes": 131046,
+      "sha256": "340c8034adfcbb3ba268357a266f2cfded51e4cd4f6c5da403abf19751e053f0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812501712057945
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000010-da52481b.ndjson.gz",
+      "bytes": 140737,
+      "sha256": "6f380030bbfefc800fa04ba243cf4360f3ed2812cbbfd1674c6d30d2703b5a45",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812503404076681
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000011-5529303e.ndjson.gz",
+      "bytes": 140180,
+      "sha256": "470084f5092cd23ad52ee234b655cce3db8bbe9d63e755e21e50bc8963590070",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812504962549767
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000012-232cf697.ndjson.gz",
+      "bytes": 144082,
+      "sha256": "87b151af8fc0ee78f13ade95b2ccbbbbedb96edff49e474d085ac9f94ac428f7",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812506623450035
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000013-e1388f2d.ndjson.gz",
+      "bytes": 143092,
+      "sha256": "d2071c6aa2af332535a28ee76396ec5d44f66f77bf7e2dd965a8d11c67ecb0ac",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812508635672553
+    },
+    {
+      "path": "mujoco_3d/run/evidence/sensors-000014-3cf91774.ndjson.gz",
+      "bytes": 114347,
+      "sha256": "b791a4e8eccd8083e4f138549436505d28b0e83128cec8e727cbd00c209070c6",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510626052886
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000001-43e50a99.ndjson.gz",
+      "bytes": 16370,
+      "sha256": "b9f0aabe159737abd16aee758f6e5e989d5e246e7dc42f3283081da6c38d602d",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812487041593525
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000002-a716c437.ndjson.gz",
+      "bytes": 21099,
+      "sha256": "d8d263c1e1bfc30ff9da97ee22f820090012d1cbcc5875306e8e26fee5eab801",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812489911941211
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000003-52c17348.ndjson.gz",
+      "bytes": 20844,
+      "sha256": "1c6f19ac5b983431232dc2d2d3df7860a129b838e412564b755cbe1a54f07987",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812491811499808
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000004-684a50ff.ndjson.gz",
+      "bytes": 20973,
+      "sha256": "42cddb128e52a5024393210426242a06b3c60b55ac58670680879e72d7b73654",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812493439077111
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000005-88360479.ndjson.gz",
+      "bytes": 20489,
+      "sha256": "50a450f1d731c099f1bee0abc1b4fda3bbacd1cadd2ea5f2b0d32149d920b641",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812495216204839
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000006-2d9b61ff.ndjson.gz",
+      "bytes": 21032,
+      "sha256": "d7c2ed047817c3beb634ec42d9f98577a6dfb701982edcc19a4e7b45a7a4ad45",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812497082847555
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000007-26b1c64e.ndjson.gz",
+      "bytes": 21022,
+      "sha256": "ffd1674ba6e3b5da1d7fa43a44a0fa21d79300094756fb16800fbec182f3e531",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812498588591113
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000008-6f8fb0f3.ndjson.gz",
+      "bytes": 21291,
+      "sha256": "68096cd197506e6471244322ba1a4c1c640652394068985246a6b93d7c901434",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812500020526002
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000009-13da9bed.ndjson.gz",
+      "bytes": 20634,
+      "sha256": "6c7f4fbfb3794a895064a9396673a24bf4bcd303bcd505c6fb6cac69d6f8629c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812501705246577
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000010-dee65ef5.ndjson.gz",
+      "bytes": 21097,
+      "sha256": "fb65bf34b93404d054a9d72e238a8553a61fa3f4282a017d56ca52633f4a4d9b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812503396108439
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000011-0c63c816.ndjson.gz",
+      "bytes": 21140,
+      "sha256": "1f93587ae0854956163ce5ef1d974d01ec537d97094e0226c4d6cbd9e3c2c985",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812504958440272
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000012-0596e09a.ndjson.gz",
+      "bytes": 21289,
+      "sha256": "01ace41cd7965544eaea7e094811976d1bbecc2fc02382b346fe4e478f691330",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812506616316251
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000013-793c7f7b.ndjson.gz",
+      "bytes": 21427,
+      "sha256": "d57641d305274d91f0ae09a579dbd54fe5805b45f1ed83a6e727b918b1bb27ab",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812508628903561
+    },
+    {
+      "path": "mujoco_3d/run/evidence/trajectory-000014-a9d86ea7.ndjson.gz",
+      "bytes": 17387,
+      "sha256": "64953532880d22c8b09ccba072626dd794f275297d0b9467f95f15b59617a7cf",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510621575225
+    },
+    {
+      "path": "mujoco_3d/run/journal.db",
+      "bytes": 548864,
+      "sha256": "c0a38a391df1df74b29d2b11e5fb83630a186e50c3b4975e588cf348ef790186",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511140147213
+    },
+    {
+      "path": "mujoco_3d/run/physics/manifest.json",
+      "bytes": 2806,
+      "sha256": "6a49938368e797e322a8a4839c469c3139a0ac404998fc77de21ef045d2476dc",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510741143723
+    },
+    {
+      "path": "mujoco_3d/run/physics/pending.ndjson",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510748672256
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000000-a4434ed9.ndjson.gz",
+      "bytes": 78675,
+      "sha256": "caeba91bba87d0e786ef84512cfbc6ecfb7d4648c56079e2c729bd59cf05e56a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812487012706181
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000001-9788d1fc.ndjson.gz",
+      "bytes": 122780,
+      "sha256": "c4fde424b392986f49cbef69010f013af496781d375b3b680c7ad2abbf12782e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812489850840526
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000002-682f779e.ndjson.gz",
+      "bytes": 122469,
+      "sha256": "7c19549656895a2420c3bd7225a6c6d776bf05ed8203e0d3194f1f8c88f74a5b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812491781613840
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000003-2db30d39.ndjson.gz",
+      "bytes": 122259,
+      "sha256": "1bd23f0ef001156139a8712c539d6f4cb6ee08680783996c53249dedbec58201",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812493400491319
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000004-6b46e918.ndjson.gz",
+      "bytes": 116529,
+      "sha256": "ea9880a22133af3b219d8ac5b2b762b4d0d1fe74ed6e15fffe416909ba6e75eb",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812495173551760
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000005-acfd1cea.ndjson.gz",
+      "bytes": 119050,
+      "sha256": "83a05545722f676257d6c65fad09f36af1131ed18779ab21203c1e92bcdd56de",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812497048493008
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000006-3e65b8bc.ndjson.gz",
+      "bytes": 121270,
+      "sha256": "c6d0a727fbafebe7c623b013d37c5664d4e18ead74777c0b7ea18e4d9e78d29e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812498558741937
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000007-1be26a01.ndjson.gz",
+      "bytes": 127886,
+      "sha256": "6391e09e9ab5d1c941951a9a8476eeb3ecbcdfe8beabd91805b6beddec23cf42",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812499986729830
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000008-ca785f92.ndjson.gz",
+      "bytes": 118323,
+      "sha256": "32b74719fcd589cfc24c9bb0df4eacadc8be0d01463bd4791321399a402b3406",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812501571381054
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000009-a07697d4.ndjson.gz",
+      "bytes": 119528,
+      "sha256": "9b70581f172af92db80be2f5f97b049b01dd937d04797ab90cb4384bf85e4ff3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812503355148566
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000010-44b7d74d.ndjson.gz",
+      "bytes": 122184,
+      "sha256": "e877b3d60edb9425f3bbec43a509935bb486f4df94059e5b05a8a45946cb381b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812504924663308
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000011-850834f7.ndjson.gz",
+      "bytes": 126104,
+      "sha256": "53775a144d2f7093492e7ba5503cdb3256b23cdf4a152220d4f8916692ae3c2a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812506572052173
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000012-713d9abb.ndjson.gz",
+      "bytes": 124750,
+      "sha256": "f91292a0d5d651e24bca4304ea603721ef142f6eb106fb74320918b65550b816",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812508594948805
+    },
+    {
+      "path": "mujoco_3d/run/physics/physics-000013-2e8b0bd1.ndjson.gz",
+      "bytes": 98534,
+      "sha256": "aeb2022e2d710aeb223d31a5d7a5fae7a79ecefe6d7007af63b5069ee8b9cf19",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510736014312
+    },
+    {
+      "path": "mujoco_3d/run/run.json",
+      "bytes": 35002,
+      "sha256": "b387ec77cd9522ae33540fa92f47aea6a70d5ad17954af9ea3b900c2ca5212b3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812510756900623
+    },
+    {
+      "path": "mujoco_3d/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "51ddc9503d5f1fad69f90fd8c35fbf5341938b6ddd20d6dcd21944fbfdcf25d8",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812484113647735
+    },
+    {
+      "path": "recording-complete.json",
+      "bytes": 953,
+      "sha256": "2143b166294e1a9f7bec41c31cfcb4c5c7df0e74ba11ecaade83ace91137ded1",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511767918877
+    },
+    {
+      "path": "recording.json",
+      "bytes": 128,
+      "sha256": "a2032154af5fcae8c8c5c3486725f55f30885a1ad2abbd250a34b35028e99fa5",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812455943919685
+    },
+    {
+      "path": "semantic-study.json",
+      "bytes": 40385,
+      "sha256": "a0350f9b3c808960dff2562d2b873c73ea5ff2d79d49991123bd8e63eed25215",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511766888169
+    },
+    {
+      "path": "study-input.json",
+      "bytes": 10398557,
+      "sha256": "5646906df0dd6b9e2c1a32146762f8e3f4d827fcb83d135531f21ed039ccf1be",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812511763919048
+    },
+    {
+      "path": "webots_3d/compiled/assets.json",
+      "bytes": 3216,
+      "sha256": "0df54cb8bfc5a11ceeab7ad55e01400f844dfa78c9ad014627579233b35eaebe",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466801560468
+    },
+    {
+      "path": "webots_3d/compiled/bom.json",
+      "bytes": 4889,
+      "sha256": "dd2d251266f4fd7c7259452627bae39d02dc6ac7377486ac7a7d40b385b0ef25",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466801722010
+    },
+    {
+      "path": "webots_3d/compiled/engineering-project.json",
+      "bytes": 5784,
+      "sha256": "fe65f427f566f44c0caedb9d249b69a27a84105eaa866f6c41da90867558f079",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466801896718
+    },
+    {
+      "path": "webots_3d/compiled/navigation-model/amr-1.json",
+      "bytes": 3048,
+      "sha256": "9716b19d3151ec784de95b998376fac13200aa7b6905763b91d0534faa9c7881",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802059301
+    },
+    {
+      "path": "webots_3d/compiled/navigation-policy.json",
+      "bytes": 1050,
+      "sha256": "7a0a75ed094c57a4c317eaaddf56b8941b6aa14446969c22f0508bc1213b1a83",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802200134
+    },
+    {
+      "path": "webots_3d/compiled/navigation-scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802358884
+    },
+    {
+      "path": "webots_3d/compiled/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802528967
+    },
+    {
+      "path": "webots_3d/compiled/recipes.json",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802673884
+    },
+    {
+      "path": "webots_3d/compiled/resolved-assembly.json",
+      "bytes": 41219,
+      "sha256": "1322124b421cab1fb7ad74c9af7efb51a17d88b4b2b8802f4d68b413494a1bdd",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802831758
+    },
+    {
+      "path": "webots_3d/compiled/runtime-project.json",
+      "bytes": 3003,
+      "sha256": "e1dad47fbe8805b5f0e468659d1da3dc69f3f8e2729eec55ec9150b76f2c7686",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466802959258
+    },
+    {
+      "path": "webots_3d/compiled/scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812466803110883
+    },
+    {
+      "path": "webots_3d/report.json",
+      "bytes": 749413,
+      "sha256": "8b9ab6e74d3bc8d44911594e912fc1c8b245f4029807aab86e195824d011c32a",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812483825142793
+    },
+    {
+      "path": "webots_3d/run/bundle/navigation-scene.json",
+      "bytes": 13319,
+      "sha256": "1827c5a8d1c4f83e9d95bc771c1daf1abf22295d3509899596e4f2bd4414ac60",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812467224261558
+    },
+    {
+      "path": "webots_3d/run/bundle/physical-model/amr-1.json",
+      "bytes": 47385,
+      "sha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812467224484808
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000001-01f62583.ndjson.gz",
+      "bytes": 1523,
+      "sha256": "c9064094e7432dbd464f2cf41d8481b273cfaf905f3003d5b672a8406ef4c3d9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812470597278540
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000002-bcd02e1d.ndjson.gz",
+      "bytes": 3926,
+      "sha256": "a178f032731eb136687f276bf8d15ea6ec5cc3569cefb499f251f04bc7b95db9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812471802201088
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000003-2173234b.ndjson.gz",
+      "bytes": 3972,
+      "sha256": "546519438397faf531ef4ef44c0d28b3d24abea5212fe0983b58c552f75a11a4",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812472824792788
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000004-33e1f636.ndjson.gz",
+      "bytes": 4413,
+      "sha256": "fafbb6671d5bfca300c477bd1b0988b130781989e12b3dfba142a167c57c81b3",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812473662029935
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000005-772f94b9.ndjson.gz",
+      "bytes": 2885,
+      "sha256": "3487f20cd11ff32ba3185a5b7dbf00ebdccc063ee3d419cd9e63bcdb73d1d571",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812474433550736
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000006-118032b8.ndjson.gz",
+      "bytes": 3205,
+      "sha256": "6fd2971f11c9477c69d9c6c2a4fa780918889892f2ce3e71e5804e48c9fb8c0c",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812475203330498
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000007-bb436b3a.ndjson.gz",
+      "bytes": 4559,
+      "sha256": "8dfe24383da707309c85c077857e3149f1ed8a1a58688026ff9573e11ae6e338",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812476386949650
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000008-c20e2f28.ndjson.gz",
+      "bytes": 3473,
+      "sha256": "30938c6ee70aedf51f562255cde8c2b99c833475fa219d2dd44709280fdcad08",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812477347137625
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000009-b3fc9366.ndjson.gz",
+      "bytes": 3247,
+      "sha256": "a03df4727b6f62ec37c54468db4be6de2f967fdef3f8928c1a4613209929d336",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812478211728244
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000010-e5d6ef32.ndjson.gz",
+      "bytes": 4582,
+      "sha256": "e0b60c4058294878d3aca2a71a5574c96b0d6d20467e6c787d551304129acd59",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812480092026362
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000011-8af9357f.ndjson.gz",
+      "bytes": 4368,
+      "sha256": "6980a3cea3731b79d662a83f8bd50e2b97bb541173d15a042fa72f6428b82a8b",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812481840059621
+    },
+    {
+      "path": "webots_3d/run/evidence/control-000012-31dcde66.ndjson.gz",
+      "bytes": 3309,
+      "sha256": "80121b62cdba29a9d734432e6b8e2e84ddd333427d8ff26abcacedc2fb361560",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812482927328210
+    },
+    {
+      "path": "webots_3d/run/evidence/manifest.json",
+      "bytes": 6539,
+      "sha256": "f871b28c836c693bfae38a06a1de3ddd908754392efb29e1263b61ae50cf1b68",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812482932933454
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000001-e641f080.ndjson.gz",
+      "bytes": 23727,
+      "sha256": "1624571f90402cd502d9b6e4e17517b9b4b6d50853754703778eafa999c9a203",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812470591701213
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000002-a335d69b.ndjson.gz",
+      "bytes": 134432,
+      "sha256": "468a271319bb1e35fb8ac85be6d026065276a5f39cbfe15a3f496bae4e4e4155",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812471797163301
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000003-726b05d1.ndjson.gz",
+      "bytes": 134556,
+      "sha256": "51bb27a8295a13dc7e6559cad90f93537769b86fbd433655fe46a33fd314d180",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812472819810501
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000004-add40b7f.ndjson.gz",
+      "bytes": 137355,
+      "sha256": "99582fc852535e881de53a5aa3b9a129814d08295efd2565e7d12cd6918ef116",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812473657834939
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000005-e89b8f9d.ndjson.gz",
+      "bytes": 126570,
+      "sha256": "e3445e039e60fb9153af198741591f09eb5980f3f5966b6d93a0049b78adc2f9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812474429400865
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000006-5edfea04.ndjson.gz",
+      "bytes": 140165,
+      "sha256": "7dde5b3cd78ee302931ccbd33758e9da1c929d922a0a75a60c442c12513b9b85",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812475199165419
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000007-779c190d.ndjson.gz",
+      "bytes": 137615,
+      "sha256": "9beb45c122839b3d8257e418ab67ab2b720d8ddc36e3a48fe5b0f2b50cd63eef",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812476382833238
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000008-d4430389.ndjson.gz",
+      "bytes": 126680,
+      "sha256": "29032f8b5ed931f856f19104b9b975f6a2cc442d3f13aa4e153684d8255260d1",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812477343171630
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000009-6ec24d11.ndjson.gz",
+      "bytes": 137020,
+      "sha256": "2fe4991b2bedc4bf6316d88f7deb8e61543396a1288ffc388a42f146f1a10c78",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812478205719709
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000010-0020fabb.ndjson.gz",
+      "bytes": 137799,
+      "sha256": "3e22115c20b3421e9a14e9a3d54bd416d603969551fda8f17a4308f8695fb6a0",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812480085711118
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000011-7f500802.ndjson.gz",
+      "bytes": 139645,
+      "sha256": "d8105d93e3bba77c5dacf7de84d1a42b36bfddfffd9b4032d1284d84149d76e9",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812481833997669
+    },
+    {
+      "path": "webots_3d/run/evidence/sensors-000012-9087baed.ndjson.gz",
+      "bytes": 116473,
+      "sha256": "354aaa45aaaaeca553945cb942e9b741493da50146aac575a229d3660f1e4438",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812482922749298
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000001-dd3e68ed.ndjson.gz",
+      "bytes": 14463,
+      "sha256": "dadb2e78ebccd38b3de99d9973f7f42a596b328d72b351ae3059b0ff04cd28e5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812470586349802
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000002-f6fc3489.ndjson.gz",
+      "bytes": 19909,
+      "sha256": "3294ee8bf571f87a442d4234f1391e587c5f3fd8f8e17d9da03a03a88ce17191",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812471793254556
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000003-81a0127a.ndjson.gz",
+      "bytes": 15745,
+      "sha256": "0fdf0dca84c8bed97233466c2da78bb7c1746f636553907b137dfa77865c069a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812472817782462
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000004-5a2a2a2f.ndjson.gz",
+      "bytes": 19060,
+      "sha256": "18a545f994cc8d982df9d9d389fffdaceca5d064011334e2767e11d5dbdd50ef",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812473654094276
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000005-16c1da1d.ndjson.gz",
+      "bytes": 19816,
+      "sha256": "a54ff001c89945d7f925ff106d656d9d40247c867ecd8daf1d52c90bfc292e07",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812474425628244
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000006-633081b2.ndjson.gz",
+      "bytes": 19943,
+      "sha256": "fd22be72734b5beca61578817c7451739ae0426fb97de2624157bd292342f96e",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812475194333799
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000007-20137e8e.ndjson.gz",
+      "bytes": 16914,
+      "sha256": "651f1bb2cb502805157b7de8974e12a2ea1416555c900d0bd619a7b20ee76045",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812476378476826
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000008-0bbfb016.ndjson.gz",
+      "bytes": 19588,
+      "sha256": "650f8c734c4b3b245703bde360b55a2e48f60deca675407d60b98ccc5e5f7111",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812477337237886
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000009-ec345426.ndjson.gz",
+      "bytes": 19960,
+      "sha256": "9a1b2f8b1c11e454d13ccb3c96cee482c23387bb744dfd0debe01ea4e2ee7e24",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812478199777132
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000010-3bea8eee.ndjson.gz",
+      "bytes": 20138,
+      "sha256": "02ab2093da1d6b9f3417423042b92e28bbc6f28b67207ca442ec4e48df11f4b5",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812480081307290
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000011-15f07625.ndjson.gz",
+      "bytes": 18431,
+      "sha256": "51f0f8d4bbc3d43d6cb277c4408e5f49abb4875b34b641708ca6ff9083427095",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812481827797384
+    },
+    {
+      "path": "webots_3d/run/evidence/trajectory-000012-36016a64.ndjson.gz",
+      "bytes": 17205,
+      "sha256": "7be01760922b56dde728be51349fb6298fd0efee725664ecdb71f7724c1e2677",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812482917074804
+    },
+    {
+      "path": "webots_3d/run/journal.db",
+      "bytes": 548864,
+      "sha256": "b236c34c4605c4ff1afdaa2bda2e0edecccfc6e51ebbe6c207a1ce3703b1331c",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812483902726877
+    },
+    {
+      "path": "webots_3d/run/run.json",
+      "bytes": 30560,
+      "sha256": "f08dbbd0449a70d6566ac33de9268b14fa9f2f40e6ed1a6e238a2c738dd9fc1a",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812483270583176
+    },
+    {
+      "path": "webots_3d/run/signing-key.json",
+      "bytes": 176,
+      "sha256": "96e1f6a6251435f1faa4a62af755250d57e64cca798a5ac8b5307b0091acaeec",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812467232988841
+    },
+    {
+      "path": "webots_3d/run/worker/.world.wbproj",
+      "bytes": 681,
+      "sha256": "a006dda896bd098ee47fbb9bd5b56e65f3661d53bfec8e230a7d01b4dd1bca96",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812482986173355
+    },
+    {
+      "path": "webots_3d/run/worker/controllers.log",
+      "bytes": 180,
+      "sha256": "8dab2157b174873740ca23af69fb86f803c2ed8435c207fe7293f6616eeddb66",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812469517004568
+    },
+    {
+      "path": "webots_3d/run/worker/webots.log",
+      "bytes": 1216,
+      "sha256": "6797ea12aafee7b799c81ac1662cd0a8ab90ff577986ad242dca074010644ee6",
+      "sourceMode": "0o644",
+      "sourceMtimeNs": 1794812482994089972
+    },
+    {
+      "path": "webots_3d/run/worker/world.wbt",
+      "bytes": 22604,
+      "sha256": "c1958d634628678caa15e656269723b591cbdb2c07a8652b6bf5fed70463aced",
+      "sourceMode": "0o600",
+      "sourceMtimeNs": 1794812467977833545
+    }
+  ],
+  "directories": [
+    "irsim_2d",
+    "irsim_2d/compiled",
+    "irsim_2d/compiled/irsim",
+    "irsim_2d/compiled/navigation-model",
+    "irsim_2d/compiled/physical-model",
+    "irsim_2d/compiled/robots",
+    "irsim_2d/run",
+    "irsim_2d/run/bundle",
+    "irsim_2d/run/bundle/irsim",
+    "irsim_2d/run/evidence",
+    "irsim_2d/run/worker",
+    "mujoco_3d",
+    "mujoco_3d/compiled",
+    "mujoco_3d/compiled/navigation-model",
+    "mujoco_3d/compiled/physical-model",
+    "mujoco_3d/run",
+    "mujoco_3d/run/bundle",
+    "mujoco_3d/run/bundle/physical-model",
+    "mujoco_3d/run/evidence",
+    "mujoco_3d/run/physics",
+    "mujoco_3d/run/worker",
+    "webots_3d",
+    "webots_3d/compiled",
+    "webots_3d/compiled/navigation-model",
+    "webots_3d/compiled/physical-model",
+    "webots_3d/run",
+    "webots_3d/run/bundle",
+    "webots_3d/run/bundle/physical-model",
+    "webots_3d/run/evidence",
+    "webots_3d/run/worker"
+  ],
+  "declaredDependencySymlinks": []
+}

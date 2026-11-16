@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:08:14.130554+00:00",
+  "id": "post-n1-production-performance",
+  "original": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "actual-cell-production.json",
+        "bytes": 27601216,
+        "sha256": "d4281f2859375eac4b757fcf6ebb4687b2c0d3e02fdd2efb41b0fae6d6b9b1b7",
+        "mode": "0o644",
+        "mtimeNs": 1794803327248238160
+      },
+      {
+        "path": "assessment.json",
+        "bytes": 447,
+        "sha256": "6153acf3903dd28840eb32c4fb69ff4eeaa95bf55d2aa978cd0cc84959321d18",
+        "mode": "0o644",
+        "mtimeNs": 1794803441200082007
+      },
+      {
+        "path": "build-identity.json",
+        "bytes": 39681,
+        "sha256": "84ad715183f2671f0208bf8e763fa42cfab0fe8a5c48982180f2f0e28e3bfe1b",
+        "mode": "0o644",
+        "mtimeNs": 1794803102862922959
+      },
+      {
+        "path": "capture-raw.json",
+        "bytes": 25350262,
+        "sha256": "cacfe764fd3ba88afe16812dde5976e2db135213132c8ce24076848804b9afbe",
+        "mode": "0o644",
+        "mtimeNs": 1794803313433064067
+      },
+      {
+        "path": "cleanup.json",
+        "bytes": 39,
+        "sha256": "09c2fa28b975b6143610ceec51c063e26eb1a375ee12c00df41e0a3c87a685b4",
+        "mode": "0o644",
+        "mtimeNs": 1794803330397161615
+      },
+      {
+        "path": "http-observations.json",
+        "bytes": 3236270,
+        "sha256": "63c1477d03b738d9d93d246b0a219b5063aface6e138a31d72cd1343d30e6b70",
+        "mode": "0o644",
+        "mtimeNs": 1794803327025947842
+      },
+      {
+        "path": "io-diagnostic.json",
+        "bytes": 8627549,
+        "sha256": "21f431ddf7ec17d77a1238e8f8bfce47ad92c6677e33a9adf0442e5ce48f9584",
+        "mode": "0o644",
+        "mtimeNs": 1794803326976910991
+      },
+      {
+        "path": "live-complete-prefix.zip",
+        "bytes": 10621052,
+        "sha256": "0936d9aa3e75456ae845277d4c129771161c355558bf6fd25f5d87153c59757b",
+        "mode": "0o644",
+        "mtimeNs": 1794803326748676653
+      },
+      {
+        "path": "observer-summary.json",
+        "bytes": 141,
+        "sha256": "ffae80d51eca29b9ce75d5e9a8ff351d2186b682d862e73a4c60dc1894d727fa",
+        "mode": "0o644",
+        "mtimeNs": 1794803329796498648
+      },
+      {
+        "path": "post-window-source-event-loop.json",
+        "bytes": 2438,
+        "sha256": "e1fe7875afa841a206b73172e62361a18721951f1a56dc105ad4561e16afe067",
+        "mode": "0o644",
+        "mtimeNs": 1794803326912133449
+      },
+      {
+        "path": "production-active-cell.png",
+        "bytes": 141682,
+        "sha256": "0c3d6f95c0ce060cc6522646a7d9ea89d227095fdf3af1c6cdc46e20164d04b2",
+        "mode": "0o644",
+        "mtimeNs": 1794803313479272387
+      },
+      {
+        "path": "production-paused-during-export.png",
+        "bytes": 144509,
+        "sha256": "826ad604b6e09bfa249c5870b6508f4fce619e84d9101d4a855d91d05788afb9",
+        "mode": "0o644",
+        "mtimeNs": 1794803313778912068
+      },
+      {
+        "path": "route-camera-observations.json",
+        "bytes": 4962,
+        "sha256": "16cd88dc0e02f6ad594b4bfc299fba47a5079f79b321683dab2b5340272fc10d",
+        "mode": "0o644",
+        "mtimeNs": 1794803239812530806
+      },
+      {
+        "path": "route-follow-amr.png",
+        "bytes": 172361,
+        "sha256": "3a83b901e0bdb71f795a8d1bc9ee1bb2e6210ed46e63e7d9ba7ea8ad38706f90",
+        "mode": "0o644",
+        "mtimeNs": 1794803236632291570
+      },
+      {
+        "path": "route-overview.png",
+        "bytes": 126257,
+        "sha256": "0b81d6b826a7d8af7929b27cde22dafd04defdb2ee57190da7604bdec5d84637",
+        "mode": "0o644",
+        "mtimeNs": 1794803125878920518
+      },
+      {
+        "path": "route-phase-follow.png",
+        "bytes": 176931,
+        "sha256": "9aed40b7d83874ce8957b2a63fd7cd35b7e729692cdf5efd9dd97267d376f72f",
+        "mode": "0o644",
+        "mtimeNs": 1794803239766691012
+      },
+      {
+        "path": "runtime-observer.ndjson",
+        "bytes": 8155460,
+        "sha256": "157b098bf6b99756df92152841e8299b52ce6fc32b21510b9e88fc0105890f51",
+        "mode": "0o600",
+        "mtimeNs": 1794803329664299803
+      },
+      {
+        "path": "runtime-stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mode": "0o644",
+        "mtimeNs": 1794803329765678444
+      },
+      {
+        "path": "source-event-loop.json",
+        "bytes": 26432,
+        "sha256": "9f3104216663af0506421ad48bde166256a9fb2c17adbdf1b936b7f51e489307",
+        "mode": "0o644",
+        "mtimeNs": 1794803326913115425
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post-n1-production-performance-part001",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part001",
+      "archive": "post-n1-production-performance-part001.tar.gz",
+      "archiveBytes": 6071974,
+      "archiveSha256": "4ee5e3356ec676db9cf67b40f0dde73f26c6dd48c118ed560a6d709cfcc71625",
+      "memberIndex": "post-n1-production-performance-part001.members.json",
+      "memberIndexSha256": "d38bcbf1ac8db45227e628488b143c54efb47c5ddd360bd3ee92839e9a94e92c",
+      "memberCount": 7,
+      "memberBytes": 64855464,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-performance-part001.extract.json",
+      "safeExtractionReceiptSha256": "32b4dadfc2a324376a8a0d89eadd7655c764597565184700eeac42cbbf5806a8",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-performance-part001",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    },
+    {
+      "id": "post-n1-production-performance-part002",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-production-performance-part002",
+      "archive": "post-n1-production-performance-part002.tar.gz",
+      "archiveBytes": 7404393,
+      "archiveSha256": "257df0d9e238cbdd7179ea380ca122d3309d4ebd7d0390a19a182d6e01ed1492",
+      "memberIndex": "post-n1-production-performance-part002.members.json",
+      "memberIndexSha256": "a492722ea5817c0c8ec9bbdad1915017bbbd204f5f5d120343886447e4c61046",
+      "memberCount": 12,
+      "memberBytes": 19572225,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-production-performance-part002.extract.json",
+      "safeExtractionReceiptSha256": "65773b5444f3e8b61125eb6f612e0fe07c69e521caee09928a914da4822a0487",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-production-performance-part002",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post-n1-production-performance",
+  "verifiedFiles": 19,
+  "verifiedBytes": 84427689,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

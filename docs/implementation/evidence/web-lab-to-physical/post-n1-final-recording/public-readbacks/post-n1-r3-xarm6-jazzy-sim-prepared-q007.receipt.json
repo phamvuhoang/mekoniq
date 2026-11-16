@@ -1,0 +1,25 @@
+{
+  "id": "post-n1-r3-xarm6-jazzy-sim-prepared-q007",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/verify-r3.mjs",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-xarm6-jazzy-sim-prepared"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:10:18.364192+00:00",
+  "finishedAt": "2026-11-16T07:10:19.580513+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "post-n1-r3-xarm6-jazzy-sim-prepared-q007.log",
+  "logBytes": 183,
+  "logSha256": "5dab2c48ac64bcb6993cdb94d81bf934db37f47b649649fcf82149711e4f1a4f",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-r3-xarm6-jazzy-sim-prepared/qualification.json",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

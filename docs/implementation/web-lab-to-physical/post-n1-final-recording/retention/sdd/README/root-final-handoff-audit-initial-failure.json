@@ -1,0 +1,11 @@
+{
+  "recordedAt": "2026-11-16T02:18:50.436813+00:00",
+  "scope": "Root metadata-only audit caller failure before writing the final audit; no source/evidence edits or producer execution.",
+  "toolChunk": "bf95b8",
+  "ownExit": 1,
+  "helper": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-handoff-audit-initial.py",
+  "helperBytes": 7994,
+  "helperSha256": "7a0710f0aa905f3c480ea6d692fb929747cbbab756b4fb6c94e14891a939dcef",
+  "error": "KeyError: web at line56: repository map assumed only source/lab though the exact-ref matrix also binds the web snapshot.",
+  "correction": "Use the actual ordinary web clone and recorded shipped head for the web row; retain source/lab final feature-head checks. Verify resolved full commits even when an explicit historical subject selector is abbreviated."
+}

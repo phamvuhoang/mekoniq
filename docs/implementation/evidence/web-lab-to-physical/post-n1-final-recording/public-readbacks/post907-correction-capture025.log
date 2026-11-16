@@ -1,0 +1,1 @@
+{"valid":true,"meetsTargets":true,"metrics":{"renderIntervalP95Ms":17.799999713897705,"workerP95Ms":4.868333,"lastStepReceiptMs":60.883544921875,"pauseAckUiMs":61.522216796875,"activeCellMs":184974.19999980927,"fullCellDrawingMs":175509.69999456406,"fullCellDrawingFrames":10515},"issues":[]}

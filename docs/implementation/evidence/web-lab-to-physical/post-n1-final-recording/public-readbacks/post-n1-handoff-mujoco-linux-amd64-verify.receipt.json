@@ -1,0 +1,27 @@
+{
+  "id": "post-n1-handoff-mujoco-linux-amd64-verify",
+  "argv": [
+    "caffeinate",
+    "-dims",
+    "perl",
+    "-e",
+    "alarm 600; exec @ARGV",
+    "node",
+    "scripts/native-handoff.mjs",
+    "verify",
+    "--input",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-mujoco-linux-amd64"
+  ],
+  "cwd": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/exact-reader-checkouts/0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "sourceStatus": "",
+  "startedAt": "2026-11-16T07:11:12.175010+00:00",
+  "finishedAt": "2026-11-16T07:11:13.452261+00:00",
+  "exitCode": 0,
+  "signal": null,
+  "log": "post-n1-handoff-mujoco-linux-amd64-verify.log",
+  "logBytes": 1655,
+  "logSha256": "70ec1b2b796b27b4ff26d4b16fbdae05b32885363529e8b4f35d7b1e9e6b28e6",
+  "subject": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-mujoco-linux-amd64",
+  "scope": "Actual public readback against safely extracted exact bytes; nonzero retained as actual failure, not qualification promotion."
+}

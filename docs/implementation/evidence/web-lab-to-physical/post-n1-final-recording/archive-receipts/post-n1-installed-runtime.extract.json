@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-16T07:07:42.128390+00:00",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-isolated-producer-sb9dhmsy/lab/.runtime/73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+  "archive": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-installed-runtime.tar.gz",
+  "archiveSha256": "c8dd0c4becb6a94c938569f954985b080e704c1b960bdf28136f00a030ddc8c7",
+  "memberIndex": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/raw/post-n1-installed-runtime.members.json",
+  "memberIndexSha256": "a9007a4157911fdfd8ed542b1fa4a3c99242c1f1d32946a8793fe9143c675ed8",
+  "destination": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-installed-runtime",
+  "verifiedFiles": 60,
+  "verifiedBytes": 3195087,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

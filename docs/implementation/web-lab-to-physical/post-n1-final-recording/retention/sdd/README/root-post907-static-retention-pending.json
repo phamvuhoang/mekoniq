@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "observedAt": "2026-11-16T03:00:11.598171+00:00",
+  "scope": "Static root/review/correction-brief records created after publication907; pending retention only, not published or complete correction evidence",
+  "entries": [
+    {
+      "file": "root-final-whole-branch-review-read-checkpoint.json",
+      "bytes": 986,
+      "sha256": "8b7e369cdcca47831c3fda0b2b4ceec51db3ff14f36b8a7864847f13876052f6"
+    },
+    {
+      "file": "final-whole-branch-review-907087c-bfde031-brief.md",
+      "bytes": 16127,
+      "sha256": "2d4b736be9ba8bd30d6be8342c9717f5661da572b2a8760e63578629b2bc1e8d"
+    },
+    {
+      "file": "task-final-whole-branch-review.md",
+      "bytes": 43287,
+      "sha256": "028367f2bd73fac034a28b1432e1f9177da9dffca815b0f99b5120625e25fe28"
+    },
+    {
+      "file": "task-final-correction-brief.md",
+      "bytes": 15421,
+      "sha256": "0af949782798459d1a60d079b5b595c4648a90d8992e541e918d2674feec03c6"
+    },
+    {
+      "file": "final-review-controller-dispositions.md",
+      "bytes": 6483,
+      "sha256": "f7f8616c21905a809c1289e47d4531e6c682f63f6c37917efda6348ebae1dd92"
+    },
+    {
+      "file": "final-correction-i1-design-ruling.md",
+      "bytes": 5057,
+      "sha256": "65c2665d7ac2147e39826f664a090989ab26ad40127cfe87e80a6f8c36adeb66"
+    },
+    {
+      "file": "post-correction-recording-outline.md",
+      "bytes": 7383,
+      "sha256": "90964bfdd9c40e046aba627f984ee1fcd7144363ba462a2f3c46002f754da0b0"
+    },
+    {
+      "file": "root-final-handoff-audit-907087c-bfde031.json",
+      "bytes": 208048,
+      "sha256": "239ea9198398535949ba7a197210b01879449c3bdb822d24207a0e3fe03c3afd"
+    },
+    {
+      "file": "root-final-handoff-audit.py",
+      "bytes": 8254,
+      "sha256": "709cc6ec5109c90b85e520712ec2b41c7404b4fea3c598cbf8f2f614bbc9b01c"
+    },
+    {
+      "file": "root-final-handoff-audit-initial.py",
+      "bytes": 7994,
+      "sha256": "7a0710f0aa905f3c480ea6d692fb929747cbbab756b4fb6c94e14891a939dcef"
+    },
+    {
+      "file": "root-final-handoff-audit-initial-failure.json",
+      "bytes": 857,
+      "sha256": "1231de8283308ca14332c1d63ed4797e5afe8bb8bc551e99ed3326792276ff47"
+    }
+  ],
+  "additionalRequired": [
+    "final-whole-branch-package-907087c-bfde031 complete exact package",
+    "live correction report and raw evidence after settlement",
+    "one scoped re-review and final dispositions",
+    "new recording/publication report, receipts and artifacts",
+    "updated full ledgers, whole rulings, central deferred entries and retained snapshots"
+  ],
+  "oldPublicationUnchanged": true
+}

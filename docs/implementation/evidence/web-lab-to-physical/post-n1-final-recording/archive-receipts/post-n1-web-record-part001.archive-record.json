@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-web-record-part001",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-web-record-part001",
+  "archive": "post-n1-web-record-part001.tar.gz",
+  "archiveBytes": 8202498,
+  "archiveSha256": "e006a5b1f9bcfe48221280662f633e4c2a31b1c2164ddb878989f75773c63133",
+  "memberIndex": "post-n1-web-record-part001.members.json",
+  "memberIndexSha256": "e8bb23339d5604b9c72b04d067917acbe9b426f50f507525e06ef0f0fa6aecb6",
+  "memberCount": 67,
+  "memberBytes": 42301200,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-web-record-part001.extract.json",
+  "safeExtractionReceiptSha256": "5dcf7baa9a56f63fb2c1fcb584f4ce3a6e0f56924b022189d334fa46ae157841",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-web-record-part001",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

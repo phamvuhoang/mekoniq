@@ -1,0 +1,15 @@
+{
+  "id": "post907-correction-part005",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-correction-part005",
+  "archive": "post907-correction-part005.tar.gz",
+  "archiveBytes": 5654126,
+  "archiveSha256": "e95eda660093b1bba5fc78187e5a5687ee3d5d5fdcd2275b754dab72eba446ef",
+  "memberIndex": "post907-correction-part005.members.json",
+  "memberIndexSha256": "4f14938caed9043aef8dfb5a85d420eb13a85b3bbb21afc99172ff93c1ab31a0",
+  "memberCount": 6,
+  "memberBytes": 57592486,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-correction-part005.extract.json",
+  "safeExtractionReceiptSha256": "df663eec53a1e39301494a72139bfd4531e6fe2cb1a9ee654fcba168947746f9",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-correction-part005",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

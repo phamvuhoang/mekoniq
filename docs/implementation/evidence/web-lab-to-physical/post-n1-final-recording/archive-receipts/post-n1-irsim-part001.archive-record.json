@@ -1,0 +1,15 @@
+{
+  "id": "post-n1-irsim-part001",
+  "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post-n1-irsim-part001",
+  "archive": "post-n1-irsim-part001.tar.gz",
+  "archiveBytes": 39780595,
+  "archiveSha256": "7f6909efd48d7c2d76e200d377d18a3d897b5796ce8a7e5b9b055ae5aceaec12",
+  "memberIndex": "post-n1-irsim-part001.members.json",
+  "memberIndexSha256": "359df105cd368f673645f704042a2ca0ba0b7d245200994e10d07013c79ee72e",
+  "memberCount": 1562,
+  "memberBytes": 66594203,
+  "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-irsim-part001.extract.json",
+  "safeExtractionReceiptSha256": "99d1318878e501a52cdc29336a0200bc5e40d835028c2c3d06a6138bee2a0f9d",
+  "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-irsim-part001",
+  "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+}

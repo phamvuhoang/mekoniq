@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:07:40.467253+00:00",
+  "id": "post907-n1-static-package",
+  "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-n1-correction",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "identity.mjs",
+        "bytes": 1492,
+        "sha256": "e69fdc0532a727f8cfab4087fb167ed02581e905ac45f74c552fae827aa67bb1",
+        "mode": "0o644",
+        "mtimeNs": 1794802507089543680
+      },
+      {
+        "path": "lab-n1-review.diff",
+        "bytes": 3433,
+        "sha256": "3e4f5a4c930cdf98b207aa6544254ec8ad282053f2ff67ff035991619e4f8419",
+        "mode": "0o644",
+        "mtimeNs": 1794802575756103291
+      },
+      {
+        "path": "output-root.txt",
+        "bytes": 71,
+        "sha256": "d88c990bcbee546c5514e018fe3ffcfa78c7f1fb67320fcacadf270aefb7fe90",
+        "mode": "0o644",
+        "mtimeNs": 1794802226230207024
+      },
+      {
+        "path": "run-check.py",
+        "bytes": 2195,
+        "sha256": "9c8a6c5d9b7b1419bb87153a357033b1211c09bc55139268e268b9b80aa83113",
+        "mode": "0o644",
+        "mtimeNs": 1794802226230650448
+      },
+      {
+        "path": "settlement.py",
+        "bytes": 3009,
+        "sha256": "1017f5e8fb60452d55267189d6c9600a29a4f3f156c8dab6e194ecf498341c09",
+        "mode": "0o644",
+        "mtimeNs": 1794802547732295971
+      },
+      {
+        "path": "source-n1-review.diff",
+        "bytes": 11147,
+        "sha256": "5e2d3aba94e7fca78c4d71ad357ededbc641c74d55bb285285fed311ab47de21",
+        "mode": "0o644",
+        "mtimeNs": 1794802575609621329
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post907-n1-static-package",
+      "source": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-n1-correction",
+      "archive": "post907-n1-static-package.tar.gz",
+      "archiveBytes": 7665,
+      "archiveSha256": "cc35de7d6f2e0ff3ae72f5cb8af581c0ffc5db9099cfa8aa3cdc9aac7dee10c8",
+      "memberIndex": "post907-n1-static-package.members.json",
+      "memberIndexSha256": "d3ddd626b618507198acb1f869fb0f0e3d976c63c65400fca805d8195100d93c",
+      "memberCount": 6,
+      "memberBytes": 21347,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-n1-static-package.extract.json",
+      "safeExtractionReceiptSha256": "667f63f8c91d2c7ac956811e6145782cee750a716dba97c29939094ff38ab606",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-static-package",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-n1-static-package",
+  "verifiedFiles": 6,
+  "verifiedBytes": 21347,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

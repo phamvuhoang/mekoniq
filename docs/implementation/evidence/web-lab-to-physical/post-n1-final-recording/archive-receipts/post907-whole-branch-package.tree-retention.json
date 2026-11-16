@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "at": "2026-11-16T07:07:40.080742+00:00",
+  "id": "post907-whole-branch-package",
+  "original": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-whole-branch-package-907087c-bfde031",
+  "originalInventory": {
+    "files": [
+      {
+        "path": "lab-commits.txt",
+        "bytes": 18425,
+        "sha256": "4602081686be180c53c6c255b9b6bb348c116b1acff3c29a1f4796719fcfb83d",
+        "mode": "0o644",
+        "mtimeNs": 1794795270330095403
+      },
+      {
+        "path": "lab-implementation-and-build-inputs.diff",
+        "bytes": 1345162,
+        "sha256": "5c3b4d3e94e0ff446460ea5d3aefd0e4559164e16c36ba8ac15761664d735432",
+        "mode": "0o644",
+        "mtimeNs": 1794795380890273366
+      },
+      {
+        "path": "lab-maintained-documents.diff",
+        "bytes": 28571,
+        "sha256": "f87393db726f4be1a2385deaf0c69a9f0b211a2a54eb3598013b37ea6338b7ae",
+        "mode": "0o644",
+        "mtimeNs": 1794795380889642542
+      },
+      {
+        "path": "lab-stat.txt",
+        "bytes": 16515,
+        "sha256": "85bc28ffaa932e7637a6dd660488191f7c3e4d132908efd566c161f79afaa176",
+        "mode": "0o644",
+        "mtimeNs": 1794795270408319932
+      },
+      {
+        "path": "lab-tests-and-fixtures.diff",
+        "bytes": 156490,
+        "sha256": "952f40ff031c3598f453f7df0e91bfc55ddf4d6006e35bab8683af204fb1e158",
+        "mode": "0o644",
+        "mtimeNs": 1794795380894567260
+      },
+      {
+        "path": "lab.diff",
+        "bytes": 1530223,
+        "sha256": "c187d11d64659463259320a48bd13ca7182f92975ae986e3106b9db16fcacb81",
+        "mode": "0o644",
+        "mtimeNs": 1794795270307496326
+      },
+      {
+        "path": "package-index.json",
+        "bytes": 1075632,
+        "sha256": "154b9b913fdcd80f5022738a4aadd0c6c01c25310bc86fea8361cc47c8b075e2",
+        "mode": "0o644",
+        "mtimeNs": 1794795270470363664
+      },
+      {
+        "path": "review-pass-index.json",
+        "bytes": 1681574,
+        "sha256": "7597daabbf47e77a27eac2b5f2afda3a8bec5dbb172a88c51596a86b9dfdad81",
+        "mode": "0o644",
+        "mtimeNs": 1794795380899258814
+      },
+      {
+        "path": "source-commits.txt",
+        "bytes": 21268,
+        "sha256": "7bc8502417767d70dbd61a4b7ad871604468edcefd6c63059e7b8de6d293bc5c",
+        "mode": "0o644",
+        "mtimeNs": 1794795266645295308
+      },
+      {
+        "path": "source-implementation-and-build-inputs.diff",
+        "bytes": 2462859,
+        "sha256": "414aaa8f49568e2509ef5bb78c34d63638b95f0ff0e0db9f53965bca6a1b5286",
+        "mode": "0o644",
+        "mtimeNs": 1794795380859024712
+      },
+      {
+        "path": "source-maintained-documents.diff",
+        "bytes": 1133021,
+        "sha256": "d32cf14e130929a1fcafef5a889ebbbe5a340d55258a27c8e963e32a481c9ef6",
+        "mode": "0o644",
+        "mtimeNs": 1794795380853122384
+      },
+      {
+        "path": "source-stat.txt",
+        "bytes": 124980,
+        "sha256": "2bb7bd25eb3a4d4d562a0d0ee746f60bfe27edd2dbcf567c6e25fd223c3c8fc5",
+        "mode": "0o644",
+        "mtimeNs": 1794795269627469283
+      },
+      {
+        "path": "source-tests-and-fixtures.diff",
+        "bytes": 839981,
+        "sha256": "8d7bca18deee6ce3208cbf520c7ba826b61568c7ef20cde9bf3ded6de9e634c3",
+        "mode": "0o644",
+        "mtimeNs": 1794795380873753365
+      },
+      {
+        "path": "source.diff",
+        "bytes": 72766053,
+        "sha256": "28bd58fbb11c0b9e5647f71db7000012a88a387eaa1277fb913614c25520a19b",
+        "mode": "0o644",
+        "mtimeNs": 1794795266589317943
+      }
+    ],
+    "directories": [],
+    "dependencyLinksDescriptorOnly": []
+  },
+  "records": [
+    {
+      "id": "post907-whole-branch-package-part001",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part001",
+      "archive": "post907-whole-branch-package-part001.tar.gz",
+      "archiveBytes": 2216939,
+      "archiveSha256": "5fb1976a8c261a0bf9fa039abd53483d381990ca6a151217ab3befe0f3a78d69",
+      "memberIndex": "post907-whole-branch-package-part001.members.json",
+      "memberIndexSha256": "f8145ce856f06daf5722113f36bb10b37c5f5544fa5104ee445798d82c7aa65a",
+      "memberCount": 13,
+      "memberBytes": 10434701,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-whole-branch-package-part001.extract.json",
+      "safeExtractionReceiptSha256": "d54dbde665681a9f86f2b91e72e0dda0ebac16b86a7aec47efda0f4994a5df1d",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-whole-branch-package-part001",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    },
+    {
+      "id": "post907-whole-branch-package-part002",
+      "source": "/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/chunk-copies/post907-whole-branch-package-part002",
+      "archive": "post907-whole-branch-package-part002.tar.gz",
+      "archiveBytes": 12673150,
+      "archiveSha256": "398807748363b44d6209480a45b59279b4def244a11665a421ef4461a792bae7",
+      "memberIndex": "post907-whole-branch-package-part002.members.json",
+      "memberIndexSha256": "3fadc134bca77a260fb2ae86f23fc6d3a3f827cf9effad960b3aaf8a5fc42bbd",
+      "memberCount": 1,
+      "memberBytes": 72766053,
+      "safeExtractionReceipt": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post907-whole-branch-package-part002.extract.json",
+      "safeExtractionReceiptSha256": "34f6e6cd7ef6081f4aff7767a4162e9706ebe2153866a7fd11f7c10a4514f301",
+      "extracted": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post907-whole-branch-package-part002",
+      "publicReadback": "Separate actual public reader receipt; archived producer outcomes never rewritten"
+    }
+  ],
+  "reassembled": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/reassembled/post907-whole-branch-package",
+  "verifiedFiles": 14,
+  "verifiedBytes": 83200754,
+  "scope": "Complete original regular-file bytes and modes reconstructed at exact relative paths. Original mtime indexed; tar has neutral time. Dependency symlinks are descriptors only, never followed/materialized. Original producer and failed/not_run status bytes unchanged. No public reader implied by byte verification."
+}

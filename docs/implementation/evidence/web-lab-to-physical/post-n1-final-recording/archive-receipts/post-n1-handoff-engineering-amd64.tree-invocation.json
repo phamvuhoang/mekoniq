@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-handoff-engineering-amd64",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-amd64"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-handoff-engineering-amd64\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/handoff-engineering-amd64\", \"archive\": \"post-n1-handoff-engineering-amd64.tar.gz\", \"archiveBytes\": 2584409, \"archiveSha256\": \"c4e03a321ee693962e502dc3720c2bc6c6568e188265754faa92d020c4874ae8\", \"memberIndex\": \"post-n1-handoff-engineering-amd64.members.json\", \"memberIndexSha256\": \"1aff25f0ae506041f3349b97647394b1d7487bd5dd30cf09b7b32befd5f7405b\", \"memberCount\": 243, \"memberBytes\": 10869301, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-handoff-engineering-amd64.extract.json\", \"safeExtractionReceiptSha256\": \"62cef73a6dd64db8985906ccc85ab85bd84c74b7f7d6e37fff1b8e67931efa4c\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-engineering-amd64\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-handoff-engineering-amd64\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-handoff-engineering-amd64\", \"verifiedFiles\": 243, \"verifiedBytes\": 10869301}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:07:49.133563+00:00"
+}

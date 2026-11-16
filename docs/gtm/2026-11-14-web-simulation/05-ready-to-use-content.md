@@ -1,6 +1,6 @@
 # 05 — Nội dung sẵn để biên tập và xuất bản sau D0
 
-**Hiện trạng kỹ thuật16/11:** đọc[08—readiness theo bằng chứng cuối](08-final-engineering-readiness.md) trước khi dùng pitch/claim. Source981/Labd4 đã được đo lại; drawing/pause/public capture validity chưa đạt. Guided replay4phút không phải full live1×; D0, host/native/hardware và quyền publish/spend vẫn riêng. Các snapshot cũ bên dưới giữ ngày/tuple lịch sử.
+**Hiện trạng sau N1, 16/11:** đọc [09 — readiness mới](09-post-n1-engineering-readiness.md) và [kết quả actual](../../implementation/web-lab-to-physical/post-n1-final-recording/status.md). Source `0d46403` / Lab `7c97b20`; capture mới invalid và bốn assertions mock chưa giải quyết, guided replay bốn phút khác live 1×, D0/native/phần cứng còn mở. Các số liệu và ghi chú trước đó bên dưới là snapshot theo ngày/tuple lịch sử.
 
 
 **Chưa đăng hoặc gửi.** Nội dung ở đây được viết cho release có simulation/replay và fault đã qua gate. Trước khi dùng, owner đối chiếu từng cảnh với [claim-proof](06-measurement-and-launch.md). Các biến `{{ten}}`, `{{quan}}`, `{{link_demo}}`, `{{link_lich}}`, `{{link_huy}}` phải được điền bằng thông tin/URL đã kiểm; không xuất bản nguyên biến. Không tự tạo lời chứng thực hoặc logo khách. Bản JA cần native-language review trước phát hành.

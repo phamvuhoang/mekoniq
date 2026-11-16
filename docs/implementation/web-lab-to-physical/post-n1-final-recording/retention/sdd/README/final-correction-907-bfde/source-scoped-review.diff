@@ -1,0 +1,834 @@
+# Review package: 907087c4f2a4d6bc1348f50177c19143d956e9d9..cb5c86cf9ee5db06cdacc38a2146f6f312b2c503
+
+## Commits
+cb5c86c fix: bind quantized render samples to complete counter windows
+89e2fd6 fix: preserve committed cell display and reclaim authority
+
+## Files changed
+ .../design/03-contracts-and-evidence.md            | 12 +++++
+ packages/lab-runtime/src/v2/gateway.ts             | 10 ++++
+ packages/lab-runtime/src/v2/scenario-runner.ts     | 41 +++++++++++-----
+ .../src/v2/simulation3d/world-display.ts           |  2 +-
+ scripts/browser-capture-clock.mjs                  | 41 +++++++++++++---
+ scripts/irsim-qualification.mjs                    |  1 +
+ scripts/record-sim-extension-r2b.mjs               |  3 +-
+ scripts/sim-extension-r2b.mjs                      | 32 +++++++++++--
+ tests/security/lab-reclaim-authorization.test.ts   | 35 ++++++++++++++
+ tests/security/lab-run-writer.test.ts              | 13 +++--
+ tests/support/r2b-capture.ts                       |  6 +--
+ tests/unit/browser-capture-clock.test.ts           | 56 +++++++++++++++++++++-
+ tests/unit/r2b-suite-coverage.test.ts              | 38 +++++++++++++++
+ tests/unit/world-runner.test.ts                    | 36 +++++++++++++-
+ 14 files changed, 294 insertions(+), 32 deletions(-)
+
+## Diff
+diff --git a/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md b/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md
+index 891a07c..964cff2 100644
+--- a/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md
++++ b/docs/implementation/web-lab-to-physical/design/03-contracts-and-evidence.md
+@@ -279,10 +279,22 @@ Release R2b.1 đòi G-MJ1 và regression theo phạm vi thay đổi; chưa tuyê
+ 
+ ## 10. Qualification mới, không sửa lịch sử
+ 
+ Recorder extension chỉ thêm bảng release `r2b`/`r3` sau khi code được triển khai. Records `documentType:'sim-extension-qualification'`, `accepted:false`, mapping cases/suites/host/inputs/artifacts explicit. Guard đọc và hash lại artifacts, không tin status trong manifest.
+ 
+ Re-record chuỗi nền trên source commit mới và **cùng Lab commit/pin**. Tách tuple `builtFromSourceCommit`, `labCommitAtRecording` khỏi commit tài liệu ghi candidate để tránh yêu cầu vòng lặp tự tham chiếu. Một code/pin thay đổi sau đó làm candidate cũ không đủ cho release mới. Candidate cũ không bị sửa; nếu superseded thì xóa khỏi tree ở commit evidence theo quy ước, giữ Git history/sidecar.
+ 
+ R3 multi-host giữ cùng source/schema/inputs nhưng có host-specific engine/lock/arch inventory. Không ép mọi host dùng cùng wheel hash Python hoặc dpkg inventory. Qualification native không tự sửa `lab/config/simulation-compatibility.json`; acceptance do reviewer gắn đúng candidate/hash/profile.
+ 
+ B07b phát hiện browser ZIP phải lấy byte lưu gốc thay vì byte giải nén. Theo [quyết định 67](05-implementation-decisions.md), reader được thêm `readStoredAsset(path)` qua cùng kiểm admission, size/hash nén và giải nén, giới hạn và lifecycle; `readAsset(path)` vẫn trả byte giải nén. Thay đổi này đang triển khai, cần review và round-trip H7 trên production build mới; lượt import lỗi trước đó được giữ. Không thay hash manifest, recompress asset hoặc đọc vòng qua reader để làm import thành công.
++
++## Final-review correction: prospective live display and capture semantics
++
++The corrected live `world-display` response pairs the committed observation and its `view` inside Source's mutation queue. The latest immutable pair is bounded to one publication, refreshed after each completed tick and control/reclaim/terminal transition. Reads clone that pair without waiting for the remaining HTTP batch. Lab polls this pair and interpolates only received poses through a bounded 150 ms display buffer; run, boot, revision, prop membership and gaps reset the buffer. It never extrapolates or derives custody. The 20 ms physics tick, ACK checks, per-tick evidence and checkpoint order remain unchanged. Cell HTTP batches request at most the existing 50 paced ticks; priority Pause/Cancel uses the same lifecycle reservation and execution-time authority as navigation controls.
++
++New capture checks separate **active full-world wall duration** (at least 180,000 ms after warm-up) from **actual GPU draw intervals** (p95 at most 33 ms). Summed draw-bearing RAF slices remain a diagnostic, not an active-duration requirement. RAF activity, render events and draw calls must correlate; missing streams, gaps beyond the existing 500 ms freshness bound, and frozen or regressing Source horizons are refused. Worker/IPC p95 remains at most 15 ms, and the browser-observed last-step receipt upper bound after Pause remains at most 500 ms. Selected 1×, achieved simulation rate and display interpolation are distinct.
++
++A final priority-paused batch can commit a shorter prefix than requested. That prefix must match the same control's admitted revision and returned horizon, and every actual worker tick must be present exactly once. Unexecuted requested ticks are not silently treated as executed. Historical 981/d4 capture bytes, original checker outcomes, 300.2 ms draw p95 and 2797.283 ms pause bound remain unchanged; this prospective correction cannot retroactively qualify them.
++
++R2b qualification now requires each table-selected Vitest file's normalized executed identity and successful per-file assertions after byte/summary validation. Selectors are checked before expensive recording. The physics evidence file is the integration suite; generic cloud payload security remains required by `r2b-regression`. Older release tables retain their existing shared-reader policy. Missing owned services, native/container/HTTPS execution and human acceptance remain separate unmet gates.
++
++Prospective ordered captures declare `renderOrdering.version:1`, the renderer count before/after the capture, each RAF sample's last observed render counter, and trailing actual GL calls. Counters must be consecutive and complete; partial/malformed metadata fails without legacy fallback. Equal browser timestamps are one clock-resolution group for cadence/gaps; raw render counts remain separate and zero deltas cannot improve p95. Legacy captures retain strict timestamp allocation. The live world buffer follows received wall timestamps at150ms delay, not the last two polls' inferred simulation rate; original Source simTime stays in all authority/evidence records. Paired3D scene context updates directly on each new committed observation, independently of coarser telemetry refresh.
+diff --git a/packages/lab-runtime/src/v2/gateway.ts b/packages/lab-runtime/src/v2/gateway.ts
+index af9cc42..d8d6688 100644
+--- a/packages/lab-runtime/src/v2/gateway.ts
++++ b/packages/lab-runtime/src/v2/gateway.ts
+@@ -314,30 +314,40 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
+    const body=await deps.readBody(request),id=runRoute![1]!;
+    if(Object.keys(body).some(k=>k!=='proof')||typeof body.proof!=='string'||body.proof.length>200)return deny(response,422,'INVALID_RECLAIM',[]);
+    const proof=body.proof;
+    return serialRun(id,async()=>{
+    const entry=runs.get(id),stored=await findReclaim(deps.directory,id);
+    if(!stored||!deps.same(proofHash(proof),stored.record.proofHash))return deny(response,404,'RUN_NOT_FOUND',[]);
+    if(stored.record.schemaHash!==deps.schemaHash||stored.record.input.sourceCommit!==deps.sourceCommit)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+    if(reclaiming.has(id)||entry?.archiving)return deny(response,409,'RECLAIM_CONFLICT',[]);
+    if(!entry&&runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
+    if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
++   const currentSession=()=>{if(sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)throw Error('SESSION_REQUIRED');};
+    reclaiming.add(id);if(!entry)creating++;let reopened:ScenarioRun|undefined;
+    try{
+     const factory=stored.record.input.mode==='simulation'?deps.simulationFactory:createScenarioRun;if(!factory)throw new Error('BACKEND_EXECUTION_DISABLED');
+     const locked=stored.record.input.engineering;
+     const run=entry?.run??(reopened=await factory(stored.record.input,{directory:stored.directory,reclaimOnly:true,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...locked?{assets:locked.runtimeProjection.assets as never}:{}}));
++    currentSession();
+     // a verified proof restores read access to this run's bundle for the new session; it never confers control
+     if(locked&&deps.engineering)await deps.engineering.grantRun(sessionId,locked.ref);
++    currentSession();
+     const closure=locked&&deps.engineering?await deps.engineering.verifyClosure(locked.ref.bundleDigest):null;
++    currentSession();
+     const view=await run.holdForReclaim();
++    // A successful hold is irreversible: preserve the owner/readers but expose its
++    // reconcile-only safety state even when the requesting session has expired.
++    if(entry)entry.readOnly=true;currentSession();
+     const epoch=Math.max(entry?.controlEpoch??0,stored.record.controlEpoch??0)+1;await saveControlEpoch(stored.directory,epoch);
++    // Persistence is monotonic even if authorization expires during fsync. Keep the
++    // existing owner/readers, but synchronize its fence before refusing publication.
++    if(entry)entry.controlEpoch=epoch;currentSession();
+     if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,run,directory:stored.directory,readOnly:true,input:stored.record.input});
+     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
+     return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
+    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
+    });
+   }
+   if(kind==='actions'){
+    const action=validateActionV2(await deps.readBody(request));
+    if(!action.ok)return deny(response,422,'INVALID_ACTION',codesOf(action.issues),action.issues);
+    if(!entry||!readable(entry,sessionId))return deny(response,404,'RUN_NOT_FOUND',[]);
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index 91b3676..c7afb3a 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -167,35 +167,38 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
+  const coffee=roles.coffee&&scenario.coffee?{...roles.coffee,recipes:CoffeeDriver.recipes(scenario.coffee.orders)}:undefined;
+  const openSource=()=>SourceSession.open(dir,cp.runId,()=>run.nowMs(),{...run.worldNavigation?{navigation:run.worldNavigation}:{},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[...new Set([roles.stationId,...coffee?[coffee.stationId]:[]])],...coffee?{coffee}:{},...scenario.fleet?{fleet:scenario.fleet}:{}},fresh);
+  if(!singleWorld)run.source=await openSource();
+  try{await run.attach(providers.coffeePorts);if(singleWorld)run.source=await openSource();
+  // telemetry is not checkpointed: a reopened run starts a new buffer and says so
+  if(!fresh)run.telemetry.gap('RUNTIME_RESTART',null,cp.tick);
+  if(!providers.reclaimOnly)await run.initializeCoffee();
+  if(cp.inFlight)await run.recover();
+  run.recoverFaultSchedule();
+  run.record();
+- await run.persist();
++ await run.persist();await run.publishWorldDisplay();
+  return run;
+  }catch(error){await run.close();throw error;}
+ }
+ class Run implements ScenarioRun {
+  source!:SourceSession;
+  readonly clock:Clock;
+  private plant!:MockPlant;
+  private adapters:RobotAdapter[]=[];
+  private world?:WorldPlantBindings;
+  private observationTick?:number;
+  nowMs(){return this.observationTick===undefined?this.clock.nowMs():EPOCH+this.observationTick*TICK_MS;}
+  private observations:RobotEvent[]=[];
+  private coffee?:CoffeeDriver;
+  private queue:Promise<unknown>=Promise.resolve();
++ private display:import('./simulation3d/world-display').WorldDisplay|undefined;
++ private steps=0;
++ private controls:{raw:unknown;beforeExecute?:()=>Promise<void>;resolve:(v:RunView)=>void;reject:(e:unknown)=>void}[]=[];
+  private closed=false;
+  /** Paced-step anchor (D57): memory only, never checkpointed or digested; cleared by pause, resume, cancel, an unpaced step and a reopen. */
+  private anchor:PaceAnchor|null=null;
+  readonly telemetry=new TelemetryRecorder();
+  constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private wall:WallClock,private worldConfig?:{manifest:RunManifestInput;factory:WorldPortsFactory},private readonly recoveryOnly=false){this.clock=createClock(EPOCH,cp.tick,cp.paused);}
+  get id(){return this.cp.runId;}
+  get worldNavigation(){return this.cp.world?.navigation;}
+  async attach(coffeePorts?:RunProviders['coffeePorts']){
+   if(!this.worldConfig){this.plant=new MockPlant(this.cp.plant,()=>this.clock.nowMs(),randomUUID);
+   this.adapters=this.cp.roles.robots.map(r=>new MockAmrAdapter(this.plant,{id:r.id,adapter:'simulator',protocolVersion:'1',firmware:`${MOCK_AMR.id}@${MOCK_AMR.version}`,capabilities:['delivery'],mapId:'lab-world',mapRevision:String(this.project.world.revision),offlineExecution:true,maxLoadMinor:'10000',trays:this.cp.trays[r.id]!,validation:'simulated'}));
+@@ -392,20 +395,21 @@ class Run implements ScenarioRun {
+     this.observationTick=undefined;this.observations=[];
+     if(previous&&c.coffee){for(const k of Object.keys(c.coffee))delete (c.coffee as unknown as Record<string,unknown>)[k];Object.assign(c.coffee,previous);}
+     c.world!.terminal='WORLD_UNKNOWN';c.suspended=true;for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
+     c.attention.push({reason:'WORLD_UNKNOWN',tick:c.tick});
+     const pending=c.world!.pending!;await w.evidence.fail({targetTick,lastCommittedTick:c.tick,ackTick:pending.ackTick,reason:(e as Error).message}).catch(()=>{});
+     await writeCheckpoint(this.dir,c,{sync:true});throw e;
+    }
+   }else{this.clock.advance(1);c.tick=this.clock.tick;this.plant.advance();await this.coffee?.advance();}
+   await this.drain();await this.coffee?.drain();
+   if(c.tick%TELEMETRY_RATE_TICKS===0)this.record();
++  await this.publishWorldDisplay();
+  }
+  recoverFaultSchedule(){
+   for(const f of this.cp.faultFires??[])if(f.outcome==='dispatching'||f.outcome==='unknown'){
+    f.outcome='unknown';if(!this.cp.attention.some(a=>a.reason==='FAULT_INJECTION_UNKNOWN'&&a.subjectId===f.id)){this.cp.attention.push({reason:'FAULT_INJECTION_UNKNOWN',subjectId:f.id,tick:this.cp.tick});this.cp.faults.push({tick:this.cp.tick,faultId:`schedule:${f.id}:unknown`,entityId:null});}this.suspend();
+   }
+  }
+  private async faultPhase():Promise<FaultPhase>{
+   for(const w of this.cp.coffee?.workload??[]){
+    if(!w.jobId)continue;const j=(await this.source.read('coffee-job',w.jobId)).state;
+    if(j.status==='loaded'||j.status==='delivered')return 'delivery';
+@@ -439,58 +443,71 @@ class Run implements ScenarioRun {
+  private suspend(){const c=this.cp;c.suspended=true;for(const x of Object.values(c.confirmations))if(x.type!=='standby')x.due=null;}
+  /** Scenario obstacles (person, chair, closed lane) enter and leave the plant world on their ticks; each change is logged as a fault entry. */
+  private schedule(){
+   const c=this.cp,injected=c.plant.injected;
+   for(const o of this.scenario.obstacles??[]){
+    const on=o.atTick<=c.tick&&(o.untilTick===undefined||c.tick<o.untilTick),i=injected.findIndex(x=>x.id===o.id);
+    if(on&&i<0){injected.push({id:o.id,x:o.x,y:o.y,width:o.width,height:o.height});c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:on`,entityId:null});}
+    else if(!on&&i>=0){injected.splice(i,1);c.faults.push({tick:c.tick,faultId:`obstacle:${o.id}:off`,entityId:null});}
+   }
+  }
+- worldDisplay(){return this.queue.then(()=>{
+-  if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
++ /** Publish from inside the mutation queue, only after a completed tick/control. Readers
++  * clone this immutable pair and never observe an in-flight checkpoint or join two horizons. */
++ async publishWorldDisplay(){
++  if(!this.worldConfig)return;const c=this.cp,s=c.world?.snapshot,command=c.world?.committedDisplay?.command;
+   const matched=!!s&&s.runId===c.runId&&s.tick===c.tick&&s.simTimeNs===this.clock.simTimeNs();
+-  return {version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'};
+- });}
++  this.display=structuredClone({view:await this.view(),version:1 as const,runId:c.runId,revision:c.revision,tick:c.tick,simTimeNs:this.clock.simTimeNs(),availability:!matched?'unknown' as const:c.world?.terminal?'stale' as const:'valid' as const,reason:!matched?'WORLD_DISPLAY_UNAVAILABLE':c.world?.terminal??null,snapshot:matched?structuredClone(s!):null,control:matched&&command?.targetTick===c.tick?structuredClone(command):null,controlReason:matched&&command?.targetTick===c.tick?null:'NOT_RECORDED_AT_TICK'});
++ }
++ async worldDisplay(){if(this.closed)throw Error('RUN_CLOSED');if(!this.display)throw Error('WORLD_DISPLAY_UNSUPPORTED');return structuredClone(this.display);}
+  worldDisplayScene(){return this.queue.then(()=>{if(this.closed)throw Error('RUN_CLOSED');if(!this.worldConfig)throw Error('WORLD_DISPLAY_UNSUPPORTED');const scene=this.world?.displayScene?.();return {version:1 as const,runId:this.cp.runId,availability:scene?'available' as const:'unavailable' as const,reason:scene?null:'WORLD_SCENE_UNAVAILABLE_AFTER_REOPEN',scene:scene??null};});}
+  snapshot(){return this.queue.then(()=>{if(this.closed)throw new Error('RUN_CLOSED');return this.view();});}
+  holdForReclaim(){
+   const p=this.queue.then(async()=>{
+    if(this.closed)throw new Error('RUN_CLOSED');const c=this.cp;
+    if(!c.reclaimed){
+     this.suspend();c.paused=true;this.clock.pause();
+     // A reclaimed process can inspect and reconcile; its old motion is made unknown, never restarted from the checkpoint.
+     if(!this.recoveryOnly){for(const a of this.adapters)await a.requestStop('LOCAL_RECLAIM');await this.drain();await this.coffee?.recover();}
+     if(c.started&&!await this.missionsDone()){
+      let targets=0;
+      // A completed navigation can still be awaiting load/handoff. Identify its active mission even when requestStop emitted no event.
+      for(const {id:robotId} of c.roles.robots){
+       const missionId=(await this.source.read('robot',robotId)).state.missionId;if(typeof missionId!=='string')continue;
+       const mission=await this.source.read('mission',missionId);if(FINAL.includes(String(mission.state.status)))continue;
+       c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',robotId,subjectId:missionId,tick:c.tick,...typeof mission.state.commandId==='string'?{commandId:mission.state.commandId}:{}});targets++;
+      }
+      if(!targets)c.attention.push({reason:'RECLAIM_RECONCILIATION_REQUIRED',tick:c.tick});
+     }
+-    c.reclaimed=true;c.revision++;this.record();await this.persist();
++    c.reclaimed=true;c.revision++;this.record();await this.persist();await this.publishWorldDisplay();
+    }
+    return this.view();
+   });this.queue=p.catch(()=>{});return p;
+  }
+  start(){return this.snapshot().then(v=>this.action({actionId:'start',expectedRevision:v.run.runRevision,kind:'start',payload:{}}));}
+- action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{const p=this.queue.then(()=>this.execute(a,beforeExecute));this.queue=p.catch(()=>{});return p;}
+- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
++ controlDuringStep(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined{
++  const kind=(a as {kind?:unknown}|null)?.kind;if(!this.worldConfig||!this.steps||(kind!=='pause'&&kind!=='cancel'))return undefined;
++  if(this.controls.length>=10000)return Promise.reject(Error('ACTION_LIMIT'));
++  return new Promise((resolve,reject)=>this.controls.push({raw:a,beforeExecute,resolve,reject}));
++ }
++ action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
++  const control=this.controlDuringStep(a,beforeExecute);if(control)return control;
++  const step=(a as {kind?:unknown}|null)?.kind==='step';if(step)this.steps++;
++  const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;
++ }
++ private async takeControls(){let admitted=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}return admitted;}
++ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
+   if(this.closed)throw new Error('RUN_CLOSED');
+   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
+   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
+   if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
+   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
+-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');return structuredClone(old.view);}
++  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
+   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
+   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
+   const view=await this.view(),status=view.run.status;
+   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
+   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
+   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
+   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
+   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
+   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
+   const cellFault=COFFEE_FAULTS.includes(String(p.faultId))?c.coffee?.cellId:ARM_FAULTS.includes(String(p.faultId))?c.coffee?.armId:null;
+@@ -501,21 +518,21 @@ class Run implements ScenarioRun {
+   if(pending&&c.plant.robots.find(r=>r.id===pending[1].robotId)!.stale)throw new Error('INVALID_STATE:LOCALIZATION_LOST');
+   if(a.kind==='restoreCup'&&!await this.coffee?.canRestoreJob(String(p.subjectId)))throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');
+   // Admission applies only to a new action, inside the same queue as receipt replay and execution.
+   // A lost response can therefore be retried even if providers became unavailable after success.
+   await beforeExecute?.();
+   c.inFlight=true;await this.persist();
+   try{
+    if(a.kind==='start')c.started=true;
+    else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;}
+    else if(a.kind==='resume'){c.paused=false;this.clock.resume();this.anchor=null;}
+-   else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;for(let i=0;i<Number(p.ticks);i++){if(pace)this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);await this.tick();}}
++   else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;try{for(let i=0;i<Number(p.ticks);i++){if(await this.takeControls())break;if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(await this.takeControls())break;}await this.tick();}}finally{await this.takeControls();}}
+    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
+    else if(a.kind==='restoreCup'){
+     if(!this.coffee)throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');await this.coffee.restoreCup(String(p.subjectId));
+    }
+    else if(a.kind==='cancel'){
+     c.cancelled=true;this.suspend();this.anchor=null;
+     for(const w of c.workload.filter((x,i,a)=>a.findIndex(y=>y.missionId===x.missionId)===i))if(w.missionId){const m=await this.source.read('mission',w.missionId);if(!FINAL.includes(String(m.state.status))&&m.state.status!=='cancelling'){const r=await this.submit('Mission.Cancel',{missionId:m.ref.id,expectedVersion:m.version});if(r.status!=='accepted')c.attention.push({reason:'CANCEL_REJECTED',subjectId:m.ref.id,tick:c.tick});}}
+     await this.coffee?.cancel();
+     // cancelled missions moved on (skipped stops, return legs): drop old confirmations and re-read the stops robots are waiting at now
+     c.confirmations={};await this.scanArrivals();
+@@ -525,24 +542,24 @@ class Run implements ScenarioRun {
+     // Mock reconciliation queries the plant by command id and audits the answer. It never resends; a signed native proof is required to release.
+     const subject=String(p.subjectId);
+     if(this.coffee?.ownsJob(subject)){c.reconciliations.push({...await this.coffee.reconcile(subject),tick:c.tick});}else{
+     let index=c.roles.robots.findIndex(r=>r.id===subject);
+     for(let i=0;index<0&&i<c.roles.robots.length;i++)if((await this.source.read('robot',c.roles.robots[i]!.id)).state.missionId===subject)index=i;
+     if(index<0)throw new Error('INVALID_ACTION');
+     const missionId=(await this.source.read('robot',c.roles.robots[index]!.id)).state.missionId,commandId=typeof missionId==='string'?String((await this.source.read('mission',missionId)).state.commandId):null;
+     c.reconciliations.push({subjectId:subject,commandId,nativeState:this.recoveryOnly?'unknown':commandId?(await this.adapters[index]!.reconcile(commandId)).status:'idle',tick:c.tick});}
+    }
+    c.revision++;c.pendingOps=[];c.inFlight=false;this.record();
+-   const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();return structuredClone(after);
++   const after=await this.view();c.receipts[a.actionId]={hash,view:after};await this.persist();await this.publishWorldDisplay();return structuredClone(after);
+   }catch(e){
+    if(e instanceof SimulatedCrash){this.closed=true;try{await this.coffee?.close();}finally{try{if(this.world){await this.world.evidence.fail({targetTick:c.tick,lastCommittedTick:c.tick,ackTick:c.tick,reason:'SIMULATED_CRASH'});await this.world.world.close();}}finally{await this.source?.close();}}throw e;}
+-   c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();throw e;
++   c.attention.push({reason:'ACTION_INTERRUPTED',tick:c.tick});c.revision++;c.inFlight=false;await this.persist();await this.publishWorldDisplay();throw e;
+   }
+  }
+  private async missionsDone(){
+   const c=this.cp;
+   if(c.workload.some(w=>w.status!=='placed')||this.coffee&&!this.coffee.done())return false;
+   for(const w of c.workload)if((await this.source.read('mission',w.missionId!)).state.status!=='completed')return false;
+   if(!this.scenario.park)return true;
+   for(const r of c.roles.robots){const s=(await this.source.read('robot',r.id)).state;if(s.missionId||s.availability!=='idle'||(s.position!==r.parkingId))return false;}
+   return true;
+  }
+diff --git a/packages/lab-runtime/src/v2/simulation3d/world-display.ts b/packages/lab-runtime/src/v2/simulation3d/world-display.ts
+index 34f6daf..92dc16a 100644
+--- a/packages/lab-runtime/src/v2/simulation3d/world-display.ts
++++ b/packages/lab-runtime/src/v2/simulation3d/world-display.ts
+@@ -1,6 +1,6 @@
+ /** One bounded, committed display observation. Read-only; never persisted in action receipts. */
+ import type {Sim3DSnapshotV1,LabWorldSceneV1} from '../navigation2d/contracts';
+ import type {WorldTickCommand} from './world-ports';
+ export type CommittedWorldDisplayCommand=Pick<WorldTickCommand,'targetTick'|'worldControl'|'velocities'>;
+-export interface WorldDisplay {version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:Sim3DSnapshotV1|null;control:CommittedWorldDisplayCommand|null;controlReason:string|null}
++export interface WorldDisplay {view?:import('../scenario-runner').RunView;version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:Sim3DSnapshotV1|null;control:CommittedWorldDisplayCommand|null;controlReason:string|null}
+ export interface WorldDisplayScene {version:1;runId:string;availability:'available'|'unavailable';reason:string|null;scene:LabWorldSceneV1|null}
+diff --git a/scripts/browser-capture-clock.mjs b/scripts/browser-capture-clock.mjs
+index b947dd9..989e65e 100644
+--- a/scripts/browser-capture-clock.mjs
++++ b/scripts/browser-capture-clock.mjs
+@@ -9,40 +9,69 @@ export function checkCaptureClock(record){
+   if(!Number.isSafeInteger(a.tick)||a.tick<0||![a.requestStartEpochMs,a.responseEndEpochMs,a.observedAtEpochMs].every(finite)||a.requestStartEpochMs>a.responseEndEpochMs||a.responseEndEpochMs>a.observedAtEpochMs+2)r.push('ACTION_CLOCK_INVALID:'+a.actionId);
+   const matches=(record.responses??[]).filter(x=>x.actionId===a.actionId&&x.runId===a.runId);
+   if(matches.length!==1||matches[0].tick!==a.tick||matches[0].requestStartEpochMs!==a.requestStartEpochMs||matches[0].responseEndEpochMs!==a.responseEndEpochMs||matches[0].status!==200)r.push('ACTION_RESPONSE_CORRELATION:'+a.actionId);
+  }
+  if(!ids.size)r.push('CAPTURE_ACTIONS_MISSING');return [...new Set(r)];
+ }
+ 
+ export function assessCapture(record){
+  const issues=checkCaptureClock(record),c=record?.capture,p=record?.pause,k=record?.clock,finite=x=>typeof x==='number'&&Number.isFinite(x),integer=x=>Number.isSafeInteger(x)&&x>=0,list=x=>Array.isArray(x)?x:[],fail=code=>issues.push(code);
+  const events=list(c?.renderEvents),samples=list(c?.samples),actions=list(record?.actions),steps=actions.filter(a=>a.kind==='step').sort((a,b)=>a.requestStartEpochMs-b.requestStartEpochMs),pauses=actions.filter(a=>a.kind==='pause'),activeSteps=steps.filter(a=>a.observedAtEpochMs>=k?.startEpochMs&&a.observedAtEpochMs<=k?.endEpochMs);
+- const windowMs=k?.endEpochMs-k?.startEpochMs;
++ const windowMs=k?.endEpochMs-k?.startEpochMs,ordered=c?.renderOrdering!==undefined||samples.some(s=>s.renderCount!==undefined),order=c?.renderOrdering;
++ if(ordered&&(!order||order.version!==1||!integer(order.startCount)||!integer(order.endCount)||order.endCount!==order.startCount+events.length||!integer(order.tailDrawCalls)||!integer(c?.drawCalls)||events.some((e,i)=>e.count!==order.startCount+i+1)||samples.some((s,i)=>!integer(s.renderCount)||s.renderCount<order.startCount||s.renderCount>order.endCount||i>0&&s.renderCount<samples[i-1].renderCount)))fail('CAPTURE_RENDER_ORDER');
++ // A final priority control may stop a requested batch at a committed boundary.
++ // Bind that shorter prefix to the same admitted revision, control and returned H.
++ const prefix=new Map(steps.map((a,i)=>[a,i?steps[i-1].tick:a.tick-a.payload?.ticks]));
++ const fullOrControlled=(a,i)=>{
++  if(!i||a.tick-prefix.get(a)===a.payload?.ticks)return true;
++  const pause=pauses[0];return i===steps.length-1&&a.tick>=prefix.get(a)&&a.tick-prefix.get(a)<a.payload?.ticks&&a.status==='paused'&&pause?.status==='paused'&&pause.tick===a.tick&&integer(a.expectedRevision)&&a.expectedRevision===pause.expectedRevision&&a.revision===pause.revision+1&&pause.revision===a.expectedRevision+1&&pause.requestStartEpochMs>=a.requestStartEpochMs&&pause.requestStartEpochMs<=a.responseEndEpochMs;
++ };
++
+  if(!finite(c?.elapsedMs)||c.elapsedMs<180000||!finite(windowMs)||Math.abs(c.elapsedMs-windowMs)>1)fail('CAPTURE_DURATION');
+- if(activeSteps.length<2||activeSteps.at(-1)?.tick<=activeSteps[0]?.tick||steps.some((a,i)=>!integer(a.tick)||!Number.isSafeInteger(a.payload?.ticks)||a.payload.ticks<1||a.payload.ticks>30000||i>0&&a.tick-steps[i-1].tick!==a.payload.ticks))fail('CAPTURE_STEP_PROGRESSION');
++ if(activeSteps.length<2||activeSteps.at(-1)?.tick<=activeSteps[0]?.tick||steps.some((a,i)=>!integer(a.tick)||!Number.isSafeInteger(a.payload?.ticks)||a.payload.ticks<1||a.payload.ticks>30000||!fullOrControlled(a,i)))fail('CAPTURE_STEP_PROGRESSION');
+  if(pauses.length!==1||p?.actionId!==pauses[0]?.actionId||!finite(p?.clickEpochMs)||p.clickEpochMs<k?.endEpochMs||!finite(p?.uiObservedAtEpochMs)||p.uiObservedAtEpochMs<p.clickEpochMs||pauses[0]?.requestStartEpochMs<p.clickEpochMs||pauses[0]?.responseEndEpochMs>p.uiObservedAtEpochMs||pauses[0]?.status!=='paused')fail('CAPTURE_PAUSE_CORRELATION');
+  const pause=pauses[0],last=steps.at(-1);
+  if(!last||pause?.tick!==last.tick||p?.lastCommittedTick!==pause?.tick||p?.stableAfterTick!==pause?.tick||p?.status!=='paused'||steps.some(a=>a.requestStartEpochMs>pause?.responseEndEpochMs)||['finalView','stableView','afterExportView'].some(key=>p?.[key]?.run?.id!==record?.runId||p?.[key]?.run?.status!=='paused'||p?.[key]?.tick!==pause?.tick))fail('CAPTURE_FINAL_HORIZON');
+  let activeCellMs=0,fullCellDrawingMs=0,fullCellDrawingFrames=0;
+  if(samples.length<2)fail('CAPTURE_ACTIVITY_STREAM');
+  for(const [i,s]of samples.entries()){
+   const previous=samples[i-1],delta=i?s.at-previous.at:0;
+   if(!finite(s.at)||s.at<0||s.at>windowMs||i>0&&delta<=0||!finite(s.interval)||Math.abs(s.interval-(i?delta:s.at))>.01||typeof s.fullCell!=='boolean'||typeof s.drawn!=='boolean'||!integer(s.drawCalls)||s.drawn!==(s.drawCalls>0)||!integer(s.tick)||s.tick>pause?.tick||s.fullCell&&(!integer(s.worldTick)||s.worldTick>pause?.tick))fail('CAPTURE_ACTIVITY_STREAM');
+   if(i&&previous.fullCell&&s.fullCell)activeCellMs+=delta;if(s.fullCell&&s.drawn)fullCellDrawingFrames++;if(i&&previous.fullCell&&s.fullCell&&s.drawn)fullCellDrawingMs+=delta;
+  }
+- if(activeCellMs<180000||fullCellDrawingMs<180000)fail('CAPTURE_ACTIVE_DRAWING_DURATION');
+- const intervals=events.slice(1).map((s,i)=>s.atMs-events[i].atMs);
++ if(activeCellMs<180000)fail('CAPTURE_ACTIVE_DRAWING_DURATION');
++ const cadence=ordered?events.filter((e,i)=>!i||e.atMs!==events[i-1].atMs):events,intervals=cadence.slice(1).map((s,i)=>s.atMs-cadence[i].atMs);
++ if(ordered&&events.some((e,i)=>i>0&&e.atMs<events[i-1].atMs))fail('CAPTURE_RENDER_ORDER');
+  if(events.length<2||events.some(e=>e.runId!==record?.runId||!finite(e.atMs)||e.atMs<k?.browserStartMs||e.atMs>k?.browserEndMs||!finite(e.durationMs)||e.durationMs<0||!integer(e.drawCalls)||e.drawCalls<1||!integer(e.worldTick)||e.worldTick>pause?.tick)||intervals.some(x=>!finite(x)||x<=0)||events.at(-1)?.atMs-events[0]?.atMs<windowMs*.9)fail('CAPTURE_RENDER_STREAM');
++ // Active duration is wall time with a valid full world, independent of RAF/draw ratio.
++ // Draw-slice duration remains diagnostic only. Missing streams or >500 ms gaps
++ // exceed the existing live sample freshness bound; they are never interpolated away.
++ if(samples.some((s,i)=>i>0&&s.at-samples[i-1].at>500)||intervals.some(x=>x>500)||samples[0]?.at>500||windowMs-samples.at(-1)?.at>500||events[0]?.atMs-k?.browserStartMs>500||k?.browserEndMs-events.at(-1)?.atMs>500)fail('CAPTURE_STREAM_GAP');
++ if(events.at(-1)?.worldTick<=events[0]?.worldTick||events.some((e,i)=>i>0&&e.worldTick<events[i-1].worldTick))fail('CAPTURE_RENDER_PROGRESSION');
++ const advances=events.filter((e,i)=>i===0||e.worldTick!==events[i-1].worldTick);
++ if(advances.length<2||advances.at(-1)?.atMs-advances[0]?.atMs<180000||advances.some((e,i)=>i>0&&e.atMs-advances[i-1].atMs>500)||events.at(-1)?.atMs-advances.at(-1)?.atMs>500)fail('CAPTURE_RENDER_PROGRESSION');
++ let cursor=0,previousTime=k?.browserStartMs;
++ for(const sample of samples){
++  let calls=0,lastEvent;while(cursor<events.length&&(ordered?events[cursor].count<=sample.renderCount:events[cursor].atMs<=k?.browserStartMs+sample.at)){
++   lastEvent=events[cursor++];calls+=lastEvent.drawCalls;
++   if(ordered&&(lastEvent.atMs<previousTime||lastEvent.atMs>k?.browserStartMs+sample.at))fail('CAPTURE_RENDER_ORDER');
++  }
++  if(sample.drawCalls!==calls||!!lastEvent!==sample.drawn||lastEvent&&sample.fullCell&&sample.worldTick!==lastEvent.worldTick)fail('CAPTURE_DRAW_ACTIVITY_CORRELATION');
++  previousTime=k?.browserStartMs+sample.at;
++ }
++ // A versioned counter window binds the actual draws after the last RAF too.
++ // Equal clock values are one cadence group; raw render calls remain separately counted.
++ if(ordered&&(events.slice(cursor).some(e=>e.atMs<previousTime)||events.slice(cursor).reduce((n,e)=>n+e.drawCalls,0)!==order?.tailDrawCalls||events.reduce((n,e)=>n+e.drawCalls,0)!==c.drawCalls||samples.reduce((n,s)=>n+s.drawCalls,0)+order?.tailDrawCalls!==c.drawCalls))fail('CAPTURE_RENDER_ORDER');
+  const worker=list(record?.workerRaw),before=list(record?.workerOutsideWindow?.before),after=list(record?.workerOutsideWindow?.after),all=[...before,...worker,...after],ids=new Set(),ticks=new Set();
+  for(const [group,rows]of [['active',worker],['before',before],['after',after]])for(const w of rows){
+   if(w.runId!==record?.runId||w.op!=='step'||typeof w.requestId!=='string'||!w.requestId||ids.has(w.requestId)||!integer(w.targetTick)||w.targetTick<1||ticks.has(w.targetTick)||w.expectedTick!==w.targetTick||w.ok!==true||!finite(w.elapsedMs)||w.elapsedMs<0||!finite(w.atEpochMs)||!finite(w.wallMs)||Math.abs(k?.nodeTimeOriginEpochMs+w.wallMs-w.atEpochMs)>.01)fail('CAPTURE_WORKER_IDENTITY');ids.add(w.requestId);ticks.add(w.targetTick);
+   if(group==='active'?(w.atEpochMs<k?.startEpochMs||w.atEpochMs>k?.endEpochMs):group==='before'?w.atEpochMs>=k?.startEpochMs:w.atEpochMs<=k?.endEpochMs)fail('CAPTURE_WORKER_WINDOW');
+-  const action=steps.find(a=>w.targetTick>a.tick-a.payload?.ticks&&w.targetTick<=a.tick);if(!action||w.atEpochMs<action.requestStartEpochMs-2||w.atEpochMs>action.responseEndEpochMs+2)fail('CAPTURE_WORKER_ACTION_CORRELATION');
++  const action=steps.find(a=>w.targetTick>prefix.get(a)&&w.targetTick<=a.tick);if(!action||w.atEpochMs<action.requestStartEpochMs-2||w.atEpochMs>action.responseEndEpochMs+2)fail('CAPTURE_WORKER_ACTION_CORRELATION');
+  }
+  if(worker.length<2||Math.max(...worker.map(w=>w.atEpochMs))-Math.min(...worker.map(w=>w.atEpochMs))<windowMs*.9||activeSteps.some(a=>!all.some(w=>w.targetTick===a.tick))||last&&!all.some(w=>w.targetTick===last.tick))fail('CAPTURE_WORKER_COVERAGE');
+- const requiredTicks=steps.reduce((n,a)=>n+(Number.isSafeInteger(a.payload?.ticks)?a.payload.ticks:30001),0);if(requiredTicks>30000)fail('CAPTURE_WORKER_COVERAGE');else for(const a of steps)for(let tick=a.tick-a.payload?.ticks+1;tick<=a.tick;tick++)if(!ticks.has(tick))fail('CAPTURE_WORKER_COVERAGE');
++ const requiredTicks=steps.reduce((n,a)=>n+(integer(prefix.get(a))&&integer(a.tick)&&a.tick>=prefix.get(a)?a.tick-prefix.get(a):30001),0);if(requiredTicks>30000)fail('CAPTURE_WORKER_COVERAGE');else for(const a of steps)for(let tick=prefix.get(a)+1;tick<=a.tick;tick++)if(!ticks.has(tick))fail('CAPTURE_WORKER_COVERAGE');
+  if(!Array.isArray(record?.errors)||record.errors.length)fail('CAPTURE_OBSERVER_ERRORS');
+  const p95=a=>a.length?[...a].sort((a,b)=>a-b)[Math.ceil(a.length*.95)-1]:null;
+  const boundaryAvailable=steps.length&&finite(p?.clickEpochMs)&&steps.every(a=>finite(a.observedAtEpochMs));
+  const metrics={renderIntervalP95Ms:p95(intervals),workerP95Ms:p95(worker.map(s=>s.elapsedMs)),lastStepReceiptMs:boundaryAvailable?Math.max(0,...steps.map(a=>a.observedAtEpochMs-p.clickEpochMs)):null,pauseAckUiMs:finite(p?.uiObservedAtEpochMs)&&finite(p?.clickEpochMs)?p.uiObservedAtEpochMs-p.clickEpochMs:null,activeCellMs,fullCellDrawingMs,fullCellDrawingFrames};
+  const valid=issues.length===0;return {valid,meetsTargets:valid&&metrics.renderIntervalP95Ms!==null&&metrics.renderIntervalP95Ms<=33&&metrics.workerP95Ms!==null&&metrics.workerP95Ms<=15&&metrics.lastStepReceiptMs!==null&&metrics.lastStepReceiptMs<=500,metrics,issues:[...new Set(issues)]};
+ }
+diff --git a/scripts/irsim-qualification.mjs b/scripts/irsim-qualification.mjs
+index 8053bc4..4b5e4e4 100644
+--- a/scripts/irsim-qualification.mjs
++++ b/scripts/irsim-qualification.mjs
+@@ -129,20 +129,21 @@ export function checkQualification(m,read,table=TABLE){
+    if(report&&rec.evidenceComplete!==false&&report.metrics?.navigation?.sensorPublications?.complete!==true)r.push(`SENSOR_COVERAGE_LOST:${run.id}`);
+   }
+  }
+  // every suite of the table must be in the record: a record that left suites out is not a consistent all-not_run pass, it is incomplete
+  for(const s of table.suites)if(!(m.suites??[]).some(su=>su.id===s.id))r.push(`SUITE_MISSING:${s.id}`);
+  if(!(m.commands??[]).some(c=>c.id==='licenses'))r.push('COMMAND_MISSING:licenses');
+  for(const su of m.suites??[]){
+   const st=suiteState(su);if(st==='failed')r.push(`SUITE_FAILED:${su.id}`);else if(skippedOf(su)>0)r.push(`SUITE_SKIPPED:${su.id}`);else if(st==='not_run')r.push(`SUITE_EMPTY:${su.id}`);
+   if(!su.result){r.push(`SUITE_RESULT_MISSING:${su.id}`);continue;}
+   const bytes=read(su.result.file);if(!bytes||sha(bytes)!==su.result.sha256){r.push(`SUITE_RESULT_CORRUPT:${su.id}`);continue;}
++  const requiredSuite=table.suites.find(t=>t.id===su.id);if(requiredSuite&&table.checkSuiteResult)r.push(...table.checkSuiteResult(requiredSuite,bytes));
+   // the counts come from the file, not from the manifest (kind from the table, not from a claim)
+   try{if(JSON.stringify(summarizeResult(table.suites.find(t=>t.id===su.id)?.kind,bytes.toString('utf8')))!==JSON.stringify(su.result.summary))r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}catch{r.push(`SUITE_SUMMARY_MISMATCH:${su.id}`);}
+  }
+  for(const c of m.commands??[])if(c.exitCode!==0)r.push(`COMMAND_FAILED:${c.id}`);
+  for(const art of m.artifacts??[]){const bytes=read(art.file);if(!bytes)r.push(`ARTIFACT_MISSING:${art.file}`);else if(sha(bytes)!==art.sha256||bytes.length!==art.bytes)r.push(`ARTIFACT_CORRUPT:${art.file}`);}
+  // statuses must be exactly what the recorded evidence supports
+  const extra=table.inputs?.(m,read)??{input:{},reasons:[]};r.push(...extra.reasons);
+  const q=qualify({campaign:summary&&summary.status==='completed'?summary:null,suites:m.suites??[],lab:!!m.lab,sourceCommit:b?.sourceCommit,...extra.input},table);
+  for(const id of Object.keys(table.cases)){
+   const c=m.cases?.[id];if(!c){r.push(`CASE_MISSING:${id}`);continue;}
+diff --git a/scripts/record-sim-extension-r2b.mjs b/scripts/record-sim-extension-r2b.mjs
+index 5f56724..5d7241b 100644
+--- a/scripts/record-sim-extension-r2b.mjs
++++ b/scripts/record-sim-extension-r2b.mjs
+@@ -1,27 +1,28 @@
+ import {execFileSync} from 'node:child_process';
+ import {mkdir,writeFile,readFile,cp,lstat} from 'node:fs/promises';
+ import {existsSync} from 'node:fs';
+ import {join,resolve,dirname} from 'node:path';
+ import {fileURLToPath} from 'node:url';
+ import {createHash} from 'node:crypto';
+-import {tableR2b,qualifyR2bStructure} from './sim-extension-r2b.mjs';
++import {tableR2b,qualifyR2bStructure,validateR2bSelectors} from './sim-extension-r2b.mjs';
+ import {verifyR2bDirectory,assessR2bDirectory,collectR2bArtifactDispositions,evidenceInventory,boundedEvidenceRead} from './r2b-readback.mjs';
+ import {summarizeResult} from './irsim-qualification.mjs';
+ import {closureIdentity} from './lab-irsim.mjs';
+ import {runR2bCaseCommand} from './native-sim/r2b-process.mjs';
+ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=b=>createHash('sha256').update(b).digest('hex');
+ export async function recordR2b(args){
+  const o={scope:'full'};for(let i=0;i<args.length;i++){const k=args[i];if(k==='--plan'){o.plan=true;continue;}if(!['--release','--scope','--out','--candidate-id','--r2a-record','--physics-campaign','--cell-campaign','--semantic-study','--web-record','--lab','--container-record'].includes(k)||!args[i+1]||args[i+1].startsWith('--'))throw Error('INVALID_OPTION:'+k);o[k.slice(2)]=args[++i];}
+  const table=tableR2b(o.scope);if(o.plan){console.log(JSON.stringify({release:'r2b',scope:o.scope,suites:table.suites,gates:table.gates,note:'No prerequisite probes run in R2b plan; WEB06 blocked_external; missing container remains not_run while other local cases execute.'},null,2));return 0;}
+  for(const key of ['r2a-record','physics-campaign','out',...o.scope==='full'?['cell-campaign','semantic-study','web-record']:[]])if(!o[key])throw Error('MISSING_OPTION:--'+key);
+  const out=resolve(o.out),lab=resolve(o.lab??join(root,'../lab'));if(existsSync(out))throw Error('OUT_EXISTS');if(out===root||out.startsWith(root+'/')||out===lab||out.startsWith(lab+'/'))throw Error('OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES');
++ validateR2bSelectors(table,{source:root,lab});
+  const git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8'}).trim(),identity=()=>({sourceCommit:git(root,'rev-parse','HEAD'),dirty:!!git(root,'status','--porcelain','--untracked-files=all'),toolClosures:closureIdentity(),node:process.version}),before=identity();if(before.dirty)throw Error('SOURCE_DIRTY');
+  const pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),labCommit=git(lab,'rev-parse','HEAD');if(git(lab,'status','--porcelain','--untracked-files=all'))throw Error('LAB_DIRTY');if(pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
+  await mkdir(out,{mode:0o700});await mkdir(join(out,'inputs'));await mkdir(join(out,'suites'));const refs={};
+  const copy=async(key,input,dest,entry)=>{const source=resolve(input);const original=evidenceInventory(source);await cp(source,join(out,dest),{recursive:true,force:false,errorOnExist:true});if(JSON.stringify(evidenceInventory(source))!==JSON.stringify(original)||JSON.stringify(evidenceInventory(join(out,dest)))!==JSON.stringify(original))throw Error('INPUT_CHANGED:'+key);const file=dest+'/'+entry;refs[key]={file,sha256:sha(boundedEvidenceRead(out,file))};};
+  await copy('r2aRecord',o['r2a-record'],'inputs/r2a','qualification.json');await copy('physicsCampaign',o['physics-campaign'],'inputs/physics','campaign.json');
+  if(o.scope==='full'){await copy('cellCampaign',o['cell-campaign'],'inputs/cell','campaign.json');await copy('webCapture',o['web-record'],'inputs/web','actual-cell-production.json');const input=resolve(o['semantic-study']),st=await lstat(input);if(!st.isFile()||st.isSymbolicLink()||st.size>200*1024*1024)throw Error('SEMANTIC_INPUT_PATH');const b=await readFile(input);await writeFile(join(out,'inputs/semantic-study.json'),b,{flag:'wx'});refs.semanticStudy={file:'inputs/semantic-study.json',sha256:sha(b)};if(o['container-record'])await copy('containerRecord',o['container-record'],'inputs/container','web05.json');}
+  const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP'])process.once(s,()=>abort.abort());const suites=[],commands=[];
+  const env={...process.env,LAB_V2_CLEAN_EXPORT:'1',PYTHONDONTWRITEBYTECODE:'1',PYTEST_ADDOPTS:'-p no:cacheprovider',NO_COLOR:'1'};delete env.FORCE_COLOR;
+  for(const suite of table.suites){const directory=join(out,'suites',suite.id);await mkdir(directory);const resultFile=`suites/${suite.id}/result.json`,cwd=suite.repo==='lab'?lab:root;
+   // A missing image is recorded locally; it never suppresses unrelated local suites or probes Docker.
+diff --git a/scripts/sim-extension-r2b.mjs b/scripts/sim-extension-r2b.mjs
+index abf49ca..282a862 100644
+--- a/scripts/sim-extension-r2b.mjs
++++ b/scripts/sim-extension-r2b.mjs
+@@ -1,41 +1,67 @@
+ // R2b structural table uses the immutable qualification core. Public success also requires directory readback.
++import {statSync} from 'node:fs';
++import {join} from 'node:path';
+ import {qualify,checkQualification} from './irsim-qualification.mjs';
+ const V=(id,files,repo='source')=>({id,repo,kind:'vitest',files});
+ export const SUITES_R2B=[
+  V('mj-contracts',['tests/contracts/mujoco-payload.test.ts','tests/unit/payload-fixture.test.ts','tests/unit/payload-experiments.test.ts']),
+  V('mj-worker',['tests/integration/mujoco-mobile-worker.test.ts','tests/integration/mujoco-mobile-lifecycle.test.ts','tests/integration/mujoco-mobile-readiness.test.ts']),
+- V('mj-evidence',['tests/integration/mujoco-payload-campaign.test.ts','tests/unit/physics-evidence.test.ts','tests/security/payload.test.ts']),
++ V('mj-evidence',['tests/integration/mujoco-payload-campaign.test.ts','tests/integration/physics-evidence.test.ts']),
+  V('cell-contracts',['tests/unit/world-scene.test.ts','tests/unit/world-control.test.ts','tests/unit/world-handoff-policy.test.ts','tests/unit/world-sweep.test.ts','tests/security/mujoco-world-authority.test.ts']),
+  V('cell-runtime',['tests/integration/mujoco-world-rig.test.ts','tests/integration/mujoco-cell-readiness.test.ts']),
+  V('web-evidence',['tests/unit/web-replay-reader.test.ts','tests/unit/web-replay-capture.test.ts','tests/security/web-replay-export.test.ts','tests/security/web-replay-gateway.test.ts']),
+  V('web-ui',['tests/unit/world-view.test.ts','tests/unit/replay-transport.test.ts','tests/unit/workspace-replay-freshness.test.ts'],'lab'),
+  V('web-container',['tests/integration/lab-runtime-container.test.ts']),
+  V('semantic',['tests/unit/semantic-study.test.ts']),
+- V('r2b-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts'])
++ V('r2b-regression',['tests/security/payload.test.ts','tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts'])
+ ];
+ const cases=(ids,suites)=>Object.fromEntries(ids.map(id=>[id,{suites}]));
+ const HOST_REASON='blocked_external: no assigned HTTPS host; WEB06 requires its own current-tuple deployment evidence';
+ export const CASES_R2B={...cases(['MJ01','MJ02','MJ03','MJ04','MJ05','MJ06','MJ07'],['mj-contracts','mj-worker','mj-evidence']),...cases(['CELL01','CELL02','CELL03','CELL04','CELL05','CELL06'],['cell-contracts','cell-runtime']),...cases(['WEB01','WEB02','WEB03','WEB04'],['web-evidence','web-ui']),WEB05:{suites:['web-container']},WEB06:{notRun:HOST_REASON},X01:{suites:['semantic']},REG04:{suites:['r2b-regression']}};
+ export const GATES_R2B={'G-MJ1':['MJ01','MJ02','MJ03','MJ04','MJ05','MJ06','MJ07'],'G-CELL1':['CELL01','CELL02','CELL03','CELL04','CELL05','CELL06'],'G-WEB1':['WEB01','WEB02','WEB03','WEB04','WEB05'],'G-X1':['X01'],'G-REG4':['REG04'],'G-HOST1':['WEB06']};
+ const equalKeys=(a,b)=>JSON.stringify(Object.keys(a??{}).sort())===JSON.stringify(Object.keys(b).sort());
+ export function tableR2b(scope='full'){
+  if(!['full','mobility'].includes(scope))throw Error('R2B_SCOPE_INVALID');
+  const gates=scope==='full'?GATES_R2B:{'G-MJ1':GATES_R2B['G-MJ1'],'G-REG4':['REG04']},ids=new Set(Object.values(gates).flat()),tableCases=Object.fromEntries(Object.entries(CASES_R2B).filter(([id])=>ids.has(id))),used=new Set(Object.values(tableCases).flatMap(c=>c.suites??[]));
+- return {documentType:'sim-extension-qualification',campaign:false,cases:tableCases,gates,suites:SUITES_R2B.filter(s=>used.has(s.id)),inputs(m){const reasons=[];
++ return {documentType:'sim-extension-qualification',campaign:false,checkSuiteResult:checkR2bExecutedFiles,cases:tableCases,gates,suites:SUITES_R2B.filter(s=>used.has(s.id)),inputs(m){const reasons=[];
+   if(m.accepted!==false||m.acceptedBy!==null||m.acceptedAt!==null)reasons.push('RECORD_ACCEPTED');
+   if(!equalKeys(m.cases,tableCases))reasons.push('CASE_TABLE_MISMATCH');
+   if(!equalKeys(m.gates,gates))reasons.push('GATE_TABLE_MISMATCH');
+   const actual=m.suites??[];if(actual.length!==used.size||new Set(actual.map(s=>s.id)).size!==actual.length||actual.some(s=>!used.has(s.id)))reasons.push('SUITE_TABLE_MISMATCH');
+   if(!/^[a-f0-9]{40}$/.test(m.lab?.commit??''))reasons.push('LAB_COMMIT_REQUIRED');
+   if(m.blocked||m.cl01||m.web06)reasons.push('R2B_UNSUPPORTED_OVERRIDE');
+   if(!equalKeys(m.artifactDispositions,tableCases)||Object.values(m.artifactDispositions??{}).some(x=>!['tested','not_run','failed','blocked_external'].includes(x?.status)||!Array.isArray(x?.issues)))reasons.push('ARTIFACT_DISPOSITION_SHAPE');
+   return {input:{artifactDispositions:m.artifactDispositions},reasons};},adjust(q,input){
+    for(const [id,c]of Object.entries(q.cases)){if(id==='WEB06')continue;const d=input.artifactDispositions?.[id]??{status:'not_run',issues:['ARTIFACT_READBACK_PENDING']};
+     const absentContainer=id==='WEB05'&&input.suites?.find(s=>s.id==='web-container'&&s.reason==='IMAGE_UNBUILT'&&!s.result&&!s.process&&s.exitCode===2);
+     if(d.status==='failed'||d.status==='not_run'&&(c.status!=='failed'||absentContainer)){c.status=d.status;c.reason='artifact '+d.status+': '+d.issues.join('; ');}else if(c.status==='tested')c.evidence.push('artifact:'+id);
+    }
+    q.notRun=Object.entries(q.cases).filter(([,c])=>c.status!=='tested').map(([id,c])=>({id,reason:c.reason}));for(const [id,g]of Object.entries(q.gates))g.status=id==='G-HOST1'?'blocked_external':g.cases.every(id=>q.cases[id].status==='tested')?'tested':'not_run';return q;
+   }};
+ }
+ export const qualifyR2bStructure=input=>qualify(input,tableR2b(input.scope));
+ export function checkR2bStructure(m,read){try{return checkQualification(m,read,tableR2b(m.scope));}catch(e){return ['R2B_STRUCTURE_INVALID:'+e.message];}}
++
++/** Closed selectors must name real files before any campaign copy or expensive execution. */
++export function validateR2bSelectors(table,roots){
++ for(const suite of table.suites)for(const file of suite.files)if(!statSync(join(roots[suite.repo],file),{throwIfNoEntry:false})?.isFile())throw Error('R2B_SELECTOR_MISSING:'+suite.id+':'+file);
++}
++/** Portable file identity: exact tests-relative path, never basename/filter matching.
++ * Absolute Vitest names may have any checkout prefix, but must share one cwd. */
++export function checkR2bExecutedFiles(suite,bytes){
++ const issues=[],fail=(code,file='')=>issues.push(`SUITE_FILE_${code}:${suite.id}${file?':'+file:''}`);let data;
++ try{data=JSON.parse(bytes.toString('utf8'));}catch{fail('RESULT_INVALID');return issues;}
++ if(!Array.isArray(data.testResults)){fail('RESULT_INVALID');return issues;}
++ const seen=new Set(),roots=new Set();
++ for(const row of data.testResults){
++  const name=typeof row.name==='string'?row.name.replaceAll('\\','/'):'',parts=name.split('/');
++  const at=parts.indexOf('tests'),file=at>=0?parts.slice(at).join('/'):'';
++  if(at<0||parts.lastIndexOf('tests')!==at||parts.includes('..')||!file||at>0&&!name.startsWith('/')&&!/^[A-Za-z]:\//.test(name)&&!name.startsWith('./')){fail('IDENTITY');continue;}
++  roots.add(parts.slice(0,at).join('/'));if(seen.has(file))fail('DUPLICATE',file);seen.add(file);
++  if(!suite.files.includes(file)){fail('UNEXPECTED',file);continue;}
++  const assertions=row.assertionResults;
++  if(row.status==='failed'||row.message||Array.isArray(assertions)&&assertions.some(a=>a.status==='failed'))fail('FAILED',file);
++  else if(row.status!=='passed'||!Array.isArray(assertions)||!assertions.length||assertions.some(a=>a.status!=='passed'))fail('SKIPPED',file);
++ }
++ if(roots.size>1)fail('AMBIGUOUS_ROOT');for(const file of suite.files)if(!seen.has(file))fail('MISSING',file);return issues;
++}
+diff --git a/tests/security/lab-reclaim-authorization.test.ts b/tests/security/lab-reclaim-authorization.test.ts
+new file mode 100644
+index 0000000..c19bc7a
+--- /dev/null
++++ b/tests/security/lab-reclaim-authorization.test.ts
+@@ -0,0 +1,35 @@
++// Owned local gateway, deterministic clock/barriers; protocol double, no worker or motion.
++import {afterEach,expect,test,vi} from 'vitest';
++import {mkdtemp,mkdir,rm} from 'node:fs/promises';
++import {tmpdir} from 'node:os';
++import {join} from 'node:path';
++import {randomUUID} from 'node:crypto';
++import type {IncomingMessage,ServerResponse} from 'node:http';
++import {createV2Gateway} from '../../packages/lab-runtime/src/v2/gateway';
++import * as store from '../../packages/lab-runtime/src/v2/reclaim-store';
++import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
++const gate=()=>{let release!:()=>void;return {promise:new Promise<void>(r=>release=r),release:()=>release()};};
++afterEach(()=>vi.restoreAllMocks());
++for(const existing of [false,true])for(const boundary of ['factory','grant','closure','hold','persist'] as const)for(const invalidation of ['expiry','revocation']){
++ if(existing&&boundary==='factory')continue;
++ test(`reclaim ${existing?'existing':'cold'} refuses ${invalidation} across ${boundary}`,async()=>{
++  const directory=await mkdtemp(join(tmpdir(),'reclaim-auth-')),runDirectory=join(directory,'run'),id=randomUUID();await mkdir(runDirectory);
++  await store.saveReclaim(runDirectory,{runId:id,proofHash:store.proofHash('proof'),schemaHash:'schema',input:{mode:'simulation',sourceCommit:'test',engineering:{ref:{bundleDigest:'bundle'},runtimeProjection:{assets:[]}}} as never});
++  let now=0,armed=false,closes=0,opens=0,holds=0,grants=0;const entered=gate(),release=gate(),wait=async(at:string)=>{if(armed&&boundary===at){entered.release();await release.promise;}};
++  const original=store.saveControlEpoch;vi.spyOn(store,'saveControlEpoch').mockImplementation(async(...args)=>{await original(...args);await wait('persist');});
++  const requests=new WeakMap<IncomingMessage,Record<string,unknown>>(),responses=new WeakMap<ServerResponse,{status:number;body:{sessionToken?:string;writer?:{controlEpoch:number}}}>();
++  const g=createV2Gateway({directory,sourceCommit:'test',schemaHash:'schema',now:()=>now,pairingValid:()=>true,accessKeyValid:()=>true,spendPairing(){},same:(a,b)=>a===b,readBody:async r=>requests.get(r)!,send:(r,status,body)=>{responses.set(r,{status,body:body as never});},engineering:{grantRun:async()=>{grants++;await wait('grant');},verifyClosure:async()=>{await wait('closure');return [];}} as never,simulationFactory:async(_input,providers)=>{expect(providers.reclaimOnly).toBe(true);opens++;await wait('factory');return {id,holdForReclaim:async()=>{holds++;await wait('hold');return {run:{id,runRevision:0},tick:0};},snapshot:async()=>({run:{id,runRevision:0},tick:0}),close:async()=>{closes++;}} as unknown as ScenarioRun;}});
++  const call=async(path:string,body:Record<string,unknown>,token?:string)=>{const req={method:'POST',headers:token?{authorization:`Bearer ${token}`}:{}} as IncomingMessage,res={setHeader(){}} as unknown as ServerResponse;requests.set(req,body);await g(req,res,'/lab/v2'+path,'http://127.0.0.1:4175');return responses.get(res)!;};
++  const pair=async()=>String((await call('/sessions',{token:'key'})).body.sessionToken),path=`/runs/${id}`;let pending:Promise<unknown>|undefined;
++  try{
++   const requester=await pair();now=1;const owner=await pair();if(existing)expect((await call(path+'/reclaim',{proof:'proof'},owner)).status).toBe(200);
++   armed=true;pending=call(path+'/reclaim',{proof:'proof'},requester);await entered.promise;
++   if(invalidation==='expiry')now=3600000;else for(let n=0;n<9;n++)await pair();
++   release.release();const refused=await pending as Awaited<ReturnType<typeof call>>;expect(refused).toMatchObject({status:401,body:{error:'SESSION_REQUIRED'}});
++   expect(opens).toBe(1);expect(closes).toBe(existing?0:1);
++   const epoch=(await store.findReclaim(directory,id))!.record.controlEpoch??0;expect(epoch).toBe((existing?1:0)+(boundary==='persist'?1:0));
++   if(boundary==='factory')expect(grants).toBe(0);if(['factory','grant','closure'].includes(boundary))expect(holds).toBe(existing?1:0);
++   armed=false;const recovered=await call(path+'/reclaim',{proof:'proof'},owner);expect(recovered.status).toBe(200);expect(recovered.body.writer!.controlEpoch).toBe(epoch+1);expect(opens).toBe(existing?1:2);
++  }finally{release.release();await pending;await g.close();await rm(directory,{recursive:true,force:true});}
++ });
++}
+diff --git a/tests/security/lab-run-writer.test.ts b/tests/security/lab-run-writer.test.ts
+index 2d60882..12a9eb4 100644
+--- a/tests/security/lab-run-writer.test.ts
++++ b/tests/security/lab-run-writer.test.ts
+@@ -39,27 +39,27 @@ test('delayed cold reclaim reuses the current runner, fences its previous owner
+   const a=await pair(),b=await pair();pending=call(path+'/reclaim',{proof:'proof'},a,true);await entered.promise;
+   const first=await call(path+'/reclaim',{proof:'proof'},b);expect(first.status).toBe(200);expect(first.body.writer).toMatchObject({controlEpoch:1});
+   acting=call(path+'/actions',{actionId:'reconcile',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b);await actionEntered.promise;
+   body.release();let recovered=false;const done=pending.then(r=>{recovered=true;return r as Awaited<ReturnType<typeof call>>;});await new Promise<void>(r=>setImmediate(r));expect(recovered).toBe(false);
+   action.release();expect((await acting as Awaited<ReturnType<typeof call>>).status).toBe(200);const second=await done;expect(second.status).toBe(200);expect(second.body.writer).toMatchObject({controlEpoch:2});expect(opens).toBe(1);
+   expect((await findReclaim(directory,id))!.record.controlEpoch).toBe(2);expect((await call(path+'/actions',{actionId:'old-owner',expectedRevision:0,kind:'reconcile',payload:{subjectId:'arm-1'}},b)).status).toBe(404);
+   await g.close();expect(closes).toBe(opens);
+  }finally{body.release();action.release();await Promise.allSettled([pending,acting]);await g.close();for(const run of owned)await run.close();}
+ });
+ async function fixture(){
+- const directory=await mkdtemp(join(tmpdir(),'writer-'));dirs.push(directory);let now=1000,steps=0,closed=0,revision=0;let hold:Promise<void>|undefined,closeHold:Promise<void>|undefined,journalHold:Promise<void>|undefined;const id=randomUUID(),view=()=>({run:{id,runRevision:revision,status:'running'},tick:steps});
+- const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),nowMs:()=>now,v2:{catalog:{...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_arm'?{...b,installed:true,compatible:true,reachable:true,reason:undefined}:b)},enabledBackends:['mock_amr','mock_coffee','mujoco_arm'],portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{await mkdir(p.directory,{recursive:true});return {id,snapshot:async()=>view(),report:async()=>({manifest:{runId:id}}),holdForReclaim:async()=>view(),action:async(a:{kind:string},before?:()=>Promise<void>)=>{if(hold)await hold;await before?.();if(a.kind==='step')steps++;revision++;return view();},close:async()=>{closed++;if(closeHold)await closeHold;},pulse:()=>({tick:steps,paused:true,runRevision:revision}),journal:async()=>{if(journalHold)await journalHold;return [];},telemetry:new TelemetryRecorder()} as unknown as ScenarioRun;}}});gateways.push(g);
++ const directory=await mkdtemp(join(tmpdir(),'writer-'));dirs.push(directory);let now=1000,steps=0,closed=0,revision=0;let reclaimHold:(()=>Promise<void>)|undefined;let hold:Promise<void>|undefined,closeHold:Promise<void>|undefined,journalHold:Promise<void>|undefined;const id=randomUUID(),view=()=>({run:{id,runRevision:revision,status:'running'},tick:steps});
++ const g=await startLabGateway({port:0,directory,sourceCommit:'test',schemaHash:'a'.repeat(64),nowMs:()=>now,v2:{catalog:{...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_arm'?{...b,installed:true,compatible:true,reachable:true,reason:undefined}:b)},enabledBackends:['mock_amr','mock_coffee','mujoco_arm'],portableChecks:async()=>['model','clock','fixture','profile','runner'].map(id=>({id,status:'ready' as const,reasonCodes:[],evidenceRef:'protocol_double'})),simulationFactory:async(_i,p)=>{await mkdir(p.directory,{recursive:true});return {id,snapshot:async()=>view(),report:async()=>({manifest:{runId:id}}),holdForReclaim:async()=>{await reclaimHold?.();return view();},action:async(a:{kind:string},before?:()=>Promise<void>)=>{if(hold)await hold;await before?.();if(a.kind==='step')steps++;revision++;return view();},close:async()=>{closed++;if(closeHold)await closeHold;},pulse:()=>({tick:steps,paused:true,runRevision:revision}),journal:async()=>{if(journalHold)await journalHold;return [];},telemetry:new TelemetryRecorder()} as unknown as ScenarioRun;}}});gateways.push(g);
+  const pair=async()=>{const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {...await r.json(),cookie:r.headers.get('set-cookie')!.split(';')[0]!};};
+  const call=async(p:{sessionToken:string},path:string,body?:unknown,epoch?:number)=>{const r=await fetch(g.url+'/lab/v2'+path,{method:body===undefined?'GET':'POST',headers:{origin,'content-type':'application/json',authorization:`Bearer ${p.sessionToken}`,...epoch!==undefined?{'x-lab-control-epoch':String(epoch)}:{}},...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:r.status,...await r.json()};};
+  const a=await pair();const create=(sourceCommit='test')=>call(a,'/runs',{project:xarmProject(),scenarioId:'MJ-BV01',scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit,schemaHash:'a'.repeat(64)}});
+  const made=await create();expect(made.status,JSON.stringify(made)).toBe(201);const path=`/runs/${id}`,step=(p:typeof a,epoch?:number)=>call(p,path+'/actions',{actionId:randomUUID(),expectedRevision:revision,kind:'step',payload:{ticks:1}},epoch),writer=(p:typeof a,recipient:typeof a,operation:string,controlEpoch:number)=>call(p,path+'/writer',{operation,recipientSessionId:recipient.sessionId,controlEpoch});
+- return {g,a,pair,call,create,made,path,step,writer,steps:()=>steps,closed:()=>closed,advance:(ms:number)=>{now+=ms;},hold:(p?:Promise<void>)=>{hold=p;},holdClose:(p:Promise<void>)=>{closeHold=p;},holdJournal:(p:Promise<void>)=>{journalHold=p;},directory};
++ return {g,a,pair,call,create,made,path,step,writer,steps:()=>steps,closed:()=>closed,advance:(ms:number)=>{now+=ms;},hold:(p?:Promise<void>)=>{hold=p;},holdReclaim:(f:()=>Promise<void>)=>{reclaimHold=f;},holdClose:(p:Promise<void>)=>{closeHold=p;},holdJournal:(p:Promise<void>)=>{journalHold=p;},directory};
+ }
+ test('explicit read authorization allows two real tokens to race: one writer, one engine step, private404 preserved',async()=>{
+  const f=await fixture(),b=await f.pair(),c=await f.pair();expect(f.a.sessionId).toMatch(/^[0-9a-f-]{36}$/);expect(f.a.sessionId).not.toBe(f.a.sessionToken);
+  expect((await f.step(b)).status).toBe(404);expect((await f.writer(f.a,b,'grant_read',0)).status).toBe(200);
+  const streamAbort=new AbortController(),stream=await fetch(f.g.url+'/lab/v2'+f.path+'/events',{headers:{authorization:`Bearer ${b.sessionToken}`},signal:streamAbort.signal});expect(stream.status).toBe(200);
+  const results=await Promise.all([f.step(f.a),f.step(b)]);streamAbort.abort();expect(results.filter(r=>r.status===200)).toHaveLength(1);expect(results.filter(r=>r.error==='RUN_WRITER_CONFLICT')).toHaveLength(1);expect(f.steps()).toBe(1);
+  expect((await f.call(b,f.path+'/report')).status).toBe(200);expect((await f.call(c,f.path+'/report')).status).toBe(404);expect((await f.call(b,f.path+'/archive',{})).error).toBe('RUN_WRITER_CONFLICT');expect((await f.writer(b,c,'transfer',0)).error).toBe('RUN_WRITER_CONFLICT');expect((await f.create('wrong-pin')).error).toBe('CONTRACT_MISMATCH');
+ });
+ test('transfer fences former and stale writers, requires later epochs, and former creator expiry does not close new writer',async()=>{
+  const f=await fixture();f.advance(1000);const b=await f.pair();expect((await f.writer(f.a,b,'transfer',0)).writer).toMatchObject({runId:f.made.run.id,sessionId:b.sessionId,controlEpoch:1});
+@@ -85,10 +85,17 @@ test('public close holds the data root until its active worker acknowledges clos
+  await expect(startLabGateway({port:0,directory:f.directory,sourceCommit:'test',schemaHash:'a'.repeat(64)})).rejects.toThrow('LAB_DATA_DIR_BUSY');release();await closing;
+  const g=await startLabGateway({port:0,directory:f.directory,sourceCommit:'test',schemaHash:'a'.repeat(64)});gateways.push(g);
+ });
+ 
+ test('public close retains ownership until an admitted SSE journal read settles',async()=>{
+  const f=await fixture();let release!:()=>void;f.holdJournal(new Promise<void>(r=>release=r));
+  const response=await fetch(f.g.url+'/lab/v2'+f.path+'/events',{headers:{authorization:`Bearer ${f.a.sessionToken}`}});expect(response.status).toBe(200);
+  let settled=false;const closing=f.g.close().then(()=>{settled=true;});
+  try{await new Promise(r=>setTimeout(r,50));expect(settled).toBe(false);await expect(startLabGateway({port:0,directory:f.directory,sourceCommit:'test',schemaHash:'a'.repeat(64)})).rejects.toThrow('LAB_DATA_DIR_BUSY');}finally{release();await closing;}
+ });
++
++test('expiry after an existing writable hold preserves owner and readers but exposes reconcile-only safety state',async()=>{
++ const f=await fixture();f.advance(1000);const owner=await f.pair(),reader=await f.pair();expect((await f.writer(f.a,owner,'transfer',0)).status).toBe(200);expect((await f.writer(owner,reader,'grant_read',1)).status).toBe(200);
++ let enter!:()=>void,release!:()=>void;const entered=new Promise<void>(r=>enter=r),barrier=new Promise<void>(r=>release=r);f.holdReclaim(async()=>{enter();await barrier;});const pending=f.call(f.a,f.path+'/reclaim',{proof:f.made.reclaimToken});
++ try{await entered;f.advance(3599001);release();expect((await pending).status).toBe(401);expect((await f.call(owner,f.path+'/report')).status).toBe(200);expect((await f.call(reader,f.path+'/report')).status).toBe(200);expect((await f.step(owner,1)).error).toBe('RECLAIM_READ_ONLY');expect((await f.writer(owner,reader,'transfer',1)).error).toBe('RUN_WRITER_CONFLICT');expect((await f.call(owner,f.path+'/actions',{actionId:'reconcile-after-held-reclaim',kind:'reconcile',expectedRevision:0,payload:{subjectId:'arm-1'}},1)).status).toBe(200);expect(f.closed()).toBe(0);
++ }finally{release();await pending;}
++});
+diff --git a/tests/support/r2b-capture.ts b/tests/support/r2b-capture.ts
+index 678c4f2..bb3d719 100644
+--- a/tests/support/r2b-capture.ts
++++ b/tests/support/r2b-capture.ts
+@@ -1,8 +1,8 @@
+ // Synthetic complete observer record. No browser, worker or native execution is claimed.
+ export function captureFixture(){
+  const start=100200,end=285200,origin=100100,nodeOrigin=100000;
+- const steps=Array.from({length:185},(_,i)=>({runId:'r',actionId:'step-'+(i+1),kind:'step',payload:{ticks:1},tick:i+1,requestStartEpochMs:start+80+i*1000,responseEndEpochMs:start+95+i*1000,observedAtEpochMs:start+100+i*1000,status:'running'}));
+- const tail={runId:'r',actionId:'tail',kind:'step',payload:{ticks:1},tick:186,requestStartEpochMs:end+30,responseEndEpochMs:end+55,observedAtEpochMs:end+60,status:'running'},pause={runId:'r',actionId:'pause',kind:'pause',tick:186,requestStartEpochMs:end+110,responseEndEpochMs:end+140,observedAtEpochMs:end+145,status:'paused'},actions=[...steps,tail,pause];
++ const steps=Array.from({length:1850},(_,i)=>({runId:'r',actionId:'step-'+(i+1),kind:'step',payload:{ticks:1},tick:i+1,requestStartEpochMs:start+80+i*100,responseEndEpochMs:start+95+i*100,observedAtEpochMs:start+100+i*100,status:'running'}));
++ const tail={runId:'r',actionId:'tail',kind:'step',payload:{ticks:1},tick:1851,requestStartEpochMs:end+30,responseEndEpochMs:end+55,observedAtEpochMs:end+60,status:'running'},pause={runId:'r',actionId:'pause',kind:'pause',tick:1851,requestStartEpochMs:end+110,responseEndEpochMs:end+140,observedAtEpochMs:end+145,status:'paused'},actions=[...steps,tail,pause];
+  const worker=(a:typeof tail)=>({runId:'r',requestId:'worker-'+a.tick,op:'step',targetTick:a.tick,expectedTick:a.tick,ok:true,elapsedMs:10,atEpochMs:a.responseEndEpochMs-5,wallMs:a.responseEndEpochMs-5-nodeOrigin});
+- const view={run:{id:'r',status:'paused'},tick:186};return {runId:'r',clock:{nodeTimeOriginEpochMs:nodeOrigin,browserTimeOriginEpochMs:origin,startEpochMs:start,endEpochMs:end,browserStartMs:start-origin,browserEndMs:end-origin},actions,responses:actions.map(a=>({runId:a.runId,actionId:a.actionId,tick:a.tick,requestStartEpochMs:a.requestStartEpochMs,responseEndEpochMs:a.responseEndEpochMs,status:200})),capture:{elapsedMs:end-start,activeCellMs:end-start,fullCellDrawingFrames:9251,samples:Array.from({length:9251},(_,i)=>({at:i*20,interval:i?20:0,drawn:true,drawCalls:1,fullCell:true,tick:Math.min(185,Math.floor(i/50)),worldTick:Math.min(185,Math.floor(i/50))})),renderEvents:Array.from({length:9251},(_,i)=>({runId:'r',atMs:start-origin+i*20,durationMs:1,count:i+1,drawCalls:1,worldTick:Math.min(185,Math.floor(i/50))}))},workerRaw:steps.map(worker),workerOutsideWindow:{before:[],after:[worker(tail)]},pause:{actionId:'pause',clickEpochMs:end+100,uiObservedAtEpochMs:end+150,lastCommittedTick:186,stableAfterTick:186,status:'paused',finalView:structuredClone(view),stableView:structuredClone(view),afterExportView:structuredClone(view)},errors:[]};
++ const view={run:{id:'r',status:'paused'},tick:1851};return {runId:'r',clock:{nodeTimeOriginEpochMs:nodeOrigin,browserTimeOriginEpochMs:origin,startEpochMs:start,endEpochMs:end,browserStartMs:start-origin,browserEndMs:end-origin},actions,responses:actions.map(a=>({runId:a.runId,actionId:a.actionId,tick:a.tick,requestStartEpochMs:a.requestStartEpochMs,responseEndEpochMs:a.responseEndEpochMs,status:200})),capture:{elapsedMs:end-start,activeCellMs:end-start,fullCellDrawingFrames:9251,samples:Array.from({length:9251},(_,i)=>({at:i*20,interval:i?20:0,drawn:true,drawCalls:1,fullCell:true,tick:Math.min(1850,Math.floor(i/5)),worldTick:Math.min(1850,Math.floor(i/5))})),renderEvents:Array.from({length:9251},(_,i)=>({runId:'r',atMs:start-origin+i*20,durationMs:1,count:i+1,drawCalls:1,worldTick:Math.min(1850,Math.floor(i/5))}))},workerRaw:steps.map(worker),workerOutsideWindow:{before:[],after:[worker(tail)]},pause:{actionId:'pause',clickEpochMs:end+100,uiObservedAtEpochMs:end+150,lastCommittedTick:1851,stableAfterTick:1851,status:'paused',finalView:structuredClone(view),stableView:structuredClone(view),afterExportView:structuredClone(view)},errors:[]};
+ }
+diff --git a/tests/unit/browser-capture-clock.test.ts b/tests/unit/browser-capture-clock.test.ts
+index 97e8ba0..cfa0cbc 100644
+--- a/tests/unit/browser-capture-clock.test.ts
++++ b/tests/unit/browser-capture-clock.test.ts
+@@ -8,15 +8,69 @@ test('explicit clocks and unique run/action/tick correlation are required; respo
+  expect(clock.checkCaptureClock({...f,clock:undefined})).toContain('CAPTURE_CLOCK_MISSING');
+ });
+ 
+ import {captureFixture} from '../support/r2b-capture';
+ test('complete coherent observer fixture qualifies with an explicitly separated trailing worker receipt',()=>{const f=captureFixture();expect(clock.assessCapture(f).valid).toBe(true);expect(clock.assessCapture(f).meetsTargets).toBe(true);});
+ test('review reproducer cannot qualify start-only actions, unbound worker and out-of-window renders',()=>{const record={runId:'r',clock:{nodeTimeOriginEpochMs:100000,browserTimeOriginEpochMs:100100,startEpochMs:100200,endEpochMs:280200,browserStartMs:100,browserEndMs:180100},actions:[{runId:'r',actionId:'start-only',kind:'start',tick:0,requestStartEpochMs:100220,responseEndEpochMs:100250,observedAtEpochMs:100260}],responses:[{runId:'r',actionId:'start-only',tick:0,requestStartEpochMs:100220,responseEndEpochMs:100250,status:200}],capture:{elapsedMs:180000,activeCellMs:180000,fullCellDrawingFrames:1,renderEvents:Array.from({length:9001},(_,i)=>({atMs:1000000000+i*20}))},workerRaw:[{elapsedMs:10}],pause:{clickEpochMs:280300,uiObservedAtEpochMs:1280300},errors:[]};expect(clock.assessCapture(record).meetsTargets).toBe(false);});
+ test.each(['step','pause','render-window','worker-run','worker-tick','worker-origin','worker-window','active-summary','drawing-summary','final-horizon','pause-correlation','tail-window'])('coherent %s mutation reaches performance observation rejection',kind=>{const f=captureFixture();expect(clock.assessCapture(f).valid).toBe(true);switch(kind){case 'step':for(const a of f.actions)if(a.kind==='step')a.kind='start';break;case 'pause':f.actions=f.actions.filter(a=>a.kind!=='pause');f.responses=f.responses.filter(a=>a.actionId!=='pause');break;case 'render-window':for(const e of f.capture.renderEvents)e.atMs+=1000000000;break;case 'worker-run':f.workerRaw[50]!.runId='other';break;case 'worker-tick':f.workerRaw[50]!.targetTick=1000;f.workerRaw[50]!.expectedTick=1000;break;case 'worker-origin':f.workerRaw[50]!.wallMs+=200;break;case 'worker-window':f.workerRaw[50]!.atEpochMs+=1000000;f.workerRaw[50]!.wallMs+=1000000;break;case 'active-summary':for(const s of f.capture.samples)s.fullCell=false;break;case 'drawing-summary':for(const s of f.capture.samples){s.drawn=false;s.drawCalls=0;}break;case 'final-horizon':f.pause.finalView.tick=100;break;case 'pause-correlation':f.pause.actionId='different';break;case 'tail-window':f.workerOutsideWindow.after[0]!.atEpochMs=f.clock.endEpochMs-1;f.workerOutsideWindow.after[0]!.wallMs=f.clock.endEpochMs-1-f.clock.nodeTimeOriginEpochMs;break;}expect(clock.assessCapture(f).valid).toBe(false);});
+ 
+ test('existing latency budgets apply to coherent observations; pause UI has no added budget',()=>{
+  const slowWorker=captureFixture();for(const w of slowWorker.workerRaw)w.elapsedMs=16;const worker=clock.assessCapture(slowWorker);expect(worker.valid).toBe(true);expect(worker.meetsTargets).toBe(false);
+- const slowRender=captureFixture();slowRender.capture.renderEvents=slowRender.capture.renderEvents.filter((_,i)=>i%2===0);const render=clock.assessCapture(slowRender);expect(render.valid).toBe(true);expect(render.metrics.renderIntervalP95Ms).toBe(40);expect(render.meetsTargets).toBe(false);
++ const slowRender=captureFixture();slowRender.capture.renderEvents=slowRender.capture.renderEvents.filter((_,i)=>i%2===0);for(const [i,s]of slowRender.capture.samples.entries()){s.drawn=i%2===0;s.drawCalls=s.drawn?1:0;}const render=clock.assessCapture(slowRender);expect(render.valid).toBe(true);expect(render.metrics.renderIntervalP95Ms).toBe(40);expect(render.meetsTargets).toBe(false);
+  const lateReceipt=captureFixture(),tail=lateReceipt.actions.find(a=>a.actionId==='tail')!;tail.observedAtEpochMs=lateReceipt.pause.clickEpochMs+501;const receipt=clock.assessCapture(lateReceipt);expect(receipt.valid).toBe(true);expect(receipt.metrics.lastStepReceiptMs).toBe(501);expect(receipt.meetsTargets).toBe(false);
+  const slowUI=captureFixture();slowUI.pause.uiObservedAtEpochMs+=1000000;expect(clock.assessCapture(slowUI).meetsTargets).toBe(true);
+ });
+ test('missing streams remain unavailable rather than a zero latency pass',()=>{for(const stream of ['workerRaw','renders','steps']){const f=captureFixture();if(stream==='workerRaw')f.workerRaw=[];else if(stream==='renders')f.capture.renderEvents=[];else f.actions=f.actions.filter(a=>a.kind!=='step');const result=clock.assessCapture(f);expect(result.valid).toBe(false);expect(result.meetsTargets).toBe(false);if(stream==='workerRaw')expect(result.metrics.workerP95Ms).toBeNull();if(stream==='renders')expect(result.metrics.renderIntervalP95Ms).toBeNull();if(stream==='steps')expect(result.metrics.lastStepReceiptMs).toBeNull();}});
++
++function lowerDrawCadence(){
++ const f=captureFixture();f.capture.samples=Array.from({length:18501},(_,i)=>({at:i*10,interval:i?10:0,drawn:i%2===0,drawCalls:i%2===0?1:0,fullCell:true,tick:Math.min(1850,Math.floor(i/10)),worldTick:Math.min(1850,Math.floor(i/10))}));return f;
++}
++test('active moving-world wall duration admits genuine 20 ms draws sampled by 10 ms RAF',()=>{
++ const f=lowerDrawCadence(),r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.activeCellMs).toBe(185000);expect(r.metrics.fullCellDrawingMs).toBe(92500);expect(r.metrics.renderIntervalP95Ms).toBe(20);expect(r.meetsTargets).toBe(true);
++});
++test.each(['short','frozen','missing','gap'])('coherent %s activity cannot qualify by summary duration or repeated repaint',kind=>{
++ const f=lowerDrawCadence();
++ if(kind==='short'){f.capture.samples=f.capture.samples.filter(s=>s.at<179000);f.capture.renderEvents=f.capture.renderEvents.filter(s=>s.atMs<f.clock.browserStartMs+179000);}
++ if(kind==='frozen'){for(const s of f.capture.samples)s.worldTick=0;for(const e of f.capture.renderEvents)e.worldTick=0;}
++ if(kind==='missing'){f.capture.renderEvents=[];for(const s of f.capture.samples){s.drawn=false;s.drawCalls=0;}}
++ if(kind==='gap'){f.capture.samples=f.capture.samples.filter(s=>s.at<=90000||s.at>=92000);for(let i=1;i<f.capture.samples.length;i++)f.capture.samples[i]!.interval=f.capture.samples[i]!.at-f.capture.samples[i-1]!.at;f.capture.renderEvents=f.capture.renderEvents.filter(s=>s.atMs<=f.clock.browserStartMs+90000||s.atMs>=f.clock.browserStartMs+92000);}
++ const r=clock.assessCapture(f);expect(r.valid).toBe(false);expect(r.issues).toContain(kind==='short'?'CAPTURE_ACTIVE_DRAWING_DURATION':kind==='frozen'?'CAPTURE_RENDER_PROGRESSION':kind==='missing'?'CAPTURE_RENDER_STREAM':'CAPTURE_STREAM_GAP');
++});
++
++test('a final priority-paused batch covers its exact actual prefix, never its unexecuted requested tail',()=>{
++ const f=captureFixture(),tail=f.actions.find(a=>a.actionId==='tail')! as typeof f.actions[number]&{revision:number;expectedRevision:number},pause=f.actions.find(a=>a.actionId==='pause')! as typeof tail;
++ Object.assign(tail,{payload:{ticks:50}});tail.status='paused';tail.expectedRevision=10;tail.revision=12;pause.expectedRevision=10;pause.revision=11;pause.requestStartEpochMs=f.clock.endEpochMs+40;f.pause.clickEpochMs=pause.requestStartEpochMs;
++ f.responses.find(r=>r.actionId==='pause')!.requestStartEpochMs=pause.requestStartEpochMs;
++ expect(clock.assessCapture(f).issues).toEqual([]);expect(clock.assessCapture(f).meetsTargets).toBe(true);
++ for(const change of ['worker','revision','earlier'] as const){const bad=structuredClone(f);if(change==='worker')bad.workerOutsideWindow.after=[];if(change==='revision')(bad.actions.find(a=>a.actionId==='pause')! as typeof pause).expectedRevision=9;if(change==='earlier')Object.assign(bad.actions[10]!,{payload:{ticks:50}});expect(clock.assessCapture(bad).valid,change).toBe(false);}
++});
++
++test('continuous repaint cannot hide a long frozen Source horizon inside an otherwise advancing capture',()=>{
++ const f=captureFixture();for(const e of f.capture.renderEvents)if(e.atMs>=f.clock.browserStartMs+90000&&e.atMs<f.clock.browserStartMs+92000)e.worldTick=900;
++ for(const s of f.capture.samples)if(s.at>=90000&&s.at<92000)s.worldTick=900;
++ const r=clock.assessCapture(f);expect(r.valid).toBe(false);expect(r.issues).toContain('CAPTURE_RENDER_PROGRESSION');
++});
++
++function orderedTies(){
++ const f=captureFixture(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
++ const extra={...c.renderEvents[10]!,count:12};c.renderEvents.splice(11,0,extra);c.renderEvents.forEach((e,i)=>e.count=i+1);
++ c.samples.forEach((s,i)=>Object.assign(s,{renderCount:i+1+(i>10?1:0)}));c.samples[11]!.drawCalls=2;
++ c.renderOrdering={version:1,startCount:0,endCount:c.renderEvents.length,tailDrawCalls:0};c.drawCalls=c.renderEvents.length;return f;
++}
++test('explicit counter window disambiguates a real equal-time render after the RAF sample without inflating cadence',()=>{
++ const f=orderedTies(),r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.renderIntervalP95Ms).toBe(20);expect(r.meetsTargets).toBe(true);
++});
++test.each(['dropped','reordered','count','calls','tail','gap','missing','version','future','start','end'])('ordered render proof rejects coherent %s corruption',kind=>{
++ const f=orderedTies(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
++ if(kind==='dropped')c.renderEvents.splice(11,1);if(kind==='reordered')[c.renderEvents[10],c.renderEvents[11]]=[c.renderEvents[11]!,c.renderEvents[10]!];
++ if(kind==='count')c.renderEvents[11]!.count--;if(kind==='calls'){c.samples[10]!.drawCalls++;c.samples[11]!.drawCalls--;}
++ if(kind==='tail')c.renderOrdering.tailDrawCalls=1;if(kind==='gap'){const start=f.clock.browserStartMs;c.renderEvents=c.renderEvents.filter(e=>e.atMs<start+90000||e.atMs>start+90600);const counters=new Map(c.renderEvents.map((e,i)=>[e.count,i+1]));c.renderEvents.forEach((e,i)=>e.count=i+1);c.samples=c.samples.filter(s=>s.at<90000||s.at>90600);c.samples.forEach((s,i)=>{const sample=s as typeof s&{renderCount:number};sample.renderCount=counters.get(sample.renderCount)!;sample.interval=i?sample.at-c.samples[i-1]!.at:sample.at;});c.renderOrdering.endCount=c.renderEvents.length;c.drawCalls=c.renderEvents.length;}
++ if(kind==='missing')delete(c.samples[10] as unknown as {renderCount?:number}).renderCount;if(kind==='version')c.renderOrdering.version=2;
++ if(kind==='future')(c.samples[10] as unknown as {renderCount:number}).renderCount=100;if(kind==='start')c.renderOrdering.startCount++;if(kind==='end')c.renderOrdering.endCount++;
++ const result=clock.assessCapture(f);expect(result.valid).toBe(false);if(kind==='gap'){expect(result.issues).toContain('CAPTURE_STREAM_GAP');expect(result.issues).not.toContain('CAPTURE_RENDER_ORDER');expect(result.issues).not.toContain('CAPTURE_DRAW_ACTIVITY_CORRELATION');}
++});
++
++test('clock-resolution render bursts cannot dilute interval p95 with zero deltas',()=>{
++ const f=captureFixture(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
++ c.renderEvents=c.renderEvents.filter((_,i)=>i%10===0).flatMap(e=>Array.from({length:25},()=>({...e})));c.samples=c.samples.filter((_,i)=>i%10===0);c.samples.forEach((s,i)=>s.interval=i?200:0);c.renderEvents.forEach((e,i)=>e.count=i+1);c.samples.forEach((s,i)=>Object.assign(s,{renderCount:(i+1)*25,drawCalls:25}));c.renderOrdering={version:1,startCount:0,endCount:c.renderEvents.length,tailDrawCalls:0};c.drawCalls=c.renderEvents.length;
++ const r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.renderIntervalP95Ms).toBe(200);expect(r.meetsTargets).toBe(false);
++});
+diff --git a/tests/unit/r2b-suite-coverage.test.ts b/tests/unit/r2b-suite-coverage.test.ts
+new file mode 100644
+index 0000000..a917657
+--- /dev/null
++++ b/tests/unit/r2b-suite-coverage.test.ts
+@@ -0,0 +1,38 @@
++import {expect,test} from 'vitest';
++import {existsSync,mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
++import {tmpdir} from 'node:os';import {join,dirname,resolve} from 'node:path';import {createHash} from 'node:crypto';
++// @ts-expect-error standalone tooling
++import {SUITES_R2B,validateR2bSelectors} from '../../scripts/sim-extension-r2b.mjs';
++// @ts-expect-error standalone tooling
++import {verifyR2bDirectory,evidenceInventory} from '../../scripts/r2b-readback.mjs';
++// @ts-expect-error standalone tooling
++import {summarizeResult} from '../../scripts/irsim-qualification.mjs';
++test('every closed R2b selector exists and cloud payload remains required only in regression',()=>{
++ expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('.'),lab:resolve('../lab')})).not.toThrow();
++ expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('missing-checkout'),lab:resolve('../lab')})).toThrow('R2B_SELECTOR_MISSING');
++ for(const suite of SUITES_R2B)for(const file of suite.files)expect(existsSync(resolve(suite.repo==='lab'?'../lab':'.',file)),`${suite.id}:${file}`).toBe(true);
++ expect(SUITES_R2B.find((s:{id:string})=>s.id==='mj-evidence').files).toEqual(['tests/integration/mujoco-payload-campaign.test.ts','tests/integration/physics-evidence.test.ts']);
++ expect(SUITES_R2B.find((s:{id:string})=>s.id==='r2b-regression').files).toContain('tests/security/payload.test.ts');
++});
++const required=['tests/integration/mujoco-payload-campaign.test.ts','tests/integration/physics-evidence.test.ts'];
++const rows=()=>required.map(name=>({name:'/portable/source/'+name,status:'passed',message:'',assertionResults:[{status:'passed',title:'executed'}]}));
++async function readCoverage(files:ReturnType<typeof rows>){
++ const root=mkdtempSync(join(tmpdir(),'r2b-membership-'));try{
++  const result={numPassedTests:files.flatMap(f=>f.assertionResults).filter(a=>a.status==='passed').length,numFailedTests:files.flatMap(f=>f.assertionResults).filter(a=>a.status==='failed').length,numPendingTests:files.flatMap(f=>f.assertionResults).filter(a=>a.status==='pending').length,numTotalTests:files.flatMap(f=>f.assertionResults).length,success:files.every(f=>f.status==='passed'),testResults:files};
++  const bytes=Buffer.from(JSON.stringify(result)),file='suites/mj-evidence/result.json',path=join(root,file);mkdirSync(dirname(path),{recursive:true});writeFileSync(path,bytes);
++  const manifest={release:'r2b',scope:'full',schemaVersion:1,documentType:'sim-extension-qualification',accepted:false,acceptedBy:null,acceptedAt:null,suites:[{id:'mj-evidence',repo:'source',kind:'vitest',exitCode:result.success?0:1,result:{file,sha256:createHash('sha256').update(bytes).digest('hex'),summary:summarizeResult('vitest',bytes.toString())}}],artifacts:evidenceInventory(root)};
++  writeFileSync(join(root,'qualification.json'),JSON.stringify(manifest));const issues:string[]=await verifyR2bDirectory(root);
++  expect(issues.some(s=>/ARTIFACT_(INVENTORY_MISMATCH|CORRUPT)|SUITE_RESULT_CORRUPT|SUITE_SUMMARY_MISMATCH/.test(s))).toBe(false);
++  return issues.filter(s=>s.startsWith('SUITE_FILE_'));
++ }finally{rmSync(root,{recursive:true,force:true});}
++}
++test('public reader admits complete executed file identities in absolute and relative cwd layouts',async()=>{expect(await readCoverage(rows())).toEqual([]);const relative=rows();for(const f of relative)f.name=f.name.replace('/portable/source/','');expect(await readCoverage(relative)).toEqual([]);});
++test('public reader rejects coherently rehashed missing and substituted file coverage',async()=>{
++ expect(await readCoverage(rows().slice(0,1))).toContain('SUITE_FILE_MISSING:mj-evidence:'+required[1]);
++ const substituted=rows();substituted[1]!.name='/portable/source/tests/unit/unrelated.test.ts';expect(await readCoverage(substituted)).toContain('SUITE_FILE_MISSING:mj-evidence:'+required[1]);
++});
++test('public reader rejects duplicate identities, failed setup and skipped per-file execution',async()=>{
++ const duplicate=rows();duplicate.push({...duplicate[1]!});expect(await readCoverage(duplicate)).toContain('SUITE_FILE_DUPLICATE:mj-evidence:'+required[1]);
++ const failed=rows();failed[1]!.status='failed';failed[1]!.message='OWNED_TEST_SERVICE_REQUIRED';failed[1]!.assertionResults[0]!.status='pending';expect(await readCoverage(failed)).toContain('SUITE_FILE_FAILED:mj-evidence:'+required[1]);
++ const skipped=rows();skipped[1]!.assertionResults[0]!.status='pending';expect(await readCoverage(skipped)).toContain('SUITE_FILE_SKIPPED:mj-evidence:'+required[1]);
++});
+diff --git a/tests/unit/world-runner.test.ts b/tests/unit/world-runner.test.ts
+index b83af37..6557929 100644
+--- a/tests/unit/world-runner.test.ts
++++ b/tests/unit/world-runner.test.ts
+@@ -32,21 +32,21 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
+  const factory:WorldPortsFactory=async input=>{opens++;ctx=input.context;committed={...snap(0),runId:input.runId};
+   const adapter={observe:()=>()=>{},describe:async()=>({id:'amr-1'}),requestStop:async()=>({acknowledged:true,physicalStopConfirmed:false}),reconcile:async()=>({status:'unknown'})} as unknown as RobotAdapter;
+   const rec=failure?.startsWith('flush-')?await openWorldRecorder({directory:evidenceDirectory,admission,runId:input.runId,bootId:'engine-boot',chunkTicks:2}):undefined;
+   const coffee=createMockCoffeePorts(input.state,input.context,input.newBootId,reporting?{tracking:{reachTolRad:.01,settleTicks:1,followTolRad:1,followTicks:1}}:{}),advance=coffee.advance;
+   if(reporting){const baseReport=coffee.report;coffee.report=()=>({...baseReport(),armPlant:{engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',tracking:{samples:0,peakRad:Array(6).fill(0),rmsRad:Array(6).fill(0)}},armCell:{waypoints:{digest:'nonnative-report-fixture',table:[]},allowedContacts:[],releaseTimeoutTicks:25,notes:['Nonnative publication seam only']}});coffee.armReportState=async tick=>{const state=structuredClone(input.state.arm);state.tracking!.trace=Array.from({length:tick+1},(_,n)=>({tick:n,actualRad:[...state.q],commandedRad:[...state.q]}));state.tracking!.props=Array.from({length:tick+1},(_,n)=>({tick:n,props:[]}));return {async materialize(){return {state,worldTrace:{method:'world-committed-trace-v1',scope:'all_world_ticks',publicCommittedTick:tick,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:0,firstTick:0,lastTick:tick,samples:tick+1,reasonCodes:[]},worldSweep:unavailableWorldSweep(tick,['NONNATIVE_PUBLICATION_FIXTURE'])};}};};}
+   if(failure==='coffee-commit')coffee.advance=async()=>{await advance();throw Error('COFFEE_COMMIT_FAILED');};return {navigation:{mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map((p:{id:string;x:number;y:number})=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:Math.PI/2}]))},robots:new Map([['amr-1',adapter]]),coffee,displayScene:()=>structuredClone(scene),snapshot:()=>committed,
+    evidence:rec?{async append(s){const p=physicsTick(s.tick);p.loads=[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';await rec.append({...s,physics:p},s.tick?{targetTick:s.tick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]}:null);},fail:rec.fail,finish:rec.finish}:{async append(s){calls.push(`append:${s.tick}`);if(failure==='append'&&s.tick>0)throw Error('DISK_FAILED');},async fail(e){calls.push(`fail:${e.lastCommittedTick}:${e.targetTick}:${e.ackTick}`);},async finish(){calls.push('finish');}},
+    world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
+  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
+  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
+- const open=(reclaimOnly=false)=>createScenarioRun(manifest,{...providers,reclaimOnly});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
++ const open=(reclaimOnly=false,wall?:import('../../packages/lab-runtime/src/v2/pace').WallClock)=>createScenarioRun(manifest,{...providers,reclaimOnly,...wall?{wall}:{}});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
+ }
+ test('world path never constructs/advances mock AMR and commits actual pose with target observation time',async()=>{
+  const h=await setup();vi.spyOn(MockPlant.prototype,'advance').mockImplementation(()=>{throw Error('MOCK_ADVANCE_FORBIDDEN');});
+  const run=await h.open();try{await run.start();const v=await act(run,'step',{ticks:1});expect(((await h.source().read('robot','amr-1')).state.bindings as Record<string,{yaw:number}>)['coffee-pickup']!.yaw).toBe(Math.PI/2);expect(v.tick).toBe(1);expect(v.entities[0]!.pose.x).toBe(.351);expect(h.calls).toContain(`commit:1:1:${Date.parse('2026-11-01T00:00:00Z')+20}`);expect(h.calls.slice(0,4)).toEqual(['append:0','prepare:1','step:1','append:1']);}finally{await run.close();}
+ });
+ for(const failure of ['append','commit','source-write','direct-source-write','lost','coffee-commit'] as const)test(`world ${failure} failure keeps old public clock, latches and never retries or respawns`,async()=>{
+  const h=await setup(failure),run=await h.open();await run.start();const watermark=(await run.journal()).at(-1)?.sequence??'0';
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow();const v=await run.snapshot();expect(v.tick).toBe(0);expect(v.entities[0]!.pose.x).toBe(.35);expect(v.entities[0]!.quality).toBe('stale');
+  if(failure==='source-write'||failure==='direct-source-write'){const added=(await run.journal()).filter(e=>BigInt(e.sequence)>BigInt(watermark));expect(JSON.stringify(added)).not.toContain('forbidden');expect(JSON.stringify(added)).not.toContain('CupTransferred');}
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');expect(h.calls.filter(c=>c.startsWith('step:'))).toHaveLength(1);expect(h.calls).toContain(`fail:0:1:${failure==='lost'?'null':'1'}`);await run.close();
+@@ -90,25 +90,57 @@ test('read-only world display clones one committed H/control and keeps action re
+   expect(typeof run.worldDisplay).toBe('function');const scene=await run.worldDisplayScene!();expect(scene).toMatchObject({availability:'available',scene:{sceneDigest:expect.any(String)}});scene.scene!.sceneDigest='mutated';expect((await run.worldDisplayScene!()).scene!.sceneDigest).not.toBe('mutated');const zero=await run.worldDisplay!();expect(zero).toMatchObject({tick:0,availability:'valid',control:null,controlReason:'NOT_RECORDED_AT_TICK'});
+   await run.start();await act(run,'step',{ticks:7});const a=await run.worldDisplay!();expect(a.tick).toBe(7);expect(a.snapshot!.tick).toBe(7);a.snapshot!.robots[0]!.poseDriveMap[0]=999;expect((await run.worldDisplay!()).snapshot!.robots[0]!.poseDriveMap[0]).not.toBe(999);
+   const cp=JSON.parse(await readFile(join(h.directory,'run.json'),'utf8'));expect(Object.values(cp.receipts).every((r:unknown)=>!JSON.stringify(r).includes('worldStep'))).toBe(true);expect(cp.world.committedDisplay.command.targetTick).toBe(7);expect(JSON.stringify(cp.world.committedDisplay).length).toBeLessThan(2048);
+  }finally{await run.close();}
+  const reopened=await h.open();try{expect(await reopened.worldDisplay!()).toMatchObject({tick:7,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});}finally{await reopened.close();}
+ });
+ test('failed H+1 ACK never becomes a public world display observation or control',async()=>{
+  const h=await setup('commit'),run=await h.open();try{await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow();expect(await run.worldDisplay!()).toMatchObject({tick:0,availability:'stale',reason:'WORLD_UNKNOWN',snapshot:{tick:0},control:null});}finally{await run.close();}
+ });
+ 
+-test('display read queued behind an in-flight action publishes a single settled H/revision',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(false);gate.release();const after=await action,d=await display;expect(d).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7}});}finally{gate.release();await run.close();}});
++test('display read during action admission retains the previous coherent committed pair',async()=>{const h=await setup(),run=await h.open();const gate=publicationGate(),entered=publicationGate();try{await run.start();const v=await run.snapshot(),action=run.action({actionId:'held-display-step',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:7}},async()=>{entered.release();await gate.promise;});await entered.promise;let read=false;const display=run.worldDisplay!().then(d=>{read=true;return d;});await new Promise<void>(r=>setImmediate(r));expect(read).toBe(true);const d=await display;expect(d).toMatchObject({tick:0,revision:v.run.runRevision,snapshot:{tick:0},view:{tick:0}});gate.release();const after=await action;expect(await run.worldDisplay!()).toMatchObject({tick:7,revision:after.run.runRevision,snapshot:{tick:7},control:{targetTick:7},view:{tick:7}});}finally{gate.release();await run.close();}});
+ 
+ test('explicit world reclaim never respawns and refuses a missing committed world checkpoint',async()=>{
+  const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
+  const reopened=await h.open(true);expect(h.opens()).toBe(1);expect((await reopened.snapshot()).tick).toBe(1);await reopened.close();
+  const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));delete cp.world;await fs.writeFile(path,JSON.stringify(cp));
+  await expect(h.open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(h.opens()).toBe(1);
+ });
+ for(const missing of ['snapshot','bootId','sceneDigest','runId','tick','coffee','arm'] as const)test(`explicit world reclaim refuses missing or mismatched ${missing} before resources and persistence`,async()=>{
+  const h=await setup(),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
+  const path=join(h.directory,'run.json'),cp=JSON.parse(await fs.readFile(path,'utf8'));
+  if(missing==='snapshot')cp.world={};else if(missing==='coffee')delete cp.coffee;else if(missing==='arm')delete cp.coffee.arm;else if(missing==='tick')cp.world.snapshot.tick=0;else delete cp.world.snapshot[missing];
+  const bytes=JSON.stringify(cp);await fs.writeFile(path,bytes);const journal=await fs.readFile(join(h.directory,'journal.db')),files=await fs.readdir(h.directory),opening=vi.spyOn(SourceSession,'open');let unexpected:Awaited<ReturnType<typeof h.open>>|undefined;
+  try{await expect(h.open(true).then(value=>{unexpected=value;return 'RECOVERY_ACCEPTED';})).rejects.toThrow('RECOVERY_STATE_INVALID');expect(opening).not.toHaveBeenCalled();expect(h.opens()).toBe(1);expect(await fs.readFile(path,'utf8')).toBe(bytes);expect((await fs.readFile(join(h.directory,'journal.db'))).equals(journal)).toBe(true);expect(await fs.readdir(h.directory)).toEqual(files);}finally{opening.mockRestore();await unexpected?.close();}
+ });
++
++for(const kind of ['pause','cancel'] as const)test(`shared world priority ${kind} stops at held paced boundary, with exact action replay`,async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
++ try{const started=await run.start(),revision=started.run.runRevision;batch=run.action({actionId:'batch',expectedRevision:revision,kind:'step',payload:{ticks:50,pace:{factor:1}}});await entered.promise;
++  const raw={actionId:'priority',expectedRevision:revision,kind,payload:{}};const control=run.controlDuringStep?.(raw);expect(control).toBeDefined();release.release();const result=await control!;
++  expect(result.tick).toBe(1);expect((await batch as {tick:number}).tick).toBe(1);expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(1);expect(await run.action(raw)).toEqual(result);
++ }finally{release.release();await batch;await run.close();}
++});
++test('paired display publishes only committed tick during a held batch without awaiting its remaining ticks',async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
++ try{const started=await run.start();batch=run.action({actionId:'display-batch',expectedRevision:started.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
++  let published:unknown;const read=run.worldDisplay!().then(x=>{published=x;});await new Promise<void>(r=>setImmediate(r));expect(published).toMatchObject({tick:1,snapshot:{tick:1},view:{tick:1,run:{runRevision:started.run.runRevision}}});release.release();await Promise.all([batch,read]);
++ }finally{release.release();await batch;await run.close();}
++});
++
++for(const reason of ['SESSION_REQUIRED','RUN_WRITER_CONFLICT'])test(`shared world control revalidates ${reason} and never truncates the batch on refusal`,async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
++ try{const v=await run.start();batch=run.action({actionId:'guard-batch',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
++  const control=run.controlDuringStep!({actionId:'guard-pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}},async()=>{throw Error(reason);})!.catch(e=>(e as Error).message);release.release();expect(await control).toBe(reason);expect((await batch as {tick:number}).tick).toBe(2);expect((await run.worldDisplay!()).view!.run.status).toBe('running');expect(run.controlDuringStep!({kind:'pause'})).toBeUndefined();
++ }finally{release.release();await batch;await run.close();}
++});
++for(const lifecycle of ['close','reclaim'])test(`shared world ${lifecycle} waits for attached control and batch completion`,async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
++ try{const v=await run.start();batch=run.action({actionId:'lifecycle-batch',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
++  const pause=run.controlDuringStep!({actionId:'lifecycle-pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}})!;let settled=false;const end=(lifecycle==='close'?run.close():run.holdForReclaim()).then(()=>{settled=true;});await new Promise<void>(r=>setImmediate(r));expect(settled).toBe(false);expect(h.calls).not.toContain('close');release.release();expect((await pause).tick).toBe(1);expect((await batch as {tick:number}).tick).toBe(1);await end;
++  if(lifecycle==='close')await expect(run.worldDisplay!()).rejects.toThrow('RUN_CLOSED');else expect((await run.worldDisplay!()).view!.controlAccess).toBe('view_reconcile');
++ }finally{release.release();await batch;await run.close();}
++});

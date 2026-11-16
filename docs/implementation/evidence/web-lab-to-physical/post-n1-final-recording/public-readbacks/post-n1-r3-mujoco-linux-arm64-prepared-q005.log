@@ -1,0 +1,6 @@
+{
+  "valid": true,
+  "accepted": false,
+  "issues": [],
+  "note": "Supplied artifact consistency only; sidecar authorship/signature and host provenance require independent review."
+}

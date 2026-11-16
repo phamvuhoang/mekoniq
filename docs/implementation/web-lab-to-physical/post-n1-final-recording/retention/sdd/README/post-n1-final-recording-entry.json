@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-16T04:22:31.900609+00:00",
+  "executionAuthorization": "Root has fully read the N1 follow-up and dispositioned it clean. This entry and root followup dispatch activate the prepared final recording brief.",
+  "source": {
+    "head": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "tree": "4ffba2273ba527ec06969cc34d02d44ca9414a2e",
+    "status": ""
+  },
+  "lab": {
+    "head": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+    "tree": "fe1b269b07a31033671c79b406244b32a446c96c",
+    "status": ""
+  },
+  "lock": {
+    "dirty": false,
+    "packageVersion": "0.1.0",
+    "toolchain": {
+      "node": "v24.22.2"
+    },
+    "sourceCommit": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+    "schemaHash": "0d4ae124258123d27a21b67a8441dee13d703fd5ab7596ad298bcab9233a31e5",
+    "protocolMajor": 2,
+    "protocolMajors": [
+      1,
+      2
+    ],
+    "nodeMajor": 24,
+    "artifactSha256": "73ca9b369160468b27af5c4308fcd0910640cae365e2b151000c5885aa77d508",
+    "entrypoint": "runtime.mjs",
+    "portableToolsDigest": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b"
+  },
+  "closures": {
+    "portable": "30dc0de3e034b14593ae3629a1f247724392d950578913cacc1dd2e9ca9bc69b",
+    "native": "79018e0a2601d8a27d3739751910bb392c86c2857cc39ad5fb451a977de78634"
+  },
+  "buildSha256": "1f968cd60d7cdeee17b706a0c43a9cb4b2eb8b78e5b82caaa49e5cb8824d37b0",
+  "buildFiles": 200,
+  "identityFile": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/subject-identity.json",
+    "bytes": 43496,
+    "sha256": "70709f44da923918030e97a6c1752a06686d2a0d94cdcab94fb8c09addbaab76"
+  },
+  "runtimeExport": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/runtime-export",
+  "review": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-n1-review.md",
+    "bytes": 11082,
+    "sha256": "5f680f51f6facc20f4e032afdd6f920cc645042720a91779d20e206669b2967c"
+  },
+  "disposition": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-n1-review-dispositions.md",
+    "bytes": 2465,
+    "sha256": "ac2c8bd761e0108fbd4b766b8573752409e36ab174a3c0114be5e2748c92b0f3"
+  },
+  "brief": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/post-n1-final-recording-brief.md",
+    "bytes": 13376,
+    "sha256": "fde4b36c355a2ea98b48d7dc7f27326c96241663f57db1a2be0533c51ab40b44"
+  },
+  "fullR3Checker": "Recorder computes/freezes actual full graph before any new R3 subject; existing four-file set is not this graph.",
+  "rawN1": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r",
+  "privateBoundary": {
+    "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-n1-private-settlement-disposition.json",
+    "bytes": 1002,
+    "sha256": "24c71ea4f5e25ee5fdce0db49764c6662b005cfcfbee69623df32d60bbbee4ea"
+  },
+  "newPerformanceAndCampaignEvidence": "not_run at dispatch; execute once on this current tuple",
+  "noHelpersOrNewBroadReview": true
+}

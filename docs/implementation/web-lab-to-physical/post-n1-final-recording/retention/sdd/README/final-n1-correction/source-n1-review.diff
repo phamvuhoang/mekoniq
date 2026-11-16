@@ -1,0 +1,108 @@
+# Review package: cb5c86cf9ee5db06cdacc38a2146f6f312b2c503..0d4640324d7fdb2f169ed9078db2208aae61b589
+
+## Commits
+0d46403 fix: preserve world batches during cached control replay
+
+## Files changed
+ packages/lab-runtime/src/v2/scenario-runner.ts |  9 ++++++---
+ tests/unit/world-runner.test.ts                | 24 ++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+), 3 deletions(-)
+
+## Diff
+diff --git a/packages/lab-runtime/src/v2/scenario-runner.ts b/packages/lab-runtime/src/v2/scenario-runner.ts
+index c7afb3a..5fa158a 100644
+--- a/packages/lab-runtime/src/v2/scenario-runner.ts
++++ b/packages/lab-runtime/src/v2/scenario-runner.ts
+@@ -486,47 +486,50 @@ class Run implements ScenarioRun {
+  controlDuringStep(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>|undefined{
+   const kind=(a as {kind?:unknown}|null)?.kind;if(!this.worldConfig||!this.steps||(kind!=='pause'&&kind!=='cancel'))return undefined;
+   if(this.controls.length>=10000)return Promise.reject(Error('ACTION_LIMIT'));
+   return new Promise((resolve,reject)=>this.controls.push({raw:a,beforeExecute,resolve,reject}));
+  }
+  action(a:unknown,beforeExecute?:()=>Promise<void>):Promise<RunView>{
+   const control=this.controlDuringStep(a,beforeExecute);if(control)return control;
+   const step=(a as {kind?:unknown}|null)?.kind==='step';if(step)this.steps++;
+   const p=this.queue.then(async()=>{try{return await this.execute(a,beforeExecute);}finally{if(step){this.steps--;await this.takeControls();}}});this.queue=p.catch(()=>{});return p;
+  }
+- private async takeControls(){let admitted=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,async()=>{await x.beforeExecute?.();admitted=true;},true).then(x.resolve,x.reject);}return admitted;}
+- private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,control=false):Promise<RunView>{
++ private async takeControls(){let begun=false;while(this.controls.length){const x=this.controls.shift()!;await this.execute(x.raw,x.beforeExecute,()=>{begun=true;}).then(x.resolve,x.reject);}return begun;}
++ private async execute(raw:unknown,beforeExecute?:()=>Promise<void>,onControlBegin?:()=>void):Promise<RunView>{
+   if(this.closed)throw new Error('RUN_CLOSED');
+   const checked=validateActionV2(raw);if(!checked.ok)throw new Error('INVALID_ACTION');
+   const a=checked.value,c=this.cp,p=a.payload as Record<string,unknown>,hash=hashJson(a),old=c.receipts[a.actionId];
+   if(c.world?.terminal)throw new Error('WORLD_TERMINAL');
+   if(c.reclaimed&&a.kind!=='reconcile')throw new Error('INVALID_STATE:RECLAIM_READ_ONLY');
+-  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(control)await beforeExecute?.();return structuredClone(old.view);}
++  if(old){if(old.hash!==hash)throw new Error('ACTION_CONFLICT');if(onControlBegin)await beforeExecute?.();return structuredClone(old.view);}
+   if(Object.keys(c.receipts).length>=10000)throw new Error('ACTION_LIMIT');
+   if(a.expectedRevision!==c.revision)throw new Error('REVISION_CONFLICT');
+   const view=await this.view(),status=view.run.status;
+   if(a.kind==='start'&&c.started||a.kind!=='start'&&!c.started)throw new Error('INVALID_STATE');
+   if(a.kind==='pause'&&c.paused||a.kind==='resume'&&!c.paused)throw new Error('INVALID_STATE');
+   if(a.kind==='step'&&c.paused)throw new Error('RUN_PAUSED');
+   if(a.kind==='step'&&c.tick+Number(p.ticks)>this.scenario.maxTicks)throw new Error('RUN_DURATION_EXCEEDED');
+   if(a.kind==='reconcile'&&status!=='needs_attention')throw new Error('INVALID_STATE');
+   if(a.kind==='cancel'&&(c.cancelled||['completed','cancelled'].includes(status)))throw new Error('INVALID_STATE');
+   const cellFault=COFFEE_FAULTS.includes(String(p.faultId))?c.coffee?.cellId:ARM_FAULTS.includes(String(p.faultId))?c.coffee?.armId:null;
+   if(a.kind==='injectFault'){try{validateFaultTarget(String(p.faultId),String(p.entityId??cellFault??c.roles.robots[0]!.id),activeFaultEntities(this.project,c.roles),'mock',c.coffee?.arm.plantId);}catch{throw new Error('INVALID_FAULT');}}
+   const pending=a.kind==='confirm'?Object.entries(c.confirmations).find(([k,x])=>x.due===null&&k.endsWith(`/${String(p.subjectId)}`)):undefined;
+   if(a.kind==='confirm'&&!pending)throw new Error('CONFIRMATION_NOT_PENDING');
+   if(pending&&pending[1].type!==p.confirmationType)throw new Error('CONFIRMATION_TYPE_MISMATCH');
+   if(pending&&c.plant.robots.find(r=>r.id===pending[1].robotId)!.stale)throw new Error('INVALID_STATE:LOCALIZATION_LOST');
+   if(a.kind==='restoreCup'&&!await this.coffee?.canRestoreJob(String(p.subjectId)))throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');
+   // Admission applies only to a new action, inside the same queue as receipt replay and execution.
+   // A lost response can therefore be retried even if providers became unavailable after success.
+   await beforeExecute?.();
++  // Receipt replay rechecks authority above, but only a new control interrupts a batch.
++  // Mark before persistence: a begun control with an uncertain outcome must still stop it.
++  onControlBegin?.();
+   c.inFlight=true;await this.persist();
+   try{
+    if(a.kind==='start')c.started=true;
+    else if(a.kind==='pause'){c.paused=true;this.clock.pause();this.anchor=null;}
+    else if(a.kind==='resume'){c.paused=false;this.clock.resume();this.anchor=null;}
+    else if(a.kind==='step'){const pace=(a.payload as {pace?:{factor:number}}).pace;if(!pace)this.anchor=null;try{for(let i=0;i<Number(p.ticks);i++){if(await this.takeControls())break;if(pace){this.anchor=await awaitTick(this.wall,this.anchor,c.tick,pace.factor);if(await this.takeControls())break;}await this.tick();}}finally{await this.takeControls();}}
+    else if(a.kind==='confirm')await this.confirmStop(pending![0],String(p.actorProvenance??'human'));
+    else if(a.kind==='restoreCup'){
+     if(!this.coffee)throw new Error('INVALID_STATE:CUP_RESTORE_UNSAFE');await this.coffee.restoreCup(String(p.subjectId));
+    }
+diff --git a/tests/unit/world-runner.test.ts b/tests/unit/world-runner.test.ts
+index 6557929..929ce7f 100644
+--- a/tests/unit/world-runner.test.ts
++++ b/tests/unit/world-runner.test.ts
+@@ -137,10 +137,34 @@ for(const reason of ['SESSION_REQUIRED','RUN_WRITER_CONFLICT'])test(`shared worl
+  }finally{release.release();await batch;await run.close();}
+ });
+ for(const lifecycle of ['close','reclaim'])test(`shared world ${lifecycle} waits for attached control and batch completion`,async()=>{
+  const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
+  const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<unknown>|undefined;
+  try{const v=await run.start();batch=run.action({actionId:'lifecycle-batch',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:2,pace:{factor:1}}});await entered.promise;
+   const pause=run.controlDuringStep!({actionId:'lifecycle-pause',expectedRevision:v.run.runRevision,kind:'pause',payload:{}})!;let settled=false;const end=(lifecycle==='close'?run.close():run.holdForReclaim()).then(()=>{settled=true;});await new Promise<void>(r=>setImmediate(r));expect(settled).toBe(false);expect(h.calls).not.toContain('close');release.release();expect((await pause).tick).toBe(1);expect((await batch as {tick:number}).tick).toBe(1);await end;
+   if(lifecycle==='close')await expect(run.worldDisplay!()).rejects.toThrow('RUN_CLOSED');else expect((await run.worldDisplay!()).view!.controlAccess).toBe('view_reconcile');
+  }finally{release.release();await batch;await run.close();}
+ });
++
++for(const outcome of ['allow','SESSION_REQUIRED','RUN_WRITER_CONFLICT','ACTION_CONFLICT'] as const)test(`stored Pause replay after Resume leaves a different 50-tick batch intact: ${outcome}`,async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}});let batch:Promise<import('../../packages/lab-runtime/src/v2/scenario-runner').RunView>|undefined;
++ try{
++  const started=await run.start(),pause={actionId:'stored-pause',expectedRevision:started.run.runRevision,kind:'pause',payload:{}},stored=await run.action(pause),storedBytes=JSON.stringify(stored),resumed=await act(run,'resume');
++  const next={actionId:'different-batch',expectedRevision:resumed.run.runRevision,kind:'step',payload:{ticks:50,pace:{factor:1}}};batch=run.action(next);await entered.promise;
++  const authorize=vi.fn(async()=>{if(outcome==='SESSION_REQUIRED'||outcome==='RUN_WRITER_CONFLICT')throw Error(outcome);});
++  const replay=run.controlDuringStep!(outcome==='ACTION_CONFLICT'?{...pause,expectedRevision:resumed.run.runRevision}:pause,authorize)!;
++  const observed=replay.then(value=>({value,error:null}),error=>({value:null,error:(error as Error).message}));release.release();const result=await observed;
++  expect(authorize).toHaveBeenCalledTimes(outcome==='ACTION_CONFLICT'?0:1);if(outcome==='allow')expect(JSON.stringify(result.value)).toBe(storedBytes);else expect(result.error).toBe(outcome);
++  const completed=await batch;expect(completed).toMatchObject({tick:50,run:{runRevision:resumed.run.runRevision+1,status:'running'}});expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(50);
++  expect(await run.snapshot()).toEqual(completed);expect(await run.action(next)).toEqual(completed);expect(JSON.stringify(await run.action(pause))).toBe(storedBytes);expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(50);
++ }finally{release.release();await batch;await run.close();}
++});
++for(const checkpoint of [1,2])test(`a newly begun priority Pause with uncertain checkpoint ${checkpoint} still ends the batch conservatively`,async()=>{
++ const h=await setup(),entered=publicationGate(),release=publicationGate();let now=0,armed=false,writes=0;
++ const run=await h.open(false,{now:()=>now,sleep:async ms=>{entered.release();await release.promise;now+=ms;}}),state=run as unknown as {persist():Promise<void>},persist=state.persist.bind(state);let batch:Promise<import('../../packages/lab-runtime/src/v2/scenario-runner').RunView>|undefined;
++ vi.spyOn(state,'persist').mockImplementation(async()=>{await persist();if(armed&&++writes===checkpoint)throw Error('PERSIST_ACK_UNKNOWN');});
++ try{const started=await run.start();batch=run.action({actionId:'uncertain-batch',expectedRevision:started.run.runRevision,kind:'step',payload:{ticks:50,pace:{factor:1}}});await entered.promise;
++  const control=run.controlDuringStep!({actionId:'uncertain-pause',expectedRevision:started.run.runRevision,kind:'pause',payload:{}},async()=>{armed=true;})!.catch(e=>(e as Error).message);release.release();expect(await control).toBe('PERSIST_ACK_UNKNOWN');const completed=await batch;
++  expect(completed).toMatchObject({tick:1,run:{status:checkpoint===1?'running':'needs_attention'}});expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(1);expect((await run.snapshot()).tick).toBe(1);if(checkpoint===2)expect(completed.attention).toContainEqual({reason:'ACTION_INTERRUPTED',tick:1});
++ }finally{release.release();await batch;await run.close();}
++});

@@ -1,0 +1,23 @@
+{
+  "started": {
+    "current_time": "2026-11-16 03:53:47 UTC"
+  },
+  "args": {
+    "cmd": "perl -e 'alarm 120; exec @ARGV' python3 .superpowers/sdd/README/root-final-correction-audit.py",
+    "workdir": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+    "max_output_tokens": 1800,
+    "yield_time_ms": 1000
+  },
+  "chunk_id": "00311d",
+  "wall_time_seconds": 1.00089325,
+  "session_id": 48783,
+  "original_token_count": 0,
+  "output": "",
+  "completion": {
+    "chunk_id": "54d9de",
+    "wall_time_seconds": 0.000322625,
+    "exit_code": 0,
+    "original_token_count": 183,
+    "output": "{\"audit\": {\"path\": \"/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/root-final-correction-audit-cb5-fded-v2.json\", \"bytes\": 101218, \"sha256\": \"ca1bedd61f524b5a79136693b87a787bf351c616d5772d82445fd5cd9cda8e3e\"}, \"issues\": [], \"receipts\": 72, \"computed\": {\"renderIntervalP95Ms\": 17.799999713897705, \"workerP95Ms\": 4.868333, \"activeCellMs\": 184974.19999980927}, \"browserStats\": {\"final-closed-browser\": {\"startTime\": \"2026-11-16T03:44:54.060Z\", \"duration\": 43607.303, \"expected\": 1, \"skipped\": 0, \"unexpected\": 0, \"flaky\": 0}, \"final-replay-browser\": {\"startTime\": \"2026-11-16T03:45:39.704Z\", \"duration\": 15961.166000000001, \"expected\": 5, \"skipped\": 0, \"unexpected\": 0, \"flaky\": 0}}}\n"
+  }
+}

@@ -1,5 +1,7 @@
 # Spec R3 — Linux native và hồ sơ sẵn sàng tới physical
 
+**Hiện trạng sau N1, 16/11:** [kết quả mới](../post-n1-final-recording/status.md), [tái hiện](../post-n1-final-recording/reproduce.md) và [disposition](../post-n1-final-recording/dispositions.md) dùng Source `0d46403` / Lab `7c97b20`. Review giữ verdict lịch sử ở tuple/scope đã nêu; capture mới và bốn assertions mock chưa giải quyết, native/physical chưa nghiệm thu. Các snapshot/kế hoạch cũ bên dưới giữ ngày và identity riêng.
+
 > Cập nhật 14/11/2026: [bằng chứng R2a mới](01-research.md#cập-nhật-bằng-chứng-r2a--2026-11-14-0900-ict) ghi một MJ-BV01 hoàn tất trên Cloud Run amd64 và kiểm Chrome production tại pin `4f893ac`. Nhận định ngày 13/11 về “chỉ có giả lập” bên dưới là lịch sử. L01 vẫn cần bộ case/inventory đầy đủ; chưa dùng bằng chứng này để đóng DEP-MJ-01 hay gate phần cứng.
 
 **Mã:** MKQ-SIM-R3-02 · **Trạng thái:** đề xuất; chưa có host mới được chạy, chưa có phần cứng được chọn.

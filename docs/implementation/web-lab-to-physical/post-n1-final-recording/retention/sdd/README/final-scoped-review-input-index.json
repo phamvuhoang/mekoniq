@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-16T03:59:18.306635+00:00",
+  "refs": [
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-scoped-review-brief.md",
+      "bytes": 21007,
+      "sha256": "906132909443c6f76afaa864c966b5a7f93e066ece3527b4ccaed90677c6dd72"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/task-final-correction-report.md",
+      "bytes": 57452,
+      "sha256": "d39e858f16b5b67f5fe2d11ebdc2cbaf3ba61b522633042f9bf467aac6788da3"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-correction-907-bfde/source-scoped-review.diff",
+      "bytes": 108297,
+      "sha256": "58690bfb2695b91c77dcccffbce0a5288e8ba6c2cf36441dc268209e425f6363"
+    },
+    {
+      "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/final-correction-907-bfde/lab-scoped-review.diff",
+      "bytes": 112610,
+      "sha256": "218c24d7af42b06da1b7b1645d587292f9ebf674e61b07b5b93df07fb4ddf168"
+    }
+  ]
+}

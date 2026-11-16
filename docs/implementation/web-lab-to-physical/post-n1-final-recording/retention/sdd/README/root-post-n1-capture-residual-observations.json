@@ -1,0 +1,215 @@
+{
+  "at": "2026-11-16T05:07:01.889556+00:00",
+  "scope": "Bounded read-only correlation of the existing final capture and committed measurement/UI code, concurrent only with independent functional cell campaign. No producer/reader/test/engine was executed; no host-wide processes or private runtime databases were read. Does not assign complete causation or change any qualification result.",
+  "source": "0d4640324d7fdb2f169ed9078db2208aae61b589",
+  "lab": "7c97b202143dd156d8e7751dfa2bbf198d17f9b9",
+  "runId": "ca244351-461e-40e2-95e9-d4eb90a40b65",
+  "inputs": [
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance/actual-cell-production.json",
+      "bytes": 27601216,
+      "sha256": "d4281f2859375eac4b757fcf6ebb4687b2c0d3e02fdd2efb41b0fae6d6b9b1b7"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance/io-diagnostic.json",
+      "bytes": 8627549,
+      "sha256": "21f431ddf7ec17d77a1238e8f8bfce47ad92c6677e33a9adf0442e5ce48f9584"
+    },
+    {
+      "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/production-performance/source-event-loop.json",
+      "bytes": 26432,
+      "sha256": "9f3104216663af0506421ad48bde166256a9fb2c17adbdf1b936b7f51e489307"
+    }
+  ],
+  "observedGapEpochMs": [
+    1794803163531.4,
+    1794803164247.8
+  ],
+  "diskSyncObservations": [
+    {
+      "kind": "fs",
+      "op": "sync",
+      "path": "35c80015-b64a-43cb-8403-21bfb6fff16e/run.json.tmp",
+      "elapsedMs": 337.025708,
+      "atEpochMs": 1794803163714,
+      "approxStartEpochMs": 1794803163376.9744
+    },
+    {
+      "kind": "fs",
+      "op": "sync",
+      "path": "35c80015-b64a-43cb-8403-21bfb6fff16e",
+      "elapsedMs": 459.827667,
+      "atEpochMs": 1794803164175,
+      "approxStartEpochMs": 1794803163715.1724
+    }
+  ],
+  "sumTwoSyncElapsedMs": 796.853375,
+  "workerBoundary": {
+    "prior": {
+      "kind": "worker_wire",
+      "runId": "ca244351-461e-40e2-95e9-d4eb90a40b65",
+      "requestId": "world-785",
+      "op": "step",
+      "targetTick": 783,
+      "expectedTick": 783,
+      "ok": true,
+      "bootId": "005286b9-7737-42e3-a5ad-f24f18a66a30",
+      "workerPid": 37177,
+      "serverPid": 37153,
+      "sentMonoNs": "2960074473825333",
+      "ackMonoNs": "2960074489419750",
+      "elapsedMs": 15.594417,
+      "atEpochMs": 1794803163124,
+      "wallMs": 62214.577880859375
+    },
+    "next": {
+      "kind": "worker_wire",
+      "runId": "ca244351-461e-40e2-95e9-d4eb90a40b65",
+      "requestId": "world-786",
+      "op": "step",
+      "targetTick": 784,
+      "expectedTick": 784,
+      "ok": true,
+      "bootId": "005286b9-7737-42e3-a5ad-f24f18a66a30",
+      "workerPid": 37177,
+      "serverPid": 37153,
+      "sentMonoNs": "2960075555780333",
+      "ackMonoNs": "2960075566475541",
+      "elapsedMs": 10.695208,
+      "atEpochMs": 1794803164201,
+      "wallMs": 63291.577880859375
+    },
+    "ackEpochGapMs": 1077,
+    "sameProcessMonotonicIdleBeforeNextRequestMs": 1066.360583
+  },
+  "httpDuringRenderGap": {
+    "requests": 16,
+    "allStatus200": true,
+    "maxResponseMs": 81.435,
+    "maxStartIntervalMs": 119.696044921875,
+    "limits": "HTTP responses are not retained display payload bodies; this does not independently establish each response horizon."
+  },
+  "browserDuringGap": {
+    "maxSampleIntervalMs": 24.299999713897705,
+    "maxObservedRenderCpuMs": 3.1000003814697266,
+    "longTaskEntriesForWholeCapture": 0,
+    "observedWorldH": "Canvas samples remain at783 without new actual draws, then advance to784."
+  },
+  "sourceEventLoopNearby": [
+    {
+      "kind": "source_event_loop",
+      "atEpochMs": 1794803162927,
+      "windowMs": 1001,
+      "p95Ms": 11.362303,
+      "maxMs": 12.337151
+    },
+    {
+      "kind": "source_event_loop",
+      "atEpochMs": 1794803163927,
+      "windowMs": 1000,
+      "p95Ms": 19.300351,
+      "maxMs": 67.698687
+    },
+    {
+      "kind": "source_event_loop",
+      "atEpochMs": 1794803164926,
+      "windowMs": 999,
+      "p95Ms": 12.877823,
+      "maxMs": 14.606335
+    }
+  ],
+  "pauseClock": {
+    "browserClickEpochMs": 1794803313558.5,
+    "playwrightTimingStartEpochMs": 1794803313553.2852,
+    "requestMinusClickMs": -5.21484375,
+    "networkRequestStartOffsetMs": 0.346,
+    "networkSendEstimateMinusClickMs": -4.868896484375,
+    "actionAndReceiptIdentityMatch": true,
+    "staticObservation": "Measurement click uses document capture listener and browser performance.timeOrigin+performance.now. Normal app delegates host bubbling click to twin.click; pause dispatch is in workspace.ts. HTTP observer separately uses Playwright request.timing().startTime for requestStartEpochMs. No measured calibration between these browser/network epoch reports is present in this artifact.",
+    "inference": "The inconsistent recorded ordering warrants clock-origin/instrumentation investigation; the negative5ms value alone does not establish that Source acted before the user event. No offline clock offset is inferred or applied."
+  },
+  "codeReferences": [
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/measure-cell-production.ts",
+        "bytes": 29669,
+        "sha256": "69875779a31019fcd74a04b0cb7c82a68392952f986a742108d18036baac93ea"
+      },
+      "lines": [
+        83,
+        87,
+        91
+      ]
+    },
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/production-http-observer.ts",
+        "bytes": 6628,
+        "sha256": "737d3b89e78fd556e5c29842ff597af757be69faf95b3ab224197cb5babbd825"
+      },
+      "lines": [
+        33,
+        41,
+        42
+      ]
+    },
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/scripts/performance-runtime-observer.mjs",
+        "bytes": 5000,
+        "sha256": "aeb2f2f37752da65002da46beb5d1a1ae2db60835ca49fb28dee31523a8ec766"
+      },
+      "lines": [
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/app.ts",
+        "bytes": 63555,
+        "sha256": "90f075c277f950178ed95d2bb78b4397d3874f5a257bb997c74742e8bf2d859e"
+      },
+      "lines": [
+        967,
+        972,
+        1112
+      ]
+    },
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/ui/workspace.ts",
+        "bytes": 125797,
+        "sha256": "d91a5ea81a54e8f9b9348cb71c64178a95e4255cd25720c9a3630f61f0cdd543"
+      },
+      "lines": [
+        697,
+        698
+      ]
+    },
+    {
+      "file": {
+        "path": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/lab/src/twin/world-playback.ts",
+        "bytes": 2580,
+        "sha256": "9ff73fbd139e0ab94fb3cf8416d3b04844f52d0a7bd5009a1e510f9bff5d6936"
+      },
+      "lines": [
+        13,
+        20,
+        24
+      ]
+    }
+  ],
+  "interpretation": "The1077ms observed gap between successive worker ACKs encloses two near-sequential owned Source sync calls totaling796.85ms, while browser sampling and successful display requests continue. This is consistent with progress waiting on persistence and bounded display refusing to invent further poses, rather than evidence of716ms render CPU. It does not identify the OS/storage cause, prove every causal edge, establish all response horizons or justify weakening durability/freshness requirements.",
+  "nextInvestigation": [
+    "Measure the checkpoint/durability path under a declared future scope while preserving journal/commit guarantees.",
+    "Capture click, dispatch and network timing with an explicitly validated common clock before judging sub-frame ordering.",
+    "Keep the current failing capture and eventual future changed-subject measurement distinct."
+  ],
+  "qualification": "unchanged valid:false/meetsTargets:false; all three current issues retained, no benchmark retry/fix wave requested",
+  "exploratoryCallerFailures": [
+    "One inline Python query had a bracket SyntaxError and exited1 before evaluation; corrected read-only query supplied the values above.",
+    "One zsh rg invocation used an unmatched src/twin/*interpol* glob and exited1 before search; explicit file reads supplied subsequent static observations."
+  ]
+}

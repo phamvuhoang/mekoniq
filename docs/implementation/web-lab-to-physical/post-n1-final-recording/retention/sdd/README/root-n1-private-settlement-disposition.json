@@ -1,0 +1,13 @@
+{
+  "documentType": "private-evidence-boundary",
+  "original": {
+    "path": "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/r2b-final-n1-7cw84h_r/settlement-processes.txt",
+    "bytes": 171347,
+    "sha256": "0d6a4906c04b7242a484fd0de0ea277143542f974ec2458a2bd8b201302a5b41"
+  },
+  "publicDisposition": "external_private_original",
+  "reason": "Full host process snapshot includes unrelated process command context; exact original remains external and unchanged.",
+  "publicDerivative": "This descriptor and the retained settlement.json receipt/reference, not a publication of original process lines.",
+  "verificationScope": "Root verified full original bytes/hash and settlement reference; no new host-wide process-absence inference. Implementer reports owned work settled; port check remains separately recorded.",
+  "historicalBoundary": "Additional fifth private original after the four previously recorded exclusions; historical four-item documents remain scoped to their earlier subjects."
+}

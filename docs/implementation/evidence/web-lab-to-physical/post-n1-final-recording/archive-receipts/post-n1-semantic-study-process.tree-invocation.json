@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.venv-irsim/bin/python3",
+    "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source/.superpowers/sdd/README/evidence-final-recording/0d46403-lab-7c97b20/retain-tree.py",
+    "post-n1-semantic-study-process",
+    "/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process"
+  ],
+  "cwd": "/Users/hoangpham/source/prv/robot/.worktrees/web-lab-to-physical/source",
+  "exitCode": 0,
+  "stdout": "{\"id\": \"post-n1-semantic-study-process\", \"source\": \"/private/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/semantic-study-process\", \"archive\": \"post-n1-semantic-study-process.tar.gz\", \"archiveBytes\": 1308, \"archiveSha256\": \"b5af93188d519c39e2a659278683623480313616c4df58dcf51b03ce99afd9ae\", \"memberIndex\": \"post-n1-semantic-study-process.members.json\", \"memberIndexSha256\": \"ba512a8b718edae46917262e1e7fa1d8bb9fbb13c6a064c21b859c0f15a4b914\", \"memberCount\": 3, \"memberBytes\": 3121, \"safeExtractionReceipt\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/archive-receipts/post-n1-semantic-study-process.extract.json\", \"safeExtractionReceiptSha256\": \"42000f2c38a845a2c9ac86be8b6f94b8bb5367d5c827fbe19513314b1768ae3b\", \"extracted\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study-process\", \"publicReadback\": \"Separate actual public reader receipt; archived producer outcomes never rewritten\"}\n{\"id\": \"post-n1-semantic-study-process\", \"reassembled\": \"/var/folders/92/wsfpj2x14hd3690cwlp639900000gp/T/mekoniq-post-n1-final-0d46403-7c97b20-f56acbhh/publication-staging/extracted/post-n1-semantic-study-process\", \"verifiedFiles\": 3, \"verifiedBytes\": 3121}\n",
+  "stderr": "",
+  "at": "2026-11-16T07:08:38.186751+00:00"
+}
