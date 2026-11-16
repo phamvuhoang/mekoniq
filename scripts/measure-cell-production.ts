@@ -2,6 +2,7 @@
 import {checkCaptureClock} from '../../source/scripts/browser-capture-clock.mjs';
 /** Actual production UI + Source shared MuJoCo world; never the synthetic renderer harness. Run with Source's pnpm exec tsx. */
 import {mkdir,readFile,writeFile,mkdtemp,stat,readdir} from 'node:fs/promises';
+import {realpathSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import os from 'node:os';
 import {spawn,execFileSync} from 'node:child_process';
@@ -18,7 +19,7 @@ import {startLabGateway} from '../../source/packages/lab-runtime/src/gateway';
 import {OwnedProcesses} from '../../source/tests/support/owned-processes';
 /** Canonical argv; must equal source/scripts/browser-evidence-readback.mjs (tests/unit/measure-args.test.ts). */
 export const BROWSER_ARGS=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'];
-if(resolve(process.argv[1]??'')===import.meta.filename){ // run only as a script; importing (unit test) has no side effects
+if(process.argv[1]&&realpathSync(process.argv[1])===realpathSync(import.meta.filename)){ // run only as a script (realpaths: a symlinked launch must still run, never exit 0 silently); importing (unit test) has no side effects
 const arg=(key:string)=>{const i=process.argv.indexOf(key);return i<0?undefined:process.argv[i+1];};
 const exported=process.argv.includes('--exported-runtime');
 const lab=resolve(import.meta.dirname,'..'),source=resolve(lab,'../source'),output=resolve(arg('--out')??'/tmp/b07b-production'),duration=Number(arg('--duration-ms')??185000),warmup=Number(arg('--warmup-ms')??5000);
