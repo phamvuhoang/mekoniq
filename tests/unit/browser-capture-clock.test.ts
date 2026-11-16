@@ -49,3 +49,28 @@ test('continuous repaint cannot hide a long frozen Source horizon inside an othe
  for(const s of f.capture.samples)if(s.at>=90000&&s.at<92000)s.worldTick=900;
  const r=clock.assessCapture(f);expect(r.valid).toBe(false);expect(r.issues).toContain('CAPTURE_RENDER_PROGRESSION');
 });
+
+function orderedTies(){
+ const f=captureFixture(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
+ const extra={...c.renderEvents[10]!,count:12};c.renderEvents.splice(11,0,extra);c.renderEvents.forEach((e,i)=>e.count=i+1);
+ c.samples.forEach((s,i)=>Object.assign(s,{renderCount:i+1+(i>10?1:0)}));c.samples[11]!.drawCalls=2;
+ c.renderOrdering={version:1,startCount:0,endCount:c.renderEvents.length,tailDrawCalls:0};c.drawCalls=c.renderEvents.length;return f;
+}
+test('explicit counter window disambiguates a real equal-time render after the RAF sample without inflating cadence',()=>{
+ const f=orderedTies(),r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.renderIntervalP95Ms).toBe(20);expect(r.meetsTargets).toBe(true);
+});
+test.each(['dropped','reordered','count','calls','tail','gap','missing','version','future','start','end'])('ordered render proof rejects coherent %s corruption',kind=>{
+ const f=orderedTies(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
+ if(kind==='dropped')c.renderEvents.splice(11,1);if(kind==='reordered')[c.renderEvents[10],c.renderEvents[11]]=[c.renderEvents[11]!,c.renderEvents[10]!];
+ if(kind==='count')c.renderEvents[11]!.count--;if(kind==='calls'){c.samples[10]!.drawCalls++;c.samples[11]!.drawCalls--;}
+ if(kind==='tail')c.renderOrdering.tailDrawCalls=1;if(kind==='gap'){const start=f.clock.browserStartMs;c.renderEvents=c.renderEvents.filter(e=>e.atMs<start+90000||e.atMs>start+90600);const counters=new Map(c.renderEvents.map((e,i)=>[e.count,i+1]));c.renderEvents.forEach((e,i)=>e.count=i+1);c.samples=c.samples.filter(s=>s.at<90000||s.at>90600);c.samples.forEach((s,i)=>{const sample=s as typeof s&{renderCount:number};sample.renderCount=counters.get(sample.renderCount)!;sample.interval=i?sample.at-c.samples[i-1]!.at:sample.at;});c.renderOrdering.endCount=c.renderEvents.length;c.drawCalls=c.renderEvents.length;}
+ if(kind==='missing')delete(c.samples[10] as unknown as {renderCount?:number}).renderCount;if(kind==='version')c.renderOrdering.version=2;
+ if(kind==='future')(c.samples[10] as unknown as {renderCount:number}).renderCount=100;if(kind==='start')c.renderOrdering.startCount++;if(kind==='end')c.renderOrdering.endCount++;
+ const result=clock.assessCapture(f);expect(result.valid).toBe(false);if(kind==='gap'){expect(result.issues).toContain('CAPTURE_STREAM_GAP');expect(result.issues).not.toContain('CAPTURE_RENDER_ORDER');expect(result.issues).not.toContain('CAPTURE_DRAW_ACTIVITY_CORRELATION');}
+});
+
+test('clock-resolution render bursts cannot dilute interval p95 with zero deltas',()=>{
+ const f=captureFixture(),c=f.capture as typeof f.capture&{renderOrdering:{version:number;startCount:number;endCount:number;tailDrawCalls:number};drawCalls:number};
+ c.renderEvents=c.renderEvents.filter((_,i)=>i%10===0).flatMap(e=>Array.from({length:25},()=>({...e})));c.samples=c.samples.filter((_,i)=>i%10===0);c.samples.forEach((s,i)=>s.interval=i?200:0);c.renderEvents.forEach((e,i)=>e.count=i+1);c.samples.forEach((s,i)=>Object.assign(s,{renderCount:(i+1)*25,drawCalls:25}));c.renderOrdering={version:1,startCount:0,endCount:c.renderEvents.length,tailDrawCalls:0};c.drawCalls=c.renderEvents.length;
+ const r=clock.assessCapture(f);expect(r.issues).toEqual([]);expect(r.metrics.renderIntervalP95Ms).toBe(200);expect(r.meetsTargets).toBe(false);
+});

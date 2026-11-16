@@ -16,7 +16,8 @@ export function checkCaptureClock(record){
 export function assessCapture(record){
  const issues=checkCaptureClock(record),c=record?.capture,p=record?.pause,k=record?.clock,finite=x=>typeof x==='number'&&Number.isFinite(x),integer=x=>Number.isSafeInteger(x)&&x>=0,list=x=>Array.isArray(x)?x:[],fail=code=>issues.push(code);
  const events=list(c?.renderEvents),samples=list(c?.samples),actions=list(record?.actions),steps=actions.filter(a=>a.kind==='step').sort((a,b)=>a.requestStartEpochMs-b.requestStartEpochMs),pauses=actions.filter(a=>a.kind==='pause'),activeSteps=steps.filter(a=>a.observedAtEpochMs>=k?.startEpochMs&&a.observedAtEpochMs<=k?.endEpochMs);
- const windowMs=k?.endEpochMs-k?.startEpochMs;
+ const windowMs=k?.endEpochMs-k?.startEpochMs,ordered=c?.renderOrdering!==undefined||samples.some(s=>s.renderCount!==undefined),order=c?.renderOrdering;
+ if(ordered&&(!order||order.version!==1||!integer(order.startCount)||!integer(order.endCount)||order.endCount!==order.startCount+events.length||!integer(order.tailDrawCalls)||!integer(c?.drawCalls)||events.some((e,i)=>e.count!==order.startCount+i+1)||samples.some((s,i)=>!integer(s.renderCount)||s.renderCount<order.startCount||s.renderCount>order.endCount||i>0&&s.renderCount<samples[i-1].renderCount)))fail('CAPTURE_RENDER_ORDER');
  // A final priority control may stop a requested batch at a committed boundary.
  // Bind that shorter prefix to the same admitted revision, control and returned H.
  const prefix=new Map(steps.map((a,i)=>[a,i?steps[i-1].tick:a.tick-a.payload?.ticks]));
@@ -38,7 +39,8 @@ export function assessCapture(record){
   if(i&&previous.fullCell&&s.fullCell)activeCellMs+=delta;if(s.fullCell&&s.drawn)fullCellDrawingFrames++;if(i&&previous.fullCell&&s.fullCell&&s.drawn)fullCellDrawingMs+=delta;
  }
  if(activeCellMs<180000)fail('CAPTURE_ACTIVE_DRAWING_DURATION');
- const intervals=events.slice(1).map((s,i)=>s.atMs-events[i].atMs);
+ const cadence=ordered?events.filter((e,i)=>!i||e.atMs!==events[i-1].atMs):events,intervals=cadence.slice(1).map((s,i)=>s.atMs-cadence[i].atMs);
+ if(ordered&&events.some((e,i)=>i>0&&e.atMs<events[i-1].atMs))fail('CAPTURE_RENDER_ORDER');
  if(events.length<2||events.some(e=>e.runId!==record?.runId||!finite(e.atMs)||e.atMs<k?.browserStartMs||e.atMs>k?.browserEndMs||!finite(e.durationMs)||e.durationMs<0||!integer(e.drawCalls)||e.drawCalls<1||!integer(e.worldTick)||e.worldTick>pause?.tick)||intervals.some(x=>!finite(x)||x<=0)||events.at(-1)?.atMs-events[0]?.atMs<windowMs*.9)fail('CAPTURE_RENDER_STREAM');
  // Active duration is wall time with a valid full world, independent of RAF/draw ratio.
  // Draw-slice duration remains diagnostic only. Missing streams or >500 ms gaps
@@ -47,13 +49,18 @@ export function assessCapture(record){
  if(events.at(-1)?.worldTick<=events[0]?.worldTick||events.some((e,i)=>i>0&&e.worldTick<events[i-1].worldTick))fail('CAPTURE_RENDER_PROGRESSION');
  const advances=events.filter((e,i)=>i===0||e.worldTick!==events[i-1].worldTick);
  if(advances.length<2||advances.at(-1)?.atMs-advances[0]?.atMs<180000||advances.some((e,i)=>i>0&&e.atMs-advances[i-1].atMs>500)||events.at(-1)?.atMs-advances.at(-1)?.atMs>500)fail('CAPTURE_RENDER_PROGRESSION');
- let cursor=0;
+ let cursor=0,previousTime=k?.browserStartMs;
  for(const sample of samples){
-  let calls=0,lastEvent;while(cursor<events.length&&events[cursor].atMs<=k?.browserStartMs+sample.at){lastEvent=events[cursor++];calls+=lastEvent.drawCalls;}
+  let calls=0,lastEvent;while(cursor<events.length&&(ordered?events[cursor].count<=sample.renderCount:events[cursor].atMs<=k?.browserStartMs+sample.at)){
+   lastEvent=events[cursor++];calls+=lastEvent.drawCalls;
+   if(ordered&&(lastEvent.atMs<previousTime||lastEvent.atMs>k?.browserStartMs+sample.at))fail('CAPTURE_RENDER_ORDER');
+  }
   if(sample.drawCalls!==calls||!!lastEvent!==sample.drawn||lastEvent&&sample.fullCell&&sample.worldTick!==lastEvent.worldTick)fail('CAPTURE_DRAW_ACTIVITY_CORRELATION');
+  previousTime=k?.browserStartMs+sample.at;
  }
- // Rendering can continue between the final RAF and observer shutdown; those
- // events are still required to lie inside the capture window above.
+ // A versioned counter window binds the actual draws after the last RAF too.
+ // Equal clock values are one cadence group; raw render calls remain separately counted.
+ if(ordered&&(events.slice(cursor).some(e=>e.atMs<previousTime)||events.slice(cursor).reduce((n,e)=>n+e.drawCalls,0)!==order?.tailDrawCalls||events.reduce((n,e)=>n+e.drawCalls,0)!==c.drawCalls||samples.reduce((n,s)=>n+s.drawCalls,0)+order?.tailDrawCalls!==c.drawCalls))fail('CAPTURE_RENDER_ORDER');
  const worker=list(record?.workerRaw),before=list(record?.workerOutsideWindow?.before),after=list(record?.workerOutsideWindow?.after),all=[...before,...worker,...after],ids=new Set(),ticks=new Set();
  for(const [group,rows]of [['active',worker],['before',before],['after',after]])for(const w of rows){
   if(w.runId!==record?.runId||w.op!=='step'||typeof w.requestId!=='string'||!w.requestId||ids.has(w.requestId)||!integer(w.targetTick)||w.targetTick<1||ticks.has(w.targetTick)||w.expectedTick!==w.targetTick||w.ok!==true||!finite(w.elapsedMs)||w.elapsedMs<0||!finite(w.atEpochMs)||!finite(w.wallMs)||Math.abs(k?.nodeTimeOriginEpochMs+w.wallMs-w.atEpochMs)>.01)fail('CAPTURE_WORKER_IDENTITY');ids.add(w.requestId);ticks.add(w.targetTick);
