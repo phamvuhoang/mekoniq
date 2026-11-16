@@ -129,8 +129,11 @@ export async function startLabGateway(options:GatewayOptions):Promise<LabGateway
   closing=true;const stopped=new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
   v2.beginClose();v2.endStreams();for(const response of responses)response.destroy();server.closeAllConnections();
   // Admitted handlers own file/compiler/capture work even after their clients disconnect.
-  // Every owned close settles before the data root is released; a failed close is reported, never a lock held forever.
-  try{await Promise.all([...requests]);for(const r of await Promise.allSettled([...runs.values()].map(r=>r.session.close())))if(r.status==='rejected')process.stderr.write(`lab v1 run close failed: ${r.reason instanceof Error?r.reason.message:String(r.reason)}\n`);await v2.close();await stopped;}finally{ownership.close();}
+  // Every owned close settles before the data root is released (never a lock held forever); failed closes are logged, then rethrown after release.
+  const failed:string[]=[],errors:unknown[]=[];
+  try{await Promise.all([...requests]);const entries=[...runs];for(const [i,r] of (await Promise.allSettled(entries.map(([,r])=>r.session.close()))).entries())if(r.status==='rejected'){process.stderr.write(`lab v1 run close failed: ${r.reason instanceof Error?r.reason.message:String(r.reason)}\n`);failed.push(entries[i]![0]);errors.push(r.reason);}
+   try{await v2.close();}catch(e){failed.push(e instanceof Error?e.message:String(e));errors.push(...e instanceof AggregateError?e.errors:[e]);}await stopped;}finally{ownership.close();}
+  if(errors.length)throw new AggregateError(errors,`LAB_GATEWAY_CLOSE_FAILED: ${failed.join('; ')}`);
  })();}};
  }catch(error){ownership.close();throw error;}
 }

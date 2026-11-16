@@ -406,5 +406,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   /** Ends open SSE connections so the HTTP server can close. */
   endStreams(){for(const r of streams)r.end();streams.clear();},
   beginClose(){replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}for(const work of replayWork.values())work.abort.abort();},
-  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;await Promise.allSettled([...runs].map(([id,x])=>x.run.close().catch(closeFailed(id))));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();}});
+  close:async()=>{replayClosing=true;for(const read of replayReads){read.abort.abort();read.response.destroy();}await Promise.all([...replayReads].map(r=>r.done));for(const work of replayWork.values())work.abort.abort();await Promise.all([...replayWork.values()].map(w=>w.done));await expiryCleanup;
+   // every run close settles (and is logged) first; failures are rethrown so a caller never records a broken close as completed
+   const ids:string[]=[],errors:unknown[]=[];await Promise.allSettled([...runs].map(([id,x])=>x.run.close().catch(e=>{closeFailed(id)(e);ids.push(id);errors.push(e);})));runs.clear();for(const p of replayPackages.values())await rm(p.directory,{recursive:true,force:true});replayPackages.clear();
+   if(errors.length)throw new AggregateError(errors,`LAB_RUN_CLOSE_FAILED: ${ids.join(',')}`);}});
 }

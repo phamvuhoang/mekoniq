@@ -1,5 +1,5 @@
 // Real HTTP sessions and gateway authority; instrumented protocol double, NOT physics evidence.
-import {afterEach,expect,test} from 'vitest';
+import {afterEach,expect,test,vi} from 'vitest';
 import {mkdtemp,mkdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -103,7 +103,14 @@ test('expiry after an existing writable hold preserves owner and readers but exp
 test('a run whose close rejects neither blocks the next create nor keeps the data root after public close',async()=>{
  const f=await fixture();f.failClose();f.advance(3600001);const b=await f.pair(),created=await f.call(b,'/runs',{project:xarmProject(),scenarioId:'MJ-BV01',scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-arm-v1',runtimeIdentity:{sourceCommit:'test',schemaHash:'a'.repeat(64)}});
  expect(created.status,JSON.stringify(created)).toBe(201);expect(f.closed()).toBe(1);
- await f.g.close();expect(f.closed()).toBe(2);gateways.splice(gateways.indexOf(f.g),1);const g=await startLabGateway({port:0,directory:f.directory,sourceCommit:'test',schemaHash:'a'.repeat(64)});gateways.push(g);
+ // the final gateway close rethrows (a producer must not record a broken close as completed), but only after ownership is released
+ const stderr=vi.spyOn(process.stderr,'write').mockImplementation(()=>true);gateways.splice(gateways.indexOf(f.g),1);
+ try{const e=await f.g.close().then(()=>undefined,(x:unknown)=>x);expect(e).toBeInstanceOf(AggregateError);expect((e as AggregateError).message).toContain(f.path.slice(6));expect((e as AggregateError).errors.map(x=>(x as Error).message)).toEqual(['CLOSE_FAILED']);
+  expect(stderr.mock.calls.some(([m])=>String(m).includes('close failed: CLOSE_FAILED'))).toBe(true);}finally{stderr.mockRestore();}
+ expect(f.closed()).toBe(2);const g=await startLabGateway({port:0,directory:f.directory,sourceCommit:'test',schemaHash:'a'.repeat(64)});gateways.push(g);
+});
+test('public close resolves when every run close succeeds',async()=>{
+ const f=await fixture();gateways.splice(gateways.indexOf(f.g),1);await expect(f.g.close()).resolves.toBeUndefined();expect(f.closed()).toBe(1);
 });
 test('a new action on a terminal world is a 409 WORLD_TERMINAL conflict',async()=>{
  const f=await fixture();f.failAction('WORLD_TERMINAL');const r=await f.step(f.a);expect(r.status).toBe(409);expect(r.error).toBe('WORLD_TERMINAL');

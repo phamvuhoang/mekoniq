@@ -68,6 +68,6 @@ if(args.includes('--help')){
  const v2=portable?{...legacy,...portable.worldExperiments?{worldExperiments:true}:{},catalog:portable.catalog,enabledBackends:[...legacy.enabledBackends,...portable.enabledBackends],simulationFactory:portable.simulationFactory,...portable.readinessChecks?{portableChecks:portable.readinessChecks}:{}}:legacy;
  return {...v2,...engineering?{engineering}:{}};}});
  console.log(`Mekoniq Robot Lab business_sim\nGateway: ${gateway.url}\n${accessKey!==undefined?'Access key: from MEKONIQ_LAB_ACCESS_KEY (no pairing code printed)':`Pairing token (expires in 5 minutes; one use): ${gateway.pairingToken}`}\nSource: ${__LAB_SOURCE_COMMIT__}`);
- const close=()=>{void gateway.close().then(()=>process.exit(0),()=>process.exit(1));};
+ const close=()=>{void gateway.close().then(()=>process.exit(0),e=>{console.error(`Lab gateway close failed: ${e instanceof Error?e.message:String(e)}`);process.exit(1);});};
  process.once('SIGINT',close);process.once('SIGTERM',close);
 }
