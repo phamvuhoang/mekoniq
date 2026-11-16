@@ -16,7 +16,7 @@ Image R2b vẫn `null` (chưa build), WEB05 `not_run` theo R76 vì Docker không
 
 ## Shared cell, replay và bằng chứng ngày16/11/2026
 
-Bản ghi đo dùng Source `981e234` / Lab `d4c3032`, runtime `8eb111…`, build `2c1e9f30…`; commit công bố tài liệu sau đó là identity khác. [Trạng thái cuối](../source/docs/implementation/web-lab-to-physical/final-recording-status.md), [tái hiện đúng tuple](../source/docs/implementation/web-lab-to-physical/reproduce-final-recording.md) và [giới hạn từng profile](../source/docs/operations/native-profile-case-matrix.md) giữ kết quả thật và mọi lần thất bại. Đây là mô phỏng phần mềm, `accepted:false`/`not_calibrated`, chưa nghiệm thu Linux/native/phần cứng hay ra mắt công khai.
+Bản ghi sau N1 dùng Source `0d46403` / Lab `7c97b20`, runtime `73ca9b…`, build `1f968cd6…`; commit tài liệu sau đó có identity riêng. [Kết quả hiện tại](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/status.md), [tái hiện đúng tuple](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/reproduce.md) và [phạm vi còn mở](../source/docs/implementation/web-lab-to-physical/post-n1-final-recording/dispositions.md) giữ mọi lần failed/not_run. Whole-branch/scoped/N1 review giữ verdict lịch sử theo tuple/scope; capture mới và bốn assertions mock vẫn chưa giải quyết, không có nghĩa mọi gate đã đóng. Đây vẫn là mô phỏng `accepted:false` / `not_calibrated`, chưa nghiệm thu Linux/native/phần cứng hay D0.
 
 ### Một world tay máy + AMR + hai cốc
 
@@ -31,15 +31,15 @@ Mở `http://127.0.0.1:4175`, vào Twin, ghép nối bằng mã một lần in �
 
 Trong Setup, chọn Coffee delivery, Cup falls after an impact hoặc Dock drift after an impact rồi tạo run mới. Đổi thí nghiệm không sửa run cũ. Nguồn giữ journal/custody, kết quả unknown/needs_attention không được tự resend hoặc respawn để coi thành công. Reset/new trial có runId mới. Không có đường Lab→robot thật.
 
-Lựa chọn1× là mục tiêu gửi bước; số measured mới là tốc độ quan sát. Lượt production 185 giây đạt0.47188883×, nhịp vẽ thực p95 300.2 ms so với mục tiêu33ms, worker IPC4.837ms so với15ms và pause tới receipt cuối2797.283ms so với500ms. UI acknowledgement3322.858ms là lượng khác. Public capture reader còn từ chối `CAPTURE_ACTIVE_DRAWING_DURATION`; không quảng bá live realtime/1×. Lượt ghi này phục vụ1cốc, chưa chứng minh một mission live hai cốc hoàn tất. Ba nominal headless có served 2 là scope Source khác.
+Lựa chọn 1× là mục tiêu gửi bước. Capture production 185 giây mới đạt 0.366375×; draw interval p95 18.3 ms / mục tiêu 33 ms, worker IPC p95 7.198542 ms / 15 ms, receipt bound khoảng 59.8 ms / 500 ms và UI khoảng 91.5 ms. Public reader vẫn từ chối `CAPTURE_PAUSE_CORRELATION`, `CAPTURE_STREAM_GAP`, `CAPTURE_RENDER_PROGRESSION`. Không nhận live realtime/1×; lượt live này served 1, không chứng minh mission hai cốc hoàn tất. Campaign headless có scope riêng.
 
-Lượt launcher trên checkout isolated đã khởi động, health 200 và xuất package H7, rồi thất bại khi mở trang replay thứ hai. Diagnostic giữ riêng quan sát Vite dependency path. Lượt full stock sau đó trên cặp active sạch đã pass 1 case browser với assertions giữ nguyên và cleanup mã 0. Toàn bộ lỗi/setup cũ vẫn được giữ theo đúng layout. Same-build production browser có 1 case pass, strict replay/story có 5 case pass ở scope riêng; các mục tiêu hiệu năng production vẫn thất bại.
+Public stock launcher/full browser mới pass 1 case với health 200 và cleanup own 0. Same-build production browser pass 1 case, strict replay/story pass 5 case; cả ba có receipts riêng. Các lỗi launcher isolated, diagnostic và setup thế hệ trước được giữ nguyên ở archive lịch sử. Browser pass không đóng failure capture dài; artifact reader của closed case còn từ chối khác biệt argv --output, không coi record đã được reader chấp nhận.
 
 ### Xem lại đúng dữ liệu đã ghi
 
 Bấm **Export replay**, giữ nguyên ZIP, giải nén vào thư mục mới rồi mở **Explore recordings** (`/#replay`). Mở Replay files, nhập nguyên thư mục đã giải nén và kiểm run/horizon. Kéo cursor từng tick; thay camera và VI/JA/EN. Trang này được chọn trước runtime client và không được gửi`/lab`/EventSource/WebSocket. Các kiểm từ chối file thiếu/sai/hash hỏng, keyboard/reduced-motion/2D, viewport390/1024/1440 và axe được ghi riêng trong production replay.
 
-Replay trong tab Report chỉ có dữ liệu report. Khi report không ghi world pose chính xác, UI hiện`WORLD_NOT_RECORDED_IN_REPORT`; không dùng pose live hoặc suy diễn vật lý để lấp chỗ thiếu. Package replay mới có world/physics samples đã hash. ZIP dài đo tớiH4515/prefixCovered:true/streamFinalized:false, khác view pausedH4520; không kéo horizon để ép khớp. Fault/KPI cuối không trở thành số đo ở cursor trước đó.
+Replay trong tab Report chỉ có dữ liệu report. Thiếu world pose đúng tick thì hiện `WORLD_NOT_RECORDED_IN_REPORT`; không dùng pose live hay suy diễn vật lý để lấp chỗ thiếu. Package mới giữ nguyên world/physics samples đã hash, metadata prefix/finalization và horizon; view paused/stable/export của capture hiện tại là H3454. Fault/KPI cuối không thành số đo ở cursor trước đó.
 
 Có thể chỉ phục vụ production UI để xem bản ghi, không mở runtime:
 
