@@ -85,3 +85,55 @@ Software checks do not close these separate gates:
 | Hardware/venue | Measured calibration, native sensor behavior, physical stop/custody and device/venue acceptance evidence. |
 
 The renderer benchmark uses 2 AMRs, one arm and six tables for at least 60 seconds, with declared desktop 33 ms and emulated tablet 2D 50 ms p95 frame targets. It measures actual renderers with synthetic visual telemetry. It does not measure runtime throughput or physical robot behavior.
+
+## Simulation engines compared (added 2026-11-14)
+
+Added after the 2026-11-14 hand smoke of every local simulation and of `MJ-BV01` on Cloud Run (report: `source/docs/implementation/smoke-local-cloud-2026-11-14.md`). It describes what each backend models, not what is accepted: every dynamics value is `not_calibrated`, no gate changed state, and `config/simulation-compatibility.json` is untouched. "Iced milk coffee" is a recipe/scenario, not an engine; each set below runs its own version of it.
+
+### Backend sets (`GET /lab/v2/health` of the pinned runtime)
+
+A run uses **one** set. No set contains another: the MuJoCo set does not include IR-SIM, Webots or the mock arm.
+
+| Set | Backends | Scenarios shown in the picker |
+|---|---|---|
+| `mock-default` | `mock_amr`, `mock_coffee`, `mock_arm` | Iced milk coffee (BV01), One delivery order (FD01), Food and coffee on one trip, Two-robot campaign |
+| `engineering-irsim-2d-v1` | `irsim_2d` | IR-SIM 2D delivery FD01, IR-SIM 2D two robots FD07 |
+| `engineering-webots-3d-v1` | `webots_3d` | Webots 3D delivery FD01, Webots 3D two robots FD07 |
+| `engineering-webots-arm-v1` | `mock_amr`, `webots_arm`, `mock_coffee` | Webots coffee with a 3D arm (WB-BV01) |
+| `engineering-mujoco-arm-v1` | `mock_amr`, `mujoco_arm`, `mock_coffee` | MuJoCo coffee with the xArm 6 (MJ-BV01) |
+
+### What each one models
+
+| | Mock (iced milk coffee) | IR-SIM 2D | Webots 3D | MuJoCo (xArm 6) |
+|---|---|---|---|---|
+| Runs the coffee scenario | yes (BV01) | **no**: delivery FD01/FD07 only | yes, arm only (WB-BV01); also delivery FD01/FD07 | yes (MJ-BV01) |
+| Arm | mock: scripted program, illustrative PUMA kinematics, capsule geometry, no physics | none | PUMA560 drawn with cylinders, assumed masses | UFACTORY xArm 6 + Gripper G2, manufacturer meshes, limits and nominal masses |
+| Grasp | a state change | none | an event, no contact | contact and friction: the cup is a body, a slip drops it |
+| AMR | mock kinematic model | 2D kinematic engine, 2D LiDAR | rigid-body 3D (mass, inertia, friction, casters), pose with height/roll/pitch | `mock_amr` |
+| Coffee machine | `mock_coffee` / `mock_process` | n/a | `mock_coffee` (arm set) | `mock_coffee` |
+| Liquid | not modelled; drink mass is a number | n/a | not modelled | not modelled; drink mass is an assumed number |
+| Distinguishing evidence | journal, custody, reconciliation | route, zone, 2D avoidance | 3D plant, 3D LiDAR scan | ARM03 collision check (`pass`), tracking error per joint, contact set |
+| Needs outside the Lab | nothing | portable Python worker (`.venv-irsim`, `.venv-linkforge`) | Webots R2025a installed on the host (not in the offline package) | portable Python worker (`.venv-mujoco`) |
+
+Smoke results on 2026-11-14 (all completed, hand-run in Chrome unless stated): mock coffee 2 served in 97.8 s, MuJoCo 2 served in 96.2 s (also on Cloud Run), Webots arm 2 served in 99.0 s, IR-SIM FD01 1 served in 61.9 s, Webots FD01 1 served in 103.0 s. The FD01 times differ by engine, but the cause was not isolated (robot design and parameters differ too). Coffee times across engines are close; that is not evidence about engine accuracy.
+
+### Where it runs
+
+| Backend | Local | Cloud Run (`mekoniq-lab-runtime`, source `4f893ac`) |
+|---|---|---|
+| Mock | yes (`pnpm lab:mock`) | installed (health), not run during the smoke |
+| MuJoCo `mujoco_arm` | yes (`pnpm lab:mujoco`) | **yes**, `MJ-BV01` ran to completion; one MuJoCo run at a time |
+| IR-SIM, LinkForge | yes (`pnpm lab:irsim`) | no: not in the image |
+| Webots 3D, Webots arm | yes (`pnpm lab:webots`, Webots installed) | no: not in the image |
+
+### The Webots window and what the browser shows
+
+Webots is a separate application the runtime starts as the physics engine. macOS has no true headless mode, so its window opens, but the worker passes `--batch --no-rendering --mode=fast` (`source/robotics/simulation-3d/webots_worker/engine.py`, commit `bb16724`), so the window stays black while the simulation runs; lidar scans and supervisor read-backs measured equal to a rendered start. `MEKONIQ_WEBOTS_WATCH=1` (development) keeps Webots rendered in real time; it has not been exercised on this host yet.
+
+The 3D view in the browser is the Lab's own twin (three.js) drawn from the poses the engine reports each tick (`pose3d`: height, roll, pitch). Every backend shares it, so an IR-SIM run and a Webots run look alike; the difference is in the engine and in the report (engine id, version, parameters), not in the picture.
+
+### Current limits when reusing the xArm model
+
+- Webots: the world compiler rejects mesh geometry (`MESH_UNSUPPORTED`, `webots_worker/compile.py`). The xArm fixture is STL meshes plus MuJoCo-specific actuator gains, so using it in Webots needs mesh support and re-tuning; none of that exists.
+- Mock: the mock arm accepts an arm model and program set (`createMockCoffeePorts` `options`), but the Lab picks the xArm meshes only for the `mujoco_arm` provider (`armModelFor`), so a mock run draws the reference arm.
+- AMR and coffee machine in the MuJoCo set stay mocks. A MuJoCo AMR is the planned R2b scope of the R2a spec; brewing, ice and milk remain process models, and liquid is out of scope.
