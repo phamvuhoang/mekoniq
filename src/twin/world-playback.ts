@@ -10,8 +10,9 @@ export class WorldPlayback {
  private samples:{sim:bigint;wall:number;poses:TwinPoses}[]=[];private identity='';private received=-Infinity;private sim=-1n;
  feed(identity:string,simNs:string,receivedMs:number,poses:TwinPoses):void{
   const key=identity+JSON.stringify([Object.keys(poses.arms).sort(),Object.keys(poses.bodies).sort(),Object.keys(poses.cups??{}).sort()]);
-  const sim=BigInt(simNs);if(key===this.identity&&(sim<=this.sim||receivedMs<this.received))return;
-  if(key!==this.identity||receivedMs-this.received>500){this.clear();this.identity=key;}
+  const sim=BigInt(simNs);if(key===this.identity){if(sim===this.sim||receivedMs<this.received)return;if(sim<this.sim){this.clear();return;}}
+  // a revision is not part of the identity: a sim-time gap over 1 s or a receipt gap over 500 ms starts a new buffer
+  if(key!==this.identity||receivedMs-this.received>500||sim-this.sim>1000000000n){this.clear();this.identity=key;}
   this.sim=sim;this.received=receivedMs;
   if(this.samples.at(-1)?.wall===receivedMs)this.samples.pop();
   this.samples.push({sim,wall:receivedMs,poses:structuredClone(poses)});if(this.samples.length>32)this.samples.shift();

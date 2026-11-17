@@ -15,6 +15,8 @@ test('alternating one/two committed ticks per poll never stalls a continuously m
  for(let wall=0;wall<=2000;wall+=10){if(wall%40===0){tick+=wall%80===0?1:2;p.feed('same-revision',String(tick*20000000),wall,poses(tick));}const x=p.at(wall)!.bodies.amr!.positionM[0];if(wall>200)expect(x).toBeGreaterThan(previous);previous=x;}
 });
 
-test('unchanged identity rejects older source or receipt time without extending freshness',()=>{
- const p=new WorldPlayback();p.feed('a','100000000',100,poses(1));p.feed('a','80000000',700,poses(9));expect(p.at(701)).toBeNull();p.feed('a','120000000',90,poses(9));expect(p.at(200)!.bodies.amr!.positionM[0]).toBe(1);
+test('unchanged identity rejects an older receipt time; sim time going backwards or jumping over 1 s clears',()=>{
+ const p=new WorldPlayback();p.feed('a','100000000',100,poses(1));p.feed('a','120000000',90,poses(9));expect(p.at(200)!.bodies.amr!.positionM[0]).toBe(1);
+ p.feed('a','80000000',150,poses(9));expect(p.at(151)).toBeNull();
+ const q=new WorldPlayback();q.feed('a','0',0,poses(0));q.feed('a','1200000000',100,poses(5));expect(q.at(200)!.bodies.amr!.positionM[0]).toBe(5);
 });

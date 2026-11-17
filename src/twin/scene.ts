@@ -20,7 +20,7 @@ export interface TwinFrame {world?:WorldDrawing;extent?:{minM:number[];maxM:numb
  payloadBundle?:PayloadBundle|null;navigation?:NavigationSceneV1|null;scans?:{scans:ScanSample[]};
  /** Replay: entities with recorded samples but none drawn at the cursor (before their first one, or in a recorded gap); drawn as without telemetry. */unrecorded?:string[]}
 export interface ViewState {view:'2d'|'3d';layers:Layers;selected:string|null}
-export interface SceneEntity {cupGeometry?:{radiusM:number;heightM:number};id:string;kind:string;name:string;x:number;y:number;/** AMR only, from a 3D plant: base height, roll and pitch */pose3d?:{z:number;rollRad:number;pitchRad:number};yawRad?:number;source:'observed'|'modeled'|'derived'|'unknown';status?:string;
+export interface SceneEntity {cupGeometry?:{radiusM:number;heightM:number};id:string;kind:string;name:string;x:number;y:number;/** AMR only, from a 3D plant: base height, roll and pitch */pose3d?:{z:number;rollRad:number;pitchRad:number};yawRad?:number;source:'observed'|'modeled'|'derived'|'unknown';status?:string;/** world frame held past its freshness while the run is running: the last committed pose, not a live one */stale?:true;
  /** Cup only: its pose in the map as the MuJoCo plant reports it (drawn there instead of at its custodian) */payload?:PayloadState;plant?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}
 /** Plant cup samples older than the plant's newest sample by more than this (sim time) have stopped: the cup left the cell and is drawn by custody again. */
 const PLANT_CUP_STOPPED_NS=1e9;

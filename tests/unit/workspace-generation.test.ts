@@ -113,7 +113,8 @@ test('active cell uses current read-only observations; full report materializes 
 test('cell retains one matched Source view/world horizon through a later action; no telemetry joins that pair',async()=>{
  const {w,h}=setup(),internal=w as unknown as {world:unknown;worldView:RunView;worldReceived:number;frame():import('../../src/twin/scene').TwinFrame;applyView(v:RunView):void};const {knownWorldDrawing}=await import('../../src/twin/cell'),scene=(await import('../../public/replays/coffee-delivery/bundle/lab-world-scene.json')).default;
  h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.tick=7;h.view!.simTimeNs='140000000';internal.worldView=structuredClone(h.view!);internal.worldReceived=performance.now();internal.world={...knownWorldDrawing(scene as unknown as import('../../src/shared/navigation2d').LabWorldSceneV1),sourceRevision:h.view!.run.runRevision,record:{snapshot:{runId:h.view!.run.id,tick:7,simTimeNs:'140000000',robots:[],arms:[],props:[]},command:null,interactions:[]}};
- internal.applyView({...h.view!,tick:8,simTimeNs:'160000000',run:{...h.view!.run,runRevision:99}});const frame=internal.frame();expect(frame.view!.tick).toBe(7);expect(frame.world!.record.snapshot.tick).toBe(7);expect(h.view!.tick).toBe(8);internal.worldReceived-=1000;expect(internal.frame().world).toBeUndefined();expect(internal.frame().view!.tick).toBe(8);
+ internal.applyView({...h.view!,tick:8,simTimeNs:'160000000',run:{...h.view!.run,runRevision:99}});const frame=internal.frame();expect(frame.view!.tick).toBe(7);expect(frame.world!.record.snapshot.tick).toBe(7);expect(h.view!.tick).toBe(8);internal.worldReceived-=1000;expect(internal.frame().world!.quality).toBe('stale');expect(internal.frame().view!.tick).toBe(7);
+ internal.applyView({...h.view!,run:{...h.view!.run,status:'paused',runRevision:100}});expect(internal.frame().world).toBeUndefined();expect(internal.frame().view!.tick).toBe(8);
 });
 
 test('explicit new cell trial preserves and retires the previous paused run before new-world admission',async()=>{
@@ -191,4 +192,40 @@ for(const code of ['REVISION_CONFLICT','NETWORK_ERROR'])test(`cell priority Paus
  internal.rt.action=async(v,kind,_payload,id)=>{calls.push({kind,revision:v.run.runRevision,id});if(kind==='step'){started.resolve();return held.promise;}if(calls.filter(c=>c.kind==='pause').length===1)throw new TwinRuntimeError(code,[],code==='REVISION_CONFLICT'?409:0);return {...before,run:{...before.run,status:'paused',runRevision:13}};};
  w.click('twin-play');await started.promise;w.click('twin-pause');await settle();held.resolve({...before,run:{...before.run,runRevision:12}});await vi.waitFor(()=>expect(h.busy).toBe(false));
  const pauses=calls.filter(c=>c.kind==='pause');expect(pauses.map(c=>c.revision)).toEqual(code==='REVISION_CONFLICT'?[11,12]:[11]);if(pauses.length===2)expect(pauses[1]!.id).not.toBe(pauses[0]!.id);expect(h.view!.run.status).toBe(code==='REVISION_CONFLICT'?'paused':'running');
+});
+
+// Task 3.5: the display loop holds the last committed cell frame and keeps interpolation across revisions.
+type Loop=CellBoundary&{ticker:ReturnType<typeof setInterval>|undefined;worldRun:string;worldDrawing:unknown;worldReason:string;v3d:unknown;worldPlayback:import('../../src/twin/world-playback').WorldPlayback};
+async function cellLoop(status:RunView['run']['status']='running'){
+ const b=await cellBoundary(status),internal=b.internal as Loop,world=internal.world!;internal.worldRun=b.h.view!.run.id;internal.worldDrawing=world;internal.left=false;
+ const observe=(tick:number,revision:number,o:{boot?:string;status?:RunView['run']['status']}={})=>{const simTimeNs=String(tick*20000000),view={...structuredClone(b.h.view!),tick,simTimeNs,run:{...b.h.view!.run,runRevision:revision,status:o.status??b.h.view!.run.status}};
+  internal.rt.worldDisplay=async()=>({version:1,runId:view.run.id,tick,revision,simTimeNs,availability:'valid',reason:null,control:null,controlReason:'NOT_RECORDED_AT_TICK',view,snapshot:{...world.record.snapshot,bootId:o.boot??'one-boot',tick,simTimeNs}});};
+ internal.rt.worldDisplayScene=async()=>({runId:b.h.view!.run.id,availability:'available',reason:null,scene:world.scene});observe(7,11);return {...b,internal,observe};
+}
+test('an unchanged world observation renders nothing, and a terminal run stops the ticker after its last poll',async()=>{
+ const {internal,renders,observe}=await cellLoop('running');await internal.refreshWorld();const n=renders();await internal.refreshWorld();await internal.refreshWorld();expect(renders()).toBe(n);
+ observe(8,12);await internal.refreshWorld();expect(renders()).toBeGreaterThan(n);
+ internal.ticker=setInterval(()=>{},1000);observe(9,13,{status:'completed'});await internal.refreshWorld();expect(internal.ticker).not.toBeUndefined();await internal.refreshWorld();expect(internal.ticker).toBeUndefined();
+});
+test('600 ms without a new tick while running keeps the last snapshot, marked stale, with interpolation off',async()=>{
+ const {w,internal}=await cellLoop('running'),{sceneEntities}=await import('../../src/twin/scene');const live=sceneEntities(internal.frame());expect(live.length).toBeGreaterThan(0);expect(live.some(e=>e.stale)).toBe(false);
+ internal.worldPlayback.feed('id','140000000',performance.now()-600,{arms:{},bodies:{},cups:{}});internal.worldReceived=performance.now()-600;
+ const f=internal.frame(),held=sceneEntities(f);expect(f.world?.quality).toBe('stale');expect(held.map(e=>e.id)).toEqual(live.map(e=>e.id));expect(held.every(e=>e.stale===true)).toBe(true);expect(internal.worldPlayback.at(performance.now())).toBeNull();
+ expect(w.html()).toContain('data-testid="world-stale"');
+});
+test('a new revision of the same run, boot and scene keeps both playbacks; a boot change clears them',async()=>{
+ const {h,internal,observe}=await cellLoop('running'),poses={arms:{},bodies:{amr:{positionM:[0,0,0] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}},cups:{}};internal.v3d={posesOf:()=>poses};
+ observe(8,12);await internal.refreshWorld();const live=vi.spyOn(internal.playback,'clear'),world=vi.spyOn(internal.worldPlayback,'clear');observe(9,13);await internal.refreshWorld();internal.applyView({...h.view!,run:{...h.view!.run,runRevision:14}});
+ expect(live).not.toHaveBeenCalled();expect(world).not.toHaveBeenCalled();expect(internal.worldPlayback.at(performance.now())).not.toBeNull();
+ observe(10,15,{boot:'two-boot'});await internal.refreshWorld();expect(world).toHaveBeenCalled();expect(live).toHaveBeenCalled();expect(internal.worldReason).toBe('WORLD_BOOT_CHANGED_REQUIRES_NEW_RUN');
+});
+test('one failed scene fetch is retried on the next poll, never reported as a scene identity mismatch',async()=>{
+ const {internal}=await cellLoop('running'),scene=internal.rt.worldDisplayScene!;let calls=0;internal.worldRun='';internal.rt.worldDisplayScene=async(...a)=>{if(++calls===1)throw new TypeError('Failed to fetch');return scene(...a);};
+ await internal.refreshWorld();expect(internal.world).toBeNull();await internal.refreshWorld();expect(calls).toBe(2);expect(internal.worldReason).not.toBe('WORLD_SCENE_IDENTITY_MISMATCH');expect(internal.world).not.toBeNull();
+});
+test('play awaits and clears a priority Pause even when the paced loop throws',async()=>{
+ const {w,h,internal}=await cellBoundary('running');h.health={...h.health!,features:{...h.health!.features,pacedStep:true}};
+ const held=deferred<RunView>(),started=deferred<void>();internal.rt.action=async(v,kind)=>{if(kind==='step'){started.resolve();return held.promise;}return {...v,run:{...v.run,status:'paused',runRevision:12}};};
+ w.click('twin-play');await started.promise;w.click('twin-pause');await settle();held.resolve(Promise.reject(new TwinRuntimeError('STEP_REFUSED',[],409)) as never);await vi.waitFor(()=>expect(h.busy).toBe(false));
+ expect((internal as unknown as {priorityPause:unknown}).priorityPause).toBeNull();
 });

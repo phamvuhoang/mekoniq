@@ -14,6 +14,7 @@ export function mapExtent(f:TwinFrame):{minM:[number,number];maxM:[number,number
 }
 export function worldEntities(w:WorldDrawing):SceneEntity[]{
  const source=w.quality==='stale'?'unknown' as const:'observed' as const,s=w.record.snapshot,arm=w.scene.armCell.arm,b=arm.baseInMap.position;
+ if(w.quality==='stale')return worldEntities({...w,quality:'valid'}).map(e=>({...e,source,stale:true}));
  return [...s.robots.map(r=>({id:r.robotId,kind:'amr',name:r.robotId,x:r.poseDriveMap[0]!,y:r.poseDriveMap[1]!,yawRad:r.poseDriveMap[2]!,pose3d:r.pose3d?{z:r.pose3d.z,rollRad:r.pose3d.roll,pitchRad:r.pose3d.pitch}:undefined,source})),
  {id:arm.armId,kind:'arm',name:'xArm 6 · Gripper G2',x:b[0]!,y:b[1]!,source},
  ...(s.props??[]).map(p=>({id:p.propId,kind:'cup',name:p.propId,x:p.position[0]!,y:p.position[1]!,source,cupGeometry:w.scene.armCell.props.find(d=>d.propId===p.propId),plant:{positionM:p.position as [number,number,number],quaternionXyzw:p.quaternionXyzw as [number,number,number,number]}}))];
