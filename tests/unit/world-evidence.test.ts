@@ -1,5 +1,6 @@
 import {afterEach,expect,test,vi} from 'vitest';
 import * as fs from 'node:fs/promises';
+import * as zlib from 'node:zlib';
 import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
@@ -9,6 +10,7 @@ import * as durable from '../../packages/lab-runtime/src/v2/navigation2d/evidenc
 import {tick} from '../support/physics';
 import type {Sim3DSnapshotV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,unlink:vi.fn(actual.unlink)};});
+vi.mock('node:zlib',async importOriginal=>{const actual=await importOriginal<typeof import('node:zlib')>();return {...actual,gzip:vi.fn(actual.gzip),gzipSync:vi.fn(actual.gzipSync)};});
 const dirs:string[]=[];afterEach(async()=>{vi.restoreAllMocks();vi.mocked(fs.unlink).mockImplementation((await vi.importActual<typeof fs>('node:fs/promises')).unlink);for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
 async function setup(extra:{maxBytes?:number;chunkTicks?:number}={}){const f=await readWorldFixture(resolve('robotics/simulation-mujoco')),admission=prepareWorldAdmission(f.scene,f.files),directory=await mkdtemp(join(tmpdir(),'world-evidence-'));dirs.push(directory);
  const snapshot=(n:number,active=false):Sim3DSnapshotV1=>{const p=tick(n);p.loads=active?[{...p.loads[0]!,propId:'cup-1',supportId:f.scene.supportMap.mobileSupportId}]:[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';return {schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(n+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'rig',bootId:'boot',seq:String(n+1),tick:n,simTimeNs:String(n*20_000_000),sceneDigest:f.scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[0,0,0],bodyVelocity:[0,0],collisionIds:[],scans:[],pose3d:{z:0,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:f.scene.armCell.arm.homeRad,velocitiesRadS:Array(6).fill(0),collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:active?[{propId:'cup-1',position:p.loads[0]!.poseMap.positionM,quaternionXyzw:p.loads[0]!.poseMap.quaternionXyzw,restingOn:null}]:[],physics:p};};
@@ -93,3 +95,11 @@ test('full world arm report reconstructs all committed samples including stop ti
  const critical=MockArmPlant.initial('arm-1');critical.tracking={gen:q,settled:0,followCount:0,samples:1,peakRad:Array(6).fill(0),sumSq:Array(6).fill(0),trace:[],props:[]};critical.stop={latched:true,reconcileRequired:true,reason:'TEST_STOP',events:[{tick:2,stage:'observed',reason:'TEST_STOP',provenance:'modelled'}]};const before=structuredClone(critical);
  const capture=await h.rec.capture(prefixAuthority(h,2)),r=await materializeWorldArmReport(capture,h.admission,critical,{journal:[],businessEpochMs:0});expect(critical).toEqual(before);expect(r.state.stop).toEqual(critical.stop);expect(r.state.tracking!.samples).toBe(1);expect(r.state.tracking!.trace.map(s=>s.tick)).toEqual([0,1,2]);expect(r.state.tracking!.props!.map(s=>s.tick)).toEqual([0,1,2]);expect(r.state.tracking!.trace[2]!.actualRad[0]).toBe(q[0]!+2e-7);expect(r.worldTrace).toMatchObject({method:'world-committed-trace-v1',scope:'all_world_ticks',publicCommittedTick:2,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:1});expect(r.worldSweep?.complete).toBe(false);expect(r.worldSweep?.scope).toMatchObject({kind:'source_committed_prefix',publicCommittedTick:2,streamFinalized:false});
 });
+
+test('chunks compress on the zlib threadpool, never gzipSync on the tick path, and stay byte-identical to the default gzip of their rows',async()=>{
+ vi.mocked(zlib.gzip).mockClear();vi.mocked(zlib.gzipSync).mockClear();
+ const h=await setup({chunkTicks:2});await h.rec.append(h.snapshot(0),null);await h.rec.append(h.snapshot(1),idleCommand(1));await h.rec.append(h.snapshot(2),idleCommand(2));await h.rec.finish();
+ const m=JSON.parse(await readFile(join(h.directory,'manifest.json'),'utf8'));expect(m.chunks.length).toBe(2);
+ for(const c of m.chunks)expect((await readFile(join(h.directory,c.path))).equals(zlib.gzipSync(zlib.gunzipSync(await readFile(join(h.directory,c.path)))))).toBe(true);
+ expect(vi.mocked(zlib.gzip).mock.calls.length).toBe(2);expect(vi.mocked(zlib.gzipSync).mock.calls.length).toBe(2); // only the two verification calls above
+ expect((await readWorldEvidence(h.directory,h.admission)).complete).toBe(true);});

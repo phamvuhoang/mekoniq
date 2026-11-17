@@ -4,7 +4,8 @@
 import {createHash,randomBytes} from 'node:crypto';
 import {lstat,mkdir,open,readdir,unlink,type FileHandle} from 'node:fs/promises';
 import {join} from 'node:path';
-import {gzipSync,gunzipSync} from 'node:zlib';
+import {promisify} from 'node:util';
+import {gzip,gunzipSync} from 'node:zlib';
 import type {WorldEvidenceV1,WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import {validateWorldEvidenceShape,validateWorldEvidenceRecordShape,type Sim3DSnapshotV1,type LabWorldSceneV1} from '../navigation2d/contracts';
 import {EVIDENCE_LIMITS,READ_LIMITS,writeDurable} from '../navigation2d/evidence';
@@ -16,6 +17,7 @@ import {validateWorldDisturbance} from './world-disturbance';
 import {hashJson} from '../hash';
 /** The same free-joint pose and matrix pose differ at floating-point roundoff; q and -q are equivalent. No raw values are changed. */
 export const WORLD_POSE_CONSISTENCY_TOLERANCE=1e-10;
+const gzipAsync=promisify(gzip);
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 export interface WorldAdmission {files:ReadonlyMap<string,Uint8Array>;scene:LabWorldSceneV1;physics:PhysicsAdmission;modelCounts:{nbody:number;ngeom:number};digest:string}
 export function prepareWorldAdmission(scene:LabWorldSceneV1,files:ReadonlyMap<string,Uint8Array>):WorldAdmission {
@@ -69,7 +71,8 @@ export async function openWorldRecorder(o:{directory:string;admission:WorldAdmis
  // Append/finish know only their local observation horizon. The Source owner may
  // replace that provisional failure once with its authoritative logical boundary.
  const fail=async(f:WorldFailure,sourceOwned=false)=>{if(!m.terminal||(sourceOwned&&!sourceFailure)){m.terminal=f.reason.slice(0,200)||'WORLD_UNKNOWN';m.gaps=[{...f,reason:m.terminal}];sourceFailure=sourceOwned;}m.complete=false;closed=true;await closeWal().catch(()=>{});await save();};
- const flush=async()=>{if(!lines.length)return;await closeWal();const b=gzipSync(lines.join(''));if(b.length>READ_LIMITS.chunkBytes||m.chunks.length>=READ_LIMITS.chunksPerStream||totalInflated+bytes>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');
+ // Compression runs on the zlib threadpool (same defaults as gzipSync, byte-identical); flush is only called inside serial(), so no append can interleave with the await.
+ const flush=async()=>{if(!lines.length)return;await closeWal();const b=await gzipAsync(lines.join(''));if(b.length>READ_LIMITS.chunkBytes||m.chunks.length>=READ_LIMITS.chunksPerStream||totalInflated+bytes>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');
   const ref={path:`world-${String(m.chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`,sha256:sha(b),bytes:b.length,firstTick:m.lastTick+1,lastTick:previous!.tick};
   const next={...m,chunks:[...m.chunks,ref],lastTick:ref.lastTick,complete:false};await quota(b.length+64+Buffer.byteLength(JSON.stringify(next))+reserve());
   await durable('write.intent',JSON.stringify({lastTick:ref.lastTick}));await durable(ref.path,b);m=next;
