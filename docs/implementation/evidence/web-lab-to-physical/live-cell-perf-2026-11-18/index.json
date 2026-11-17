@@ -1,0 +1,243 @@
+{
+ "version": 1,
+ "accepted": false,
+ "physics": "not_calibrated",
+ "source": "bab707fe22c84176d9435a12b88c85ac9f5944c4",
+ "runtimePin": "Lab 7bd151e chore: pin source runtime bab707f",
+ "note": "Task 3.7. Raw archives live outside Git under evidence-archive/live-cell-perf-2026-11-18/ (Task 2.3 convention); this index carries relative paths, sizes and sha256.",
+ "runs": [
+  {
+   "id": "fail-render-cap",
+   "lab": "7bd151e",
+   "producerExit": 1,
+   "result": "RENDER_SAMPLE_LIMIT x19: in-page cap of 25000 twin-render events exceeded by 19 at the end of the 185 s window (25019 events); no predicate evaluated; physics/UI otherwise completed (sim 184.2 s, served 2). Not a reader failure.",
+   "archive": {
+    "path": "fail-render-cap-bab707f.tar.gz",
+    "bytes": 17597539,
+    "sha256": "e04657a2b292a4369dc0f9e3d9b11013db3fc909f3621ec817b50c153fb8fac6"
+   },
+   "members": [
+    {
+     "path": "build-identity.json",
+     "bytes": 39681,
+     "sha256": "b293019788940658d62b0cbf92c1d76a71d78f899169b8902c74493038580f4c"
+    },
+    {
+     "path": "capture-raw.json",
+     "bytes": 26537339,
+     "sha256": "f48d6348489ad937ed07dfc60f0731d6d9db01f1796427d9c433ae74ce44cbe3"
+    },
+    {
+     "path": "cleanup.json",
+     "bytes": 39,
+     "sha256": "09c2fa28b975b6143610ceec51c063e26eb1a375ee12c00df41e0a3c87a685b4"
+    },
+    {
+     "path": "error.txt",
+     "bytes": 519,
+     "sha256": "250c098393c4c37bff26718a8d7a3b9fe08a23d9331e0dd107114cd6f1defdc7"
+    },
+    {
+     "path": "failure-body.txt",
+     "bytes": 756,
+     "sha256": "7434d5fe48d480765cfcbb7725a0458ecbfb6028a227764b206b850bf57cdd3f"
+    },
+    {
+     "path": "failure.png",
+     "bytes": 150275,
+     "sha256": "554902c57570f69b7b8f1f24da5da80e77f3d1b63291be3a8c68c63ab827bdcd"
+    },
+    {
+     "path": "http-observations.json",
+     "bytes": 3526396,
+     "sha256": "6d43a5e882eec780485561701863f6258d6067c55cba81cdb7d07952d1d3c946"
+    },
+    {
+     "path": "io-diagnostic.json",
+     "bytes": 11546526,
+     "sha256": "86d411350e0e1d665621b9ede4b3b8b87cbf9c1f30a8f79ece6984217a857bc3"
+    },
+    {
+     "path": "live-complete-prefix.zip",
+     "bytes": 17049004,
+     "sha256": "3b587400146cb0cd54f9c4cab3ed75587a748a99b8231855f375ebaf76498814"
+    },
+    {
+     "path": "observer-summary.json",
+     "bytes": 142,
+     "sha256": "27b24c919fd7dc3d0ee6721ec8a3199a6416ce6de8612d3d95d5f4b874bda91c"
+    },
+    {
+     "path": "post-window-source-event-loop.json",
+     "bytes": 4877,
+     "sha256": "798b91d9e46c0344274c8c831ddfc4cf8124c5a8f791edbf8aa629dc6aedd98b"
+    },
+    {
+     "path": "production-active-cell.png",
+     "bytes": 144796,
+     "sha256": "9bb714c7c9444e47585d84d7f4ecfda11774588b53de233b7f199a2393f40e30"
+    },
+    {
+     "path": "production-paused-during-export.png",
+     "bytes": 148886,
+     "sha256": "be02dba03bbd24c82c9514018e8c762f1a61aa1729d40ef0eb9f5c3ca01fc9ba"
+    },
+    {
+     "path": "route-camera-observations.json",
+     "bytes": 4961,
+     "sha256": "bcb64f6bb4f08bb6abb9e3ec863bd36b2660f13668f527baf0dc22a59f96b14c"
+    },
+    {
+     "path": "route-follow-amr.png",
+     "bytes": 175663,
+     "sha256": "f0692ec4e84033610781e126b3effd068c823bdc03d5045f9cc8305e6fb0b9a2"
+    },
+    {
+     "path": "route-overview.png",
+     "bytes": 127137,
+     "sha256": "70228d835cef97240855cc30b875c2d73223faa1ef85e888555d07100f2ca165"
+    },
+    {
+     "path": "route-phase-follow.png",
+     "bytes": 180601,
+     "sha256": "92b45a195967e858c93bb2a8069a2d06415014dca968685baabc8d288eb5653c"
+    },
+    {
+     "path": "runtime-observer.ndjson",
+     "bytes": 12819476,
+     "sha256": "2def9b193b9703f2d3bfe82077e8b0509c7ef7ad2423233150bd520e088a0161"
+    },
+    {
+     "path": "runtime-stderr.log",
+     "bytes": 0,
+     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+     "path": "source-event-loop.json",
+     "bytes": 26300,
+     "sha256": "dbe41361c7ca0d9ed97daf1d9a6f5ff8bd21449e18a707d17b27a608768cf109"
+    }
+   ]
+  },
+  {
+   "id": "pass",
+   "lab": "3fac175",
+   "fixCommit": "3fac175 raise the producer render-sample cap 25000 -> 60000 (producer tooling only; no reader threshold changed)",
+   "producerExit": 0,
+   "readerExit": 0,
+   "targets": {
+    "durationMet": true,
+    "displayMet": true,
+    "workerMet": true,
+    "pauseMet": true
+   },
+   "metrics": {
+    "elapsedMs": 185000.8,
+    "renderIntervalP95Ms": 17.3,
+    "workerP95Ms": 5.13,
+    "lastStepReceiptMs": 72.33,
+    "pauseAckUiMs": 104.26,
+    "fullCellDrawingFrames": 11037,
+    "served": "2",
+    "simTimeNs": "185280000000"
+   },
+   "archive": {
+    "path": "pass-3fac175.tar.gz",
+    "bytes": 20596845,
+    "sha256": "1991ddab634355b6612d5bd2f010b2853feddf2e7402c1ac938caa4b954b75a8"
+   },
+   "members": [
+    {
+     "path": "actual-cell-production.json",
+     "bytes": 32117640,
+     "sha256": "2a871a6ef72fb601a0c3fd4cb1cc8ed7d624886ce4848dbb2424061f7c1c51c0"
+    },
+    {
+     "path": "build-identity.json",
+     "bytes": 39681,
+     "sha256": "2ef7f6b8abe5007eb44e4ac7b96f490e60f8e1f05ca8d229a4268c80908fe98c"
+    },
+    {
+     "path": "capture-raw.json",
+     "bytes": 26536030,
+     "sha256": "50b401590326240e0254ae66ba4d38920ad17f793c07bbc7f5ea757256b10e12"
+    },
+    {
+     "path": "cleanup.json",
+     "bytes": 39,
+     "sha256": "09c2fa28b975b6143610ceec51c063e26eb1a375ee12c00df41e0a3c87a685b4"
+    },
+    {
+     "path": "http-observations.json",
+     "bytes": 3523487,
+     "sha256": "d8c749d5754be516de246bf146f1932f28cac8a2e7791a90a23fc5d8c0e89ada"
+    },
+    {
+     "path": "io-diagnostic.json",
+     "bytes": 11670353,
+     "sha256": "bdc14cf0a21536bf94e42b04d083502a23158ebe5e9b97c0baecfa390ae2c6f7"
+    },
+    {
+     "path": "live-complete-prefix.zip",
+     "bytes": 17095720,
+     "sha256": "31cc1d443054b36c5305f3238ce3f268f3d46a9b55d5a11d93aaaa187b9ea7ea"
+    },
+    {
+     "path": "observer-summary.json",
+     "bytes": 142,
+     "sha256": "8ceff184a9266e13a84d8fccc54505cb48d2d8f46449bebff2a86f74d9609a16"
+    },
+    {
+     "path": "post-window-source-event-loop.json",
+     "bytes": 4155,
+     "sha256": "c214931cf36e08058b704f6b34bc1c0a08630f375a5526514b48574ffae4a629"
+    },
+    {
+     "path": "production-active-cell.png",
+     "bytes": 154636,
+     "sha256": "d0f99b0156a1e5fee1902d18089ff91747e2ef3fac6997e20ecf37256bf302a2"
+    },
+    {
+     "path": "production-paused-during-export.png",
+     "bytes": 157902,
+     "sha256": "943336bb8fd8a947d8edcf4993b5302a0ea36394e5d1d256854386ff90889712"
+    },
+    {
+     "path": "route-camera-observations.json",
+     "bytes": 4961,
+     "sha256": "32afd4650e6ed76dd03b2a2724cab0f352367fcc6bb195319062e4a124223078"
+    },
+    {
+     "path": "route-follow-amr.png",
+     "bytes": 177286,
+     "sha256": "150a2f5123bacb550f1c8d0786eb52a310aa91b37bde56cc24dcfbc6b09a4d2a"
+    },
+    {
+     "path": "route-overview.png",
+     "bytes": 127137,
+     "sha256": "70228d835cef97240855cc30b875c2d73223faa1ef85e888555d07100f2ca165"
+    },
+    {
+     "path": "route-phase-follow.png",
+     "bytes": 180261,
+     "sha256": "023d4fe8e9989ecb2a4c6466b3c60ec9f15c9f3988d7d879ee4d0af2d24ca335"
+    },
+    {
+     "path": "runtime-observer.ndjson",
+     "bytes": 12892019,
+     "sha256": "8d8ff4528d0f0f78d2cbcb2d338d9ca2148d07b31c47d9b20c27e9a09727291c"
+    },
+    {
+     "path": "runtime-stderr.log",
+     "bytes": 0,
+     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+     "path": "source-event-loop.json",
+     "bytes": 26441,
+     "sha256": "40f22808c1cf238603428528681626c47d85131180a2f62679bd94a665839306"
+    }
+   ]
+  }
+ ]
+}
