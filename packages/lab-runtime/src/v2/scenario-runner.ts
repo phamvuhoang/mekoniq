@@ -255,7 +255,9 @@ class Run implements ScenarioRun {
   for(const r of this.cp.plant.robots){const actual=s.robots.find(x=>x.robotId===r.id);if(!actual)throw new Error('WORLD_ROBOT_MISSING');const [x,y,yawRad]=actual.poseDriveMap;r.distanceM+=this.cp.tick===0?0:Math.hypot(x!-r.pose.x,y!-r.pose.y);r.pose={x:x!,y:y!,yawRad:yawRad!};r.bootId=s.bootId;r.seq=Number(s.seq);r.moving=Math.abs(actual.bodyVelocity[0]!)>.01||Math.abs(actual.bodyVelocity[1]!)>.02;r.stale=false;r.hold=null;}
   this.cp.plant.contacts+=s.robots.reduce((n,r)=>n+r.collisionIds.length,0);this.cp.plant.maxConcurrentMovers=Math.max(this.cp.plant.maxConcurrentMovers,this.cp.plant.robots.filter(r=>r.moving).length);
  }
- persist(){return writeCheckpoint(this.dir,this.cp);}
+ /** Logical commit (action receipt, reclaim, run creation): fsynced before it returns. Within a world tick only the
+  * evidence WAL append is durable; the stage checkpoints are plain atomic replaces that never run ahead of it. */
+ persist(){return writeCheckpoint(this.dir,this.cp,{sync:'file'});}
  record(){if(this.recoveryOnly)return;const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;this.telemetry.record(projectSamples({runId:c.runId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),nowMs:this.clock.nowMs(),robots:c.plant.robots,...c.world?.snapshot?{world:c.world.snapshot,worldStale:!!c.world.terminal}:{},...c.coffee?{coffee:c.coffee}:{}},String(process.hrtime.bigint())));}
  pulse(){const c=this.cp;return {tick:c.tick,paused:c.paused,runRevision:c.revision};}
  journal(){return this.queue.then(async()=>{if(this.closed)throw new Error('RUN_CLOSED');return (await this.source.journal()).map(entry=>({sequence:entry.sequence,at:entry.recordedAt,events:(entry.payload.events as unknown as DomainEvent[]).map(e=>({type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject}))}));});}
@@ -285,7 +287,7 @@ class Run implements ScenarioRun {
    if(limits.length)payload={...payload,speedLimitMps:Math.min(...limits,typeof payload.speedLimitMps==='number'?payload.speedLimitMps:Infinity)};
   }
   const c=this.cp,ordinal=++c.ordinal,operationId=`op-${ordinal}`;
-  c.pendingOps.push({ordinal,operationId,type,payloadHash:hashPayload(payload)});await this.persist();
+  c.pendingOps.push({ordinal,operationId,type,payloadHash:hashPayload(payload)});await writeCheckpoint(this.dir,c);
   const result=await this.source.submit(type,payload,operationId,robotId);
   if(result.status==='accepted'&&c.crashArmed&&type==='Robot.Observe')throw new SimulatedCrash();
   if(result.status==='accepted'&&Array.isArray(result.value.effects)&&result.value.effects.length)c.dispatchDue=true;
@@ -384,12 +386,12 @@ class Run implements ScenarioRun {
   if(c.dispatchDue)await this.dispatch();
   if(this.world){
    const w=this.world,previous=structuredClone(c.coffee),targetTick=c.tick+1;
-   c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c,{sync:true});
+   c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c);
    try{
     const snapshot=await stepWorldOnce({...w.world,
-     step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:true});const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
+     step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c);const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
      commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
-    },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c,{sync:true});});
+    },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c);});
     this.clock.advance(1);c.tick=this.clock.tick;const committedCommand=c.world!.pending!.command!;c.world!.committedDisplay={command:structuredClone({targetTick:committedCommand.targetTick,worldControl:committedCommand.worldControl,velocities:committedCommand.velocities})};c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;
    }catch(e){
     this.observationTick=undefined;this.observations=[];

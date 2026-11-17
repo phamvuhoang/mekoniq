@@ -74,6 +74,13 @@ test('captured chunk refs and durable tail stay consistent across later flush/fi
  const now=await materializeWorldPrefix(await h.rec.capture(prefixAuthority(h,3)),h.admission);expect(now.records.map(r=>r.snapshot.tick)).toEqual([0,1,2,3]);expect(now.publication.streamFinalized).toBe(true);
  for(const [n,b] of before)expect(await readFile(join(h.directory,n))).toEqual(b);expect(await fs.readdir(h.directory)).toEqual([...before.keys()]);
 });
+test('quota byte counter follows created, overwritten and removed files exactly like a fresh readdir+lstat',async()=>{
+ const {physicsDirectoryBytes}=await import('../../packages/lab-runtime/src/v2/simulation3d/physics-evidence'),h=await setup({chunkTicks:2}),same=async()=>expect(h.rec.storedBytes()).toBe(await physicsDirectoryBytes(h.directory));
+ await same();await h.rec.append(h.snapshot(0),null);await same();
+ await h.rec.append(h.snapshot(1,true),command);expect(h.rec.manifest().chunks).toHaveLength(1);await same(); // intent created+removed, chunk created, manifest and WAL overwritten
+ await h.rec.append(h.snapshot(2,true),idleCommand(2));await same();await h.rec.finish();await same();
+ await writeFile(join(h.directory,'orphan'),Buffer.alloc(10));expect(h.rec.storedBytes()).toBe(await physicsDirectoryBytes(h.directory)-10); // a foreign file is seen only by the next rescan
+});
 for(const mode of ['corrupt-tail','oversize-tail','write-intent','missing-chunk'] as const)test(`Source prefix capture ${mode} never claims covered history`,async()=>{
  const h=await setup({chunkTicks:2}),{materializeWorldPrefix}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');await h.rec.append(h.snapshot(0),null);await h.rec.append(h.snapshot(1,true),command);
  if(mode==='corrupt-tail')await writeFile(join(h.directory,'pending.ndjson'),'invalid\n');if(mode==='oversize-tail')await writeFile(join(h.directory,'pending.ndjson'),Buffer.alloc(13*1024*1024));if(mode==='write-intent')await writeFile(join(h.directory,'write.intent'),'{}');if(mode==='missing-chunk')await fs.unlink(join(h.directory,h.rec.manifest().chunks[0]!.path));

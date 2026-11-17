@@ -18,29 +18,67 @@ import {openWorldRecorder,prepareWorldAdmission,readWorldEvidence} from '../../p
 import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
 import {tick as physicsTick} from '../support/physics';
 import {act,cleanupRuns,runDirectory} from '../support/lab-v2';
-vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,readFile:vi.fn(actual.readFile)};});
-afterEach(async()=>{vi.restoreAllMocks();vi.mocked(fs.readFile).mockImplementation((await vi.importActual<typeof fs>('node:fs/promises')).readFile);await cleanupRuns();});
+vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,readFile:vi.fn(actual.readFile),open:vi.fn(actual.open),rename:vi.fn(actual.rename)};});
+afterEach(async()=>{vi.restoreAllMocks();const actual=await vi.importActual<typeof fs>('node:fs/promises');vi.mocked(fs.readFile).mockImplementation(actual.readFile);vi.mocked(fs.open).mockImplementation(actual.open);vi.mocked(fs.rename).mockImplementation(actual.rename);await cleanupRuns();});
 const fx=resolve('robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1');
-async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-write'|'lost'|'coffee-commit'|'flush-chunk'|'flush-cleanup',reporting=false){
+async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-write'|'lost'|'coffee-commit'|'flush-chunk'|'flush-cleanup'|'actual',reporting=false){
  const project=JSON.parse(await readFile(fx+'/project.json','utf8'));
  const manifest:RunManifestInput={project,scenarioId:'MJ-BV01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'test-world',sourceCommit:'test'};
  const catalog:CapabilityCatalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b),sets:{...defaultCatalog.sets,'test-world':{...defaultCatalog.sets['engineering-mujoco-arm-v1']!,backends:['mujoco_3d','mujoco_arm','mock_coffee'],providers:{amr:'mujoco_3d',arm:'mujoco_arm',coffee:'mock_coffee'},execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1],composition:'single_world'}}}};
  const scene=JSON.parse(await readFile(fx+'/lab-world-scene.json','utf8'));
  const snap=(tick:number):Sim3DSnapshotV1=>({schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(tick+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'assigned',bootId:'engine-boot',seq:String(tick+1),tick,simTimeNs:String(tick*20_000_000),sceneDigest:scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[.35+tick*.001,.48591366218667575,Math.PI/2],bodyVelocity:[.05,0],collisionIds:[],scans:[],pose3d:{z:.09,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:scene.armCell.arm.homeRad,velocitiesRadS:[0,0,0,0,0,0],collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:[]});
  const fixture=await readWorldFixture(resolve('robotics/simulation-mujoco')),admission=prepareWorldAdmission(fixture.scene,fixture.files);
- const directory=await runDirectory(),evidenceDirectory=join(directory,'actual-world-evidence'),calls:string[]=[];let opens=0,committed=snap(0),ctx:WorldFactoryInput['context'];
+ const directory=await runDirectory(),evidenceDirectory=join(directory,'actual-world-evidence'),calls:string[]=[],hooks:{afterAppend?:(tick:number)=>Promise<void>}={};let opens=0,committed=snap(0),ctx:WorldFactoryInput['context'];
  const factory:WorldPortsFactory=async input=>{opens++;ctx=input.context;committed={...snap(0),runId:input.runId};
   const adapter={observe:()=>()=>{},describe:async()=>({id:'amr-1'}),requestStop:async()=>({acknowledged:true,physicalStopConfirmed:false}),reconcile:async()=>({status:'unknown'})} as unknown as RobotAdapter;
-  const rec=failure?.startsWith('flush-')?await openWorldRecorder({directory:evidenceDirectory,admission,runId:input.runId,bootId:'engine-boot',chunkTicks:2}):undefined;
+  const rec=failure==='actual'||failure?.startsWith('flush-')?await openWorldRecorder({directory:evidenceDirectory,admission,runId:input.runId,bootId:'engine-boot',chunkTicks:failure==='actual'?250:2}):undefined;
   const coffee=createMockCoffeePorts(input.state,input.context,input.newBootId,reporting?{tracking:{reachTolRad:.01,settleTicks:1,followTolRad:1,followTicks:1}}:{}),advance=coffee.advance;
   if(reporting){const baseReport=coffee.report;coffee.report=()=>({...baseReport(),armPlant:{engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',tracking:{samples:0,peakRad:Array(6).fill(0),rmsRad:Array(6).fill(0)}},armCell:{waypoints:{digest:'nonnative-report-fixture',table:[]},allowedContacts:[],releaseTimeoutTicks:25,notes:['Nonnative publication seam only']}});coffee.armReportState=async tick=>{const state=structuredClone(input.state.arm);state.tracking!.trace=Array.from({length:tick+1},(_,n)=>({tick:n,actualRad:[...state.q],commandedRad:[...state.q]}));state.tracking!.props=Array.from({length:tick+1},(_,n)=>({tick:n,props:[]}));return {async materialize(){return {state,worldTrace:{method:'world-committed-trace-v1',scope:'all_world_ticks',publicCommittedTick:tick,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:0,firstTick:0,lastTick:tick,samples:tick+1,reasonCodes:[]},worldSweep:unavailableWorldSweep(tick,['NONNATIVE_PUBLICATION_FIXTURE'])};}};};}
   if(failure==='coffee-commit')coffee.advance=async()=>{await advance();throw Error('COFFEE_COMMIT_FAILED');};return {navigation:{mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map((p:{id:string;x:number;y:number})=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:Math.PI/2}]))},robots:new Map([['amr-1',adapter]]),coffee,displayScene:()=>structuredClone(scene),snapshot:()=>committed,
-   evidence:rec?{async append(s){const p=physicsTick(s.tick);p.loads=[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';await rec.append({...s,physics:p},s.tick?{targetTick:s.tick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]}:null);},fail:rec.fail,finish:rec.finish}:{async append(s){calls.push(`append:${s.tick}`);if(failure==='append'&&s.tick>0)throw Error('DISK_FAILED');},async fail(e){calls.push(`fail:${e.lastCommittedTick}:${e.targetTick}:${e.ackTick}`);},async finish(){calls.push('finish');}},
+   evidence:rec?{async append(s){const p=physicsTick(s.tick);p.loads=[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';await rec.append({...s,physics:p},s.tick?{targetTick:s.tick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]}:null);await hooks.afterAppend?.(s.tick);},fail:rec.fail,finish:rec.finish}:{async append(s){calls.push(`append:${s.tick}`);if(failure==='append'&&s.tick>0)throw Error('DISK_FAILED');},async fail(e){calls.push(`fail:${e.lastCommittedTick}:${e.targetTick}:${e.ackTick}`);},async finish(){calls.push('finish');}},
    world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
- const open=(reclaimOnly=false,wall?:import('../../packages/lab-runtime/src/v2/pace').WallClock)=>createScenarioRun(manifest,{...providers,reclaimOnly,...wall?{wall}:{}});return {open,calls,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
+ const open=(reclaimOnly=false,wall?:import('../../packages/lab-runtime/src/v2/pace').WallClock,dir=directory)=>createScenarioRun(manifest,{...providers,directory:dir,reclaimOnly,...wall?{wall}:{}});return {open,calls,hooks,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
 }
+/** Names every FileHandle.sync by the path its handle was opened with; `steps` is the world step in flight when it ran. */
+async function traceSyncs(h:{calls:string[]},onSync=async(_file:string)=>{}){
+ const actual=await vi.importActual<typeof fs>('node:fs/promises'),paths=new WeakMap<object,string>(),syncs:{file:string;steps:number}[]=[];
+ vi.mocked(fs.open).mockImplementation(async(...a:Parameters<typeof fs.open>)=>{const f=await actual.open(...a);paths.set(f,String(a[0]));return f;});
+ const probe=await actual.open(fx+'/project.json','r'),proto=Object.getPrototypeOf(probe) as {sync():Promise<void>},sync=proto.sync;await probe.close();
+ vi.spyOn(proto,'sync').mockImplementation(async function(this:object){await sync.call(this);const file=paths.get(this)??'?';syncs.push({file,steps:h.calls.filter(c=>c.startsWith('step:')).length});await onSync(file);});
+ return syncs;
+}
+const lastWalTick=(text:string)=>text.trim()?(JSON.parse(text.trim().split('\n').at(-1)!) as {snapshot:{tick:number}}).snapshot.tick:-1;
+test('a world tick fsyncs at most twice and run.json never carries a tick before its WAL record is synced',async()=>{
+ const h=await setup('actual'),actual=await vi.importActual<typeof fs>('node:fs/promises'),wal=join(h.evidenceDirectory,'pending.ndjson'),late:string[]=[];let synced=-1;
+ const all=await traceSyncs(h,async file=>{if(file===wal)synced=lastWalTick(await actual.readFile(wal,'utf8'));}),run=await h.open(); // the WAL fd lives across ticks: trace from its open
+ try{await run.start();all.length=0;const syncs=all;
+  vi.mocked(fs.rename).mockImplementation(async(from,to)=>{if(String(to)===join(h.directory,'run.json')){const cp=JSON.parse(await actual.readFile(from,'utf8'));if(cp.tick>synced||cp.world.snapshot.tick>synced)late.push(`run.json tick ${cp.tick} before synced WAL tick ${synced}`);}return actual.rename(from,to);});
+  expect((await act(run,'step',{ticks:10})).tick).toBe(10);
+  expect(syncs.filter(s=>s.file===wal).map(s=>s.steps)).toEqual([1,2,3,4,5,6,7,8,9,10]);
+  // between two world steps (one full tick period) at most two fsyncs; the action's own run.json commit is amortized over its ticks
+  for(let k=1;k<10;k++)expect(syncs.filter(s=>s.steps===k).length,`tick ${k}`).toBeLessThanOrEqual(2);
+  expect(syncs.length).toBeLessThanOrEqual(2*10);expect(late).toEqual([]);expect(synced).toBe(10);
+ }finally{await run.close();}
+});
+test('a kill after a tick WAL append, before run.json commits it, reopens as WORLD_RESTART_UNKNOWN at the committed tick',async()=>{
+ const h=await setup('actual'),run=await h.open(),killed=await runDirectory();
+ h.hooks.afterAppend=async tick=>{if(tick===3)await fs.cp(h.directory,killed,{recursive:true});};
+ try{await run.start();await act(run,'step',{ticks:5});}finally{await run.close();}
+ expect(lastWalTick(await readFile(join(killed,'actual-world-evidence','pending.ndjson'),'utf8'))).toBe(3);
+ const reopened=await h.open(false,undefined,killed);try{const v=await reopened.snapshot();expect(v.tick).toBe(2);expect(v.attention).toContainEqual({reason:'WORLD_RESTART_UNKNOWN',tick:2});expect(await reopened.worldDisplay!()).toMatchObject({tick:2,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});await expect(act(reopened,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await reopened.close();}
+});
+test('persist() fsyncs run.json before it returns; a kill right after reopens a readable committed checkpoint',async()=>{
+ const h=await setup('actual'),run=await h.open(),killed=await runDirectory(),state=run as unknown as {persist():Promise<void>},persist=state.persist.bind(state);let committed:string[]|undefined;
+ try{await run.start();const syncs=await traceSyncs(h);
+  vi.spyOn(state,'persist').mockImplementation(async()=>{const from=syncs.length;await persist();committed=syncs.slice(from).map(s=>s.file);await fs.cp(h.directory,killed,{recursive:true});});
+  await act(run,'step',{ticks:4});
+ }finally{await run.close();}
+ expect(committed).toContain(join(h.directory,'run.json.tmp'));
+ const bytes=await readFile(join(killed,'run.json'),'utf8');expect(bytes.length).toBeGreaterThan(0);expect(JSON.parse(bytes)).toMatchObject({tick:4,world:{snapshot:{tick:4}}});
+ const reopened=await h.open(false,undefined,killed);try{expect(await reopened.snapshot()).toMatchObject({tick:4,attention:[{reason:'WORLD_RESTART_UNKNOWN',tick:4}]});}finally{await reopened.close();}
+});
 test('world path never constructs/advances mock AMR and commits actual pose with target observation time',async()=>{
  const h=await setup();vi.spyOn(MockPlant.prototype,'advance').mockImplementation(()=>{throw Error('MOCK_ADVANCE_FORBIDDEN');});
  const run=await h.open();try{await run.start();const v=await act(run,'step',{ticks:1});expect(((await h.source().read('robot','amr-1')).state.bindings as Record<string,{yaw:number}>)['coffee-pickup']!.yaw).toBe(Math.PI/2);expect(v.tick).toBe(1);expect(v.entities[0]!.pose.x).toBe(.351);expect(h.calls).toContain(`commit:1:1:${Date.parse('2026-11-01T00:00:00Z')+20}`);expect(h.calls.slice(0,4)).toEqual(['append:0','prepare:1','step:1','append:1']);}finally{await run.close();}

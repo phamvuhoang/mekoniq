@@ -2,7 +2,7 @@
  * interval metrics use (0,lastTick]. Source lifecycle records are facts about physical
  * birth/removal, never a receipt for grip, handoff, withdrawal or business custody. */
 import {createHash,randomBytes} from 'node:crypto';
-import {mkdir,open,readdir,unlink} from 'node:fs/promises';
+import {lstat,mkdir,open,readdir,unlink,type FileHandle} from 'node:fs/promises';
 import {join} from 'node:path';
 import {gzipSync,gunzipSync} from 'node:zlib';
 import type {WorldEvidenceV1,WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
@@ -57,27 +57,35 @@ export async function openWorldRecorder(o:{directory:string;admission:WorldAdmis
  // Reuse B03 path/byte guards and atomic fsync publication. Reserve one worst-case
  // terminal record before admitting any bytes, including temporary publication copies.
  const reserve=()=>Buffer.byteLength(JSON.stringify({...m,terminal:'\u0000'.repeat(200),gaps:[...m.gaps,{targetTick:30000,lastCommittedTick:30000,ackTick:30000,reason:'\u0000'.repeat(200)}]}))+64;
- const quota=async(extra:number)=>{if(await physicsDirectoryBytes(o.directory)+extra>max)throw Error('WORLD_EVIDENCE_QUOTA_EXCEEDED');};
- const save=async()=>{const b=JSON.stringify(m);if(Buffer.byteLength(b)>READ_LIMITS.manifestBytes)throw Error('WORLD_EVIDENCE_READ_LIMIT');await quota(Buffer.byteLength(b)+(m.terminal?0:reserve()));await writeDurable(o.directory,'manifest.json',b);};
+ // Running byte count of this directory (empty at open): every own write updates it; a failed write
+ // (possible orphan .tmp) or a WAL (re)open at each chunk start rescans readdir+lstat, so foreign bytes count within one chunk.
+ let sizes:Map<string,number>|null=new Map(),used=0,wal:FileHandle|undefined,walCreated=false;
+ const sized=(name:string,n:number|null)=>{if(!sizes)return;used+=(n??0)-(sizes.get(name)??0);if(n===null)sizes.delete(name);else sizes.set(name,n);};
+ const tracked=async(name:string,size:()=>number|null,op:()=>Promise<unknown>)=>{try{await op();}catch(e){sizes=null;throw e;}sized(name,size());};
+ const durable=(name:string,b:Uint8Array|string)=>tracked(name,()=>Buffer.byteLength(b),()=>writeDurable(o.directory,name,b));
+ const quota=async(extra:number)=>{if(!sizes){const next=new Map<string,number>();used=0;for(const name of await readdir(o.directory)){const st=await lstat(join(o.directory,name));if(!st.isFile())throw Error('PHYSICS_PATH_REJECTED');next.set(name,st.size);used+=st.size;}sizes=next;}if(used+extra>max)throw Error('WORLD_EVIDENCE_QUOTA_EXCEEDED');};
+ const closeWal=async()=>{const h=wal;wal=undefined;await h?.close();};
+ const save=async()=>{const b=JSON.stringify(m);if(Buffer.byteLength(b)>READ_LIMITS.manifestBytes)throw Error('WORLD_EVIDENCE_READ_LIMIT');await quota(Buffer.byteLength(b)+(m.terminal?0:reserve()));await durable('manifest.json',b);};
  // Append/finish know only their local observation horizon. The Source owner may
  // replace that provisional failure once with its authoritative logical boundary.
- const fail=async(f:WorldFailure,sourceOwned=false)=>{if(!m.terminal||(sourceOwned&&!sourceFailure)){m.terminal=f.reason.slice(0,200)||'WORLD_UNKNOWN';m.gaps=[{...f,reason:m.terminal}];sourceFailure=sourceOwned;}m.complete=false;closed=true;await save();};
- const flush=async()=>{if(!lines.length)return;const b=gzipSync(lines.join(''));if(b.length>READ_LIMITS.chunkBytes||m.chunks.length>=READ_LIMITS.chunksPerStream||totalInflated+bytes>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');
+ const fail=async(f:WorldFailure,sourceOwned=false)=>{if(!m.terminal||(sourceOwned&&!sourceFailure)){m.terminal=f.reason.slice(0,200)||'WORLD_UNKNOWN';m.gaps=[{...f,reason:m.terminal}];sourceFailure=sourceOwned;}m.complete=false;closed=true;await closeWal().catch(()=>{});await save();};
+ const flush=async()=>{if(!lines.length)return;await closeWal();const b=gzipSync(lines.join(''));if(b.length>READ_LIMITS.chunkBytes||m.chunks.length>=READ_LIMITS.chunksPerStream||totalInflated+bytes>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');
   const ref={path:`world-${String(m.chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`,sha256:sha(b),bytes:b.length,firstTick:m.lastTick+1,lastTick:previous!.tick};
   const next={...m,chunks:[...m.chunks,ref],lastTick:ref.lastTick,complete:false};await quota(b.length+64+Buffer.byteLength(JSON.stringify(next))+reserve());
-  await writeDurable(o.directory,'write.intent',JSON.stringify({lastTick:ref.lastTick}));await writeDurable(o.directory,ref.path,b);m=next;
+  await durable('write.intent',JSON.stringify({lastTick:ref.lastTick}));await durable(ref.path,b);m=next;
   // The new manifest owns these rows, even if publication or subsequent cleanup
   // throws. A terminal save/finish must never publish the same rows a second time.
-  totalInflated+=bytes;lines=[];bytes=0;await save();await writeDurable(o.directory,'pending.ndjson','');await unlink(join(o.directory,'write.intent'));
+  totalInflated+=bytes;lines=[];bytes=0;await save();await durable('pending.ndjson','');await tracked('write.intent',()=>null,()=>unlink(join(o.directory,'write.intent')));
  };
  await save();
- return {manifest:()=>structuredClone(m),async capture(authority:WorldPrefixAuthority,requestedTick=authority.publicCommittedTick){checkPrefixHorizon(authority,requestedTick);if(authority.runId!==o.runId||authority.bootId!==o.bootId||authority.sceneDigest!==o.admission.scene.sceneDigest||authority.admissionDigest!==o.admission.digest)throw Error('WORLD_PREFIX_AUTHORITY_MISMATCH');return serial(()=>captureWorldPrefixDisk(o.directory,o.admission,authority,requestedTick,{manifest:structuredClone(m),tail:lines.join('')}));},append(snapshot:Sim3DSnapshotV1,command:WorldTickCommand|null){return serial(async()=>{if(closed)throw Error('WORLD_EVIDENCE_TERMINAL');const lastCommittedTick=previous?.tick??0,targetTick=Math.min(30000,previous?previous.tick+1:0);try{
+ return {manifest:()=>structuredClone(m),/** Running quota count, or null until the next rescan. */storedBytes:()=>sizes?used:null,async capture(authority:WorldPrefixAuthority,requestedTick=authority.publicCommittedTick){checkPrefixHorizon(authority,requestedTick);if(authority.runId!==o.runId||authority.bootId!==o.bootId||authority.sceneDigest!==o.admission.scene.sceneDigest||authority.admissionDigest!==o.admission.digest)throw Error('WORLD_PREFIX_AUTHORITY_MISMATCH');return serial(()=>captureWorldPrefixDisk(o.directory,o.admission,authority,requestedTick,{manifest:structuredClone(m),tail:lines.join('')}));},append(snapshot:Sim3DSnapshotV1,command:WorldTickCommand|null){return serial(async()=>{if(closed)throw Error('WORLD_EVIDENCE_TERMINAL');const lastCommittedTick=previous?.tick??0,targetTick=Math.min(30000,previous?previous.tick+1:0);try{
   const interactions=(command?.worldInteractions??[]).map(i=>({eventId:i.eventId,cupId:i.cupId,propId:i.propId,kind:i.kind,tick:i.targetTick,commandDigest:hashJson(command as never),reason:(i.eventId.startsWith('rig:')?(i.kind==='birth'?'rig_birth':'rig_removal'):(i.kind==='birth'?'source_nozzle_birth':'source_recipient_removal')) as WorldEvidenceRecord['interactions'][number]['reason'],before:pose(previous,i.propId),after:pose(snapshot,i.propId)}));
   const r:WorldEvidenceRecord={snapshot,command,interactions},next=validateWorldRecord(r,o.admission,history,previous,o,disturbances),line=JSON.stringify(r)+'\n',n=Buffer.byteLength(line);
-  if(n>READ_LIMITS.lineBytes||totalInflated+bytes+n>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');if(bytes+n>12*1024*1024)await flush();await quota(n+reserve());
-  const h=await open(join(o.directory,'pending.ndjson'),'a',0o600);try{await h.writeFile(line);await h.sync();}finally{await h.close();}const dir=await open(o.directory,'r');try{await dir.sync();}finally{await dir.close();}
+  if(n>READ_LIMITS.lineBytes||totalInflated+bytes+n>READ_LIMITS.totalInflated)throw Error('WORLD_EVIDENCE_READ_LIMIT');if(bytes+n>12*1024*1024)await flush();if(!wal)sizes=null;await quota(n+reserve());
+  // One durable write per tick: the WAL fd stays open for the chunk and only the file is synced; the directory only when this creates it.
+  await tracked('pending.ndjson',()=>(sizes?.get('pending.ndjson')??0)+n,async()=>{try{if(!wal){wal=await open(join(o.directory,'pending.ndjson'),'a',0o600);if(!walCreated){const dir=await open(o.directory,'r');try{await dir.sync();}finally{await dir.close();}walCreated=true;}}await wal.writeFile(line);await wal.sync();}catch(e){await closeWal().catch(()=>{});throw e;}});
   lines.push(line);bytes+=n;previous=structuredClone(snapshot);history=next;if(lines.length>=chunkTicks)await flush();
- }catch(e){await fail({targetTick,lastCommittedTick,ackTick:snapshot.tick,reason:(e as Error).message}).catch(()=>{});throw e;}});},fail(f:WorldFailure){return serial(()=>fail(f,true));},finish(){return serial(async()=>{try{await flush();closed=true;m.complete=!!previous&&!m.terminal&&!m.gaps.length;await save();}catch(e){await fail({targetTick:previous?.tick??0,lastCommittedTick:previous?.tick??0,ackTick:previous?.tick??null,reason:(e as Error).message}).catch(()=>{});throw e;}});}};
+ }catch(e){await fail({targetTick,lastCommittedTick,ackTick:snapshot.tick,reason:(e as Error).message}).catch(()=>{});throw e;}});},fail(f:WorldFailure){return serial(()=>fail(f,true));},finish(){return serial(async()=>{try{await flush();await closeWal();closed=true;m.complete=!!previous&&!m.terminal&&!m.gaps.length;await save();}catch(e){await fail({targetTick:previous?.tick??0,lastCommittedTick:previous?.tick??0,ackTick:previous?.tick??null,reason:(e as Error).message}).catch(()=>{});throw e;}});}};
 }
 export async function readWorldEvidence(directory:string,admission:WorldAdmission){
  const records:WorldEvidenceRecord[]=[],issues:string[]=[];let history:WorldInteractionIntent[]=[];const disturbances=new Set<string>();
