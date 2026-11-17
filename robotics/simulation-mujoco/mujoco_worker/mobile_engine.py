@@ -249,8 +249,10 @@ class MobileEngine:
                     resting[pid] = sid
             loads.append({"propId": pid, "poseMap": matrix_pose(at), "linearVelocityMapMps": pv[3:].tolist(), "angularVelocityMapRadps": pv[:3].tolist(), "supportId": sid, "poseInSupport": relative})
         wheel = {"robotId": self.rid, "angleRad": d.qpos[self.wq].tolist(), "velocityRadS": d.qvel[self.wv].tolist(), "torqueNm": d.actuator_force[self.acts].tolist(), "targetRadS": self.targets.tolist(), "saturatedSubsteps": self.saturated}
+        # A scan goes on the wire only on its own publish tick; the source client carries the last one forward (bytes per ACK).
+        published = {"scans": self.scans} if self.scans and self.scans[0]["tick"] == self.tick else {}
         return {"time": float(d.time), "unstable": self.unstable, "robot": {"robotId": self.rid, "poseDriveMap": [float(drive[0, 3]), float(drive[1, 3]), heading],
-                "bodyVelocity": [float(drive_vel[0] * math.cos(heading) + drive_vel[1] * math.sin(heading)), float(vel[2])], "scans": self.scans,
+                "bodyVelocity": [float(drive_vel[0] * math.cos(heading) + drive_vel[1] * math.sin(heading)), float(vel[2])], **published,
                 "collisionIds": sorted(collisions), "pose3d": {"z": float(base[2, 3]), "roll": roll, "pitch": pitch}, "wheels": {"leftRadS": wheel["velocityRadS"][0], "rightRadS": wheel["velocityRadS"][1]}},
                 "base": {"robotId": self.rid, "poseMap": matrix_pose(base), "rollRad": roll, "pitchRad": pitch}, "wheel": wheel, "odometry": self.odom.tolist(), "loads": loads, "resting": resting, "contacts": self.contacts}
 

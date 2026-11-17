@@ -99,6 +99,20 @@ def test_real_world_session_ack_identity_and_exact_clock(session):
  assert r['tick']==1 and r['result']['physics']['tick']==1
  assert session.substeps==20 and session.engine.total_substeps==20
 
+def test_lidar_scan_is_on_the_wire_only_on_publish_ticks(session):
+ from scene_fixture import SCHEMAS
+ from mujoco_worker.protocol import load_validators
+ wire=load_validators(SCHEMAS)[1];r0=start_world(session);k=session.scene['navigation']['robots'][0]['model']['sensors'][0]['publishEveryTicks']
+ def check(r,tick):
+  assert r['ok'] and r['tick']==tick and not list(wire.iter_errors(r)),r.get('error')
+  robot=r['result']['robots'][0]
+  if tick%k:assert 'scans' not in robot
+  else:assert [(s['tick'],len(s['rangesM']),len(s['states'])) for s in robot['scans']]==[(tick,360,360)]
+ check(r0,0)
+ for t in range(2*k):
+  check(session.handle(world_step(session,t)),t+1)
+  if t+1==k-1:check(session.handle(request('getState',{},t+1)),t+1)
+
 def test_world_requires_source_owned_birth_and_removal_intents_before_any_mutation(session):
  start_world(session);placement={'propId':'cup-1','pose':{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]}}
  r=session.handle(world_step(session,placements=[placement]));assert not r['ok'] and r['error']['code']=='WORLD_INTERACTION_INVALID'

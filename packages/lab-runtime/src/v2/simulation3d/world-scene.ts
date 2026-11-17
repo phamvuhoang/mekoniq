@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
-import {documentDigest,validateWorldSceneShape,validateSim3DResponse,type LabWorldSceneV1,type Sim3DSnapshotV1} from '../navigation2d/contracts';
+import {documentDigest,validateWorldSceneShape,validateSim3DSnapshot,type LabWorldSceneV1,type Sim3DSnapshotV1} from '../navigation2d/contracts';
 import {XARM6_SI} from '../models/arm-kinematics';
 export type {LabWorldSceneV1};
 /** Source-owned intent. Its existence alone is not a custody receipt; B06 binds eventId to the production journal. */
@@ -33,7 +33,7 @@ export function activeWorldProps(scene:LabWorldSceneV1,intents:readonly WorldInt
 /** Additional world consumer checks after worker-client envelope validation, before any append or observer commit. */
 export function validateWorldObservation(input:unknown,scene:LabWorldSceneV1,intents:readonly WorldInteractionIntent[]):asserts input is Sim3DSnapshotV1 {
  const s=input as Sim3DSnapshotV1,fail=()=>{throw new Error('WORLD_OBSERVATION_INVALID');};
- if(!s||!validateSim3DResponse({protocol:'mekoniq-sim3d/1',requestId:'world-validation',runId:s.runId,bootId:s.bootId,tick:s.tick,ok:true,result:s}).ok)fail();
+ if(!s||!validateSim3DSnapshot(s))fail();
  const finite=(x:unknown):boolean=>typeof x==='number'?Number.isFinite(x):Array.isArray(x)?x.every(finite):x!==null&&typeof x==='object'?Object.values(x).every(finite):true;
  const arm=s.arms?.[0],expected=activeWorldProps(scene,intents,s.tick);
  if(!s.worldStep||s.worldStep.physicsSubsteps!==(s.tick+1)*10||s.worldStep.nq!==21+7*scene.propBindings.length||s.worldStep.nv!==20+6*scene.propBindings.length||!finite(s)||s.sceneDigest!==scene.sceneDigest||s.robots.length!==1||s.robots[0]!.robotId!==scene.navigation.robots[0]!.robotId||s.arms?.length!==1||arm?.armId!==scene.armCell.arm.armId||arm.positionsRad.length!==6||arm.positionsRad.some((q,i)=>q<XARM6_SI.limits[i]!.min-1e-3||q>XARM6_SI.limits[i]!.max+1e-3)||arm.velocitiesRadS.length!==6||!arm.gripper||new Set(arm.gripper.heldPropIds).size!==arm.gripper.heldPropIds.length||s.props?.length!==expected.length||new Set(s.props?.map(p=>p.propId)).size!==expected.length||s.props?.some(p=>!expected.includes(p.propId)||Math.abs(Math.hypot(...p.quaternionXyzw)-1)>1e-6)||arm.gripper.heldPropIds.some(p=>!expected.includes(p))||s.simTimeNs!==String(BigInt(s.tick)*20_000_000n))fail();

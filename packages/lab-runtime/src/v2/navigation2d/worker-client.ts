@@ -59,7 +59,7 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
  const env={PATH:'/usr/bin:/bin',PYTHONPATH:root,...bytecodeEnv(),PYTHONNOUSERSITE:'1',PYTHONUNBUFFERED:'1',PYTHONUTF8:'1',LANG:'C.UTF-8',MPLBACKEND:'Agg',...wire.env} as unknown as NodeJS.ProcessEnv;
  const child=spawn(o.python,args,{cwd:resolve(o.runDirectory),env,stdio:['pipe','pipe','pipe'],detached:true});
  let state:'ready'|'failed'|'closed'='ready',bootId:string|null=null,buffer='',stderrTail='',lastTick=0,lastSeq=0n,sceneDigest=o.sceneDigest,timer:NodeJS.Timeout|undefined,closing:Promise<void>|undefined;
- const queue:Pending[]=[];let inFlight:Pending|undefined;
+ const queue:Pending[]=[],lastScans=new Map<string,IRSimSnapshotV1['robots'][number]['scans']>();let inFlight:Pending|undefined;
  // Settled by the process ending ('exit'; 'close' covers a spawn error where 'exit' never fires). It must not wait for stdio to drain: a grandchild that
  // inherited the pipes (recordings hung ~15 min on exactly that) would hold 'close' open, so after 'exit' the streams get 500 ms to flush and are then destroyed.
  const exited=new Promise<void>(done=>{
@@ -113,6 +113,13 @@ export async function spawnWorker(o:SpawnOptions,wire:WireSpec):Promise<IRSimWor
     lastSeq=BigInt(snap.seq);
     sceneDigest??=snap.sceneDigest;
     if(snap.sceneDigest!==sceneDigest)return fail('WORKER_PROTOCOL','the snapshot is for a different scene than this run was bound to');
+    // A MuJoCo ACK (Sim3DWireRobotStateV1) carries `scans` only on the publish tick. Carry the last publication forward, at its own key position, so every
+    // snapshot past this point (controller, evidence, world records) is the one the worker used to send in full; a robot never published is a protocol fault.
+    for(const [i,rb] of snap.robots.entries()){
+     if((rb as {scans?:unknown}).scans!==undefined){lastScans.set(rb.robotId,structuredClone(rb.scans));continue;}
+     const prev=lastScans.get(rb.robotId);if(!prev)return fail('WORKER_PROTOCOL',`robot ${rb.robotId} has no LiDAR publication to carry forward`);
+     const {robotId,poseDriveMap,bodyVelocity,...rest}=rb as Omit<typeof rb,'scans'>;snap.robots[i]={robotId,poseDriveMap,bodyVelocity,scans:structuredClone(prev),...rest};
+    }
    }
   }
   lastTick=r.tick;clearTimeout(timer);inFlight=undefined;

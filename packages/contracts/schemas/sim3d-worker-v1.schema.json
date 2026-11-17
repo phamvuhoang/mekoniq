@@ -1035,6 +1035,105 @@
         "robots"
       ]
     },
+    "Sim3DWireRobotStateV1": {
+      "title": "Sim3DWireRobotStateV1",
+      "description": "Sim3DRobotStateV1 as a worker ACK carries it: a MuJoCo worker sends `scans` only on the sensor's publish tick; the source client carries the last publication forward, so every Sim3DRobotStateV1 (and world evidence) still has it.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "robotId": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/robotId"
+        },
+        "poseDriveMap": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/poseDriveMap"
+        },
+        "bodyVelocity": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/bodyVelocity"
+        },
+        "scans": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/scans"
+        },
+        "collisionIds": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/collisionIds"
+        },
+        "pose3d": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/pose3d"
+        },
+        "wheels": {
+          "$ref": "#/definitions/Sim3DRobotStateV1/properties/wheels"
+        }
+      },
+      "required": [
+        "robotId",
+        "poseDriveMap",
+        "bodyVelocity",
+        "collisionIds",
+        "pose3d",
+        "wheels"
+      ]
+    },
+    "Sim3DWireSnapshotV1": {
+      "title": "Sim3DWireSnapshotV1",
+      "description": "Sim3DSnapshotV1 as a worker ACK carries it (robots as Sim3DWireRobotStateV1).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/schemaVersion"
+        },
+        "runId": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/runId"
+        },
+        "bootId": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/bootId"
+        },
+        "tick": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/tick"
+        },
+        "simTimeNs": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/simTimeNs"
+        },
+        "seq": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/seq"
+        },
+        "sceneDigest": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/sceneDigest"
+        },
+        "robots": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/definitions/Sim3DWireRobotStateV1"
+          }
+        },
+        "model": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/model"
+        },
+        "arms": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/arms"
+        },
+        "props": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/props"
+        },
+        "physics": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/physics"
+        },
+        "worldStep": {
+          "$ref": "#/definitions/Sim3DSnapshotV1/properties/worldStep"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "runId",
+        "bootId",
+        "tick",
+        "simTimeNs",
+        "seq",
+        "sceneDigest",
+        "robots"
+      ]
+    },
     "Sim3DResponseV1": {
       "title": "Sim3DResponseV1",
       "type": "object",
@@ -1072,7 +1171,7 @@
             "result": {
               "anyOf": [
                 {
-                  "$ref": "#/definitions/Sim3DSnapshotV1"
+                  "$ref": "#/definitions/Sim3DWireSnapshotV1"
                 },
                 {
                   "type": "object",

@@ -124,6 +124,8 @@ const sim3dRequestValidator=ajv.getSchema('sim3d-worker-v1.schema.json')!,sim3dR
 /** mekoniq-sim3d/1: the IR-SIM envelope and ops, with the 3D pose and wheel speeds required on every robot state. */
 export const validateSim3DRequest=(input:unknown):{ok:true;value:Sim3DRequestV1}|{ok:false;issues:NavigationIssue[]}=>sim3dRequestValidator(input)?{ok:true,value:input as Sim3DRequestV1}:{ok:false,issues:schemaIssues(sim3dRequestValidator.errors)};
 export const validateSim3DResponse=(input:unknown):{ok:true;value:Sim3DResponseV1}|{ok:false;issues:NavigationIssue[]}=>sim3dResponseValidator(input)?{ok:true,value:input as Sim3DResponseV1}:{ok:false,issues:schemaIssues(sim3dResponseValidator.errors)};
+/** The strict snapshot (every robot carries `scans`): what a consumer sees after the worker client carried the last LiDAR publication forward. */
+export const validateSim3DSnapshot=ajv.getSchema('sim3d-worker-v1.schema.json#/definitions/Sim3DSnapshotV1')!;
 export const validateAlgorithmResult=(input:unknown):{ok:true;value:AlgorithmResultV1}|{ok:false;issues:NavigationIssue[]}=>algorithmValidator(input)?{ok:true,value:input as AlgorithmResultV1}:{ok:false,issues:schemaIssues(algorithmValidator.errors)};
 
 const armSceneValidator=ajv.getSchema('arm-scene-3d-v1.schema.json')!;
