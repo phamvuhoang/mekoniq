@@ -217,3 +217,20 @@ for(const checkpoint of [1,2])test(`a newly begun priority Pause with uncertain 
   expect(completed).toMatchObject({tick:1,run:{status:checkpoint===1?'running':'needs_attention'}});expect(h.calls.filter(x=>x.startsWith('step:'))).toHaveLength(1);expect((await run.snapshot()).tick).toBe(1);if(checkpoint===2)expect(completed.attention).toContainEqual({reason:'ACTION_INTERRUPTED',tick:1});
  }finally{release.release();await batch;await run.close();}
 });
+test('world display reads the journal only after a commit and keeps the journal-derived event cursor',async()=>{
+ const h=await setup('actual'),run=await h.open(),last=async()=>(await run.journal()).at(-1)?.sequence??null;let commitAt=-1;
+ h.hooks.afterAppend=async tick=>{if(tick===commitAt)expect((await h.source().submit('Session.Open',{sessionId:`s-${tick}`,tableId:'table-1'},`op-${tick}`)).status).toBe('accepted');};
+ try{await run.start();await act(run,'step',{ticks:1});const before=await last();
+  const store=h.source().store,reads=vi.spyOn(Object.getPrototypeOf(store) as {journal:typeof store.journal},'journal');
+  for(let n=0;n<10;n++)await act(run,'step',{ticks:10});
+  expect(reads).toHaveBeenCalledTimes(0);expect((await run.worldDisplay!()).view!.run.eventCursor).toBe(before);
+  commitAt=105;await act(run,'step',{ticks:10});expect(reads).toHaveBeenCalledTimes(1); // one same-tick commit -> exactly one refresh
+  const d=await run.worldDisplay!();expect(d.tick).toBe(111);expect(BigInt(d.view!.run.eventCursor!)).toBe(BigInt(before!)+1n);
+  reads.mockClear();await act(run,'pause');await act(run,'resume');await act(run,'step',{ticks:5});expect(reads).toHaveBeenCalledTimes(0);
+  reads.mockRestore();expect((await run.worldDisplay!()).view!.run.eventCursor).toBe(await last()); // same value the per-tick journal read gave
+ }finally{await run.close();}
+ const reopened=await h.open();try{const d=await reopened.worldDisplay!();expect(d).toMatchObject({tick:116,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});expect(d.view!.run.eventCursor).toBe((await reopened.journal()).at(-1)!.sequence);}finally{await reopened.close();}
+});
+test('a terminal world display keeps the journal-derived event cursor',async()=>{
+ const h=await setup('commit'),run=await h.open();try{await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow();const d=await run.worldDisplay!();expect(d).toMatchObject({availability:'stale',reason:'WORLD_UNKNOWN'});expect(d.view!.run.eventCursor).toBe((await run.journal()).at(-1)?.sequence??null);}finally{await run.close();}
+});

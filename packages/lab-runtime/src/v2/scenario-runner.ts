@@ -582,8 +582,8 @@ class Run implements ScenarioRun {
   else if(c.paused)status='paused';
   else if(awaiting.length)status='awaiting_confirmation';
   let served=0n;for(const lineId of [...c.workload.map(w=>w.lineId),...c.coffee?.workload.map(w=>w.lineId)??[]])if(lineId)served+=BigInt(String((await this.source.read('fulfillment',lineId)).state.served??'0'));
-  const journal=await this.source.journal();
-  return {run:{...m.faultSchedule?{faultScheduleHash:m.faultSchedule.hash}:{},schemaVersion:2,id:c.runId,mode:m.mode,access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor:journal.length?journal[journal.length-1]!.sequence:null,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
+  const eventCursor=await this.source.cursor();
+  return {run:{...m.faultSchedule?{faultScheduleHash:m.faultSchedule.hash}:{},schemaVersion:2,id:c.runId,mode:m.mode,access:'simulated',backendSetId:m.backendSetId,backends:m.backends.map(b=>b.id),status,runRevision:c.revision,eventCursor,telemetryCursor:this.telemetry.cursor(),fidelity:'modeled',ageMs:0,sourceCommit:m.sourceCommit,scenarioId:m.scenario.id,scenarioRevision:m.scenario.revision,seed:m.seed},
    tick:c.tick,simTimeNs:this.clock.simTimeNs(),model:this.worldConfig?'mujoco_shared_world':MOCK_AMR.model,entities:this.entities(),workload:structuredClone(c.workload),awaiting,attention:structuredClone(c.attention),served:String(served),coffee:this.coffee?await this.coffee.view():null,...c.reclaimed?{controlAccess:'view_reconcile' as const}:{}};
  }
  private entities():EntityView[]{

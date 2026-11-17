@@ -28,6 +28,7 @@ export const coffeeDevices=(cellId:string,armId:string)=>[[cellId,'machine'],[`$
 export const mealFor=(stationId:string)=>`meal-${stationId}`;
 export class SourceSession {
  private readonly registry=createProductionRegistry();
+ private cursorStale=true;private lastSequence:string|null=null;
  private constructor(readonly scope:Scope,readonly store:DurableStore,private nowMs:()=>number,private stationIds:string[]){}
  static async open(directory:string,runId:string,nowMs:()=>number,fixture:SourceFixture,fresh:boolean){
   let jwk;
@@ -35,6 +36,8 @@ export class SourceSession {
   const key=createPrivateKey({key:jwk,format:'jwk'}),publicJwk=createPublicKey(key).export({format:'jwk'}) as JsonObject;
   const store=await openStore({driver:'sqlite',url:join(directory,'journal.db'),nowMs,authority:{ownerDeviceId:DEVICE,deviceEpoch:EPOCH,publicJwk},ackLevel:'venue',producer:{deviceId:DEVICE,deviceEpoch:EPOCH},signerPublicJwk:publicJwk,signer:bytes=>sign('sha256',bytes,{key,dsaEncoding:'ieee-p1363'}).toString('base64url')});
   const s=new SourceSession({organizationId:`lab-${runId}`,venueId:'simulation'},store,nowMs,fixture.stationIds);
+  // Every journal append goes through commit: mark the cached cursor stale before and after, so a cursor read during a commit is retried.
+  const commit=store.commit.bind(store);store.commit=batch=>{s.cursorStale=true;return commit(batch).finally(()=>{s.cursorStale=true;});};
   await store.provision(s.scope,1,1);
   if(fresh)await initializeFixtureV2(store,s.scope,fixture,publicJwk);
   return s;
@@ -54,6 +57,8 @@ export class SourceSession {
  receipt(operationId:string,payloadHash:string){return this.store.receipt(this.scope,operationId,payloadHash);}
  effects(){return this.store.effects(this.scope);}
  /** Journal in durable producer order (integer sequences stored as TEXT); entries are never rewritten. */
+ /** Last journal sequence (event cursor); re-reads the journal only after a commit since the previous read, never on an idle tick. */
+ async cursor(){if(this.cursorStale){this.cursorStale=false;const j=await this.journal();this.lastSequence=j.length?j[j.length-1]!.sequence:null;}return this.lastSequence;}
  async journal(){return (await this.store.journal(this.scope)).sort((a,b)=>{const l=BigInt(a.sequence),r=BigInt(b.sequence);return l<r?-1:l>r?1:0;});}
  close(){return this.store.close();}
 }
