@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 1369dbda348cdec5f73d759edf389048fa72f104 (sha256 a8cf062d0af798d20edaf55b365a7f58631fbd18f3e9b95aeb1a77aa08b61b34). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ c654d9aad882da3bda7bc0e79f185630f63bb3e2 (sha256 3fc8cf5cb84274546bd04403811d338427d40caf4e24d1cbd951d1783e15e661). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -158,6 +158,49 @@ export type IRSimRequestV1 =
  */
 export type NavigationRunEvidenceV1 = NavigationRunEvidenceV11;
 /**
+ * @minItems 3
+ * @maxItems 3
+ */
+export type PoseDriveMap = number[];
+/**
+ * @minItems 2
+ * @maxItems 2
+ */
+export type BodyVelocity = number[];
+/**
+ * @minItems 0
+ * @maxItems 16
+ */
+export type Scans = LidarScanV1[];
+/**
+ * @minItems 0
+ * @maxItems 64
+ */
+export type CollisionIds = string[];
+/**
+ * @minItems 0
+ * @maxItems 1
+ */
+export type Arms = Sim3DArmStateV1[];
+/**
+ * @minItems 0
+ * @maxItems 8
+ */
+export type Props = {
+  propId: EngineeringId;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  position: number[];
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  quaternionXyzw: number[];
+  restingOn: string | null;
+}[];
+/**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "Sim3DResponseV1".
  */
@@ -170,7 +213,7 @@ export type Sim3DResponseV1 =
       tick: number;
       ok: true;
       result:
-        | Sim3DSnapshotV1
+        | Sim3DWireSnapshotV1
         | {
             state: 'created' | 'running' | 'paused' | 'stopped' | 'failed';
           }
@@ -1165,26 +1208,10 @@ export interface WheelStateV1 {
  */
 export interface Sim3DRobotStateV1 {
   robotId: EngineeringId;
-  /**
-   * @minItems 3
-   * @maxItems 3
-   */
-  poseDriveMap: number[];
-  /**
-   * @minItems 2
-   * @maxItems 2
-   */
-  bodyVelocity: number[];
-  /**
-   * @minItems 0
-   * @maxItems 16
-   */
-  scans: LidarScanV1[];
-  /**
-   * @minItems 0
-   * @maxItems 64
-   */
-  collisionIds: string[];
+  poseDriveMap: PoseDriveMap;
+  bodyVelocity: BodyVelocity;
+  scans: Scans;
+  collisionIds: CollisionIds;
   pose3d: Pose3DV1;
   wheels: WheelStateV1;
 }
@@ -1236,72 +1263,10 @@ export interface Sim3DSnapshotV1 {
    */
   robots: Sim3DRobotStateV1[];
   model?: Sim3DModelReadbackV1;
-  /**
-   * @minItems 0
-   * @maxItems 1
-   */
-  arms?: Sim3DArmStateV1[];
-  /**
-   * @minItems 0
-   * @maxItems 8
-   */
-  props?: {
-    propId: EngineeringId;
-    /**
-     * @minItems 3
-     * @maxItems 3
-     */
-    position: number[];
-    /**
-     * @minItems 4
-     * @maxItems 4
-     */
-    quaternionXyzw: number[];
-    restingOn: string | null;
-  }[];
+  arms?: Arms;
+  props?: Props;
   physics?: PhysicsTickRecord;
-  worldStep?: {
-    workerPid: number;
-    modelCount: 1;
-    physicsSubsteps: number;
-    primingSubsteps: 10;
-    nq: number;
-    nv: number;
-    nbody: number;
-    ngeom: number;
-    /**
-     * @maxItems 1
-     */
-    disturbances?: {
-      eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
-      revision: 1;
-      targetId: string;
-      targetTick: number;
-      runId: string;
-      bootId: string;
-      sceneDigest: string;
-      requestId: string;
-      requestDigest: string;
-      frame: 'map';
-      /**
-       * @minItems 3
-       * @maxItems 3
-       */
-      forceMapN: number[];
-      durationSubsteps: 10;
-      /**
-       * @minItems 3
-       * @maxItems 3
-       */
-      beforePositionM: number[];
-      /**
-       * @minItems 3
-       * @maxItems 3
-       */
-      afterPositionM: number[];
-    }[];
-  };
+  worldStep?: WorldStep;
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1512,6 +1477,88 @@ export interface LoadObservation {
      */
     quaternionXyzw: number[];
   } | null;
+}
+export interface WorldStep {
+  workerPid: number;
+  modelCount: 1;
+  physicsSubsteps: number;
+  primingSubsteps: 10;
+  nq: number;
+  nv: number;
+  nbody: number;
+  ngeom: number;
+  /**
+   * @maxItems 1
+   */
+  disturbances?: {
+    eventId: string;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    revision: 1;
+    targetId: string;
+    targetTick: number;
+    runId: string;
+    bootId: string;
+    sceneDigest: string;
+    requestId: string;
+    requestDigest: string;
+    frame: 'map';
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    forceMapN: number[];
+    durationSubsteps: 10;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    beforePositionM: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    afterPositionM: number[];
+  }[];
+}
+/**
+ * Sim3DRobotStateV1 as a worker ACK carries it: a MuJoCo worker sends `scans` only on the sensor's publish tick; the source client carries the last publication forward, so every Sim3DRobotStateV1 (and world evidence) still has it.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Sim3DWireRobotStateV1".
+ */
+export interface Sim3DWireRobotStateV1 {
+  robotId: EngineeringId;
+  poseDriveMap: PoseDriveMap;
+  bodyVelocity: BodyVelocity;
+  scans?: Scans;
+  collisionIds: CollisionIds;
+  pose3d: Pose3DV1;
+  wheels: WheelStateV1;
+}
+/**
+ * Sim3DSnapshotV1 as a worker ACK carries it (robots as Sim3DWireRobotStateV1).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Sim3DWireSnapshotV1".
+ */
+export interface Sim3DWireSnapshotV1 {
+  schemaVersion: 1;
+  runId: string;
+  bootId: string;
+  tick: number;
+  simTimeNs: string;
+  seq: string;
+  sceneDigest: Digest;
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  robots: Sim3DWireRobotStateV1[];
+  model?: Sim3DModelReadbackV1;
+  arms?: Arms;
+  props?: Props;
+  physics?: PhysicsTickRecord;
+  worldStep?: WorldStep;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
