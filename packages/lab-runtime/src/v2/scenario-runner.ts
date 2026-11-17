@@ -1,6 +1,6 @@
 import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
 import type {RobotAdapter} from '../../../robot-adapters/src/contract';
-import {validateSim3DResponse,type Sim3DSnapshotV1} from './navigation2d/contracts';
+import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
 import {retainedWorldArmReports} from './simulation3d/world-arm-report';
@@ -92,7 +92,8 @@ function validateRecoveryState(cp:Checkpoint,coffee:Roles['coffee']|undefined,si
  if(singleWorld){
   const s=cp.world?.snapshot;
   if(!s||s.runId!==cp.runId||s.tick!==cp.tick||typeof s.bootId!=='string'||!s.bootId||typeof s.sceneDigest!=='string'||!/^[a-f0-9]{64}$/.test(s.sceneDigest))return fail();
-  if(!validateSim3DResponse({protocol:'mekoniq-sim3d/1',requestId:'retained-recovery',runId:s.runId,bootId:s.bootId,tick:s.tick,ok:true,result:s}).ok||!cp.roles.robots.every(r=>s.robots.some(robot=>robot.robotId===r.id))||!s.arms?.some(a=>a.armId===coffee?.armId))fail();
+  // strict snapshot, not the wire ACK: a retained world state always carries each robot's scans
+  if(!validateSim3DSnapshot(s)||!cp.roles.robots.every(r=>s.robots.some(robot=>robot.robotId===r.id))||!s.arms?.some(a=>a.armId===coffee?.armId))fail();
  }
 }
 function activeFaultEntities(project:LabProjectV2,roles:Roles){const ids=new Set([...roles.robots.map(r=>r.id),...roles.coffee?[roles.coffee.cellId,roles.coffee.armId]:[]]);return project.entities.filter(e=>ids.has(e.id));}
