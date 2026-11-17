@@ -28,3 +28,10 @@ test('host bind refusal retains cleanup after a valid empty Docker inventory',as
   const earlier=createServer();await new Promise<void>((ok,fail)=>{earlier.once('error',fail);earlier.listen(57421,'127.0.0.1',ok);});await new Promise<void>(ok=>earlier.close(()=>ok()));
  }finally{await new Promise<void>(ok=>listener.close(()=>ok()));rmSync(root,{recursive:true,force:true});}
 },15000);
+
+test('status JSON is parsed from stdout even when the CLI warns on stderr',()=>{
+ const root=mkdtempSync(join(tmpdir(),'owned-ci-status-test-')),bin=join(root,'bin'),scratch=join(root,'tmp'),seen=join(root,'seen');mkdirSync(bin);mkdirSync(scratch);
+ writeFileSync(join(bin,'docker'),`#!${process.execPath}\nif(process.argv[4]==='{{.Id}}')console.log(${JSON.stringify(id)});\n`,{mode:0o755});
+ writeFileSync(join(bin,'pnpm'),`#!${process.execPath}\nif(process.argv.includes('status')){process.stderr.write('Stopped services: [studio]\\n');console.log(JSON.stringify({DB_URL:'postgres://stub'}));}\n`,{mode:0o755});
+ try{const r=spawnSync(process.execPath,[cli,'--',process.execPath,'-e',`require('node:fs').writeFileSync(${JSON.stringify(seen)},process.env.DATABASE_ADMIN_URL)`],{env:{...process.env,PATH:bin+':'+process.env.PATH,TMPDIR:scratch},encoding:'utf8',timeout:10000});expect(r.error).toBeUndefined();expect(r.status).toBe(0);expect(readFileSync(seen,'utf8')).toBe('postgres://stub');}finally{rmSync(root,{recursive:true,force:true});}
+},15000);
