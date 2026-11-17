@@ -255,8 +255,10 @@ class Run implements ScenarioRun {
   for(const r of this.cp.plant.robots){const actual=s.robots.find(x=>x.robotId===r.id);if(!actual)throw new Error('WORLD_ROBOT_MISSING');const [x,y,yawRad]=actual.poseDriveMap;r.distanceM+=this.cp.tick===0?0:Math.hypot(x!-r.pose.x,y!-r.pose.y);r.pose={x:x!,y:y!,yawRad:yawRad!};r.bootId=s.bootId;r.seq=Number(s.seq);r.moving=Math.abs(actual.bodyVelocity[0]!)>.01||Math.abs(actual.bodyVelocity[1]!)>.02;r.stale=false;r.hold=null;}
   this.cp.plant.contacts+=s.robots.reduce((n,r)=>n+r.collisionIds.length,0);this.cp.plant.maxConcurrentMovers=Math.max(this.cp.plant.maxConcurrentMovers,this.cp.plant.robots.filter(r=>r.moving).length);
  }
- /** Logical commit (action receipt, reclaim, run creation): fsynced before it returns. Within a world tick only the
-  * evidence WAL append is durable; the stage checkpoints are plain atomic replaces that never run ahead of it. */
+ /** Logical commit (action receipt, reclaim, run creation): the run.json data is fsynced before it returns, but the rename is
+  * not directory-synced, so a receipt is not guaranteed durable across power loss (crash-consistent for a process kill).
+  * Within a world tick only the evidence WAL append is durable; the stage checkpoints are unsynced atomic replaces written
+  * after it, so no run.json image names a tick before its WAL record is synced. */
  persist(){return writeCheckpoint(this.dir,this.cp,{sync:'file'});}
  record(){if(this.recoveryOnly)return;const c=this.cp;c.telemetrySeq=(c.telemetrySeq??c.tick)+1;this.telemetry.record(projectSamples({runId:c.runId,seq:String(c.telemetrySeq),simTimeNs:this.clock.simTimeNs(),nowMs:this.clock.nowMs(),robots:c.plant.robots,...c.world?.snapshot?{world:c.world.snapshot,worldStale:!!c.world.terminal}:{},...c.coffee?{coffee:c.coffee}:{}},String(process.hrtime.bigint())));}
  pulse(){const c=this.cp;return {tick:c.tick,paused:c.paused,runRevision:c.revision};}
