@@ -234,3 +234,11 @@ test('world display reads the journal only after a commit and keeps the journal-
 test('a terminal world display keeps the journal-derived event cursor',async()=>{
  const h=await setup('commit'),run=await h.open();try{await run.start();await expect(act(run,'step',{ticks:1})).rejects.toThrow();const d=await run.worldDisplay!();expect(d).toMatchObject({availability:'stale',reason:'WORLD_UNKNOWN'});expect(d.view!.run.eventCursor).toBe((await run.journal()).at(-1)?.sequence??null);}finally{await run.close();}
 });
+test('a failed journal read leaves the event cursor stale so the next read retries',async()=>{
+ const h=await setup(),run=await h.open();try{await run.start();const source=h.source(),before=await source.cursor();
+  expect((await source.submit('Session.Open',{sessionId:'s-retry',tableId:'table-1'},'op-retry')).status).toBe('accepted');
+  vi.spyOn(Object.getPrototypeOf(source.store) as {journal:typeof source.store.journal},'journal').mockRejectedValueOnce(Error('JOURNAL_READ_FAILED'));
+  await expect(source.cursor()).rejects.toThrow('JOURNAL_READ_FAILED');const after=await source.cursor();
+  expect(before).toBeNull();expect(after).toBe((await source.journal()).at(-1)!.sequence);expect(after).not.toBeNull();
+ }finally{await run.close();}
+});

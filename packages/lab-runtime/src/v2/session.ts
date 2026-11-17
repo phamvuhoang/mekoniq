@@ -58,7 +58,7 @@ export class SourceSession {
  effects(){return this.store.effects(this.scope);}
  /** Journal in durable producer order (integer sequences stored as TEXT); entries are never rewritten. */
  /** Last journal sequence (event cursor); re-reads the journal only after a commit since the previous read, never on an idle tick. */
- async cursor(){if(this.cursorStale){this.cursorStale=false;const j=await this.journal();this.lastSequence=j.length?j[j.length-1]!.sequence:null;}return this.lastSequence;}
+ async cursor(){if(this.cursorStale){this.cursorStale=false;try{const j=await this.journal();this.lastSequence=j.length?j[j.length-1]!.sequence:null;}catch(e){this.cursorStale=true;throw e;}}return this.lastSequence;}
  async journal(){return (await this.store.journal(this.scope)).sort((a,b)=>{const l=BigInt(a.sequence),r=BigInt(b.sequence);return l<r?-1:l>r?1:0;});}
  close(){return this.store.close();}
 }
