@@ -9,7 +9,7 @@
     "check:brand": "node ../../scripts/check-brand.mjs --dir ../../packages/ui/brand && node ../../scripts/check-brand.mjs --dir public/brand --against ../../packages/ui/brand/release.json"
   },
   "dependencies": {
-    "next": "16.4.3",
+    "next": "16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "postgres": "3.4.8",
