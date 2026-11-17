@@ -6,3 +6,4 @@ tests/
 test-results/
 playwright-report/
 .superpowers/
+playwright*.config.ts
