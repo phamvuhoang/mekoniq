@@ -135,6 +135,14 @@ def test_success_is_actual_and_lost_result_does_not_mask_timeout(session):
     s.now=lambda:110
     assert s.query('a')['status']=='completed'
 
+def test_ros_domain_stays_in_the_xarm_range_and_refusals_are_classified():
+    import native_xarm.worker as worker
+    assert {worker.ros_domain(f'run-{seed}') for seed in range(1000)}<=set(range(1,51))  # 51..101 is Gazebo/Nav2 (tests/unit/lab-v2-worker-argv.test.ts)
+    for code in ['VENDOR_SOURCE_MISMATCH:xarm_description/x.xacro','SOURCE_DIRTY','XARM_MODEL_SELECTOR_MISMATCH','XARM_VENDOR_CHECKOUT_MISMATCH']:
+        for reasons in ([code],['OS_MISMATCH',code]):
+            r=worker.refusal(reasons);assert (r['status'],r['result'],r['category'],r['accepted'])==('not_run','failed','tooling',False)
+    r=worker.refusal(['OS_MISMATCH','XARM_VENDOR_OVERLAY_MISSING']);assert (r['result'],r['category'])==('blocked_external','external')
+
 @pytest.mark.parametrize('mode',['X1','X2'])
 def test_prepared_worker_lifecycle_uses_fixed_launch_and_owned_shutdown(tmp_path,monkeypatch,mode):
     import io,sys

@@ -57,11 +57,11 @@ export interface GazeboBackend {
 }
 const SIM_ROOT=resolve(fileURLToPath(new URL('../../../../../robotics/simulation/',import.meta.url)));
 /** Per-run ROS domain (1..100) and Gazebo partition from the run id: two runs on one host never share a graph (the worker keeps them if set). */
-export function partitionEnv(runId:string){const n=parseInt(createHash('sha256').update(runId).digest('hex').slice(0,8),16);return {ROS_DOMAIN_ID:String(1+n%100),GZ_PARTITION:`lab-${runId}`};}
+export function partitionEnv(runId:string){const n=parseInt(createHash('sha256').update(runId).digest('hex').slice(0,8),16);return {ROS_DOMAIN_ID:String(51+n%51),GZ_PARTITION:`lab-${runId}`};}
 /** Fixed argv for the worker (shell:false): module, bundle, run id, namespaces, state dir, optional scenario fixture. No user string reaches it. */
 export function workerArgv(world:CompiledWorld,runId:string,python='python3',scenarioFile?:string,simulationRoot=SIM_ROOT,engineeringProfile?:string,engineeringCase?:string){
  return {command:python,args:['-m',engineeringProfile?'bridge.engineering_session':'bridge.nav2_session','--bundle',world.outputDirectory,'--run-id',runId,'--robots',world.robots.map(r=>r.namespace).join(','),'--state-dir',join(world.outputDirectory,'.bridge'),...scenarioFile?['--scenario',scenarioFile]:[],...engineeringProfile?['--profile',engineeringProfile,...engineeringCase?['--case',engineeringCase]:[]]:[]],cwd:simulationRoot,
-  env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId),...engineeringProfile?{ROS_DOMAIN_ID:String(100+Number(partitionEnv(runId).ROS_DOMAIN_ID)),ROS_LOCALHOST_ONLY:'1',GZ_IP:'127.0.0.1'}:{}}};
+  env:{...process.env,PYTHONDONTWRITEBYTECODE:'1',PYTHONPATH:`${simulationRoot}:${resolve(simulationRoot,'../agent')}`,...partitionEnv(runId),...engineeringProfile?{ROS_LOCALHOST_ONLY:'1',GZ_IP:'127.0.0.1'}:{}}};
 }
 /** JSON-lines request/response over a child's stdio; one in-flight request at a time per id, bounded wait. */
 export class StdioWorkerPort implements WorkerPort {

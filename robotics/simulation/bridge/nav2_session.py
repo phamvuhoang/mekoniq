@@ -32,10 +32,10 @@ def _agent_path():
 
 
 def partition_env(run_id, env=None):
-    """Per-run ROS domain (1..100) and Gazebo partition derived from the run id, unless the caller already pinned them: two runs on one host never share a graph."""
+    """Per-run ROS domain (51..101; 1..50 belongs to the xArm worker) and Gazebo partition derived from the run id, unless the caller already pinned them: two runs on one host never share a graph."""
     out = dict(os.environ if env is None else env)
     digest = int(hashlib.sha256(run_id.encode()).hexdigest()[:8], 16)
-    out.setdefault("ROS_DOMAIN_ID", str(1 + digest % 100))
+    out.setdefault("ROS_DOMAIN_ID", str(51 + digest % 51))
     out.setdefault("GZ_PARTITION", f"lab-{run_id}")
     return out
 

@@ -9,18 +9,22 @@ import {createXarmSimProvider,xarmProgramHash,type XarmServerConfig} from './xar
 import profile from '../../../../../robotics/manipulation/profiles/xarm6-jazzy-sim.json';
 import {hashJson} from '../hash';
 interface CaseConfig {sourceRoot:string;out:string;mode:'X1'|'X2';environmentProfile:XarmServerConfig['environmentProfile'];nativeCase:'nominal'|'cancel'|'restart';python?:string}
+export const XARM_TOOLING_REFUSALS=['VENDOR_SOURCE_MISMATCH','SOURCE_DIRTY','XARM_MODEL_SELECTOR_MISMATCH','XARM_VENDOR_CHECKOUT_MISMATCH'];
 export async function runXarmCase(c:CaseConfig){
  if(!['X1','X2'].includes(c.mode)||!['nominal','cancel','restart'].includes(c.nativeCase))throw Error('XARM_CASE_INVALID');
  await mkdir(c.out,{recursive:false});
  const git=async(...args:string[])=>(await promisify(execFile)('git',args,{cwd:c.sourceRoot,timeout:10000})).stdout.trim();
  const sourceCommit=await git('rev-parse','HEAD'),dirty=Boolean(await git('status','--porcelain','--untracked-files=all'));
  const config:XarmServerConfig={sourceRoot:c.sourceRoot,runDirectory:c.out,runId:'xarm-'+c.mode+'-'+c.nativeCase,cellId:'native-motion-cell',deviceId:'xarm6-sim',mode:c.mode,environmentProfile:c.environmentProfile,...c.python?{python:c.python}:{}};
- const manifest={schemaVersion:1,sourceCommit,dirty,subjectProfileId:c.environmentProfile,targetProfileId:profile.id,requestedProfile:profile.requestedProfile,profileHash:hashJson(profile),mode:c.mode,nativeCase:c.nativeCase,evidenceKind:profile.modes[c.mode].evidenceKind,checkerScope:'source_snapshot_not_git_graph_attestation',motion:{status:'not_run',result:'blocked_external',reason:''},contact:{status:'not_run',result:'blocked_external',reason:profile.contact.reason,trialsExecuted:0,trialsRequired:10},accepted:false,dynamics:'not_calibrated',artifacts:[] as {path:string;sha256:string}[]};
+ const manifest={schemaVersion:1,sourceCommit,dirty,subjectProfileId:c.environmentProfile,targetProfileId:profile.id,requestedProfile:profile.requestedProfile,profileHash:hashJson(profile),mode:c.mode,nativeCase:c.nativeCase,evidenceKind:profile.modes[c.mode].evidenceKind,checkerScope:'source_snapshot_not_git_graph_attestation',motion:{status:'not_run',result:'blocked_external',reason:''} as {status:string;result:string;reason:string;category?:string},contact:{status:'not_run',result:'not_run',category:'tooling',reason:profile.contact.reason,trialsExecuted:0,trialsRequired:10},accepted:false,dynamics:'not_calibrated',artifacts:[] as {path:string;sha256:string}[]};
  let provider:Awaited<ReturnType<typeof createXarmSimProvider>>|undefined;
  const lifecycle={phase:'provider_start_requested',startup:'unknown',command:'not_attempted',shutdownErrors:[] as string[]};
  const durable=async(name:string,value:unknown)=>{const path=join(c.out,name),tmp=path+'.tmp';const fd=await open(tmp,'w');try{await fd.writeFile(JSON.stringify(value,null,2)+'\n');await fd.sync();}finally{await fd.close();}await rename(tmp,path);const dir=await open(c.out,'r');try{await dir.sync();}finally{await dir.close();}};
  const persistLifecycle=()=>durable('source-lifecycle.json',lifecycle);
- const failure=(e:unknown)=>{const reason=(e as Error).message;const preflight=lifecycle.phase==='provider_start_requested'&&reason.startsWith('XARM_NATIVE_NOT_QUALIFIED:');if(preflight){lifecycle.startup='preflight_refused';lifecycle.phase='preflight_refused';}return {status:preflight?'not_run':'executed',result:preflight?'blocked_external':'fail',reason};};
+ const failure=(e:unknown)=>{const reason=(e as Error).message;const preflight=lifecycle.phase==='provider_start_requested'&&reason.startsWith('XARM_NATIVE_NOT_QUALIFIED:');if(preflight){lifecycle.startup='preflight_refused';lifecycle.phase='preflight_refused';}if(!preflight)return {status:'executed',result:'fail',reason};
+  // mirrors TOOLING_REFUSALS in native_xarm/worker.py: our own checkout/tooling being wrong is a failure, only a host/profile-only refusal is blocked_external
+  const tooling=reason.slice('XARM_NATIVE_NOT_QUALIFIED:'.length).split(',').some(r=>XARM_TOOLING_REFUSALS.includes(r.split(':')[0]!));
+  return tooling?{status:'not_run',result:'failed',category:'tooling',reason}:{status:'not_run',result:'blocked_external',category:'external',reason};};
  await persistLifecycle();
  try{
   provider=await createXarmSimProvider(config);manifest.evidenceKind=provider.evidenceKind;lifecycle.startup='ready';lifecycle.phase='provider_ready';await persistLifecycle();
@@ -48,6 +52,6 @@ export async function xarmMain(argv:string[]){
  const options:Record<string,string>={};for(let i=0;i<argv.length;i+=2){const key=argv[i]!,value=argv[i+1];if(!['--out','--mode','--environment-profile','--case'].includes(key)||!value||value.startsWith('--')||options[key])throw Error('XARM_CLI_INVALID');options[key]=value;}
  if(!options['--out']||!['X1','X2'].includes(options['--mode']??'')||!['engineering-amd64','engineering-arm64'].includes(options['--environment-profile']??''))throw Error('XARM_CLI_INVALID');
  const root=fileURLToPath(new URL('../../../../../',import.meta.url));const result=await runXarmCase({sourceRoot:root,out:resolve(options['--out']),mode:options['--mode'] as 'X1'|'X2',environmentProfile:options['--environment-profile'] as XarmServerConfig['environmentProfile'],nativeCase:(options['--case']??'nominal') as CaseConfig['nativeCase']});
- console.log(JSON.stringify(result));return result.motion.result==='pass'?0:result.motion.status==='not_run'?2:1;
+ console.log(JSON.stringify(result));return result.motion.result==='pass'?0:result.motion.result==='blocked_external'?2:1;
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url))xarmMain(process.argv.slice(2)).then(code=>{process.exitCode=code;}).catch(e=>{console.error((e as Error).message);process.exitCode=2;});

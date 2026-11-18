@@ -16,6 +16,18 @@ for(const [name,ack]of Object.entries({lostAck:{accepted:false,unknown:true,reas
   expect(JSON.parse(await readFile(join(out,'source-lifecycle.json'),'utf8'))).toMatchObject({phase:'command_attempted',startup:'ready',command:ack.unknown?'unknown':'rejected'});
  });
 }
+for(const code of ['VENDOR_SOURCE_MISMATCH:xarm_description/x.xacro','SOURCE_DIRTY','XARM_MODEL_SELECTOR_MISMATCH','XARM_VENDOR_CHECKOUT_MISMATCH'])for(const reasons of [code,'OS_MISMATCH,'+code]){
+ test(`CLI preflight refusal ${reasons} is a tooling failure, never blocked_external`,async()=>{
+  vi.spyOn(factory,'createXarmSimProvider').mockRejectedValue(Error('XARM_NATIVE_NOT_QUALIFIED:'+reasons));
+  const out=join(await mkdtemp(join(tmpdir(),'xarm-cli-')),'run');const r=await runXarmCase({sourceRoot:resolve('.'),out,mode:'X2',environmentProfile:'engineering-arm64',nativeCase:'nominal'});
+  expect(r.motion).toMatchObject({status:'not_run',result:'failed',category:'tooling'});
+ });
+}
+test('CLI host-only preflight refusal stays blocked_external and the unobserved G2 contact is not_run tooling',async()=>{
+ vi.spyOn(factory,'createXarmSimProvider').mockRejectedValue(Error('XARM_NATIVE_NOT_QUALIFIED:OS_MISMATCH,XARM_VENDOR_OVERLAY_MISSING'));
+ const out=join(await mkdtemp(join(tmpdir(),'xarm-cli-')),'run');const r=await runXarmCase({sourceRoot:resolve('.'),out,mode:'X2',environmentProfile:'engineering-arm64',nativeCase:'nominal'});
+ expect(r.motion).toMatchObject({status:'not_run',result:'blocked_external',category:'external'});expect(r.contact).toMatchObject({status:'not_run',result:'not_run',category:'tooling',reason:'G2_MIMIC_CONTACT_NOT_OBSERVED'});
+});
 for(const [name,error,status]of [['preflight','XARM_NATIVE_NOT_QUALIFIED:OS_MISMATCH','not_run'],['startup','XARM_STARTUP_TIMEOUT','executed']] as const){
  test('CLI '+name+' phase is distinct',async()=>{
   vi.spyOn(factory,'createXarmSimProvider').mockRejectedValue(Error(error));

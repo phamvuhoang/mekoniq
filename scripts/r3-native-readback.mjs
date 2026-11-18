@@ -94,7 +94,9 @@ export async function readXarmObservation(root,subject,profile){
  }
  const start=read(root,'native-started.json'),source=read(root,'source-xarm-journal.json'),native=read(root,'native-journal.json'),command=read(root,'source-command.json').command;
  if(start.mode!==m.mode||start.runId!==source.runId||start.runId!==native.runId||start.runId!==command.runId||source.evidenceKind!==m.evidenceKind||native.evidenceKind!==m.evidenceKind||native.bootId!==samples[0].bootId||native.epoch!==samples[0].epoch||native.receipts?.[command.commandId]?.hash!==hashJson(command)||!Array.isArray(source.receipts)||source.receipts.length!==1||!same(source.receipts[0].command,command))throw Error('R3_XARM_RUN_COMMAND_BINDING');
- return {mode:m.mode,nativeCase:m.nativeCase,evidenceKind:m.evidenceKind,modelMapping:'tested',sampleCoverage:'tested',qualification:'not_run',limitations:['CONTROLLER_RESTART_NOT_OBSERVED','COLLISION_PLANNING_NOT_OBSERVED','G2_CONTACT_NOT_OBSERVED','DIRECT_TRAJECTORY_SUMMARY_IS_NOT_QUALIFICATION','BAG_ACTION_PAYLOAD_SEMANTICS_NOT_INDEPENDENTLY_VERIFIED']};
+ // a run whose motion did not pass proves nothing about the mapping or the samples, however well-formed its artifacts are
+ const observed=m.motion?.result==='pass'?'tested':'not_run';
+ return {mode:m.mode,nativeCase:m.nativeCase,evidenceKind:m.evidenceKind,modelMapping:observed,sampleCoverage:observed,qualification:'not_run',limitations:['CONTROLLER_RESTART_NOT_OBSERVED','COLLISION_PLANNING_NOT_OBSERVED','G2_CONTACT_NOT_OBSERVED','DIRECT_TRAJECTORY_SUMMARY_IS_NOT_QUALIFICATION','BAG_ACTION_PAYLOAD_SEMANTICS_NOT_INDEPENDENTLY_VERIFIED']};
 }
 export async function readLinuxcncObservation(root,subject){
  evidenceInventory(root);const trace=read(root,'actual-joint-trace.json');if(trace.sourceCommit!==subject.sourceCommit||trace.evidenceKind!=='native_capture')throw Error('R3_LINUXCNC_NATIVE_TRACE_REQUIRED');

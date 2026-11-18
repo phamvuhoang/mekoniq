@@ -14,6 +14,14 @@ from .policy import ROOT,load_profile,launch_argv,verify_vendor,decode_sim_selec
 from .mapping import produce_mapping
 from .session import Session
 
+# ROS 2 domains above 101 are unsafe on Linux (ephemeral ports). xArm runs own 1..50; Gazebo/Nav2 (gazebo-nav2.ts, nav2_session.py) owns 51..101.
+def ros_domain(run_id):return 1+int(hashlib.sha256(run_id.encode()).hexdigest()[:6],16)%50
+# A refusal for one of these is our own checkout/tooling being wrong, never a missing host: it must not read as blocked_external.
+TOOLING_REFUSALS={'VENDOR_SOURCE_MISMATCH','SOURCE_DIRTY','XARM_MODEL_SELECTOR_MISMATCH','XARM_VENDOR_CHECKOUT_MISMATCH'}
+def refusal(reasons):
+    tooling=any(r.split(':')[0] in TOOLING_REFUSALS for r in reasons)
+    return {'kind':'refusal','reasons':reasons,'status':'not_run','result':'failed' if tooling else 'blocked_external','category':'tooling' if tooling else 'external','accepted':False,'dynamics':'not_calibrated'}
+
 def preflight(profile):
     from bridge.native_profile import inspect_profile
     report=inspect_profile(profile);reasons=list(report['reasonCodes'])+verify_vendor()
@@ -58,9 +66,9 @@ def main():
     inventory,reasons=preflight(args.environment_profile)
     (args.directory/'native-inventory.json').write_text(json.dumps(inventory,indent=2))
     if reasons:
-        print(json.dumps({'kind':'refusal','reasons':reasons,'status':'not_run','result':'blocked_external','accepted':False,'dynamics':'not_calibrated'}),flush=True);return 2
+        print(json.dumps(refusal(reasons)),flush=True);return 2
     import fcntl
-    domain=40+int(hashlib.sha256(args.run_id.encode()).hexdigest()[:6],16)%160
+    domain=ros_domain(args.run_id)
     os.environ.update(ROS_DOMAIN_ID=str(domain),ROS_LOCALHOST_ONLY='1',GZ_PARTITION='mekoniq-xarm-'+args.run_id,TMPDIR='/tmp')
     lease=open('/tmp/mekoniq-ros-domain-'+str(domain)+'.lock','a');fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
     graph=subprocess.run(['ros2','node','list','--no-daemon'],capture_output=True,text=True,timeout=15,check=False)
