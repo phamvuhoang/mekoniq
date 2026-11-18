@@ -1,0 +1,71 @@
+{
+  "sourceCommit": "3d8c2a8",
+  "labCommit": "4b57a9a",
+  "accepted": false,
+  "scope": "prepared",
+  "nativeReady": false,
+  "dynamics": "not_calibrated",
+  "note": "Six R3 prepared-scope records. Only DEP-PREP-01 (G-PREP) is tested; every native and physical case is not_run: no Linux host is assigned. Recorded with Source detached at 3d8c2a8 so the Lab pin equals HEAD. The handoff inputs were re-assembled from the retained 981/d4 handoffs as templates (profile, role assignment, frames, seeds, case policy) with every byte taken from the 3d8c2a8 checkout, a fresh runtime export and the Lab pin; the assembler and driver are in the archive under logs/. No human review sidecar.",
+  "rawArchive": {
+    "file": "r3-prepared.tar.gz",
+    "sha256": "fba6a9090f95a088157cbec94bc68052bb619f063d658cbdc848ed9c6e0dbf98",
+    "bytes": 64667010
+  },
+  "invocations": "36 (per profile: handoff verify, export, verify, record, verify-r3, acceptance 12/12), all exit 0",
+  "profiles": {
+    "mujoco-linux-amd64": {
+      "candidateId": "r3-mujoco-linux-amd64-prepared-3d8c2a8",
+      "qualificationSha256": "307e46895a9b117a4fd45610c77c0a9f399b1ab4fb6f8b2df055c5542b2ef6f8",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-MJ": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    },
+    "mujoco-linux-arm64": {
+      "candidateId": "r3-mujoco-linux-arm64-prepared-3d8c2a8",
+      "qualificationSha256": "183d60121285296ad6f30d6d3e11f8d2a99a8f917c4e3037aca132aa6cdafff2",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-MJ": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    },
+    "engineering-amd64": {
+      "candidateId": "r3-engineering-amd64-prepared-3d8c2a8",
+      "qualificationSha256": "67951edfa78f2ae39090b7998215d9a513b8e40b9d75859dc66e0191b6335ad6",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-AMR": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    },
+    "engineering-arm64": {
+      "candidateId": "r3-engineering-arm64-prepared-3d8c2a8",
+      "qualificationSha256": "c9f8766dda42b3022c7031f91278f2d3cdf13dbc6d31eae390f7c75f0b1d6827",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-AMR": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    },
+    "xarm6-jazzy-sim": {
+      "candidateId": "r3-xarm6-jazzy-sim-prepared-3d8c2a8",
+      "qualificationSha256": "4582ed226e56e6aa76b5d50472c2e38f7100627cf03705f0428fad04e6cbc20f",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-ARM": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    },
+    "puma560-linuxcnc-sim": {
+      "candidateId": "r3-puma560-linuxcnc-sim-prepared-3d8c2a8",
+      "qualificationSha256": "fb91ee3db49192ec3c8ef59f1745be395f5499d906c8c856d6f03b71f76818cd",
+      "gates": {
+        "G-PREP": "tested",
+        "G-NATIVE-ARM": "not_run",
+        "G-PHYS-PREP": "not_run"
+      }
+    }
+  }
+}
