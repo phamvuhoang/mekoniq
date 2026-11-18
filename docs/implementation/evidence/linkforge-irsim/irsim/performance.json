@@ -44,17 +44,17 @@
  "steadyState": {
   "batches": 60,
   "perTickMs": {
-   "p50": 6.55822332,
-   "p95": 11.86752084,
-   "max": 14.1660925
+   "p50": 5.4676325,
+   "p95": 11.314445840000001,
+   "max": 17.7814225
   },
-  "realtimeFactor": 2.46665261668188,
-  "wallSeconds": 24.324462875000002,
+  "realtimeFactor": 2.8235941993661413,
+  "wallSeconds": 21.249512417000002,
   "workerRssMiB": {
-   "max": 103.578125,
+   "max": 104.9375,
    "samples": 60
   },
-  "evidenceBytes": 1522443
+  "evidenceBytes": 1522442
  },
  "targets": {
   "realtimeFactorAt1x": ">= 1 (median)",

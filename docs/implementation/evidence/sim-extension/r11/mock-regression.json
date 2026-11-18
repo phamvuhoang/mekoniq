@@ -18,9 +18,9 @@
   }
  },
  "revisions": {
-  "source": "9aebb482f727f4b0e666159e7e36dd883da23354",
+  "source": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
   "sourceDirty": false,
-  "lab": "f3909ef855c550205805db324a9a84c5790f21ea",
+  "lab": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
   "labDirty": false
  },
  "identity": {
@@ -32,25 +32,25 @@
   ],
   "start": {
    "source": {
-    "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-    "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+    "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+    "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
     "dirtyCodePaths": []
    },
    "lab": {
-    "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-    "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+    "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+    "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
     "dirtyCodePaths": []
    }
   },
   "end": {
    "source": {
-    "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-    "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+    "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+    "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
     "dirtyCodePaths": []
    },
    "lab": {
-    "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-    "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+    "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+    "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
     "dirtyCodePaths": []
    }
   },
@@ -59,13 +59,13 @@
     "id": "source-typecheck:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -74,13 +74,13 @@
     "id": "source-typecheck:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -89,13 +89,13 @@
     "id": "source-lint:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -104,13 +104,13 @@
     "id": "source-lint:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -119,13 +119,13 @@
     "id": "source-contracts-check:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -134,13 +134,13 @@
     "id": "source-contracts-check:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -149,13 +149,13 @@
     "id": "source-referenced:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -164,13 +164,13 @@
     "id": "source-referenced:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -179,13 +179,13 @@
     "id": "source-unit:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -194,13 +194,13 @@
     "id": "source-unit:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -209,13 +209,13 @@
     "id": "source-contracts:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -224,13 +224,13 @@
     "id": "source-contracts:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -239,13 +239,13 @@
     "id": "source-engineering:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -254,13 +254,13 @@
     "id": "source-engineering:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -269,13 +269,13 @@
     "id": "source-pytest-simulation:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -284,13 +284,13 @@
     "id": "source-pytest-simulation:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -299,13 +299,13 @@
     "id": "lab-check-source:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -314,13 +314,13 @@
     "id": "lab-check-source:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -329,13 +329,13 @@
     "id": "lab-typecheck:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -344,13 +344,13 @@
     "id": "lab-typecheck:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -359,13 +359,13 @@
     "id": "lab-vitest:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -374,13 +374,13 @@
     "id": "lab-vitest:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -389,13 +389,13 @@
     "id": "lab-build:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -404,13 +404,13 @@
     "id": "lab-build:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -419,13 +419,13 @@
     "id": "lab-e2e-browser:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -434,13 +434,13 @@
     "id": "lab-e2e-browser:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -449,13 +449,13 @@
     "id": "lab-mock-e2e:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -464,13 +464,13 @@
     "id": "lab-mock-e2e:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -479,13 +479,13 @@
     "id": "lab-runtime-e2e:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -494,13 +494,13 @@
     "id": "lab-runtime-e2e:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -509,13 +509,13 @@
     "id": "lab-ui-performance:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -524,13 +524,13 @@
     "id": "lab-ui-performance:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -539,13 +539,13 @@
     "id": "lab-offline-build:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -554,13 +554,13 @@
     "id": "lab-offline-build:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -569,13 +569,13 @@
     "id": "lab-offline-e2e:before",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -584,13 +584,13 @@
     "id": "lab-offline-e2e:after",
     "identity": {
      "source": {
-      "commit": "9aebb482f727f4b0e666159e7e36dd883da23354",
-      "codeHash": "3eb283b103bdf6afb0228e0af7bc523e878b338d4d02d1f98f216909883b21a5",
+      "commit": "3d8c2a8daa025cab6373fd86b0cec7f40864fdb0",
+      "codeHash": "8443c3c8f759ad0dfde9b3256e5b6da85dbe467cfaa30f2485765f0f1063d46c",
       "dirtyCodePaths": []
      },
      "lab": {
-      "commit": "f3909ef855c550205805db324a9a84c5790f21ea",
-      "codeHash": "00b914a4196a1480061887dce4d730c52d1fef59c57759c54a2490089176a4c2",
+      "commit": "4b57a9a8811c961cb854c2810f70f0d2eeab4af9",
+      "codeHash": "3f26a39cb0e0cd5be90deb54dbef4e9e30fbf4d98177a03dc217a1070ee67107",
       "dirtyCodePaths": []
      }
     }
@@ -603,12 +603,12 @@
    "id": "source-referenced:source-referenced.json",
    "repo": "source",
    "kind": "vitest",
-   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-referenced.json",
-   "startedAt": "2026-11-18T04:40:23.890Z",
-   "finishedAt": "2026-11-18T04:43:39.955Z",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-referenced.json",
+   "startedAt": "2026-11-18T19:14:33.866Z",
+   "finishedAt": "2026-11-18T19:17:54.835Z",
    "exitCode": 0,
    "file": "source-referenced.json",
-   "sha256": "5b324ca76eda92eaeb9cb70f320e68053f2d6d7c5637678df9d39154a99858d8",
+   "sha256": "78e8cd6a9ad82207a4315d35d2b47bcf8ae3d87716c0862fbeea7be914179bea",
    "summary": {
     "passed": 286,
     "failed": 0,
@@ -620,29 +620,29 @@
    "id": "source-unit:source-unit.json",
    "repo": "source",
    "kind": "vitest",
-   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-unit.json",
-   "startedAt": "2026-11-18T04:43:40.497Z",
-   "finishedAt": "2026-11-18T04:47:27.103Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-unit.json",
+   "startedAt": "2026-11-18T19:17:55.450Z",
+   "finishedAt": "2026-11-18T19:21:52.678Z",
    "exitCode": 0,
    "file": "source-unit.json",
-   "sha256": "71c060d45fa9320e68d75af9b1bde1af878a6a09f2e4dd7354e682adb37f0a7d",
+   "sha256": "32aac3f6fa652ad812d08f88aa02cf4d12e62e17ee56120e3202b3fc55664d50",
    "summary": {
-    "passed": 1106,
+    "passed": 1111,
     "failed": 0,
     "skipped": 0,
-    "total": 1106
+    "total": 1111
    }
   },
   {
    "id": "source-contracts:source-contracts.json",
    "repo": "source",
    "kind": "vitest",
-   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-contracts.json",
-   "startedAt": "2026-11-18T04:47:27.744Z",
-   "finishedAt": "2026-11-18T04:47:32.192Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-contracts.json",
+   "startedAt": "2026-11-18T19:21:53.335Z",
+   "finishedAt": "2026-11-18T19:21:57.857Z",
    "exitCode": 0,
    "file": "source-contracts.json",
-   "sha256": "38037b3ebfa207dff3957df6eb0fb22e2d240cc9c923f579d6ea3cfc589e3bed",
+   "sha256": "68ebab1587a26d56e389028e5e19ff2d2d66b31f4a04477030d9f4ba5899c75d",
    "summary": {
     "passed": 105,
     "failed": 0,
@@ -654,12 +654,12 @@
    "id": "source-engineering:source-engineering.json",
    "repo": "source",
    "kind": "vitest",
-   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-engineering.json",
-   "startedAt": "2026-11-18T04:47:32.611Z",
-   "finishedAt": "2026-11-18T04:54:46.002Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-engineering.json",
+   "startedAt": "2026-11-18T19:21:58.331Z",
+   "finishedAt": "2026-11-18T19:28:53.811Z",
    "exitCode": 0,
    "file": "source-engineering.json",
-   "sha256": "f15c7c8ce8b418d91902ae5a6c4abbafa171711f7d11f0b7ff5c35fd719526d2",
+   "sha256": "142b8edc36c8906f99f11f16d2ced75812f3f083a4fd8895e340f435b646f3dd",
    "summary": {
     "passed": 716,
     "failed": 0,
@@ -671,12 +671,12 @@
    "id": "source-pytest-simulation:source-pytest-simulation.xml",
    "repo": "source",
    "kind": "junit",
-   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-pytest-simulation.xml",
-   "startedAt": "2026-11-18T04:54:46.652Z",
-   "finishedAt": "2026-11-18T04:54:49.923Z",
+   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-pytest-simulation.xml",
+   "startedAt": "2026-11-18T19:28:54.472Z",
+   "finishedAt": "2026-11-18T19:28:58.112Z",
    "exitCode": 0,
    "file": "source-pytest-simulation.xml",
-   "sha256": "374845d83f6d7cadf4ea6b31418fb0a45870e9cfc57ae6bc4a6686617827fcfe",
+   "sha256": "76630f80f713455080c077c25adf1e957584df53b0d19a557253eaf8886ba2cf",
    "summary": {
     "tests": 217,
     "failures": 0,
@@ -688,12 +688,12 @@
    "id": "lab-vitest:lab-vitest.json",
    "repo": "lab",
    "kind": "vitest",
-   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-vitest.json",
-   "startedAt": "2026-11-18T04:54:58.565Z",
-   "finishedAt": "2026-11-18T04:55:26.779Z",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-vitest.json",
+   "startedAt": "2026-11-18T19:29:04.674Z",
+   "finishedAt": "2026-11-18T19:29:29.844Z",
    "exitCode": 0,
    "file": "lab-vitest.json",
-   "sha256": "f5798c9f4f180be303851c3e5a65e7ded717f7545123a961148c9eb1135dcf76",
+   "sha256": "25a8df2910455a512f51baff4f587f8cb49528ecc6cd388526f93f8080348b16",
    "summary": {
     "passed": 629,
     "failed": 0,
@@ -705,12 +705,12 @@
    "id": "lab-e2e-browser:lab-pw-browser.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-e2e-browser pnpm exec playwright test",
-   "startedAt": "2026-11-18T04:55:35.084Z",
-   "finishedAt": "2026-11-18T04:56:28.226Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-e2e-browser pnpm exec playwright test",
+   "startedAt": "2026-11-18T19:29:37.429Z",
+   "finishedAt": "2026-11-18T19:30:19.219Z",
    "exitCode": 0,
    "file": "lab-pw-browser.json",
-   "sha256": "854f3c8055bd2c68e2c4452827d953a01d15057af904127188bd6ae6fcde1215",
+   "sha256": "35bd2416ee7f6db37904766e8d830418272e7f2e84b643c2a5b98814a5594a53",
    "summary": {
     "expected": 70,
     "unexpected": 0,
@@ -722,12 +722,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-twin-workspace.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-twin-workspace.json",
-   "sha256": "29f862c9a389f29591b301b768f21b4b625614622a53289a387ec1843afdcdce",
+   "sha256": "314d0e1f48c91e63f4b47dbc329fdb4fcffac9d2b5a0553904ec4e40a411d59e",
    "summary": {
     "expected": 5,
     "unexpected": 0,
@@ -739,12 +739,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-coffee-journey.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-coffee-journey.json",
-   "sha256": "c3542ca91a3613dbbf9b81a5f0bf7de67c2f0897307ef91074350ef77c9e09eb",
+   "sha256": "81de774af8f8995a8c3b213e2300cd1ef050003a3ace876634f9ae2da255f987",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -756,12 +756,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-twin-recovery.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-twin-recovery.json",
-   "sha256": "b4d38832d4a48f6824c88de264acb8b051e8e9fed8e4ffe399fd3e34196c966c",
+   "sha256": "07f5ee9ca95518e99ffb6fe0d007c97fc82f1fed79c8b1f3349975a29bbbb4f7",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -773,12 +773,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-twin-inputs.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-twin-inputs.json",
-   "sha256": "a201d8b6b5831e20567f740f0cc07b469223a1efe8f6fc3da429387cec6e1272",
+   "sha256": "9b8f3f9e07807b5d54f9b88024b51bc2ea556a35be3d028b20cabca49f0b0425",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -790,12 +790,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-fault-schedule.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-fault-schedule.json",
-   "sha256": "2001873dc003971e222646d2bef57acee75a14440a105e657edf4003aa693ec7",
+   "sha256": "0c6d4cb6dceb6393abf63ff534c199d731de3ea7e60ba1db0c67973b98fdaefc",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -807,12 +807,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-arm-simulation.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-arm-simulation.json",
-   "sha256": "51cb3637b46266469390e48b307a9169bf6fd837f5310b26da8d9c9e2094b676",
+   "sha256": "1d1d659949b57b9d3be6a6adf237c23d66218fb7eae43f1dc72b0aa9d2d19a8e",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -824,12 +824,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-twin-plan01.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-twin-plan01.json",
-   "sha256": "f646e58c4f123b254a0786fc1dc35ab8788811a56fa7a1a39e56dbe23115bbf9",
+   "sha256": "2403a1e4ef0ea17ce9fdec2111c096c9a62b0d53855b0f6164d84f5670267061",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -841,12 +841,12 @@
    "id": "lab-mock-e2e:lab-pw-mock-legacy-campaign.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "file": "lab-pw-mock-legacy-campaign.json",
-   "sha256": "34b9c40f7fbae445b7ccbff5b6b6cc0e3005e50b193a4e1dde4800b5fcf67026",
+   "sha256": "8172301a379f5c1ba724d244aea12996d75a3078c6f021be1b6c69ead5c66914",
    "summary": {
     "expected": 3,
     "unexpected": 0,
@@ -858,12 +858,12 @@
    "id": "lab-runtime-e2e:lab-pw-runtime.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
-   "startedAt": "2026-11-18T04:58:45.345Z",
-   "finishedAt": "2026-11-18T04:58:51.964Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-18T19:32:38.066Z",
+   "finishedAt": "2026-11-18T19:32:44.059Z",
    "exitCode": 0,
    "file": "lab-pw-runtime.json",
-   "sha256": "b54bdede128623523d1c7b4f14ddd53a93e668dcc2f9d8089dd5655a69a9a550",
+   "sha256": "bdafbdea261ac9d68891a9936efcc8a46cb23eed2f5f9b37452771f58de71662",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -875,12 +875,12 @@
    "id": "lab-ui-performance:lab-ui-performance.json",
    "repo": "lab",
    "kind": "measurement",
-   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-ui-performance.json",
-   "startedAt": "2026-11-18T04:58:52.432Z",
-   "finishedAt": "2026-11-18T05:00:58.711Z",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-18T19:32:44.429Z",
+   "finishedAt": "2026-11-18T19:34:50.743Z",
    "exitCode": 0,
    "file": "lab-ui-performance.json",
-   "sha256": "8170f2d385c30c4f6ac46ef98c8ac4245043f6c2818da8f6e3e95dac2c1c6624",
+   "sha256": "78babc62a71505177ca2b150394b17594e5f5c630fcbb12f5d837b15bbd0ce01",
    "summary": {
     "durationMs": 60000,
     "minimumDurationMet": true,
@@ -888,13 +888,13 @@
      {
       "id": "desktop-3d",
       "p95Ms": 16.700000000004366,
-      "paintP95Ms": 2.9000000953674316,
+      "paintP95Ms": 3,
       "meetsTarget": true
      },
      {
       "id": "tablet-2d-emulated",
       "p95Ms": 16.700000000004366,
-      "paintP95Ms": 3.299999713897705,
+      "paintP95Ms": 3.700000286102295,
       "meetsTarget": true
      }
     ]
@@ -904,12 +904,12 @@
    "id": "lab-offline-e2e:lab-pw-offline-twin-recovery.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
-   "startedAt": "2026-11-18T05:01:00.698Z",
-   "finishedAt": "2026-11-18T05:01:49.140Z",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-18T19:34:52.457Z",
+   "finishedAt": "2026-11-18T19:35:38.652Z",
    "exitCode": 0,
    "file": "lab-pw-offline-twin-recovery.json",
-   "sha256": "f51dc22aba5cc67ee3922ed8afc99a42df3b5a2bc14dd04cf2ac4145336c507f",
+   "sha256": "6db9049f0985651536ca46e07b9bc94738877d9a0890a423b790ba3aad532880",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -921,12 +921,12 @@
    "id": "lab-offline-e2e:lab-pw-offline-coffee-journey.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
-   "startedAt": "2026-11-18T05:01:00.698Z",
-   "finishedAt": "2026-11-18T05:01:49.140Z",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-18T19:34:52.457Z",
+   "finishedAt": "2026-11-18T19:35:38.652Z",
    "exitCode": 0,
    "file": "lab-pw-offline-coffee-journey.json",
-   "sha256": "26fddbd3697298ae10be7b6db6adc9db2c5190c242e02e876be8e815af971a06",
+   "sha256": "236e685c62b74048bdec45a3c59972e245a99cb852739793ee84f53339369ab8",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -938,12 +938,12 @@
    "id": "lab-offline-e2e:lab-pw-offline-offline-bv01.json",
    "repo": "lab",
    "kind": "playwright",
-   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
-   "startedAt": "2026-11-18T05:01:00.698Z",
-   "finishedAt": "2026-11-18T05:01:49.140Z",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-18T19:34:52.457Z",
+   "finishedAt": "2026-11-18T19:35:38.652Z",
    "exitCode": 0,
    "file": "lab-pw-offline-offline-bv01.json",
-   "sha256": "0159eaa9fb42c766d69120a76a15d8f174ea0d575d9ff42c49ac855856ff7cc2",
+   "sha256": "eb67e0d2560db95baad41920d55d14ce46c6be801ce50eb1e5baf254d9291953",
    "summary": {
     "expected": 1,
     "unexpected": 0,
@@ -957,8 +957,8 @@
    "id": "source-typecheck",
    "repo": "source",
    "command": "pnpm -s typecheck",
-   "startedAt": "2026-11-18T04:40:05.926Z",
-   "finishedAt": "2026-11-18T04:40:14.661Z",
+   "startedAt": "2026-11-18T19:14:13.496Z",
+   "finishedAt": "2026-11-18T19:14:24.038Z",
    "exitCode": 0,
    "log": "source-typecheck.log",
    "logSha256": "adba4af9194e10e47dda75ff0fd0f8c2b756474896d0eba5612799c527ff372a"
@@ -967,8 +967,8 @@
    "id": "source-lint",
    "repo": "source",
    "command": "pnpm -s exec eslint . --ignore-pattern .superpowers/**",
-   "startedAt": "2026-11-18T04:40:15.142Z",
-   "finishedAt": "2026-11-18T04:40:22.510Z",
+   "startedAt": "2026-11-18T19:14:24.532Z",
+   "finishedAt": "2026-11-18T19:14:32.394Z",
    "exitCode": 0,
    "log": "source-lint.log",
    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -977,8 +977,8 @@
    "id": "source-contracts-check",
    "repo": "source",
    "command": "pnpm -s contracts:check",
-   "startedAt": "2026-11-18T04:40:22.921Z",
-   "finishedAt": "2026-11-18T04:40:23.474Z",
+   "startedAt": "2026-11-18T19:14:32.812Z",
+   "finishedAt": "2026-11-18T19:14:33.368Z",
    "exitCode": 0,
    "log": "source-contracts-check.log",
    "logSha256": "3e8bf9225a03bd72709aba63c895580240a4737d43068ce350b8c0ed5e6b18cd"
@@ -986,69 +986,69 @@
   {
    "id": "source-referenced",
    "repo": "source",
-   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-referenced.json",
-   "startedAt": "2026-11-18T04:40:23.890Z",
-   "finishedAt": "2026-11-18T04:43:39.955Z",
+   "command": "LAB_V2_CLEAN_EXPORT=1 node node_modules/vitest/vitest.mjs run tests/integration/lab-v2-mock.test.ts tests/integration/lab-v2-recovery.test.ts tests/integration/lab-v2-contracts.test.ts tests/integration/lab-v2-model.test.ts tests/integration/lab-v2-arm-model.test.ts tests/integration/lab-v2-stream.test.ts tests/integration/lab-v2-report.test.ts tests/integration/lab-v2-residuals.test.ts tests/integration/lab-runtime.test.ts tests/integration/lab-runtime-gateway.test.ts tests/integration/lab-runtime-contracts.test.ts tests/integration/lab-runtime-artifact.test.ts tests/integration/coffee-job.test.ts tests/integration/coffee-transfer.test.ts tests/integration/coffee-recovery.test.ts tests/integration/coffee-review.test.ts tests/integration/coffee-policy.test.ts tests/integration/coffee-conservation.test.ts tests/integration/lab-v2-runtime-review.test.ts tests/integration/lab-v2-software-gaps.test.ts tests/integration/lab-v2-mixed.test.ts tests/integration/lab-v2-arm-safety-model.test.ts tests/integration/lab-v2-arm-faults.test.ts tests/integration/lab-v2-arm-scene.test.ts tests/integration/lab-v2-arm-inactive-scene.test.ts tests/integration/lab-v2-checkpoint-compat.test.ts tests/integration/lab-v2-reclaim-targets.test.ts tests/integration/robot-admission.test.ts tests/integration/table-order-amendments.test.ts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-referenced.json",
+   "startedAt": "2026-11-18T19:14:33.866Z",
+   "finishedAt": "2026-11-18T19:17:54.835Z",
    "exitCode": 0,
    "log": "source-referenced.log",
-   "logSha256": "4eea4e77f777659edb634e92061de15b463fa23b542b8267f2c6e84c5f4ac704"
+   "logSha256": "180c54b2ba03167aec2bd6022fa62cd7ac51515213719a96ca7d15898da3a17b"
   },
   {
    "id": "source-unit",
    "repo": "source",
-   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-unit.json",
-   "startedAt": "2026-11-18T04:43:40.497Z",
-   "finishedAt": "2026-11-18T04:47:27.103Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/unit --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-unit.json",
+   "startedAt": "2026-11-18T19:17:55.450Z",
+   "finishedAt": "2026-11-18T19:21:52.678Z",
    "exitCode": 0,
    "log": "source-unit.log",
-   "logSha256": "218424c86152e47c0349218de675c242769ff8189827a682f3d32fdeb5fe1c07"
+   "logSha256": "24b9343333fea8d3b30c3d3328f782a1a5f958c610d0ac5ed68a7f7de213c5ac"
   },
   {
    "id": "source-contracts",
    "repo": "source",
-   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-contracts.json",
-   "startedAt": "2026-11-18T04:47:27.744Z",
-   "finishedAt": "2026-11-18T04:47:32.192Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-contracts.json",
+   "startedAt": "2026-11-18T19:21:53.335Z",
+   "finishedAt": "2026-11-18T19:21:57.857Z",
    "exitCode": 0,
    "log": "source-contracts.log",
-   "logSha256": "0c29a28f6fe82f11a3dab891d0ecde857467736353f8f193675bb43dc734ef0e"
+   "logSha256": "3d854288e3208f0260a8ae1a638f07f9a864f280d41164f666c0606c84c83602"
   },
   {
    "id": "source-engineering",
    "repo": "source",
-   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-engineering.json",
-   "startedAt": "2026-11-18T04:47:32.611Z",
-   "finishedAt": "2026-11-18T04:54:46.002Z",
+   "command": "node node_modules/vitest/vitest.mjs run tests/integration/engineering tests/integration/lab- tests/security/engineering tests/unit/engineering tests/contracts --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-engineering.json",
+   "startedAt": "2026-11-18T19:21:58.331Z",
+   "finishedAt": "2026-11-18T19:28:53.811Z",
    "exitCode": 0,
    "log": "source-engineering.log",
-   "logSha256": "8291effb55ecca6657bf828995f43c6c72f276d51997a6d5eda35901bb952e3a"
+   "logSha256": "76901e6bb430fe0c16bc81ee446021abaf54c4d1f86ad71489db63f55af293bd"
   },
   {
    "id": "source-pytest-simulation",
    "repo": "source",
-   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/source-pytest-simulation.xml",
-   "startedAt": "2026-11-18T04:54:46.652Z",
-   "finishedAt": "2026-11-18T04:54:49.923Z",
+   "command": "PYTHONDONTWRITEBYTECODE=1 <workspace>/source/.venv/bin/python -m pytest robotics/simulation/tests -q --junitxml=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/source-pytest-simulation.xml",
+   "startedAt": "2026-11-18T19:28:54.472Z",
+   "finishedAt": "2026-11-18T19:28:58.112Z",
    "exitCode": 0,
    "log": "source-pytest-simulation.log",
-   "logSha256": "161c767434040e152ea465754c6a869539d96eb3181c4d3c766fc9567377631b"
+   "logSha256": "6e1107d8613bf19caa5c27c8fa7415c0e635625bcacfae5fa9ec33039b3d3aba"
   },
   {
    "id": "lab-check-source",
    "repo": "lab",
    "command": "pnpm -s check:source",
-   "startedAt": "2026-11-18T04:54:50.580Z",
-   "finishedAt": "2026-11-18T04:54:50.857Z",
+   "startedAt": "2026-11-18T19:28:58.552Z",
+   "finishedAt": "2026-11-18T19:28:58.815Z",
    "exitCode": 0,
    "log": "lab-check-source.log",
-   "logSha256": "573478ec7f446276a3803239456d7beaffcef920bfe03bc34917c4e576d9c52b"
+   "logSha256": "117a6f73cd1fafbc365cee570558ca72f2b8374b2654ed88504fb0b47ff507cd"
   },
   {
    "id": "lab-typecheck",
    "repo": "lab",
    "command": "pnpm -s typecheck",
-   "startedAt": "2026-11-18T04:54:51.332Z",
-   "finishedAt": "2026-11-18T04:54:57.821Z",
+   "startedAt": "2026-11-18T19:28:59.168Z",
+   "finishedAt": "2026-11-18T19:29:04.297Z",
    "exitCode": 0,
    "log": "lab-typecheck.log",
    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
@@ -1056,69 +1056,69 @@
   {
    "id": "lab-vitest",
    "repo": "lab",
-   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-vitest.json",
-   "startedAt": "2026-11-18T04:54:58.565Z",
-   "finishedAt": "2026-11-18T04:55:26.779Z",
+   "command": "<workspace>/lab/node_modules/.bin/vitest run tests/unit tests/integration --reporter=json --outputFile=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-vitest.json",
+   "startedAt": "2026-11-18T19:29:04.674Z",
+   "finishedAt": "2026-11-18T19:29:29.844Z",
    "exitCode": 0,
    "log": "lab-vitest.log",
-   "logSha256": "cfd8b9246eac60da190a6ca3de752be20a2a328798a607dbda45c94bf03f4cbe"
+   "logSha256": "b983def6f2bf4ee813253713b4c4b162112abb678acae572c3679dc0a4025148"
   },
   {
    "id": "lab-build",
    "repo": "lab",
    "command": "pnpm -s build",
-   "startedAt": "2026-11-18T04:55:27.382Z",
-   "finishedAt": "2026-11-18T04:55:34.536Z",
+   "startedAt": "2026-11-18T19:29:30.290Z",
+   "finishedAt": "2026-11-18T19:29:36.978Z",
    "exitCode": 0,
    "log": "lab-build.log",
-   "logSha256": "81c38a5c54a0c975f4b646c51d64ac43c86be6be7f4922c6454abbcaa8271135"
+   "logSha256": "df7ea619fba73e0a40f6f20a2a7fcf71235a157728f16544bf84f2f01a8dbbaa"
   },
   {
    "id": "lab-e2e-browser",
    "repo": "lab",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-e2e-browser pnpm exec playwright test",
-   "startedAt": "2026-11-18T04:55:35.084Z",
-   "finishedAt": "2026-11-18T04:56:28.226Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-browser.json LAB_BRAND_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/brand-ui LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-e2e-browser LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-e2e-browser pnpm exec playwright test",
+   "startedAt": "2026-11-18T19:29:37.429Z",
+   "finishedAt": "2026-11-18T19:30:19.219Z",
    "exitCode": 0,
    "log": "lab-e2e-browser.log",
-   "logSha256": "5a8826f957f9960062aa2341a3b0be3b6a529d8af24bb45a85303105cd0fb3e6"
+   "logSha256": "2f0ef005d71cf96243e7016861fa82da04286390da885ab5ab83b753e29365ea"
   },
   {
    "id": "lab-mock-e2e",
    "repo": "lab",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
-   "startedAt": "2026-11-18T04:56:28.882Z",
-   "finishedAt": "2026-11-18T04:58:44.678Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-mock.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-mock-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-mock-e2e node scripts/test-mock-e2e.mjs twin-workspace.spec.ts coffee-journey.spec.ts twin-recovery.spec.ts twin-inputs.spec.ts fault-schedule.spec.ts arm-simulation.spec.ts twin-plan01.spec.ts legacy-campaign.spec.ts",
+   "startedAt": "2026-11-18T19:30:19.758Z",
+   "finishedAt": "2026-11-18T19:32:37.517Z",
    "exitCode": 0,
    "log": "lab-mock-e2e.log",
-   "logSha256": "44333fa9e38eec604e1e2df9c8f6bdca9efb7fb2d9260b4562421692b0c8ff65"
+   "logSha256": "9df11e5fd98535d26759e8d3d466d34e06ef8ad769122ccd07065f1eb1fa9f31"
   },
   {
    "id": "lab-runtime-e2e",
    "repo": "lab",
-   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
-   "startedAt": "2026-11-18T04:58:45.345Z",
-   "finishedAt": "2026-11-18T04:58:51.964Z",
+   "command": "LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-runtime.json LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-runtime-e2e pnpm -s test:runtime-e2e",
+   "startedAt": "2026-11-18T19:32:38.066Z",
+   "finishedAt": "2026-11-18T19:32:44.059Z",
    "exitCode": 0,
    "log": "lab-runtime-e2e.log",
-   "logSha256": "356cadb56d1331016803c21b8091eff74a68b090e7611557c63ee295b160ca18"
+   "logSha256": "27989e850aa2a50f68da3809ddcffdb8be84778c552cf18fcda3c51de62f0cff"
   },
   {
    "id": "lab-ui-performance",
    "repo": "lab",
-   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-ui-performance.json",
-   "startedAt": "2026-11-18T04:58:52.432Z",
-   "finishedAt": "2026-11-18T05:00:58.711Z",
+   "command": "node scripts/measure-twin-ui.mjs --duration-ms 60000 --output <workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-ui-performance.json",
+   "startedAt": "2026-11-18T19:32:44.429Z",
+   "finishedAt": "2026-11-18T19:34:50.743Z",
    "exitCode": 0,
    "log": "lab-ui-performance.log",
-   "logSha256": "16001c3a1926f0a080f4431f82022ba23f35f1eb235066da97c29b3be433f944"
+   "logSha256": "8459a2c31361b4bb1f40d59d56a52042c0413d801aa1b65b2df8f0622bdc4cf6"
   },
   {
    "id": "lab-offline-build",
    "repo": "lab",
    "command": "node scripts/build-offline.mjs --out <tmp>",
-   "startedAt": "2026-11-18T05:00:59.382Z",
-   "finishedAt": "2026-11-18T05:01:00.059Z",
+   "startedAt": "2026-11-18T19:34:51.349Z",
+   "finishedAt": "2026-11-18T19:34:52.008Z",
    "exitCode": 0,
    "log": "lab-offline-build.log",
    "logSha256": "42973bfdcfa85ac8fcdbde482c0cb6b0aeefa817d778dd110b60702c543d85b5"
@@ -1126,19 +1126,19 @@
   {
    "id": "lab-offline-e2e",
    "repo": "lab",
-   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-9aebb48-lab-r3/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
-   "startedAt": "2026-11-18T05:01:00.698Z",
-   "finishedAt": "2026-11-18T05:01:49.140Z",
+   "command": "LAB_TEST_OFFLINE_ROOT=<tmp> LAB_PW_JSON=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/lab-pw-offline.json LAB_EVIDENCE_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/screens/lab-offline-e2e LAB_PW_OUTPUT_DIR=<workspace>/evidence-archive/records-3d8c2a8-lab-4b57a9a/regression/playwright/lab-offline-e2e node scripts/test-mock-e2e.mjs twin-recovery.spec.ts coffee-journey.spec.ts offline-bv01.spec.ts",
+   "startedAt": "2026-11-18T19:34:52.457Z",
+   "finishedAt": "2026-11-18T19:35:38.652Z",
    "exitCode": 0,
    "log": "lab-offline-e2e.log",
-   "logSha256": "0ed3a7c8ec02fdc503ec41ae9b2400a11fdb1b6f1c2b29cda4fa0ca755b6b5c3"
+   "logSha256": "1ce5e2374ac56cf8fbffc6548465525648fde04a94434606efc3fb88f206f830"
   }
  ],
  "notRun": [],
  "artifacts": [
   {
    "file": "brand-ui/lab-deployment-1024.png",
-   "sha256": "4965d392613c55efd7a3b9f9e8cff4ca730185423c25be6f81bc13ddc061dcc3",
+   "sha256": "9ef58aa53065aa274468e8c5625a93153c33cb8c89f8372d0ae90ba273aa2cb8",
    "commandId": "lab-e2e-browser"
   },
   {
@@ -1153,17 +1153,17 @@
   },
   {
    "file": "brand-ui/lab-design-1024.png",
-   "sha256": "42d06c479b9bd412fc7d38d4bc9c8f36314df1df919444182eb05b58937e5795",
+   "sha256": "390007f9eea1d990627e327db39fa9bc4a2965cc74c3cf43840c4a94c64fecaa",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-design-1512.png",
-   "sha256": "f03fea08a218f48e9ea4424ae448fad2786dfd762395f7bc4dc8d315c7af8b78",
+   "sha256": "fe48fc0dae10027f12e74a48dd2c4fc73cde19d0cfcef9f5c2635d1c001bb00d",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-design-390.png",
-   "sha256": "dd84cf54b62ec5ac880a7eea39613ce2d2ef982235a20e45504774ed91895b0f",
+   "sha256": "21420bf8ef5054a13a798d1f1260a77d3a90584b156b4aa25a4623bf8fb3254c",
    "commandId": "lab-e2e-browser"
   },
   {
@@ -1173,17 +1173,17 @@
   },
   {
    "file": "brand-ui/lab-restaurant-1512.png",
-   "sha256": "e149fb7c8ef57901d87c53140f28359b8762fa915acf6cd4551e5e50b8baba7e",
+   "sha256": "03b3de5b76f74ea75d1086c834b5db454dcb2146d121768490c1f698ee7d1afc",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-restaurant-390.png",
-   "sha256": "adc9ba210fdb955ac1f7d76ca4ce64be3454945f019089c155e10233ec4d3c91",
+   "sha256": "5d39f53809e8259ef09af0f0b75b44eb33ec3f2a59a26c872a1275dcce81f7d3",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-results-1024.png",
-   "sha256": "dbea5a95ecfb99aea432a5befc58d55e153549196aa189eceb61b70758054573",
+   "sha256": "13dda17a1025b9504f1b04aa41f5207354967e5865229d3a91e73b331209b460",
    "commandId": "lab-e2e-browser"
   },
   {
@@ -1198,32 +1198,32 @@
   },
   {
    "file": "brand-ui/lab-scenarios-1024.png",
-   "sha256": "4ebf9cc771f5f4a6a7324eac582343ddf310e54a3762d5d63b9aff7fd3f1475a",
+   "sha256": "80c2b04b7bde62efa10b811f0ad2c360a855dd048bd1156d7e603a8470b97a86",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-scenarios-1512.png",
-   "sha256": "03de8ef59653a74abb3090aee606e77dccca1ee4d26bf5aac88c40e3f42b93b8",
+   "sha256": "e2e03603f51a23bf00a4962a71da9b87862c1945bb81c6e52903b90fddf5aa2b",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-scenarios-390.png",
-   "sha256": "e0fc3cfb9305f7a633e64efd1303630e6ffffed1bf02356a821b34bff73039c1",
+   "sha256": "05dbeb290186d8e53733b66959ed8c58dd1f753ca6bcf3fe8271cf628c794670",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-twin-1024.png",
-   "sha256": "e242989ac02f3a9d706eb64ab7d9d6938df57e63b85c099d29756718c13a51f3",
+   "sha256": "6cbe5d9cbc32213bffe35d1a798c033f80dbce6c571e0b89f007d38a1e9f937a",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-twin-1512.png",
-   "sha256": "da7f8935186bedfe547a938797553864fd302aad45d6a1a4b708355f06170f4e",
+   "sha256": "a113b1f7fd3264b0fb1896b0a7be388b2ea3d1b511549ce3c43af643cba75b12",
    "commandId": "lab-e2e-browser"
   },
   {
    "file": "brand-ui/lab-twin-390.png",
-   "sha256": "04fe73a9ca38ec1d829393216faff2e41e4c34d6ac22ffa5b418443976f4ce91",
+   "sha256": "3e58b3333d172fb73a22a9d074a4736f2cf2e9d9bbb9f0dbef2df68218a401ec",
    "commandId": "lab-e2e-browser"
   },
   {
@@ -1298,7 +1298,7 @@
   },
   {
    "file": "screens/lab-mock-e2e/F05-coffee-run-mobile-ja.png",
-   "sha256": "f717bb72ecd54f30ffc84ce58907ed59fc708158b295df0fc02de48b1ac328af",
+   "sha256": "39e9d8bd4d5f2ced58c2ec0ba550be687865d5c143cc8e5e20364b4c09d7d94b",
    "commandId": "lab-mock-e2e"
   },
   {
@@ -1308,17 +1308,17 @@
   },
   {
    "file": "screens/lab-mock-e2e/F05-engineering-desktop-en.png",
-   "sha256": "788d43402c4feb6d6d35802bdbc56c76a1152ff245a0b54e407b27c14223b238",
+   "sha256": "3ca4e10ce454f0fca1ad94ba53ce64fbe0478b1b1a5669094ad11e5957485ac4",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F05-engineering-desktop-ja.png",
-   "sha256": "b667452b53e44eb2aad4411f0ccc2023eb21ff74b25b0694127d11c55fd13810",
+   "sha256": "9a26c9491aa9ca01d0985c528a8f0450ef92a41130b3a505caf1917d9abc2cf5",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F05-engineering-desktop-vi.png",
-   "sha256": "35ebf7b2004a8537a5a484d0796eadf0d528cf0b69689fdec6d4e976b164b2f6",
+   "sha256": "90ddbc1a3506c95d8be16e2c99a8405576a2a59c3078bed47ac8ea75864e3dee",
    "commandId": "lab-mock-e2e"
   },
   {
@@ -1333,12 +1333,12 @@
   },
   {
    "file": "screens/lab-mock-e2e/F06-browser-memory.json",
-   "sha256": "92d6b9312f287379b02590aaff06c76d34a98a800fc17fca40ae3c7a2f09e6d3",
+   "sha256": "90f7fcbb5a579493be94c0e2849856c26a5f0deab703523fa8b78c98fff77b7f",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F06-compare-desktop-vi.png",
-   "sha256": "d7cb8374ed0dee91e2273fb61c44bcd855be518c16cd08246022844e53086995",
+   "sha256": "d8ed44d805115734e5f669ad3457b6be51efc743a8d2da775e60ac883be3f086",
    "commandId": "lab-mock-e2e"
   },
   {
@@ -1348,37 +1348,37 @@
   },
   {
    "file": "screens/lab-mock-e2e/F06-session-lost-desktop-vi.png",
-   "sha256": "b1393ec6fee1bcc5ccca0ab29ba9f862bc1575d7b2668babe16c1442f2f8f41d",
+   "sha256": "0374f4db6dc058df257f46dfc46691d46a4f0ab1f804d5d1c42a858a11119ebf",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F06-telemetry-disconnected-desktop-vi.png",
-   "sha256": "ada37ee6b0c3dfbcb58cdbcd629a77e1b25e7a2db1daf6fbcfdf213d5fa5c523",
+   "sha256": "1d6a4aeb997173779a1e3fa354c05b0a242304da861a7a41c01cc4c3c904172d",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
-   "sha256": "b5a929742f1452332502b4972eb04b880a04c75381f9cff4a5323ad03c1956e7",
+   "sha256": "59634dd24f92acc7924a25915c38970446c7c2d39e62a56459c048ce09334281",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
-   "sha256": "957745914a9379fad99f29c70fd64f3c844475ced30eef16c918c1ea23156624",
+   "sha256": "c4eb9140977884c72970a0490e3f10924ea90082f2cea08eae3f0bbdc609eb28",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/V06-scheduled-cup-mock.png",
-   "sha256": "35ec7f2ff5c51b84f0e19d43faa9e489df4f411311c80c9176c9b7be903d75b5",
+   "sha256": "fb2a9ca71bcc7064b382e315081c69e711ad78ad4f3878974949aca1155d7f14",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-mock-e2e/plan01-render-independence.json",
-   "sha256": "7e352c57a4f04a97d403ce6e89b51b7accb1607220464b8b9669aca33be39c5d",
+   "sha256": "3b91fe2873b5b09b1389ba71bbd19a2c6e64c949afd0d67ccfa889c26f4dd635",
    "commandId": "lab-mock-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/F05-coffee-completed-desktop-vi.png",
-   "sha256": "e5af31b656d86f31929114b6d8dfb463eef53bf2cc60c72b06b97907e97b3b8c",
+   "sha256": "00d0a202cec5360e5c97b52c56588e69b846858c361c44b6271165b860a6a4df",
    "commandId": "lab-offline-e2e"
   },
   {
@@ -1388,12 +1388,12 @@
   },
   {
    "file": "screens/lab-offline-e2e/F06-browser-memory.json",
-   "sha256": "8b318511746b5b2eed293514fc4cc5d5cff5e61701bb32a468bc3ab61c514814",
+   "sha256": "42e92b196df1fe360e27f6847981c7749c4a2f7e13d6abbfcdf54e6635826f55",
    "commandId": "lab-offline-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/F06-compare-desktop-vi.png",
-   "sha256": "d8ed44d805115734e5f669ad3457b6be51efc743a8d2da775e60ac883be3f086",
+   "sha256": "d7cb8374ed0dee91e2273fb61c44bcd855be518c16cd08246022844e53086995",
    "commandId": "lab-offline-e2e"
   },
   {
@@ -1403,27 +1403,27 @@
   },
   {
    "file": "screens/lab-offline-e2e/F06-session-lost-desktop-vi.png",
-   "sha256": "adccf55ec9ebf10d5447e6cb62b2dd1c20494beb7f3d5b57ca72eaf3b61cf87a",
+   "sha256": "ed2cf484963c81e82903df37031f26bf39c4cfb6e40a04f43c79fa3cad802179",
    "commandId": "lab-offline-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/F06-telemetry-disconnected-desktop-vi.png",
-   "sha256": "29567d9e6b48cf6bbcb756dab33db73801a7cc24449fa69d2b42ed083d2f91c5",
+   "sha256": "0963c89a5bb0c35efe2aacbfb6db61626430a24875396a5e2462b8bb73df3a4b",
    "commandId": "lab-offline-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/F06-telemetry-frozen-sim-desktop-vi.png",
-   "sha256": "38b01a9ef5bdf80597dcd0ca0ad181285481ccc23f4138928aa6d730a4be868b",
+   "sha256": "7ddb197a79d510933b0536106686b1b55087b1dc96420e15356ab3556203755b",
    "commandId": "lab-offline-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/F06-telemetry-stale-heartbeat-desktop-vi.png",
-   "sha256": "a1ea91c9a2427b96cd2db7e830595b4cab5e901fc219a370428c808a85c47f44",
+   "sha256": "f6fbbf2b5f5a62dabea1d755faaea26b4261ab7572adf77f854bc87aff0d5b04",
    "commandId": "lab-offline-e2e"
   },
   {
    "file": "screens/lab-offline-e2e/R02-offline-bv01.png",
-   "sha256": "35c5c6d3a59daa27e3124eb92a064090a13675e682ea03d89162de35bd10f647",
+   "sha256": "3bdbced29ca685811d6294316920038490afbc0da54b69ec282e4a251a0bd460",
    "commandId": "lab-offline-e2e"
   },
   {
@@ -1453,7 +1453,7 @@
   },
   {
    "file": "playwright/lab-e2e-browser/captures/mekoniq-lab-vi.png",
-   "sha256": "f596cc982ea51ea873c72c8e345532508b0768620d09a94b5865f1a4f6c5b1a8",
+   "sha256": "a6a8e17e638f6d3489a45089b3f4bba0eedccbae50e17e519d2a295710e2bec8",
    "commandId": "lab-e2e-browser"
   },
   {
@@ -1518,7 +1518,7 @@
   },
   {
    "file": "playwright/lab-runtime-e2e/captures/mekoniq-lab-source-run.png",
-   "sha256": "7648927fb2a17111bc4a964f100c7a720bd1ccf341b556efdd19c16296dcf212",
+   "sha256": "54f7b783c83084c4a52055243cd4dad50add8fcd3f0f9618d60cf739c55b4618",
    "commandId": "lab-runtime-e2e"
   }
  ]

@@ -1,21 +1,21 @@
 {
-  "candidateId": "r1-candidate-08",
+  "candidateId": "r1-candidate-09",
   "accepted": false,
-  "sourceCommit": "9aebb48",
-  "labCommit": "f3909ef",
+  "sourceCommit": "3d8c2a8",
+  "labCommit": "4b57a9a",
   "note": "In-tree files are the top-level JSON of the record (the sim-extension guard compares them byte for byte). The complete directory (suites, screens, inputs, campaigns) is the raw archive below, kept outside Git. No acceptance sidecar: only a human reviewer writes one.",
   "rawArchive": {
     "file": "r1.tar.gz",
-    "sha256": "0a9606bcf2831a897f549ad1d49557da95d297d6c3b1bb31fe52b0c7fba62db1",
-    "bytes": 87736640,
+    "sha256": "96933a3a40abc0e394de96ad40622df37d0958be8baa8e8d4024d1edc47becae",
+    "bytes": 87745309,
     "fileCount": 2588
   },
   "topLevelFiles": {
     "algorithm-results.json": "dfd60463701bff084e4880f6ed5cae71fe318871a1418188377b4ec4c963f30d",
-    "irsim-record.json": "1c82fad2b5b8294fc79db8445b46f7b79b7394ad71e9f63550aea882660e7d12",
-    "mock-regression.json": "cc074a19ccc0a9f038c7eac8b627b531ad908cf4c90af7ab6337dfcf26f33302",
-    "performance.json": "4dbb9f75de1ab853e903f66d651ae14716d70c56d9916f1443eb3b23acdf795f",
-    "qualification.json": "98a04a83fb606d828b4a4b180d525beb9011447c0f71c60f9d8b78e83306606f"
+    "irsim-record.json": "195000948174ed2b76516e1971f98ece2ed2e1413805438c3418997b7f81ec50",
+    "mock-regression.json": "5994bb6f1b3271b5918a3d9f3e99c7befe2d22e15cd3053b51726a98eae3544e",
+    "performance.json": "419bafd37ad14a840e5b5280bce454c860b5c1e65eb4f0243411e15bcfe8f982",
+    "qualification.json": "a8ef5566a05052cd6dfea71a82747df9ee6bba05773165ea443fada55e73f492"
   },
-  "treeDirectoryNote": "Directory is named 'r1' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is r1-candidate-08. Bytes are unchanged."
+  "treeDirectoryNote": "Directory is named 'r1' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is r1-candidate-09. Bytes are unchanged."
 }

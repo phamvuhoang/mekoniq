@@ -25,23 +25,23 @@
    "tick": 1500,
    "simTimeNs": "30000000000"
   },
-  "outputBytes": 3199019
+  "outputBytes": 3199193
  },
  "steadyState": {
   "batches": 30,
   "perTickMs": {
-   "p50": 5.6506325,
-   "p95": 11.35949916,
-   "max": 14.15804584
+   "p50": 6.73475084,
+   "p95": 12.625050000000002,
+   "max": 14.87984
   },
-  "realtimeFactor": 2.4309182496556936,
-  "wallSeconds": 12.341015583,
+  "realtimeFactor": 2.1922616779998374,
+  "wallSeconds": 13.68449775,
   "webotsRssMiB": {
-   "max": 203.453125,
+   "max": 224.0625,
    "samples": 30
   },
   "controllersRssMiB": {
-   "max": 54.4375
+   "max": 46.4375
   }
  }
 }

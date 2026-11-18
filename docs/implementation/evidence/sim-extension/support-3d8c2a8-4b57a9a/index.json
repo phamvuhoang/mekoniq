@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "3d8c2a8",
+  "labCommit": "4b57a9a",
+  "accepted": false,
+  "archives": {
+    "regression.tar.gz": {
+      "sha256": "fdf43702579efc2122e23b7d9997231cadb09ca9c185c057926b5353609420ea",
+      "bytes": 9697362
+    },
+    "r2b-inputs.tar.gz": {
+      "sha256": "70e2b00aef56d25cd82b685585a6404b3505fabe53797ca2fe3beee105122858",
+      "bytes": 175877470
+    },
+    "r2b-web05.tar.gz": {
+      "sha256": "96352094c691af1ffd3d7ff71c6d26a620e7fb7f81532d26cec9817c73230d15",
+      "bytes": 14638916
+    }
+  },
+  "notes": [
+    "regression = R-MOCK record of Lab 4b57a9a; r2b-inputs = 185 s web capture and its browser verify, payload and cell campaigns, semantic study; r2b-web05 = container record (image mekoniq-lab-runtime:3d8c2a8).",
+    "Failed attempts are retained outside Git next to the archives: records-9b576ba-FAILED-regression-in-tree-record-tests, records-3d8c2a8-lab-35f43bd-FAILED-r2a-remote-origin-morph, r1-FAILED-try1 (alg-ts timing), r2b-FAILED-web-stall with web-FAILED-stall (one 697 ms tick stall in the capture) and web-FAILED-retry1/2 (re-captures with stalls above 500 ms)."
+  ]
+}

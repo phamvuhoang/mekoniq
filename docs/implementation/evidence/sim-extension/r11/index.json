@@ -1,20 +1,20 @@
 {
-  "candidateId": "r11-candidate-05",
+  "candidateId": "r11-candidate-06",
   "accepted": false,
-  "sourceCommit": "9aebb48",
-  "labCommit": "f3909ef",
+  "sourceCommit": "3d8c2a8",
+  "labCommit": "4b57a9a",
   "note": "In-tree files are the top-level JSON of the record (the sim-extension guard compares them byte for byte). The complete directory (suites, screens, inputs, campaigns) is the raw archive below, kept outside Git. No acceptance sidecar: only a human reviewer writes one.",
   "rawArchive": {
     "file": "r11.tar.gz",
-    "sha256": "bc8367f858ce0a438042853d6b3735477973be616d7ecbdf156bc575dfce84bf",
-    "bytes": 434239,
+    "sha256": "096e5c2e3ed9d09cf06f39c6ad171e88975b38f1f2106ef1ab5595239b2b1faa",
+    "bytes": 434846,
     "fileCount": 24
   },
   "topLevelFiles": {
-    "irsim-record.json": "1c82fad2b5b8294fc79db8445b46f7b79b7394ad71e9f63550aea882660e7d12",
-    "mock-regression.json": "cc074a19ccc0a9f038c7eac8b627b531ad908cf4c90af7ab6337dfcf26f33302",
-    "qualification.json": "32288008607788b79bc8770ba6c95067ade954a361cf21a4e9cb37c7710367de",
-    "r1-record.json": "98a04a83fb606d828b4a4b180d525beb9011447c0f71c60f9d8b78e83306606f"
+    "irsim-record.json": "195000948174ed2b76516e1971f98ece2ed2e1413805438c3418997b7f81ec50",
+    "mock-regression.json": "5994bb6f1b3271b5918a3d9f3e99c7befe2d22e15cd3053b51726a98eae3544e",
+    "qualification.json": "e47149ba211d3f6513f75319ecb5a87ff663a0e3be1a43972cd0b3ea354c8e15",
+    "r1-record.json": "a8ef5566a05052cd6dfea71a82747df9ee6bba05773165ea443fada55e73f492"
   },
-  "treeDirectoryNote": "Directory is named 'r11' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is r11-candidate-05. Bytes are unchanged."
+  "treeDirectoryNote": "Directory is named 'r11' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is r11-candidate-06. Bytes are unchanged."
 }

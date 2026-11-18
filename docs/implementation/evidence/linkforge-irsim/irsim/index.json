@@ -1,18 +1,18 @@
 {
-  "candidateId": "candidate-10",
+  "candidateId": "candidate-11",
   "accepted": false,
-  "sourceCommit": "9aebb48",
-  "labCommit": "f3909ef",
+  "sourceCommit": "3d8c2a8",
+  "labCommit": "4b57a9a",
   "note": "In-tree files are the top-level JSON of the record (the sim-extension guard compares them byte for byte). The complete directory (suites, screens, inputs, campaigns) is the raw archive below, kept outside Git. No acceptance sidecar: only a human reviewer writes one.",
   "rawArchive": {
     "file": "irsim.tar.gz",
-    "sha256": "991ba01a051e64b97ed558a7c63f349ea8c04b76129044332bf691bca2c9e5cc",
-    "bytes": 43230810,
+    "sha256": "02ce9d2504a0621937c9d2bf003ed938a525398468e21cc2da11551973ef1d6a",
+    "bytes": 43235992,
     "fileCount": 1603
   },
   "topLevelFiles": {
-    "performance.json": "b945c829c2755b4cbb02c7d7f71572d49830e7b88db801dd29384972d682ffb3",
-    "qualification.json": "1c82fad2b5b8294fc79db8445b46f7b79b7394ad71e9f63550aea882660e7d12"
+    "performance.json": "462271b4f8ee505f1b349eae76c6b93327f1be29a641db7953fd65caab102178",
+    "qualification.json": "195000948174ed2b76516e1971f98ece2ed2e1413805438c3418997b7f81ec50"
   },
-  "treeDirectoryNote": "Directory is named 'irsim' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is candidate-10. Bytes are unchanged."
+  "treeDirectoryNote": "Directory is named 'irsim' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is candidate-11. Bytes are unchanged."
 }

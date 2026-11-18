@@ -66,12 +66,14 @@ LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/<candidate> p
 
 Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có cache dưới portable tool root, và phải chạy dưới `caffeinate -dims` với màn hình mở khóa khi có Webots. Recorder R2a đã tự tắt pytest cache provider; không cần biến môi trường khắc phục tạm.
 
-Bản ghi hiện tại (2026-11-18, source `9aebb48`, Lab `f3909ef`, mọi record `accepted:false`, chưa có `acceptance.json`): xem [trạng thái 18/11](web-lab-to-physical/status-2026-11-18.md). Trong cây chỉ có JSON cấp trên cùng và `index.json` (sha256 của archive thô ngoài Git tại `robot/evidence-archive/raw-9aebb48-lab-f3909ef/`); guard cần bản đầy đủ giải nén từ archive đó.
+Bản ghi hiện tại (2026-11-19, source `3d8c2a8`, Lab `4b57a9a`, mọi record `accepted:false`, chưa có `acceptance.json`): xem [trạng thái 19/11](web-lab-to-physical/status-2026-11-19.md). Trong cây chỉ có JSON cấp trên cùng và `index.json` (sha256 của archive thô ngoài Git tại `robot/evidence-archive/raw-3d8c2a8-lab-4b57a9a/`); guard cần bản đầy đủ giải nén từ archive đó. Cả năm guard PASS.
 
-- IR-SIM `candidate-10`: `evidence/linkforge-irsim/irsim/`.
-- R1 `r1-candidate-08`: `evidence/sim-extension/r1/`. R1.1 `r11-candidate-05`: `evidence/sim-extension/r11/`.
-- R2a `r2a-candidate-03`: `evidence/sim-extension/r2a-candidate-03/`.
-- R2b `r2b-candidate-02`: `evidence/sim-extension/r2b-candidate-02/`; **G-WEB1 `not_run`**, guard fail. Phải ghi lại cả chuỗi sau khi test `web-replay-capture` có hạn 60 s.
+- IR-SIM `candidate-11`: `evidence/linkforge-irsim/irsim/`.
+- R1 `r1-candidate-09`: `evidence/sim-extension/r1/`. R1.1 `r11-candidate-06`: `evidence/sim-extension/r11/`.
+- R2a `r2a-candidate-04`: `evidence/sim-extension/r2a-candidate-04/`.
+- R2b `r2b-candidate-03`: `evidence/sim-extension/r2b-candidate-03/`; G-WEB1 `tested`, G-HOST1 `blocked_external`.
+
+Các bản ghi 18/11 (source `9aebb48`, Lab `f3909ef`; [trạng thái 18/11](web-lab-to-physical/status-2026-11-18.md)) đã gỡ khỏi cây và còn trong lịch sử Git.
 
 Các bản ghi R2a trước đó (source `4f893ac`, Lab `a6ec316`) đã gỡ khỏi cây ở `b57e3be` và còn trong lịch sử Git (`git show b57e3be^:<đường dẫn>`):
 
