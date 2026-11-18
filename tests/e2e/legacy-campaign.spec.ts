@@ -56,6 +56,8 @@ test("cancelling a run keeps the cup with its owner instead of deleting custody"
   test.skip(!token, "Run scripts/test-mock-e2e.mjs: it starts the pinned runtime and supplies its one-time token.");
   test.setTimeout(120000);
   await run("Cà phê sữa đá");
+  // the run view paints before the first step returns: wait for a real owner, not the "—" placeholder
+  await expect(page.getByTestId("cup-owner")).not.toHaveText("—");
   const owner = await page.getByTestId("cup-owner").innerText();
   expect(owner.length).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Hủy lần chạy" }).click();
