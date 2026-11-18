@@ -118,9 +118,13 @@ test('guard: a complete consistent candidate has no reasons; each single defect 
  one(m=>{m.commands=[{id:'performance',exitCode:0}];},/COMMAND_MISSING:licenses/);
 });
 
+// Raw archives live outside Git (docs/implementation/README.md), so the tree may hold an index-only record: its top-level bytes must equal its index and stay unaccepted.
+// The full check of such a record is the acceptance guard on the extracted archive.
+const indexOnly=(d:string)=>{const i=JSON.parse(readFileSync(join(d,'index.json'),'utf8')) as M;expect(i.accepted).toBe(false);expect(Object.keys(i.topLevelFiles)).toContain('qualification.json');for(const [f,h] of Object.entries(i.topLevelFiles))expect(createHash('sha256').update(readFileSync(join(d,f))).digest('hex'),join(d,f)).toBe(h);expect(JSON.parse(readFileSync(join(d,'qualification.json'),'utf8')).accepted).toBe(false);};
 test('the default table of irsim-qualification.mjs is unchanged: the newest recorded LinkForge/IR-SIM candidate checks clean through the parameterised core and its statuses are reproduced',()=>{
  const dir=join('docs/implementation/evidence/linkforge-irsim'),cands=existsSync(dir)?readdirSync(dir).filter(d=>/^candidate-\d+$/.test(d)).sort():[];
- expect(cands.length).toBeGreaterThan(0);
+ expect(Object.keys(ir.GATES)).toEqual(['G-LF1','G-LF2','G-IR1','G-IR2','G-IR3','G-INT1']);
+ if(!cands.length)return indexOnly(join(dir,'irsim'));
  const d=join(dir,cands.at(-1)!),read=(p:string)=>existsSync(join(d,p))?readFileSync(join(d,p)):null,m=JSON.parse(readFileSync(join(d,'qualification.json'),'utf8')) as M;
  expect(ir.checkQualification(m,read)).toEqual([]);
  const summary=JSON.parse(readFileSync(join(d,m.campaign.summary.path),'utf8'));
@@ -393,7 +397,8 @@ test('r2a guard: a blocked record is valid only with the spike note copy conclud
 
 test('the recorded r1 and r1.1 candidates in the tree still check clean (newest of each)',()=>{
  const dir='docs/implementation/evidence/sim-extension',newest=(re:RegExp)=>readdirSync(dir).filter(d=>re.test(d)).sort((a,b)=>Number(a.split('-').pop())-Number(b.split('-').pop())).at(-1);
- for(const c of [newest(/^r1-candidate-\d+$/),newest(/^r11-candidate-\d+$/)]){
+ for(const c of [newest(/^r1-candidate-\d+$/)??'r1',newest(/^r11-candidate-\d+$/)??'r11']){
+  if(existsSync(join(dir,c,'index.json'))){indexOnly(join(dir,c));continue;}
   expect(c).toBeTruthy();const d=join(dir,c!),read=(p:string)=>existsSync(join(d,p))?readFileSync(join(d,p)):null;
   expect(checkQualification(JSON.parse(readFileSync(join(d,'qualification.json'),'utf8')),read),c).toEqual([]);
  }
