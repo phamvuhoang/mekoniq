@@ -561,7 +561,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
  private async cancelPayload(){
   if(this.runPreset?.id!=='mujoco-payload')return this.act('cancel');
   const epoch=this.gen,id=this.view?.run.id;let clockPaused=this.view?.run.status==='paused'||this.payloadCancelPaused;
-  const current=()=>this.gen===epoch&&this.view?.run.id===id&&!this.left&&!this.archived&&!this.replay&&this.view?.controlAccess!=='view_reconcile';
+  const current=()=>this.gen===epoch&&this.view?.run.id===id&&!this.left&&!this.archived&&!this.replay&&!this.view?.controlAccess;
   if(!current())return;
   this.playing=false;this.hiddenStop=false;this.payloadStopping=true;this.payloadStopPause=false;
   try{
@@ -692,7 +692,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   if(action==='twin-start')return void this.call(()=>this.act('start'));
   if(action==='twin-rerun')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!)):undefined;
   if(!this.view)return;
-  if(this.view.controlAccess==='view_reconcile'&&!['twin-reconcile','twin-confirm-cancel','twin-confirm-ok'].includes(action))return;
+  if(this.view.controlAccess&&!['twin-reconcile','twin-confirm-cancel','twin-confirm-ok'].includes(action))return;
   if(action==='twin-step'&&this.clock()?.step)return void this.call(()=>this.act('step',{ticks:STEP_TICKS}));
   if(action==='twin-play')return void this.play();
   if(action==='twin-stop'){this.playing=false;this.hiddenStop=false;return this.rerender();}

@@ -38,7 +38,7 @@ export function nextAction(s:OpsState):NextAction {
 }
 /** What the transport bar may request now (native = the engine owns time: no Lab step, pause or auto-run). */
 export function runControls(s:OpsState):{live:boolean;paused:boolean;canPlay:boolean;canStep:boolean;canPause:boolean;canCancel:boolean}{
- const v=s.view,live=!!v&&v.controlAccess!=='view_reconcile'&&['running','awaiting_confirmation','paused'].includes(v.run.status);
+ const v=s.view,live=!!v&&!v.controlAccess&&['running','awaiting_confirmation','paused'].includes(v.run.status);
  // a source fixed-step simulation is stepped by the runtime on request like mock
  const paused=v?.run.status==='paused',native=v?.run.mode==='simulation'&&s.clock?.clock!=='source_fixed_step',step=s.clock?s.clock.step:!native&&live&&!paused,play=s.clock?s.clock.play:!native&&live&&!paused;
  return {live,paused,canPlay:play&&live&&!paused&&!s.busy,canStep:step&&live&&!s.busy&&!s.playing,canPause:live&&!native&&!s.busy&&(paused||!s.playing),canCancel:!!v&&!['completed','cancelled','failed'].includes(v.run.status)&&!s.busy&&!s.playing};

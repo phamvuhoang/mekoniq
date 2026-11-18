@@ -32,7 +32,7 @@ export interface CoffeeJobView {canRestoreCup?:boolean;waitingReason?:string|nul
 export interface CupView {cupId:string;ownerKind:string;ownerId:string}
 /** The inputs a run was created from, as stored by the runtime. Engineering runs also carry the exact project, projection and bundle ref. */
 export type LockedInput=CreateRun&{sourceCommit?:string;engineering?:{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:unknown[]}}};
-export interface RunView {lockedInput?:LockedInput;controlAccess?:'view_reconcile';run:RunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:(AmrView|PayloadView)[];
+export interface RunView {lockedInput?:LockedInput;controlAccess?:'view_reconcile'|'view';run:RunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:(AmrView|PayloadView)[];
  workload:{actor:string;tableId:string;status:string;missionId?:string}[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];
  attention:Attention[];served:string;coffee:{jobs:CoffeeJobView[];cups:CupView[]}|null;}
 export interface Quantity {amount:string;unit:string;provenance:string;tolerance?:string}

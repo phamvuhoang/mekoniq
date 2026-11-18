@@ -76,6 +76,7 @@ test('reconciliation subject prefers the actual coffee job and otherwise require
  expect(reconciliationSubject({reason:'CUP_REMOVED',tick:125,subjectId:'coffee-job-1',robotId:'amr-1'},reclaimed)).toBe('coffee-job-1');
  reclaimed.awaiting=[{subjectId:'stop-1',missionId:'mission-1',robotId:'amr-1',confirmationType:'load'}];
  expect(reconciliationSubject({reason:'STOP_REQUESTED',tick:125,subjectId:'mission-1'},reclaimed)).toBe('amr-1');
+ expect(reconciliationSubject({reason:'STOP_REQUESTED',tick:125,subjectId:'mission-1'},{...reclaimed,controlAccess:'view'})).toBeNull();// terminal world: the runtime refuses reconcile
  reclaimed.entities[0]!.goal={commandId:'command-1',state:'unknown'};
  expect(reconciliationSubject({reason:'OUTCOME_UNKNOWN',tick:125,commandId:'command-1'},reclaimed)).toBe('amr-1');
  expect(reconciliationSubject({reason:'RECLAIM_RECONCILIATION_REQUIRED',tick:125},reclaimed)).toBeNull();
