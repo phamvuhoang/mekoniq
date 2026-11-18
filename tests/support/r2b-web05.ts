@@ -16,11 +16,11 @@ export function web05Fixture(){
  const finishedReport={...report(finished,2,'completed'),worldSweep:{scope:{identity:{runId:finished,bootId:'boot',sceneDigest:'d'.repeat(64)},publicCommittedTick:2,prefixCovered:true,streamFinalized:true}}};
  const replayReport=structuredClone(finishedReport);replayReport.outcome.status='needs_attention';finishedReport.worldSweep.scope.streamFinalized=false;
  put('finished-report.json',finishedReport);http('finished',`/runs/${finished}/report`,finishedReport);
- const before=report(active,100,'running'),after=report(active,100,'needs_attention'),chunks={'chunk-00000.ndjson.gz':'e'.repeat(64)};
+ const before=report(active,300,'running'),after=report(active,300,'needs_attention'),chunks={'chunk-00000.ndjson.gz':'e'.repeat(64)};
  put('before-crash-report.json',before);http('before',`/runs/${active}/report`,before);put('committed-before.json',chunks);command('chunksBefore',['exec','main','node','-e',CHUNK_PROGRAM,active],JSON.stringify(chunks));
  command('contenderStart',['run','-d','--name','contender','-v','volume:/data/runs',image],'container-2');command('contenderWait',['wait','contender'],'1');command('contenderLogs',['logs','--tail','20','contender'],'LAB_DATA_DIR_BUSY');
  command('kill',['kill','--signal','KILL','main'],'main');command('restart',['start','main'],'main');http('healthAfter','/health',health);
- http('reclaim',`/runs/${active}/reclaim`,{run:{id:active,status:'needs_attention'},tick:100,controlAccess:'view_reconcile'},{proof:'[redacted]'});
+ http('reclaim',`/runs/${active}/reclaim`,{run:{id:active,status:'needs_attention'},tick:300,controlAccess:'view_reconcile'},{proof:'[redacted]'});
  put('after-crash-report.json',after);http('after',`/runs/${active}/report`,after);put('committed-after.json',chunks);command('chunksAfter',['exec','main','node','-e',CHUNK_PROGRAM,active],JSON.stringify(chunks));
  http('resume',`/runs/${active}/actions`,{error:'RECLAIM_READ_ONLY'},{actionId:'resume-refused',kind:'resume',payload:{}},403);command('workers',['exec','main','node','-e',WORKER_PROGRAM],'0');
  http('finishedReclaim',`/runs/${finished}/reclaim`,{run:{id:finished,status:'needs_attention'},tick:2,controlAccess:'view_reconcile'},{proof:'[redacted]'});put('replay-report.json',replayReport);http('replayReport',`/runs/${finished}/report`,replayReport);
