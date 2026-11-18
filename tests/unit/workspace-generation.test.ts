@@ -99,6 +99,15 @@ test('item 4: a finished run whose report fetch failed: the Report tab says so a
  expect(calls.filter(c=>c==='report run').length).toBeGreaterThan(0);void report;
 });
 
+test('a step whose report fetch fails (session lost mid-step) keeps the last report of the same run; another run still shows none',async()=>{
+ const {w,h}=setup();const rt=(h as unknown as {rt:Record<string,unknown>}).rt,kept=h.report;
+ expect(kept?.manifest.runId).toBe(h.view!.run.id);
+ rt.report=async()=>{throw new TwinRuntimeError('SESSION_LOST',[],401);};
+ w.click('twin-step');await vi.waitFor(()=>expect(h.busy).toBe(false));
+ expect(h.report).toBe(kept);
+ h.report={...kept!,manifest:{...kept!.manifest,runId:'another-run'}};w.click('twin-step');await vi.waitFor(()=>expect(h.busy).toBe(false));
+ expect(h.report).toBeNull();
+});
 test('known cell Pause ACK updates controls while its independent full-prefix report is still materializing',async()=>{
  const {w,h}=await cellBoundary('running'),internal=w as unknown as CellBoundary&{act(kind:'pause'):Promise<void>};const paused={...structuredClone(h.view!),run:{...h.view!.run,status:'paused' as const,runRevision:12}},gate=deferred<RunReport>();
  internal.rt.action=async()=>paused;internal.rt.report=()=>gate.promise;let finished=false;const pause=internal.act('pause').then(()=>{finished=true;});

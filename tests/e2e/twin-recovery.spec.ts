@@ -108,6 +108,8 @@ test("telemetry stream, stale/frozen states, reconnect, read-only replay, compar
   await expect(page.getByTestId("compare-panel")).toContainText("So sánh được");
   await expect(page.getByTestId("compare-panel")).toContainText("missionTimeS");
   await shot(page, "compare-desktop-vi");
+  // the second run's first step (and its report) must have landed before the session is cut below: otherwise that report fetch races the cookie clear
+  await expect(page.getByRole("button", { name: "+5 s" })).toBeEnabled();
 
   if (shots) {
     // browser memory with the stream open (Chrome only, approximate): recorded, not asserted

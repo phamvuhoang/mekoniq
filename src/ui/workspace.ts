@@ -477,7 +477,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
    if(this.view)try{this.applyView(await this.current(this.rt.get(this.view.run.id)));if(!(e instanceof TwinRuntimeError&&e.code==='REPORT_TIMEOUT'))this.refreshReport(true);}catch{/* keep the last snapshot */}
   }finally{this.busy=false;this.rerender();}
  }
- private async apply(v:RunView){this.applyView(v);const seq=++this.reportSeq;let r:RunReport|null=null;try{r=await this.fetchReport(v.run.id);}catch(e){if(stale(e))throw e;/* shown as no report */}this.takeReport(v.run.id,seq,r,false);}
+ private async apply(v:RunView){this.applyView(v);const seq=++this.reportSeq;let r:RunReport|null=null;try{r=await this.fetchReport(v.run.id);}catch(e){if(stale(e))throw e;/* the last report of this run stays viewable (a lost session must not erase it); a run with none shows none */if(this.report?.manifest.runId===v.run.id)return;}this.takeReport(v.run.id,seq,r,false);}
  /** The run snapshot only (the action receipt is the pause acknowledgement; heartbeats only refresh it between receipts, e.g. another tab). */
  private applyView(v:RunView){if(v.run.status==='failed'||v.attention?.some(a=>/WORLD_UNKNOWN|WORLD_RESTART|ENGINE_|WORKER_|PLANT_|PHYSICAL_UNKNOWN/.test(a.reason)))this.clearWorld();if(this.world?.record.snapshot.runId!==v.run.id){this.world=null;this.worldView=null;}if(v.run.id!==this.view?.run.id){this.playback.clear();this.worldPlayback.clear();this.payloadCancelPaused=false;}this.view=v;this.track(v);this.link={...this.link,paused:v.run.status==='paused'};}
  /** The report (trail, summary, caveats) may lag the live picture, which comes from the streams. Never on the paced loop's path:
