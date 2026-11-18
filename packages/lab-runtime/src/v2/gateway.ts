@@ -345,7 +345,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     if(entry)entry.controlEpoch=epoch;currentSession();
     if(entry){entry.owner=sessionId;entry.readOnly=true;entry.readers.clear();entry.controlEpoch=epoch;entry.input=stored.record.input;}else runs.set(id,{owner:sessionId,readers:new Set(),controlEpoch:epoch,run,directory:stored.directory,readOnly:true,input:stored.record.input});
     // Only the proof-protected record supplies reset/evidence inputs; the caller cannot substitute a project or seed.
-    return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
+    return send(response,200,{...view,writer:writerView(runs.get(id)!),controlAccess:view.controlAccess??'view_reconcile',lockedInput:structuredClone(stored.record.input),...closure?{engineeringClosure:{status:closure.length?'missing':'ok',problems:closure}}:{}});
    }catch(e){await reopened?.close().catch(()=>{});return failed(response,e);}finally{reclaiming.delete(id);if(!entry)creating--;}
    });
   }
@@ -400,7 +400,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }catch(e){entry.archiving=false;return failed(response,e);}});
   }
   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&readable(entry,sessionId)&&!entry.archiving);}
-  try{const value=kind==='report'?{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2}:{...await entry.run.snapshot(),writer:writerView(entry),...entry.readOnly?{controlAccess:'view_reconcile'}:{}};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
+  try{const snap=kind==='report'?null:await entry.run.snapshot(),value=snap?{...snap,writer:writerView(entry),...entry.readOnly?{controlAccess:snap.controlAccess??'view_reconcile'}:{}}:{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
  };
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */

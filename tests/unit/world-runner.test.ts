@@ -68,7 +68,7 @@ test('a kill after a tick WAL append, before run.json commits it, reopens as WOR
  h.hooks.afterAppend=async tick=>{if(tick===3)await fs.cp(h.directory,killed,{recursive:true});};
  try{await run.start();await act(run,'step',{ticks:5});}finally{await run.close();}
  expect(lastWalTick(await readFile(join(killed,'actual-world-evidence','pending.ndjson'),'utf8'))).toBe(3);
- const reopened=await h.open(false,undefined,killed);try{const v=await reopened.snapshot();expect(v.tick).toBe(2);expect(v.attention).toContainEqual({reason:'WORLD_RESTART_UNKNOWN',tick:2});expect(await reopened.worldDisplay!()).toMatchObject({tick:2,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});await expect(act(reopened,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await reopened.close();}
+ const reopened=await h.open(false,undefined,killed);try{const v=await reopened.snapshot();expect(v.tick).toBe(2);expect(v.attention).toContainEqual({reason:'WORLD_RESTART_UNKNOWN',tick:2});expect(v.controlAccess).toBe('view');await expect(act(reopened,'reconcile',{subjectId:v.run.id})).rejects.toThrow('WORLD_TERMINAL');expect(await reopened.worldDisplay!()).toMatchObject({tick:2,availability:'stale',reason:'WORLD_RESTART_UNKNOWN'});await expect(act(reopened,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');}finally{await reopened.close();}
 });
 test('a torn or empty run.json fails closed as RECOVERY_CHECKPOINT_CORRUPT without opening the world',async()=>{
  const h=await setup('actual'),run=await h.open();await run.start();await act(run,'step',{ticks:1});await run.close();
