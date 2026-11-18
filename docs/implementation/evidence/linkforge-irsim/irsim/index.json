@@ -1,0 +1,18 @@
+{
+  "candidateId": "candidate-10",
+  "accepted": false,
+  "sourceCommit": "9aebb48",
+  "labCommit": "f3909ef",
+  "note": "In-tree files are the top-level JSON of the record (the sim-extension guard compares them byte for byte). The complete directory (suites, screens, inputs, campaigns) is the raw archive below, kept outside Git. No acceptance sidecar: only a human reviewer writes one.",
+  "rawArchive": {
+    "file": "irsim.tar.gz",
+    "sha256": "991ba01a051e64b97ed558a7c63f349ea8c04b76129044332bf691bca2c9e5cc",
+    "bytes": 43230810,
+    "fileCount": 1603
+  },
+  "topLevelFiles": {
+    "performance.json": "b945c829c2755b4cbb02c7d7f71572d49830e7b88db801dd29384972d682ffb3",
+    "qualification.json": "1c82fad2b5b8294fc79db8445b46f7b79b7394ad71e9f63550aea882660e7d12"
+  },
+  "treeDirectoryNote": "Directory is named 'irsim' because the recorded manifests of the later records reference this input by its recording directory name; the record's candidateId is candidate-10. Bytes are unchanged."
+}

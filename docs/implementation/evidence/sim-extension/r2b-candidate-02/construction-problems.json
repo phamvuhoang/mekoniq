@@ -1,0 +1,4 @@
+[
+  "SUITE_FAILED:web-evidence",
+  "SUITE_FILE_FAILED:web-evidence:tests/unit/web-replay-capture.test.ts"
+]

@@ -1,0 +1,17 @@
+{
+  "candidateId": "r2b-candidate-02",
+  "accepted": false,
+  "sourceCommit": "9aebb48",
+  "labCommit": "f3909ef",
+  "note": "In-tree files are the top-level JSON of the record (the sim-extension guard compares them byte for byte). The complete directory (suites, screens, inputs, campaigns) is the raw archive below, kept outside Git. No acceptance sidecar: only a human reviewer writes one.",
+  "rawArchive": {
+    "file": "r2b.tar.gz",
+    "sha256": "24cfe5a706dcc59b8c4f040c81dd585f7c77bcc9f0c70a1b9731e693aec915ca",
+    "bytes": 195299469,
+    "fileCount": 2233
+  },
+  "topLevelFiles": {
+    "construction-problems.json": "93bbab02eea243fd17f8cf4a6c6a942b86f8e498ff48e7cac684eb3fbf512228",
+    "qualification.json": "601a7d9e1de7a68de0ae6fba8102456046cec59befb747e71e56f422f3beabac"
+  }
+}
