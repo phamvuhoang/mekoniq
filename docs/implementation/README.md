@@ -66,12 +66,19 @@ LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/<candidate> p
 
 Recorder cần cây source và Lab sạch, Lab pin đúng commit source, không có cache dưới portable tool root, và phải chạy dưới `caffeinate -dims` với màn hình mở khóa khi có Webots. Recorder R2a đã tự tắt pytest cache provider; không cần biến môi trường khắc phục tạm.
 
-Các bản ghi lịch sử R2a sau code review (source `4f893ac`, Lab `a6ec316`), cùng định danh trong toàn bộ chuỗi:
+Bản ghi hiện tại (2026-11-18, source `9aebb48`, Lab `f3909ef`, mọi record `accepted:false`, chưa có `acceptance.json`): xem [trạng thái 18/11](web-lab-to-physical/status-2026-11-18.md). Trong cây chỉ có JSON cấp trên cùng và `index.json` (sha256 của archive thô ngoài Git tại `robot/evidence-archive/raw-9aebb48-lab-f3909ef/`); guard cần bản đầy đủ giải nén từ archive đó.
 
-- [LinkForge + IR-SIM candidate-09](evidence/linkforge-irsim/candidate-09/README.md).
-- [R1 candidate-07](evidence/sim-extension/r1-candidate-07/README.md), Webots và thuật toán.
-- [R1.1 candidate-04](evidence/sim-extension/r11-candidate-04/README.md), tay máy Webots.
-- [R2a candidate-02](evidence/sim-extension/r2a-candidate-02/README.md), MuJoCo xArm 6, runtime web và UI; regression R-MOCK tại `lab/docs/implementation/evidence/sim-extension-r2a/regression-02`.
+- IR-SIM `candidate-10`: `evidence/linkforge-irsim/irsim/`.
+- R1 `r1-candidate-08`: `evidence/sim-extension/r1/`. R1.1 `r11-candidate-05`: `evidence/sim-extension/r11/`.
+- R2a `r2a-candidate-03`: `evidence/sim-extension/r2a-candidate-03/`.
+- R2b `r2b-candidate-02`: `evidence/sim-extension/r2b-candidate-02/`; **G-WEB1 `not_run`**, guard fail. Phải ghi lại cả chuỗi sau khi test `web-replay-capture` có hạn 60 s.
+
+Các bản ghi R2a trước đó (source `4f893ac`, Lab `a6ec316`) đã gỡ khỏi cây ở `b57e3be` và còn trong lịch sử Git (`git show b57e3be^:<đường dẫn>`):
+
+- LinkForge + IR-SIM candidate-09 (`evidence/linkforge-irsim/candidate-09/`).
+- R1 candidate-07 (`evidence/sim-extension/r1-candidate-07/`), Webots và thuật toán.
+- R1.1 candidate-04 (`evidence/sim-extension/r11-candidate-04/`), tay máy Webots.
+- R2a candidate-02 (`evidence/sim-extension/r2a-candidate-02/`), MuJoCo xArm 6, runtime web và UI; regression R-MOCK tại `lab/docs/implementation/evidence/sim-extension-r2a/regression-02`.
 - [Cloud Run mekoniq / CL01](evidence/cloud-run/mekoniq-2026-11-14/README.md): đã deploy theo lệnh người dùng, image amd64 cùng pin; health, ghép nối, mock, nối lại stream và MJ-BV01 đều đạt trên x86-64 thật. Guard `cloud-run` xác nhận **G-CLOUD1 `tested` qua bản bổ sung**, ràng buộc SHA-256 của đúng qualification R2a và source/Lab pin. Qualification gốc giữ trạng thái legacy `blocked_external`/`not_run`; không sửa dữ liệu đã ghi.
 - [Cập nhật production R2a](evidence/production/r2a-2026-11-14/README.md): source và Lab đã push, Vercel READY, health đạt; Chrome tự động từ Lab production tới Cloud Run chạy `MJ-BV01` hoàn tất, phục vụ 2 và archive run thử. Bằng chứng này có phạm vi riêng với kiểm tay HTTPS tới loopback.
 
@@ -94,4 +101,4 @@ Luồng hiện có: menu có version, phiên bàn/order, KDS theo phần, alloca
 
 Các lệnh phần cứng/provider chưa có prerequisite phải thất bại rõ ràng. Không có deploy hosted, robot thật, SMTP production, commissioning hoặc RPO/RTO production trong kết quả local. Xem [kết quả kiểm tra](verification.md), `evidence/`, `gates/A-continuity.md` và `tablet-support-matrix.json` cho phạm vi từng phép đo.
 
-Guard Cloud bổ sung: `LAB_CLOUD_EVIDENCE_DIR=docs/implementation/evidence/cloud-run/mekoniq-2026-11-14 LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-02 pnpm test:acceptance -- cloud-run`. Guard R-MOCK đã chạy 41/41 trên commit được ghi, với log tại `lab/docs/implementation/evidence/sim-extension-r2a/mock-acceptance-02/`; bản mặc định lịch sử có thể vẫn báo `SOURCE_REVISION_STALE` khi so với HEAD khác.
+Guard Cloud bổ sung (ràng buộc với đúng byte của R2a candidate-02, nên phải lấy thư mục đó từ `b57e3be^` trước khi chạy): `LAB_CLOUD_EVIDENCE_DIR=docs/implementation/evidence/cloud-run/mekoniq-2026-11-14 LAB_SIMEXT_EVIDENCE_DIR=docs/implementation/evidence/sim-extension/r2a-candidate-02 pnpm test:acceptance -- cloud-run`. Guard R-MOCK đã chạy 41/41 trên commit được ghi, với log tại `lab/docs/implementation/evidence/sim-extension-r2a/mock-acceptance-02/`; bản mặc định lịch sử có thể vẫn báo `SOURCE_REVISION_STALE` khi so với HEAD khác.
