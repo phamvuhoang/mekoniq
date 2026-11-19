@@ -170,3 +170,11 @@ Các chỗ dưới đây khác với bản commit `c19785d`:
 5. **Log:** guard log và log probe được chép ra `robot/evidence-archive/r4-baseline-c19785d/` kèm `SHA256SUMS` (SHA-256 của file đó: `a81b33acbcef842189833a70858f4a47bc34a0f97b1e7a54786bc4f8f0beabb8`), cùng JSON health của Cloud Run và kết quả kiểm ba trạng thái kết thúc.
 6. **Lab:** thêm commit `65a4593` và kết quả kiểm thật; ghi rõ ca cốc rơi còn trống hình.
 
+
+## R4.1 V05: kiểm trong image runtime (CLD01, CLD02)
+
+Nguồn `4b36956`, cây sạch, `deploy/lab-runtime/build.sh` (image `mekoniq-lab-runtime:r4` arm64, `:r4-amd64`). Log: `robot/evidence-archive/r4-cil-v1-4b36956/` (`cld01-container.log`, `cld02-amd64-pytest.log`, cùng campaign `cil-v1` 26 run đã `verify` exit 0).
+
+- **CLD01 (arm64, trong image): đạt.** `tests/integration/lab-runtime-container-r4.test.ts`: `MJ-CELL-BV01` với `drive-nominal-v1` hoàn tất tại tick 10900, phục vụ 2, report có `manifest.drive` và `driveEvidence` 9 trục không lỗi; `docker diff` rỗng, không chạy root, chỉ publish `127.0.0.1`, root read-only + tmpfs `/tmp`, dừng sạch (exit 0). 37,7 ms/tick trên Mac arm64. Chặn `IMAGE_STALE` có trong test nhưng chưa có ca âm riêng.
+- **CLD02 (amd64 dưới giả lập, pytest tool-root, 174 test): 166 đạt, 8 trượt, 1 skip.** Chạy bằng venv của image với repo gắn read-only (test cần file ngoài thư mục tool-root, nên không chỉ gắn `tests/`). Cùng lệnh ở baseline trước R4 `c19785d` trượt 3/126: `test_mobile` ×2 và `test_world` ×1, trùng với 3 trong 8 ca này. 5 ca còn lại là `test_drive_engine`: 3 ca bit-identical ideal-vs-legacy (chỉ có nghĩa trên arm64), 1 ca `PLANT_UNSTABLE: BADQACC` (giả lập amd64 đã biết là không ổn định số), 1 ca ngưỡng mô-men đỉnh (0,257 N·m thay vì > 5,0: cùng nguyên nhân số). Không kết luận được gì về amd64 thật.
+- **Không chạy cell đầy đủ dưới giả lập.** CLD03 (Cloud Run) `not_run`, lý do `deploy_order_pending`: chưa có lệnh deploy, `lab/main` giữ pin `3d8c2a8`.
