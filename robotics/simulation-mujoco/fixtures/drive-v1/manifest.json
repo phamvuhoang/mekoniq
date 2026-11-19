@@ -57,8 +57,13 @@
     },
     {
       "path": "xarm6-control-v1.json",
-      "sha256": "aeb8915931d4f88b33724a6bfba9ccfa78f427673fa851b904c7e5e49af5938a",
-      "bytes": 2921
+      "sha256": "28ec4efa971d1f4a6655e9b396979f3d84346ef0a783beaf3b28afb169aee031",
+      "bytes": 3065
+    },
+    {
+      "path": "xarm6-drive-coarse-encoder-v1.json",
+      "sha256": "0dbc7bf01e7a5be6710ab903e932b67d22b22f3df137ca3d6817a9a7b3ef5e00",
+      "bytes": 6690
     },
     {
       "path": "xarm6-drive-ideal-v1.json",
@@ -66,9 +71,14 @@
       "bytes": 6365
     },
     {
+      "path": "xarm6-drive-latency-v1.json",
+      "sha256": "f90d53175bc4f18bb9fcb7ea13656b3e4850b8f1f333cced64ad1ebd1964ba44",
+      "bytes": 6697
+    },
+    {
       "path": "xarm6-drive-nominal-v1.json",
-      "sha256": "0bad49f00bc27feff46c86f09a6ecc447303277f3349b059eb55fa67dab63802",
-      "bytes": 6744
+      "sha256": "ecf4013f9a4840c0f421c37652dd2abcd3b202f32a95e2897fd41105948baab7",
+      "bytes": 6690
     }
   ]
 }

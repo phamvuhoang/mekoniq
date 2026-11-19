@@ -18,7 +18,7 @@ const controlCodes=(v:unknown,m:DriveModelV1=model)=>validateControlProfile(v,m,
 const ref=(path='serve-drive-nominal-v1.json')=>({id:'serve-drive-nominal-v1',revision:1,sha256:'a'.repeat(64),path});
 
 test('the generated fixtures validate: models, profiles, envelope, oracle',()=>{
- for(const f of ['serve-drive-ideal-v1','serve-drive-nominal-v1','serve-drive-torque-limited-v1','serve-drive-latency-v1','serve-drive-coarse-encoder-v1','xarm6-drive-ideal-v1','xarm6-drive-nominal-v1'])expect(validateDriveModel(read(`drive-v1/${f}.json`)),f).toEqual({ok:true,reasonCodes:[]});
+ for(const f of ['serve-drive-ideal-v1','serve-drive-nominal-v1','serve-drive-torque-limited-v1','serve-drive-latency-v1','serve-drive-coarse-encoder-v1','xarm6-drive-ideal-v1','xarm6-drive-nominal-v1','xarm6-drive-latency-v1','xarm6-drive-coarse-encoder-v1'])expect(validateDriveModel(read(`drive-v1/${f}.json`)),f).toEqual({ok:true,reasonCodes:[]});
  expect(validateTuningEnvelope(envelope)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlProfile(control,model,envelope)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlProfile(read('drive-v1/xarm6-control-v1.json'),read('drive-v1/xarm6-drive-nominal-v1.json'),envelope)).toEqual({ok:true,reasonCodes:[]});

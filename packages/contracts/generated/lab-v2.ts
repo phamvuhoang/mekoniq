@@ -939,6 +939,11 @@ export interface CreateRunRequest {
     projectDigest: string;
   };
   worldExperimentId?: 'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1';
+  /**
+   * Registered server-owned virtual-drive experiment (R4) of the shared-world cell. Absent: the R2b control path, byte for byte.
+   */
+  driveExperimentId?:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
 }
 
 export interface RunVerification {

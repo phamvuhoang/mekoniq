@@ -1,3 +1,5 @@
+import {experimentOfMobileModel} from '../control/drive-experiments';
+import {admitDriveDocuments,mobileDrive,driveManifest,type MobileDrive} from '../control/drive-run';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
 import {physicsMetrics} from '../simulation3d/physics-metrics';
 // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
@@ -134,6 +136,9 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const read=fresh?(path:string)=>{if(!providers.bundleFile)throw new Error('ENGINEERING_CLOSURE_MISSING');return providers.bundleFile(input.engineering!.ref.bundleDigest,path);}:(path:string)=>readFile(join(bundleDir,path));
  const {scene,files}=await lockScene(input,project,roles,read,amr.id);
  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
+ // a scene that names a drive model and a control profile runs its AMR through the diff-drive controller and the virtual drive; one that names neither is the R2b path, untouched
+ const driveDocs=amr.id==='mujoco_3d'?await admitDriveDocuments(scene,read,providers.runtime.workerRoot,scene.robots[0]!.model.physicalModelDigest):undefined;
+ const drive=driveDocs?mobileDrive(driveDocs,{robotId:scene.robots[0]!.robotId,wheelRadiusM:scene.robots[0]!.model.kinematics.wheelRadiusM,wheelSeparationM:scene.robots[0]!.model.kinematics.wheelSeparationM}):undefined;
  const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
  if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
@@ -142,7 +147,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
  const configuration={revision:1,hash:hashJson({...plant.identity.completionObservation?{completionObservation:plant.identity.completionObservation}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:plant.identity.simulationPerturbation}:{},roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
  const backends=[{...amr}];
- const manifest:Omit<RunReport['manifest'],'runId'>={...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...driveDocs?{drive:driveManifest(driveDocs,experimentOfMobileModel((scene.engine as {driveModelRef:{path:string}}).driveModelRef.path))}:{},...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
@@ -171,7 +176,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // every terminal the recorder produces (any flush, the tick limit, close) goes into the checkpoint before its manifest write is attempted
  const owner:{run?:FixedStepRun}={},opened=cp;
  const recorder=await openNavigationRecorder({knownTerminal:cp.evidenceTerminal??null,onTerminal:async reason=>{const c=owner.run?.checkpoint??opened;c.evidenceTerminal=reason.slice(0,500);await writeCheckpoint(dir,c);},directory:join(dir,'evidence'),scene,runId:cp.runId,...providers.runtime.evidence,maxTicks:Math.min(providers.runtime.evidence?.maxTicks??Infinity,scenario.maxTicks,EVIDENCE_LIMITS.maxTicks)});
- const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics);owner.run=run;
+ const run=new FixedStepRun(dir,cp,scenario,project,scene,providers.runtime,plant,{mapId,mapRevision},recorder,identity,fixture,providers.wall??realWall,stopMonitor,physics,drive);owner.run=run;
  run.source=await SourceSession.open(dir,cp.runId,()=>run.clock.nowMs(),{epochMs:EPOCH,navigation:{mapId,mapRevision,bindings},project,robots:roles.robots.map(r=>({...r,trays:trays[r.id]!})),stationIds:[roles.stationId],...scenario.fleet?{fleet:scenario.fleet}:{}},fresh).catch(async(e:unknown)=>{await recorder.close();throw e;});
  run.traffic=fixture.zones.length?createZoneTraffic(createZoneBridge(run.source,{async enter(){}},()=>`op-${++run.checkpoint.ordinal}`),fixture.zones,{clearanceM:scene.policy.parameters.safetyMarginM+2*scene.policy.parameters.gridResolutionM}):undefined;
  try{
@@ -217,7 +222,7 @@ class FixedStepRun implements ScenarioRun {
  private physicsRec?:PhysicsRecorder;
  /** Paced-step anchor (D57): memory only, never checkpointed nor in evidence; cleared by pause, resume, cancel, an unpaced step and a reopen. */
  private anchor:PaceAnchor|null=null;
- constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>){
+ constructor(private dir:string,private cp:Checkpoint,private scenario:ScenarioDefinition,private project:LabProjectV2,private scene:NavigationSceneV1,private irsim:IRSimRuntimeOptions,private plant:PlantPort,map:{mapId:string;mapRevision:string},private rec:NavigationRecorder,private identity:Omit<EvidenceIdentity,'engine'>,private fixture:ResolvedFixture,private wall:WallClock,private stopMonitor?:import('./plant').PlantStopMonitor,private physics?:Awaited<ReturnType<typeof preparePhysicsAdmission>>,private drive?:MobileDrive){
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
@@ -449,11 +454,19 @@ class FixedStepRun implements ScenarioRun {
    const rg=c.rig?.[d.robotId];
    if(rg&&rg.commandId===d.commandId&&rg.state==='executing'&&d.status!=='executing'){rg.state=d.status;rg.tick=c.tick;if(d.status!=='arrived'){c.attention.push({reason:d.reason??d.status.toUpperCase(),robotId:d.robotId,subjectId:d.commandId,tick:c.tick});this.suspend();}}
   }
-  let next:IRSimSnapshotV1,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>};
+  let next:IRSimSnapshotV1,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>;driveCommands?:import('../control/drive-io').DriveCommandV1[]};
   try{
    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:actorUpdatesAt(this.fixture,c.tick+1)};
-   const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload});
+   // with a drive the navigation controller's velocities are its setpoint: they go through the diff-drive controller and the drive, and the wire carries driveCommands only (the evidence keeps the setpoint)
+   let wire:typeof payload=payload;
+   if(this.drive){
+    const rid=this.scene.robots[0]!.robotId,sp=out.velocities.find(v=>v.robotId===rid)??{vMps:0,omegaRadps:0},d=this.drive.step(c.tick,{vMps:sp.vMps,omegaRadps:sp.omegaRadps},snapT as {drives?:never});
+    payload.driveCommands=d.commands;wire={...payload,velocities:[]};
+    // a drive that is not ready or has faulted is a finding that needs a person: the run is not reset or retried, and the controller holds
+    for(const ev of d.events)if(ev.code==='DRIVE_FAULT'||ev.code==='DRIVE_NOT_READY'){c.attention.push({reason:ev.code,robotId:rid,tick:c.tick});this.suspend();}
+   }
+   const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload:wire});
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
@@ -461,7 +474,7 @@ class FixedStepRun implements ScenarioRun {
   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
   if(this.physics){
-   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append((next as import('./contracts').Sim3DSnapshotV1).physics!);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
+   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append({...(next as import('./contracts').Sim3DSnapshotV1).physics!,...(next as {drives?:unknown[]}).drives?{drives:(next as {drives?:never}).drives}:{}} as never);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
    catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
   }
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;

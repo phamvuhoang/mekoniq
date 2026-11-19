@@ -284,7 +284,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
-    const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...engineering?{engineering}:{}};
+    const input:RunManifestInput={project,scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...engineering?{engineering}:{}};
     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run

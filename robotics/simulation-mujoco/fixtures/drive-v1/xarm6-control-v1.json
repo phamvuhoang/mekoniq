@@ -3,12 +3,14 @@
   "documentType": "control-profile",
   "id": "xarm6-control-v1",
   "revision": 1,
-  "digest": "b05b7e90e31fdd416950407d0f86e0823508fd745440f01455d8e8502afabad5",
+  "digest": "1f727cb47d943039f1fc6e644a8e6bc8fb7f90db5a8336e8fdb5c179d39a0092",
   "calibration": "not_calibrated",
   "plantModelDigest": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
   "driveModelDigests": [
     "e9b6be46830e80e2e50a1f316862f324c49c7693aa30e4dc127fd7d74a48f53a",
-    "fab9324dc1a93ded1458ddce4952dd6468952d8fb703570171841e9e64a10740"
+    "33e81253be77e3544c56addc5e8140c001920ceda7748ea9d695eecb585f723f",
+    "b3ac9256f3aa0386c6c8a8ab4dd279f6569b060b2e9713c042043fd99e68fd10",
+    "9289bb746f14a9f5fce5e010fa2d751f565b1c1e1124ad5412b465b986ff3475"
   ],
   "axes": [
     {

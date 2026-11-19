@@ -14,6 +14,8 @@ export interface WorldTickCommand {
  worldInteractions?:{eventId:string;cupId:string;propId:string;kind:'birth'|'remove';targetTick:number}[];
  worldPerturbations?:{eventId:string;presetId:'world-dock-drift-v1'|'world-cup-fall-v1';revision:1;targetId:string;targetTick:number}[];
  propPlacements:{propId:string;pose:{position:[number,number,number];quaternionXyzw:[number,number,number,number]}|null}[];
+ /** Only with a virtual drive: the nine axis commands of the tick. The velocities and joint targets above are then the setpoints the controllers were given (kept as evidence, not sent). */
+ driveCommands?:import('../control/drive-io').DriveCommandV1[];
 }
 /** Preparation cannot publish observations. The shared engine advances only in step; commit consumes a validated, durably recorded ACK. */
 export interface WorldPlantPorts {
@@ -27,7 +29,7 @@ export interface WorldEvidence {append(snapshot:Sim3DSnapshotV1):Promise<void>;f
 export interface WorldPlantBindings {
  displayScene?():import('../navigation2d/contracts').LabWorldSceneV1;
  navigation?:import('../session').SourceFixture['navigation'];
- metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'>;
+ metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'|'drive'>;
  evidence:WorldEvidence;
  world:WorldPlantPorts;
  robots:ReadonlyMap<string,RobotAdapter>;

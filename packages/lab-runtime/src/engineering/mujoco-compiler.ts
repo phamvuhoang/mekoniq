@@ -6,6 +6,7 @@ import {dirname,join} from 'node:path';
 import {NAVIGATION_SCHEMA_HASH,defaultNavigationPolicy,sealDocument,type LoadProfileV1,type RobotPhysicalModelV1} from '../v2/navigation2d/contracts';
 import {MOBILE_STOP_POLICY,MOBILE_CONTROLLER_POLICY} from '../v2/simulation3d/mujoco-mobile';
 import {hashJson} from '../v2/hash';
+import {mobileDriveBundle} from '../v2/control/drive-experiments';
 import {EngineeringInputError} from './assembly';
 import type {CompilerPort} from './gateway';
 import {compileNavigationScene,withSceneFiles,NAVIGATION_COMPILER_VERSION} from './navigation-compiler';
@@ -34,12 +35,14 @@ export function createMujocoCompiler(o:{workerRoot:string}):CompilerPort{
    if(sha(physicsBytes)!==registered[physicsName]?.sha256)fail('MUJOCO_PROFILE_UNSUPPORTED','the mobile profile must be the reviewed B02a measurement lock');
    const baseline=defaultNavigationPolicy(),parameters=experiment?{...baseline.parameters,maxLinearMps:experiment.maxLinearMps,maxAngularRadps:experiment.maxAngularRadps}:baseline.parameters;
    const policy=hashJson(parameters)===hashJson(baseline.parameters)?baseline:sealDocument({...baseline,id:`${input.project.mujocoExperimentId}-navigation-policy`,parameters,source:{kind:'assumed' as const,documentId:'payload-experiments-v1',revision:'1',locator:`registered ${input.project.mujocoExperimentId} speed caps; all other parameters retain baseline`,contentSha256:hashJson(parameters)}},'hash'),model=projectNavigationModel(physical,policy,{entitySpeedLimitMps:entities[0]!.speedLimitMps});
+   // a registered drive experiment adds exactly two documents and two refs; without the field the bundle is what it always was
+   const drive=input.project.driveExperimentId?await mobileDriveBundle(o.workerRoot,input.project.driveExperimentId,physical.modelDigest):undefined;
    const stopBytes=json(MOBILE_STOP_POLICY),controllerBytes=json(MOBILE_CONTROLLER_POLICY);
-   const files=[{path:'mobile-controller-policy.json',bytes:controllerBytes},{path:'mobile-stop-policy.json',bytes:stopBytes},{path:physicalPath,bytes:physicalBytes},{path:`${loadName}.json`,bytes:loadBytes},{path:`${physicsName}.json`,bytes:physicsBytes},
+   const files=[...drive?.files??[],{path:'mobile-controller-policy.json',bytes:controllerBytes},{path:'mobile-stop-policy.json',bytes:stopBytes},{path:physicalPath,bytes:physicalBytes},{path:`${loadName}.json`,bytes:loadBytes},{path:`${physicsName}.json`,bytes:physicsBytes},
     {path:'assumptions.json',bytes:await readFile(join(fixture,'assumptions.json'))},
     {path:'cell-layout.json',bytes:await readFile(join(o.workerRoot,'fixtures/xarm6-g2-v1/cell-layout.json'))},
     {path:'canonical-physical-model.json',bytes:await readFile(join(fixture,'physical-model-amr-1.json'))}];
-   const scene=withSceneFiles(compileNavigationScene(input,[model],policy,NAVIGATION_SCHEMA_HASH,{world3d:{...WORLD3D_DEFAULT},engine:{id:'mujoco_3d',version:'3.17.0',timestepMs:2,substeps:10,
+   const scene=withSceneFiles(compileNavigationScene(input,[model],policy,NAVIGATION_SCHEMA_HASH,{world3d:{...WORLD3D_DEFAULT},engine:{id:'mujoco_3d',version:'3.17.0',timestepMs:2,substeps:10,...drive?.refs,
     controllerPolicyRef:{id:MOBILE_CONTROLLER_POLICY.id,revision:MOBILE_CONTROLLER_POLICY.revision,path:'mobile-controller-policy.json',sha256:sha(controllerBytes)},stopPolicyRef:{id:MOBILE_STOP_POLICY.id,revision:MOBILE_STOP_POLICY.revision,path:'mobile-stop-policy.json',sha256:sha(stopBytes)},physicsProfileRef:{id:physics.id,revision:physics.revision,path:`${physicsName}.json`,sha256:sha(physicsBytes)},loadProfileRef:{id:load.id,revision:load.revision,path:`${loadName}.json`,sha256:sha(loadBytes)}}}),files.map(f=>({path:f.path,sha256:sha(f.bytes),bytes:f.bytes.length})));
    const sceneBytes=json(scene),out=[...files,{path:'scene.json',bytes:sceneBytes},{path:'navigation-scene.json',bytes:sceneBytes},{path:'navigation-policy.json',bytes:json(policy)},{path:`navigation-model/${physical.robotId}.json`,bytes:json(model)}];
    for(const f of out){await mkdir(dirname(join(outDir,f.path)),{recursive:true});await writeFile(join(outDir,f.path),f.bytes);}

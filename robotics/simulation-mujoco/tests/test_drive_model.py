@@ -288,7 +288,7 @@ def test_overspeed_and_following_error_latch():
         r.g.begin_tick([{"axisId": a["axisId"], "seq": k + 1, "mode": "csp", "target": 2.0, "enable": True, "quickStop": False, "faultReset": False} for a in r.model["axes"]])
         for _ in range(SUB):
             r.g.substep([0.0] * n, [0.0] * n); r.g.sample([0.0] * n, [0.0] * n, [0] * n, [False] * n)
-    assert set(r.faults()) == {"FOLLOWING_ERROR"}
+    assert set(r.faults()[:6]) == {"FOLLOWING_ERROR"} and r.faults()[6] is None   # the gripper has no following-error monitor
     r2 = Rig()
     r2.enable_all()
     r2.g.begin_tick(r2.commands())

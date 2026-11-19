@@ -85,7 +85,9 @@ class MobileEngine:
         self.targets = np.zeros(2)
         if drive:
             of_axis = {f"{self.rid}/wheel-left": self.acts[0], f"{self.rid}/wheel-right": self.acts[1]}
-            limits = {a["axisId"]: (-a["velocityLimitRadS"], a["velocityLimitRadS"]) for a in drive[0]["axes"]}
+            # the command range of a wheel is the plant's own limit (as VELOCITY_TARGET_OUT_OF_RANGE always was); the drive model's velocityLimitRadS is the speed at which the drive itself trips (OVERSPEED)
+            top = float(self.physical["drive"]["actuatorMaxSpeedRadps"]["value"])
+            limits = {a["axisId"]: (-top, top) for a in drive[0]["axes"]}
             self.drive = build_drive(m, d, drive, plan, of_axis, limits, self.substeps)
             self.wheel_pos = [self.drive.g.index[f"{self.rid}/wheel-left"], self.drive.g.index[f"{self.rid}/wheel-right"]]
         self.contacts, self.saturated, self.unstable = [], 0, None

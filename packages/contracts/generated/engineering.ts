@@ -705,6 +705,11 @@ export interface EngineeringProject {
     | 'payload-fast-v1'
     | 'payload-friction-low-v1'
     | 'payload-friction-high-v1';
+  /**
+   * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
+   */
+  driveExperimentId?:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

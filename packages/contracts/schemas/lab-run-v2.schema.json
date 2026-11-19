@@ -234,6 +234,16 @@
             "world-dock-drift-v1",
             "world-cup-fall-v1"
           ]
+        },
+        "driveExperimentId": {
+          "description": "Registered server-owned virtual-drive experiment (R4) of the shared-world cell. Absent: the R2b control path, byte for byte.",
+          "enum": [
+            "drive-ideal-v1",
+            "drive-nominal-v1",
+            "drive-torque-limited-v1",
+            "drive-latency-v1",
+            "drive-coarse-encoder-v1"
+          ]
         }
       },
       "required": [

@@ -113,7 +113,8 @@ class WorldEngine:
         if drive:
             arm_id,rid=scene['armCell']['arm']['armId'],v.rid
             of_axis={**{f'{arm_id}/J{k+1}':x for k,x in enumerate(a.arm_act)},f'{arm_id}/gripper':a.grip_act,f'{rid}/wheel-left':v.acts[0],f'{rid}/wheel-right':v.acts[1]}
-            limits={**{f'{arm_id}/J{k+1}':lim for k,lim in enumerate(self.arm_limits)},f'{arm_id}/gripper':a.grip_range,**{x['axisId']:(-x['velocityLimitRadS'],x['velocityLimitRadS']) for x in drive[0]['axes'] if x['mode']=='csv'}}
+            top=float(v.physical['drive']['actuatorMaxSpeedRadps']['value']) # a wheel's command range is the plant's limit; velocityLimitRadS is where the drive trips
+            limits={**{f'{arm_id}/J{k+1}':lim for k,lim in enumerate(self.arm_limits)},f'{arm_id}/gripper':a.grip_range,**{x['axisId']:(-top,top) for x in drive[0]['axes'] if x['mode']=='csv'}}
             self.drive=build_drive(m,d,drive,plan,of_axis,limits,10)
             self.wheel_pos=[self.drive.g.index[f'{rid}/wheel-left'],self.drive.g.index[f'{rid}/wheel-right']]
 

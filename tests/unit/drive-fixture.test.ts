@@ -16,7 +16,7 @@ test('generation is byte deterministic and the committed fixture is what the gen
   await generateDriveFixture(join(dir,'a'));await generateDriveFixture(join(dir,'b'));
   const names=await readdir(join(dir,'a'));
   expect(names).toEqual(expect.arrayContaining(['manifest.json','README.md','serve-control-v1.json','xarm6-control-v1.json','tuning-envelope-v1.json','control-oracle-v1.json']));
-  expect(names.filter(n=>n.includes('-drive-'))).toHaveLength(7);
+  expect(names.filter(n=>n.includes('-drive-'))).toHaveLength(9);
   for(const n of names){const a=await readFile(join(dir,'a',n));expect(a.equals(await readFile(join(dir,'b',n))),n).toBe(true);expect(a.equals(await readFile(FX+'drive-v1/'+n)),n).toBe(true);}
  }finally{await rm(dir,{recursive:true,force:true});}
 });
@@ -26,7 +26,7 @@ test('the manifest hashes the bytes of every file it lists',async()=>{
 });
 test('every document is sealed by its own digest and says assumed / not_calibrated',async()=>{
  const names=(await readdir(FX+'drive-v1')).filter(n=>n.endsWith('.json')&&n!=='manifest.json');
- expect(names).toHaveLength(11);
+ expect(names).toHaveLength(13);
  for(const n of names){
   const d=await json<{digest:string;calibration:string;sources?:Record<string,{kind:string}>;source?:{kind:string}}>('drive-v1/'+n);
   expect(driveDocumentDigest(d),n).toBe(d.digest);expect(d.calibration).toBe('not_calibrated');

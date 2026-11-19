@@ -3,7 +3,7 @@
   "documentType": "drive-model",
   "id": "xarm6-drive-nominal-v1",
   "revision": 1,
-  "digest": "fab9324dc1a93ded1458ddce4952dd6468952d8fb703570171841e9e64a10740",
+  "digest": "33e81253be77e3544c56addc5e8140c001920ceda7748ea9d695eecb585f723f",
   "calibration": "not_calibrated",
   "axes": [
     {
@@ -183,10 +183,7 @@
       "quickStopSubsteps": 100,
       "onDisable": "brake",
       "brakeTorqueNm": 1.2,
-      "followingError": {
-        "limitRad": 0.5,
-        "substeps": 100
-      }
+      "followingError": null
     }
   ],
   "sources": {

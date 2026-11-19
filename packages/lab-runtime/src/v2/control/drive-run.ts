@@ -1,0 +1,54 @@
+// The glue between a run and its virtual drive (R4-A §5.3, plan V04): admit the two bundle documents of a scene that names them, build the controller configuration from them
+// and the plant, and turn a navigation setpoint plus the last measured feedback into the commands of the next tick. Nothing here reads the true state of the plant.
+import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {splitDriveSnapshot,validateControlProfile,validateDriveModel,validateDriveRefs,type ControlProfileV1,type DriveAxisSnapshot,type DriveCommandV1,type DriveModelV1,type TuningEnvelopeV1} from './drive-io';
+import {diffDriveBaseV1,type DiffDriveBaseConfig,type DiffDriveBaseState} from './diff-drive-base';
+import type {ControllerEvent} from './controller';
+
+export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
+/** Starting values of the controller's own timers (`assumed`): ticks of 20 ms. */
+export const BASE_CONTROLLER_DEFAULTS={enableTimeoutTicks:50,trackingDegradedRadS:1,trackingDegradedTicks:25} as const;
+export interface DriveManifest {driveModelDigest:string;controlProfileDigest:string;controllers:{id:string;revision:number}[];testLevel:typeof CONTROLLER_IN_THE_LOOP;experimentId?:string}
+const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
+type Ref={id:string;revision:number;path:string;sha256:string};
+
+/** The documents a scene names, checked: shape, own digest, pairing, the server's tuning envelope, the plant binding. Undefined when the scene names none. */
+export async function admitDriveDocuments(scene:{engine?:object},read:(path:string)=>Promise<Uint8Array>,workerRoot:string,plantDigest:string|null):Promise<{model:DriveModelV1;control:ControlProfileV1}|undefined>{
+ const refs=validateDriveRefs({engine:(scene.engine??{}) as Record<string,unknown>});
+ if(!refs.ok)throw new Error(refs.reasonCodes[0]);
+ const e=(scene.engine??{}) as {driveModelRef?:Ref;controlProfileRef?:Ref};
+ if(!e.driveModelRef||!e.controlProfileRef)return undefined;
+ const load=async<T,>(r:Ref)=>{const b=await read(r.path);if(sha(b)!==r.sha256)throw new Error('DRIVE_DOCUMENT_HASH_MISMATCH');return JSON.parse(Buffer.from(b).toString()) as T;};
+ const model=await load<DriveModelV1>(e.driveModelRef),control=await load<ControlProfileV1>(e.controlProfileRef);
+ const envelope=JSON.parse(await readFile(join(workerRoot,'fixtures/drive-v1/tuning-envelope-v1.json'),'utf8')) as TuningEnvelopeV1;
+ // a world's axes carry the scene's arm id, the envelope of the fixture the xarm-1 prefix: bound by suffix
+ const bound={...envelope,axes:model.axes.map(a=>{const own=envelope.axes.find(x=>x.axisId===a.axisId)??envelope.axes.find(x=>x.axisId.split('/')[1]===a.axisId.split('/')[1]&&x.axisId.startsWith('xarm-1/'));return own?{...own,axisId:a.axisId}:undefined;}).filter(Boolean) as TuningEnvelopeV1['axes']};
+ const checks=[validateDriveModel(model),validateControlProfile(control,model,bound)];
+ const bad=checks.find(c=>!c.ok);if(bad)throw new Error(`DRIVE_DOCUMENT_INVALID:${bad.reasonCodes.join(',')}`);
+ if(plantDigest!==null&&control.plantModelDigest!==plantDigest)throw new Error('DRIVE_PLANT_MISMATCH');
+ return {model,control};
+}
+
+export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
+ controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{}});
+
+export interface MobileDrive {readonly manifest:DriveManifest;readonly events:ControllerEvent[];
+ /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
+ step(tick:number,setpoint:{vMps:number;omegaRadps:number},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
+
+export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number}):MobileDrive{
+ const ctl=d.control.controllers.find(c=>c.controllerId===diffDriveBaseV1.id);
+ if(!ctl||ctl.revision!==diffDriveBaseV1.revision)throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
+ const accelMps2=ctl.params.maxAccelerationMps2;
+ const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
+  maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS};
+ let state:DiffDriveBaseState=diffDriveBaseV1.init(config);const events:ControllerEvent[]=[];
+ return {manifest:driveManifest(d),events,step(tick,setpoint,snapshot){
+  if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
+  const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});
+  state=r.state;events.push(...r.events);
+  return {commands:r.commands,events:r.events,odometry:state.odometry};
+ }};
+}
