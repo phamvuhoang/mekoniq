@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ f63c4ef04f0e7fac74c8e181073f1e1d1db6322f (sha256 f5c0bd9dc09d38fc6f32fd3776dba00722000a36b01ff809324eb3e6ac4bc25e). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 9cfc87f67a772263203194be5708fc1791896c80 (sha256 9be9e94a92424244a5f0e00bf32bf8fbef87b87c877340d098dd6832d70c4b75). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -243,6 +243,7 @@ export type Sim3DResponseV1 =
             ops: string[];
             engineVersion?: string;
             executableSha256?: Digest;
+            hostArch?: 'arm64' | 'x86_64';
           };
     }
   | {
@@ -1058,6 +1059,7 @@ export interface NavigationRunEvidenceV11 {
           path: string;
           sha256: Digest;
         };
+        hostArch?: 'arm64' | 'x86_64';
       };
   /**
    * Optional (added with B05): the versions a rerun must match besides the engine and lock.
