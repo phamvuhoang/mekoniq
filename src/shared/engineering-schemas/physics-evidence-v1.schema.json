@@ -359,6 +359,14 @@
               "pitchRad"
             ]
           }
+        },
+        "drives": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisSnapshot"
+          }
         }
       },
       "required": [

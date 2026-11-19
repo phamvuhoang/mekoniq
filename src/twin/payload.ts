@@ -6,6 +6,7 @@ import physicalSchema from '../shared/engineering-schemas/robot-physical-model-v
 import loadSchema from '../shared/engineering-schemas/load-profile-v1.schema.json' with {type:'json'};
 import navModelSchema from '../shared/engineering-schemas/navigation-model-2d-v1.schema.json' with {type:'json'};
 import navSchema from '../shared/engineering-schemas/navigation-scene-v1.schema.json' with {type:'json'};
+import driveIoSchema from '../shared/engineering-schemas/drive-io-v1.schema.json' with {type:'json'};
 import sampleSchema from '../shared/engineering-schemas/twin-sample-v2.schema.json' with {type:'json'};
 import design from '../../fixtures/engineering/serve-payload-v1/serve-3d-project.json' with {type:'json'};
 import centerLoad from '../../fixtures/engineering/serve-payload-v1/cup-center.json' with {type:'json'};
@@ -20,7 +21,7 @@ import type {TwinRuntime} from '../scenarios/controls';
 import {buildFrameGraph,composePose,checkQuaternion} from './frames';
 import {hashJson,sha256Hex} from './hash';
 import {tr} from '../i18n';
-const ajv=new Ajv({strict:false});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');ajv.addSchema(navModelSchema,'navigation-model-2d-v1.schema.json');
+const ajv=new Ajv({strict:false});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicalSchema,'robot-physical-model-v1.schema.json');ajv.addSchema(navModelSchema,'navigation-model-2d-v1.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');
 const validPhysical=ajv.getSchema<RobotPhysicalModelV1>('robot-physical-model-v1.schema.json')!,validLoad=ajv.compile<LoadProfileV1>(loadSchema),validNav=ajv.compile<NavigationSceneV1>(navSchema),validSample=ajv.compile<TwinSample>(sampleSchema);
 export const MUJOCO_MOBILE_SET='engineering-mujoco-3d-v1';
 export const PAYLOAD_EXPERIMENT_IDS=['payload-empty-v1','payload-center-v1','payload-offset-v1','payload-slow-v1','payload-fast-v1','payload-friction-low-v1','payload-friction-high-v1'] as const;

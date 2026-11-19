@@ -1,4 +1,5 @@
 import {validMobileSample} from '../twin/payload';
+import driveIoSchema from '../shared/engineering-schemas/drive-io-v1.schema.json' with {type:'json'};
 import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json' with {type:'json'};
 import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
 // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
@@ -53,7 +54,7 @@ const shape=obj({
  reconciliations:arr(obj({subjectId:str,commandId:nullable(str),nativeState:str,tick:integer})),coverage:record(bool),limitations:arr(str),
  coffee:obj({plantLog:arr(obj({})),jobs:arr(job),cups:arr(cup),armTrace:obj({tag:str,interpolation:str,modelRevision:str,limitsOk:bool,samples:arr(obj({tick:integer,q:arr(num),tcp:vector(3)})),collision:nullable(collision),stop:nullable(obj({latched:bool,reconcileRequired:bool,reason:str,events:arr(obj({tick:integer,stage:{enum:['requested','acknowledged','observed','reset']},reason:str,provenance:{const:'modelled'}}))}))},['tag','interpolation','modelRevision','limitsOk','samples'])},['jobs','cups','armTrace'])
 },['manifest','outcome','metrics','businessEvents','effects','faults','reconciliations','coverage','limitations']);
-const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicsSchema,'physics-evidence-v1.schema.json');
+const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicsSchema,'physics-evidence-v1.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');
 const validShape=ajv.compile<RunReport>(shape);
 export function validReportShape(value:unknown):value is RunReport{
  if(!validShape(value))return false;
