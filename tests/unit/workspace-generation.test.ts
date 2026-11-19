@@ -222,6 +222,13 @@ test('600 ms without a new tick while running keeps the last snapshot, marked st
  const f=internal.frame(),held=sceneEntities(f);expect(f.world?.quality).toBe('stale');expect(held.map(e=>e.id)).toEqual(live.map(e=>e.id));expect(held.every(e=>e.stale===true)).toBe(true);expect(internal.worldPlayback.at(performance.now())).toBeNull();
  expect(w.html()).toContain('data-testid="world-stale"');
 });
+test('a completed cell run keeps its final committed frame after the ticker stops',async()=>{
+ const {internal,observe}=await cellLoop('running'),{sceneEntities}=await import('../../src/twin/scene');
+ observe(9,13,{status:'completed'});await internal.refreshWorld();await internal.refreshWorld();expect(internal.ticker).toBeUndefined();
+ const live=sceneEntities(internal.frame());expect(live.length).toBeGreaterThan(0);
+ internal.worldReceived=performance.now()-600;
+ const f=internal.frame();expect(f.world?.quality).toBe('valid');expect(sceneEntities(f).map(e=>e.id)).toEqual(live.map(e=>e.id));
+});
 test('a new revision of the same run, boot and scene keeps both playbacks; a boot change clears them',async()=>{
  const {h,internal,observe}=await cellLoop('running'),poses={arms:{},bodies:{amr:{positionM:[0,0,0] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}},cups:{}};internal.v3d={posesOf:()=>poses};
  observe(8,12);await internal.refreshWorld();const live=vi.spyOn(internal.playback,'clear'),world=vi.spyOn(internal.worldPlayback,'clear');observe(9,13);await internal.refreshWorld();internal.applyView({...h.view!,run:{...h.view!.run,runRevision:14}});
