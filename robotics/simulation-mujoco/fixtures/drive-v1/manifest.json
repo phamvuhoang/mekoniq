@@ -22,7 +22,7 @@
     },
     {
       "path": "serve-control-v1.json",
-      "sha256": "a231455c4d5d6bc2f5e8f27780e6f696689fca5f4ae9b0c866d36da31a3c64d1",
+      "sha256": "7f269710f275d0281afb87c1af34a8453dbc72945c631d98b906ef062b83fd35",
       "bytes": 2146
     },
     {
@@ -47,7 +47,7 @@
     },
     {
       "path": "serve-drive-torque-limited-v1.json",
-      "sha256": "9dd4fcd6d33af5d67d1ad577b6d5596d124408986c9077c15a895ca0e6fff7f7",
+      "sha256": "89f5d4e931804c0179696f66f92a30fe201e980e8e4c8e669a4ac4decaff8301",
       "bytes": 3500
     },
     {

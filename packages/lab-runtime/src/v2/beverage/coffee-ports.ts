@@ -35,7 +35,10 @@ export interface CoffeePlantPorts {
  snapshot():{coffee:CoffeePlantState;arm:ArmPlantState|null};
  drain():readonly CellReport[];
  transferEvidence(transferId:string):CorrelatedTransferEvidence|null;
- report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport;/** Set by a contact arm plant (R2a). */armCell?:ArmCellEvidence;/** Set by a drive world (R4): the report section built from the recorded drive stream. */driveEvidence?:import('../control/drive-report').DriveEvidenceReport};
+ /** Set by a drive world (R4): the report section, built from the recorded drive rows ON DEMAND. It is deliberately not part of report(): the run view calls report() every poll and a rebuild over
+  * the whole run made a view cost grow with the tick count (review of V05). */
+ driveReport?():import('../control/drive-report').DriveEvidenceReport;
+ report():{cupLedger:readonly CupPhysicalState[];arm:ArmCollisionEvidenceRecord|null;/** Set by a plant-backed arm (R1.1): what plant it is and how closely it followed the commands. */armPlant?:ArmPlantReport;/** Set by a contact arm plant (R2a). */armCell?:ArmCellEvidence};
  close():Promise<void>;
  /** Scripted cup input and fault controls. These never assert domain custody. */
  coffeePlant?:MockCoffeePlant;

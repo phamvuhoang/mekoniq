@@ -20,7 +20,9 @@ export function buildDriveEvidence(model:Pick<DriveModelV1,'axes'>,records:reado
     if(d.fault&&!faults.some(f=>f.fault===d.fault))faults.push({fault:d.fault,firstTick:r.tick});
     saturated+=d.saturatedSubsteps;if(enabledAt===null&&d.state==='enabled')enabledAt=r.tick;
    }
-   const tracking:ControlMetric=enabledAt===null?{available:false,value:null,unit:a.mode==='csp'?'rad':'rad/s',reason:'NEVER_ENABLED'}:trackingRms(records,a.axisId,{fromTick:enabledAt,toTick:last},a.mode);
-   return {axisId:a.axisId,mode:a.mode,states,faults,enabledAtTick:enabledAt,saturatedSubsteps:saturated,trackingRms:tracking,...a.mode==='csv'?{speedDeficit:speedDeficit(records,a.axisId,{minCruiseTicks:CRUISE_MIN_TICKS})}:{}};
+   const unit=a.mode==='csp'?'rad':'rad/s',unavailable=(reason:string):ControlMetric=>({available:false,value:null,unit,reason});
+   // a stream that is not complete (a gap, a terminal reason) gives no metric: what is left of it is not the run
+   const tracking:ControlMetric=!o.complete?unavailable('EVIDENCE_INCOMPLETE'):enabledAt===null?unavailable('NEVER_ENABLED'):trackingRms(records,a.axisId,{fromTick:enabledAt,toTick:last},a.mode);
+   return {axisId:a.axisId,mode:a.mode,states,faults,enabledAtTick:enabledAt,saturatedSubsteps:saturated,trackingRms:tracking,...a.mode==='csv'?{speedDeficit:o.complete?speedDeficit(records,a.axisId,{minCruiseTicks:CRUISE_MIN_TICKS}):unavailable('EVIDENCE_INCOMPLETE')}:{}};
   })};
 }

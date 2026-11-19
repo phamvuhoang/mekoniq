@@ -17,6 +17,7 @@ test('MJ-CELL-BV01 on drive-nominal-v1, seed 7, serves two coffees through the c
  const saved=await h.save('drive-nominal'),report=saved.report;
  expect(report.outcome,JSON.stringify(report.attention)).toMatchObject({status:'completed',served:'2'});expect(report.attention).toEqual([]);
  expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1'});
+ expect(['arm64','x86_64']).toContain(report.manifest.drive!.hostArch);   // the worker's own architecture, recorded for every drive run (contracts §1)
  expect(report.manifest.drive!.controllers.map(c=>c.id)).toEqual(['joint-trajectory-follower-v1','diff-drive-base-v1']);
  // the saved report carries the drive section (once, at the root) built from the recorded stream: 9 axes, all enabled, no faults
  expect(report.driveEvidence).toMatchObject({testLevel:'controller_in_the_loop',complete:true,issues:[]});expect(report.driveEvidence!.axes).toHaveLength(9);expect(report.driveEvidence!.axes.every(a=>a.faults.length===0&&a.enabledAtTick!==null)).toBe(true);expect((report.coffee as {driveEvidence?:unknown}).driveEvidence).toBeUndefined();
@@ -50,13 +51,18 @@ test('pausing a cell run for two wall seconds raises no drive fault (the cell ru
 test('CIL05 (cell): a command stream that goes quiet for J2 while the hand holds the cup faults the drive; the hand keeps the cup and no command opens the gripper or resets',async()=>{
  // The plan's variant lowers the rated speed of J2 below the lift speed. The measured lift (J2 0.83 rad/s) is slower than the approach before the grasp (0.94 rad/s), so no rated speed separates
  // the two: the fault is made by what a lost command channel does (J2 repeats its last seq: COMMAND_TIMEOUT after 5 ticks), starting 20 ticks after the engine reports the cup held.
- let heldAt:number|null=null;const frozen:{seq?:number}={};
+ let heldAt:number|null=null;const frozen:{seq?:number}={},afterFault:{cmd:Record<string,number>;pos:Record<string,number>}[]=[];let faulted=false;
  const spawn:typeof spawnMujocoWorker=async o=>{const w=await spawnMujocoWorker(o);return {...w,async request(req){
   if(req.op==='step'&&heldAt!==null&&(req.payload as {targetTick:number}).targetTick>=heldAt+20){
    const p=req.payload as {driveCommands?:{axisId:string;seq:number}[]};
    for(const c of p.driveCommands??[])if(c.axisId.endsWith('/J2')){frozen.seq??=c.seq;c.seq=frozen.seq;}
   }
   const r=await w.request(req);
+  if(r.ok&&req.op==='step'){
+   const drives=(r.result as {drives?:{axisId:string;fault:string|null;actualPositionRad:number}[]}).drives??[];
+   if(faulted)afterFault.push({cmd:Object.fromEntries(((req.payload as {driveCommands?:{axisId:string;target:number}[]}).driveCommands??[]).filter(c=>!c.axisId.endsWith('/gripper')).map(c=>[c.axisId,c.target])),pos:Object.fromEntries(drives.filter(d=>d.axisId.startsWith('arm-1/')&&!d.axisId.endsWith('/gripper')).map(d=>[d.axisId,d.actualPositionRad]))});
+   if(drives.some(d=>d.fault))faulted=true;
+  }
   if(r.ok&&req.op==='step'&&heldAt===null&&(r.result as {arms?:{gripper:{heldPropIds:string[]}}[]}).arms?.[0]?.gripper.heldPropIds.length)heldAt=(r.result as {tick:number}).tick;
   return r;}};};
  const h=await openCell(7,'drive-cil05',{},{driveExperimentId:'drive-nominal-v1'},spawn);open.push(h);
@@ -72,6 +78,13 @@ test('CIL05 (cell): a command stream that goes quiet for J2 while the hand holds
  expect(report.coffee!.cups.find(c=>c.cupId==='cup-1')).toMatchObject({ownerKind:'cell',ownerId:'coffee-1',movements:[],disposition:null,pendingTransfer:{lastResult:'outcome_unknown'}});
  expect(report.attention.map(a=>a.reason)).toContain('TRANSFER_UNKNOWN');       // the run needs a person; it does not reset or retry
  expect(report.outcome.served).toBe('0');
+ // the hold is latched at the fault (review of V05). A person who steps the stopped run for 5 s sees the joints that are still enabled keep the target of the fault: no command moves and the true
+ // positions stay within 1.2 degrees of each other ("latest measurement" every tick let J3 sag 16 degrees); the cup stays between the pads
+ await act(h,'step',{ticks:250});
+ expect(afterFault.length).toBeGreaterThan(200);
+ for(const id of Object.keys(afterFault[0]!.cmd))expect(new Set(afterFault.map(x=>x.cmd[id])).size,id).toBe(1);
+ for(const id of Object.keys(afterFault[0]!.pos).filter(x=>!x.endsWith('/J2')))expect(Math.abs(afterFault.at(-1)!.pos[id]!-afterFault[2]!.pos[id]!),id).toBeLessThan(0.02);
+ expect((h.bindings().snapshot() as typeof at).arms[0]!.gripper.heldPropIds).toEqual(['cup-1']);
  await h.run.close();
  const read=await h.readback(),after=read.records.filter(r=>r.snapshot.tick>(heldAt??0)+20);
  const gripper=after.map(r=>r.command!.driveCommands!.find(c=>c.axisId.endsWith('/gripper'))!.target);

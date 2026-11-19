@@ -53,7 +53,8 @@ class WorldEngine:
         for pid,name in an['props'].items():
             bid=m.body(name).id;jid=m.body_jntadr[bid];qa,va=m.jnt_qposadr[jid],m.jnt_dofadr[jid]
             a.prop[pid]={'body':bid,'geom':m.body_geomadr[bid],'qpos':qa,'qvel':va,'park':d.qpos[qa:qa+7].copy()}
-        d.qpos[a.arm_qpos]=scene['armCell']['arm']['homeRad'];d.ctrl[a.arm_act]=scene['armCell']['arm']['homeRad']
+        d.qpos[a.arm_qpos]=scene['armCell']['arm']['homeRad']
+        if not drive:d.ctrl[a.arm_act]=scene['armCell']['arm']['homeRad']   # on the drive path ctrl is written through actuator_ctrladr every substep (a pid actuator owns two cells: an actuator id is not a ctrl address)
         # Bind mobile observations, independent wheel odometry and raycasting.
         v=self.mobile=MobileEngine.__new__(MobileEngine)
         v.model,v.data,v.names=m,d,names['mobile'];bn=v.names

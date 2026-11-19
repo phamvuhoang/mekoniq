@@ -34,7 +34,7 @@ export async function runCellCampaign(o:{root:string;out:string;sourceCommit:str
  o.signal?.throwIfAborted();
  if(!/^[a-f0-9]{40}$/.test(o.sourceCommit))throw Error('CELL_SOURCE_COMMIT_REQUIRED');
  if(o.caseId&&!CELL_CASES.some(c=>c.id===o.caseId))throw Error('CAMPAIGN_CASE_UNREGISTERED');
- await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign,sourceCommit:o.sourceCommit,accepted:false,execution:'actual_mujoco',calibration:'not_calibrated',...o.driveExperimentId?{driveExperimentId:o.driveExperimentId}:{}}));
+ await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign,sourceCommit:o.sourceCommit,accepted:false,execution:'actual_mujoco',calibration:'not_calibrated',...o.driveExperimentId?{driveExperimentId:o.driveExperimentId,hostArch:process.arch==='arm64'?'arm64':'x86_64'}:{}}));
  const workerRoot=join(o.root,'robotics/simulation-mujoco'),project=JSON.parse(await readFile(join(workerRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
  for(const spec of CELL_CASES.filter(c=>!o.caseId||c.id===o.caseId)){
   const dir=join(o.out,spec.id);await mkdir(dir);const directory=join(dir,'run');await mkdir(directory);let input!:WorldFactoryInput,bindings!:WorldPlantBindings,worker:Awaited<ReturnType<typeof spawnMujocoWorker>>|undefined,drop=false,opens=0,action=0;

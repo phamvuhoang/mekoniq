@@ -24,6 +24,7 @@ test('the first run on drive-nominal-v1 starts the drive, serves 1, and its mani
  expect(report.outcome,JSON.stringify(v.attention)).toMatchObject({status:'completed',served:'1'});
  expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1',controllers:[{id:'diff-drive-base-v1',revision:1}]});
  expect(report.manifest.drive!.driveModelDigest).toMatch(/^[0-9a-f]{64}$/);
+ expect(['arm64','x86_64']).toContain(report.manifest.drive!.hostArch);   // the worker's own architecture (contracts §1)
  // the drive was not ready before its enable sequence ended: no wheel moved before both axes were enabled
  const drives=(s:Step)=>(s.result as {drives:{state:string;actualVelocityRadS:number}[]}).drives;
  const enabledAt=steps.findIndex(s=>drives(s).every(d=>d.state==='enabled')),movedAt=steps.findIndex(s=>drives(s).some(d=>Math.abs(d.actualVelocityRadS)>0.01));  // 0.5 mrad of settling is not motion

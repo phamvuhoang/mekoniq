@@ -56,3 +56,19 @@ test('the follower is pure and refuses a setpoint of the wrong shape',()=>{
  expect(run(steps)).toEqual(run(steps));
  expect(()=>run([{setpoint:{positionsRad:[1],openingM:null},feedback:fb('enabled')}])).toThrow('JOINT_SETPOINT_SHAPE');
 });
+
+test('the hold is latched once: a sagging measurement after the fault does not drag the targets of the joints that are still enabled',()=>{
+ // review of V05: "target = latest measured position" every tick lets an enabled joint lose its stiffness (J3 16 degrees in 5 s on the engine). The target is the position at the fault, whatever is measured after.
+ const steps=[{setpoint:{positionsRad:[1,1,1],openingM:0},feedback:fb('enabled',[0.9,0.9,0.9,0.8])},
+  ...Array.from({length:40},(_,k)=>({setpoint:{positionsRad:[0,0,0],openingM:0.0889},feedback:fb(id=>id==='arm-1/J2'?'fault':'enabled',[0.91-0.001*k,0.92-0.001*k,0.93-0.001*k,0.8])}))];
+ const {out}=run(steps);
+ for(const o of out.slice(1))expect(o.commands.slice(0,3).map(c=>c.target)).toEqual([0.91,0.92,0.93]);
+});
+test('the latch is taken once while the drive is not enabled, and released when every axis is enabled again',()=>{
+ const steps=[{setpoint:sp,feedback:fb('disabled',[0.5,0.5,0.5,0.1])},{setpoint:sp,feedback:fb('disabled',[0.6,0.6,0.6,0.1])},{setpoint:{positionsRad:[1,2,3],openingM:0},feedback:fb('enabled',[0.6,0.6,0.6,0.1])},{setpoint:{positionsRad:[1,2,3],openingM:0},feedback:fb('disabled',[0.7,0.7,0.7,0.1])}];
+ const {out}=run(steps);
+ expect(out[0]!.commands.slice(0,3).map(c=>c.target)).toEqual([0.5,0.5,0.5]);
+ expect(out[1]!.commands.slice(0,3).map(c=>c.target)).toEqual([0.5,0.5,0.5]);          // latched at the first measurement, not the latest
+ expect(out[2]!.commands.slice(0,3).map(c=>c.target)).toEqual([1,2,3]);
+ expect(out[3]!.commands.slice(0,3).map(c=>c.target)).toEqual([0.7,0.7,0.7]);          // a new latch after the release
+});

@@ -341,3 +341,72 @@ def test_plan_actuators_gives_each_axis_its_own_group():
     assert [p["group"] for p in plan.values()] == [1, 2, 3, 4, 5, 6, 7]
     with pytest.raises(WorkerError):
         plan_actuators(doc("serve-drive-nominal-v1.json"), doc("xarm6-control-v1.json"))
+
+
+# ---- review of V05 (2026-11-19): a cleared fault must not replay the target of before it; the acceleration limit must not depend on the command delay -----------------------
+def test_after_a_fault_reset_the_wheels_start_from_rest_not_from_the_target_of_before_the_fault():
+    r = Rig()
+    r.enable_all()
+    for _ in range(2):
+        r.tick(target=8.0)
+    for _ in range(6):
+        r.tick(seq=r.seq, target=8.0)                 # a stale seq: the watchdog trips COMMAND_TIMEOUT
+    assert r.faults()[0] == "COMMAND_TIMEOUT"
+    r.tick(target=0.0, faultReset=True)
+    r.log.clear()
+    for _ in range(4):
+        r.tick(target=0.0)
+    assert r.states()[0] == "enabled" or r.states()[0] in ("ready", "disabled")
+    assert all(abs(o["target"][i]) < 1e-12 for o in r.log for i in range(r.n)), "no substep may hand out the target the axis had before the fault"
+
+
+def test_a_disabled_axis_that_is_enabled_again_starts_from_neutral_and_not_from_its_last_target():
+    r = Rig()
+    r.enable_all()
+    for _ in range(3):
+        r.tick(target=8.0)
+    for _ in range(5):
+        r.tick(target=0.0, enable=False)
+    r.log.clear()
+    for _ in range(4):
+        r.tick(target=0.0)
+    assert all(abs(o["target"][i]) < 1e-12 for o in r.log for i in range(r.n))
+
+
+def test_a_position_axis_that_is_enabled_again_holds_where_it_is_not_where_it_was_commanded():
+    r = Rig()
+    csp = [i for i, a in enumerate(r.model["axes"]) if a["mode"] == "csp"]
+    if not csp:
+        pytest.skip("this fixture has no csp axis")
+    r.enable_all()
+    r.tick(target=1.0)
+    for _ in range(3):
+        r.tick(target=1.0, enable=False)
+    pos = r.pos[csp[0]]
+    r.log.clear()
+    r.tick(target=pos)
+    assert all(abs(o["target"][csp[0]] - pos) < 1e-9 for o in r.log)
+
+
+@pytest.mark.parametrize("delay", [0, 1, 50])
+def test_the_acceleration_limit_is_the_documented_one_whatever_the_command_delay(delay):
+    def edit(m):
+        for a in m["axes"]:
+            a["commandDelaySubsteps"], a["enableDelaySubsteps"], a["watchdogTicks"] = delay, 0, None
+    m, c = doc("serve-drive-nominal-v1.json"), doc("serve-control-v1.json")
+    edit(m)
+    for a in c["axes"]:
+        a["accelerationLimit"] = 100.0                # rad/s^2: 0.2 rad/s per substep, 10 rad/s after 50 substeps
+    g = DriveGroup(m, c, DT, SUB, {a["axisId"]: (-20, 20) for a in m["axes"]})
+    g.reset([0.0] * len(m["axes"]))
+    seq, outs = 0, []
+    for _ in range(40):
+        seq += 1
+        g.begin_tick([{"axisId": a["axisId"], "seq": seq, "mode": a["mode"], "target": 10.0, "enable": True, "quickStop": False, "faultReset": False} for a in m["axes"]])
+        for _s in range(SUB):
+            o = g.substep([0.0] * len(m["axes"]), [0.0] * len(m["axes"]))
+            outs.append(o["target"][0])
+            g.sample([0.0] * len(m["axes"]), [0.0] * len(m["axes"]), [0.0] * len(m["axes"]), [False] * len(m["axes"]))
+        g.end_tick()
+    first = next(i for i, x in enumerate(outs) if x >= 10.0 - 1e-9)
+    assert first + 1 == 50 + delay, f"reached after {first + 1} substeps, the ramp alone takes 50 and the delay adds {delay}"

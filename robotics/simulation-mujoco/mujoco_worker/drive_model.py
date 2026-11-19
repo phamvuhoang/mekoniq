@@ -104,6 +104,7 @@ class DriveGroup:
         self.accepting = [False] * self.n
         self.channel = [deque([t] * (a["commandDelaySubsteps"] + 1), maxlen=a["commandDelaySubsteps"] + 1) for t, a in zip(self.initial_target, self.axes)]
         self.applied = list(self.initial_target)
+        self.ramp = list(self.initial_target)      # the acceleration limiter's own last output (before the delay): the limit must not depend on the channel's delay
         self.pref = list(self.pos)
         self.fb_pos = [deque([quantize(p, a["encoder"]["countsPerRev"])] * (a["feedbackDelaySubsteps"] + 1), maxlen=a["feedbackDelaySubsteps"] + 1) for p, a in zip(self.pos, self.axes)]
         self.fb_hist = [deque([quantize(p, a["encoder"]["countsPerRev"])] * (a["encoder"]["velocityWindowSubsteps"] + 1), maxlen=a["encoder"]["velocityWindowSubsteps"] + 1) for p, a in zip(self.pos, self.axes)]
@@ -120,8 +121,9 @@ class DriveGroup:
         return [{"axisId": a["axisId"], "seq": 0, "mode": a["mode"], "target": self.initial_target[i], "enable": self.boot_enabled[i], "quickStop": False, "faultReset": False} for i, a in enumerate(self.axes)]
 
     # ---- one tick ----------------------------------------------------------------------------------------------------------------------------------
-    def begin_tick(self, commands):
-        """Admit the whole command set or refuse it (WorkerError with a DRIVE_* code) before any state changes."""
+    def check(self, commands):
+        """Pure: the commands of one tick by axis id, or a WorkerError with a DRIVE_* code. Changes nothing, so a session can refuse a tick before it spends anything (a one-shot disturbance,
+        a perturbation) and begin_tick() cannot refuse a set that was checked against the same state."""
         by_id = {}
         for c in commands:
             i = self.index.get(c["axisId"])
@@ -141,6 +143,11 @@ class DriveGroup:
         for axis_id in self.ids:
             if axis_id not in by_id:
                 raise WorkerError("DRIVE_COMMAND_REQUIRED", axis_id)
+        return by_id
+
+    def begin_tick(self, commands):
+        """Admit the whole command set or refuse it (WorkerError with a DRIVE_* code) before any state changes."""
+        by_id = self.check(commands)
         for i, a in enumerate(self.axes):
             c = by_id[a["axisId"]]
             fresh = c["seq"] > self.seq[i]
@@ -159,11 +166,22 @@ class DriveGroup:
                     self._trip(i, "COMMAND_TIMEOUT")
             else:
                 self.stale[i] = 0
-            # an axis that is not enabled acknowledges the command (seq above) and drops its target: the channel keeps what it had
+            # an axis that is not enabled acknowledges the command (seq above) and drops its target. Its command channel does not keep the target of before: it is brought to
+            # neutral (a velocity axis at 0, a position axis where it is), so that enabling it again, after a disable or a fault reset, never replays an old target
             self.accepting[i] = self.state[i] == ENABLED
-            self.prev_in[i] = self.cmd_in[i]
-            self.cmd_in[i] = c["target"] if self.accepting[i] else self.cmd_in[i]
+            if self.accepting[i]:
+                self.prev_in[i] = self.cmd_in[i]
+                self.cmd_in[i] = c["target"]
+            else:
+                self._neutral(i)
         self.sub = 0
+
+    def _neutral(self, i):
+        n = self.pos[i] if self.axes[i]["mode"] == "csp" else 0.0
+        self.prev_in[i] = self.cmd_in[i] = self.applied[i] = self.ramp[i] = n
+        ch = self.channel[i]
+        for k in range(len(ch)):
+            ch[k] = n
 
     def _cause_cleared(self, i, fresh):
         cause = self.fault[i]
@@ -198,8 +216,9 @@ class DriveGroup:
             x = self.prev_in[i] + (self.cmd_in[i] - self.prev_in[i]) * s / self.substeps if a["commandInterpolation"] == "linear" else self.cmd_in[i]
             if self.accel[i] is not None:
                 limit = self.accel[i] * self.dt
-                last = self.applied[i]
+                last = self.ramp[i]
                 x = last + max(-limit, min(limit, x - last))
+                self.ramp[i] = x
             ch = self.channel[i]
             ch.append(x)
             out = ch[0]

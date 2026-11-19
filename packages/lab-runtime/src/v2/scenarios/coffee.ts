@@ -305,7 +305,7 @@ export class CoffeeDriver {
  async report():Promise<CoffeeReport>{
   const jobs:JsonObject[]=[],cups:CoffeeReport['cups']=[];
   for(const w of this.st.workload){const j=await this.ctx.source.read('coffee-job',w.jobId).catch(()=>null),cup=await this.ctx.source.read('cup',w.cupId);if(!j?.version||!cup.version)continue;jobs.push(j.state);cups.push(cup.state as unknown as CoffeeReport['cups'][number]);}
-  const drive=this.ports.report().driveEvidence;
+  const drive=this.ports.driveReport?.();
   return {jobs,cups,...this.ports.custodyEvidence==='correlated'?{physicalCustody:this.ports.report().cupLedger}:{},...drive?{driveEvidence:drive}:{},cellEffects:(await this.ctx.source.effects()).filter(e=>e.type==='cell.execute').map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
    armTrace:{...this.st.arm.plantId==='mujoco_arm'?{tag:'mujoco_position_actuator_tracked',interpolation:'quintic-sync-v1',modelRevision:XARM6_SI.revision}:{tag:MOCK_KINEMATIC,interpolation:'linear_joint_illustrative',modelRevision:PUMA560_SI.revision},limitsOk:this.arm?this.st.arm.limitsOk:false,samples:this.arm?structuredClone(this.st.arm.trace):[],collision:this.arm?structuredClone(this.st.arm.collision??null):null,stop:this.arm?structuredClone(this.st.arm.stop??null):null},plantLog:structuredClone(this.st.plant.log) as unknown as JsonObject[]};
  }

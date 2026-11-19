@@ -50,7 +50,7 @@ test('the experiments differ from nominal only where the spec says',async()=>{
  expect((await diff('latency'))[0]).toEqual(['commandDelaySubsteps']);
  expect((await diff('coarse-encoder'))[0]).toEqual(['encoder']);
  const lat=await json<DriveModelV1>('drive-v1/serve-drive-latency-v1.json');expect(lat.axes[0]!.commandDelaySubsteps).toBe(50);
- const tl=await json<DriveModelV1>('drive-v1/serve-drive-torque-limited-v1.json');expect(tl.axes[0]!.torque).toEqual({kind:'envelope_ref',scale:0.2});
+ const tl=await json<DriveModelV1>('drive-v1/serve-drive-torque-limited-v1.json');expect(tl.axes[0]!.torque).toEqual({kind:'envelope_ref',scale:0.1});
  expect(nominal.axes[0]).toMatchObject({watchdogTicks:5,commandDelaySubsteps:1,feedbackDelaySubsteps:1,enableDelaySubsteps:25,encoder:{countsPerRev:4096}});
 });
 test('arm brake torque holds the gravity torque of the V01 spike with margin and stays inside the joint effort',async()=>{

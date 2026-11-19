@@ -30,9 +30,11 @@ export async function generateControllerVectors(outDir){
  const notReady=Array.from({length:12},(_,k)=>({tick:k,setpoint:{vMps:0.3,omegaRadps:0},feedback:fb(wheels,k<9?'disabled':'ready',[0,0],[0,0])}));
  const rest=Array.from({length:40},(_,k)=>({tick:k,setpoint:{vMps:0,omegaRadps:0},feedback:fb(wheels,'enabled',[k%7===3?q:0,0],[k%7===3?q/0.01:k%7===4?-q/0.01:0,0])}));
  const stuck=Array.from({length:30},(_,k)=>({tick:k,setpoint:{vMps:0.18,omegaRadps:0},feedback:fb(wheels,'enabled',[0,0],[0,0])}));
+ // an interlock asks for zero at once: the wheels go to 0 in one tick, not down the acceleration ramp
+ const stopNow=(()=>{const inputs=[];let angle=[0,0],vel=[0,0],targets=[0,0];for(let k=0;k<30;k++){const sp=k<15?{vMps:0.3,omegaRadps:0}:{vMps:0,omegaRadps:0,stop:true};if(k>=3)vel=targets;angle=angle.map((a,i)=>a+vel[i]*0.02);inputs.push({tick:k,setpoint:sp,feedback:fb(wheels,k<3?'disabled':'enabled',angle.map(round),vel,null)});let s=diffDriveBaseV1.init(base),out=[0,0];for(const x of inputs){const r=diffDriveBaseV1.step(s,x);s=r.state;out=r.commands.map(c=>c.target);}targets=out;}return inputs;})();
  const diff={schemaVersion:1,controller:{id:diffDriveBaseV1.id,revision:diffDriveBaseV1.revision},generator:'scripts/generate-controller-vectors.mjs',cases:[
   {name:'enable-run-stop-fault',config:base,steps:run(diffDriveBaseV1,base,runCase)},{name:'never-enabled',config:base,steps:run(diffDriveBaseV1,base,notReady)},
-  {name:'quantised-encoder-at-rest',config:base,steps:run(diffDriveBaseV1,base,rest)},{name:'wheels-do-not-follow',config:base,steps:run(diffDriveBaseV1,base,stuck)}]};
+  {name:'quantised-encoder-at-rest',config:base,steps:run(diffDriveBaseV1,base,rest)},{name:'wheels-do-not-follow',config:base,steps:run(diffDriveBaseV1,base,stuck)},{name:'stop-now-ignores-the-acceleration-limit',config:base,steps:run(diffDriveBaseV1,base,stopNow)}]};
  // ---- joint-trajectory-follower-v1 ----
  const cfg={axes:joints,gripperAxis:grip,gripperMap:{loRad:0,hiRad:0.85,openingMaxM:0.0889},enableTimeoutTicks:5,followTolRad:0.05,followTicks:6};
  const ids=[...joints,grip];

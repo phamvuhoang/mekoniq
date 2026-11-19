@@ -3,7 +3,7 @@
   "documentType": "drive-model",
   "id": "serve-drive-torque-limited-v1",
   "revision": 1,
-  "digest": "80c2eb14a851fb094e68738b2c918e4d1940b0d7159c3481c3bb6cde54cbf4e2",
+  "digest": "9d191ca31768232559e1a01a84a4c984d921464a783dabcaa17b414f1d1c4a0a",
   "calibration": "not_calibrated",
   "axes": [
     {
@@ -11,7 +11,7 @@
       "mode": "csv",
       "torque": {
         "kind": "envelope_ref",
-        "scale": 0.2
+        "scale": 0.1
       },
       "velocityLimitRadS": 20,
       "encoder": {
@@ -34,7 +34,7 @@
       "mode": "csv",
       "torque": {
         "kind": "envelope_ref",
-        "scale": 0.2
+        "scale": 0.1
       },
       "velocityLimitRadS": 20,
       "encoder": {

@@ -35,3 +35,12 @@ test('speedDeficit without a long enough constant command is NO_CRUISE_WINDOW',(
  expect(speedDeficit(rec(100,()=>({targetApplied:2})).filter(x=>x.tick!==40),'w',{minCruiseTicks:10})).toMatchObject({available:false,reason:'TRACE_GAP'});
  expect(speedDeficit(rec(10,()=>({targetApplied:2})),'w',{minCruiseTicks:1})).toMatchObject({available:false,reason:'POLICY_INVALID'});
 });
+
+import {buildDriveEvidence} from '../../packages/lab-runtime/src/v2/control/drive-report';
+test('a section built from an incomplete stream never offers a metric as available (review of V05)',()=>{
+ const model={axes:[{axisId:'w',mode:'csv' as const}]} as never,r=rec(200,()=>({targetApplied:1,actualVelocityRadS:0.9}));
+ const whole=buildDriveEvidence(model,r,{complete:true,issues:[],events:[]}).axes[0]!;
+ expect(whole.trackingRms.available).toBe(true);
+ const cut=buildDriveEvidence(model,r,{complete:false,issues:['PHYSICS_COVERAGE_INCOMPLETE'],events:[]}).axes[0]!;
+ expect(cut.trackingRms).toMatchObject({available:false,value:null,reason:'EVIDENCE_INCOMPLETE'});expect(cut.speedDeficit).toMatchObject({available:false,reason:'EVIDENCE_INCOMPLETE'});
+});

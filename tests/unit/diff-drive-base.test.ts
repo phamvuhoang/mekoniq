@@ -47,6 +47,17 @@ test('a wheel that does not follow its command for trackingDegradedTicks is repo
  const hits=out.flatMap((o,i)=>o.events.filter(e=>e.code==='TRACKING_DEGRADED').map(()=>i));
  expect(hits).toEqual([24]);   // the window of 25 error samples is full at the 25th tick
 });
+test('a deviation smaller than what the encoder can resolve is not a tracking problem; a larger one still is (review of V05: the coarse encoder, 2.45 rad/s per count)',()=>{
+ const slow=(c:DiffDriveBaseConfig,v:number)=>run(c,Array.from({length:60},()=>({setpoint:{vMps:v,omegaRadps:0},feedback:fb('enabled',{velocityRadS:0})}))).out.flatMap(o=>o.events.filter(e=>e.code==='TRACKING_DEGRADED'));
+ const coarse={...config,velocityResolutionRadS:2.45};
+ expect(slow(config,0.18)).toHaveLength(1);                       // 2 rad/s of error, an exact encoder: reported
+ expect(slow(coarse,0.18)).toEqual([]);                           // the same 2 rad/s is under one count of this encoder: not reported
+ expect(slow(coarse,0.36)).toHaveLength(1);                       // 4 rad/s of error is not quantisation
+});
+test('a stop input takes the wheels to zero in one tick, not down the acceleration ramp; without it the ramp stays',()=>{
+ const run2=(stop:boolean)=>run({...config,maxWheelAccelRadS2:10},[...Array.from({length:30},()=>({setpoint:{vMps:0.18,omegaRadps:0},feedback:fb('enabled')})),{setpoint:{vMps:0,omegaRadps:0,...stop?{stop:true}:{}},feedback:fb('enabled')}]).out.at(-1)!.commands.map(c=>c.target);
+ expect(run2(true)).toEqual([0,0]);expect(run2(false)[0]).toBeGreaterThan(0);
+});
 test('a wheel that follows its command is never reported',()=>{
  let measured=0;const steps=Array.from({length:200},()=>({setpoint:{vMps:0.18,omegaRadps:0},get feedback(){return fb('enabled',{velocityRadS:measured});}}));
  let s=diffDriveBaseV1.init(config);const events=[];

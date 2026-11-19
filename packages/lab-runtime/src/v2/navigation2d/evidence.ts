@@ -512,7 +512,10 @@ const digestOf=(header:unknown,...texts:string[])=>{const h=createHash('sha256')
  * The trajectory digest covers the control ledger and the contact records with the trajectory: the same motion under different commands is not the same run.
  */
 export function evidenceDigests(scene:NavigationSceneV1,id:DigestIdentity,read:EvidenceRead,m:NavigationMetrics,assertions:readonly Assertion[],host:HostIdentity=hostIdentity()){
- const {runId:_,...inputs}=id;void _;
+ const {runId:_,...all}=id;void _;
+ // hostArch (contracts §1): the architecture the worker reported is hashed only for a run that has a drive; every other run keeps the R2b formula, byte for byte
+ const hasDrive=!!(scene.engine as {driveModelRef?:unknown}).driveModelRef,{hostArch:__,...engineWithoutArch}=(all.engine??{}) as Record<string,unknown>;void __;
+ const inputs=hasDrive||!all.engine||!('hostArch' in all.engine)?all:{...all,engine:engineWithoutArch};
  const header={algorithm:DIGEST_ALGORITHM,evidenceFormat:EVIDENCE_FORMAT,scene:{sceneDigest:scene.sceneDigest,policy:scene.policy.hash,compilerVersion:scene.compilerVersion,schemaHash:scene.schemaHash},inputs,host,
   seed:{runSeed:id.runSeed,engineSeed:engineSeedOf(id.runSeed,scene).engineSeed},horizon:read.horizon,gaps:read.gaps,issues:read.issues.map(i=>`${i.code} ${i.at}`),reasons:read.reasons,terminal:read.terminal};
  return {trajectoryDigest:digestOf({...header,stream:'trajectory+control+collisions'},read.text.trajectory,read.text.control,read.text.collisions),

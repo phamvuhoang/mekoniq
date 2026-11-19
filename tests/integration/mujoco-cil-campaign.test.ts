@@ -8,9 +8,14 @@ import {CIL_CASES,runCilCampaign,verifyCilCampaign} from '../../packages/lab-run
 import {cellArtifacts} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
 
 const root=resolve('.'),COMMIT='0123456789abcdef0123456789abcdef01234567',CASE='fd01-drive-ideal-v1-s7';
-let recorded:string;
-beforeAll(async()=>{const out=await mkdtemp(join(tmpdir(),'cil-one-'));recorded=join(out,'c');await runCilCampaign({root,out:recorded,sourceCommit:COMMIT,caseId:CASE});},300_000);
-afterAll(async()=>{await rm(join(recorded,'..'),{recursive:true,force:true});});
+const LATENCY='fd01-drive-latency-v1-s7';
+let recorded:string,recordedLatency:string;
+beforeAll(async()=>{
+ const out=await mkdtemp(join(tmpdir(),'cil-one-'));recorded=join(out,'c');await runCilCampaign({root,out:recorded,sourceCommit:COMMIT,caseId:CASE});
+ // a case with controller events (TRACKING_DEGRADED, a stop for attention), to check that the events are recomputed and not trusted
+ const out2=await mkdtemp(join(tmpdir(),'cil-lat-'));recordedLatency=join(out2,'c');await runCilCampaign({root,out:recordedLatency,sourceCommit:COMMIT,caseId:LATENCY});
+},900_000);
+afterAll(async()=>{await rm(join(recorded,'..'),{recursive:true,force:true});await rm(join(recordedLatency,'..'),{recursive:true,force:true});});
 const copy=async()=>{const d=join(await mkdtemp(join(tmpdir(),'cil-tamper-')),'c');await cp(recorded,d,{recursive:true});return d;};
 const json=async(p:string)=>JSON.parse(await readFile(p,'utf8')) as Record<string,any>;   // eslint-disable-line @typescript-eslint/no-explicit-any
 const write=(p:string,v:unknown)=>writeFile(p,JSON.stringify(v,null,2)+'\n');
@@ -40,6 +45,22 @@ test('verification catches an edit the inventory was re-made for: a result that 
  d=await copy();r=await json(join(dir(d),'report.json'));r.manifest.drive.experimentId='drive-nominal-v1';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toContain('CIL_MANIFEST_DRIVE');
  d=await copy();const t=await json(join(dir(d),'trace.json'));t.steps[10].driveCommands[0].faultReset=true;await write(join(dir(d),'trace.json'),t);await reseal(d);expect(await issues(d)).toContain('CIL_COMMAND_TRACE');
  d=await copy();r=await json(join(dir(d),'report.json'));r.attention=[{reason:'X'}];r.outcome.status='needs_attention';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toMatch(/CIL_OUTCOME_STATUS|CIL_RUN_IDENTITY|CIL_DRIVE/);
+});
+test('the architecture is recorded: a drive run without it, or with another than the campaign\'s, is refused (contracts §1)',async()=>{
+ const campaign=await json(join(recorded,'campaign.json'));expect(['arm64','x86_64']).toContain(campaign.hostArch);
+ let d=await copy();let r=await json(join(d,CASE,'report.json'));delete r.manifest.drive.hostArch;await write(join(d,CASE,'report.json'),r);await reseal(d);expect(await issues(d)).toContain('CIL_HOSTARCH');
+ d=await copy();r=await json(join(d,CASE,'report.json'));r.manifest.drive.hostArch=campaign.hostArch==='arm64'?'x86_64':'arm64';await write(join(d,CASE,'report.json'),r);await reseal(d);expect(await issues(d)).toContain('CIL_HOSTARCH');
+ d=await copy();const c=await json(join(d,'campaign.json'));delete c.hostArch;await write(join(d,'campaign.json'),c);expect(await issues(d)).toContain('CIL_CAMPAIGN_IDENTITY');
+});
+test('the controller events of a run are recomputed from the stream: a report that drops, adds or moves one is refused, an honest one verifies',async()=>{
+ const dir=(d:string)=>join(d,LATENCY),reseal2=async(d:string)=>{const rec=await json(join(dir(d),'case.json'));rec.artifacts=await cellArtifacts(dir(d));await write(join(dir(d),'case.json'),rec);},issues2=async(d:string)=>(await verifyCilCampaign(d,LATENCY)).issues.join('|');
+ expect(await issues2(recordedLatency)).toBe('');
+ const events=(await json(join(recordedLatency,LATENCY,'report.json'))).driveEvidence.events as {tick:number}[];expect(events.length).toBeGreaterThan(0);
+ for(const edit of [(e:{tick:number}[])=>e.slice(1),(e:{tick:number}[])=>[...e,{tick:1,code:'TRACKING_DEGRADED'}],(e:{tick:number}[])=>e.map((x,i)=>i?x:{...x,tick:x.tick+1})]){
+  const d=join(await mkdtemp(join(tmpdir(),'cil-lat-t-')),'c');await cp(recordedLatency,d,{recursive:true});
+  const r=await json(join(dir(d),'report.json'));r.driveEvidence.events=edit(r.driveEvidence.events);await write(join(dir(d),'report.json'),r);await reseal2(d);
+  expect(await issues2(d)).toContain('CIL_DRIVE_REPORT_NOT_FROM_STREAM');
+ }
 });
 test('the baseline of an equivalence case must be a legacy run: a drive baseline is refused',async()=>{
  const d=await copy(),dir=join(d,CASE);

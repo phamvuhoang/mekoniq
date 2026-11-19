@@ -271,6 +271,17 @@ class WorkerSession:
         self.cups = {c["propId"]:(c["radiusM"],c["heightM"]) for c in arm["props"]}
         return self._advance_world(arm["arm"]["homeRad"],self.engine.opening_max_m,[],0,0,0,commands=self.engine.drive.g.prime_commands() if drive else None)
 
+    def _check_drive_commands(self, commands, kin):
+        """Refuses a drive tick before anything is spent: the commands of every axis (DriveGroup.check, pure) and the (v, omega) the two wheel commands amount to against the admitted
+        navigation limits, as VELOCITY_TARGET_OUT_OF_RANGE always was on the velocity path. Returns the wheel commands' (v, omega)."""
+        g, mob = self.engine.drive.g, getattr(self.engine, "mobile", self.engine)
+        by_id = g.check(commands)
+        left, right = by_id[mob.rid + "/wheel-left"]["target"], by_id[mob.rid + "/wheel-right"]["target"]
+        v, w = (left + right) / 2 * mob.radius, (right - left) * mob.radius / mob.separation
+        if abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9):
+            raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel commands exceed the admitted navigation limits")
+        return v, w
+
     def _advance_world(self,q,opening,placements,v,w,tick,disturbance=None,commands=None):
         reading = self.engine.step(q,opening,placements,v,w,disturbance) if commands is None else self.engine.step(q,opening,placements,v,w,disturbance,commands)
         self.substeps += 10
@@ -304,6 +315,7 @@ class WorkerSession:
             if p.get("velocities") or p.get("jointTargets") or p.get("gripperTargets"):raise WorkerError("INVALID_REQUEST","a world with a drive model takes driveCommands, not velocities or arm targets")
             commands=p.get("driveCommands")
             if commands is None:raise WorkerError("DRIVE_COMMAND_REQUIRED","every tick needs one command per drive axis")
+            self._check_drive_commands(commands,nav["robots"][0]["model"]["kinematics"])
             rid=nav["robots"][0]["robotId"];wheels=[c["target"] for c in commands if c["axisId"] in (rid+"/wheel-left",rid+"/wheel-right")]
             v,w=(1.0,0.0) if any(x!=0 for x in wheels) else (0.0,0.0)   # only whether the wheels are asked to move matters to the interlock below
         else:
@@ -493,6 +505,7 @@ class WorkerSession:
                 raise WorkerError("INVALID_REQUEST", "a run with a drive model takes driveCommands only: no velocities, actors, arm commands or placements")
             if p.get("driveCommands") is None:
                 raise WorkerError("DRIVE_COMMAND_REQUIRED", "every tick needs one command per drive axis")
+            self._check_drive_commands(p["driveCommands"], self.scene["robots"][0]["model"]["kinematics"])
             return 0, 0, p["driveCommands"]
         if p.get("actorUpdates") or p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
             raise WorkerError("INVALID_REQUEST", "mobile-only world admits velocities, no interaction placements, actors or arm commands")

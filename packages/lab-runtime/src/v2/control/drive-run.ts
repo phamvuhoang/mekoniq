@@ -9,8 +9,14 @@ import type {ControllerEvent} from './controller';
 
 export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
 /** Starting values of the controller's own timers (`assumed`): ticks of 20 ms. */
+const SUBSTEP_S=0.002;   // the worker's engine step: the drive's velocity window is counted in these
+/** The speed one count of the wheel encoders is worth over the drive's velocity window (0 for an exact encoder): the coarsest of the two wheels. */
+export function wheelVelocityResolutionRadS(model:Pick<DriveModelV1,'axes'>,robotId:string):number{
+ return Math.max(0,...model.axes.filter(a=>a.axisId===`${robotId}/wheel-left`||a.axisId===`${robotId}/wheel-right`).map(a=>a.encoder.countsPerRev===null?0:2*Math.PI/a.encoder.countsPerRev/(a.encoder.velocityWindowSubsteps*SUBSTEP_S)));
+}
 export const BASE_CONTROLLER_DEFAULTS={enableTimeoutTicks:50,trackingDegradedRadS:1,trackingDegradedTicks:25} as const;
-export interface DriveManifest {driveModelDigest:string;controlProfileDigest:string;controllers:{id:string;revision:number}[];testLevel:typeof CONTROLLER_IN_THE_LOOP;experimentId?:string}
+export interface DriveManifest {driveModelDigest:string;controlProfileDigest:string;controllers:{id:string;revision:number}[];testLevel:typeof CONTROLLER_IN_THE_LOOP;experimentId?:string;/** the architecture the worker reported (contracts §1): required for a drive run, since bit identity only means something within one */hostArch?:HostArch}
+export type HostArch='arm64'|'x86_64';
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 type Ref={id:string;revision:number;path:string;sha256:string};
 
@@ -31,8 +37,8 @@ export async function admitDriveDocuments(scene:{engine?:object},read:(path:stri
  return {model,control};
 }
 
-export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
- controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{}});
+export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string,hostArch?:HostArch):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
+ controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{},...hostArch?{hostArch}:{}});
 
 export interface MobileDrive {readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
@@ -43,7 +49,7 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
  if(!ctl||ctl.revision!==diffDriveBaseV1.revision)throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
  const accelMps2=ctl.params.maxAccelerationMps2;
  const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
-  maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS};
+  maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
  let state:DiffDriveBaseState=diffDriveBaseV1.init(config);const events:ControllerEvent[]=[];
  return {manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');

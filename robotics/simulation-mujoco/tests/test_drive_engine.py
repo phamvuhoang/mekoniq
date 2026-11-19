@@ -225,7 +225,7 @@ def drive_wheels(variant, ticks=60):
 def test_wheel_torque_never_exceeds_the_motoring_envelope_times_the_scale():
     nominal_peak, nominal_sat = drive_wheels("nominal")
     limited_peak, limited_sat = drive_wheels("torque-limited")
-    assert nominal_peak > 5.0 and limited_peak <= 0.2 * 6.0 + 1e-9   # the envelope at rest is the 6 N m of the physics profile
+    assert nominal_peak > 5.0 and limited_peak <= 0.1 * 6.0 + 1e-9   # the envelope at rest is the 6 N m of the physics profile
     assert limited_sat > nominal_sat > 0                              # the limit binds sooner
 
 
@@ -444,3 +444,69 @@ def test_drive_documents_that_do_not_fit_the_scene_are_refused_at_create(tmp_pat
     r = s.handle(request("create", {"sceneRef": "navigation-scene.json", "seed": 7}))
     assert not r["ok"] and r["error"]["code"] == code, r
     assert s.engine is None
+
+
+# ---- review of V05 (2026-11-19) ------------------------------------------------------------------------------------------------------------------------------
+def world_drive_session(tmp_path):
+    world = ROOT / "fixtures" / "coffee-delivery-world-v1"
+    for p in world.iterdir():
+        if p.is_file():
+            shutil.copy(p, tmp_path / p.name)
+    shutil.copytree(BLOBS, tmp_path / "blobs")
+    scene = json.loads((tmp_path / "lab-world-scene.json").read_text())
+    model, control = world_docs("arm-1")
+    refs = {}
+    for name, d, key in (("world-drive-test-v1.json", model, "driveModelRef"), ("world-control-test-v1.json", control, "controlProfileRef")):
+        raw = (json.dumps(d, indent=2) + "\n").encode()
+        (tmp_path / name).write_bytes(raw)
+        refs[key] = {"id": d["id"], "revision": 1, "path": name, "sha256": hashlib.sha256(raw).hexdigest()}
+        scene["files"].append({"path": name, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
+    scene["engine"] = refs
+    scene["sceneDigest"] = scene_digest_of(scene)
+    (tmp_path / "lab-world-scene.json").write_text(json.dumps(scene))
+    s = WorkerSession(run_id="w", bundle_root=tmp_path, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"])
+
+    def req(op, payload, tick=0, rid=None):
+        return {"protocol": PROTOCOL, "requestId": rid or f"{op}-{tick}", "runId": "w", "expectedTick": tick, "op": op, "payload": payload}
+    assert s.handle(req("create", {"sceneRef": "lab-world-scene.json", "seed": 7}))["ok"]
+    assert s.handle(req("start", {}))["ok"]
+    ctl = {"worldControl": {"version": 1, "program": None, "attachmentProxyPropId": None, "movementInterlocked": False, "stopLatched": False}} if scene.get("controlContextVersion") == 1 else {}
+    home = scene["armCell"]["arm"]["homeRad"]
+    arm = arm_commands("arm-1", home, 0.0889, s.engine.arm.grip_range, s.engine.opening_max_m, 1)
+    return s, req, arm, ctl, scene
+
+
+def test_a_world_step_that_lacks_the_gripper_command_is_refused_with_a_code_and_the_session_lives(tmp_path):
+    s, req, arm, ctl, _ = world_drive_session(tmp_path)
+    wh = [cmd("amr-1/wheel-left", 1, "csv", 0.0), cmd("amr-1/wheel-right", 1, "csv", 0.0)]
+    r = s.handle(req("step", {"targetTick": 1, "velocities": [], "actorUpdates": [], "driveCommands": arm[:-1] + wh, **ctl}, rid="nogrip"))
+    assert not r["ok"] and r["error"]["code"] == "DRIVE_COMMAND_REQUIRED", r
+    assert s.state != "failed" and s.tick == 0
+    assert s.handle(req("step", {"targetTick": 1, "velocities": [], "actorUpdates": [], "driveCommands": arm + wh, **ctl}, rid="ok"))["ok"]
+    s.end()
+
+
+def test_a_refused_drive_tick_spends_no_one_shot_disturbance_state(tmp_path):
+    s, req, arm, ctl, _ = world_drive_session(tmp_path)
+    wh = [cmd("amr-1/wheel-left", 1, "csv", 0.0), cmd("amr-1/wheel-right", 1, "csv", 0.0)]
+    bad = [{**c, "target": 1e9} for c in arm + wh]
+    r = s.handle(req("step", {"targetTick": 1, "velocities": [], "actorUpdates": [], "driveCommands": bad, "worldPerturbations": [{"presetId": "world-dock-drift-v1", "revision": 1, "targetId": "amr-1", "targetTick": 1, "eventId": "e"}], **ctl}, rid="bad"))
+    assert not r["ok"] and r["error"]["code"] == "DRIVE_TARGET_OUT_OF_RANGE", r
+    assert s.world_disturbance_consumed is False
+    s.end()
+
+
+def test_wheel_commands_beyond_the_admitted_navigation_limits_are_refused_on_the_drive_path_too(tmp_path):
+    s = mobile_session(tmp_path)
+    assert s.handle(request("create", {"sceneRef": "navigation-scene.json", "seed": 7}))["ok"]
+    assert s.handle(request("start"))["ok"]
+    kin = s.scene["robots"][0]["model"]["kinematics"]
+    fast = 1.05 * kin["maxLinearMps"] / s.engine.radius                 # both wheels: v = 1.05 x the admitted limit, inside the plant's own wheel range
+    assert fast < float(s.engine.physical["drive"]["actuatorMaxSpeedRadps"]["value"])
+    r = s.handle(step_request(0, wheels(1, fast)))
+    assert not r["ok"] and r["error"]["code"] == "VELOCITY_TARGET_OUT_OF_RANGE", r
+    assert s.tick == 0
+    again = step_request(0, wheels(1, 0.5 * kin["maxLinearMps"] / s.engine.radius))
+    again["requestId"] = "slower"
+    assert s.handle(again)["ok"]
+    s.end()
