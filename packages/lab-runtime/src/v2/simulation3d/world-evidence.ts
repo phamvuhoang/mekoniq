@@ -15,18 +15,20 @@ import type {WorldFailure,WorldTickCommand} from './world-ports';
 import {validateWorldControl} from './world-control';
 import {validateWorldDisturbance} from './world-disturbance';
 import {hashJson} from '../hash';
+import {driveCommandProblem,driveRecordProblem} from '../control/drive-evidence';
 /** The same free-joint pose and matrix pose differ at floating-point roundoff; q and -q are equivalent. No raw values are changed. */
 export const WORLD_POSE_CONSISTENCY_TOLERANCE=1e-10;
 const gzipAsync=promisify(gzip);
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
-export interface WorldAdmission {files:ReadonlyMap<string,Uint8Array>;scene:LabWorldSceneV1;physics:PhysicsAdmission;modelCounts:{nbody:number;ngeom:number};digest:string}
+export interface WorldAdmission {/** the drive model's axis ids in order; absent: the world has no drive */driveAxes?:string[];files:ReadonlyMap<string,Uint8Array>;scene:LabWorldSceneV1;physics:PhysicsAdmission;modelCounts:{nbody:number;ngeom:number};digest:string}
 export function prepareWorldAdmission(scene:LabWorldSceneV1,files:ReadonlyMap<string,Uint8Array>):WorldAdmission {
  validateWorldScene(scene);for(const f of scene.files){const b=files.get(f.path);if(!b||b.length!==f.bytes||sha(b)!==f.sha256)throw Error('WORLD_CLOSURE_INVALID');}
+ const driveRef=scene.engine?.driveModelRef,driveAxes=driveRef?(JSON.parse(Buffer.from(files.get(driveRef.path)!).toString()) as {axes:{axisId:string}[]}).axes.map(a=>a.axisId):undefined;
  const doc=(path:string)=>JSON.parse(Buffer.from(files.get(path)!).toString()) as {links:{id:string;collision:unknown[]}[]};
  const mobile=doc(scene.models.mobilePhysical.path),arm=doc(scene.models.armComponent.path),rid=scene.navigation.robots[0]!.robotId,aid=scene.armCell.arm.armId;
  const physics:PhysicsAdmission={robotId:rid,props:[],contactIds:['floor',...mobile.links.flatMap(l=>l.collision.map((_,i)=>`${rid}/${l.id}/c${i}`)),...arm.links.flatMap(l=>l.collision.map((_,i)=>`${aid}/${l.id}/c${i}`)),`${aid}/palm`,`${aid}/pad/0`,`${aid}/pad/1`,...scene.armCell.supports.filter(s=>s.id!==scene.supportMap.replacedStaticSupportId).map(s=>`support/${s.id}`),...scene.armCell.statics.map(s=>`static/${s.id}`),...[...scene.navigation.world.boundaries,...scene.navigation.world.obstacles].map(s=>`static/${s.id}`),...scene.propBindings.map(p=>`prop/${p.propId}`)],tickMs:20,substeps:10,driveFrameInBase:scene.navigation.robots[0]!.model.driveFrameInBase};
  const modelCounts={nbody:1+arm.links.length+mobile.links.length+scene.propBindings.length,ngeom:1+arm.links.reduce((n,l)=>n+l.collision.length,0)+3+mobile.links.reduce((n,l)=>n+l.collision.length,0)+scene.armCell.supports.length-1+scene.armCell.statics.length+scene.navigation.world.boundaries.length+scene.navigation.world.obstacles.length+scene.propBindings.length};
- return {files:new Map(files),scene:structuredClone(scene),physics,modelCounts,digest:hashJson({scene,physics,modelCounts} as never)};
+ return {...driveAxes?{driveAxes}:{},files:new Map(files),scene:structuredClone(scene),physics,modelCounts,digest:hashJson({scene,physics,modelCounts} as never)};
 }
 const pose=(s:Sim3DSnapshotV1|undefined,id:string)=>{const p=s?.props?.find(p=>p.propId===id);return p?{position:p.position,quaternionXyzw:p.quaternionXyzw}:null;};
 export function validateWorldRecord(r:WorldEvidenceRecord,a:WorldAdmission,history:WorldInteractionIntent[],previous:Sim3DSnapshotV1|undefined,identity:{runId:string;bootId:string},disturbances:Set<string>){
@@ -43,6 +45,8 @@ export function validateWorldRecord(r:WorldEvidenceRecord,a:WorldAdmission,histo
   if(intent.targetTick!==tick||p.propId!==intent.propId||(intent.kind==='birth')!==(p.pose!==null)||record.eventId!==intent.eventId||record.cupId!==intent.cupId||record.propId!==intent.propId||record.kind!==intent.kind||record.tick!==tick||record.commandDigest!==hashJson(c as never)||hashJson(record.before as never)!==hashJson(pose(previous,intent.propId) as never)||hashJson(record.after as never)!==hashJson(pose(s,intent.propId) as never)||(intent.kind==='birth'?(record.before!==null||record.after===null):(record.before===null||record.after!==null)))throw Error('WORLD_INTERACTION_INVALID');
   next.push({eventId:intent.eventId,cupId:intent.cupId,propId:intent.propId,kind:intent.kind,tick});
  }
+ // with a drive every tick carries its nine axis snapshots and (after tick 0) its nine commands; without one, neither
+ if(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)||driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0))throw Error(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)??driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0)!);
  validateWorldObservation(s,a.scene,next);if(s.worldStep!.nbody!==a.modelCounts.nbody||s.worldStep!.ngeom!==a.modelCounts.ngeom)throw Error('WORLD_MODEL_COUNTS_INVALID');if(!s.physics)throw Error('WORLD_PHYSICS_REQUIRED');
  const ids=activeWorldProps(a.scene,next,tick);validatePhysicsRecord(s.physics,{...a.physics,props:ids.map(propId=>({propId,supportId:a.scene.supportMap.mobileSupportId}))},tick);
  for(const p of s.props??[]){const l=s.physics.loads.find(l=>l.propId===p.propId)!;if(Math.hypot(...l.poseMap.positionM.map((v,i)=>v-p.position[i]!))>WORLD_POSE_CONSISTENCY_TOLERANCE||Math.min(Math.hypot(...l.poseMap.quaternionXyzw.map((v,i)=>v-p.quaternionXyzw[i]!)),Math.hypot(...l.poseMap.quaternionXyzw.map((v,i)=>v+p.quaternionXyzw[i]!)))>WORLD_POSE_CONSISTENCY_TOLERANCE)throw Error('WORLD_PROP_OBSERVATION_MISMATCH');}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "cil-v1",
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "scenarioId": "MJ-FD01",
+  "backendSetId": "engineering-mujoco-3d-v1",
+  "cell": {"scenarioId": "MJ-CELL-BV01", "backendSetId": "engineering-mujoco-cell-v1", "driveExperimentId": "drive-nominal-v1", "seeds": [7, 42, 99], "faults": ["dock-drift", "cup-fall", "cancel-held", "worker-loss", "lost-ack"]},
+  "seeds": [7, 19, 41],
+  "experiments": ["drive-ideal-v1", "drive-nominal-v1", "drive-torque-limited-v1", "drive-latency-v1", "drive-coarse-encoder-v1"],
+  "repeats": {"experimentId": "drive-nominal-v1", "seed": 7, "count": 3},
+  "maxTicks": 12000,
+  "coverage": ["DRV02", "DRV06", "CIL01", "CIL02", "CIL03", "CIL04", "CIL05", "CIL06"],
+  "oracles": {
+    "note": "Locked before the recording. 'false served' is a run that counts a served order without completing, or while it needs attention. A 'finding' (a run that does not complete) is a result, not a failure of the campaign, where the oracle allows it.",
+    "mobile": {
+      "drive-ideal-v1": {"status": ["completed"], "served": "1", "faults": [], "events": [], "enabledAtTick": 0, "equivalentToLegacy": true},
+      "drive-nominal-v1": {"status": ["completed"], "served": "1", "faults": [], "events": [], "enableSequence": true},
+      "drive-torque-limited-v1": {"status": ["completed", "needs_attention"], "falseServed": false, "enableSequence": true, "speedDeficitRecorded": true},
+      "drive-latency-v1": {"status": ["completed", "needs_attention"], "falseServed": false, "enableSequence": true, "trackingRmsRecorded": true},
+      "drive-coarse-encoder-v1": {"status": ["completed"], "served": "1", "faults": [], "events": [], "enableSequence": true}
+    },
+    "repeat": {"bitIdenticalTo": "fd01-drive-nominal-v1-s7"},
+    "cell": {"nominal": {"served": "2", "faults": []}, "faults": "the five R2b fault cases keep their expected code, serve 0 and keep the last Source custody"}
+  },
+  "limitations": [
+    "software simulation only; every drive parameter is assumed and every model not_calibrated",
+    "bit identity is meaningful on one architecture and one build",
+    "the drive-latency and drive-torque-limited outcomes are findings, not requirements: only a false serve fails them"
+  ]
+}

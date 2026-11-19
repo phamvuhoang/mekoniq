@@ -7,6 +7,7 @@ export interface CellDisturbanceOption {presetId:keyof typeof WORLD_DISTURBANCE_
 import type {Sim3DSnapshotV1,LabWorldSceneV1} from '../navigation2d/contracts';
 import type {WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import {hashJson} from '../hash';
+import {driveWireCommand} from '../control/drive-run';
 /** Independent readback of native disturbance identity, fixed force and before/after positions. */
 export function validateWorldDisturbance(snapshot:Sim3DSnapshotV1,command:WorldEvidenceRecord['command'],scene:LabWorldSceneV1,previous:Sim3DSnapshotV1|undefined,seen:ReadonlySet<string>):string|null{
  const intents=command?.worldPerturbations??[],receipts=snapshot.worldStep?.disturbances??[],fail=()=>{throw Error('WORLD_PERTURBATION_EVIDENCE_INVALID');};
@@ -14,7 +15,7 @@ export function validateWorldDisturbance(snapshot:Sim3DSnapshotV1,command:WorldE
  const intent=intents[0]!,r=receipts[0]!,admitted=scene.disturbance;if(!admitted||!previous||seen.has(admitted.presetId))fail();
  const preset=WORLD_DISTURBANCE_PRESETS[intent.presetId],rid=scene.navigation.robots[0]!.robotId;
  const at=(s:Sim3DSnapshotV1,id:string)=>id===rid?s.physics?.base[0]?.poseMap.positionM:s.props?.find(p=>p.propId===id)?.position;
- if(!preset||intent.presetId!==admitted!.presetId||intent.revision!==admitted!.revision||intent.targetId!==admitted!.targetId||intent.targetTick!==snapshot.tick||!intent.eventId||r.eventId!==intent.eventId||r.presetId!==intent.presetId||r.revision!==intent.revision||r.targetId!==intent.targetId||r.targetTick!==snapshot.tick||r.runId!==snapshot.runId||r.bootId!==snapshot.bootId||r.sceneDigest!==snapshot.sceneDigest||r.requestId!==`world-${snapshot.tick+2}`||r.requestDigest!==hashJson(command)||r.frame!=='map'||r.durationSubsteps!==preset.durationSubsteps||hashJson(r.forceMapN)!==hashJson(preset.forceMapN)||hashJson(r.beforePositionM)!==hashJson(at(previous!,intent.targetId))||hashJson(r.afterPositionM)!==hashJson(at(snapshot,intent.targetId)))fail();
+ if(!preset||intent.presetId!==admitted!.presetId||intent.revision!==admitted!.revision||intent.targetId!==admitted!.targetId||intent.targetTick!==snapshot.tick||!intent.eventId||r.eventId!==intent.eventId||r.presetId!==intent.presetId||r.revision!==intent.revision||r.targetId!==intent.targetId||r.targetTick!==snapshot.tick||r.runId!==snapshot.runId||r.bootId!==snapshot.bootId||r.sceneDigest!==snapshot.sceneDigest||r.requestId!==`world-${snapshot.tick+2}`||r.requestDigest!==hashJson((scene.engine?.driveModelRef&&command?driveWireCommand(command as never):command) as never)||r.frame!=='map'||r.durationSubsteps!==preset.durationSubsteps||hashJson(r.forceMapN)!==hashJson(preset.forceMapN)||hashJson(r.beforePositionM)!==hashJson(at(previous!,intent.targetId))||hashJson(r.afterPositionM)!==hashJson(at(snapshot,intent.targetId)))fail();
  return admitted!.presetId;
 }
 

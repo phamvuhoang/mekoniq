@@ -304,7 +304,6 @@ class WorkerSession:
             if p.get("velocities") or p.get("jointTargets") or p.get("gripperTargets"):raise WorkerError("INVALID_REQUEST","a world with a drive model takes driveCommands, not velocities or arm targets")
             commands=p.get("driveCommands")
             if commands is None:raise WorkerError("DRIVE_COMMAND_REQUIRED","every tick needs one command per drive axis")
-            if p.get("worldPerturbations"):raise WorkerError("WORLD_PERTURBATION_NOT_ADMITTED","disturbance presets are defined on the R2b control path only")
             rid=nav["robots"][0]["robotId"];wheels=[c["target"] for c in commands if c["axisId"] in (rid+"/wheel-left",rid+"/wheel-right")]
             v,w=(1.0,0.0) if any(x!=0 for x in wheels) else (0.0,0.0)   # only whether the wheels are asked to move matters to the interlock below
         else:
@@ -322,7 +321,10 @@ class WorkerSession:
                 if not isinstance(stage,int) or stage<0 or stage>=len(stages) or stages[stage]['waypoint']!=program.get('waypoint') or not any(b['cupId']==program.get('cupId') for b in self.scene['propBindings']):raise WorkerError('WORLD_CONTROL_INVALID','unadmitted program/stage/cup')
             if control.get('movementInterlocked')!=bool(program or proxy or control.get('stopLatched')) or control.get('movementInterlocked') and (v!=0 or w!=0):raise WorkerError('WORLD_CONTROL_INVALID','movement interlock')
         elif control is not None:raise WorkerError('WORLD_CONTROL_INVALID','unadmitted control context')
-        if self.drive_on:q,opening,checked=None,None,self._check_placements(p)
+        if self.drive_on:
+            # the dock-drift preset is admitted before release with a CLOSED commanded gripper: on a drive world the commanded opening is the gripper axis' command mapped back (closed = hi end of its range)
+            g=next(c for c in commands if c["axisId"]==self.scene["armCell"]["arm"]["armId"]+"/gripper");lo,hi=self.engine.arm.grip_range
+            q,opening,checked=None,self.engine.opening_max_m*(1-(g["target"]-lo)/(hi-lo)),self._check_placements(p)
         else:q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
         disturbances=p.get('worldPerturbations') or []
         disturbance=disturbances[0] if len(disturbances)==1 else None

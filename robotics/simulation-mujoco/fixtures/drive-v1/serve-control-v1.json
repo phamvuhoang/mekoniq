@@ -3,13 +3,13 @@
   "documentType": "control-profile",
   "id": "serve-control-v1",
   "revision": 1,
-  "digest": "8d53c22898f3ff027096a830f0dae6a42be809b8f8a94017d8b4932306b03bc6",
+  "digest": "3e685124ed9e72374c0be4852bd9e1e2aab17a32c3a5c908f01972c2b9c1e5bd",
   "calibration": "not_calibrated",
   "plantModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
   "driveModelDigests": [
     "1c9364f9456e0c9c8b8d34022576e5ec98e9eea1f75eef871428685cc4bd59f0",
     "cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405",
-    "8779182ba4cc84007955f421b6f3da61e0567f932e2434a05c220ca8052cb710",
+    "80c2eb14a851fb094e68738b2c918e4d1940b0d7159c3481c3bb6cde54cbf4e2",
     "f95dd48ee12d198e0e78381a9cc42291d0b322a622f683b7a7995f3397427e3c",
     "0dc9f9ab53eeb231f22e1ad7927f84dd4408ccfb473cd7ba5760c856f7edaa47"
   ],

@@ -1,3 +1,4 @@
+import {buildDriveEvidence} from '../control/drive-report';
 import {experimentOfMobileModel} from '../control/drive-experiments';
 import {admitDriveDocuments,mobileDrive,driveManifest,type MobileDrive} from '../control/drive-run';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
@@ -289,7 +290,7 @@ class FixedStepRun implements ScenarioRun {
    created=true;
    if(this.physics){
     this.physicsRec=await openPhysicsRecorder({directory:join(this.dir,'physics'),identity:{runId:c.runId,bootId:snap.bootId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest},admission:this.physics.admission,assumptions:this.physics.assumptions,metricsPolicyDigest:this.physics.metricsPolicyDigest,...o.evidence,maxTicks:Math.min(o.evidence?.maxTicks??EVIDENCE_LIMITS.maxTicks,this.scenario.maxTicks)});
-    try{this.validatePhysics(snap,0);await this.physicsRec.append((snap as import('./contracts').Sim3DSnapshotV1).physics!);}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
+    try{this.validatePhysics(snap,0);await this.physicsRec.append(this.physicsRecord(snap));}catch(e){await this.recordGap({fromTick:0,toTick:0,reason:'PHYSICS_OBSERVATION_INVALID'});throw e;}
    }
    const fault=this.stopMonitor?.(snap);if(fault)throw new Error(fault.code);
    await this.ask('start',{});
@@ -308,7 +309,7 @@ class FixedStepRun implements ScenarioRun {
  private validatePhysics(snap:IRSimSnapshotV1,tick:number){
   if(!this.physics)return;const s=snap as import('./contracts').Sim3DSnapshotV1;
   if(s.tick!==tick||s.runId!==this.cp.runId||s.sceneDigest!==this.scene.sceneDigest||s.simTimeNs!==String(tick*20_000_000)||(tick>0&&s.bootId!==this.cp.plant.snapshot?.bootId))throw new Error('PHYSICS_OBSERVATION_INVALID');
-  validatePhysicsRecord(s.physics,this.physics.admission,tick);
+  validatePhysicsRecord(this.physicsRecord(snap),this.physics.admission,tick);
   const base=s.physics!.base[0]!,pose=s.robots[0]?.pose3d;
   if(!pose||Math.abs(pose.z-base.poseMap.positionM[2]!)>1e-6||Math.abs(pose.roll-base.rollRad)>1e-6||Math.abs(pose.pitch-base.pitchRad)>1e-6)throw new Error('PHYSICS_OBSERVATION_INVALID');
  }
@@ -474,7 +475,7 @@ class FixedStepRun implements ScenarioRun {
   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
   if(this.physics){
-   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append({...(next as import('./contracts').Sim3DSnapshotV1).physics!,...(next as {drives?:unknown[]}).drives?{drives:(next as {drives?:never}).drives}:{}} as never);await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
+   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append(this.physicsRecord(next));await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
    catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
   }
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
@@ -699,12 +700,15 @@ class FixedStepRun implements ScenarioRun {
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
-   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{}};
+   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{}};
  }
  private async flushPhysics(){
   if(!this.physicsRec)return;
   try{await this.physicsRec.flush();}catch{const first=this.physicsRec.manifest().coverage.lastTick+1;await this.recordGap({fromTick:Math.min(first,this.cp.tick),toTick:this.cp.tick,reason:'PHYSICS_EVIDENCE_FAILED'});await this.plantLost('PHYSICS_EVIDENCE_FAILED','PHYSICS_EVIDENCE_FAILED');await this.persist();}
  }
+ /** The physics tick as recorded: the worker's PhysicsTickRecord, with the axis snapshots of the same tick when the run has a drive. */
+ private physicsRecord(snap:IRSimSnapshotV1){const s=snap as import('./contracts').Sim3DSnapshotV1;return {...s.physics!,...s.drives?{drives:s.drives}:{}};}
+ private driveEvidence?:import('../control/drive-report').DriveEvidenceReport;
  private async physicsReport(navigation:import('./evidence').EvidenceRead):Promise<RunReport['physicsEvidence']>{
   if(!this.physics)return undefined;
   const manifest=this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>this.cp.started||this.cp.plant.startupAttempt?{schemaVersion:1 as const,documentType:'physics-evidence' as const,identity:{runId:this.cp.runId,bootId:this.cp.plant.snapshot?.bootId??'unobserved',sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics!.loadProfileDigest,physicsProfileDigest:this.physics!.physicsProfileDigest},streams:[],coverage:{firstTick:0,lastTick:this.cp.tick,complete:false},gaps:[{firstTick:0,lastTick:this.cp.tick,reason:'PHYSICS_MANIFEST_INVALID'}],terminalReason:'PHYSICS_MANIFEST_INVALID',metricsPolicyDigest:this.physics!.metricsPolicyDigest,assumptions:this.physics!.assumptions}:null);
@@ -714,6 +718,7 @@ class FixedStepRun implements ScenarioRun {
   if(this.cp.plant.status==='lost')manifest.terminalReason??=this.cp.plant.reason??'PLANT_LOST';
   if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
   const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
+  if(this.drive)this.driveEvidence=buildDriveEvidence(this.drive.model,read.records.map(r=>({tick:r.tick,drives:(r as {drives?:never}).drives??[]})),{complete:read.complete,issues:read.issues,events:this.drive.events});
   return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
  }
  async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}

@@ -34,7 +34,7 @@ export async function admitDriveDocuments(scene:{engine?:object},read:(path:stri
 export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
  controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{}});
 
-export interface MobileDrive {readonly manifest:DriveManifest;readonly events:ControllerEvent[];
+export interface MobileDrive {readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
  step(tick:number,setpoint:{vMps:number;omegaRadps:number},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
@@ -45,10 +45,16 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
  const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS};
  let state:DiffDriveBaseState=diffDriveBaseV1.init(config);const events:ControllerEvent[]=[];
- return {manifest:driveManifest(d),events,step(tick,setpoint,snapshot){
+ return {manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});
   state=r.state;events.push(...r.events);
   return {commands:r.commands,events:r.events,odometry:state.odometry};
  }};
+}
+
+/** The step a drive world sends: the controllers' setpoints (velocities, joint and gripper targets) stay in the evidence and are not sent. */
+export function driveWireCommand<T extends {velocities:unknown[];jointTargets:unknown[];gripperTargets:unknown[]}>(c:T):T{
+ const {velocities:_v,jointTargets:_j,gripperTargets:_g,...rest}=c;void _v;void _j;void _g;
+ return {...rest,velocities:[],jointTargets:[],gripperTargets:[]} as unknown as T;
 }

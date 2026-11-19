@@ -20,11 +20,11 @@ test('every id names fixture files that exist, validate, and are declared for ea
   for(const f of b.files)expect(createHash('sha256').update(f.bytes).digest('hex')).toBe(f.path===b.refs.driveModelRef.path?b.refs.driveModelRef.sha256:b.refs.controlProfileRef.sha256);
  }
 });
-test('the experiments differ from nominal only in the device: latency 100 ms, coarse encoder, wheel torque x 0.4, ideal has no effect',async()=>{
+test('the experiments differ from nominal only in the device: latency 100 ms, coarse encoder, wheel torque x 0.2, ideal has no effect',async()=>{
  const m=async(id:string)=>(await mobileDriveBundle(root,id)).model.axes[0]!;
  expect((await m('drive-latency-v1')).commandDelaySubsteps).toBe(50);
  expect((await m('drive-coarse-encoder-v1')).encoder.countsPerRev).toBe(256);
- expect((await m('drive-torque-limited-v1')).torque).toEqual({kind:'envelope_ref',scale:0.4});
+ expect((await m('drive-torque-limited-v1')).torque).toEqual({kind:'envelope_ref',scale:0.2});
  expect(await m('drive-ideal-v1')).toMatchObject({commandDelaySubsteps:0,watchdogTicks:null,encoder:{countsPerRev:null}});
  const arm=async(id:string)=>(await worldDriveBundle(root,id,'arm-1')).model.axes[1]!;
  expect((await arm('drive-latency-v1')).commandDelaySubsteps).toBe(50);expect((await arm('drive-coarse-encoder-v1')).encoder.countsPerRev).toBe(1024);

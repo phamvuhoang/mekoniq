@@ -225,7 +225,7 @@ def drive_wheels(variant, ticks=60):
 def test_wheel_torque_never_exceeds_the_motoring_envelope_times_the_scale():
     nominal_peak, nominal_sat = drive_wheels("nominal")
     limited_peak, limited_sat = drive_wheels("torque-limited")
-    assert nominal_peak > 5.0 and limited_peak <= 0.4 * 6.0 + 1e-9   # the envelope at rest is the 6 N m of the physics profile
+    assert nominal_peak > 5.0 and limited_peak <= 0.2 * 6.0 + 1e-9   # the envelope at rest is the 6 N m of the physics profile
     assert limited_sat > nominal_sat > 0                              # the limit binds sooner
 
 

@@ -38,7 +38,7 @@ export async function generateDriveFixture(outDir){
  };
  const ideal={wheelCounts:null,jointCounts:null,torqueScale:1,feedbackDelay:0,feedbackLoss:0,commandDelay:0,watchdog:null,enableDelay:0,quickStop:100,followingError:false};
  const nominal={...ideal,wheelCounts:4096,jointCounts:16384,feedbackDelay:1,feedbackLoss:25,commandDelay:1,watchdog:5,enableDelay:25,followingError:true};
- const variants={ideal,nominal,'torque-limited':{...nominal,torqueScale:0.4},latency:{...nominal,commandDelay:50},'coarse-encoder':{...nominal,wheelCounts:256,jointCounts:1024}};
+ const variants={ideal,nominal,'torque-limited':{...nominal,torqueScale:0.2}  /* R4-A said x 0.4; the nominal mission's peak wheel torque is 1.63 N m (V05 measurement) against the 6 N m envelope, so x 0.4 (2.4 N m) never binds: 0 saturated substeps. x 0.2 = 1.2 N m does */,latency:{...nominal,commandDelay:50},'coarse-encoder':{...nominal,wheelCounts:256,jointCounts:1024}};
  const driveModel=(id,axes,p,s)=>sealDriveDocument({schemaVersion:1,documentType:'drive-model',id,revision:1,digest:'',calibration:'not_calibrated',axes:axes.map(a=>model(a,p)),sources:s});
  const serveModels=Object.entries(variants).map(([k,p])=>driveModel(`serve-drive-${k}-v1`,wheels,p,serveSources));
  const armModels=['ideal','nominal','latency','coarse-encoder'].map(k=>driveModel(`xarm6-drive-${k}-v1`,[...joints,gripper],variants[k],sources({torque:src('xarm6-g2-v1/physics.json',bytesOf.armPhysics,'actuators, gripper.forceRangeNm'),velocity:src('xarm6-g2-v1/component.json',bytesOf.armComponent,'joint velocity limits')})));
