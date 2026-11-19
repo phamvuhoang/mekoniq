@@ -43,6 +43,16 @@ test('the state at a cursor is the last transition not after it; before the firs
  expect(stateAt(b,'amr-1/wheel-left',60)).toEqual({state:'fault',fault:'OVERSPEED'});expect(stateAt(b,'amr-1/ghost',5)).toBeNull();
  const late:DriveEvidenceBlock={...b,axes:[{...b.axes[0]!,states:[{state:'enabled',fromTick:5}],faults:[]}]};expect(stateAt(late,'amr-1/wheel-left',2)).toBeNull();
 });
+test('a fault is shown only while the axis is in the fault state: after a reset the axis shows its new state without it',()=>{
+ const b=block();b.axes[0]!.states=[{state:'enabled',fromTick:3},{state:'fault',fromTick:60},{state:'disabled',fromTick:80},{state:'enabled',fromTick:90}];
+ expect(stateAt(b,'amr-1/wheel-left',70)).toEqual({state:'fault',fault:'OVERSPEED'});
+ expect(stateAt(b,'amr-1/wheel-left',85)).toEqual({state:'disabled',fault:null});expect(stateAt(b,'amr-1/wheel-left',95)).toEqual({state:'enabled',fault:null});
+});
+test('a block with a missing events, issues or axis member is no drive data, never an exception',()=>{
+ const {events:_e,...noEvents}=block(),{issues:_i,...noIssues}=block();void _e;void _i;
+ for(const bad of [noEvents,noIssues,{...block(),axes:[{axisId:'x'}]},{...block(),axes:[null]}])expect(driveSection({driveEvidence:bad}),JSON.stringify(bad).slice(0,60)).toEqual({available:false,reason:'NO_DRIVE_DATA'});
+ expect(()=>driveHtml({...report(),driveEvidence:noEvents} as never)).not.toThrow();
+});
 test('the inspector rows of an entity are its own axes at the cursor, with the fault and the tracking error; a report without drive has none',()=>{
  const rows=driveRows(withDrive(),'amr-1',70);
  expect(rows.map(r=>r.key)).toEqual(['drive-amr-1/wheel-left','drive-amr-1/wheel-right']);

@@ -5,7 +5,7 @@ import {tr} from '../i18n';
 import {esc} from '../ui/icons';
 
 export type DriveSection={available:false;reason:string}|{available:true;complete:boolean;issues:string[];axes:{axisId:string;states:string[];trackingRms:ControlMetric}[];events:DriveEvidenceBlock['events']};
-const isBlock=(b:unknown):b is DriveEvidenceBlock=>!!b&&typeof b==='object'&&Array.isArray((b as DriveEvidenceBlock).axes)&&(b as DriveEvidenceBlock).testLevel==='controller_in_the_loop';
+const isBlock=(b:unknown):b is DriveEvidenceBlock=>!!b&&typeof b==='object'&&Array.isArray((b as DriveEvidenceBlock).axes)&&Array.isArray((b as DriveEvidenceBlock).events)&&Array.isArray((b as DriveEvidenceBlock).issues)&&(b as DriveEvidenceBlock).testLevel==='controller_in_the_loop'&&(b as DriveEvidenceBlock).axes.every(a=>!!a&&Array.isArray(a.states)&&Array.isArray(a.faults)&&!!a.trackingRms);
 /** `report` is whatever was imported: anything without a well-formed drive block is NO_DRIVE_DATA (an R2b report, a malformed one, null). */
 export function driveSection(report:unknown):DriveSection{
  const b=report&&typeof report==='object'?(report as {driveEvidence?:unknown}).driveEvidence:undefined;
@@ -18,7 +18,8 @@ const metricText=(m:ControlMetric)=>m.available?`${m.value.toPrecision(3)} ${m.u
 export function stateAt(block:DriveEvidenceBlock,axisId:string,tick:number):{state:string;fault:string|null}|null{
  const a=block.axes.find(x=>x.axisId===axisId);if(!a)return null;
  const s=[...a.states].reverse().find(x=>x.fromTick<=tick);if(!s)return null;
- const f=a.faults.filter(x=>x.firstTick<=tick).at(-1);return {state:s.state,fault:f?.fault??null};
+ // the fault shown is the one the axis is in at the cursor: not one it has since left (a reset)
+ const f=s.state==='fault'?a.faults.filter(x=>x.firstTick<=tick).at(-1):undefined;return {state:s.state,fault:f?.fault??null};
 }
 /** Rows for the inspector of an entity: one per axis whose id starts with `${entityId}/` — its drive state at the cursor and its tracking error. */
 export function driveRows(report:RunReport|null,entityId:string,tick:number):Row[]{
