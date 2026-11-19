@@ -377,6 +377,14 @@
                 },
                 "worldControl": {
                   "$ref": "sim3d-worker-v1.schema.json#/definitions/WorldControlV1"
+                },
+                "driveCommands": {
+                  "type": "array",
+                  "minItems": 0,
+                  "maxItems": 16,
+                  "items": {
+                    "$ref": "drive-io-v1.schema.json#/definitions/DriveCommandV1"
+                  }
                 }
               },
               "required": [
@@ -467,6 +475,14 @@
               "before",
               "after"
             ]
+          }
+        },
+        "drives": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisSnapshot"
           }
         }
       },

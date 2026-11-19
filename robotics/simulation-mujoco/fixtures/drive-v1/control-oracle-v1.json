@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "documentType": "control-oracle",
+  "id": "control-oracle-v1",
+  "revision": 1,
+  "digest": "2ac222fe9f732b88a2baa93482db053191841a675d8816f04a85e0c47f294c8c",
+  "calibration": "not_calibrated",
+  "metricPolicy": {
+    "finalWindowS": 0.5,
+    "settleBand": 0.02,
+    "holdWindowS": 0.25
+  },
+  "sustainedOscillation": {
+    "windowRatio": 0.9,
+    "thresholdRad": 0.02,
+    "thresholdRadS": 0.1
+  },
+  "minAmplitudeQuanta": 10,
+  "source": {
+    "kind": "assumed",
+    "documentId": "docs/research/virtual-drive-spike/results.json",
+    "revision": "1",
+    "locator": "section 5: metric windows are test policy, not safety parameters",
+    "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+  }
+}

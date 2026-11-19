@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "documentType": "drive-model",
+  "id": "xarm6-drive-nominal-v1",
+  "revision": 1,
+  "digest": "e1966ff9b4f4406860895616f0f4ee56c0adc658e3bfee3ee65d21b5ad3d3c52",
+  "calibration": "not_calibrated",
+  "axes": [
+    {
+      "axisId": "xarm-1/J1",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 179.4445
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 1,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J2",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 179.4445
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 3.12,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J3",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 92
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 47.81,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J4",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 81.558
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 1,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J5",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 30.6
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 5.22,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J6",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 30.6
+      },
+      "velocityLimitRadS": 3.14,
+      "encoder": {
+        "countsPerRev": 16384,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 1,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/gripper",
+      "mode": "csp",
+      "torque": {
+        "kind": "effort",
+        "limitNm": 1.2
+      },
+      "velocityLimitRadS": 2,
+      "encoder": {
+        "countsPerRev": 4096,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 1.2,
+      "followingError": {
+        "limitRad": 0.5,
+        "substeps": 100
+      }
+    }
+  ],
+  "sources": {
+    "torque": {
+      "kind": "assumed",
+      "documentId": "xarm6-g2-v1/physics.json",
+      "revision": "1",
+      "locator": "actuators, gripper.forceRangeNm",
+      "contentSha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd"
+    },
+    "velocity": {
+      "kind": "assumed",
+      "documentId": "xarm6-g2-v1/component.json",
+      "revision": "1",
+      "locator": "joint velocity limits",
+      "contentSha256": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a"
+    },
+    "encoder": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: countsPerRev starting values",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "delays": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "case 4: command delay, queue equals native buffer",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "watchdog": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: watchdog and enable sequence starting values",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "disable": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "case 3: group-bit switch-off and brake softness",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "followingError": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: following error starting value",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    }
+  }
+}

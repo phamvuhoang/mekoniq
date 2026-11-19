@@ -201,6 +201,21 @@ export type Props = {
 }[];
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisId".
+ */
+export type DriveAxisId = string;
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveState".
+ */
+export type DriveState = 'disabled' | 'ready' | 'enabled' | 'quick_stop' | 'fault';
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFault".
+ */
+export type DriveFault = 'COMMAND_TIMEOUT' | 'FEEDBACK_LOSS' | 'FOLLOWING_ERROR' | 'OVERSPEED' | 'EXTERNAL_TRIP';
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "Sim3DResponseV1".
  */
 export type Sim3DResponseV1 =
@@ -360,6 +375,11 @@ export type Sim3DRequestV1 =
           targetTick: number;
         }[];
         worldControl?: WorldControlV1;
+        /**
+         * @minItems 0
+         * @maxItems 16
+         */
+        driveCommands?: DriveCommandV1[];
       };
     }
   | {
@@ -398,6 +418,11 @@ export type Sim3DRequestV1 =
     };
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveMode".
+ */
+export type DriveMode = 'csp' | 'csv';
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "ArmObstacle".
  */
 export type ArmObstacle =
@@ -425,6 +450,36 @@ export type ArmObstacle =
        */
       max: number[];
     };
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisDriveModel".
+ */
+export type AxisDriveModel = AxisDriveModel1;
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlMetric".
+ */
+export type ControlMetric =
+  | {
+      available: true;
+      value: number;
+      unit: string;
+      samples: number;
+      basis: 'actual' | 'feedback';
+    }
+  | {
+      available: false;
+      value: null;
+      unit: string;
+      reason: string;
+    };
+/**
+ * Per-axis drive evidence, tuning results, fault reports and the control oracle policy (R4). Readers build TuningResultV1 and FaultReportV1 from verified streams.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlEvidenceV1".
+ */
+export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1;
 
 export interface Navigation2DContracts {}
 /**
@@ -781,6 +836,8 @@ export interface NavigationSceneV11 {
           path: string;
           sha256: Digest;
         };
+        driveModelRef?: DriveDocumentRef;
+        controlProfileRef?: DriveDocumentRef;
       };
   policy: NavigationPolicyV1;
   /**
@@ -794,6 +851,16 @@ export interface NavigationSceneV11 {
    */
   limitations: string[];
   world3d?: World3DV1;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveDocumentRef".
+ */
+export interface DriveDocumentRef {
+  id: string;
+  revision: number;
+  path: string;
+  sha256: Digest;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1266,6 +1333,16 @@ export interface Sim3DSnapshotV1 {
   props?: Props;
   physics?: PhysicsTickRecord;
   worldStep?: WorldStep;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  driveTrace?: DriveTrace[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1412,6 +1489,11 @@ export interface PhysicsTickRecord {
     rollRad: number;
     pitchRad: number;
   }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1477,6 +1559,27 @@ export interface LoadObservation {
     quaternionXyzw: number[];
   } | null;
 }
+/**
+ * Feedback plus the true state; the actual* fields never reach a controller.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisSnapshot".
+ */
+export interface DriveAxisSnapshot {
+  axisId: DriveAxisId;
+  state: DriveState;
+  fault: DriveFault | null;
+  commandSeq: number;
+  positionRad: number | null;
+  velocityRadS: number | null;
+  torqueNm: number | null;
+  tick: number;
+  targetApplied: number;
+  actualPositionRad: number;
+  actualVelocityRadS: number;
+  saturatedSubsteps: number;
+  followingErrorRad: number | null;
+}
 export interface WorldStep {
   workerPid: number;
   modelCount: 1;
@@ -1520,6 +1623,24 @@ export interface WorldStep {
   }[];
 }
 /**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveTrace".
+ */
+export interface DriveTrace {
+  axisId: DriveAxisId;
+  dtS: number;
+  /**
+   * @minItems 0
+   * @maxItems 5000
+   */
+  samples: {
+    target: number;
+    actual: number;
+    feedback: number | null;
+    torqueNm: number;
+  }[];
+}
+/**
  * Sim3DRobotStateV1 as a worker ACK carries it: a MuJoCo worker sends `scans` only on the sensor's publish tick; the source client carries the last publication forward, so every Sim3DRobotStateV1 (and world evidence) still has it.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1558,6 +1679,16 @@ export interface Sim3DWireSnapshotV1 {
   props?: Props;
   physics?: PhysicsTickRecord;
   worldStep?: WorldStep;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  driveTrace?: DriveTrace[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1595,6 +1726,19 @@ export interface WorldControlV1 {
   attachmentProxyPropId: string | null;
   movementInterlocked: boolean;
   stopLatched: boolean;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveCommandV1".
+ */
+export interface DriveCommandV1 {
+  axisId: DriveAxisId;
+  seq: number;
+  mode: DriveMode;
+  target: number;
+  enable: boolean;
+  quickStop: boolean;
+  faultReset: boolean;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2031,6 +2175,10 @@ export interface LabWorldSceneV1 {
     cupId: string;
   };
   controlContextVersion?: 1;
+  engine?: {
+    driveModelRef?: DriveDocumentRef;
+    controlProfileRef?: DriveDocumentRef;
+  };
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2111,6 +2259,11 @@ export interface WorldEvidenceRecord {
       targetTick: number;
     }[];
     worldControl?: WorldControlV1;
+    /**
+     * @minItems 0
+     * @maxItems 16
+     */
+    driveCommands?: DriveCommandV1[];
   } | null;
   /**
    * @maxItems 16
@@ -2126,6 +2279,11 @@ export interface WorldEvidenceRecord {
     before: Sim3DPoseV1 | null;
     after: Sim3DPoseV1 | null;
   }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  drives?: DriveAxisSnapshot[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2395,4 +2553,307 @@ export interface SemanticStudyV1 {
    * @maxItems 20
    */
   limitations: string[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFeedbackV1".
+ */
+export interface DriveFeedbackV1 {
+  axisId: DriveAxisId;
+  state: DriveState;
+  fault: DriveFault | null;
+  commandSeq: number;
+  positionRad: number | null;
+  velocityRadS: number | null;
+  torqueNm: number | null;
+  tick: number;
+}
+/**
+ * Neutral drive command/feedback contract (R4-A). DriveFeedbackV1 carries measured values only; DriveAxisSnapshot adds the true state and is evidence-only.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveIoV1".
+ */
+export interface DriveIoV1 {
+  schemaVersion: 1;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  commands?: DriveCommandV1[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  feedback?: DriveFeedbackV1[];
+}
+export interface AxisDriveModel1 {
+  axisId: DriveAxisId;
+  mode: DriveMode;
+  torque:
+    | {
+        kind: 'envelope_ref';
+        scale: number;
+      }
+    | {
+        kind: 'effort';
+        limitNm: number;
+      };
+  velocityLimitRadS: number;
+  encoder: {
+    countsPerRev: number | null;
+    velocityWindowSubsteps: number;
+  };
+  feedbackDelaySubsteps: number;
+  feedbackLossSubsteps: number;
+  commandDelaySubsteps: number;
+  commandInterpolation: 'hold' | 'linear';
+  watchdogTicks: number | null;
+  enableDelaySubsteps: number;
+  quickStopSubsteps: number;
+  onDisable: 'coast' | 'brake';
+  brakeTorqueNm: number | null;
+  followingError: {
+    limitRad: number;
+    substeps: number;
+  } | null;
+}
+/**
+ * A device model: what a servo drive is, not how it is tuned. Changes only with a better source (datasheet, measurement).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveModelV1".
+ */
+export interface DriveModelV1 {
+  schemaVersion: 1;
+  documentType: 'drive-model';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisDriveModel[];
+  sources: {
+    torque: SourceRef;
+    velocity: SourceRef;
+    encoder: SourceRef;
+    delays: SourceRef;
+    watchdog: SourceRef;
+    disable: SourceRef;
+    followingError: SourceRef;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisControl".
+ */
+export interface AxisControl {
+  axisId: DriveAxisId;
+  loop: {
+    kp: number;
+    ki: number;
+    kd: number;
+    integralLimit: number | null;
+    slewLimit: number | null;
+  };
+  accelerationLimit: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControllerConfig".
+ */
+export interface ControllerConfig {
+  controllerId: string;
+  revision: number;
+  params: {
+    [k: string]: number;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningBound".
+ */
+export interface TuningBound {
+  min: number;
+  max: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "AxisEnvelope".
+ */
+export interface AxisEnvelope {
+  axisId: DriveAxisId;
+  kp: TuningBound;
+  ki: TuningBound;
+  kd: TuningBound;
+  integralLimit: TuningBound;
+  slewLimit: TuningBound;
+  accelerationLimit: TuningBound;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningEnvelopeV1".
+ */
+export interface TuningEnvelopeV1 {
+  schemaVersion: 1;
+  documentType: 'tuning-envelope';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisEnvelope[];
+  source: SourceRef;
+}
+/**
+ * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlProfileV1".
+ */
+export interface ControlProfileV1 {
+  schemaVersion: 1;
+  documentType: 'control-profile';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  plantModelDigest: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  driveModelDigests: Digest[];
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: AxisControl[];
+  /**
+   * @minItems 1
+   * @maxItems 4
+   */
+  controllers: ControllerConfig[];
+  sources: {
+    loop: SourceRef;
+    limits: SourceRef;
+    controller: SourceRef;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlArtifactRef".
+ */
+export interface ControlArtifactRef {
+  path: string;
+  sha256: Digest;
+  bytes: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveTickRecord".
+ */
+export interface DriveTickRecord {
+  schemaVersion: 1;
+  tick: number;
+  simTimeNs: string;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  driveCommands?: DriveCommandV1[];
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  drives: DriveAxisSnapshot[];
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export interface TuningResultV1 {
+  schemaVersion: 1;
+  documentType: 'tuning-result';
+  runId: string;
+  axisId: DriveAxisId;
+  controlProfileDigest: Digest;
+  signal: {
+    t0S: number;
+    y0: number;
+    amplitude: number;
+  };
+  policy: {
+    finalWindowS: number;
+    settleBand: number;
+    holdWindowS: number;
+  };
+  metrics: {
+    [k: string]: ControlMetric;
+  };
+  /**
+   * @maxItems 8
+   */
+  clamped: ('kp' | 'ki' | 'kd' | 'integralLimit' | 'slewLimit' | 'accelerationLimit')[];
+  trace: ControlArtifactRef;
+  accepted: false;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultReportV1".
+ */
+export interface FaultReportV1 {
+  schemaVersion: 1;
+  documentType: 'fault-report';
+  runId: string;
+  scheduleDigest: Digest;
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  entries: {
+    entryId: string;
+    faultId: string;
+    targetId: string;
+    status: 'fired' | 'not_fired' | 'evidence_invalid';
+    appliedTick: number | null;
+    detection: 'detected' | 'not_detected' | 'not_applicable';
+    detectedTick: number | null;
+  }[];
+  /**
+   * @minItems 0
+   * @maxItems 16
+   */
+  evidence: ControlArtifactRef[];
+  accepted: false;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "ControlOracleV1".
+ */
+export interface ControlOracleV1 {
+  schemaVersion: 1;
+  documentType: 'control-oracle';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  metricPolicy: {
+    finalWindowS: number;
+    settleBand: number;
+    holdWindowS: number;
+  };
+  sustainedOscillation: {
+    windowRatio: number;
+    thresholdRad: number;
+    thresholdRadS: number;
+  };
+  minAmplitudeQuanta: number;
+  source: SourceRef;
 }

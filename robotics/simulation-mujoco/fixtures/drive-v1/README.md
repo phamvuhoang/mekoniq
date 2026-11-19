@@ -1,0 +1,10 @@
+# Drive fixtures v1
+
+Generate with `node scripts/generate-drive-fixture.mjs [out-dir]`. Inputs are the committed Serve physics profile and physical model, the xArm 6 physics and component, and the V01 spike output (docs/research/virtual-drive-spike/results.json).
+
+- `serve-drive-{ideal,nominal,torque-limited,latency,coarse-encoder}-v1.json`, `xarm6-drive-{ideal,nominal}-v1.json`: DriveModelV1, the device. `ideal` has no quantisation, no delay, no watchdog and no enable sequence.
+- `serve-control-v1.json`, `xarm6-control-v1.json`: ControlProfileV1, the tuning. Gains equal the R2b gains (wheel kp = velocityGainNmsPerRad, joint kp/kd = physics kp/kv, every ki = 0, no slew), so the ideal drive reproduces the R2b path. One profile lists every drive model it is declared for (driveModelDigests): the experiments vary the device, not the tuning. plantModelDigest is the physical model's modelDigest (AMR) or the SHA-256 of the xArm component file.
+- `tuning-envelope-v1.json`: the server's bounds per axis. `integralLimit` is a force limit in N m (ki * imax in the engine's pid actuator); a velocity axis allows no kd and no slew.
+- `control-oracle-v1.json`: metric windows and the sustained-oscillation threshold, locked before any campaign.
+
+Every value is `assumed`, every document `not_calibrated`; none is the parameter set of a real driver. Arm brake torque is 3x the gravity torque at home measured in the V01 spike (floored at 1 N m); a world needs one combined drive model and profile, which V05 adds.

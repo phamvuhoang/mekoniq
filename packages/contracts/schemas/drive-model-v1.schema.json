@@ -1,0 +1,321 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.drive-model.v1",
+  "title": "DriveModelV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "A device model: what a servo drive is, not how it is tuned. Changes only with a better source (datasheet, measurement).",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "drive-model"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "calibration": {
+      "const": "not_calibrated"
+    },
+    "axes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/definitions/AxisDriveModel"
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "torque": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "velocity": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "encoder": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "delays": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "watchdog": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "disable": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        },
+        "followingError": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "torque",
+        "velocity",
+        "encoder",
+        "delays",
+        "watchdog",
+        "disable",
+        "followingError"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "calibration",
+    "axes",
+    "sources"
+  ],
+  "definitions": {
+    "AxisDriveModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+        },
+        "mode": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveMode"
+        },
+        "torque": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "envelope_ref"
+                },
+                "scale": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "kind",
+                "scale"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "effort"
+                },
+                "limitNm": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              },
+              "required": [
+                "kind",
+                "limitNm"
+              ]
+            }
+          ]
+        },
+        "velocityLimitRadS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "encoder": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "countsPerRev": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "velocityWindowSubsteps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "countsPerRev",
+            "velocityWindowSubsteps"
+          ]
+        },
+        "feedbackDelaySubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "feedbackLossSubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "commandDelaySubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "commandInterpolation": {
+          "enum": [
+            "hold",
+            "linear"
+          ]
+        },
+        "watchdogTicks": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "enableDelaySubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "quickStopSubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "onDisable": {
+          "enum": [
+            "coast",
+            "brake"
+          ]
+        },
+        "brakeTorqueNm": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "followingError": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "limitRad": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "substeps": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000
+                }
+              },
+              "required": [
+                "limitRad",
+                "substeps"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "axisId",
+        "mode",
+        "torque",
+        "velocityLimitRadS",
+        "encoder",
+        "feedbackDelaySubsteps",
+        "feedbackLossSubsteps",
+        "commandDelaySubsteps",
+        "commandInterpolation",
+        "watchdogTicks",
+        "enableDelaySubsteps",
+        "quickStopSubsteps",
+        "onDisable",
+        "brakeTorqueNm",
+        "followingError"
+      ],
+      "title": "AxisDriveModel",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "onDisable": {
+                "const": "brake"
+              }
+            },
+            "required": [
+              "onDisable"
+            ]
+          },
+          "then": {
+            "properties": {
+              "brakeTorqueNm": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "brakeTorqueNm": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "csv"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "followingError": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

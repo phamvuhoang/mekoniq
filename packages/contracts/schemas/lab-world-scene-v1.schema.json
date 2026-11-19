@@ -671,6 +671,19 @@
     },
     "controlContextVersion": {
       "const": 1
+    },
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "driveModelRef": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
+        },
+        "controlProfileRef": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
+        }
+      },
+      "required": []
     }
   },
   "required": [

@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "documentType": "tuning-envelope",
+  "id": "tuning-envelope-v1",
+  "revision": 1,
+  "digest": "cff8282c8fcde64b69878ecc4f4a5328fae52f93111f0840d3f05aec3ed0bde7",
+  "calibration": "not_calibrated",
+  "axes": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "kp": {
+        "min": 0,
+        "max": 20
+      },
+      "ki": {
+        "min": 0,
+        "max": 64
+      },
+      "kd": {
+        "min": 0,
+        "max": 0
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 6
+      },
+      "slewLimit": {
+        "min": 0,
+        "max": 0
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 100
+      }
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "kp": {
+        "min": 0,
+        "max": 20
+      },
+      "ki": {
+        "min": 0,
+        "max": 64
+      },
+      "kd": {
+        "min": 0,
+        "max": 0
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 6
+      },
+      "slewLimit": {
+        "min": 0,
+        "max": 0
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 100
+      }
+    },
+    {
+      "axisId": "xarm-1/J1",
+      "kp": {
+        "min": 0,
+        "max": 12000
+      },
+      "ki": {
+        "min": 0,
+        "max": 6000
+      },
+      "kd": {
+        "min": 0,
+        "max": 300
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 179.4445
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/J2",
+      "kp": {
+        "min": 0,
+        "max": 12000
+      },
+      "ki": {
+        "min": 0,
+        "max": 6000
+      },
+      "kd": {
+        "min": 0,
+        "max": 300
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 179.4445
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/J3",
+      "kp": {
+        "min": 0,
+        "max": 10000
+      },
+      "ki": {
+        "min": 0,
+        "max": 5000
+      },
+      "kd": {
+        "min": 0,
+        "max": 200
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 92
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/J4",
+      "kp": {
+        "min": 0,
+        "max": 4000
+      },
+      "ki": {
+        "min": 0,
+        "max": 2000
+      },
+      "kd": {
+        "min": 0,
+        "max": 80
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 81.558
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/J5",
+      "kp": {
+        "min": 0,
+        "max": 4000
+      },
+      "ki": {
+        "min": 0,
+        "max": 2000
+      },
+      "kd": {
+        "min": 0,
+        "max": 60
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 30.6
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/J6",
+      "kp": {
+        "min": 0,
+        "max": 1000
+      },
+      "ki": {
+        "min": 0,
+        "max": 500
+      },
+      "kd": {
+        "min": 0,
+        "max": 28
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 30.6
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 3.14
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    },
+    {
+      "axisId": "xarm-1/gripper",
+      "kp": {
+        "min": 0,
+        "max": 40
+      },
+      "ki": {
+        "min": 0,
+        "max": 20
+      },
+      "kd": {
+        "min": 0,
+        "max": 1
+      },
+      "integralLimit": {
+        "min": 0,
+        "max": 1.2
+      },
+      "slewLimit": {
+        "min": 0.1,
+        "max": 2
+      },
+      "accelerationLimit": {
+        "min": 0.5,
+        "max": 50
+      }
+    }
+  ],
+  "source": {
+    "kind": "assumed",
+    "documentId": "docs/research/virtual-drive-spike/results.json",
+    "revision": "1",
+    "locator": "section 5: starting values, bounds are server policy",
+    "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+  }
+}

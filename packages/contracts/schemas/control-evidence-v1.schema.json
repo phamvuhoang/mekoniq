@@ -1,0 +1,476 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.control-evidence.v1",
+  "title": "ControlEvidenceV1",
+  "description": "Per-axis drive evidence, tuning results, fault reports and the control oracle policy (R4). Readers build TuningResultV1 and FaultReportV1 from verified streams.",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/DriveTickRecord"
+    },
+    {
+      "$ref": "#/definitions/TuningResultV1"
+    },
+    {
+      "$ref": "#/definitions/FaultReportV1"
+    },
+    {
+      "$ref": "#/definitions/ControlOracleV1"
+    }
+  ],
+  "definitions": {
+    "ControlMetric": {
+      "title": "ControlMetric",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "available": {
+              "const": true
+            },
+            "value": {
+              "type": "number"
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "samples": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "basis": {
+              "enum": [
+                "actual",
+                "feedback"
+              ]
+            }
+          },
+          "required": [
+            "available",
+            "value",
+            "unit",
+            "samples",
+            "basis"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "available": {
+              "const": false
+            },
+            "value": {
+              "type": "null"
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "available",
+            "value",
+            "unit",
+            "reason"
+          ]
+        }
+      ]
+    },
+    "ControlArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "sha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "title": "ControlArtifactRef"
+    },
+    "DriveTickRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "simTimeNs": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "driveCommands": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveCommandV1"
+          }
+        },
+        "drives": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisSnapshot"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "tick",
+        "simTimeNs",
+        "drives"
+      ],
+      "title": "DriveTickRecord"
+    },
+    "TuningResultV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "tuning-result"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "axisId": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+        },
+        "controlProfileDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "signal": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "t0S": {
+              "type": "number",
+              "minimum": 0
+            },
+            "y0": {
+              "type": "number"
+            },
+            "amplitude": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "t0S",
+            "y0",
+            "amplitude"
+          ]
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "finalWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "settleBand": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "holdWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "finalWindowS",
+            "settleBand",
+            "holdWindowS"
+          ]
+        },
+        "metrics": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "$ref": "#/definitions/ControlMetric"
+          }
+        },
+        "clamped": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "enum": [
+              "kp",
+              "ki",
+              "kd",
+              "integralLimit",
+              "slewLimit",
+              "accelerationLimit"
+            ]
+          }
+        },
+        "trace": {
+          "$ref": "#/definitions/ControlArtifactRef"
+        },
+        "accepted": {
+          "const": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "runId",
+        "axisId",
+        "controlProfileDigest",
+        "signal",
+        "policy",
+        "metrics",
+        "clamped",
+        "trace",
+        "accepted"
+      ],
+      "title": "TuningResultV1"
+    },
+    "FaultReportV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "fault-report"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "scheduleDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "entries": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entryId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "faultId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "targetId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "status": {
+                "enum": [
+                  "fired",
+                  "not_fired",
+                  "evidence_invalid"
+                ]
+              },
+              "appliedTick": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "detection": {
+                "enum": [
+                  "detected",
+                  "not_detected",
+                  "not_applicable"
+                ]
+              },
+              "detectedTick": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "entryId",
+              "faultId",
+              "targetId",
+              "status",
+              "appliedTick",
+              "detection",
+              "detectedTick"
+            ]
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/ControlArtifactRef"
+          }
+        },
+        "accepted": {
+          "const": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "runId",
+        "scheduleDigest",
+        "entries",
+        "evidence",
+        "accepted"
+      ],
+      "title": "FaultReportV1"
+    },
+    "ControlOracleV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "control-oracle"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "calibration": {
+          "const": "not_calibrated"
+        },
+        "metricPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "finalWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "settleBand": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "holdWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "finalWindowS",
+            "settleBand",
+            "holdWindowS"
+          ]
+        },
+        "sustainedOscillation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "windowRatio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "thresholdRad": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "thresholdRadS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "windowRatio",
+            "thresholdRad",
+            "thresholdRadS"
+          ]
+        },
+        "minAmplitudeQuanta": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "source": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "id",
+        "revision",
+        "digest",
+        "calibration",
+        "metricPolicy",
+        "sustainedOscillation",
+        "minAmplitudeQuanta",
+        "source"
+      ],
+      "title": "ControlOracleV1"
+    }
+  }
+}

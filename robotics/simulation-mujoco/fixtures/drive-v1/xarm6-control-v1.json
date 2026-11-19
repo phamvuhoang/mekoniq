@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "documentType": "control-profile",
+  "id": "xarm6-control-v1",
+  "revision": 1,
+  "digest": "003c237a55f8dbe95829219ea1fd3310a94e84212c7dfe2648713aa3a6adef9f",
+  "calibration": "not_calibrated",
+  "plantModelDigest": "0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a",
+  "driveModelDigests": [
+    "57149feb9b806dee6e4b1402fa016101d2ee6b7b0b3d2c59f7227b3230327b7d",
+    "e1966ff9b4f4406860895616f0f4ee56c0adc658e3bfee3ee65d21b5ad3d3c52"
+  ],
+  "axes": [
+    {
+      "axisId": "xarm-1/J1",
+      "loop": {
+        "kp": 6000,
+        "ki": 0,
+        "kd": 150,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/J2",
+      "loop": {
+        "kp": 6000,
+        "ki": 0,
+        "kd": 150,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/J3",
+      "loop": {
+        "kp": 5000,
+        "ki": 0,
+        "kd": 100,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/J4",
+      "loop": {
+        "kp": 2000,
+        "ki": 0,
+        "kd": 40,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/J5",
+      "loop": {
+        "kp": 2000,
+        "ki": 0,
+        "kd": 30,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/J6",
+      "loop": {
+        "kp": 500,
+        "ki": 0,
+        "kd": 14,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    },
+    {
+      "axisId": "xarm-1/gripper",
+      "loop": {
+        "kp": 20,
+        "ki": 0,
+        "kd": 0.5,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": null
+    }
+  ],
+  "controllers": [
+    {
+      "controllerId": "joint-trajectory-follower-v1",
+      "revision": 1,
+      "params": {}
+    }
+  ],
+  "sources": {
+    "loop": {
+      "kind": "assumed",
+      "documentId": "xarm6-g2-v1/physics.json",
+      "revision": "1",
+      "locator": "actuators[].kp, kv; gripper.kp, kv",
+      "contentSha256": "2c756a02a780b8475fcd0c50062595443f1198c8cced13b0219d362de26c18dd"
+    },
+    "limits": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "controller": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    }
+  }
+}
