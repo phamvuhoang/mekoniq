@@ -12,6 +12,8 @@ import numpy as np
 from .compile import CompileError
 from .compile_mobile import compile_mobile, matrix_pose, pose, resolve_lidar
 from .drive import wheel_targets, torque_limits
+from .drive_binding import build_drive
+from .drive_model import plan_actuators
 from .engine import BAD_STATE
 from .protocol import WorkerError
 
@@ -54,10 +56,11 @@ class ContactAccumulator:
 
 
 class MobileEngine:
-    def __init__(self, scene, physical_models, load_profile, physics):
+    def __init__(self, scene, physical_models, load_profile, physics, drive=None):
         if mujoco.__version__ != "3.17.0":
             raise CompileError("ENGINE_VERSION_MISMATCH")
-        xml, self.names = compile_mobile(scene, physical_models, load_profile, physics)
+        plan = plan_actuators(*drive) if drive else None
+        xml, self.names = compile_mobile(scene, physical_models, load_profile, physics, plan)
         self.scene, self.profile, self.physics = scene, load_profile, physics
         self.entry = scene["robots"][0]
         self.rid = self.entry["robotId"]
@@ -70,15 +73,21 @@ class MobileEngine:
         self.wj = [m.joint(n).id for n in self.names["wheelJoints"]]
         self.wq, self.wv = m.jnt_qposadr[self.wj], m.jnt_dofadr[self.wj]
         self.acts = [m.actuator(n).id for n in self.names["actuators"]]
+        self.drive = None
         self.tags = {m.geom(n).id: tag for n, tag in self.names["tags"].items()}
         self.prop = {pid: m.body(n).id for pid, n in self.names["props"].items()}
         self.dt, self.substeps = m.opt.timestep, scene["engine"]["substeps"]
         self.radius, self.separation = (self.physical["drive"][k]["value"] for k in ("wheelRadiusM", "wheelSeparationM"))
-        drive = self.physical["drive"]["driveFrameInBase"]
-        self.drive_in_base = pose(drive["xyzM"], drive["quaternionXyzw"])
+        frame = self.physical["drive"]["driveFrameInBase"]  # (`drive` is the virtual drive documents of the parameter)
+        self.drive_in_base = pose(frame["xyzM"], frame["quaternionXyzw"])
         self.odom = np.array(self.entry["initialPoseMap"], dtype=float)
         self.tick = -1
         self.targets = np.zeros(2)
+        if drive:
+            of_axis = {f"{self.rid}/wheel-left": self.acts[0], f"{self.rid}/wheel-right": self.acts[1]}
+            limits = {a["axisId"]: (-a["velocityLimitRadS"], a["velocityLimitRadS"]) for a in drive[0]["axes"]}
+            self.drive = build_drive(m, d, drive, plan, of_axis, limits, self.substeps)
+            self.wheel_pos = [self.drive.g.index[f"{self.rid}/wheel-left"], self.drive.g.index[f"{self.rid}/wheel-right"]]
         self.contacts, self.saturated, self.unstable = [], 0, None
         self.scans = []
         # Deep initial penetration is a bad input, not a settling procedure. Robot
@@ -141,25 +150,37 @@ class MobileEngine:
     def clear_payload_impulse(self):
         self.data.xfrc_applied[self.prop["cup-1"], :] = 0
 
-    def step(self, v_mps, omega_radps):
+    def step(self, v_mps, omega_radps, commands=None):
+        """One tick. With a virtual drive the wheels take `commands` (DriveCommandV1 dicts) and the drive writes ctrl every substep; v and omega are then unused."""
         d, m = self.data, self.model
-        targets = wheel_targets(v_mps, omega_radps, self.radius, self.separation)
-        if any(not lo <= t <= hi for t, (lo,hi) in zip(targets, m.actuator_ctrlrange[self.acts])):
-            raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel target exceeds canonical speed limit")
-        self.targets[:] = targets
-        d.ctrl[self.acts] = self.targets
+        drv = self.drive
+        if drv is None:
+            targets = wheel_targets(v_mps, omega_radps, self.radius, self.separation)
+            if any(not lo <= t <= hi for t, (lo,hi) in zip(targets, m.actuator_ctrlrange[self.acts])):
+                raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel target exceeds canonical speed limit")
+            self.targets[:] = targets
+            d.ctrl[self.acts] = self.targets
+        else:
+            drv.g.begin_tick(commands)
         aggregate, unstable, self.saturated = ContactAccumulator(self.dt, self.names["expected"]), set(), 0
         for _ in range(self.substeps):
             old = d.qpos[self.wq].copy()
             saturated = False
-            for act, velocity, target in zip(self.acts, d.qvel[self.wv], self.targets):
+            if drv is not None:
+                out = drv.pre_substep()
+                self.targets[:] = [out["target"][i] for i in self.wheel_pos]
+            for k, (act, velocity, target) in enumerate(zip(self.acts, d.qvel[self.wv], self.targets)):
                 lo, hi = torque_limits(float(velocity), float(target), self.physics)
+                if drv is not None:
+                    lo, hi = drv.scale_limits(self.wheel_pos[k], lo, hi)
                 m.actuator_forcerange[act] = lo, hi
                 demand = self.physics["velocityGainNmsPerRad"] * (target - velocity)
                 saturated |= demand < lo - 1e-12 or demand > hi + 1e-12
             self.saturated += int(saturated)
             before = {k: d.warning[w].number for k, w in BAD_STATE.items()}
             mujoco.mj_step(m, d)
+            if drv is not None:
+                drv.post_substep()
             unstable.update(k for k, w in BAD_STATE.items() if d.warning[w].number != before[k])
             if not np.isfinite(d.qpos).all() or not np.isfinite(d.qvel).all() or not np.isfinite(d.qacc).all():
                 unstable.add("NONFINITE")
@@ -178,7 +199,10 @@ class MobileEngine:
         mujoco.mj_forward(m, d)  # read transforms/velocities at the final integrated pose
         if self.tick % self.entry["model"]["sensors"][0]["publishEveryTicks"] == 0:
             self.scans = [self.scan(self.tick)]
-        return self.read()
+        reading = self.read()
+        if drv is not None:
+            reading["drives"] = drv.g.end_tick()
+        return reading
 
     def scan(self, tick):
         sensor, physical = self.sensor, self.sensor_physical

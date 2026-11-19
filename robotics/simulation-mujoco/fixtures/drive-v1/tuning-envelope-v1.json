@@ -3,7 +3,7 @@
   "documentType": "tuning-envelope",
   "id": "tuning-envelope-v1",
   "revision": 1,
-  "digest": "cff8282c8fcde64b69878ecc4f4a5328fae52f93111f0840d3f05aec3ed0bde7",
+  "digest": "09043a2fa356c223deeba6c7356cd2a4a4575ed300cef7996b4b7afa3783d91f",
   "calibration": "not_calibrated",
   "axes": [
     {
@@ -242,7 +242,7 @@
       },
       "slewLimit": {
         "min": 0.1,
-        "max": 2
+        "max": 10
       },
       "accelerationLimit": {
         "min": 0.5,

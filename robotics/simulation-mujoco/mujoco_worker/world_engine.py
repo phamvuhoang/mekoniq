@@ -14,6 +14,8 @@ from .compile_mobile import pose,matrix_pose,resolve_lidar
 from .engine import MujocoEngine,BAD_STATE
 from .mobile_engine import MobileEngine,ContactAccumulator,_transform
 from .drive import wheel_targets,torque_limits
+from .drive_binding import build_drive
+from .drive_model import plan_actuators
 from .protocol import WorkerError
 from . import snapshot
 
@@ -25,9 +27,10 @@ WORLD_DISTURBANCES={
 }
 
 class WorldEngine:
-    def __init__(self,scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir):
+    def __init__(self,scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir,drive=None):
         if mujoco.__version__!='3.17.0':raise CompileError('ENGINE_VERSION_MISMATCH')
-        xml,names=compile_world(scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir)
+        plan=plan_actuators(*drive) if drive else None
+        xml,names=compile_world(scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir,plan)
         self.scene,self.names=scene,names
         self.model=m=mujoco.MjModel.from_xml_string(xml)
         self.data=d=mujoco.MjData(m)
@@ -41,7 +44,7 @@ class WorldEngine:
         a.arm_qpos,a.arm_qvel=m.jnt_qposadr[a.arm_joints],m.jnt_dofadr[a.arm_joints]
         self.arm_limits=a.arm_limits=[tuple(map(float,r)) for r in m.jnt_range[a.arm_joints]]
         a.arm_act=[m.actuator(n).id for n in an['actuators']]
-        a.grip_act=m.actuator(an['gripper']).id;a.grip_range=tuple(m.actuator_ctrlrange[a.grip_act])
+        a.grip_act=m.actuator(an['gripper']).id;a.grip_range=tuple(m.actuator_ctrlrange[m.actuator_ctrladr[a.grip_act]])
         gj=[m.joint(n).id for n in an['jointIds'].values() if n not in an['joints']]
         a.grip_qpos,a.grip_qvel=m.jnt_qposadr[gj],m.jnt_dofadr[gj]
         a.pads=[m.geom(n).id for n in an['pads']]
@@ -106,8 +109,15 @@ class WorldEngine:
         mujoco.mj_forward(m,d)
         for c in d.contact[:d.ncon]:
             if c.dist < -1e-6:raise CompileError('INITIAL_PENETRATION',f'{v.tags[int(c.geom1)]}/{v.tags[int(c.geom2)]}: {c.dist}')
+        self.drive=None
+        if drive:
+            arm_id,rid=scene['armCell']['arm']['armId'],v.rid
+            of_axis={**{f'{arm_id}/J{k+1}':x for k,x in enumerate(a.arm_act)},f'{arm_id}/gripper':a.grip_act,f'{rid}/wheel-left':v.acts[0],f'{rid}/wheel-right':v.acts[1]}
+            limits={**{f'{arm_id}/J{k+1}':lim for k,lim in enumerate(self.arm_limits)},f'{arm_id}/gripper':a.grip_range,**{x['axisId']:(-x['velocityLimitRadS'],x['velocityLimitRadS']) for x in drive[0]['axes'] if x['mode']=='csv'}}
+            self.drive=build_drive(m,d,drive,plan,of_axis,limits,10)
+            self.wheel_pos=[self.drive.g.index[f'{rid}/wheel-left'],self.drive.g.index[f'{rid}/wheel-right']]
 
-    def step(self,targets,opening,placements,v_mps,omega_radps,disturbance=None):
+    def step(self,targets,opening,placements,v_mps,omega_radps,disturbance=None,commands=None):
         if self.failed:raise WorkerError('WORLD_TERMINAL','world may not retry',fatal=True)
         m,d,a,v=self.model,self.data,self.arm,self.mobile
         force_body=None
@@ -121,10 +131,13 @@ class WorldEngine:
             else:
                 if target not in a.in_scene:raise WorkerError('WORLD_PERTURBATION_TARGET_INVALID','inactive prop')
                 force_body=a.prop[target]['body']
-        v.targets[:]=wheel_targets(v_mps,omega_radps,v.radius,v.separation)
-        d.ctrl[a.arm_act]=targets;d.ctrl[v.acts]=v.targets
-        if opening is not None:
-            lo,hi=a.grip_range;d.ctrl[a.grip_act]=lo+(hi-lo)*(1-opening/a.opening_max_m)
+        drv=self.drive
+        if drv is None:
+            v.targets[:]=wheel_targets(v_mps,omega_radps,v.radius,v.separation)
+            d.ctrl[a.arm_act]=targets;d.ctrl[v.acts]=v.targets
+            if opening is not None:
+                lo,hi=a.grip_range;d.ctrl[a.grip_act]=lo+(hi-lo)*(1-opening/a.opening_max_m)
+        else:drv.g.begin_tick(commands)
         for pid,at in placements:
             if at is None:a.in_scene.discard(pid);a._set_contacts(pid,False)
             else:
@@ -136,12 +149,17 @@ class WorldEngine:
         try:
             for _ in range(10):
                 old=d.qpos[v.wq].copy();saturated=False
-                for act,actual,target in zip(v.acts,d.qvel[v.wv],v.targets):
-                    lo,hi=torque_limits(float(actual),float(target),v.physics);m.actuator_forcerange[act]=lo,hi
+                if drv is not None:
+                    out=drv.pre_substep();v.targets[:]=[out['target'][i] for i in self.wheel_pos]
+                for k,(act,actual,target) in enumerate(zip(v.acts,d.qvel[v.wv],v.targets)):
+                    lo,hi=torque_limits(float(actual),float(target),v.physics)
+                    if drv is not None:lo,hi=drv.scale_limits(self.wheel_pos[k],lo,hi)
+                    m.actuator_forcerange[act]=lo,hi
                     demand=v.physics['velocityGainNmsPerRad']*(target-actual);saturated|=demand<lo-1e-12 or demand>hi+1e-12
                 v.saturated+=int(saturated)
                 before={k:d.warning[w].number for k,w in BAD_STATE.items()}
                 mujoco.mj_step(m,d);self.total_substeps+=1
+                if drv is not None:drv.post_substep()
                 warnings=[k for k,w in BAD_STATE.items() if d.warning[w].number!=before[k]]
                 if warnings or not all(np.isfinite(x).all() for x in (d.qpos,d.qvel,d.qacc)):
                     self.failed=True;raise WorkerError('PLANT_UNSTABLE',','.join(warnings) or 'NONFINITE',fatal=True)
@@ -169,6 +187,7 @@ class WorldEngine:
             if touching:prop['restingOn']=self.support_id if np.linalg.norm(pv[3:]-support_velocity)<.01 else None
             result['physics']['loads'].append({'propId':pid,'poseMap':matrix_pose(at),'linearVelocityMapMps':pv[3:].tolist(),'angularVelocityMapRadps':pv[:3].tolist(),'supportId':self.support_id,'poseInSupport':relative})
         result['worldStep']={'workerPid':os.getpid(),'modelCount':1,'physicsSubsteps':self.total_substeps,'primingSubsteps':10,**{k:int(getattr(m,k)) for k in ('nq','nv','nbody','ngeom')}}
+        if drv is not None:result['drives']=drv.g.end_tick()
         self.last=result
         return {'time':float(d.time),'unstable':None,'world':result}
 

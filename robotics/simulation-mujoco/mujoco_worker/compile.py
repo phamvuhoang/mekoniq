@@ -160,7 +160,45 @@ def _bits(bits):
     return {"contype": str(bits[0]), "conaffinity": str(bits[1])}
 
 
-def compile_cell(scene, component, physics, blob_dir):
+def apply_drive_actuators(root, name_by_axis, plan):
+    """Re-types the actuators of the axes named in `plan` (drive_model.plan_actuators) for a virtual drive: sets their gains, gives each its own actuator group, takes the effort limit of an
+    effort axis from the drive model, turns an axis that needs the engine's `pid` actuator into one (it owns two ctrl cells: reference position and reference velocity, so the keyframe's ctrl grows
+    by one cell after each) and keeps `ctrlrange` on cell 0 of a position axis. Axes of `plan` that this model does not contain are for another compiler and are skipped."""
+    actuator = root.find("actuator")
+    original = list(actuator)
+    names = [e.get("name") for e in original]
+    pids = set()
+    for axis, name in name_by_axis.items():
+        entry = plan.get(axis)
+        if entry is None:
+            continue
+        el, spec = original[names.index(name)], entry["spec"]
+        el.set("group", str(entry["group"]))
+        if entry["effortNm"] is not None:
+            el.set("forcerange", _vec([-entry["effortNm"], entry["effortNm"]]))
+        if spec["kind"] == el.tag:
+            for k, v in spec["attrs"].items():
+                el.set(k, _num(v))
+            continue
+        attrs = {k: el.get(k) for k in ("name", "joint", "forcerange", "group")}
+        if el.tag == "position" and el.get("ctrlrange"):
+            attrs["ctrlrange"] = el.get("ctrlrange")
+        attrs.update({k: _num(v) for k, v in spec["attrs"].items()})
+        actuator.insert(list(actuator).index(el), ET.Element("pid", attrs))
+        actuator.remove(el)
+        pids.add(name)
+    key = root.find("keyframe/key")
+    if key is not None and pids:
+        ctrl = [float(x) for x in key.get("ctrl").split()]
+        grown = []
+        for name, value in zip(names, ctrl):
+            grown.append(value)
+            if name in pids:
+                grown.append(0.0)
+        key.set("ctrl", _vec(grown))
+
+
+def compile_cell(scene, component, physics, blob_dir, drive_plan=None):
     """(mjcf, names) of one arm cell; raises CompileError(code) on a missing or malformed input, never falls back."""
     links, kids, root, chain = _check_component(component, physics)
     arm, w3 = _get(scene, "arm"), _get(scene, "world3d")
@@ -315,5 +353,8 @@ def compile_cell(scene, component, physics, blob_dir):
     force = _get(g, "forceRangeNm")
     _el(actuator, "position", name="grip_act", joint=drive, kp=_num(_get(g, "kp")), kv=_num(_get(g, "kv")), forcerange=_vec([-force, force]), ctrlrange=_vec([dl["lower"]["value"], dl["upper"]["value"]]))
     _el(_el(root_el, "keyframe"), "key", name="home", qpos=_vec(qpos), ctrl=_vec([*home, 0.0]))
+    if drive_plan:
+        arm_id = scene["arm"]["armId"]
+        apply_drive_actuators(root_el, {**{f"{arm_id}/J{k + 1}": f"J{k + 1}_act" for k in range(len(chain))}, f"{arm_id}/gripper": "grip_act"}, drive_plan)
     ET.indent(root_el, space=" ")
     return ET.tostring(root_el, encoding="unicode") + "\n", names

@@ -15,6 +15,8 @@ import numpy as np
 BAD_STATE = {"BADQPOS": mujoco.mjtWarning.mjWARN_BADQPOS, "BADQVEL": mujoco.mjtWarning.mjWARN_BADQVEL, "BADQACC": mujoco.mjtWarning.mjWARN_BADQACC}
 
 from .compile import compile_cell
+from .drive_binding import build_drive
+from .drive_model import plan_actuators
 
 
 def engine_version():
@@ -22,8 +24,9 @@ def engine_version():
 
 
 class MujocoEngine:
-    def __init__(self, scene, component, physics, blob_dir):
-        mjcf, names = compile_cell(scene, component, physics, blob_dir)
+    def __init__(self, scene, component, physics, blob_dir, drive=None):
+        plan = plan_actuators(*drive) if drive else None
+        mjcf, names = compile_cell(scene, component, physics, blob_dir, plan)
         self.names = names
         m = self.model = mujoco.MjModel.from_xml_string(mjcf)
         d = self.data = mujoco.MjData(m)
@@ -36,7 +39,7 @@ class MujocoEngine:
         self.arm_limits = [(float(lo), float(hi)) for lo, hi in m.jnt_range[self.arm_joints]]
         self.arm_act = [m.actuator(n).id for n in names["actuators"]]
         self.grip_act = m.actuator(names["gripper"]).id
-        self.grip_range = tuple(float(v) for v in m.actuator_ctrlrange[self.grip_act])
+        self.grip_range = tuple(float(v) for v in m.actuator_ctrlrange[m.actuator_ctrladr[self.grip_act]])  # ctrlrange is per ctrl cell, not per actuator
         grip_joints = [m.joint(n).id for n in names["jointIds"].values() if n not in names["joints"]]
         self.grip_qpos, self.grip_qvel = m.jnt_qposadr[grip_joints], m.jnt_dofadr[grip_joints]
         if len(names["pads"]) != 2:
@@ -63,6 +66,12 @@ class MujocoEngine:
                 b = m.geom_bodyid[g]
                 tags[g] = ("link", link_of[m.body(b).name]) if b in arm_bodies else ("gripper",)
         self.tags = tags
+        self.drive = None
+        if drive:
+            arm_id = scene["arm"]["armId"]
+            of_axis = {**{f"{arm_id}/J{k + 1}": a for k, a in enumerate(self.arm_act)}, f"{arm_id}/gripper": self.grip_act}
+            limits = {**{f"{arm_id}/J{k + 1}": lim for k, lim in enumerate(self.arm_limits)}, f"{arm_id}/gripper": self.grip_range}
+            self.drive = build_drive(m, d, drive, plan, of_axis, limits, self.substeps)
 
     # ---- commands ----
     def _set_contacts(self, pid, on):
@@ -75,13 +84,18 @@ class MujocoEngine:
         d.qpos[p["qpos"]:p["qpos"] + 7] = qpos7
         d.qvel[p["qvel"]:p["qvel"] + 6] = 0.0
 
-    def step(self, targets, opening, placements):
-        """One tick; `opening` None keeps the last gripper command. `placements` are (propId, pose or None), already validated."""
+    def step(self, targets, opening, placements, commands=None):
+        """One tick; `opening` None keeps the last gripper command. `placements` are (propId, pose or None), already validated.
+        With a virtual drive the axes take `commands` (DriveCommandV1 dicts) instead of targets and opening, and the drive writes ctrl every substep."""
         d = self.data
-        d.ctrl[self.arm_act] = targets
-        if opening is not None:
-            lo, hi = self.grip_range
-            d.ctrl[self.grip_act] = lo + (hi - lo) * (1.0 - opening / self.opening_max_m)
+        drv = self.drive
+        if drv is not None:
+            drv.g.begin_tick(commands)
+        else:
+            d.ctrl[self.arm_act] = targets
+            if opening is not None:
+                lo, hi = self.grip_range
+                d.ctrl[self.grip_act] = lo + (hi - lo) * (1.0 - opening / self.opening_max_m)
         for pid, pose in placements:
             if pose is None:
                 self.in_scene.discard(pid)
@@ -97,10 +111,17 @@ class MujocoEngine:
         seen, unstable = set(), set()
         for _ in range(self.substeps):
             before = {k: d.warning[w].number for k, w in BAD_STATE.items()}
+            if drv is not None:
+                drv.pre_substep()
             mujoco.mj_step(self.model, d)
+            if drv is not None:
+                drv.post_substep()
             unstable.update(k for k, w in BAD_STATE.items() if d.warning[w].number != before[k])
             seen.update(self.contacts())
-        return {**self.read(), "tickContacts": sorted(seen), "unstable": ",".join(sorted(unstable)) or None}
+        reading = {**self.read(), "tickContacts": sorted(seen), "unstable": ",".join(sorted(unstable)) or None}
+        if drv is not None:
+            reading["drives"] = drv.g.end_tick()
+        return reading
 
     # ---- readings ----
     def opening(self):

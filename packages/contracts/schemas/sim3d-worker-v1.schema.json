@@ -1265,6 +1265,12 @@
                     },
                     "executableSha256": {
                       "$ref": "engineering-component.schema.json#/definitions/Digest"
+                    },
+                    "hostArch": {
+                      "enum": [
+                        "arm64",
+                        "x86_64"
+                      ]
                     }
                   },
                   "required": [

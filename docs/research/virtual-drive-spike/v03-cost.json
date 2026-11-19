@@ -1,0 +1,75 @@
+{
+ "machine": "arm64",
+ "python": "3.11.15",
+ "ticksPerRun": 800,
+ "scope": "WorkerSession.handle of the cell world; runtime, recorder and fsync are not in it",
+ "pairs": [
+  {
+   "pair": 1,
+   "loadAverageBefore": 4.2119140625,
+   "legacy": {
+    "meanMs": 1.292,
+    "p50Ms": 1.0747,
+    "p95Ms": 2.0817
+   },
+   "driveNominal9Axes": {
+    "meanMs": 1.6972,
+    "p50Ms": 1.3674,
+    "p95Ms": 2.9258
+   },
+   "deltaMeanMs": 0.4052,
+   "deltaP50Ms": 0.2927
+  },
+  {
+   "pair": 2,
+   "loadAverageBefore": 4.11474609375,
+   "legacy": {
+    "meanMs": 1.4655,
+    "p50Ms": 1.0796,
+    "p95Ms": 2.1842
+   },
+   "driveNominal9Axes": {
+    "meanMs": 1.6079,
+    "p50Ms": 1.331,
+    "p95Ms": 2.4687
+   },
+   "deltaMeanMs": 0.1424,
+   "deltaP50Ms": 0.2514
+  },
+  {
+   "pair": 3,
+   "loadAverageBefore": 4.11474609375,
+   "legacy": {
+    "meanMs": 1.2797,
+    "p50Ms": 1.0756,
+    "p95Ms": 2.0983
+   },
+   "driveNominal9Axes": {
+    "meanMs": 1.5425,
+    "p50Ms": 1.3161,
+    "p95Ms": 2.342
+   },
+   "deltaMeanMs": 0.2628,
+   "deltaP50Ms": 0.2405
+  },
+  {
+   "pair": 4,
+   "loadAverageBefore": 4.265625,
+   "legacy": {
+    "meanMs": 1.4258,
+    "p50Ms": 1.123,
+    "p95Ms": 2.4051
+   },
+   "driveNominal9Axes": {
+    "meanMs": 1.5221,
+    "p50Ms": 1.3099,
+    "p95Ms": 2.3454
+   },
+   "deltaMeanMs": 0.0963,
+   "deltaP50Ms": 0.1869
+  }
+ ],
+ "deltaMeanMsAcrossPairs": 0.2267,
+ "accepted": false,
+ "calibration": "not_calibrated"
+}

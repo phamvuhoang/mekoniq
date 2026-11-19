@@ -13,6 +13,7 @@ import type {PlantPort} from '../../packages/lab-runtime/src/v2/navigation2d/pla
 import type {ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
 import {navigationFixture} from '../support/navigation2d';
 import {testCompiler,writeFixtureCatalog} from '../support/engineering';
+import {validateNavigationEvidence} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 const dirs:string[]=[],runs:ScenarioRun[]=[],root=resolve('robotics/simulation-mujoco');
 const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'mj-lifecycle-'));dirs.push(d);return d;};
 afterEach(async()=>{for(const r of runs.splice(0))await r.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
@@ -128,3 +129,13 @@ test('gateway reclaim-only mobile recovery retains committed tick without spawni
  await expect(open(true)).rejects.toThrow('RECOVERY_CHECKPOINT_MISSING');expect(spawns).toBe(0);
  const run=await open();await run.start();await act(run,'step',{ticks:5});await run.close();const reclaimed=await open(true);await reclaimed.holdForReclaim();expect((await reclaimed.snapshot()).tick).toBe(5);expect(spawns).toBe(1);await expect(act(reclaimed,'resume')).rejects.toThrow();
 });
+
+test('the run manifest carries the architecture the worker reports; a manifest without the field stays valid',async()=>{
+ const {open}=await setup(()=>{});
+ const run=await open();await run.start();await act(run,'step',{ticks:5});
+ const nav=(await run.report()).navigation2d as unknown as {engine:Record<string,unknown>};
+ expect(['arm64','x86_64']).toContain(nav.engine.hostArch);
+ expect(validateNavigationEvidence(nav).ok).toBe(true);
+ const {hostArch:_,...legacyEngine}=nav.engine;void _;
+ expect(validateNavigationEvidence({...nav,engine:legacyEngine}).ok).toBe(true);
+},60_000);

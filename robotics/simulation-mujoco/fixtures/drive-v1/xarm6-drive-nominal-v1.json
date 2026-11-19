@@ -3,7 +3,7 @@
   "documentType": "drive-model",
   "id": "xarm6-drive-nominal-v1",
   "revision": 1,
-  "digest": "e1966ff9b4f4406860895616f0f4ee56c0adc658e3bfee3ee65d21b5ad3d3c52",
+  "digest": "fab9324dc1a93ded1458ddce4952dd6468952d8fb703570171841e9e64a10740",
   "calibration": "not_calibrated",
   "axes": [
     {
@@ -169,7 +169,7 @@
         "kind": "effort",
         "limitNm": 1.2
       },
-      "velocityLimitRadS": 2,
+      "velocityLimitRadS": 10,
       "encoder": {
         "countsPerRev": 4096,
         "velocityWindowSubsteps": 5

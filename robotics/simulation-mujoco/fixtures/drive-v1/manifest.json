@@ -17,8 +17,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "b7ce89583115502b72bea1a4e411a8bf65cb25bf2d6fa499dd04ff4871a2c9e6",
-      "bytes": 1514
+      "sha256": "2755b10536de9a32492766b76f07ac647d0ebb2a960b31a935a0ed91a8889c7b",
+      "bytes": 1715
     },
     {
       "path": "serve-control-v1.json",
@@ -52,23 +52,23 @@
     },
     {
       "path": "tuning-envelope-v1.json",
-      "sha256": "84e5fb7f6303151c8aacfdf822052bbb85048470178332245689e03ed4e7976b",
-      "bytes": 4490
+      "sha256": "aade34a3996c58d3068e9b52ee62761d21def8902ba8e19c0b8d57de1abd6d53",
+      "bytes": 4491
     },
     {
       "path": "xarm6-control-v1.json",
-      "sha256": "edc427efdba51bdbe5e177ebef70c52f5824f2cb6bcb19e5d9b749c8f3b70ad3",
+      "sha256": "aeb8915931d4f88b33724a6bfba9ccfa78f427673fa851b904c7e5e49af5938a",
       "bytes": 2921
     },
     {
       "path": "xarm6-drive-ideal-v1.json",
-      "sha256": "4f3c167d07a0305bf7c1470afbc1f6f0b72effaaf6ca2c78c926163d9fd0ec41",
-      "bytes": 6364
+      "sha256": "e7d18b766feda0c0886b1ea12cab83672452c51c23ab1c5ea48b8876cfb36839",
+      "bytes": 6365
     },
     {
       "path": "xarm6-drive-nominal-v1.json",
-      "sha256": "6bb6231d6c84414773f58776d17a722c589081e10354914be944e8efa1379250",
-      "bytes": 6743
+      "sha256": "0bad49f00bc27feff46c86f09a6ecc447303277f3349b059eb55fa67dab63802",
+      "bytes": 6744
     }
   ]
 }

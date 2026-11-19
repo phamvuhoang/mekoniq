@@ -21,7 +21,7 @@ export const mujocoMobilePlant=(runtime:MujocoRuntimeOptions,experiment?:'payloa
    'The seed is identity only: no stochastic engine, noisy sensors or actors. Fixed-caster drag and wheel-odometry slip are modeled limitations.',
    'Declared support coordinates and instantaneous payload contact are not proof of custody or delivery; physics metrics require verified durable coverage.'],
   evidence:{seedAlgorithm:'mujoco-identity-seed-v1',limitation:'mujoco_3d rigid-body dynamics, not_calibrated; seed is identity only (no stochastic engine or sensor noise)',
-   engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
+   engine:d=>({id:'mujoco_3d',engineVersion:runtime.engineVersion,timestepMs:2,substeps:10,pythonVersion:d.pythonVersion,...d.hostArch?{hostArch:d.hostArch}:{},platform:d.platform,lockDigest:d.lockDigest,...d.scene.engine.id==='mujoco_3d'?{stopPolicyRef:d.scene.engine.stopPolicyRef,controllerPolicyRef:d.scene.engine.controllerPolicyRef,loadProfileRef:d.scene.engine.loadProfileRef,physicsProfileRef:d.scene.engine.physicsProfileRef}:{}})}},
  protocol:'mekoniq-sim3d/1',spawn:o=>spawnMujocoWorker({...o,...perturbation?{payloadPerturbationId:perturbation}:{}}),
 });};
 

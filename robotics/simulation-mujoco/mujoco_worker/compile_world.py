@@ -11,7 +11,7 @@ from .compile_mobile import compile_mobile
 
 WORLD_NUMERICS={'id':'coffee-delivery-world-numerics-v1','revision':1,'calibration':'not_calibrated','timestepMs':2,'substeps':10,'primingSubsteps':10,'integrator':'implicitfast','cone':'elliptic','impratio':10,'solver':'Newton','iterations':100,'tolerance':1e-8,'floorSlidingFriction':1.0}
 
-def compile_world(scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir):
+def compile_world(scene,component,arm_physics,physical_models,load_profile,mobile_physics,blob_dir,drive=None):
     if scene['numericalPolicy']!=WORLD_NUMERICS:
         raise CompileError('WORLD_NUMERICS_UNSUPPORTED')
     nav,arm=copy.deepcopy(scene['navigation']),copy.deepcopy(scene['armCell'])
@@ -25,8 +25,8 @@ def compile_world(scene,component,arm_physics,physical_models,load_profile,mobil
     if arm['world3d']['supportFriction']!=WORLD_NUMERICS['floorSlidingFriction']:
         raise CompileError('WORLD_CONTACT_POLICY_INVALID')
     arm['supports']=[s for s in arm['supports'] if s['id']!='tray']
-    ax,an=compile_cell(arm,component,arm_physics,blob_dir)
-    bx,bn=compile_mobile(nav,physical_models,load_profile,mobile_physics)
+    ax,an=compile_cell(arm,component,arm_physics,blob_dir,drive)
+    bx,bn=compile_mobile(nav,physical_models,load_profile,mobile_physics,drive)
     a,b=ET.fromstring(ax),ET.fromstring(bx)
     a.set('model','coffee-delivery-world-v1')
     option=a.find('option')

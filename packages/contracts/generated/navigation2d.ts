@@ -242,6 +242,7 @@ export type Sim3DResponseV1 =
             ops: string[];
             engineVersion?: string;
             executableSha256?: Digest;
+            hostArch?: 'arm64' | 'x86_64';
           };
     }
   | {
@@ -1057,6 +1058,7 @@ export interface NavigationRunEvidenceV11 {
           path: string;
           sha256: Digest;
         };
+        hostArch?: 'arm64' | 'x86_64';
       };
   /**
    * Optional (added with B05): the versions a rerun must match besides the engine and lock.

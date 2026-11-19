@@ -67,7 +67,7 @@ interface Checkpoint {
  pendingOps:{ordinal:number;operationId:string;type:string;payloadHash:string}[];inFlight:boolean;
  plant:PlantCheckpoint;adapters:Record<string,IRSimAdapterState>;distanceM:Record<string,number>;maxConcurrentMovers:number;
  /** what the worker's describe reported when the plant started */
- engine?:{packageVersion:string;pythonVersion:string};
+ engine?:{packageVersion:string;pythonVersion:string;hostArch?:'arm64'|'x86_64'};
  /** gaps the run asked the recorder for (a lost step ACK, a refused append): re-recorded on reopen when the manifest never got them */
  evidenceGaps?:Gap[];
  /** the recording's terminal reason once it ended: re-recorded on reopen when the manifest never got it (its write failed), so the evidence never turns complete */
@@ -275,9 +275,9 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,o=this.irsim;let created=false;
   this.worker=await this.plant.spawn({python:o.python,workerRoot:o.workerRoot,runId:c.runId,bundleRoot:join(this.dir,'bundle'),runDirectory:join(this.dir,'worker'),lockDigest:o.lockDigest,schemaDir:o.schemaDir,sceneDigest:this.scene.sceneDigest,...this.fixture.actors.length?{fixtureSha256:sha256(Buffer.from(JSON.stringify(fixtureFile(this.fixture))))}:{},...o.entry?{entry:o.entry}:{},...o.deadlinesMs?{deadlinesMs:o.deadlinesMs}:{}});
   try{
-   const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string};
+   const d=(await this.ask('describe',{})).result as {lockDigest:string;packageVersion:string;pythonVersion:string;hostArch?:'arm64'|'x86_64'};
    if(d.lockDigest!==o.lockDigest||d.packageVersion!==this.plant.identity.amr.version)throw new Error('IRSIM_PROVIDER_MISMATCH');
-   c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion};
+   c.engine={packageVersion:d.packageVersion,pythonVersion:d.pythonVersion,...d.hostArch?{hostArch:d.hostArch}:{}};
    // The plant's explicit seed profile determines engine identity; IR-SIM keeps its legacy NumPy derivation.
    if(this.plant.startupPolicy){c.plant.startupAttempt=true;await this.persist();}
    const snap=(await this.ask('create',{sceneRef:SCENE,seed:this.engineSeed})).result as IRSimSnapshotV1;
@@ -672,7 +672,7 @@ class FixedStepRun implements ScenarioRun {
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
   const physicsEvidence=await this.physicsReport(read);
-  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started'}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
+  const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started',...c.engine?.hostArch?{hostArch:c.engine.hostArch}:{}}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
   return {schemaVersion:2,manifest:structuredClone(c.manifest),outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,

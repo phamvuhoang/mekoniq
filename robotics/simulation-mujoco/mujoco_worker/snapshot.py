@@ -31,9 +31,12 @@ def build_mobile(*, run_id, boot_id, seq, tick, scene, reading):
     time = str(tick * TICK_NS)
     physics = {"schemaVersion": 1, "tick": tick, "simTimeNs": time, "contacts": reading["contacts"], "loads": reading["loads"],
                "wheels": [reading["wheel"]], "odometry": [{"robotId": reading["robot"]["robotId"], "poseDriveMap": reading["odometry"]}], "base": [reading["base"]]}
-    return {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "seq": str(seq), "tick": tick, "simTimeNs": time, "sceneDigest": scene["sceneDigest"],
+    snap = {"schemaVersion": 1, "runId": run_id, "bootId": boot_id, "seq": str(seq), "tick": tick, "simTimeNs": time, "sceneDigest": scene["sceneDigest"],
             "robots": [reading["robot"]], "arms": [], "props": [{"propId": p["propId"], "position": p["poseMap"]["positionM"], "quaternionXyzw": p["poseMap"]["quaternionXyzw"],
               "restingOn": reading.get("resting", {}).get(p["propId"])} for p in reading["loads"]], "physics": physics}
+    if "drives" in reading:
+        snap["drives"] = reading["drives"]
+    return snap
 
 
 def _finite(values):

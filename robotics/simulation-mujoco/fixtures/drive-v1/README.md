@@ -7,4 +7,4 @@ Generate with `node scripts/generate-drive-fixture.mjs [out-dir]`. Inputs are th
 - `tuning-envelope-v1.json`: the server's bounds per axis. `integralLimit` is a force limit in N m (ki * imax in the engine's pid actuator); a velocity axis allows no kd and no slew.
 - `control-oracle-v1.json`: metric windows and the sustained-oscillation threshold, locked before any campaign.
 
-Every value is `assumed`, every document `not_calibrated`; none is the parameter set of a real driver. Arm brake torque is 3x the gravity torque at home measured in the V01 spike (floored at 1 N m); a world needs one combined drive model and profile, which V05 adds.
+Every value is `assumed`, every document `not_calibrated`; none is the parameter set of a real driver. Arm brake torque is 3x the gravity torque at home measured in the V01 spike (floored at 1 N m). The gripper's velocityLimitRadS is 10 rad/s, above the 7.7 rad/s its drive joint reaches closing on a cup: it is an OVERSPEED reference (trip at 1.2x), not the 2 rad/s command rate of the R2b program; a world needs one combined drive model and profile, which V05 adds.
