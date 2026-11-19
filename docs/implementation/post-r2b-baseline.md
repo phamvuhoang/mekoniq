@@ -1,6 +1,6 @@
 # Baseline sau R2b/R3 cho R4 (V00b)
 
-Chụp 2026-11-19 trên nhánh `r4/virtual-commissioning` của source (tách từ `main` `33847b9`). Tài liệu chỉ đọc và đo: không sinh record mới, không sửa evidence cũ, không ghi `accepted:true` hay sidecar `acceptance.json`. Hash là SHA-256 của byte file, trừ khi ghi khác. Máy: Mac arm64, Node v24.22.2, pnpm 10.32.1. Việc sửa hiển thị của Lab (task V00 mục 2) đã làm riêng ở Lab; mục [Lab](#lab-và-lỗi-hiển-thị-đã-sửa) ghi lại.
+Chụp 2026-11-19 trên nhánh `r4/virtual-commissioning` của source (tách từ `main` `33847b9`). Tài liệu chỉ đọc và đo: không sinh record mới, không sửa evidence cũ, không ghi `accepted:true` hay sidecar `acceptance.json`. Hash là SHA-256 của byte file, trừ khi ghi khác. Máy: Mac arm64, Node v24.22.2, pnpm 10.32.1. Việc sửa hiển thị của Lab (task V00 mục 2) đã làm riêng ở Lab; mục [Lab](#lab-và-lỗi-hiển-thị-đã-sửa) ghi lại. Tài liệu này được sửa sau một lượt review cùng ngày; các chỗ sửa liệt kê ở [cuối tài liệu](#sửa-sau-review-ngày-1911).
 
 ## Trạng thái cây và HEAD lúc bắt đầu
 
@@ -63,12 +63,12 @@ Năm record nằm trong cây (chỉ JSON cấp trên cùng + `index.json`); bả
 G-WEB1 là `tested` (không còn `not_run`). Hai gate còn mở:
 
 - **G-HOST1 `blocked_external`** (WEB06: chưa có host HTTPS được giao). Không chặn task R4 nào: R4 không phụ thuộc host, Linux native, GPU hay phần cứng (plan R4, Global Constraints).
-- **G-CLOUD1 `blocked_external`** (CL01 trong record R2a; bằng chứng riêng đã PASS ngày 14/11 ở `evidence/cloud-run/mekoniq-2026-11-14/` và được guard `cloud-run` kiểm, không qua `qualification.json`). Không chặn task R4 nào. Tương ứng của R4 là CLD03 và G-CLOUD2, chỉ chạy sau một lần deploy theo lệnh người dùng: V05, V07, V10, V13 chỉ cần CLD01/CLD02 (không deploy); V16 cần CLD03 và nếu chưa có lệnh deploy thì CLD03 `not_run` với lý do `deploy_order_pending`, G-CLOUD2 không thành `tested`, các task sau vẫn đi tiếp.
+- **G-CLOUD1 `blocked_external`** (CL01 trong record R2a). Bằng chứng riêng PASS ngày 14/11 ở `evidence/cloud-run/mekoniq-2026-11-14/` gắn với record R2a của ngày đó và với dịch vụ ở commit `4f893ac`. Nó không phủ `r2a-candidate-04` và không phủ bản đang deploy (`3d8c2a8`); guard `cloud-run` không chạy được trên tuple này (xem dưới). Với tuple mà tài liệu này khóa, chưa có bằng chứng cloud nào được guard kiểm. Không chặn task R4 nào. Tương ứng của R4 là CLD03 và G-CLOUD2, chỉ chạy sau một lần deploy theo lệnh người dùng: V05, V07, V10, V13 chỉ cần CLD01/CLD02 (không deploy); V16 cần CLD03 và nếu chưa có lệnh deploy thì CLD03 `not_run` với lý do `deploy_order_pending`, G-CLOUD2 không thành `tested`, các task sau vẫn đi tiếp.
 - Native (G-NATIVE-MJ/AMR/ARM) và phần cứng (G-HW): `not_run`, ngoài phạm vi R4.
 
 ### Guard chạy ngày 19/11 (nguyên kết quả)
 
-Chạy trên bản đầy đủ đã giải nén của năm record, `PATH` Node 24.22.2, `PYTHONDONTWRITEBYTECODE=1`, dưới `perl alarm`, ở source `33847b9` (khác `3d8c2a8`, chỉ thêm commit docs/test). Log: `source/.superpowers/sdd/01-drive-and-cil/logs-V00b/guard-*.log`.
+Chạy trên bản đầy đủ đã giải nén của năm record, `PATH` Node 24.22.2, `PYTHONDONTWRITEBYTECODE=1`, dưới `perl alarm`, ở source `33847b9` (khác `3d8c2a8`, chỉ thêm commit docs/test). Log: `robot/evidence-archive/r4-baseline-c19785d/logs-V00b/guard-*.log` (ngoài Git, kèm `SHA256SUMS`; bản gốc nằm ở `source/.superpowers/sdd/01-drive-and-cil/logs-V00b/`, thư mục bị Git bỏ qua).
 
 | Lệnh | Kết quả |
 |---|---|
@@ -90,13 +90,13 @@ Không chạy: guard R3 (`verify-r3`, cần handoff trong `r3-prepared.tar.gz`; 
 |---|---|---|
 | Mock BV01 | `tests/unit/bv01-mock-golden.test.ts` (seed 42): outcome digest và arm-trace digest nhúng trong test | file `b3f7ea126b04b47d26b34644fd6f0fa58e9eddea4d5a29108552f05cfe299133`; outcome `9cfda98a693941cde4e0ecbfe028d48471877c6f8440295fc26e7e5061a1a2a2`; armTrace `70ff6e4014be2e7db90b986aefc679fb00810ebaa813c3214bbf6a8f2e1beeff` |
 | IR-SIM chunk | `tests/fixtures/navigation2d/ir-chunk-hashes.json` (IR-FD01@5, IR-FD07@7; kiểm bởi `tests/integration/irsim-plant-port.test.ts`) | file `a25969a9d37acf265591d7c63595abd507a42a9a98252c9b96d9b1f244abd79f`; test `35f80cf06684529d7bac30b0b7c40a771b881085a17777582d713ef9e9dd0b07` |
-| Webots bytes | Không có byte-golden commit trong cây. Bản giữ lại: world Webots do semantic study sinh ra, `evidence-archive/r2b-inputs-3d8c2a8-lab-4b57a9a/study/out/webots_3d/run/worker/world.wbt` | retained `c1958d634628678caa15e656269723b591cbdb2c07a8652b6bf5fed70463aced`; `semantic-study.json` `33f61864630449e5cd96578a8c03a9a7a656720df020290e4d1c9a3d38472461` |
+| Webots bytes | `robotics/simulation-3d/tests/test_compile_arm.py::test_amr_world_unchanged`: SHA-256 của world AMR do `compile_world` sinh từ fixture `serve-3d-v1` (seed 7), một robot và hai robot, nhúng trong test; chạy lại ngày 19/11: đạt. Bản giữ lại của semantic study (`evidence-archive/r2b-inputs-3d8c2a8-lab-4b57a9a/study/out/webots_3d/run/worker/world.wbt`) là artifact của một run, không phải golden | một robot `7a841131a01e14a6a07e6505396b6b6b6169d9fe26823a79387068e091b8bf9f`; hai robot `2d7321fa1b70de613b3151b8b04070041d288d2eb713fe92b951c5052e70d654`; file test `8410d84fd57f0ab441e39988479d66457ac28dd523f282287c7b2a7be58b8279`; retained `world.wbt` `c1958d634628678caa15e656269723b591cbdb2c07a8652b6bf5fed70463aced` |
 | MJ-BV01 | Không có digest outcome commit riêng. Neo: fixture `robotics/simulation-mujoco/fixtures/xarm6-g2-v1` (`fk-golden.json`, `programs.json`) và hành vi trong `tests/integration/mujoco-arm-bv01.test.ts` | `fk-golden.json` `87dc76938e7687fb9543046c0fc1c3c8b522bf78c0ec286d9cd6d88206137d90`; `programs.json` `af99b362b9d22ca2bbb327deef6ab820ae6de9dc181643e6ffd61b85e1ce0e48`; test `f1e35ec9ab3fb908ada9f035610ffb88ca12141f23e369ba1726a4cd9efd0f3c` |
 | Payload 19 ca | `robotics/simulation-mujoco/campaigns/payload-v1.json` (`payload-v1`, 19 case, đã đếm) và campaign đã ghi của R2b | file `65b6249a58beb1fec9cdefd78476a6d228f578d756a652e798387af79a33034a`; retained `r2b-inputs-…/physics/campaign.json` `9a7b795c00402277446fc2377c8c11a17f80a510c31fc5c64b687dce8665a88c` (khớp `physicsCampaign.sha256` trong record R2b) |
 | Cell 3 seed + 5 fault | `robotics/simulation-mujoco/campaigns/mj-cell-bv01-v1.json` (`nominalSeeds` 7, 42, 99; fault `dock-drift`, `cup-fall`, `cancel-held`, `worker-loss`, `lost-ack`; 8 run) và campaign đã ghi | file `270373713f61734a2ff411bc65fa85046af6e9ad6d6269927ccdc9e22ce63fa7`; test `tests/integration/mujoco-cell-bv01.test.ts` `65c844d967784266aebf64380cb53c84eab300e90617a782a936b851dc9fc93e`; retained `r2b-inputs-…/cell/campaign.json` `504abf12d458606601a25308dfe89a1f3337dbedb98728d1144c8d1b7c297ec0` (khớp `cellCampaign.sha256`) |
 | Ba replay package | `evidence-archive/retained-corpus-copy/` — catalog `inputs.json` (ba input: `cell-nominal-7` 82 file, `cell-nominal-export` 1 file, `payload-cup-fall` 41 file) | `inputs.json` `30351aae82c52171d3744d07446fc13341850da7eda155976de586493498a56f`; `cell-nominal-export/manifest.json` (web-replay-package, runId `9821d890-85d2-41f0-91f8-d070ab7c222a`) `b3eb6e7cc0e6c2287092c358e02ab3c860e76e5bc828a5ed41bae4e83bbebaea`; `cell-nominal-7/nominal-report.json` `c09a8cfd47de75cddf04067d0bce7fc85a5e3e6d9dee9e5e59827510fcb47b6e`; `payload-cup-fall/report.json` `b4b76a1b2b7c982779f4f8b9869c097d41fe3a57a88f09a0adfe9839af41be50` |
 
-Hai mục chưa có byte-golden riêng (Webots bytes, MJ-BV01): V00b không tạo golden mới. REG05 nên chốt hai neo trên hoặc ghi hai golden mới ở một task có phạm vi rõ, trước khi đổi đường legacy.
+Một mục chưa có byte-golden riêng: MJ-BV01 (test hiện có so trong dung sai `repeatJointRad`). V00b không tạo golden mới. Plan R4 ghi digest trạng thái theo tick của đường legacy ở V01, trước khi V03 sửa engine, và V03 kiểm lại digest đó trên cùng kiến trúc.
 
 Mức dùng được cho CLD/REG: so hash chỉ có nghĩa trong cùng kiến trúc (arm64 ghi, arm64 chạy lại).
 
@@ -110,13 +110,21 @@ Lần 1 (JSON nguyên văn):
 {"world":"coffee-delivery-cell-v1","seed":1,"chunk":25,"ticks":1500,"status":"running","error":null,"wallMs":24906.764,"msPerTick":16.605,"fsyncCount":1678,"fsyncPerTick":1.119,"fsyncTotalMs":9158.366,"fsyncMsP50":3.86,"fsyncMsP95":14.88,"flushMs":[25.504,53.237,22.538,24.501,23.895,27.237,28.37],"fsyncByFile":{"run.json.tmp":{"count":120,"perTick":0.08,"totalMs":506.79},"pending.ndjson":{"count":1500,"perTick":1,"totalMs":8459.902},"write.intent.tmp":{"count":7,"perTick":0.005,"totalMs":49.244},"world-evidence":{"count":29,"perTick":0.019,"totalMs":78.888},"evidence-chunk.tmp":{"count":7,"perTick":0.005,"totalMs":23.366},"manifest.json.tmp":{"count":8,"perTick":0.005,"totalMs":22.052},"pending.ndjson.tmp":{"count":7,"perTick":0.005,"totalMs":18.125}}}
 ```
 
-Lần 2 (cùng lệnh; log đầy đủ ở `logs-V00b/tick-probe-2.json`): `wallMs` 22646,215, `msPerTick` **15,097**, `fsyncCount` 1678, `fsyncPerTick` 1,119.
+Lần 2 (cùng lệnh; log đầy đủ ở `logs-V00b/tick-probe-2.json`): `wallMs` 22646,215, `msPerTick` **15,097**, `fsyncCount` 1678, `fsyncPerTick` 1,119, `fsyncTotalMs` 7291,747, `fsyncMsP50` 3,391, `fsyncMsP95` 8,127, `pending.ndjson` 6714,679 ms.
 
-Kết luận: 16,6 và 15,1 ms/tick, cao hơn số tham chiếu 13,3 ms/tick (19/11) và cao hơn dải 12,75–14,45 của spec R4-A. Dư thời gian ở 1× (tick 20 ms) còn khoảng 3,4–4,9 ms thay vì 6,7 ms. Số fsync/tick (1,119) và phân bố theo file giống nhau giữa hai lần: `pending.ndjson` chiếm ~8,5 s trên ~9,2 s fsync. Chênh lệch có thể do tải nền của máy; chưa kiểm chứng. V03 trở đi nên đo lại trên máy yên tĩnh trước khi dùng 13,3 làm ngưỡng so sánh. Chi phí thêm cho đường tick của R4 phải đo cùng điều kiện với chính lần đo ngay trước đó.
+Tách thời gian ghi bền (fsync) khỏi phần còn lại:
+
+| Lần đo | ms/tick | fsync ms/tick | Phần còn lại ms/tick | fsync p95 |
+|---|---|---|---|---|
+| Lần 1 | 16,605 | 6,11 | 10,50 | 14,88 ms |
+| Lần 2 | 15,097 | 4,86 | 10,24 | 8,13 ms |
+| Lần 3 (khi review, cùng lệnh, load 4,3–4,7; chỉ giữ số tóm tắt) | 15,702 | 4,68 | 11,02 | 7,80 ms |
+
+Kết luận: tổng ms/tick cao hơn số tham chiếu 13,3 và dải 12,75–14,45 của spec R4-A, nhưng phần chênh lệch nằm ở độ trễ ghi bền chứ không ở engine. Số lần fsync mỗi tick giống nhau (1,119); thời gian fsync thì khác nhau giữa các lần (9,2 s, 7,3 s) và `pending.ndjson` chiếm phần lớn. Phần không tính fsync ổn định ở 10,2–11,0 ms/tick. Từ V03, đo theo cặp xen kẽ trong cùng phiên và so hai số tách riêng: phần không tính fsync, và số fsync mỗi tick. Không dùng một số tuyệt đối đo ở phiên khác làm ngưỡng.
 
 ## Baseline cloud
 
-`GET https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app/lab/v2/health` (một lần, không credential): **HTTP 200**, không cần xác thực.
+`GET https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app/lab/v2/health` (một lần, không credential): **HTTP 200**, không cần xác thực. Một bản JSON đầy đủ đọc lại cùng ngày nằm ở `robot/evidence-archive/r4-baseline-c19785d/cloud-health-2026-11-19.json`.
 
 | Trường | Giá trị |
 |---|---|
@@ -133,13 +141,32 @@ Chạy `MJ-CELL-BV01` trên Cloud Run từ Lab: **`not_run`**, lý do `access_ke
 
 ## Lab và lỗi hiển thị đã sửa
 
-Lab commit `260f4aa` `fix: keep the final frame of a completed cell run` trên `lab/main` (local, chưa push): `frame()` không để cặp world/view hết hạn sau 500 ms khi `run.status` là `completed` và khung cuối không mang nhãn `stale`; `paused`, `cancelled`, `failed` giữ nguyên. Pin runtime không đổi (vẫn `3d8c2a8`); đưa lên `lab/main` cần lệnh riêng vì push `main` là deploy production.
+Hai commit trên `lab/main`, chỉ đổi `src/ui/workspace.ts` và test của nó; pin runtime không đổi (vẫn `3d8c2a8`):
+
+- `260f4aa` `fix: keep the final frame of a completed cell run`: `frame()` không để cặp world/view hết hạn sau 500 ms khi `run.status` là `completed`.
+- `65a4593` `fix: hold the frame of a settled cell run until its final pair arrives`: review cho thấy `260f4aa` chưa đủ. Run `completed`, `cancelled` và `needs_attention` giữ cặp khớp đúng view hiện tại (cùng run, tick và revision); cặp cũ hơn không được trình bày như khung cuối. Run đã kết thúc tiếp tục đọc khi còn action đang chạy và chỉ dừng khi đã giữ cặp của receipt, vì runtime tick tiếp tới hết bước sau khi nhiệm vụ xong và chỉ tăng revision khi bước trả về. View đổi sau khi đã dừng thì đọc lại. Lần đọc lỗi không làm mất khung cuối đã giữ của run đã kết thúc; run đang chờ xử lý vẫn hiện lỗi.
+
+Kiểm ngày 19/11 cho `65a4593`: 49 test của `workspace-generation.test.ts` và 537 test unit của Lab đạt, `tsc --noEmit` sạch. Năm test tích hợp về launcher của Lab fail trong lúc kiểm vì một launcher khác đang giữ cổng 4175/4176; chúng không chạm tới file đã đổi. Chạy thật trên runtime local qua trình duyệt: `MJ-CELL-BV01` tới hoàn thành (phục vụ 2, tick 10.850) giữ hình 3D, lần đọc cuối cùng là cặp tick 10.850 của revision receipt; run bị hủy ở tick 750 giữ hình. Chạy không qua trình duyệt với runtime thật ở ba trạng thái kết thúc (hủy, cốc rơi, hoàn thành): display runtime công bố khớp tick và revision của view; kết quả ở `robot/evidence-archive/r4-baseline-c19785d/end-state-display.ndjson`.
+
+Chưa sửa: với run có thí nghiệm `world-cup-fall-v1`, Lab vẫn xóa hình khi run dừng. `applyView()` xóa world khi lý do dừng khớp `WORLD_UNKNOWN|WORLD_RESTART|ENGINE_|WORKER_|PLANT_|PHYSICAL_UNKNOWN`; lý do `CUP_RECONCILE_REQUIRED:PHYSICAL_UNKNOWN` khớp biểu thức đó, giao diện hiện nhãn `WORLD_SCENE_IDENTITY_MISMATCH` và đọc lại liên tục. Hành vi này có từ trước; giữ hay đổi là quyết định của người dùng.
 
 ## Giới hạn còn mở
 
 - Mọi record `accepted:false`, không sidecar; vật lý `not_calibrated`, mọi tham số `assumed`.
 - G-HOST1, G-CLOUD1 `blocked_external`; native, Linux host, phần cứng `not_run`.
 - Số tick Mac cao hơn tham chiếu (xem trên); số tick cloud chưa đo.
-- Webots bytes và MJ-BV01 chưa có byte-golden commit.
+- MJ-BV01 chưa có byte-golden commit; Webots bytes có (`test_amr_world_unchanged`).
 - Các khoảng tick đứng > 500 ms ở capture web của chuỗi 19/11 chưa được điều tra; điều tra trước khi R4 ghi capture web.
-- Có `.pytest_cache` sẵn dưới `robotics/model-validation/` và `robotics/navigation-2d/` (tạo 19/11 lúc 02:41, trước V00b, bị Git bỏ qua): theo quy ước pin chúng làm launcher Lab từ chối closure (`PORTABLE_TOOLS_MISMATCH … :BYTECODE`), cần xóa trước khi ghi record hay chạy launcher.
+- Có `.pytest_cache` sẵn dưới `robotics/model-validation/` và `robotics/navigation-2d/` (tạo 19/11 lúc 02:41, trước V00b, bị Git bỏ qua). Chúng **không** chặn launcher hay recorder: `scripts/native-sim/tool-identity.mjs` và `lab/scripts/runtime-artifact.mjs` bỏ qua `.pytest_cache`, còn `bytecodeUnder` chỉ bắt `__pycache__` và `.pyc`/`.pyo`. Launcher của Lab khởi động lúc 07:27 và chuỗi record ngày 19/11 đều chạy khi hai thư mục này đã có. Xóa hay giữ đều được.
+
+## Sửa sau review ngày 19/11
+
+Các chỗ dưới đây khác với bản commit `c19785d`:
+
+1. **`.pytest_cache`** không chặn launcher hay recorder; bản đầu ghi ngược lại.
+2. **Golden Webots** đã có trong cây (`test_amr_world_unchanged`); bản đầu ghi là chưa có. Chỉ `MJ-BV01` chưa có digest.
+3. **Chi phí tick:** thêm số fsync của lần 2 và một lần đo thứ ba; kết luận đổi thành "chênh lệch nằm ở độ trễ ghi bền", kèm cách đo từ V03.
+4. **G-CLOUD1:** nói rõ bằng chứng ngày 14/11 không phủ tuple này và bản đang deploy.
+5. **Log:** guard log và log probe được chép ra `robot/evidence-archive/r4-baseline-c19785d/` kèm `SHA256SUMS` (SHA-256 của file đó: `a81b33acbcef842189833a70858f4a47bc34a0f97b1e7a54786bc4f8f0beabb8`), cùng JSON health của Cloud Run và kết quả kiểm ba trạng thái kết thúc.
+6. **Lab:** thêm commit `65a4593` và kết quả kiểm thật; ghi rõ ca cốc rơi còn trống hình.
+
