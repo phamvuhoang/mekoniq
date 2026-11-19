@@ -18,6 +18,9 @@ test('MJ-CELL-BV01 on drive-nominal-v1, seed 7, serves two coffees through the c
  expect(report.outcome,JSON.stringify(report.attention)).toMatchObject({status:'completed',served:'2'});expect(report.attention).toEqual([]);
  expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1'});
  expect(report.manifest.drive!.controllers.map(c=>c.id)).toEqual(['joint-trajectory-follower-v1','diff-drive-base-v1']);
+ // the saved report carries the drive section (once, at the root) built from the recorded stream: 9 axes, all enabled, no faults
+ expect(report.driveEvidence).toMatchObject({testLevel:'controller_in_the_loop',complete:true,issues:[]});expect(report.driveEvidence!.axes).toHaveLength(9);expect(report.driveEvidence!.axes.every(a=>a.faults.length===0&&a.enabledAtTick!==null)).toBe(true);expect((report.coffee as {driveEvidence?:unknown}).driveEvidence).toBeUndefined();
+ expect(saved.report.manifest.drive!.testLevel).toBe('controller_in_the_loop');
  await h.run.close();   // the world evidence is published on close
  const read=await h.readback();expect(read.issues).toEqual([]);expect(read.complete).toBe(true);
  const rows=read.records;expect(rows.length).toBe(report.outcome.tick+1);

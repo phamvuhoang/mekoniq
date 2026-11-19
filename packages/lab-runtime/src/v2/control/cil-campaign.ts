@@ -148,6 +148,7 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
    const faults=again.axes.flatMap(a=>a.faults.map(f=>f.fault)),events=again.events.map(x=>x.code);
    if('faults' in oracle)check(faults.length===(oracle.faults as string[]).length,'CIL_FAULTS:'+faults.join(','));
    if('events' in oracle)check(events.length===(oracle.events as string[]).length,'CIL_EVENTS:'+events.join(','));
+   if('eventsAllowed' in oracle)check(events.every(e=>(oracle.eventsAllowed as string[]).includes(e)),'CIL_EVENTS:'+events.join(','));
    const wheel=again.axes[0]!,motion=records.findIndex(r=>r.drives!.some(d=>Math.abs(d.actualVelocityRadS)>0.01));
    if('enabledAtTick' in oracle)check(wheel.enabledAtTick===oracle.enabledAtTick,'CIL_ENABLE_TICK:'+wheel.enabledAtTick);
    if('enableSequence' in oracle)check(wheel.states.map(s=>s.state).join()==='disabled,ready,enabled'&&wheel.enabledAtTick!==null&&wheel.enabledAtTick>0&&(motion<0||motion>=wheel.enabledAtTick),'CIL_ENABLE_SEQUENCE');
