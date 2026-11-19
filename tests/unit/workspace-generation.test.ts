@@ -222,12 +222,90 @@ test('600 ms without a new tick while running keeps the last snapshot, marked st
  const f=internal.frame(),held=sceneEntities(f);expect(f.world?.quality).toBe('stale');expect(held.map(e=>e.id)).toEqual(live.map(e=>e.id));expect(held.every(e=>e.stale===true)).toBe(true);expect(internal.worldPlayback.at(performance.now())).toBeNull();
  expect(w.html()).toContain('data-testid="world-stale"');
 });
-test('a completed cell run keeps its final committed frame after the ticker stops',async()=>{
- const {internal,observe}=await cellLoop('running'),{sceneEntities}=await import('../../src/twin/scene');
- observe(9,13,{status:'completed'});await internal.refreshWorld();await internal.refreshWorld();expect(internal.ticker).toBeUndefined();
+// A settled run gets no newer pair: the pair that matches the current view (tick and revision) is the frame to keep.
+for(const status of ['completed','cancelled','needs_attention'] as const)test(`a ${status} cell run keeps its current committed frame, unmarked, after 600 ms`,async()=>{
+ const {w,internal,observe}=await cellLoop('running'),{sceneEntities}=await import('../../src/twin/scene');
+ observe(9,13,{status});await internal.refreshWorld();
  const live=sceneEntities(internal.frame());expect(live.length).toBeGreaterThan(0);
  internal.worldReceived=performance.now()-600;
- const f=internal.frame();expect(f.world?.quality).toBe('valid');expect(sceneEntities(f).map(e=>e.id)).toEqual(live.map(e=>e.id));
+ const f=internal.frame();expect(f.view!.run.status).toBe(status);expect(f.world?.quality).toBe('valid');expect(sceneEntities(f).map(e=>e.id)).toEqual(live.map(e=>e.id));expect(w.html()).not.toContain('data-testid="world-stale"');
+});
+test('an older held pair is never presented as the final frame of a completed run',async()=>{
+ const {h,internal}=await cellLoop('running');await internal.refreshWorld();
+ internal.applyView({...h.view!,tick:10,simTimeNs:'200000000',run:{...h.view!.run,status:'completed',runRevision:14}});
+ internal.worldReceived=performance.now()-600;const f=internal.frame();
+ expect(f.view!.run.status).toBe('completed');expect(f.view!.tick).toBe(10);expect(f.world).toBeUndefined();
+});
+// The runtime keeps ticking to the end of a step after the missions complete, and bumps the revision only when the step returns:
+// the pairs polled meanwhile already say `completed`, one revision behind the receipt.
+test('a run that completes while its step is in flight keeps polling until it holds the pair of the receipt',async()=>{
+ const {h,internal,observe}=await cellLoop('running'),flight=internal as unknown as {busy:boolean};internal.ticker=setInterval(()=>{},1000);
+ try{flight.busy=true;observe(9,13,{status:'completed'});await internal.refreshWorld();await internal.refreshWorld();
+  expect(internal.ticker).not.toBeUndefined();
+  internal.applyView({...h.view!,tick:10,simTimeNs:'200000000',run:{...h.view!.run,status:'completed',runRevision:14}});flight.busy=false;
+  expect(internal.frame().world?.record.snapshot.tick).toBe(9);   // the pair just received stays up: no blank between the receipt and its pair
+  observe(10,14,{status:'completed'});await internal.refreshWorld();
+  const f=internal.frame();expect(internal.ticker).toBeUndefined();expect(f.view!.tick).toBe(10);expect(f.view!.run.runRevision).toBe(14);expect(f.world?.record.snapshot.tick).toBe(10);
+ }finally{clearInterval(internal.ticker);}
+});
+test('a failed poll never drops the final pair a finished run already holds',async()=>{
+ const {internal,observe}=await cellLoop('running'),flight=internal as unknown as {busy:boolean};internal.ticker=setInterval(()=>{},1000);
+ try{flight.busy=true;observe(9,13,{status:'completed'});await internal.refreshWorld();flight.busy=false;
+  internal.rt.worldDisplay=async()=>{throw new TypeError('Failed to fetch');};await internal.refreshWorld();
+  expect(internal.frame().world?.record.snapshot.tick).toBe(9);expect(internal.worldReason).toBe('');expect(internal.ticker).toBeUndefined();
+ }finally{clearInterval(internal.ticker);}
+});
+test('a finished run whose view moves past its held pair polls again for the pair of that view',async()=>{
+ const {h,internal,observe}=await cellLoop('running');internal.ticker=setInterval(()=>{},1000);
+ try{observe(9,13,{status:'completed'});await internal.refreshWorld();await internal.refreshWorld();expect(internal.ticker).toBeUndefined();
+  internal.applyView({...h.view!,run:{...h.view!.run,status:'completed',runRevision:14}});   // a later revision of the finished run, e.g. seen through the heartbeat
+  expect(internal.ticker).not.toBeUndefined();
+  observe(9,14,{status:'completed'});await internal.refreshWorld();expect(internal.ticker).toBeUndefined();expect(internal.frame().world?.sourceRevision).toBe(14);
+ }finally{clearInterval(internal.ticker);}
+});
+test('a finished run told there is no world stops polling and repaints without it',async()=>{
+ const {internal,renders,observe}=await cellLoop('running');internal.ticker=setInterval(()=>{},1000);
+ try{observe(9,13,{status:'completed'});await internal.refreshWorld();const final=internal.rt.worldDisplay!;
+  internal.rt.worldDisplay=async(...a)=>({...await final(...a),availability:'unknown',reason:'WORLD_DISPLAY_UNAVAILABLE',snapshot:null});
+  const n=renders();await internal.refreshWorld();
+  expect(internal.ticker).toBeUndefined();expect(internal.frame().world).toBeUndefined();expect(internal.worldReason).toBe('WORLD_DISPLAY_UNAVAILABLE');expect(renders()).toBeGreaterThan(n);
+ }finally{clearInterval(internal.ticker);}
+});
+test('a held-for-attention run still shows a poll failure instead of a live-looking frame',async()=>{
+ const {internal,observe}=await cellLoop('running');observe(9,13,{status:'needs_attention'});await internal.refreshWorld();expect(internal.frame().world).toBeDefined();
+ internal.rt.worldDisplay=async()=>{throw new TypeError('Failed to fetch');};await internal.refreshWorld();
+ expect(internal.frame().world).toBeUndefined();expect(internal.worldReason).toContain('Failed to fetch');
+});
+// The last poll of a finished run must settle (a pair, or a definite "no world") before polling stops; it is bounded so a dead runtime is not polled forever.
+test('a failed final poll keeps the ticker alive; the next good poll restores the frame and stops it',async()=>{
+ const {internal,observe,h}=await cellLoop('running');internal.ticker=setInterval(()=>{},1000);
+ try{observe(9,13,{status:'completed'});const final=internal.rt.worldDisplay!;
+  internal.applyView({...h.view!,tick:9,simTimeNs:'180000000',run:{...h.view!.run,status:'completed',runRevision:13}});
+  internal.rt.worldDisplay=async()=>{throw new TypeError('Failed to fetch');};await internal.refreshWorld();
+  expect(internal.ticker).not.toBeUndefined();expect(internal.frame().world).toBeUndefined();
+  internal.rt.worldDisplay=final;await internal.refreshWorld();expect(internal.ticker).toBeUndefined();expect(internal.frame().world?.record.snapshot.tick).toBe(9);
+ }finally{clearInterval(internal.ticker);}
+});
+test('a final poll that answers for an older horizon is asked again',async()=>{
+ const {internal,observe,h}=await cellLoop('running');internal.ticker=setInterval(()=>{},1000);
+ try{observe(9,13,{status:'completed'});const final=internal.rt.worldDisplay!;
+  internal.applyView({...h.view!,tick:9,simTimeNs:'180000000',run:{...h.view!.run,status:'completed',runRevision:13}});
+  internal.rt.worldDisplay=async(...a)=>{const o=await final(...a);return {...o,view:undefined,tick:8,simTimeNs:'160000000'};};   // no paired view: checked against the current one
+  await internal.refreshWorld();expect(internal.worldReason).toBe('WORLD_VIEW_HORIZON_MISMATCH');expect(internal.ticker).not.toBeUndefined();
+  internal.rt.worldDisplay=final;await internal.refreshWorld();expect(internal.ticker).toBeUndefined();expect(internal.frame().world?.record.snapshot.tick).toBe(9);
+ }finally{clearInterval(internal.ticker);}
+});
+test('a runtime that never answers a completed run stops being polled after 75 tries, counted per run',async()=>{
+ const {internal,h}=await cellLoop('running'),reset=internal as unknown as {clearWorld():void};internal.ticker=setInterval(()=>{},1000);
+ try{internal.applyView({...h.view!,run:{...h.view!.run,status:'completed',runRevision:12}});internal.rt.worldDisplay=async()=>{throw new TypeError('Failed to fetch');};
+  for(let i=0;i<60;i++)await internal.refreshWorld();reset.clearWorld();   // a switch of run starts the count again
+  for(let i=0;i<74;i++)await internal.refreshWorld();expect(internal.ticker).not.toBeUndefined();await internal.refreshWorld();expect(internal.ticker).toBeUndefined();
+ }finally{clearInterval(internal.ticker);}
+});
+for(const status of ['completed','cancelled','needs_attention'] as const)test(`the observation age is hidden once the run is ${status}`,async()=>{
+ const {w,internal,observe}=await cellLoop('running');await internal.refreshWorld();expect(w.html()).toMatch(/data-testid="world-observation-age">H7 · r11 · \d+ ms</);
+ observe(9,13,{status});await internal.refreshWorld();internal.worldReceived=performance.now()-600000;
+ expect(w.html()).toContain('data-testid="world-observation-age">H9 · r13<');
 });
 test('a new revision of the same run, boot and scene keeps both playbacks; a boot change clears them',async()=>{
  const {h,internal,observe}=await cellLoop('running'),poses={arms:{},bodies:{amr:{positionM:[0,0,0] as [number,number,number],quaternionXyzw:[0,0,0,1] as [number,number,number,number]}},cups:{}};internal.v3d={posesOf:()=>poses};
