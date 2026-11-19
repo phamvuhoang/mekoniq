@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 9cfc87f67a772263203194be5708fc1791896c80 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ cb5259c92ddaa089be58de1f179a6c89e4432a61 (sha256 2e9a7169024a73516822b677138880f9e9addb231b87c06706b75cf23daf4982). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -707,6 +707,11 @@ export interface EngineeringProject {
     | 'payload-fast-v1'
     | 'payload-friction-low-v1'
     | 'payload-friction-high-v1';
+  /**
+   * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
+   */
+  driveExperimentId?:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
