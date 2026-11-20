@@ -6,7 +6,10 @@
 import {execFileSync,spawnSync} from 'node:child_process';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createServer} from 'node:net';
-import {readFile} from 'node:fs/promises';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {machine,tmpdir,type} from 'node:os';
+import {join} from 'node:path';
+import {assertR4Image,assertR4Runtime} from '../support/r4-container-identity';
 import {afterAll,describe,expect,test} from 'vitest';
 
 const image=process.env.LAB_CONTAINER_IMAGE??'',LABEL='mekoniq-lab-container-test',ORIGIN='http://127.0.0.1:4175';
@@ -20,13 +23,22 @@ afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
 
 describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
  test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
-  const inspected=docker(['image','inspect','--format','{{.Id}}',image]);
+  const inspected=docker(['image','inspect',image]);
   if(!inspected.ok)throw new Error(`IMAGE_MISSING: ${image} does not exist locally; build it with deploy/lab-runtime/build.sh ${image}`);
-  let port=await freePort();while(port===1880||port===1884)port=await freePort();
+  const [info]=JSON.parse(inspected.out);
+  const host={os:type(),machine:machine(),daemonPlatform:docker(['version','--format','{{.Server.Os}}/{{.Server.Arch}}']).out};
+  assertR4Image(host,info,head);
+  const imageId=info.Id;
+  expect(imageId).toMatch(/^sha256:[0-9a-f]{64}$/);
+  let port=await freePort();while([1880,1884,4175,4176].includes(port))port=await freePort();
   const key=randomBytes(20).toString('hex'),name=`mekoniq-lab-r4-${runId.slice(0,8)}`;names.push(name);
+  const exportDir=await mkdtemp(join(tmpdir(),'r4-cld01-export-'));
   try{
+   execFileSync(process.execPath,['scripts/export-lab-runtime.mjs',exportDir],{stdio:['ignore','ignore','inherit'],timeout:120_000});
+   const manifest=JSON.parse(await readFile(join(exportDir,'manifest.json'),'utf8'));
+   expect(manifest).toMatchObject({sourceCommit:head,dirty:false});
    // the key only through the environment of the docker client (`-e NAME` copies it), never on a command line, never printed
-   const started=docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,'--read-only','--tmpfs','/tmp','-p',`127.0.0.1:${port}:${port}`,'-e',`PORT=${port}`,'-e','MEKONIQ_LAB_ACCESS_KEY','-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,'-e','LAB_DATA_DIR=/tmp/runs',image],{MEKONIQ_LAB_ACCESS_KEY:key});
+   const started=docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,'--read-only','--tmpfs','/tmp','-p',`127.0.0.1:${port}:${port}`,'-e',`PORT=${port}`,'-e','MEKONIQ_LAB_ACCESS_KEY','-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,'-e','LAB_DATA_DIR=/tmp/runs',imageId],{MEKONIQ_LAB_ACCESS_KEY:key});
    if(!started.ok)throw new Error(`CONTAINER_START_FAILED: ${started.err.replaceAll(key,'<key>')}`);
    const published=docker(['port',name]).out;expect(published.split('\n').every(l=>l.includes('127.0.0.1:'))).toBe(true);   // never 0.0.0.0
    const base=`http://127.0.0.1:${port}/lab/v2`,api=async(path:string,init:{method?:string;token?:string;body?:unknown}={})=>{
@@ -39,7 +51,9 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
     if(!health){if(docker(['inspect','--format','{{.State.Running}}',name]).out!=='true')throw new Error(`CONTAINER_EXITED: ${docker(['logs','--tail','20',name]).out.replaceAll(key,'<key>')}`);await sleep(500);}
    }
    if(!health)throw new Error('HEALTH_TIMEOUT');
-   if(health.sourceCommit!==head)throw new Error(`IMAGE_STALE: the image was built from ${health.sourceCommit}, the repository HEAD is ${head}; commit, then rebuild with deploy/lab-runtime/build.sh ${image}`);
+   const bundle=docker(['exec',name,'sha256sum','/app/runtime.mjs']);expect(bundle.ok).toBe(true);
+   assertR4Runtime(manifest,health,bundle.out.split(/\s+/)[0]!);
+   console.log('CLD01 identity',JSON.stringify({host,image,imageId,platform:info.Os+'/'+info.Architecture,sourceCommit:head,schemaHash:manifest.schemaHash,artifactSha256:manifest.artifactSha256}));
    expect(health.backends.filter((b:{installed:boolean})=>b.installed).map((b:{id:string})=>b.id).sort()).toEqual(['mock_amr','mock_arm','mock_coffee','mujoco_3d','mujoco_arm']);
    const paired=await api('/sessions',{method:'POST',body:{token:key}});expect(paired.status).toBe(201);
    const token=paired.body.sessionToken as string;
@@ -54,9 +68,10 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
    let view=await act('start',{});const t0=Date.now();
    while(['running','created','paused'].includes(view.run.status)){if(view.tick>14000)throw new Error(`STEP_LIMIT at ${view.tick}`);view=await act('step',{ticks:100});}
    const wallMs=Date.now()-t0;
-   console.log('MJ-CELL-BV01 drive container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
-   const report=(await api(`${url}/report`,{token})).body as Record<string,any>;
+   console.log('MJ-CELL-BV01 drive container',JSON.stringify({image,platform:info.Os+'/'+info.Architecture,finalTick:view.tick,wallMs,msPerTick:+(wallMs/view.tick).toFixed(3),status:view.run.status}));
+   const cellReport=await api(`${url}/report`,{token});expect(cellReport.status).toBe(200);const report=cellReport.body;
    if(view.run.status!=='completed')console.log('NOT COMPLETED',JSON.stringify({outcome:report.outcome,attention:report.attention,drive:report.driveEvidence?.events}).slice(0,3000),docker(['logs','--tail','20',name]).out.replaceAll(key,'<key>'));
+   expect(view.run.status).toBe('completed');
    expect(report.outcome).toMatchObject({status:'completed',served:'2'});
    expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1'});
    expect(report.driveEvidence).toMatchObject({testLevel:'controller_in_the_loop',complete:true,issues:[]});expect(report.driveEvidence.axes).toHaveLength(9);
@@ -73,19 +88,28 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
    let bv=await bAct('start',{});const b0=Date.now();
    while(['running','created','paused'].includes(bv.run.status)){if(bv.tick>500)throw new Error(`BENCH_STEP_LIMIT at ${bv.tick}`);bv=await bAct('step',{ticks:100});}
    const benchWallMs=Date.now()-b0;
-   console.log('MJ-BENCH-WHEEL step container',JSON.stringify({image,platform:docker(['image','inspect','--format','{{.Os}}/{{.Architecture}}',image]).out,finalTick:bv.tick,wallMs:benchWallMs,msPerTick:+(benchWallMs/bv.tick).toFixed(3),status:bv.run.status}));
-   const bReport=(await api(`${bUrl}/report`,{token})).body as Record<string,any>;
-   expect(bReport.tuning).toMatchObject({status:'completed',axisIds:['amr-1/wheel-left','amr-1/wheel-right']});expect(bReport.tuning.metrics).toBeTruthy();expect(bReport.tuning.suggestions).toHaveLength(8);
+   console.log('MJ-BENCH-WHEEL step container',JSON.stringify({image,platform:info.Os+'/'+info.Architecture,finalTick:bv.tick,wallMs:benchWallMs,msPerTick:+(benchWallMs/bv.tick).toFixed(3),status:bv.run.status}));
+   expect(bv.run.status).toBe('completed');expect(bv.tick).toBe(500);
+   const benchReport=await api(`${bUrl}/report`,{token});expect(benchReport.status).toBe(200);const bReport=benchReport.body;
+   expect(bReport.outcome.status).toBe('completed');
+   expect(bReport.tuning).toMatchObject({status:'completed',axisIds:['amr-1/wheel-left','amr-1/wheel-right']});expect(bReport.tuning.suggestions).toHaveLength(8);
+   for(const key of ['rmsError','peakTorqueNm','saturationRatio']){
+    const metric=bReport.tuning.metrics[key];expect(metric).toMatchObject({available:true,basis:'actual'});
+    expect(Number.isFinite(metric.value)).toBe(true);expect(metric.samples).toBeGreaterThan(0);
+   }
    expect(bReport.bench.traceIssues).toEqual([]);
    const bTrace=await api(`${bUrl}/trace`,{token});expect(bTrace.status).toBe(200);expect(bTrace.body.issues).toEqual([]);expect(bTrace.body.traces.length).toBeGreaterThan(0);expect(bTrace.body.traces[0].samples.length).toBeGreaterThan(0);
    // slot free: the first bench is still open (the gateway keeps a run until its session ends), a second is created and started at once
    const b2=await api('/runs',{method:'POST',token,body:benchBody({kind:'hold',ticks:50})});expect(b2.status,JSON.stringify(b2.body).slice(0,400)).toBe(201);
    const b2s=await api(`/runs/${b2.body.run.id}/actions`,{method:'POST',token,body:{actionId:'b2-start',expectedRevision:b2.body.run.runRevision,kind:'start',payload:{}}});expect(b2s.status,JSON.stringify(b2s.body).slice(0,300)).toBe(200);
+   expect(b2.body.run.id).not.toBe(b1.body.run.id);expect(b2s.body.run.status).toBe('running');
+   const next=await api(`/runs/${b2.body.run.id}/actions`,{method:'POST',token,body:{actionId:'b2-step',expectedRevision:b2s.body.run.runRevision,kind:'step',payload:{ticks:1}}});
+   expect(next.status).toBe(200);expect(next.body.run.status).toBe('running');expect(next.body.tick).toBeGreaterThan(b2s.body.tick);
    // nothing written outside /tmp (read-only root + empty diff; OrbStack alone adds its CA certificate under /usr/local/share/ca-certificates at container start), not root
    expect(docker(['diff',name]).out.split('\n').filter(l=>l&&!/^[CA] \/usr(\/local(\/share(\/ca-certificates(\/orbstack-root\.crt)?)?)?)?$/.test(l))).toEqual([]);
    expect(Number(docker(['exec',name,'id','-u']).out)).toBeGreaterThan(0);
    const stopped=docker(['stop','-t','20',name]);expect(stopped.ok).toBe(true);expect(docker(['inspect','--format','{{.State.Running}} {{.State.ExitCode}}',name]).out).toBe('false 0');
-  }finally{docker(['rm','-f',name]);}
+  }finally{docker(['rm','-f',name]);await rm(exportDir,{recursive:true,force:true});}
   expect(docker(['ps','-a','-q','--filter',`label=${LABEL}=${runId}`]).out).toBe('');
  },1_800_000);
 });
