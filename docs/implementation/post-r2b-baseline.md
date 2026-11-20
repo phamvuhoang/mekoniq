@@ -178,3 +178,11 @@ Nguồn `4b36956`, cây sạch, `deploy/lab-runtime/build.sh` (image `mekoniq-la
 - **CLD01 (arm64, trong image): đạt.** `tests/integration/lab-runtime-container-r4.test.ts`: `MJ-CELL-BV01` với `drive-nominal-v1` hoàn tất tại tick 10900, phục vụ 2, report có `manifest.drive` và `driveEvidence` 9 trục không lỗi; `docker diff` rỗng, không chạy root, chỉ publish `127.0.0.1`, root read-only + tmpfs `/tmp`, dừng sạch (exit 0). 37,7 ms/tick trên Mac arm64. Chặn `IMAGE_STALE` có trong test nhưng chưa có ca âm riêng.
 - **CLD02 (amd64 dưới giả lập, pytest tool-root, 174 test): 166 đạt, 8 trượt, 1 skip.** Chạy bằng venv của image với repo gắn read-only (test cần file ngoài thư mục tool-root, nên không chỉ gắn `tests/`). Cùng lệnh ở baseline trước R4 `c19785d` trượt 3/126: `test_mobile` ×2 và `test_world` ×1, trùng với 3 trong 8 ca này. 5 ca còn lại là `test_drive_engine`: 3 ca bit-identical ideal-vs-legacy (chỉ có nghĩa trên arm64), 1 ca `PLANT_UNSTABLE: BADQACC` (giả lập amd64 đã biết là không ổn định số), 1 ca ngưỡng mô-men đỉnh (0,257 N·m thay vì > 5,0: cùng nguyên nhân số). Không kết luận được gì về amd64 thật.
 - **Không chạy cell đầy đủ dưới giả lập.** CLD03 (Cloud Run) `not_run`, lý do `deploy_order_pending`: chưa có lệnh deploy, `lab/main` giữ pin `3d8c2a8`.
+
+### Sau review V05 (nguồn `5e93570`)
+
+Campaign `cil-v1` ghi lại ở `5e93570`: 26/26, `run` và `verify` exit 0, oracle không đổi sau lần ghi; bằng chứng ở `robot/evidence-archive/r4-cil-v1-5e93570/` (kèm `cld01-container.log`, `drive-cost-ab-after.ndjson`, `cell-tamper-checks.log`). Bản `4b36956` bị thay thế (giữ ở `r4-cil-v1-4b36956/`).
+
+- **DRV08, chi phí tick của cell (arm64, native, 4 lần chạy xen kẽ legacy / drive-nominal, 4000 tick):** legacy 14,55 và 14,61 ms/tick; drive 15,93 và 17,08 ms/tick, tức thêm 1,4–2,5 ms (10–17 %), không tăng theo số tick. Trước sửa: 22–24 ms (legacy) và ~26 ms (drive) trong cùng máy, view của cell có drive tăng từ 0,53 ms (tick 300) lên 1,75 ms (tick 1500); sau sửa 0,08 ms ở cả hai. Ngân sách 1× là 20 ms.
+- **CLD01 chạy lại (arm64, trong image):** `MJ-CELL-BV01` + `drive-nominal-v1` hoàn tất tick 10900, phục vụ 2, **13,2 ms/tick** (lần trước 37,7 ms/tick). Các kiểm tra khác như cũ.
+- **CLD02 (amd64 giả lập) chưa chạy lại** sau các sửa này: kết quả 166/174 ở `4b36956` không còn là số của mã hiện tại. CLD03 vẫn `not_run` (`deploy_order_pending`).
