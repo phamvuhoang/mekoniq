@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 5e93570cc319b2aa496e245b8f03084de81fba44 (sha256 9be9e94a92424244a5f0e00bf32bf8fbef87b87c877340d098dd6832d70c4b75). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 9805ec64aac85521faa236690416ed34d755a607 (sha256 f33002c8a970c6db913c411f8ff9cbd6deec800181d767f36e56ff55748d54c4). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2684,6 +2684,8 @@ export interface TuningBound {
   max: number;
 }
 /**
+ * A field the axis does not accept (kd and slewLimit on a velocity axis, accelerationLimit on a position axis) is absent.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "AxisEnvelope".
  */
@@ -2691,10 +2693,10 @@ export interface AxisEnvelope {
   axisId: DriveAxisId;
   kp: TuningBound;
   ki: TuningBound;
-  kd: TuningBound;
+  kd?: TuningBound;
   integralLimit: TuningBound;
-  slewLimit: TuningBound;
-  accelerationLimit: TuningBound;
+  slewLimit?: TuningBound;
+  accelerationLimit?: TuningBound;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
