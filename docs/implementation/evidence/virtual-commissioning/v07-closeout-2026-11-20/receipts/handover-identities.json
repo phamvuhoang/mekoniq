@@ -4,7 +4,8 @@
   "sourceTooling": "3411b832caf74b1a390c9749146da2afb7c632bf",
   "lab": "6973aa21fc708dd99e04ebfd3051a7a193a90ace",
   "finalReviewSha256": "80e7a4e8b4043bf318d734ec7ca2bbce12344515067f15eca9b0aee4bf39c004",
-  "handoverSha256": "6af0746b1f9617d6a357b7bae429638281be3b750e8298f4ac9bb01c522dcc86",
-  "workspaceHandoverSha256": "3abb519b000ceeb4a207a0ce431f4f4ac129e356935d648404c92ff7a275861b",
-  "scope": "Doc commit/reference publication checked separately; qualified runtime is unchanged"
+  "handoverSha256": "dcef6cb46d3b4d727b6750270ce610604bd846b001ae8ca24688b86a157f01d2",
+  "workspaceHandoverSha256": "be59148bb2d9529954301d3f49be57730956a73cd590036e1188095508221ab4",
+  "scope": "Doc commit/reference publication checked separately; qualified runtime is unchanged",
+  "backupLink": "Stable release list plus releaseId452762939/tag r4-v07-evidence-backup-20261120; GitHub regenerates draft untagged URL when target changes."
 }

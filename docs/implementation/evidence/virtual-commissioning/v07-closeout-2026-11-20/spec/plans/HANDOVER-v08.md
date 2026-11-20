@@ -77,7 +77,7 @@ Các test launcher dùng cổng cô lập. Python dùng `PYTHONDONTWRITEBYTECODE
 
 ## Sao lưu, khôi phục và giới hạn
 
-[Draft backup](https://github.com/phamvuhoang/mekoniq/releases/tag/untagged-9ea6cc5fd070a0c581c4), ID `452762939`, tag `r4-v07-evidence-backup-20261120`, cần tài khoản được phép đọc draft. Giữ unpublished. Đọc `RESTORE.md`, `ACTIVE-SHA256SUMS` và các receipt trong draft; không dùng inventory lịch sử để đòi các asset đã bị thay thế.
+[Danh sách release — chọn draft R4 V07](https://github.com/phamvuhoang/mekoniq/releases), ID `452762939`, tag `r4-v07-evidence-backup-20261120`, cần tài khoản được phép đọc draft. GitHub có thể đổi URL `untagged-*` khi sửa target của draft; dùng ID và tag ở đây làm định danh khôi phục. Giữ unpublished. Đọc `RESTORE.md`, `ACTIVE-SHA256SUMS` và các receipt trong draft; không dùng inventory lịch sử để đòi các asset đã bị thay thế.
 
 Review cuối phát hiện **102 khóa ký EC tạm của run mô phỏng** trong ba archive CIL đã chuyển lên draft. Không có bằng chứng lộ credential production hoặc truy cập trái phép. Original trên máy giữ nguyên. Ba archive remote chứa khóa riêng đã được gỡ **sau** khi tải lại và khôi phục bản thay thế: chỉ giữ `kty/crv/x/y`, giữ nguyên journal/chữ ký, reseal inventory và map hash trước/sau từng member. Bản sao này dùng để kiểm chứng, không thể resume hoặc ký tiếp run. Người có quyền đọc draft có thể đã tải bản cũ; gỡ asset không thu hồi được các bản đã tải.
 
