@@ -198,3 +198,40 @@ Nguồn `2f49084` (commit `test: run a bench step inside the runtime image`, tr�
   - Dấu hiệu trong log: `PLANT_UNSTABLE: BADQACC` ở bit-identical mobile, bit-identical world, `…ki…converges`; cảnh báo `Nan, Inf or huge value in QACC` ở bit-identical arm và `registered_payload_impulse`. Ba ca còn lại là trượt ngưỡng số, không có QACC trong log: `torque_never_exceeds` (0,2567 thay vì > 5,0), `motion_is_physics_driven` (2,00001 thay vì > 2,1) và `test_world::one_priming…` (0,485902 thay vì > 0,485914). Nghi do giả lập amd64 (bất ổn số đã biết), **chưa chứng minh**; không kết luận được gì về amd64 thật.
   - Số test: R4.1 là 166 đạt + 8 trượt + 1 skip = 175 (entry R4.1 ghi "174", sót skip); R4.2 là 227 + 8 + 1 = 236, tức thêm 61 test (kể cả skip như R4.1), đều đạt: 227 − 166 = 61. Trong đó 31 test của `test_bench.py` đạt (chạy riêng: 31 passed). Trên arm64 cùng bộ chạy 236 đạt (báo cáo V07pre).
 - **CLD03 (Cloud Run): `not_run`**, lý do `deploy_order_pending`: chưa có lệnh deploy, `lab/main` giữ pin `3d8c2a8`. Không chạy cell đầy đủ dưới giả lập.
+
+## R4.2 — G-TUNE1 (bench `bench-v1`, sau review toàn V07)
+
+Nguồn `77b38f7` (`feat: record the bench campaign and bind a tuned source to its axes and drive model`), cây sạch; Lab `47d2199` (`chore: pin source runtime 77b38f7`) và `e352c5d` (sửa Lab của đợt này), nhánh `r4/virtual-commissioning`. Bằng chứng ngoài Git: `robot/evidence-archive/r4-2-bench-77b38f7/` (`SHA256SUMS` 535 dòng; SHA-256 của file đó: `5b6e753c3b92608e31a6124463714b0a8efb7417d22e504681b2344fbb6eee0d`). Mọi bản ghi `accepted:false`, mô phỏng, `not_calibrated`; không gate nào được nghiệm thu.
+
+- **Campaign `bench-v1`** (`robotics/simulation-mujoco/campaigns/bench-v1.json`): mỗi trục bench (`wheels`, J1–J6, `gripper`) một `step` và một `trapezoid`, profile khởi điểm do health phục vụ, `drive-nominal-v1`, seed 7: 16 run, mỗi run có bundle, trace (chunk + manifest), report và `case.json` riêng. Oracle (trạng thái và tính khả dụng của từng metric) khóa trong file campaign **trước** lần ghi, cơ sở ghi trong `oracles.note`; không đổi sau lần ghi. `node scripts/lab-mujoco.mjs run --campaign bench-v1 --out …` exit 0 (35 s, 20/11 17:53 +07), `verify --input …` exit 0: 16/16, không issue. Verifier đọc lại từng trace (kích thước, sha256, thứ tự tick của chunk), tính lại metric và gợi ý gain từ trace và quán tính đọc lại, kiểm commit, kịch bản, tín hiệu, digest profile/drive model/plant (cả byte trong bundle), `hostArch` (`arm64`) và oracle; test sửa giả (metric, chunk bị xóa hoặc hỏng, commit, trạng thái, tín hiệu, digest trace, gợi ý, kiến trúc, byte profile) trong `tests/integration/mujoco-bench-campaign.test.ts`. Đây là bản ghi bench mà `--bench-record` của V16 cần (kế hoạch chưa có task nào tạo nó).
+
+| Run | Tín hiệu | Kết quả | Lên 10–90 % | Vọt lố | Xác lập ±2 % | Sai số xác lập | RMS bám | Mô-men đỉnh | Bão hòa | J (kg m²) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| wheels-step | step 2 rad/s @10 | completed | 0,103 s | 0 % | `NOT_SETTLED` | 0,0662 rad/s | 0,113 rad/s | 4 N m | 0 % | 0,0874 |
+| wheels-trapezoid | 4 rad / 2 rad/s / 10 rad/s² @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,176 rad/s | 1,25 N m | 0 % | 0,0874 |
+| J1-step | step 0,05 rad @10 | completed | 0,0486 s | 0,00016 % | 0,094 s | −8e-8 rad | 0,00176 rad | 179 N m | 0,02 % | 0,352 |
+| J1-trapezoid | 0,1 rad / 0,5 rad/s / 2 rad/s² @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,006 rad | 45,1 N m | 0 % | 0,352 |
+| J2-step | step −0,05 rad @10 | completed | 0,045 s | 0,195 % | 0,082 s | 9,7e-5 rad | 0,00181 rad | 179 N m | 0,04 % | 0,584 |
+| J2-trapezoid | −0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,00581 rad | 40,7 N m | 0 % | 0,584 |
+| J3-step | step 0,05 rad @10 | completed | 0,0325 s | 2,03 % | 0,076 s | −2e-5 rad | 0,00362 rad | 92 N m | 0,08 % | 0,713 |
+| J3-trapezoid | 0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,003 rad | 28,1 N m | 0 % | 0,713 |
+| J4-step | step 0,05 rad @10 | completed | 0,0382 s | 0 % | 0,076 s | 3,7e-5 rad | 0,00158 rad | 81,6 N m | 0,02 % | 0,113 |
+| J4-trapezoid | 0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,00529 rad | 15,8 N m | 0 % | 0,113 |
+| J5-step | step 0,05 rad @10 | completed | 0,026 s | 1,54 % | 0,044 s | 5,9e-5 rad | 0,00195 rad | 30,6 N m | 0,10 % | 0,136 |
+| J5-trapezoid | 0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,0048 rad | 16,5 N m | 0 % | 0,136 |
+| J6-step | step 0,05 rad @10 | completed | 0,0582 s | 0,033 % | 0,268 s | −1,7e-5 rad | 0,00215 rad | 25 N m | 0 % | 0,101 |
+| J6-trapezoid | 0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,00865 rad | 4,37 N m | 0 % | 0,101 |
+| gripper-step | step 0,05 rad @10 | completed | 0,041 s | 16,9 % | 0,208 s | 1,1e-6 rad | 0,00245 rad | 1,0 N m | 0 % | 0,00232 |
+| gripper-trapezoid | 0,1 / 0,5 / 2 @10 | completed | `SIGNAL_NOT_STEP` | ← | ← | ← | 0,0061 rad | 0,114 N m | 0 % | 0,00232 |
+
+Mỗi run: trace 5.000 mẫu/trục, 11 chunk, đầy đủ; 8 gợi ý gain bằng `gainSuggestions` của quán tính đọc lại. Ghi chú: oracle để `either` cho thời gian xác lập của J6 (vùng chết frictionloss 0,002 rad rộng hơn dải 2 %) và của kẹp; cả hai đều xác lập được. Kẹp vọt lố 16,9 % (mô hình 1 bậc tự do dự đoán ζ ≈ 1,16; khớp mimic thêm quán tính không có trong đường chéo). J1, J2, J3, J4, J5 chạm trần mô-men một thời gian ngắn ở bước 0,05 rad. Bước bánh với Kp 4 (TUNE04: lên 1,6 ms, vọt lố 35,9 %, nghi trượt ở 6 N m) là quan sát vật lý của plant/metric, chuyển cho V08–V10 hoặc R4.5.
+
+| Case | Bằng chứng | Ở đâu |
+|---|---|---|
+| TUNE01 | Admission: tín hiệu đóng, biên, 500 tick, trần trace, slot; gain quá cao → `drive_fault` OVERSPEED, slot nhả; nguồn tuned phải ghi đúng bench, trục của profile và model drive profile khai báo (`TUNED_SOURCE_*`, 422) | `tests-tune01-05.log` (`tests/security/lab-bench.test.ts`), `tune05-mujoco-bench.log`; 16 tín hiệu của campaign đều được admit |
+| TUNE02 | Metric trên vector giải tích (unit) và trên engine; lý do `unavailable` (`NOT_SETTLED`, `SIGNAL_NOT_STEP`) | `tests-tune01-05.log` (`tuning-metrics`), campaign: metric tính lại từ trace của 16 run |
+| TUNE03 | Trace 500 Hz bền, đọc lại; chunk hỏng hoặc thiếu → metric không tính | campaign (`verify.log`), test sửa giả trong `tests-tune01-05.log`, `tune05-mujoco-bench.log` (trace không engine) |
+| TUNE04 | Web trên runtime thật: chọn trục, sửa, chạy, đồ thị, A/B, xuất (nguồn ghi `axisIds` và `driveModelDigest`), nhập, biên hai phía, profile plant khác bị từ chối, một từ chối thật của server (`SIGNAL_TOO_LONG` hiện ở ô của nó), một trapezoid, một gợi ý được áp và chạy, ba ngôn ngữ, 390/1024/1440, axe | `tune04/` (`playwright.json`: 1 expected, 0 unexpected; `e2e.log`; `shots/` 11 ảnh + `V07a-results.json`), cổng 4185/4186, đường bearer |
+| TUNE05 | Gợi ý gain = `suggestGains(J)` với quán tính đọc lại, có nhãn, trong envelope | `tune05-mujoco-bench.log` (`MEKONIQ_BENCH_LOG=1`), campaign (16 run tính lại), `tests-tune01-05.log` (`gain-suggest`) |
+
+**Chưa chạy:** đường same-origin (cookie + CSRF) của TUNE04 trên 4175/4176: `not_run`, vì launcher của một phiên khác giữ hai cổng này suốt đợt (`tune04/same-origin-not_run.txt` ghi lệnh chạy lại khi cổng trống). CLD01/CLD02 không chạy lại ở `77b38f7` (bản ghi ở `r4-2-bench-2f49084/` cũ theo commit); CLD03 vẫn `not_run` (`deploy_order_pending`). Một seed, profile khởi điểm: campaign cho thấy bench và artifact hoạt động trên mọi trục, không cho thấy gain khởi điểm là tốt.
