@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 608d5add998e476bbb88f6c7c2fc233a9185658d (sha256 2202e3372bad9c0911180abb88c9a0a01702ada4e547865a346b810fc46258b6). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 7466e72702a244ef3ca053fe457f6ca28d56f1f1 (sha256 e641fef83e5d4378c9d64628b12c4786aedc7f1480e1117d15ffd2b642a27986). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -3044,10 +3044,38 @@ export interface BenchTraceIdentity {
    * @minItems 1
    * @maxItems 2
    */
-  axisIds: string[];
+  axisIds: DriveAxisId[];
   plantModelDigest: Digest;
   driveModelDigest: Digest;
   controlProfileDigest: Digest;
+}
+/**
+ * One hashed NDJSON record. Optional bodyForwardMps is the chassis forward speed observed at the end of this same wheel tick. Older wheel traces omit it.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceTick".
+ */
+export interface BenchTraceTick {
+  tick: number;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axes: {
+    axisId: DriveAxisId;
+    /**
+     * @minItems 10
+     * @maxItems 10
+     */
+    samples: {
+      target: number;
+      actual: number;
+      feedback: number | null;
+      torqueNm: number;
+      saturated: boolean;
+    }[];
+  }[];
+  bodyForwardMps?: number;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
