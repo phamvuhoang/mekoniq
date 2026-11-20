@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 38c22332a66790e21cb76a74b614140cffba7f93 (sha256 666ed44e35cfbd33aabd13af630393b62de42052cdbc18e094155bbd96392d20). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ abd24f17fc3297077f63196e54a25eb1fe7d9756 (sha256 a821f2cab94ac4db3ce66ad3e72503f33e3b6a15fac1291c89d0f7f10ec49316). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -488,6 +488,15 @@ export type ControlMetric =
       reason: string;
     };
 /**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning). The object of the other two results is null.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export type TuningResultV1 = TuningResultV11;
+/**
+ * Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "BenchSignal".
  */
@@ -2827,20 +2836,19 @@ export interface DriveTickRecord {
    */
   drives: DriveAxisSnapshot[];
 }
-/**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here.
- *
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "TuningResultV1".
- */
-export interface TuningResultV1 {
+export interface TuningResultV11 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
-  status: 'completed' | 'unstable';
+  status: 'completed' | 'drive_fault' | 'unstable';
   unstable: {
     tick: number;
     warning: string;
+  } | null;
+  fault: {
+    tick: number;
+    axisId: DriveAxisId;
+    code: string;
   } | null;
   /**
    * @minItems 1

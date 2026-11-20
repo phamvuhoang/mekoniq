@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 38c22332a66790e21cb76a74b614140cffba7f93 (sha256 2e9a7169024a73516822b677138880f9e9addb231b87c06706b75cf23daf4982). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ abd24f17fc3297077f63196e54a25eb1fe7d9756 (sha256 2e9a7169024a73516822b677138880f9e9addb231b87c06706b75cf23daf4982). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
