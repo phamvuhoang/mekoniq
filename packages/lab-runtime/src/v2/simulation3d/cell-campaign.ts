@@ -82,11 +82,12 @@ async function readCellJson(root:string,path:string){
 export async function verifyCellCampaign(root:string,onlyIds?:string[],historicalDrive?:boolean):Promise<CellCampaignVerdict>{
  const selected=CELL_CASES.filter(s=>!onlyIds||onlyIds.includes(s.id));
  const v:CellCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[]};let source:string|undefined,experiment:DriveExperimentId|undefined,host:HostArch|undefined,legacyProfile=false,driveRegistry:string|undefined;
- try{const c=await readCellJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(campaign)||!/^[a-f0-9]{40}$/.test(c.sourceCommit))throw Error();source=c.sourceCommit;experiment=c.driveExperimentId;host=c.hostArch;driveRegistry=c.driveProfileRegistry;
+ try{const c=await readCellJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(campaign)||!/^[a-f0-9]{40}$/.test(c.sourceCommit))throw Error();experiment=c.driveExperimentId;host=c.hostArch;driveRegistry=c.driveProfileRegistry;
   if(experiment){legacyProfile=c.driveProfileRegistry===undefined;if((!legacyProfile&&c.driveProfileRegistry!=='cil-v2')||(historicalDrive!==undefined&&historicalDrive!==legacyProfile)||!['arm64','x86_64'].includes(c.hostArch))throw Error();}
- }catch{v.issues.push('CELL_CAMPAIGN_IDENTITY');v.missingArtifacts=selected.map(x=>x.id);return v;}
+  source=c.sourceCommit;
+ }catch{v.issues.push('CELL_CAMPAIGN_IDENTITY');}
  for(const spec of selected){const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};try{
-  const rec=await readCellJson(dir,'case.json');check(rec.schemaVersion===1&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.engineVersion==='3.17.0'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec),'CELL_CASE_IDENTITY');
+  const rec=await readCellJson(dir,'case.json');check(source!==undefined&&rec.schemaVersion===1&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.engineVersion==='3.17.0'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec),'CELL_CASE_IDENTITY');
   const files=await cellArtifacts(dir);check(hashJson(files)===hashJson(rec.artifacts),'CELL_ARTIFACT_INVENTORY');const paths=new Set(files.map(f=>f.path));for(const p of ['report.json','source-journal.json','controller-state.json','physical-custody.json','trace.json','run/run.json','run/journal.db','run/world-evidence/manifest.json'])check(paths.has(p),'CELL_ARTIFACT_MISSING:'+p);
   const read=(p:string)=>readCellJson(dir,p),report=await read('report.json') as RunReport,cp=await read('run/run.json'),trace=await read('trace.json');check(trace.opens===1&&!trace.error&&trace.requests.length>1,'CELL_ACTUAL_WORKER_REQUIRED');
   check(cp.manifest.seed===spec.seed&&cp.manifest.sourceCommit===source&&report.manifest.sourceCommit===source&&report.manifest.seed===spec.seed&&cp.runId===report.manifest.runId&&cp.tick===report.outcome.tick,'CELL_RUN_IDENTITY');
