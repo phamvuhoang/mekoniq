@@ -80,6 +80,8 @@ async function readCellJson(root:string,path:string){
  if(!/^[\w.-]+(?:\/[\w.-]+)*$/.test(path)||path.split('/').some(p=>p==='.'||p==='..'))throw Error('CELL_ARTIFACT_PATH');let current=root;if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');for(const part of path.split('/')){current=join(current,part);if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');}const st=await lstat(current);if(!st.isFile()||st.size>64*1024*1024)throw Error('CELL_ARTIFACT_LIMIT');return JSON.parse(await readFile(current,'utf8'));
 }
 export async function verifyCellCampaign(root:string,onlyIds?:string[],historicalDrive?:boolean):Promise<CellCampaignVerdict>{
+ if(onlyIds!==undefined&&(!onlyIds.length||onlyIds.some(id=>!CELL_CASES.some(c=>c.id===id))))
+  return {expectedRuns:0,completedCases:0,missingArtifacts:[],issues:['CELL_CASE_UNREGISTERED']};
  const selected=CELL_CASES.filter(s=>!onlyIds||onlyIds.includes(s.id));
  const v:CellCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[]};let source:string|undefined,experiment:DriveExperimentId|undefined,host:HostArch|undefined,legacyProfile=false,driveRegistry:string|undefined;
  try{const c=await readCellJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(campaign)||!/^[a-f0-9]{40}$/.test(c.sourceCommit))throw Error();experiment=c.driveExperimentId;host=c.hostArch;driveRegistry=c.driveProfileRegistry;

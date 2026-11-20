@@ -394,7 +394,7 @@ class BenchRun implements ScenarioRun {
  });}
  report(){return this.serial(()=>this.buildReport());}
  /** The trace of ticks 0..tick as read back from its chunks now (readBenchTrace: null samples for what it could not confirm), at most 2 axes × 5,010 samples; behind actions, so a step's flushed ticks are in it. */
- trace(){return this.serial(async()=>{if(this.st.closed)throw Error('RUN_CLOSED');const {traces,issues}=await readBenchTrace(this.rec.directory,this.identity,this.st.tick);return {traces,issues};});}
+ trace(){return this.serial(async()=>{if(this.st.closed)throw Error('RUN_CLOSED');const {traces,issues,manifestSha256}=await readBenchTrace(this.rec.directory,this.identity,this.st.tick);return {runId:this.id,manifestSha256,traces,issues};});}
  close(){return this.serial(async()=>{if(this.st.closed)return;this.st.closed=true;await this.stopWorker('RUN_CLOSED');});}
 
  private view():RunView{

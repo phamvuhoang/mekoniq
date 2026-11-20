@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {CIL_CASES,runCilCampaign,verifyCilCampaign} from '../../packages/lab-runtime/src/v2/control/cil-campaign';
 import {cellArtifacts} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
+const ideal='fd01-drive-ideal-v1-s7';
 const repeat='repeat-torque-limited-s7-r1',latency='fd01-drive-latency-v1-s7',cell='cell-lost-ack',source=resolve('.');
 const commit='0123456789abcdef0123456789abcdef01234567';
 let dir:string;
@@ -12,7 +13,14 @@ const read=async(p:string)=>JSON.parse(await readFile(p,'utf8'));
 const save=(p:string,v:unknown)=>writeFile(p,JSON.stringify(v)+'\n');
 beforeAll(async()=>{
  dir=await mkdtemp(join(tmpdir(),'cil-durable-'));
- for(const id of [latency,cell,repeat])await runCilCampaign({root:source,out:join(dir,id),caseId:id,sourceCommit:commit});
+ const recorded=process.env.CIL_RECORDED_DIR;
+ for(const id of [latency,cell,repeat,ideal]){
+  const out=join(dir,id);
+  if(!recorded){await runCilCampaign({root:source,out,caseId:id,sourceCommit:commit});continue;}
+  await mkdir(out);await cp(join(recorded,'campaign.json'),join(out,'campaign.json'));
+  const paths=id===cell?['cell/campaign.json','cell/lost-ack']:id===repeat?['fd01-drive-nominal-v1-s7','fd01-drive-torque-limited-v1-s7',id]:[id];
+  for(const path of paths)await cp(join(recorded,path),join(out,path),{recursive:true});
+ }
 },600_000);
 afterAll(async()=>{await rm(dir,{recursive:true,force:true});});
 async function edit(id:string,path:string,change:(value:ReturnType<typeof JSON.parse>)=>void){
@@ -99,4 +107,24 @@ test.each(['missing-header','loss-attention','foreign-world'] as const)('standal
  const v=await verifyCellCampaign(copy,['lost-ack']);
  expect(v.completedCases).toBe(0);
  expect(v.issues).toEqual(['lost-ack:'+({'missing-header':'CELL_DRIVE_IDENTITY','loss-attention':'CELL_FAULT_CODE','foreign-world':'CELL_WORLD_RUN_BINDING'}[variant])]);
+});
+
+test('a relabelled actual baseline cannot count as an independent repeat',async()=>{
+ const copy=await mkdtemp(join(dir,'duplicate-'));await cp(join(dir,repeat),copy,{recursive:true});
+ const target=join(copy,repeat),rec=await read(join(target,'case.json'));
+ await rm(target,{recursive:true});await cp(join(copy,'fd01-drive-torque-limited-v1-s7'),target,{recursive:true});
+ rec.artifacts=await cellArtifacts(target);await save(join(target,'case.json'),rec);
+ const v=await verifyCilCampaign(copy,repeat);
+ expect(v.completedCases).toBe(0);expect(v.issues).toContain(repeat+':CIL_DUPLICATE_EXECUTION');
+ expect(v.equivalence.some(e=>e.bitIdentical)).toBe(false);
+});
+test('ideal and its nested legacy comparison must name separate executions',async()=>{
+ const copy=await mkdtemp(join(dir,'duplicate-legacy-'));await cp(join(dir,ideal),copy,{recursive:true});
+ const run=join(copy,ideal),baseline=join(run,'baseline'),{runId}=await read(join(run,'run/run.json'));
+ for(const path of ['run/run.json','report.json']){
+  const file=join(baseline,path),doc=await read(file);doc.manifest.runId=runId;if(path==='run/run.json')doc.runId=runId;await save(file,doc);
+ }
+ const rec=await read(join(run,'case.json'));rec.artifacts=await cellArtifacts(run);await save(join(run,'case.json'),rec);
+ const v=await verifyCilCampaign(copy,ideal);
+ expect(v.completedCases).toBe(0);expect(v.issues).toContain(ideal+':CIL_DUPLICATE_EXECUTION');expect(v.equivalence).toEqual([]);
 });

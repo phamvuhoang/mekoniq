@@ -455,9 +455,10 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
    expect(report.body.tuning).toMatchObject({status:'completed',axisIds:['xarm-1/J2'],seed:3});
    expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
    // F2: the trace as recorded and read back: exactly the samples the metrics were computed from
-   const trace=await call(`/runs/${id}/trace`) as unknown as {status:number;body:{traces:DriveTrace[];issues:string[]}};expect(trace.status).toBe(200);
+   const trace=await call(`/runs/${id}/trace`) as unknown as {status:number;body:{runId:string;manifestSha256:string;traces:DriveTrace[];issues:string[]}};expect(trace.status).toBe(200);
    expect(trace.body.issues).toEqual([]);expect(trace.body.traces.map(x=>[x.axisId,x.dtS,x.samples.length])).toEqual([['xarm-1/J2',0.002,5010]]);expect(trace.body.traces[0]!.samples.every(x=>x!==null)).toBe(true);
    const t=report.body.tuning as TuningResultV1,anchor=(report.body.bench as {anchorTick:number}).anchorTick;
+   expect(trace.body.runId).toBe(t.runId);expect(trace.body.manifestSha256).toBe(t.trace.sha256);
    expect(benchMetrics(trace.body.traces[0]!,b.signal,anchor,'csp',t.policy,'completed')).toEqual(t.metrics);
    // the anchor health announced for this plant and experiment is the one the run really had (the first tick commanded after every axis reported enabled)
    expect(anchor).toBe(health.benchCatalog['MJ-BENCH-ARM'].experiments['drive-nominal-v1']!.anchorTick);

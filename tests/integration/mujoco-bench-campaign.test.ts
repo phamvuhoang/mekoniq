@@ -9,7 +9,9 @@ import historical from '../../robotics/simulation-mujoco/campaigns/bench-v1.json
 import {BENCH_CAMPAIGN,BENCH_CASES,runBenchCampaign,verifyBenchCampaign} from '../../packages/lab-runtime/src/v2/control/bench-campaign';
 import {admitBench,benchCatalog} from '../../packages/lab-runtime/src/v2/control/bench-runner';
 import {BENCH_AXES} from '../../packages/lab-runtime/src/v2/control/drive-io';
-import {cellArtifacts} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
+import {gzipSync,gunzipSync} from 'node:zlib';
+import {createHash} from 'node:crypto';
+import {cellArtifacts,verifyCellCampaign} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
 import {mujocoReady,mujocoRoot} from '../support/mujoco-arm';
 
 const root=resolve('.'),COMMIT='0123456789abcdef0123456789abcdef01234567',CASE='J3-step';
@@ -33,6 +35,13 @@ test('bench-v1 selects its own run even if bench-v2 drops it',async()=>{
   await write(join(dir,'campaign.json'),{campaign:historical,sourceCommit:COMMIT,hostArch:'arm64',accepted:false,execution:'actual_mujoco',calibration:'not_calibrated'});
   expect(await verifyBenchCampaign(dir,last.id)).toMatchObject({expectedRuns:1,completedCases:0,missingArtifacts:[last.id]});
  }finally{BENCH_CASES.push(last);await rm(dir,{recursive:true,force:true});}
+});
+
+test.each(['','unknown'])('bench refuses an unregistered explicit selector before reading artifacts (%s)',async id=>{
+ expect((await verifyBenchCampaign('/missing-campaign',id)).issues).toEqual(['BENCH_CASE_UNREGISTERED']);
+});
+test.each([{ids:[]},{ids:['unknown']},{ids:['lost-ack','unknown']}])('cell refuses invalid explicit scope before reading artifacts ($ids)',async({ids})=>{
+ expect(await verifyCellCampaign('/missing-campaign',ids)).toEqual({expectedRuns:0,completedCases:0,missingArtifacts:[],issues:['CELL_CASE_UNREGISTERED']});
 });
 
 describe.skipIf(!mujocoReady)('a recorded bench case on the real engine',()=>{
@@ -59,8 +68,27 @@ describe.skipIf(!mujocoReady)('a recorded bench case on the real engine',()=>{
    report.tuning.wheelMeasurement.comparison.bodyForwardMps+=0.01;await write(p,report);
    const rec=await json(join(run,'case.json'));rec.artifacts=await cellArtifacts(run);await write(join(run,'case.json'),rec);
    expect((await verifyBenchCampaign(out,id)).issues).toContain(id+':BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
+   const folder=join(run,'run/trace'),manifestFile=join(folder,'manifest.json'),manifest=await json(manifestFile);
+   const last=manifest.chunks.at(-1),chunkFile=join(folder,last.path);
+   const rows=gunzipSync(await readFile(chunkFile)).toString().trimEnd().split('\n').map(row=>JSON.parse(row));
+   delete rows.at(-1).bodyForwardMps;
+   const compressed=gzipSync(rows.map(row=>JSON.stringify(row)+'\n').join(''));
+   const sha=(bytes:Buffer)=>createHash('sha256').update(bytes).digest('hex');
+   await writeFile(chunkFile,compressed);last.bytes=compressed.length;last.sha256=sha(compressed);
+   await write(manifestFile,manifest);report.tuning.trace.sha256=sha(await readFile(manifestFile));
+   delete report.tuning.wheelMeasurement;await write(p,report);
+   rec.artifacts=await cellArtifacts(run);await write(join(run,'case.json'),rec);
+   expect((await verifyBenchCampaign(out,id)).issues).toEqual([id+':BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE']);
   }finally{await rm(dir,{recursive:true,force:true});}
  },120000);
+ test.each(['accepted','schema','cancelled','paused','contradictory'])('verification refuses a resealed invalid tuning result or outer outcome (%s)',async mutation=>{
+  expect(await editReport(r=>{
+   if(mutation==='accepted')r.tuning.accepted=true;
+   else if(mutation==='schema')r.tuning.schemaVersion=2;
+   else if(mutation==='contradictory')r.tuning.collision={tick:500,ids:['test']};
+   else r.outcome.status=mutation;
+  })).toMatch(/BENCH_(RESULT_SCHEMA|STATUS_NOT_THE_RUN)/);
+ });
  test('verification refuses a missing run, an edited or removed file (inventory) and a campaign of another identity or commit',async()=>{
   let d=await copy();await rm(join(d,CASE),{recursive:true});expect(await issues(d)).toContain(CASE);
   d=await copy();const chunk=(await readdir(join(d,CASE,'run/trace'))).find(n=>n.endsWith('.ndjson.gz'))!;await rm(join(d,CASE,'run/trace',chunk));expect(await issues(d)).toContain('BENCH_ARTIFACT_INVENTORY');

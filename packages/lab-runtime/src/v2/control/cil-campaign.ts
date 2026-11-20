@@ -156,8 +156,14 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
  const cases=casesFor(table),selected=cases.filter(c=>!onlyCase||c.id===onlyCase),wanted=new Set(selected.map(c=>c.id));
  v.expectedRuns=selected.length;if(!selected.length){v.issues.push('CIL_CASE_UNREGISTERED');return v;}
  const verified=new Map<string,{stream:string;deficits:ReturnType<typeof buildDriveEvidence>['axes'][number]['speedDeficit'][]}>();
- const repeated=new Map<string,boolean>();
+ const repeated=new Map<string,boolean>(),executions=new Set<string>();
+ const claimExecution=(runId:unknown)=>{
+  if(typeof runId!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(runId))throw Error('CIL_EXECUTION_IDENTITY');
+  if(executions.has(runId))throw Error('CIL_DUPLICATE_EXECUTION');
+  executions.add(runId);
+ };
  for(const spec of withDependencies(selected,cases).filter(c=>c.kind!=='cell')){
+  const repeatId=`repeat-${spec.experimentId.replace(/^drive-|-v1$/g,'')}-s${spec.seed}`;
   const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};
   try{
    for(const id of dependencies(spec))check(verified.has(id),'CIL_DEPENDENCY:'+id);
@@ -165,6 +171,7 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
    check(hashJson(await cellArtifacts(dir))===hashJson(rec.artifacts),'CIL_ARTIFACT_INVENTORY');
    const report=await readJson(dir,'report.json') as RunReport,cp=await readJson(dir,'run/run.json'),trace=await readJson(dir,'trace.json') as Trace;
    check(cp.manifest.seed===spec.seed&&cp.manifest.sourceCommit===source&&cp.runId===report.manifest.runId&&cp.tick===report.outcome.tick&&report.manifest.sourceCommit===source&&report.manifest.seed===spec.seed&&cp.manifest.scenario.id===table.scenarioId&&trace.spawns===1&&!trace.error,'CIL_RUN_IDENTITY');
+   claimExecution(cp.runId);
    // the scene the run used names exactly the registered experiment, and the manifest carries the digests of those very documents
    const {scene,read}=await readStream(dir,cp);const e=scene.engine as {driveModelRef?:{path:string;sha256:string};controlProfileRef?:{path:string;sha256:string}};
    check(experimentOfMobileModel(e.driveModelRef?.path??'')===spec.experimentId,'CIL_EXPERIMENT_MISMATCH');
@@ -200,6 +207,7 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
    if('equivalentToLegacy' in oracle){
     const legacyDir=join(dir,'baseline'),legacyCp=await readJson(legacyDir,'run/run.json'),legacyReport=await readJson(legacyDir,'report.json'),legacyTrace=await readJson(legacyDir,'trace.json');
     check(legacyCp.manifest.sourceCommit===source&&legacyCp.manifest.seed===spec.seed&&legacyCp.manifest.scenario.id===table.scenarioId&&legacyCp.runId===legacyReport.manifest.runId&&!legacyReport.manifest.drive&&legacyTrace.spawns===1&&legacyTrace.error===null&&legacyTrace.steps.length===legacyCp.tick,'CIL_BASELINE_NOT_LEGACY');
+    claimExecution(legacyCp.runId);
     verifyCampaignOutcome(legacyCp,await readCampaignJournal(join(legacyDir,'run'),legacyCp.runId),legacyReport,'CIL');
     const base=await readStream(legacyDir,legacyCp),legacy=base.read.records as unknown as Rec[];
     check(base.read.complete&&base.scene.engine.id==='mujoco_3d'&&!(base.scene.engine as {driveModelRef?:unknown}).driveModelRef,'CIL_BASELINE_NOT_LEGACY');
@@ -210,12 +218,12 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
    const hash=createHash('sha256');for(const record of records)hash.update(JSON.stringify(record)+'\n');
    const stream=hash.digest('hex');
    if(spec.kind==='repeat'){
-    const same=stream===verified.get(baseline(spec))!.stream,id=`repeat-${spec.experimentId.replace(/^drive-|-v1$/g,'')}-s${spec.seed}`;
-    repeated.set(id,(repeated.get(id)??true)&&same);check(same,'CIL_REPEAT_NOT_BIT_IDENTICAL');
+    const same=stream===verified.get(baseline(spec))!.stream;
+    repeated.set(repeatId,(repeated.get(repeatId)??true)&&same);check(same,'CIL_REPEAT_NOT_BIT_IDENTICAL');
    }
    verified.set(spec.id,{stream,deficits:again.axes.map(a=>a.speedDeficit)});
    if(wanted.has(spec.id))v.completedCases++;
-  }catch(e){if(wanted.has(spec.id))v.missingArtifacts.push(spec.id);v.issues.push(`${spec.id}:${(e as NodeJS.ErrnoException).code==='ENOENT'?'CIL_ARTIFACT_MISSING':(e as Error).message}`);}
+  }catch(e){if(spec.kind==='repeat')repeated.set(repeatId,false);if(wanted.has(spec.id))v.missingArtifacts.push(spec.id);v.issues.push(`${spec.id}:${(e as NodeJS.ErrnoException).code==='ENOENT'?'CIL_ARTIFACT_MISSING':(e as Error).message}`);}
  }
  for(const [id,bitIdentical] of repeated)v.equivalence.push({id,bitIdentical});
  // the cell part: the cell campaign's own verifier, then the drive facts of each run
@@ -232,6 +240,7 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
      // the cell campaign is the one this campaign recorded (same commit, same experiment, same architecture), and the run is the one the report is of
      check(cellCommit===source&&cellExperiment===campaign.cell.driveExperimentId&&cellHost===host,'CIL_CELL_CAMPAIGN_BINDING');
      check(report.manifest.sourceCommit===source&&cp.manifest.sourceCommit===source&&cp.runId===report.manifest.runId,'CIL_CELL_RUN_BINDING');
+     claimExecution(cp.runId);
      check(report.manifest.drive?.testLevel==='controller_in_the_loop'&&report.manifest.drive.experimentId===campaign.cell.driveExperimentId,'CIL_CELL_MANIFEST_DRIVE');
      check(report.manifest.drive?.hostArch&&report.manifest.drive.hostArch===host,'CIL_HOSTARCH:'+String(report.manifest.drive?.hostArch));
      if(id.startsWith('nominal'))check(report.outcome.served==='2'&&report.driveEvidence!.axes.every(a=>a.faults.length===0),'CIL_CELL_NOMINAL');

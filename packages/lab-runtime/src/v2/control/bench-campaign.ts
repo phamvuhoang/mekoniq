@@ -15,6 +15,7 @@ import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {benchCatalog,benchMetrics,benchPlant,benchWheelMeasurement,createBenchRun,readBenchTrace,BENCH_TRACE_LIMITS} from './bench-runner';
 import {BENCH_MAX_TICKS,benchAxisMode,benchSignalLastTick} from './bench-signals';
 import {gainSuggestions} from './gain-suggest';
+import {validateControlEvidenceShape} from './drive-io';
 import type {BenchRequestV1,BenchSignal,ControlProfileV1,TuningResultV1} from './drive-io';
 
 export const BENCH_CAMPAIGN=campaign;
@@ -62,45 +63,51 @@ export async function runBenchCampaign(o:{root:string;out:string;sourceCommit:st
 /** `workerRoot`: where the plant fixtures are (the drive model, the starting profile, the envelope and the metric policy): this checkout's, the commit the campaign names. */
 export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoot=WORKER_ROOT):Promise<BenchCampaignVerdict>{
  const v:BenchCampaignVerdict={expectedRuns:0,completedCases:0,missingArtifacts:[],issues:[],runs:[]};let source:string|undefined,host:string|undefined,table:typeof historical|typeof campaign=campaign;
+ if(onlyCase!==undefined&&![...campaign.runs,...historical.runs].some(c=>c.id===onlyCase)){v.issues.push('BENCH_CASE_UNREGISTERED');return v;}
  try{const c=await readJson(root,'campaign.json');table=c.campaign?.id===historical.id?historical:campaign;if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(table)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;host=c.hostArch;}catch{v.issues.push('BENCH_CAMPAIGN_IDENTITY');return v;}
- const selected=(table.runs as BenchCase[]).filter(c=>!onlyCase||c.id===onlyCase);v.expectedRuns=selected.length;
+ const selected=(table.runs as BenchCase[]).filter(c=>onlyCase===undefined||c.id===onlyCase);v.expectedRuns=selected.length;
+ if(!selected.length){v.issues.push('BENCH_CASE_UNREGISTERED');return v;}
  const names=table===campaign?campaign.startingProfiles:{'MJ-BENCH-WHEEL':'serve-control-v1.json','MJ-BENCH-ARM':'xarm6-control-v1.json'};
  for(const spec of selected){
   const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};
   try{
    const rec=await readJson(dir,'case.json');check(rec.schemaVersion===1&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec)&&rec.error===null,'BENCH_CASE_IDENTITY');
    check(hashJson(await cellArtifacts(dir))===hashJson(rec.artifacts),'BENCH_ARTIFACT_INVENTORY');
-   const report=await readJson(dir,'report.json') as Report,t=report.tuning;check(t,'BENCH_NO_RESULT');
+   const report=await readJson(dir,'report.json') as Report,t=report.tuning;if(!t)throw Error('BENCH_NO_RESULT');
+   check(validateControlEvidenceShape(t)&&t.documentType==='tuning-result','BENCH_RESULT_SCHEMA');
+   check(report.outcome?.status==='completed','BENCH_STATUS_NOT_THE_RUN');
    // identity: commit, scenario, seed, signal, the starting profile and drive model the plant serves (their bundle bytes too), the traced axes, the engine's architecture
    const profile=JSON.parse(await readFile(join(workerRoot,'fixtures/drive-v1',names[spec.scenarioId]),'utf8')) as ControlProfileV1,plant=await benchPlant(workerRoot,{scenarioId:spec.scenarioId,axis:spec.axis,driveExperimentId:table.driveExperimentId as BenchRequestV1['driveExperimentId']});
-   check(report.manifest.sourceCommit===source&&report.manifest.scenario.id===spec.scenarioId&&report.manifest.seed===table.seed&&t!.seed===table.seed&&report.manifest.runId===t!.runId,'BENCH_RUN_IDENTITY');
-   check(hashJson(report.bench.request as never)===hashJson({schemaVersion:1,scenarioId:spec.scenarioId,axis:spec.axis,signal:spec.signal,driveExperimentId:table.driveExperimentId,controlProfile:{id:profile.id,revision:profile.revision,digest:profile.digest}})&&hashJson(t!.signal as never)===hashJson(spec.signal as never),'BENCH_REQUEST_IDENTITY');
-   check(t!.plant.controlProfileDigest===profile.digest&&(await readFile(join(dir,'run/bundle/bench-control.json'),'utf8'))===JSON.stringify(profile),'BENCH_PROFILE_IDENTITY');
-   check(t!.plant.driveModelDigest===plant.model.digest&&(await readFile(join(dir,'run/bundle/bench-drive.json'))).equals(plant.modelBytes)&&t!.plant.plantModelDigest===plant.plantModelDigest&&t!.plant.load===plant.load,'BENCH_PLANT_IDENTITY');
-   check(hashJson(t!.axisIds)===hashJson(plant.axisIds),'BENCH_AXIS_IDENTITY');
-   check(t!.engine.hostArch&&t!.engine.hostArch===host,'BENCH_HOSTARCH:'+String(t!.engine.hostArch));
+   check(report.manifest.sourceCommit===source&&report.manifest.scenario.id===spec.scenarioId&&report.manifest.seed===table.seed&&t.seed===table.seed&&report.manifest.runId===t.runId,'BENCH_RUN_IDENTITY');
+   check(hashJson(report.bench.request as never)===hashJson({schemaVersion:1,scenarioId:spec.scenarioId,axis:spec.axis,signal:spec.signal,driveExperimentId:table.driveExperimentId,controlProfile:{id:profile.id,revision:profile.revision,digest:profile.digest}})&&hashJson(t.signal as never)===hashJson(spec.signal as never),'BENCH_REQUEST_IDENTITY');
+   check(t.plant.controlProfileDigest===profile.digest&&(await readFile(join(dir,'run/bundle/bench-control.json'),'utf8'))===JSON.stringify(profile),'BENCH_PROFILE_IDENTITY');
+   check(t.plant.driveModelDigest===plant.model.digest&&(await readFile(join(dir,'run/bundle/bench-drive.json'))).equals(plant.modelBytes)&&t.plant.plantModelDigest===plant.plantModelDigest&&t.plant.load===plant.load,'BENCH_PLANT_IDENTITY');
+   check(hashJson(t.axisIds)===hashJson(plant.axisIds),'BENCH_AXIS_IDENTITY');
+   check(t.engine.hostArch&&t.engine.hostArch===host,'BENCH_HOSTARCH:'+String(t.engine.hostArch));
    check(report.bench.anchorTick===plant.anchorTick,'BENCH_ANCHOR:'+String(report.bench.anchorTick));
    // the trace as read back now: every chunk's size and sha256 against its manifest, its ticks against their place; complete, and the manifest the result names
-   const read=await readBenchTrace(join(dir,'run/trace'),{runId:t!.runId,axisIds:plant.axisIds,plantModelDigest:plant.plantModelDigest,driveModelDigest:plant.model.digest,controlProfileDigest:profile.digest},report.outcome.tick);
+   const read=await readBenchTrace(join(dir,'run/trace'),{runId:t.runId,axisIds:plant.axisIds,plantModelDigest:plant.plantModelDigest,driveModelDigest:plant.model.digest,controlProfileDigest:profile.digest},report.outcome.tick);
    check(!read.issues.length&&read.manifest?.coverage.complete&&read.manifest.coverage.lastTick===report.outcome.tick,'BENCH_TRACE_INCOMPLETE:'+read.issues.join(','));
-   if(read.bodyForwardMps!==null||t!.wheelMeasurement!==undefined)
-    check(spec.axis==='wheels'&&hashJson(t!.wheelMeasurement??null)===hashJson(benchWheelMeasurement(read,report.outcome.tick,plant.wheelRadiusM)),'BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
+   if(table===campaign&&spec.axis==='wheels'&&t.status==='completed')
+    check(read.bodyForwardMps!==null&&t.wheelMeasurement?.comparison?.tick===report.outcome.tick,'BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
+   if(read.bodyForwardMps!==null||t.wheelMeasurement!==undefined)
+    check(spec.axis==='wheels'&&hashJson(t.wheelMeasurement??null)===hashJson(benchWheelMeasurement(read,report.outcome.tick,plant.wheelRadiusM)),'BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
    const first=read.traces[0]!,samples=first.samples.slice(BENCH_TRACE_LIMITS.substeps).filter(x=>x!==null).length;
-   check(read.manifestSha256===t!.trace.sha256&&read.manifest!.chunks.length===t!.trace.chunks&&samples===t!.trace.samples,'BENCH_TRACE_NOT_THE_RESULTS');
+   check(read.manifestSha256===t.trace.sha256&&read.manifest?.chunks.length===t.trace.chunks&&samples===t.trace.samples,'BENCH_TRACE_NOT_THE_RESULTS');
    // the result's status against the run: a completed step or trapezoid ran to the bench's last tick; any other result ended on the tick it names
-   const end=t!.fault?.tick??t!.unstable?.tick??t!.collision?.tick;
-   check(t!.status==='completed'?end===undefined&&report.outcome.tick===(spec.signal.kind==='hold'?plant.anchorTick+benchSignalLastTick(spec.signal):BENCH_MAX_TICKS):end===report.outcome.tick,'BENCH_STATUS_NOT_THE_RUN');
+   const end=t.fault?.tick??t.unstable?.tick??t.collision?.tick;
+   check(t.status==='completed'?end===undefined&&report.outcome.tick===(spec.signal.kind==='hold'?plant.anchorTick+benchSignalLastTick(spec.signal):BENCH_MAX_TICKS):end===report.outcome.tick,'BENCH_STATUS_NOT_THE_RUN');
    // the metrics and the suggestions, recomputed from the trace read back and the inertia the run reports
-   const again=benchMetrics(first,spec.signal,report.bench.anchorTick,benchAxisMode(spec.axis),plant.policy,t!.status);
-   check(hashJson(again as never)===hashJson(t!.metrics as never)&&hashJson(t!.policy as never)===hashJson(plant.policy as never),'BENCH_METRICS_NOT_FROM_TRACE');
+   const again=benchMetrics(first,spec.signal,report.bench.anchorTick,benchAxisMode(spec.axis),plant.policy,t.status);
+   check(hashJson(again as never)===hashJson(t.metrics as never)&&hashJson(t.policy as never)===hashJson(plant.policy as never),'BENCH_METRICS_NOT_FROM_TRACE');
    const env=plant.envelope.axes.find(a=>a.axisId===plant.axisIds[0])!;
-   check(t!.effectiveInertia?t!.effectiveInertia.valueKgM2>0&&hashJson(t!.suggestions as never)===hashJson(gainSuggestions({mode:benchAxisMode(spec.axis),inertiaKgM2:t!.effectiveInertia.valueKgM2},env) as never):t!.suggestions===null,'BENCH_SUGGESTIONS_NOT_FROM_INERTIA');
+   check(t.effectiveInertia?t.effectiveInertia.valueKgM2>0&&hashJson(t.suggestions as never)===hashJson(gainSuggestions({mode:benchAxisMode(spec.axis),inertiaKgM2:t.effectiveInertia.valueKgM2},env) as never):t.suggestions===null,'BENCH_SUGGESTIONS_NOT_FROM_INERTIA');
    // the oracle, as the campaign file declared it before the recording
    const oracle=table.expectations[spec.expect] as {status:string;metrics:Record<string,string>};
-   check(t!.status===oracle.status,'BENCH_ORACLE_STATUS:'+t!.status);
-   for(const [k,want] of Object.entries(oracle.metrics)){const m=t!.metrics[k];check(m&&(want==='either'||(want==='available'?m.available:!m.available&&m.reason===want)),`BENCH_ORACLE_METRIC:${k}:${m?.available?'available':m?.reason}`);}
-   if(t!.status==='completed')check(samples===table.oracles.trace.samplesPerAxis,'BENCH_ORACLE_TRACE:'+samples);
-   v.runs.push({id:spec.id,status:t!.status,metrics:Object.fromEntries(Object.entries(t!.metrics).map(([k,m])=>[k,m.available?m.value:m.reason]))});
+   check(t.status===oracle.status,'BENCH_ORACLE_STATUS:'+t.status);
+   for(const [k,want] of Object.entries(oracle.metrics)){const m=t.metrics[k];check(m&&(want==='either'||(want==='available'?m.available:!m.available&&m.reason===want)),`BENCH_ORACLE_METRIC:${k}:${m?.available?'available':m?.reason}`);}
+   if(t.status==='completed')check(samples===table.oracles.trace.samplesPerAxis,'BENCH_ORACLE_TRACE:'+samples);
+   v.runs.push({id:spec.id,status:t.status,metrics:Object.fromEntries(Object.entries(t.metrics).map(([k,m])=>[k,m.available?m.value:m.reason]))});
    v.completedCases++;
   }catch(e){v.missingArtifacts.push(spec.id);v.issues.push(`${spec.id}:${(e as Error).message}`);v.runs.push({id:spec.id,status:null,metrics:{}});}
  }
