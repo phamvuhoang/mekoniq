@@ -1,6 +1,9 @@
-// The drive section of a report (R4): what a virtual drive did, from the report's `driveEvidence`. Read-only; a report without it says why, never a zero.
+// The drive section of a report (R4): what a virtual drive did, from the report's `driveEvidence`, and a bench's TuningResultV1 (R4.2). Read-only; a report without them says why, never a zero.
 import type {ControlMetric,DriveEvidenceBlock,RunReport} from '../scenarios/controls';
 import type {Row} from '../twin/amr';
+import type {TuningResultV1} from '../shared/navigation2d';
+import {comparable} from '../control/workbench';
+import {sig} from '../ui/svg-plot';
 import {tr} from '../i18n';
 import {esc} from '../ui/icons';
 
@@ -37,4 +40,39 @@ export function driveHtml(report:RunReport):string{
 <div class="eng-table-wrap" tabindex="0" role="region" aria-label="${tr('Trạng thái và sai số bám theo trục','軸ごとの状態と追従誤差','Axis state and tracking error')}"><table class="eng-table" data-testid="drive-axes"><thead><tr><th scope="col">${tr('Trục','軸','Axis')}</th><th scope="col">${tr('Trạng thái đã qua','経過した状態','States passed')}</th><th scope="col">${tr('RMS sai số bám','追従誤差RMS','Tracking RMS')}</th></tr></thead><tbody>${s.axes.map(a=>`<tr data-axis="${esc(a.axisId)}"><th scope="row">${esc(a.axisId)}</th><td>${esc(a.states.map(stateText).join(' → '))}</td><td data-metric="${a.trackingRms.available?'available':'unavailable'}">${esc(metricText(a.trackingRms))}</td></tr>`).join('')}</tbody></table></div>
 ${s.events.length?`<ul data-testid="drive-events">${s.events.map(e=>`<li>tick ${esc(e.tick)} · <code>${esc(e.code)}</code>${e.axisId?` · ${esc(e.axisId)}`:''}</li>`).join('')}</ul>`:''}
 <p class="source-note">${tr('Tham số drive là giả định; phép đo từ trạng thái thật của mô phỏng, không phải phần cứng.','ドライブのパラメータは仮定です。測定はシミュレーションの真値で、実機ではありません。','Drive parameters are assumed; measured on the simulation\'s true state, not on hardware.')}</p></div>`;
+}
+
+// ---- R4.2 bench (V07): a TuningResultV1 in words. The run status of a finished bench is always completed; the result is tuning.status. ----
+const METRICS=['riseTimeS','overshootPct','settlingTimeS','steadyStateError','rmsError','peakTorqueNm','saturationRatio'] as const;
+const metricName=(k:string,t:TuningResultV1)=>({riseTimeS:tr('Thời gian lên 10–90 %','立ち上がり時間 10–90 %','Rise time 10–90 %'),overshootPct:tr('Vọt lố','オーバーシュート','Overshoot'),
+ settlingTimeS:tr(`Thời gian xác lập (±${t.policy.settleBand*100} %)`,`整定時間(±${t.policy.settleBand*100} %)`,`Settling time (±${t.policy.settleBand*100} %)`),steadyStateError:tr('Sai số xác lập','定常偏差','Steady-state error'),
+ rmsError:tr('RMS sai số bám','追従誤差RMS','Tracking error RMS'),peakTorqueNm:tr('Mô-men đỉnh','ピークトルク','Peak torque'),saturationRatio:tr('Tỷ lệ substep bão hòa','飽和サブステップ率','Saturated substeps')} as Record<string,string>)[k]??k;
+/** Why a metric (or a run) has no value, in words; an unknown code is shown as itself. */
+export const reasonWords=(code:string)=>({NOT_SETTLED:tr('chưa ổn định trong cửa sổ đo','測定窓内で整定せず','did not settle within the window'),TARGET_NOT_REACHED:tr('chưa đạt 90 % mục tiêu','目標の90 %に未達','never reached 90 % of the target'),
+ TRACE_GAP:tr('trace có khoảng trống trong cửa sổ','窓内でトレースが欠落','the trace has a gap in the window'),AMPLITUDE_ZERO:tr('biên độ bằng 0','振幅がゼロ','zero amplitude'),WINDOW_INVALID:tr('cửa sổ đo nằm ngoài trace','測定窓がトレースの外','the window lies outside the trace'),
+ SIGNAL_NOT_STEP:tr('chỉ đo với tín hiệu bước','ステップ信号でのみ測定','measured on a step only'),SIGNAL_NOT_STARTED:tr('tín hiệu chưa bắt đầu (drive chưa bật)','信号が開始せず(ドライブ未有効)','the signal never started (drive not enabled)'),SIGNAL_TRUNCATED:tr('tín hiệu bị cắt ở cuối bench','ベンチ終端で信号が切れた','the signal was cut at the end of the bench'),
+ SATURATION_NOT_TRACED:tr('trace không ghi bão hòa','飽和が記録されていない','saturation was not traced'),POLICY_INVALID:tr('chính sách metric không hợp lệ','メトリック方針が無効','invalid metric policy'),DRIVE_FAULT:tr('drive đã báo lỗi','ドライブが故障を報告','the drive faulted'),
+ PLANT_UNSTABLE:tr('mô phỏng bất ổn','シミュレーションが不安定','the simulation went unstable'),COLLISION:tr('có va chạm','衝突が発生','a collision occurred')} as Record<string,string>)[code]??code;
+const faultWords=(code:string)=>({OVERSPEED:tr('đáp ứng vượt giới hạn tốc độ của drive và drive tự ngắt để bảo vệ. Đây là vật lý của model với các gain này, không phải lỗi phần mềm.','応答がドライブの速度上限を超え、ドライブが保護のため停止しました。これはこのゲインでのモデルの物理挙動であり、ソフトウェアの不具合ではありません。','the response exceeded the drive’s speed limit and the drive tripped to protect itself. That is the model’s physics with these gains, not a software bug.'),
+ FOLLOWING_ERROR:tr('sai lệch bám vượt giới hạn của drive','追従偏差がドライブの上限を超えた','the following error exceeded the drive’s limit'),COMMAND_TIMEOUT:tr('drive không nhận được lệnh mới kịp (watchdog)','指令が間に合わなかった(ウォッチドッグ)','no new command in time (watchdog)'),
+ FEEDBACK_LOSS:tr('mất phản hồi encoder','エンコーダ帰還が失われた','the encoder feedback was lost'),EXTERNAL_TRIP:tr('ngắt từ bên ngoài','外部トリップ','an external trip')} as Record<string,string>)[code]??tr('drive báo lỗi','ドライブが故障を報告','the drive latched a fault');
+/** The result and its cause in words (R4-A §6.1: an over-gained bench is a result with its tick and cause, never an incident; no gain is lowered). */
+export function tuningStatus(t:TuningResultV1):string{
+ if(t.status==='drive_fault'&&t.fault)return `${tr('Lỗi drive','ドライブ故障','Drive fault')} · tick ${t.fault.tick} · ${t.fault.axisId} · ${t.fault.code}: ${faultWords(t.fault.code)}`;
+ if(t.status==='unstable'&&t.unstable)return `${tr('Bất ổn','不安定','Unstable')} · tick ${t.unstable.tick}: ${tr('engine báo','エンジンの報告','the engine reported')} “${t.unstable.warning}”. ${tr('Đây là kết quả của gain này, không phải sự cố; không tự hạ gain.','このゲインの結果であり障害ではありません。ゲインは自動で下げません。','This is the result of these gains, not an incident; no gain is lowered for you.')}`;
+ if(t.status==='collision'&&t.collision)return `${tr('Va chạm','衝突','Collision')} · tick ${t.collision.tick}: ${t.collision.ids.join(', ')}`;
+ return tr('Hoàn tất','完了','Completed');
+}
+const value=(m:ControlMetric|undefined)=>!m?'—':m.available?m.unit==='ratio'?`${sig(m.value*100)} %`:`${sig(m.value)} ${m.unit}`:`${tr('Không khả dụng','利用不可','Unavailable')}: ${reasonWords(m.reason)} (${m.reason})`;
+const delta=(a:ControlMetric|undefined,b:ControlMetric|undefined)=>{if(!a?.available||!b?.available)return '—';const d=b.unit==='ratio'?(b.value-a.value)*100:b.value-a.value;return `${d>0?'+':d<0?'−':''}${sig(Math.abs(d))} ${b.unit==='ratio'?'%':b.unit}`;};
+const changedName=(k:string)=>({plantModelDigest:tr('digest plant','プラントのダイジェスト','plant digest'),driveModelDigest:tr('digest model drive','ドライブモデルのダイジェスト','drive model digest'),load:tr('tải','負荷','load'),axis:tr('trục','軸','axis'),signal:tr('tín hiệu','信号','signal'),seed:'seed',engine:'engine'} as Record<string,string>)[k]??k;
+/** The bench result (status, metrics, inertia, identity) and, given the previous result `a`, the A/B: B − A per metric when the two are comparable, otherwise the inputs that changed and no delta. */
+export function tuningHtml(t:TuningResultV1,a?:TuningResultV1|null):string{
+ const c=a?comparable(a,t):null,ab=!!c?.ok,run=(r:TuningResultV1)=>esc(r.runId.slice(0,8));
+ const rows=METRICS.filter(k=>k in t.metrics).map(k=>`<tr data-metric="${k}"><th scope="row">${esc(metricName(k,t))}</th>${ab?`<td>${esc(value(a!.metrics[k]))}</td>`:''}<td data-available="${t.metrics[k]!.available}">${esc(value(t.metrics[k]))}</td>${ab?`<td>${esc(delta(a!.metrics[k],t.metrics[k]))}</td>`:''}</tr>`).join('');
+ const j=t.effectiveInertia;
+ return `<div class="control-result" data-testid="tuning-result" data-status="${esc(t.status)}"><p class="control-status" data-status="${esc(t.status)}" role="status"><b>${esc(tuningStatus(t))}</b></p>
+${c&&!c.ok?`<p class="field-help" data-testid="ab-changed">${tr('Không so với lần trước: đầu vào đã đổi','前回とは比較しません:入力が変わりました','Not compared with the previous run: its inputs changed')} (${esc(c.changed.map(changedName).join(', '))}).</p>`:''}
+<div class="eng-table-wrap" tabindex="0" role="region" aria-label="${tr('Metric đáp ứng','応答メトリック','Response metrics')}"><table class="eng-table" data-testid="${ab?'ab-delta':'tuning-metrics'}"><thead><tr><th scope="col">${tr('Metric','メトリック','Metric')}</th>${ab?`<th scope="col">A · ${run(a!)}</th>`:''}<th scope="col">${ab?`B · ${run(t)}`:tr('Giá trị','値','Value')}</th>${ab?`<th scope="col">Δ B − A</th>`:''}</tr></thead><tbody>${rows}</tbody></table></div>
+<p class="source-note">${j?`J = ${sig(j.valueKgM2)} kg m² (${esc(j.basis)}, ${tr('giả định','仮定','assumed')}) · `:''}${esc(t.engine.id)} ${esc(t.engine.version)}${t.engine.hostArch?` · ${esc(t.engine.hostArch)}`:''} · seed ${esc(t.seed)} · ${tr('tải','負荷','load')} ${esc(t.plant.load)} · trace ${esc(t.trace.sha256.slice(0,12))} · ${esc(t.trace.samples)} ${tr('mẫu','サンプル','samples')} · ${tr('chưa hiệu chuẩn','未校正','not calibrated')}</p></div>`;
 }

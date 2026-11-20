@@ -11,7 +11,10 @@ import {validModelValidationReport} from './model-validation';
 import {loadToken,requestInit,saveToken,type RuntimeTarget} from '../runtime/target';
 import {FetchEventSource} from '../runtime/fetch-event-source';
 import type {StreamDeps} from '../runtime/stream';
-export interface TwinHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
+import type {BenchHealth} from '../control/workbench';
+import type {BenchRequestV1,DriveTrace,TuningResultV1} from '../shared/navigation2d';
+/** `tuningEnvelope`, `benchSignals` and `benchCatalog` (BenchHealth) are present only where a bench scenario is offered (R4.2, V06/V07pre). */
+export interface TwinHealth extends BenchHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
  /** Server-advertised optional features, e.g. engineering_bundle_v1. Absent on runtimes that predate engineering. */
  capabilities?:string[];
  /** scenarioId -> backendSetId -> what that pairing needs; engineering clients must read this instead of scenarioRequirements. */
@@ -60,7 +63,8 @@ export type ControlMetric={available:true;value:number;unit:string;samples:numbe
 export interface DriveEvidenceBlock {testLevel:'controller_in_the_loop';complete:boolean;issues:string[];ticks:number;
  axes:{axisId:string;mode:'csp'|'csv';states:{state:string;fromTick:number}[];faults:{fault:string;firstTick:number}[];enabledAtTick:number|null;saturatedSubsteps:number;trackingRms:ControlMetric;speedDeficit?:ControlMetric}[];
  events:{tick:number;code:string;axisId?:string}[]}
-export interface RunReport {driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+/** `tuning`: a bench run's result (R4.2); null until it has one, absent on every other run. */
+export interface RunReport {tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[]};
  outcome:{status:string;served:string;tick:number;simTimeNs:string};
  metrics:{maxConcurrentMovers?:number;distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
@@ -81,7 +85,9 @@ interface CreateRunBase {worldExperimentId?:import('../twin/cell').WorldExperime
 export interface LegacyCreateRun extends CreateRunBase {project:LabProjectV2;engineeringRef?:undefined}
 /** Engineering request: the server derives the project from the bundle; a project, if sent at all, must equal the locked projection. */
 export interface EngineeringCreateRun extends CreateRunBase {engineeringRef:EngineeringRef;project?:LabProjectV2}
-export type CreateRun=LegacyCreateRun|EngineeringCreateRun;
+/** Bench request (R4.2): the plant is the server's, so no project, bundle or run experiment travels with it. */
+export interface BenchCreateRun extends CreateRunBase {bench:BenchRequestV1;project?:undefined;engineeringRef?:undefined}
+export type CreateRun=LegacyCreateRun|EngineeringCreateRun|BenchCreateRun;
 export function requestForPreset(p:import('./catalog').TwinPreset):CreateRun{
  const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
  // engineering never falls back to the preset project: the receipt that matches this exact draft is the only way to a ref
@@ -125,6 +131,10 @@ export interface TwinRuntime {
  action(view:RunView,kind:ActionKind,payload?:Record<string,unknown>,actionId?:string,signal?:AbortSignal):Promise<RunView>;
  readonly recoverableRunIds?:readonly string[];archive?(runId:string):Promise<void>;reclaim?(runId:string):Promise<RunView>;
  get(runId:string,signal?:AbortSignal):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
+ /** A bench run's drive trace as read back from its chunks (GET /runs/:id/trace; null samples are gaps). Up to ~1 MB: read once per finished bench, never polled. */
+ trace?(runId:string,signal?:AbortSignal):Promise<{traces:DriveTrace[];issues:string[]}>;
+ /** Drop this client's reclaim proof of a run: an archived bench keeps no checkpoint to reclaim, so it is never offered for reopening. */
+ dropProof?(runId:string):void;
  /** Where requests go (target.ts). Optional only so test doubles may omit it; httpTwinRuntime always has it. */
  readonly target?:RuntimeTarget;
  /** Point this client at another runtime: the old session (and its stored bearer) is dropped. */
@@ -228,6 +238,12 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   worldDisplay:(id,signal)=>request<WorldDisplay>(`${run(id)}/world-display`,undefined,signal),
   worldDisplayScene:(id,signal)=>request(`${run(id)}/world-display/scene`,undefined,signal),
   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
+  async trace(id,signal){
+   const r=await request<{traces?:unknown;issues?:unknown}>(`${run(id)}/trace`,undefined,signal);
+   if(!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+   return {traces:r.traces as DriveTrace[],issues:r.issues.map(String)};
+  },
+  dropProof(id){if(!Object.hasOwn(proofs,id))return;delete proofs[id];try{localStorage.setItem(proofKey(target),JSON.stringify(proofs));}catch{/* this tab forgets it anyway */}},
  };
 }
 /** What the run controls may offer, from the set's execution metadata in health. Mock: Lab step/auto-run. Simulation with a source fixed-step clock:

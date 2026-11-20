@@ -1,0 +1,383 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.control-profile.v1",
+  "title": "ControlProfileV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "control-profile"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "calibration": {
+      "const": "not_calibrated"
+    },
+    "plantModelDigest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "driveModelDigests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "engineering-component.schema.json#/definitions/Digest"
+      }
+    },
+    "axes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/definitions/AxisControl"
+      }
+    },
+    "controllers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/definitions/ControllerConfig"
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "loop": {
+          "type": "object",
+          "description": "An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).",
+          "discriminator": {
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            },
+            {
+              "$ref": "#/definitions/TunedSourceRef"
+            }
+          ]
+        },
+        "limits": {
+          "type": "object",
+          "description": "An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).",
+          "discriminator": {
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            },
+            {
+              "$ref": "#/definitions/TunedSourceRef"
+            }
+          ]
+        },
+        "controller": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "loop",
+        "limits",
+        "controller"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "calibration",
+    "plantModelDigest",
+    "driveModelDigests",
+    "axes",
+    "controllers",
+    "sources"
+  ],
+  "definitions": {
+    "AxisControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+        },
+        "loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kp": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ki": {
+              "type": "number",
+              "minimum": 0
+            },
+            "kd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "integralLimit": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "slewLimit": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "kp",
+            "ki",
+            "kd",
+            "integralLimit",
+            "slewLimit"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "ki": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                },
+                "required": [
+                  "ki"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "integralLimit": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "accelerationLimit": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "axisId",
+        "loop",
+        "accelerationLimit"
+      ],
+      "title": "AxisControl"
+    },
+    "ControllerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "controllerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "params": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "controllerId",
+        "revision",
+        "params"
+      ],
+      "title": "ControllerConfig"
+    },
+    "TuningBound": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "title": "TuningBound"
+    },
+    "AxisEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+        },
+        "kp": {
+          "$ref": "#/definitions/TuningBound"
+        },
+        "ki": {
+          "$ref": "#/definitions/TuningBound"
+        },
+        "kd": {
+          "$ref": "#/definitions/TuningBound"
+        },
+        "integralLimit": {
+          "$ref": "#/definitions/TuningBound"
+        },
+        "slewLimit": {
+          "$ref": "#/definitions/TuningBound"
+        },
+        "accelerationLimit": {
+          "$ref": "#/definitions/TuningBound"
+        }
+      },
+      "required": [
+        "axisId",
+        "kp",
+        "ki",
+        "integralLimit"
+      ],
+      "description": "A field the axis does not accept (kd and slewLimit on a velocity axis, accelerationLimit on a position axis) is absent.",
+      "title": "AxisEnvelope"
+    },
+    "TuningEnvelopeV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "tuning-envelope"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "calibration": {
+          "const": "not_calibrated"
+        },
+        "axes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/AxisEnvelope"
+          }
+        },
+        "source": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "id",
+        "revision",
+        "digest",
+        "calibration",
+        "axes",
+        "source"
+      ],
+      "title": "TuningEnvelopeV1"
+    },
+    "TunedSourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.",
+      "properties": {
+        "kind": {
+          "const": "tuned_in_simulation"
+        },
+        "benchRunId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "scenarioId": {
+          "enum": [
+            "MJ-BENCH-WHEEL",
+            "MJ-BENCH-ARM"
+          ]
+        },
+        "traceSha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      },
+      "required": [
+        "kind",
+        "benchRunId",
+        "scenarioId",
+        "traceSha256",
+        "sourceCommit"
+      ],
+      "title": "TunedSourceRef"
+    }
+  }
+}

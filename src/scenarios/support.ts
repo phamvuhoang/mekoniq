@@ -19,8 +19,10 @@ export function setReasons(health:TwinHealth,s:TwinHealth['backendSets'][number]
  if(portable)for(const [backend,capability] of Object.entries(PORTABLE_CAPABILITY))if(s.backends.includes(backend)&&!health.capabilities?.includes(capability))reasons.push(`CAPABILITY_MISSING:${capability}`);
  return reasons;
 }
+/** The single-axis bench set (R4.2): its runs come from the Control tab only, never from the twin's run selector. */
+export const BENCH_SET='engineering-mujoco-bench-v1';
 export function backendSetOptions(health:TwinHealth|null):SetOption[]{
- return (health?.backendSets??[]).filter(s=>['mock','simulation'].includes(s.mode)&&s.access==='simulated').map(s=>{
+ return (health?.backendSets??[]).filter(s=>['mock','simulation'].includes(s.mode)&&s.access==='simulated'&&s.id!==BENCH_SET).map(s=>{
   if(s.execution?.host!=='portable_python')return {id:s.id,mode:s.mode,selectable:true,reasons:[]};
   const reasons=setReasons(health!,s);
   return {id:s.id,mode:s.mode,selectable:!reasons.length,reasons};

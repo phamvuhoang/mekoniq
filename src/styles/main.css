@@ -2651,3 +2651,61 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 [data-testid="semantic-study"] summary{min-height:44px;cursor:pointer;padding:8px 0}
 [data-testid="semantic-study"] td{overflow-wrap:anywhere;max-width:24ch}
 #twin-import-study{max-width:100%;margin:8px 0}
+/* Control tab (R4.2 §6.3): while it is the open tab the inspector takes the main area, form beside plots (the viewport is hidden; the twin's run goes on) */
+.twin-main.control-open{grid-template-columns:minmax(0,1fr)}
+.twin-main.control-open>.twin-viewport{display:none}
+.control-bench{display:grid;gap:12px;min-width:0}
+.control-head h2{margin:0 0 4px;font-size:15px}
+.control-plant{margin:0;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.control-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin:8px 0 0;padding:6px 10px;color:var(--amber);border:1px solid var(--amber);border-radius:8px}
+.control-banner span{color:var(--muted)}
+.control-grid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:16px;align-items:start}
+.control-form{display:grid;gap:10px;min-width:0}
+.control-form fieldset{display:grid;gap:8px;margin:0;padding:8px 10px 10px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.control-form legend{padding:0 4px;font-size:12px;font-weight:700;color:var(--muted)}
+.control-axes{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:0 8px}
+.control-axes label:has(#twin-ctl-axis-wheels){grid-column:span 2}
+.control-axes label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.control-axes input[type="radio"]{width:auto;min-height:0;margin:0;padding:0;accent-color:var(--accent)}
+.control-field,.control-suggest,.control-io{display:grid;gap:4px;min-width:0}
+.control-field label,.control-suggest label,.control-io label{font-size:12px}
+.control-field small{font-family:var(--mono);color:var(--muted)}
+.control-form [aria-invalid="true"]{border-color:var(--danger)}
+.control-form .field-error,.control-results .field-error{margin:0;color:var(--danger);font-size:12px}
+.control-form .field-help,.control-results .field-help{margin:0}
+/* Run stays in reach while the form scrolls in its panel */
+.control-actions{position:sticky;bottom:0;z-index:1;display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;background:var(--panel)}
+.control-actions .button,.control-suggest .button,.control-io .button{min-height:44px}
+.control-reasons{padding-left:18px}
+.control-results{display:grid;gap:10px;min-width:0;container-type:inline-size}
+.control-results h3{margin:0;font-size:13px}
+.control-result{display:grid;gap:8px}
+.control-status{margin:0}
+.control-status b{color:var(--amber)}
+.control-status[data-status="completed"] b{color:var(--accent)}
+.control-progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.control-plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.control-plots figure{margin:0;min-width:0}
+.control-plots .plot-wide{grid-column:1/-1}
+.control-plots figcaption{margin-bottom:2px;font-size:12px;color:var(--muted)}
+.plot{display:block;width:100%;max-width:760px;height:auto}
+.plot text{font:12px var(--mono);fill:var(--muted)}
+.plot .plot-label{fill:var(--ink)}
+.plot-frame{fill:none;stroke:var(--line)}
+.plot-grid{stroke:var(--line);stroke-width:.5}
+.plot-line{fill:none;stroke-width:1.5;stroke-linejoin:round}
+.plot-line.plot-s0{stroke:var(--blue)}.plot-line.plot-s1{stroke:var(--accent)}.plot-line.plot-s2{stroke:var(--amber)}
+.plot-band{fill:var(--danger);opacity:.25}
+.plot-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 0;padding:0;list-style:none;font-size:12px}
+.plot-key{display:inline-block;width:18px;margin-right:6px;vertical-align:middle;border-top:2px solid}
+.plot-key.plot-s0{border-color:var(--blue)}.plot-key.plot-s1{border-color:var(--accent)}.plot-key.plot-s2{border-color:var(--amber)}.plot-key.dashed{border-top-style:dashed}
+.plot-data summary{display:flex;align-items:center;min-height:44px;cursor:pointer}
+/* the error and torque plots sit side by side only when the results column has room for both; a plot drawn smaller gets larger text in viewBox units, so it stays legible */
+@container (max-width:760px){.control-plots{grid-template-columns:minmax(0,1fr)}.plot-wide .plot text{font-size:16px}}
+@container (max-width:480px){.plot text{font-size:15px}.plot-wide .plot text{font-size:18px}}
+/* phones: form above results; the open Control tab is the page (no viewport row, no sheet height cap) */
+@media (max-width:767px){
+ .control-grid{grid-template-columns:minmax(0,1fr)}
+ .twin-main.control-open,.twin-main.control-open.inspector-open{grid-template-rows:auto}
+ .twin-main.control-open .twin-inspector{max-height:none}
+}
