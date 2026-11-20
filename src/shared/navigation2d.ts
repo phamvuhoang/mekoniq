@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 4c605af1630917a26f70584485813c760594fece (sha256 b8c03d9a73bc600e0268eb7bcab3e29751d9807d7f3645870635b7d7b4c358c2). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 608d5add998e476bbb88f6c7c2fc233a9185658d (sha256 2202e3372bad9c0911180abb88c9a0a01702ada4e547865a346b810fc46258b6). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -487,13 +487,6 @@ export type ControlMetric =
       unit: string;
       reason: string;
     };
-/**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
- *
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "TuningResultV1".
- */
-export type TuningResultV1 = TuningResultV11;
 /**
  * Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.
  *
@@ -2863,7 +2856,13 @@ export interface DriveTickRecord {
    */
   drives: DriveAxisSnapshot[];
 }
-export interface TuningResultV11 {
+/**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export interface TuningResultV1 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
@@ -2935,6 +2934,15 @@ export interface TuningResultV11 {
     samples: number;
   };
   accepted: false;
+  wheelMeasurement?: {
+    quantity: 'wheel_angular_speed';
+    inertiaAssumption: 'straight_line_no_slip';
+    comparison: {
+      tick: number;
+      bodyForwardMps: number;
+      wheelSurfaceMps: number;
+    } | null;
+  };
 }
 /**
  * suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).
