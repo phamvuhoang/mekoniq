@@ -598,10 +598,11 @@ test.each([['start','ready',0],['start','paused',0],['start','running',1],['step
   return next;};
  a.run();await a.idle();expect(changed).toBe(true);expect(a.w.html()).toContain(kind.toUpperCase()+'_OUTCOME_UNKNOWN');expect(a.calls.at(-1)).toBe(kind+' bench-1');expect(a.rt.recoverableRunIds).toContain('bench-1');
 });
-test.each(['wheels-reversed','joint-mismatch','duplicate-drive'])('round1 health %s disables creation',cause=>{
+test.each(['wheels-reversed','joint-mismatch','duplicate-drive','nested-axis-object'])('round1 health %s disables creation',cause=>{
  const h=structuredClone(health()),arm=h.benchCatalog!['MJ-BENCH-ARM']!,j=arm.axes[0]!;
  if(cause==='wheels-reversed')h.benchCatalog!['MJ-BENCH-WHEEL']!.axes[0]!.axisIds.reverse();
  else if(cause==='joint-mismatch')j.axisIds=['xarm-1/J4'];
+ else if(cause==='nested-axis-object')Object.assign(j,{axis:{toString:null}});
  else arm.axes.push({...j,axis:'J4'} as typeof j);
  const a=bench({h});a.run();expect(a.calls).toEqual([]);expect(a.w.html()).toContain('BENCH_CATALOG_INVALID');
 });
@@ -680,4 +681,24 @@ test('round1 an in-flight second run preserves the displayed result and earlier 
  a.run();await vi.waitFor(()=>expect(parked).toBe(true));
  try{expect(a.w.html()).not.toContain('data-testid="ab-delta"');expect(a.w.html()).toMatch(/data-action="twin-ctl-export"(?! disabled)/);}
  finally{gate.resolve();await a.idle();}
+});
+test.each(['same-target re-pair','target return','timeout'])('round2 a late CREATE after %s preserves the newer result and export',async transition=>{
+ const a=bench(),create=a.rt.create,gate=deferred<void>(),parked=deferred<void>();
+ a.rt.create=async q=>{const view=await create(q);if(view.run.id==='bench-1'){parked.resolve();await gate.promise;}return view;};
+ const firstTarget=a.rt.target.base,other='https://other/lab/v2',panel=a.h.control as {invalidate(base:string):void};
+ const switchTarget=(base:string)=>{panel.invalidate(base);a.rt.target.base=base;};
+ if(transition==='timeout'){
+  vi.useFakeTimers();
+  try{a.run();await parked.promise;await vi.advanceTimersByTimeAsync(30001);expect(a.h.control.phase).toBe('idle');}
+  finally{vi.useRealTimers();}
+ }else{a.run();await parked.promise;a.w.click('twin-disconnect');await a.rt.pair();a.h.health=health();}
+ a.run();await a.idle();
+ const result=()=>{const html=a.w.html();expect(html).toMatch(/data-testid="control-run">Run <code>bench-2</);expect(html).toContain('data-testid="control-plots"');expect(html).toMatch(/data-action="twin-ctl-export" aria-describedby/);};
+ result();
+ if(transition==='target return')switchTarget(other);
+ gate.resolve();
+ await vi.waitFor(()=>expect(marks().some(m=>m.id==='bench-1')).toBe(true));
+ if(transition==='target return'){expect(a.w.html()).not.toContain('control-recovery-bench-1');switchTarget(firstTarget);}
+ expect(a.w.html()).toContain('data-action="twin-ctl-reread" data-value="bench-1"');result();
+ expect(a.calls).not.toContain('start bench-1');expect(a.calls).not.toContain('archive bench-1');
 });

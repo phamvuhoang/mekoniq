@@ -133,14 +133,14 @@ export function validBenchCatalog(signals:BenchSignals,envelope:TuningEnvelopeV1
   const profileIds=e.startingProfile.axes.map(a=>a.axisId);
   return unique(profileIds)&&unique(e.axes.map(a=>a?.axis))&&Object.entries(e.experiments).every(([name,x])=>benchSchema.properties.driveExperimentId.enum.includes(name)&&x&&integer(x.anchorTick)&&x.anchorTick>=0&&x.anchorTick<=signals.maxTicks&&e.startingProfile.driveModelDigests.includes(x.driveModelDigest))
    &&e.axes.every(a=>{
-    if(!a||!Array.isArray(a.axisIds))return false;
+    if(!a||typeof a.axis!=='string'||!benchSchema.properties.axis.enum.includes(a.axis)||!Array.isArray(a.axisIds))return false;
     const expected=a.axis==='wheels'?['amr-1/wheel-left','amr-1/wheel-right']:[`xarm-1/${a.axis}`];
     if(canonicalJson(a.axisIds)!==canonicalJson(expected)||a.axisIds.some(axis=>driveIds.has(axis)))return false;
     for(const axis of a.axisIds)driveIds.add(axis);
     return a.axisIds.every(axis=>profileIds.includes(axis)&&envelope.axes.some(x=>x.axisId===axis))
     &&(a.axis==='wheels'?id==='MJ-BENCH-WHEEL'&&a.axisIds.length===2&&a.mode==='csv'&&a.unit==='rad/s'&&a.direction==='forward'
      &&(a.quantity===undefined&&a.inertiaAssumption===undefined||a.quantity==='wheel_angular_speed'&&a.inertiaAssumption==='straight_line_no_slip')
-    :id==='MJ-BENCH-ARM'&&benchSchema.properties.axis.enum.includes(a.axis)&&a.axisIds.length===1&&a.mode==='csp'&&a.unit==='rad'&&finite(a.lowerRad)&&finite(a.startRad)&&finite(a.upperRad)&&a.lowerRad<=a.startRad&&a.startRad<=a.upperRad);});
+    :id==='MJ-BENCH-ARM'&&a.axisIds.length===1&&a.mode==='csp'&&a.unit==='rad'&&finite(a.lowerRad)&&finite(a.startRad)&&finite(a.upperRad)&&a.lowerRad<=a.startRad&&a.startRad<=a.upperRad);});
  });
 }
 // The endpoint includes ten initial substeps plus up to 5000 measured substeps.

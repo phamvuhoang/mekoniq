@@ -20,7 +20,7 @@ const STEP_TICKS=50,SEED=7,SCENARIO_REVISION=1;
 export interface ControlHost {rt():TwinRuntime;health():TwinHealth|null;pinBlock():string[]|null;render():void;engineHolder?():string|null;freeEngine?():Promise<void>}
 /** `unread`: its report could not be read; `open`: its archive failed (a bench that lost contact mid-run may still hold the engine). Either way it stays open on the runtime, its
  *  proof and mark kept, and is listed to read again or close until an archive succeeds (final-fix V07 I2). */
-interface Bench {owner:BenchSession;confirmed:boolean;pendingAction?:BenchAction;lastTick:number;revision:number;reclaimTick?:number;terminalTick?:number;runId:string;request:BenchCreateRun;axisIds:string[];driveDigest:string;load:string;scenarioId:BenchScenarioId;axis:BenchAxisName;unit:string;base:ControlProfileV1;control:AxisControl;sourceCommit:string;status:string;tuning:TuningResultV1|null;trace:DriveTrace|null;issues:string[];unread?:boolean;open?:boolean}
+interface Bench {owner:BenchSession;confirmed:boolean;recoveryOnly?:boolean;pendingAction?:BenchAction;lastTick:number;revision:number;reclaimTick?:number;terminalTick?:number;runId:string;request:BenchCreateRun;axisIds:string[];driveDigest:string;load:string;scenarioId:BenchScenarioId;axis:BenchAxisName;unit:string;base:ControlProfileV1;control:AxisControl;sourceCommit:string;status:string;tuning:TuningResultV1|null;trace:DriveTrace|null;issues:string[];unread?:boolean;open?:boolean}
 /** Bench runs this browser created and has not closed, per runtime like the reclaim proofs (per-viewer storage). The twin never offers one as a twin run to
  *  reopen. The page that owns a mark refreshes it while the run is open; a mark nobody refreshed for MARK_STALE_MS (its page was closed or reloaded) whose proof
  *  is still held is an orphan the Control tab offers to close. A live bench of another tab is therefore never one. Storage that fails only loses the memory. */
@@ -163,7 +163,7 @@ export class ControlPanel {
    this.forget(s,id);return true;
   }catch(e){if(this.active(s))this.say(`ARCHIVE_FAILED: ${codeOf(e)}`);return false;}
  }
- private keep(b:Bench){this.history=[...this.history.filter((x,i,a)=>x!==b&&(x.unread||x.open||i>=a.length-7)),b];}
+ private keep(b:Bench){b.recoveryOnly=false;this.history=[...this.history.filter((x,i,a)=>x!==b&&(x.unread||x.open||i>=a.length-7)),b];}
  private canRecover(b:Bench){return this.active(b.owner)||!!this.host.rt().recoverableRunIds?.includes(b.runId);}
  private reportIdentity(b:Bench,r:Awaited<ReturnType<TwinRuntime['report']>>){
   const m=r?.manifest,{controlProfile,...request}=b.request.bench;
@@ -257,12 +257,17 @@ export class ControlPanel {
    bench:{schemaVersion:1,scenarioId:c.scenarioId,axis:c.axis.axis,signal:s.signal,driveExperimentId:c.experiment,controlProfile:benchDraft(base,control,c.axis.axisIds)}};
   this.phase='creating';this.stopAsked=false;this.progress=0;this.paint();
   const session=this.session();let v:RunView|null=null,b:Bench|undefined,mutation='CREATE',uncertain=false;
-  const remember=(id:string)=>{
+  const remember=(id:string,signal:AbortSignal)=>{
    if(b)return b;
    b={owner:session,confirmed:false,lastTick:0,revision:0,runId:id,request,axisIds:[...c.axis.axisIds],driveDigest:c.driveModelDigest,load:c.entry.plant.load,scenarioId:c.scenarioId,axis:c.axis.axis,unit:c.axis.unit,base,control,sourceCommit:h.sourceCommit,status:'ready',tuning:null,trace:null,issues:[],open:true,unread:true};
-   if(this.markKey()===session.key)this.keep(b);
-   else this.histories.set(session.key,[...(this.histories.get(session.key)??[]),b]);
    this.marks.write(session.key,id,{id,page:this.page,at:0});
+   if(this.active(session)&&!signal.aborted)this.keep(b);
+   else{
+    // A late identifier belongs to recovery. Only an explicit successful reread can select its result.
+    b.recoveryOnly=true;
+    if(this.markKey()===session.key){this.history=[b,...this.history];this.host.render();}
+    else this.histories.set(session.key,[b,...(this.histories.get(session.key)??[])]);
+   }
    return b;
   };
   const action=async(view:RunView,kind:BenchAction)=>{
@@ -275,9 +280,9 @@ export class ControlPanel {
    const result=await this.op(session,async signal=>{
     try{
      const next=await rt.create(request,{sourceCommit:h.sourceCommit,schemaHash:h.schemaHash},signal);
-     if(typeof next?.run?.id==='string'&&next.run.id.trim())remember(next.run.id);
+     if(typeof next?.run?.id==='string'&&next.run.id.trim())remember(next.run.id,signal);
      return next;
-    }catch(e){if(e instanceof TwinRuntimeError&&e.code==='BENCH_CREATE_PROOF_MISSING'&&e.runId)remember(e.runId);throw e;}
+    }catch(e){if(e instanceof TwinRuntimeError&&e.code==='BENCH_CREATE_PROOF_MISSING'&&e.runId)remember(e.runId,signal);throw e;}
    });
    if(!b||!validView(result,b)||result.run.status!=='ready'||result.tick!==0||result.run.runRevision!==0)throw Error('BENCH_VIEW_INVALID');
    if(!rt.recoverableRunIds?.includes(b.runId))throw Error('BENCH_CREATE_PROOF_MISSING');
@@ -358,7 +363,7 @@ export class ControlPanel {
   this.bases[c.scenarioId]=r.profile;for(const p of c.axes)if(p.scenarioId===c.scenarioId)delete this.drafts[p.axis.axis];this.errors={};this.reasons=[];
   this.notice=tr(`Đã nhập ${r.profile.id} r${r.profile.revision}: bản nháp lấy giá trị của file.`,`${r.profile.id} r${r.profile.revision} を読み込みました。下書きはファイルの値です。`,`Imported ${r.profile.id} r${r.profile.revision}: the draft holds the file’s values.`);this.noticeOk=true;this.paint();
  }
- private get displayedHistory(){return this.history.filter(b=>b.runId!==this.inFlight);}
+ private get displayedHistory(){return this.history.filter(b=>!b.recoveryOnly&&b.runId!==this.inFlight);}
  private export(){
   const b=this.displayedHistory.at(-1);if(b?.tuning?.status!=='completed')return;
   let text:string;try{text=exportControlProfile(b.base,b.control,b.tuning,{scenarioId:b.scenarioId,sourceCommit:b.sourceCommit});}catch(e){const code=codeOf(e);this.notice=`${code}: ${codeWords(code)}`;this.noticeOk=false;return this.paint();}
