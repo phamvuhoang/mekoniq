@@ -140,10 +140,15 @@ export async function readStream(dir:string,cp:{runId:string;plant:{snapshot:{bo
 export type Rec=Record<string,unknown>&{tick:number;drives?:DriveAxisSnapshot[]};
 const strip=(r:Rec)=>{const {drives:_d,...rest}=r;void _d;return rest;};
 
-export async function replayMobile(dir:string,cp:{tick:number;runId:string;plant:{snapshot:{bootId:string}}},scene:NavigationSceneV1,docs:{model:DriveModelV1;control:ControlProfileV1},records:Rec[],trace:Trace,faults:readonly import('../fault-schedule').FaultScheduleEntry[]=[]){
+/** The navigation evidence of a mobile run, read with the checks the CIL verifier makes (identity, one boot, one control record per tick). */
+export async function readMobileNavigation(dir:string,cp:{tick:number;runId:string;plant:{snapshot:{bootId:string}}},scene:NavigationSceneV1){
  const manifest=await readJson(dir,'run/evidence/manifest.json');
  const nav=await readNavigationEvidence(join(dir,'run/evidence'),manifest,{scene,runTick:cp.tick});
  if(!nav.complete||manifest.runId!==cp.runId||manifest.sceneDigest!==scene.sceneDigest||manifest.boots?.length!==1||manifest.boots[0].bootId!==cp.plant.snapshot.bootId||nav.control.length!==cp.tick)throw Error('CIL_CONTROL_EVIDENCE');
+ return nav;
+}
+export async function replayMobile(dir:string,cp:{tick:number;runId:string;plant:{snapshot:{bootId:string}}},scene:NavigationSceneV1,docs:{model:DriveModelV1;control:ControlProfileV1},records:Rec[],trace:Trace,faults:readonly import('../fault-schedule').FaultScheduleEntry[]=[]){
+ const nav=await readMobileNavigation(dir,cp,scene);
  const robot=scene.robots[0]!,controller=mobileDrive(docs,{robotId:robot.robotId,...robot.model.kinematics});
  return replayMobileCommands(controller,robot.robotId,records,nav.control,trace.steps,faults);
 }

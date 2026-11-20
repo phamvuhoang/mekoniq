@@ -155,7 +155,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
      const interlocked=!!cellHalted||st.arm.holding!==null||st.arm.programs.some(p=>p.state==='running')||st.arm.stop?.latched,nav=interlocked?{velocities:[{robotId:rid,vMps:0,omegaRadps:0}],decisions:[]}:controller.advance(last,{},!last.drives?.some(d=>d.state!=='enabled'));decisions=nav.decisions;
      const propPlacements:WorldTickCommand['propPlacements']=[],worldInteractions:NonNullable<WorldTickCommand['worldInteractions']>=[];
      for(const binding of scene.propBindings){const born=history.some(i=>i.propId===binding.propId&&i.kind==='birth'),gone=history.some(i=>i.propId===binding.propId&&i.kind==='remove');
-      const kind=!born&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;
+      // a halted cell births no cup: the arm will not take the one at the nozzle, and a second one would be placed over it (the worker refuses that, which ended the run as an exception)
+      const kind=!born&&!cellHalted&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;
       if(workflow&&last.arms![0]!.gripper!.heldPropIds.includes(binding.propId))throw Error('WORLD_MOVE_HELD_PROP');
       propPlacements.push({propId:binding.propId,pose:kind==='birth'?{position:hp.birth.centerM,quaternionXyzw:[0,0,0,1]}:null});worldInteractions.push({eventId:workflow?(kind==='birth'?birthEvents:removeEvents).get(binding.cupId)!:`source:${input.runId}:${binding.cupId}:${kind}`,cupId:binding.cupId,propId:binding.propId,kind,targetTick});
      }

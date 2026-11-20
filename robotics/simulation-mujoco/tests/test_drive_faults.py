@@ -351,3 +351,21 @@ def test_a_world_step_carries_injections_and_answers_receipts_in_the_wire_schema
     assert faulted["drives"][-1]["positionRad"] is None and faulted["faultReceipts"][0]["runId"] == "world-test"
     assert "faultReceipts" not in step(4)
     s.end()
+
+
+def test_a_wheel_that_went_quiet_does_not_make_the_pair_a_refused_body_twist(tmp_path):
+    """command-loss repeats one wheel's last seq. The (v, omega) the pair amounts to is then no command anybody gave: the navigation-limit admission applies to fresh pairs only (each wheel's own range still applies)."""
+    s, _ = started(tmp_path, 3)
+    kin = s.scene["robots"][0]["model"]["kinematics"]
+    radius, sep = s.engine.radius, s.engine.separation
+    top = float(s.engine.physical["drive"]["actuatorMaxSpeedRadps"]["value"])
+    r_target = 0.99 * top
+    v, w = (0 + r_target) / 2 * radius, (r_target - 0) * radius / sep
+    assert abs(v) > kin["maxLinearMps"] or abs(w) > kin["maxAngularRadps"], "the test needs a pair beyond the navigation limits"
+    quiet = [{**c} for c in wheels(3, 0.0)]       # both wheels were last sent seq 3 with target 0.0
+    mixed = [quiet[0], {**quiet[1], "seq": 4, "target": r_target}]   # left repeats seq 3, right is fresh at a speed the pair cannot carry
+    r = s.handle(request("step", {"targetTick": 4, "velocities": [], "actorUpdates": [], "driveCommands": mixed}, 3, rid="mixed"))
+    assert r["ok"], r
+    both = s.handle(request("step", {"targetTick": 5, "velocities": [], "actorUpdates": [], "driveCommands": wheels(5, r_target)}, 4, rid="fresh"))
+    assert not both["ok"] and both["error"]["code"] == "VELOCITY_TARGET_OUT_OF_RANGE", both   # a fresh pair is still checked
+    s.end()

@@ -788,9 +788,6 @@ export interface FaultScheduleEntry {
         value: 'brew' | 'grasp' | 'handoff' | 'delivery';
       };
   durationMs: number;
-  params?: {
-    [k: string]: number;
-  };
 }
 
 export interface LabProjectV2 {
@@ -958,9 +955,12 @@ export interface CreateRunRequest {
    *
    * @maxItems 16
    */
-  driveFaultSchedule?: FaultScheduleEntry[];
+  driveFaultSchedule?: DriveFaultEntryV1[];
 }
-export interface FaultScheduleEntry {
+/**
+ * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
+ */
+export interface DriveFaultEntryV1 {
   id: string;
   faultId: string;
   targetId: string;

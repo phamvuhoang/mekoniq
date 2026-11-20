@@ -313,7 +313,9 @@ class WorkerSession:
         by_id = g.check(commands)
         left, right = by_id[mob.rid + "/wheel-left"]["target"], by_id[mob.rid + "/wheel-right"]["target"]
         v, w = (left + right) / 2 * mob.radius, (right - left) * mob.radius / mob.separation
-        if abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9):
+        # a wheel that repeats its last seq (a silenced command channel) holds a target no controller paired with the other wheel's: only a pair of fresh commands is a body twist to admit
+        fresh = all(c["seq"] > g.seq[g.index[c["axisId"]]] for c in commands if c["axisId"] in (mob.rid + "/wheel-left", mob.rid + "/wheel-right"))
+        if fresh and (abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9)):
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel commands exceed the admitted navigation limits")
         return by_id
 

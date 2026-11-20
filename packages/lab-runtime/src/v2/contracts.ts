@@ -3,6 +3,7 @@ import addFormats from 'ajv-formats';
 import {hashPayload,type JsonValue} from '../../../contracts/src/index';
 import type {LabProjectV2,LabActionV2,CreateRunRequest,LabRunSnapshotV2,TwinSampleV2,AssetRevision,CoffeeRecipe,CellCommand,CellObservation,LabEvidenceV2,ArmCommand,ArmObservation} from '../../../contracts/generated/lab-v2';
 import faultScheduleSchema from '../../../contracts/schemas/lab-fault-schedule.schema.json';
+import driveIoSchema from '../../../contracts/schemas/drive-io-v1.schema.json';
 import projectSchema from '../../../contracts/schemas/lab-project-v2.schema.json';
 import runSchema from '../../../contracts/schemas/lab-run-v2.schema.json';
 import actionSchema from '../../../contracts/schemas/lab-action-v2.schema.json';
@@ -22,7 +23,7 @@ export interface Issue {path:string;code:string;message:string;}
 export type Validated<T>={ok:true;value:T}|{ok:false;issues:Issue[]};
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});addFormats(ajv);
 // The arm bridge schemas $ref the cell schemas by file name (the generator resolves files); Ajv resolves them under the same key.
-ajv.addSchema(faultScheduleSchema,'lab-fault-schedule.schema.json');
+ajv.addSchema(faultScheduleSchema,'lab-fault-schedule.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');
 ajv.addSchema(commandSchema,'cell-command.schema.json');ajv.addSchema(observationSchema,'cell-observation.schema.json');
 // Property names a caller must never supply: authority comes from the server session and catalog, never the body.
 const ACTOR=/actor|role|principal|owner|operator|user/i,ENDPOINT=/endpoint|url|uri|host|address|socket|topic|^ip$|^port$/i,RAW=/gcode|halcmd|shell|script|command$/i,MODE=/^(mode|access|backends?|backendSetId)$/i;

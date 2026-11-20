@@ -88,3 +88,13 @@ test('cell: schedules the world refuses never start a worker',async()=>{
  await expect(openCell(7,'fault-bad-1',{},{driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[entry('lidar-noise','amr-1/lidar-2d',100,1000,{sigmaM:0.01,dropoutFraction:0})]}).then(async h=>{open.push(h);await h.run.start();})).rejects.toThrow('FAULT_TARGET_INVALID');
  await expect(openCell(7,'fault-bad-2',{},{driveFaultSchedule:[entry('encoder-dropout','amr-1/wheel-left',100,300)]}).then(async h=>{open.push(h);await h.run.start();})).rejects.toThrow('FAULT_BACKEND_UNSUPPORTED');
 },120_000);
+
+test('cell: an arm axis fault that halts an idle arm ends the run in attention, not in a refused cup birth over the cup still at the nozzle',async()=>{
+ const e=entry('encoder-dropout','arm-1/J2',25_000,300),h=await openCell(7,'fault-arm',{},{driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[e]});open.push(h);
+ await h.run.start();await cellUntil(h.run,()=>false,cellCampaign.maxTicks,50);   // must not throw
+ const {report}=await h.save('fault-arm');await h.run.close();
+ expect(['needs_attention','completed']).toContain(report.outcome.status);expect(report.outcome.served).toBe('0');
+ const fr=report.faultReport!;expect(fr,JSON.stringify(report.driveEvidence?.issues)).toBeDefined();
+ expect(fr.entries[0]).toMatchObject({faultId:'encoder-dropout',verdict:'detected_in_time'});
+ expect(fr.invariants.filter(i=>i.result==='violated')).toEqual([]);
+},deadline);

@@ -410,12 +410,12 @@
           "params": {}
         },
         {
-          "id": "drive-reset-wheel-right-12400",
+          "id": "drive-reset-wheel-right-12020",
           "faultId": "drive-reset",
           "targetId": "amr-1/wheel-right",
           "trigger": {
             "kind": "elapsed_sim_ms",
-            "value": 12400
+            "value": 12020
           },
           "durationMs": 20,
           "params": {}
@@ -430,7 +430,7 @@
           "drive-trip-wheel-right-12000": [
             "detected_in_time"
           ],
-          "drive-reset-wheel-right-12400": [
+          "drive-reset-wheel-right-12020": [
             "detected_in_time",
             "detected_late",
             "not_detected"

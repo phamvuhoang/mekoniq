@@ -22,7 +22,8 @@ import {buildDriveEvidence} from './drive-report';
 import {DRIVE_FAULTS,faultStartTick,validateDriveFaultSchedule} from './drive-faults';
 import {driveDocumentDigest,type ControlProfileV1,type DriveModelV1,type FaultOracleV1} from './drive-io';
 import {buildFaultReport,serveTicksOf,servedFacts} from '../fault-report';
-import {readJson,readStream,replayMobile,runMobile,setupMobile,type Rec,type Trace} from './cil-campaign';
+import {readJson,readMobileNavigation,readStream,replayMobile,runMobile,setupMobile,type Rec,type Trace} from './cil-campaign';
+import {replayLidarNoise} from './sensor-transforms';
 
 export const FAULT_CAMPAIGN=campaign;
 export interface FaultCase {id:string;kind:'mobile'|'cell';seed:number;schedule:FaultScheduleEntry[];expect:{status:string[];served:string|null;verdicts:Record<string,string[]>}}
@@ -128,6 +129,12 @@ export async function verifyFaultCampaign(root:string,onlyCase?:string):Promise<
     const events=await replayMobile(dir,cp,scene,{model,control},records,trace,spec.schedule);
     const rows=records.map(r=>({tick:r.tick,drives:r.drives??[]})),drive=buildDriveEvidence(model,rows,{complete:read.complete,issues:read.issues,events});
     check(hashJson(drive as never)===hashJson(report.driveEvidence as never),'FLT_DRIVE_REPORT_NOT_FROM_STREAM');
+    // lidar-noise: the perturbed scans the run recorded are exactly what its own stream gives on the true publications of the navigation evidence
+    if(spec.schedule.some(e=>e.faultId==='lidar-noise')){
+     const nav=await readMobileNavigation(dir,cp,scene),expected=replayLidarNoise({seed:cp.manifest.seed,robotId:scene.robots[0]!.robotId,schedule:spec.schedule,publications:nav.sensors.map(x=>({tick:x.tick,scan:x.scan})),lastTick:cp.tick});
+     const recorded=records.flatMap(r=>((r as unknown as {sensorTransforms?:object[]}).sensorTransforms??[]).map(x=>({tick:r.tick,...x})));
+     check(hashJson(expected)===hashJson(recorded)&&recorded.length>0,'FLT_SENSOR_TRANSFORMS');
+    }
     // the wire sent a fault injection exactly on the ticks the schedule's timeline names, and only the ones the worker applies
     const sentTicks=new Set((trace as unknown as {steps:{tick:number}[]}).steps.map(s=>s.tick));check(sentTicks.size===(trace as unknown as {steps:unknown[]}).steps.length,'FLT_RESEND');
     if(spec.schedule.length)again=buildFaultReport({runId:cp.runId,schedule:spec.schedule,oracle,drives:rows,controllerEvents:events,attention,physics:records as never,

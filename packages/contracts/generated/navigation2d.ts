@@ -2706,6 +2706,30 @@ export interface DriveFeedbackV1 {
   tick: number;
 }
 /**
+ * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFaultEntryV1".
+ */
+export interface DriveFaultEntryV1 {
+  id: string;
+  faultId: string;
+  targetId: string;
+  trigger:
+    | {
+        kind: 'elapsed_sim_ms';
+        value: number;
+      }
+    | {
+        kind: 'phase';
+        value: 'brew' | 'grasp' | 'handoff' | 'delivery';
+      };
+  durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
+}
+/**
  * Neutral drive command/feedback contract (R4-A). DriveFeedbackV1 carries measured values only; DriveAxisSnapshot adds the true state and is evidence-only.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

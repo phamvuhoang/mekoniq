@@ -7,7 +7,8 @@ import {join} from 'node:path';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
 import {DRIVE_FAULTS,validateDriveFaultSchedule} from './control/drive-faults';
-import {validateFaultEntryShape,type FaultScheduleEntry} from './fault-schedule';
+import type {FaultScheduleEntry} from './fault-schedule';
+import {validateDriveFaultEntryShape} from './control/drive-io';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
 import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffered} from './scenario-matrix';
@@ -266,7 +267,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    // R4 (V08): a body that carries driveFaultSchedule is a schedule check against the catalog and the experiment, not a project
    if(Object.hasOwn(body,'driveFaultSchedule')){
     const keys=Object.keys(body).filter(k=>!['driveFaultSchedule','backendSetId','scenarioId','driveExperimentId'].includes(k)),entries=body.driveFaultSchedule;
-    if(keys.length||!Array.isArray(entries)||entries.length>16||typeof body.backendSetId!=='string'||typeof body.scenarioId!=='string'||(body.driveExperimentId!==undefined&&typeof body.driveExperimentId!=='string')||!entries.every(e=>validateFaultEntryShape(e)))return deny(response,422,'INVALID_FAULT_SCHEDULE',['FAULT_SCHEDULE_INVALID']);
+    if(keys.length||!Array.isArray(entries)||entries.length>16||typeof body.backendSetId!=='string'||typeof body.scenarioId!=='string'||(body.driveExperimentId!==undefined&&typeof body.driveExperimentId!=='string')||!entries.every(e=>validateDriveFaultEntryShape(e)))return deny(response,422,'INVALID_FAULT_SCHEDULE',['FAULT_SCHEDULE_INVALID']);
     const ctx=await deps.driveFaultContext?.({mode:'simulation',backendSetId:body.backendSetId,scenarioId:body.scenarioId,...body.driveExperimentId?{driveExperimentId:body.driveExperimentId}:{}});
     if(!ctx)return deny(response,422,'FAULT_BACKEND_UNSUPPORTED',['FAULT_BACKEND_UNSUPPORTED']);
     const checked=validateDriveFaultSchedule(entries as FaultScheduleEntry[],{...ctx,campaign:false});

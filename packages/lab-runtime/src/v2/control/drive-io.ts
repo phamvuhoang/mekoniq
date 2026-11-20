@@ -22,6 +22,7 @@ export const validateTraceTickShape=ajv.getSchema('drive-trace-manifest-v1.schem
 export const validateTraceIdentityShape=ajv.getSchema('drive-trace-manifest-v1.schema.json#/definitions/BenchTraceIdentity')!;
 export const validateTraceManifestShape=ajv.getSchema('drive-trace-manifest-v1.schema.json')!;
 export const validateControlEvidenceShape=ajv.getSchema('control-evidence-v1.schema.json')!;
+export const validateDriveFaultEntryShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveFaultEntryV1')!;
 export const validateDriveAxisSnapshotShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveAxisSnapshot')!;
 export const validateDriveCommandShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveCommandV1')!;
 

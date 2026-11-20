@@ -487,6 +487,91 @@
         "sceneDigest",
         "requestDigest"
       ]
+    },
+    "DriveFaultEntryV1": {
+      "title": "DriveFaultEntryV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "faultId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "targetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./:-]{1,200}$"
+        },
+        "trigger": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "elapsed_sim_ms"
+                },
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 3600000
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "phase"
+                },
+                "value": {
+                  "enum": [
+                    "brew",
+                    "grasp",
+                    "handoff",
+                    "delivery"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ]
+            }
+          ]
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 60000
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9]{0,39}$"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "faultId",
+        "targetId",
+        "trigger",
+        "durationMs"
+      ],
+      "description": "A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes."
     }
   }
 }
