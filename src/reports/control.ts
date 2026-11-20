@@ -71,7 +71,7 @@ const changedName=(k:string)=>({plantModelDigest:tr('digest plant','プラント
  *  with each reason and, given the previous result `a`, the A/B: B − A per metric when the two are comparable, otherwise the inputs that changed and no delta. */
 export function tuningHtml(t:TuningResultV1,a?:TuningResultV1|null,plots=''):string{
  const c=a?comparable(a,t):null,ab=!!c?.ok,run=(r:TuningResultV1)=>esc(r.runId.slice(0,8));
- const rows=METRICS.filter(k=>k in t.metrics).map(k=>`<tr data-metric="${k}"><th scope="row">${esc(metricName(k,t))}</th>${ab?`<td>${esc(value(a!.metrics[k]))}</td>`:''}<td data-available="${t.metrics[k]!.available}">${esc(value(t.metrics[k]))}</td>${ab?`<td>${esc(delta(a!.metrics[k],t.metrics[k]))}</td>`:''}</tr>`).join('');
+ const rows=METRICS.filter(k=>k in t.metrics).map(k=>`<tr data-metric="${k}"><th scope="row">${esc(metricName(k,t))}</th>${ab?`<td>${esc(value(a!.metrics[k]))}</td>`:''}<td data-available="${esc(t.metrics[k]!.available)}">${esc(value(t.metrics[k]))}</td>${ab?`<td>${esc(delta(a!.metrics[k],t.metrics[k]))}</td>`:''}</tr>`).join('');
  const j=t.effectiveInertia;
  return `<div class="control-result" data-testid="tuning-result" data-status="${esc(t.status)}"><p class="control-status" data-status="${esc(t.status)}" role="status"><b>${esc(tuningStatus(t))}</b></p>${plots}
 <p class="control-summary" data-testid="tuning-summary">${METRICS.filter(k=>k in t.metrics).map(k=>{const m=t.metrics[k]!;return `<span><small>${esc(shortName(k))}</small> ${esc(m.available?value(m):'—')}</span>`;}).join(' · ')}</p>

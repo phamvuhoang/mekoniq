@@ -18,10 +18,13 @@ const STEP_TICKS=50,SEED=7,SCENARIO_REVISION=1;
 export interface ControlHost {rt():TwinRuntime;health():TwinHealth|null;pinBlock():string[]|null;render():void;engineHolder?():string|null;freeEngine?():Promise<void>}
 /** `unread`: the run finished but its report could not be read; it stays open on the runtime (it holds no engine slot) until "read again" succeeds. */
 interface Bench {runId:string;scenarioId:BenchScenarioId;axis:BenchAxisName;unit:string;base:ControlProfileV1;control:AxisControl;sourceCommit:string;status:string;tuning:TuningResultV1|null;trace:DriveTrace|null;issues:string[];unread?:boolean}
-/** Bench run ids this browser created and has not closed yet (per-viewer storage): the twin never offers them as twin runs to reopen, and after a reload the
- *  Control tab offers to close one an earlier page left open. Storage that fails only loses the memory across reloads. */
-const BENCH_KEY='mekoniq-lab-bench-runs';
-const loadMarks=():string[]=>{try{const v:unknown=JSON.parse(localStorage.getItem(BENCH_KEY)??'[]');return Array.isArray(v)?v.filter((x):x is string=>typeof x==='string'):[];}catch{return [];}};
+/** Bench runs this browser created and has not closed, per runtime like the reclaim proofs (per-viewer storage). The twin never offers one as a twin run to
+ *  reopen. The page that owns a mark refreshes it while the run is open; a mark nobody refreshed for MARK_STALE_MS (its page was closed or reloaded) whose proof
+ *  is still held is an orphan the Control tab offers to close. A live bench of another tab is therefore never one. Storage that fails only loses the memory. */
+interface Mark {id:string;page:string;at:number}
+const MARK_KEY='mekoniq-lab-bench-runs',MARK_REFRESH_MS=5000,MARK_STALE_MS=15000;
+/** Reclaim or archive answers that mean the runtime does not hold the run (a bench keeps no checkpoint: RECOVERY_CHECKPOINT_MISSING is "not in memory"). */
+const gone=(e:unknown)=>e instanceof TwinRuntimeError&&['RUN_NOT_FOUND','RECOVERY_CHECKPOINT_MISSING'].includes(e.code);
 /** The code of a failure, for the words the panel shows. */
 const codeOf=(e:unknown)=>e instanceof TwinRuntimeError?e.code:e instanceof Error?e.message:String(e);
 type Pick={scenarioId:BenchScenarioId;entry:BenchCatalogEntry;axis:BenchCatalogAxis};
@@ -39,6 +42,7 @@ const codeWords=(c:string)=>({UNPAIRED:tr('ghép nối một runtime trước (h
  TICK_OUT_OF_RANGE:tr('tín hiệu không vừa trong 500 tick sau khi drive bật','ドライブ有効化後の500 tickに収まらない','the signal does not fit in the 500 ticks after the drive enables'),SIGNAL_TOO_LONG:tr('chuyển động dài hơn bench','動作がベンチより長い','the motion is longer than the bench'),
  DIGEST_MISMATCH:tr('digest không khớp nội dung','ダイジェストが内容と一致しない','the digest does not match the content'),DRIVE_PLANT_MISMATCH:tr('profile của plant khác','別のプラントのプロファイル','a profile of another plant'),DRIVE_MODEL_DIGEST_MISMATCH:tr('profile không khai báo model drive này','このドライブモデル向けに宣言されていない','not declared for this drive model'),
  AXIS_SET_MISMATCH:tr('bộ trục khác với plant','軸の構成がプラントと異なる','another set of axes than the plant'),INVALID_JSON:tr('không phải JSON','JSONではない','not JSON'),SCHEMA_INVALID:tr('không đúng schema ControlProfileV1','ControlProfileV1スキーマに合わない','does not match the ControlProfileV1 schema'),
+ RECLAIM_CONFLICT:tr('lần chạy đang được mở lại hoặc lưu trữ ở nơi khác','実行は別の場所で再開またはアーカイブ中','the run is being reclaimed or archived elsewhere'),SESSION_REQUIRED:tr('phiên runtime đã hết hạn: ghép nối lại','ランタイムのセッションが切れました。再ペアリングしてください','the runtime session expired: pair again'),
  PROFILE_TOO_LARGE:tr('file quá lớn (tối đa 1 MiB)','ファイルが大きすぎる(最大1 MiB)','file too large (1 MiB at most)'),NON_FINITE_NUMBER:tr('có số không hữu hạn','有限でない数値を含む','holds a non-finite number')} as Record<string,string>)[c]??reasonWords(c);
 const axisName=(a:BenchAxisName)=>a==='wheels'?tr('Hai bánh','両輪','Both wheels'):a==='gripper'?tr('Kẹp','グリッパー','Gripper'):a;
 const kindName=(k:string)=>({step:tr('Bước','ステップ','Step'),trapezoid:tr('Hình thang','台形','Trapezoid'),hold:tr('Giữ','保持','Hold')} as Record<string,string>)[k]??String(k);
@@ -53,20 +57,39 @@ export class ControlPanel {
  private errors:Record<string,string>={};private reasons:string[]=[];private notice='';private noticeOk=false;private suggestion=0;private tableOpen=false;
  /** The latest benches, newest last; only the newest keeps its trace (up to ~1 MB) for the plots. */
  private history:Bench[]=[];private plotCache={key:'',plots:'',table:''};
- /** The bench in flight (from its create until it is archived) and the benches this browser created and has not closed. */
- private activeRunId='';private marks=new Set(loadMarks());private freeing=false;
+ /** This page's open bench runs (in flight, or finished and not read yet): its marks, refreshed every MARK_REFRESH_MS while any is open. */
+ private page=crypto.randomUUID();private own=new Set<string>();private beat:ReturnType<typeof setInterval>|undefined;private freeing=false;private closing=false;
  constructor(private host:ControlHost){}
- /** A run of this panel: never one for the twin to reopen. */
- isBench(id:string):boolean{return id===this.activeRunId||this.marks.has(id);}
- /** Re-read before each write: another tab of this browser may have marked or closed one meanwhile. */
- private mark(id:string,on:boolean){const marks=new Set([...loadMarks(),...this.marks]);if(on)marks.add(id);else marks.delete(id);this.marks=marks;try{localStorage.setItem(BENCH_KEY,JSON.stringify([...marks]));}catch{/* this page still knows */}}
- /** Benches an earlier page left open on this runtime (a proof is still held, none of this page's benches): offered to close, never to reopen. */
- private orphans(){return (this.host.rt().recoverableRunIds??[]).filter(id=>this.marks.has(id)&&id!==this.activeRunId&&!this.history.some(b=>b.runId===id));}
- /** Close a bench run: archive it (a runtime that refuses, e.g. another session's, is said) and forget it either way. */
+ private markKey(){return `${MARK_KEY}:${this.host.rt().target?.base??'/lab/v2'}`;}
+ private loadMarks():Mark[]{try{const v:unknown=JSON.parse(localStorage.getItem(this.markKey())??'[]');return Array.isArray(v)?v.filter((m):m is Mark=>!!m&&typeof m.id==='string'&&typeof m.page==='string'&&typeof m.at==='number'):[];}catch{return [];}}
+ private saveMarks(m:Mark[]){try{localStorage.setItem(this.markKey(),JSON.stringify(m));}catch{/* this page still knows its own */}}
+ /** Read, then write: other tabs' marks are kept as they are, this page's are its own and fresh. */
+ private refresh(){const now=Date.now();this.saveMarks([...this.loadMarks().filter(m=>!this.own.has(m.id)),...[...this.own].map(id=>({id,page:this.page,at:now}))]);}
+ private open(id:string){this.own.add(id);this.refresh();if(!this.beat){this.beat=setInterval(()=>this.refresh(),MARK_REFRESH_MS);(this.beat as {unref?:()=>void}).unref?.();}}
+ private forget(id:string){this.own.delete(id);this.saveMarks(this.loadMarks().filter(m=>m.id!==id));if(!this.own.size){clearInterval(this.beat);this.beat=undefined;}}
+ /** A run of a Control tab (this page's or one marked in this browser): never one for the twin to reopen. */
+ isBench(id:string):boolean{return this.own.has(id)||this.loadMarks().some(m=>m.id===id);}
+ /** Bench runs an earlier page left open on this runtime: a held proof and a mark nobody refreshed for MARK_STALE_MS. A stale mark without a proof is dropped. */
+ private orphans():string[]{
+  const proofs=this.host.rt().recoverableRunIds??[],now=Date.now(),marks=this.loadMarks(),stale=(m:Mark)=>!this.own.has(m.id)&&now-m.at>MARK_STALE_MS;
+  const kept=marks.filter(m=>!stale(m)||proofs.includes(m.id));if(kept.length!==marks.length)this.saveMarks(kept);
+  return kept.filter(m=>stale(m)&&proofs.includes(m.id)).map(m=>m.id);
+ }
+ private say(text:string){this.notice=`${this.notice?`${this.notice} · `:''}${text}`;this.noticeOk=false;}
+ /** Close one of this page's bench runs: archive it (a refusal other than "not held" is said) and forget it either way. */
  private async close(id:string){
   const rt=this.host.rt();
-  await rt.archive?.(id).catch((e:unknown)=>{if(!(e instanceof TwinRuntimeError&&e.code==='RUN_NOT_FOUND')){this.notice=`${this.notice?`${this.notice} · `:''}ARCHIVE_FAILED: ${codeOf(e)}`;this.noticeOk=false;}});
-  rt.dropProof?.(id);this.mark(id,false);
+  await rt.archive?.(id).catch((e:unknown)=>{if(!gone(e))this.say(`ARCHIVE_FAILED: ${codeOf(e)}`);});
+  rt.dropProof?.(id);this.forget(id);
+ }
+ /** Close a bench an earlier page left open. This session does not own it (the runtime answers its archive "not found"), so it is reclaimed first with the proof:
+  *  this session becomes the owner and a bench that was still stepping stops (its engine slot is freed). Then it is archived and forgotten. A refused reclaim or
+  *  archive is said and the proof and mark are kept for another try; only "the runtime does not hold it" forgets it at once. */
+ private async closeOrphan(id:string){
+  const rt=this.host.rt();
+  try{if(rt.reclaim)await rt.reclaim(id);await rt.archive?.(id);}
+  catch(e){if(!gone(e)){this.say(`${tr('Không đóng được','閉じられません','Could not close')} ${id.slice(0,8)}: ${codeOf(e)} (${codeWords(codeOf(e))})`);return;}}
+  rt.dropProof?.(id);this.forget(id);
  }
  /** The report of a finished bench, then its trace on its own: a trace that cannot be read keeps the result and says why. A report that cannot be read leaves
   *  the bench open (no engine slot is held by a finished bench) with "read again"; a bench read is closed. */
@@ -124,7 +147,7 @@ export class ControlPanel {
   this.phase='creating';this.stopAsked=false;this.progress=0;this.paint();
   let v:RunView|null=null;
   try{
-   v=await rt.create(request,{sourceCommit:h.sourceCommit,schemaHash:h.schemaHash});this.activeRunId=v.run.id;this.mark(v.run.id,true);
+   v=await rt.create(request,{sourceCommit:h.sourceCommit,schemaHash:h.schemaHash});this.open(v.run.id);
    if(!this.stopAsked){v=await rt.action(v,'start');this.phase='running';this.paint();}
    while(v.run.status==='running'&&!this.stopAsked){v=await rt.action(v,'step',{ticks:STEP_TICKS});this.progress=v.tick;this.paint();}
    // a stop asked while a step was in flight goes with the revision that step returned; "stopping" stays until the runtime answers it
@@ -143,14 +166,16 @@ export class ControlPanel {
   }finally{
    // archived even when it failed or was refused after creation: a bench is never left open on the runtime (20 open runs at most); an archived bench is never reclaimed
    if(v)await this.close(v.run.id);
-   this.phase='idle';this.stopAsked=false;this.activeRunId='';this.paint();
+   this.phase='idle';this.stopAsked=false;this.paint();
   }
  }
  click(action:string,value?:string):void{
   if(action==='twin-ctl-cancel'){if(this.phase==='idle'||this.phase==='reading'||this.stopAsked)return;this.stopAsked=true;return this.paint();}
-  const unread=this.history.find(b=>b.unread&&b.runId===value);
-  if(action==='twin-ctl-reread'&&unread&&this.phase==='idle'){this.phase='reading';this.paint();void this.read(unread).finally(()=>{this.phase='idle';this.paint();});return;}
-  if(action==='twin-ctl-orphan'&&value&&this.orphans().includes(value)&&this.phase==='idle'){this.phase='reading';this.paint();void this.close(value).finally(()=>{this.phase='idle';this.paint();});return;}
+  const unread=this.history.find(b=>b.unread&&b.runId===value),idle=this.phase==='idle'&&!this.closing;
+  if(action==='twin-ctl-reread'&&unread&&idle){this.phase='reading';this.paint();void this.read(unread).finally(()=>{this.phase='idle';this.paint();});return;}
+  // a run whose report cannot be read (for good, e.g. the runtime restarted) is closed without its result
+  if(action==='twin-ctl-unread-close'&&unread&&idle)return this.closeWith(()=>this.close(unread.runId).then(()=>{this.history=this.history.filter(b=>b!==unread);}));
+  if(action==='twin-ctl-orphan'&&value&&idle&&this.orphans().includes(value))return this.closeWith(()=>this.closeOrphan(value));
   const c=this.ctx();if(!c.ok)return;
   if(action==='twin-ctl-suggest-apply'){const g=this.suggestions(c)[this.suggestion];if(!g)return;this.drafts[c.axis.axis]=draftOf({axisId:c.axis.axisIds[0]!,loop:g.loop,accelerationLimit:g.accelerationLimit});for(const k of DRAFT_FIELDS)delete this.errors[k];return this.paint();}
   if(action==='twin-ctl-export')return this.export();
@@ -180,6 +205,7 @@ export class ControlPanel {
   if(f.size>MAX_PROFILE_BYTES)return this.refused(['PROFILE_TOO_LARGE']);
   void f.text().then(t=>this.importText(t),()=>this.refused(['INVALID_JSON']));
  }
+ private closeWith(task:()=>Promise<void>){this.closing=true;this.paint();void task().finally(()=>{this.closing=false;this.paint();});}
  private refused(codes:string[]){this.notice=`${tr('Không nhập profile; bản nháp giữ nguyên','プロファイルを読み込みません。下書きはそのまま','Profile not imported; the draft is unchanged')}: ${codes.map(x=>`${x} (${codeWords(x)})`).join(', ')}`;this.noticeOk=false;this.paint();}
  /** A profile for the current plant becomes the base of its drafts; anything else is refused and the draft stays as it was (never applied to another plant). */
  importText(text:string):void{
@@ -207,7 +233,7 @@ export class ControlPanel {
  }
  private benchHtml(b:Bench,prev:Bench|undefined):string{
   const title=`<h3 data-testid="control-run">${tr('Lần chạy','実行','Run')} <code>${esc(b.runId.slice(0,8))}</code> · ${esc(axisName(b.axis))}${b.tuning?` · ${esc(signalText(b.tuning.signal))}`:''}</h3>`;
-  if(b.unread)return `${title}<p class="field-error" role="status" data-testid="control-unread">${tr('Lần chạy đã xong nhưng chưa đọc được báo cáo; nó vẫn mở trên runtime (không giữ engine).','実行は終了しましたがレポートを読めませんでした。ランタイム上で開いたままです(エンジンは保持しません)。','The run finished but its report could not be read; it stays open on the runtime (it holds no engine).')} ${esc(b.issues.join(', '))}</p><button type="button" class="button secondary" data-action="twin-ctl-reread" data-value="${esc(b.runId)}"${this.phase==='idle'?'':' disabled'}>${icon('rotate',16)}${tr('Đọc lại báo cáo và trace','レポートとトレースを再読み込み','Read the report and trace again')}</button>`;
+  if(b.unread)return `${title}<p class="field-error" role="status" data-testid="control-unread">${tr('Lần chạy đã xong nhưng chưa đọc được báo cáo; nó vẫn mở trên runtime (không giữ engine).','実行は終了しましたがレポートを読めませんでした。ランタイム上で開いたままです(エンジンは保持しません)。','The run finished but its report could not be read; it stays open on the runtime (it holds no engine).')} ${esc(b.issues.join(', '))}</p>`;
   if(!b.tuning)return `${title}<p class="field-error" role="status" data-testid="control-no-result">${b.status==='cancelled'?tr('Đã dừng trước khi có kết quả.','結果が出る前に停止しました。','Stopped before a result.'):tr('Không có kết quả.','結果はありません。','No result.')}${b.issues.length?` ${esc(b.issues.join(', '))}`:''}</p>`;
   const {plots,table}=b.trace?this.plots(b as Bench&{trace:DriveTrace}):{plots:'',table:''};
   // §6.3 order: status, the plots, a metric line, the full table (or A/B), then the plots' own number table
@@ -242,8 +268,10 @@ ${pin?`<p class="field-error" role="status">${esc(codeWords('RUNTIME_PIN_MISMATC
 <p class="field-help" id="twin-ctl-io-note">${exportable?tr(`Xuất: profile của lần chạy ${esc(last!.runId.slice(0,8))}, nguồn tuned_in_simulation, chưa hiệu chuẩn.`,`書き出し:実行 ${esc(last!.runId.slice(0,8))} のプロファイル、出典 tuned_in_simulation、未校正。`,`Export: the profile of run ${esc(last!.runId.slice(0,8))}, sourced tuned_in_simulation, not calibrated.`):tr('Xuất cần một lần chạy thử hoàn tất.','書き出しには完了したベンチが必要です。','Export needs a completed bench.')} ${tr('Nhập kiểm schema, digest và plant; profile của plant khác bị từ chối.','読み込み時にスキーマ・ダイジェスト・プラントを確認し、別プラントのものは拒否します。','Import checks the schema, the digest and the plant; a profile of another plant is refused.')}</p></div>`;
   const progress=busy?`<p class="control-progress" role="status" data-testid="control-progress">${this.stopAsked?tr('Đang dừng… chờ runtime xác nhận','停止中… ランタイムの確認待ち','Stopping… waiting for the runtime to confirm'):this.phase==='creating'?tr('Đang tạo lần chạy thử','ベンチ実行を作成中','Creating the bench run'):this.phase==='reading'?tr('Đang đọc báo cáo và trace đã ghi','レポートと記録済みトレースを読み込み中','Reading the report and the recorded trace'):`${tr('Đang chạy','実行中','Running')} · tick ${esc(this.progress)}/${esc(c.signals.maxTicks)}`}${this.phase==='running'?` <progress max="${esc(c.signals.maxTicks)}" value="${esc(this.progress)}"></progress>`:''}</p>`:'';
   const prev=this.history.slice(0,-1).reverse().find(b=>b.tuning),orphans=this.orphans();
-  const left=orphans.length?`<div class="control-orphans" data-testid="control-orphans"><p class="field-help">${tr('Lần chạy thử mà một trang trước để mở trên runtime này (không bao giờ mở lại như lần chạy của twin):','以前のページがこのランタイムに開いたままにしたベンチ実行(ツインの実行としては開きません):','Bench runs an earlier page left open on this runtime (never reopened as twin runs):')}</p>${orphans.map(id=>`<button type="button" class="button secondary" data-action="twin-ctl-orphan" data-value="${esc(id)}"${busy?' disabled':''}>${tr('Đóng','閉じる','Close')} <code>${esc(id.slice(0,8))}</code></button>`).join('')}</div>`:'';
-  const results=`<div class="control-results" id="twin-ctl-results">${progress}${left}${this.notice?`<p class="${this.noticeOk?'field-help':'field-error'}" role="status" data-testid="control-notice">${esc(this.notice)}</p>`:''}${last?this.benchHtml(last,prev):`<p class="empty-inline">${tr('Chưa có lần chạy thử. Chọn trục, chỉnh gain trong biên rồi bấm Chạy thử.','まだベンチ実行はありません。軸を選び、範囲内でゲインを調整して「試運転」を押してください。','No bench yet. Pick an axis, set the gains inside the bounds, then press Run bench.')}</p>`}</div>`;
+  const waiting=busy||this.closing,unread=this.history.filter(b=>b.unread);
+  const unreadList=unread.length?`<div class="control-orphans" data-testid="control-unread"><p class="field-help">${tr('Lần chạy đã xong nhưng chưa đọc được báo cáo (vẫn mở trên runtime, không giữ engine):','終了したがレポートを読めなかった実行(ランタイム上で開いたまま、エンジンは保持しない):','Runs that finished but whose report could not be read (still open on the runtime, holding no engine):')}</p>${unread.map(b=>`<span class="control-unread"><code>${esc(b.runId.slice(0,8))}</code> <button type="button" class="button secondary" data-action="twin-ctl-reread" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${icon('rotate',16)}${tr('Đọc lại','再読み込み','Read again')}</button> <button type="button" class="button secondary" data-action="twin-ctl-unread-close" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${tr('Đóng không đọc','読まずに閉じる','Close without reading')}</button></span>`).join('')}</div>`:'';
+  const left=orphans.length?`<div class="control-orphans" data-testid="control-orphans"><p class="field-help">${tr('Lần chạy thử mà một trang trước để mở trên runtime này (không bao giờ mở lại như lần chạy của twin):','以前のページがこのランタイムに開いたままにしたベンチ実行(ツインの実行としては開きません):','Bench runs an earlier page left open on this runtime (never reopened as twin runs):')}</p>${orphans.map(id=>`<button type="button" class="button secondary" data-action="twin-ctl-orphan" data-value="${esc(id)}"${waiting?' disabled':''}>${tr('Đóng','閉じる','Close')} <code>${esc(id.slice(0,8))}</code></button>`).join('')}</div>`:'';
+  const results=`<div class="control-results" id="twin-ctl-results">${progress}${left}${unreadList}${this.notice?`<p class="${this.noticeOk?'field-help':'field-error'}" role="status" data-testid="control-notice">${esc(this.notice)}</p>`:''}${last?this.benchHtml(last,prev):`<p class="empty-inline">${tr('Chưa có lần chạy thử. Chọn trục, chỉnh gain trong biên rồi bấm Chạy thử.','まだベンチ実行はありません。軸を選び、範囲内でゲインを調整して「試運転」を押してください。','No bench yet. Pick an axis, set the gains inside the bounds, then press Run bench.')}</p>`}</div>`;
   return `<section class="control-bench" data-testid="control-bench" data-phase="${this.phase}" aria-labelledby="control-title">${head}<div class="control-grid"><form class="control-form" id="twin-ctl-form" novalidate>${axes}<div class="control-field control-inline"><label for="twin-ctl-experiment">${tr('Model drive','ドライブモデル','Drive model')}</label><select id="twin-ctl-experiment">${c.experiments.map(x=>`<option value="${esc(x)}"${x===c.experiment?' selected':''}>${esc(x)}</option>`).join('')}</select></div>${signal}${gains}${actions}${suggest}${io}</form>${results}</div></section>`;
  }
 }

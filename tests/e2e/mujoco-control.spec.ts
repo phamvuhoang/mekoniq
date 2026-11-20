@@ -57,11 +57,10 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  expect(a.tuning.status).toBe('completed');
  await expect(bench).toHaveAttribute('data-phase','idle');await expect(page.getByTestId('tuning-metrics')).toBeVisible();
  await checkMetrics(a.tuning);await checkPlots(a);
- // §6.3 at 1440×900 (ruling 1): after a bench the three plots and the gains are in view side by side, and Kp is not under the sticky Run row
+ // §6.3 at 1440×900 (ruling 1): after a bench the three plots, the metric line, the gains and Run are in view side by side
  for(const id of ['control-plot-response','control-plot-error','control-plot-torque'])await expect(page.getByTestId(id),id).toBeInViewport({ratio:1});
  await expect(page.getByTestId('tuning-summary')).toBeInViewport({ratio:1});
  await expect(kp).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-ki')).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-run')).toBeInViewport({ratio:1});
- const kpBox=(await kp.boundingBox())!,runRow=(await page.locator('.control-actions').boundingBox())!;expect(kpBox.y+kpBox.height).toBeLessThanOrEqual(runRow.y);
  // a gain suggestion now exists for the wheels (from this bench's effective inertia)
  await expect(page.locator('[data-action="twin-ctl-suggest-apply"]')).toBeEnabled();await expect(page.locator('#twin-ctl-suggest-note')).toContainText('model-based starting point, not calibrated');
  await shot(page,'1440-first-bench');

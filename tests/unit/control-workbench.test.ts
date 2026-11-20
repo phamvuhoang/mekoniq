@@ -139,21 +139,23 @@ type Panel={phase:string;importText(t:string):void};
 type H={health:TwinHealth|null;healthChecked:boolean;control:Panel};
 const workspaces:InstanceType<typeof TwinWorkspace>[]=[];
 afterEach(()=>{for(const w of workspaces.splice(0))w.leave();});
-function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeError;result?:(draftDigest:string,n:number)=>TuningResultV1;h?:TwinHealth;traceError?:Error;reportFailures?:number;proofs?:string[];startError?:Error}={}){
- const proofs=new Set(o.proofs??[]);let reportFailures=o.reportFailures??0;
+function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeError;result?:(draftDigest:string,n:number)=>TuningResultV1;h?:TwinHealth;traceError?:Error;reportFailures?:number;proofs?:string[];startError?:Error;ownerOnly?:boolean;reclaimError?:Error;reportFailFor?:string}={}){
+ const proofs=new Set(o.proofs??[]),owned=new Set<string>();let reportFailures=o.reportFailures??0;
  const calls:string[]=[],created:{bench:{controlProfile:ControlProfileV1;signal:unknown;axis:string}}[]=[],actions:{kind:string;revision:number}[]=[],pending:Record<string,{resolve:(v?:unknown)=>void}>={};
  let n=0;
  const view=(id:string,status:RunView['run']['status'],tick:number,revision:number):RunView=>({run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:BENCH_SET,backends:['mujoco_3d'],status,runRevision:revision,eventCursor:null,telemetryCursor:null,fidelity:'modeled',ageMs:0,sourceCommit:'5'.repeat(40),scenarioId:'MJ-BENCH-WHEEL',scenarioRevision:1,seed:7},tick,simTimeNs:String(tick*20_000_000),model:'mujoco_drive_bench',entities:[],workload:[],awaiting:[],attention:[],served:'0',coffee:null});
  const wait=async<T,>(key:string,v:T,defer?:boolean)=>{if(!defer)return v;const d=deferred<unknown>();pending[key]={resolve:()=>d.resolve(undefined)};await d.promise;delete pending[key];return v;};
  const rt={paired:true,get recoverableRunIds(){return [...proofs];},target:{base:'/lab/v2',kind:'same_origin'},forget(){},pair:async()=>{},health:async()=>o.h??health(),get:async()=>{throw new Error('not used');},
-  create:async(r:{bench:never})=>{calls.push('create');if(o.refuse)throw o.refuse;created.push(structuredClone(r));const id=`bench-${++n}`;proofs.add(id);return wait('create',view(id,'ready',0,0),o.deferCreate);},
+  create:async(r:{bench:never})=>{calls.push('create');if(o.refuse)throw o.refuse;created.push(structuredClone(r));const id=`bench-${++n}`;proofs.add(id);owned.add(id);return wait('create',view(id,'ready',0,0),o.deferCreate);},
   action:async(v:RunView,kind:string)=>{calls.push(`${kind} ${v.run.id}`);actions.push({kind,revision:v.run.runRevision});const r=v.run.runRevision+1;
    if(kind==='start'){if(o.startError)throw o.startError;return view(v.run.id,'running',0,r);}
    if(kind==='cancel')return view(v.run.id,'cancelled',v.tick,r);
    const tick=v.tick+50;return wait('step',view(v.run.id,tick>=500?'completed':'running',Math.min(tick,500),r),o.deferStep);},
-  report:async(id:string)=>{calls.push(`report ${id}`);if(reportFailures>0){reportFailures--;throw new TypeError('Failed to fetch');}const i=Number(id.split('-')[1])-1,digest=created[i]!.bench.controlProfile.digest;return {tuning:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
+  report:async(id:string)=>{calls.push(`report ${id}`);if(reportFailures>0||id===o.reportFailFor){reportFailures--;throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);}const i=Number(id.split('-')[1])-1,digest=created[i]!.bench.controlProfile.digest;return {tuning:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
   trace:async(id:string)=>{calls.push(`trace ${id}`);if(o.traceError)throw o.traceError;return {traces:[{axisId:'amr-1/wheel-left',dtS:0.002,samples:Array.from({length:5010},(_,j)=>({target:j<140?0:2,actual:2*(1-Math.exp(-Math.max(0,j-140)/60)),feedback:2*(1-Math.exp(-Math.max(0,j-145)/60)),torqueNm:1,saturated:j===150}))}],issues:[]};},
-  archive:async(id:string)=>{calls.push(`archive ${id}`);},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
+  // the gateway answers a session that does not own the run 404 (readable() before the owner check); reclaim with the proof makes this session the owner
+  archive:async(id:string)=>{calls.push(`archive ${id}`);if(o.ownerOnly&&!owned.has(id))throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);},
+  reclaim:async(id:string)=>{calls.push(`reclaim ${id}`);if(o.reclaimError)throw o.reclaimError;owned.add(id);return view(id,'needs_attention',0,1);},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
  };
  const w=new TwinWorkspace(()=>{},rt as unknown as TwinRuntime),h=w as unknown as H;workspaces.push(w);
  Object.assign(h,{health:o.h??health(),healthChecked:true});
@@ -238,21 +240,24 @@ test('a runtime without the bench catalog says the tab is unavailable and offers
 });
 
 // ---- fix round 1 ----
-test('Fix 2: an in-flight bench is never offered as a twin run to reopen; after a reload a bench left open is offered in the Control tab only, to close',async()=>{
+const MARKS='mekoniq-lab-bench-runs:/lab/v2',marks=()=>JSON.parse(store.get(MARKS)??'[]') as {id:string;page:string;at:number}[];
+/** An earlier page that is gone: its marks are no longer refreshed. */
+const age=()=>store.set(MARKS,JSON.stringify(marks().map(m=>({...m,at:0}))));
+test('Fix 2: an in-flight bench is never offered as a twin run to reopen; once its page is gone it is offered in the Control tab only, to close',async()=>{
  const first=bench({deferStep:true});
  first.run();await vi.waitFor(()=>expect(first.pending.step).toBeDefined());
  expect(first.w.html()).not.toMatch(/data-action="twin-reclaim" data-value="bench-1"/);
  // a reload mid-bench: a new page with the same storage, whose runtime client still holds the bench's reclaim proof (and a twin run's)
- const again=bench({proofs:['bench-1','twin-run']});
+ age();const again=bench({proofs:['bench-1','twin-run']});
  const html=again.w.html();
  expect(html).not.toMatch(/data-action="twin-reclaim" data-value="bench-1"/);expect(html).toMatch(/data-action="twin-reclaim" data-value="twin-run"/);
  expect(html).toMatch(/data-action="twin-ctl-orphan" data-value="bench-1"/);expect(html).not.toMatch(/data-action="twin-ctl-orphan" data-value="twin-run"/);
  again.w.click('twin-ctl-orphan','bench-1');
- await vi.waitFor(()=>expect(again.calls).toEqual(['archive bench-1','drop bench-1']));
+ await vi.waitFor(()=>expect(again.calls).toEqual(['reclaim bench-1','archive bench-1','drop bench-1']));
  expect(again.w.html()).not.toContain('twin-ctl-orphan');
  first.w.click('twin-ctl-cancel');first.pending.step!.resolve();await first.idle();
  // a bench that ended normally leaves no proof and no mark behind
- expect(first.calls.slice(-2)).toEqual(['archive bench-1','drop bench-1']);expect(JSON.parse(store.get('mekoniq-lab-bench-runs')??'[]')).toEqual([]);
+ expect(first.calls.slice(-2)).toEqual(['archive bench-1','drop bench-1']);expect(marks()).toEqual([]);
 });
 test('Fix 3: a trace that cannot be read keeps the result already read and says why; the bench is still archived',async()=>{
  const {w,calls,run,idle}=bench({traceError:new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502)});
@@ -303,4 +308,56 @@ test('Fix 5: an engine held by another MuJoCo run is said in words in three lang
  await vi.waitFor(()=>expect(cap.calls).toContain('archive cell-run'));
  await vi.waitFor(()=>expect(cap.w.html()).not.toContain('twin-ctl-free-engine'));
  expect(cap.w.html()).toContain('the engine is free');expect(cap.w.html()).toMatch(/id="twin-ctl-kp"[^>]*value="3"/);
+});
+
+// ---- fix round 2 ----
+test('R2-1: an orphan on a session that does not own it (archive answers 404) is reclaimed first, then archived; a refused reclaim keeps the key; only "not found" forgets it',async()=>{
+ store.set(MARKS,JSON.stringify([{id:'bench-1',page:'gone',at:0}]));
+ const a=bench({proofs:['bench-1'],ownerOnly:true});
+ expect(a.w.html()).toMatch(/data-action="twin-ctl-orphan" data-value="bench-1"/);
+ a.w.click('twin-ctl-orphan','bench-1');
+ await vi.waitFor(()=>expect(a.calls).toEqual(['reclaim bench-1','archive bench-1','drop bench-1']));
+ expect(marks()).toEqual([]);expect(a.w.html()).not.toContain('twin-ctl-orphan');
+ // a refused reclaim (the run is being reclaimed elsewhere): said, the proof and the mark are kept, Close stays
+ store.set(MARKS,JSON.stringify([{id:'bench-9',page:'gone',at:0}]));
+ const b=bench({proofs:['bench-9'],ownerOnly:true,reclaimError:new TwinRuntimeError('RECLAIM_CONFLICT',[],409)});
+ b.w.click('twin-ctl-orphan','bench-9');
+ await vi.waitFor(()=>expect(b.w.html()).toContain('RECLAIM_CONFLICT'));
+ expect(b.calls).toEqual(['reclaim bench-9']);expect(marks().map(m=>m.id)).toEqual(['bench-9']);expect(b.w.html()).toMatch(/data-action="twin-ctl-orphan" data-value="bench-9"/);
+ // the runtime no longer has it (restarted): forgotten
+ const c=bench({proofs:['bench-9'],ownerOnly:true,reclaimError:new TwinRuntimeError('RUN_NOT_FOUND',[],404)});
+ c.w.click('twin-ctl-orphan','bench-9');
+ await vi.waitFor(()=>expect(c.calls).toEqual(['reclaim bench-9','drop bench-9']));expect(marks()).toEqual([]);
+});
+test('R2-2: a bench another live tab is running is not an orphan here (its mark is fresh); it becomes one only once that tab stops refreshing it',async()=>{
+ const live=bench({deferStep:true});
+ live.run();await vi.waitFor(()=>expect(live.pending.step).toBeDefined());
+ const other=bench({proofs:['bench-1']});
+ expect(other.w.html()).not.toContain('twin-ctl-orphan');expect(other.w.html()).not.toMatch(/data-action="twin-reclaim" data-value="bench-1"/);
+ age();expect(other.w.html()).toMatch(/data-action="twin-ctl-orphan" data-value="bench-1"/);
+ live.w.click('twin-ctl-cancel');live.pending.step!.resolve();await live.idle();
+});
+test('R2-3: marks are kept per runtime and a stale mark with no proof is dropped',async()=>{
+ store.set(MARKS,JSON.stringify([{id:'no-proof',page:'gone',at:0},{id:'fresh-elsewhere',page:'other',at:Date.now()}]));
+ store.set('mekoniq-lab-bench-runs:http://127.0.0.1:4186/lab/v2',JSON.stringify([{id:'other-runtime',page:'gone',at:0}]));
+ const {w}=bench();w.html();
+ expect(marks().map(m=>m.id)).toEqual(['fresh-elsewhere']);
+ expect(JSON.parse(store.get('mekoniq-lab-bench-runs:http://127.0.0.1:4186/lab/v2')!)).toHaveLength(1);
+ store.delete(MARKS);
+});
+test('R2-4: every unread bench can be read again or closed, also after a newer bench and when its report fails for good',async()=>{
+ const {w,calls,run,idle}=bench({reportFailFor:'bench-1'});
+ run();await idle();run();await idle();
+ let html=w.html();expect(html).toContain('Completed');
+ expect(html).toMatch(/data-action="twin-ctl-reread" data-value="bench-1"/);expect(html).toMatch(/data-action="twin-ctl-unread-close" data-value="bench-1"/);
+ w.click('twin-ctl-reread','bench-1');await vi.waitFor(()=>expect(calls.filter(c=>c==='report bench-1')).toHaveLength(2));await idle();
+ expect(w.html()).toMatch(/data-action="twin-ctl-reread" data-value="bench-1"/);
+ w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(calls).toContain('drop bench-1'));await idle();
+ expect(calls.slice(-2)).toEqual(['archive bench-1','drop bench-1']);
+ html=w.html();expect(html).not.toContain('data-value="bench-1"');expect(html).toContain('Completed');expect(marks()).toEqual([]);
+});
+test('R2-5: a metric\'s availability from a report is written escaped',()=>{
+ const evil='"><x-evil data-evil="1">';
+ const html=tuningHtml(tuning({metrics:{...tuning().metrics,riseTimeS:{available:evil as never,value:0.1,unit:'s',samples:1,basis:'actual'}}}));
+ expect(html).not.toContain('<x-evil');expect(html).not.toContain('data-evil="1"');
 });
