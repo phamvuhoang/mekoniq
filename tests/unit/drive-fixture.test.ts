@@ -26,7 +26,7 @@ test('the manifest hashes the bytes of every file it lists',async()=>{
 });
 test('every document is sealed by its own digest and says assumed / not_calibrated',async()=>{
  const names=(await readdir(FX+'drive-v1')).filter(n=>n.endsWith('.json')&&n!=='manifest.json');
- expect(names).toHaveLength(13);
+ expect(names.sort()).toEqual(["control-oracle-v1.json", "serve-control-legacy-ideal-v1.json", "serve-control-v1.json", "serve-control-v2.json", "serve-drive-coarse-encoder-v1.json", "serve-drive-ideal-v1.json", "serve-drive-latency-v1.json", "serve-drive-nominal-v1.json", "serve-drive-torque-limited-v1.json", "tuning-envelope-v1.json", "xarm6-control-v1.json", "xarm6-drive-coarse-encoder-v1.json", "xarm6-drive-ideal-v1.json", "xarm6-drive-latency-v1.json", "xarm6-drive-nominal-v1.json"]);
  for(const n of names){
   const d=await json<{digest:string;calibration:string;sources?:Record<string,{kind:string}>;source?:{kind:string}}>('drive-v1/'+n);
   expect(driveDocumentDigest(d),n).toBe(d.digest);expect(d.calibration).toBe('not_calibrated');
