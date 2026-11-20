@@ -1,0 +1,478 @@
+{
+ "accepted": false,
+ "wheels": [
+  {
+   "runId": "1f79eada-d439-4541-bb7c-8fe884d9058e",
+   "kp": 2,
+   "status": "completed",
+   "metrics": {
+    "riseTimeS": {
+     "available": true,
+     "value": 0.1031937976569449,
+     "unit": "s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "overshootPct": {
+     "available": true,
+     "value": 0,
+     "unit": "%",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "settlingTimeS": {
+     "available": false,
+     "value": null,
+     "unit": "s",
+     "reason": "NOT_SETTLED"
+    },
+    "steadyStateError": {
+     "available": true,
+     "value": 0.06619670812542888,
+     "unit": "rad/s",
+     "samples": 250,
+     "basis": "actual"
+    },
+    "rmsError": {
+     "available": true,
+     "value": 0.1129763817868436,
+     "unit": "rad/s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "peakTorqueNm": {
+     "available": true,
+     "value": 4.000000016056739,
+     "unit": "N m",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "saturationRatio": {
+     "available": true,
+     "value": 0,
+     "unit": "ratio",
+     "samples": 4871,
+     "basis": "actual"
+    }
+   },
+   "trace": {
+    "chunks": 11,
+    "sha256": "a4f40e23b7ece8b17658db48fdecc38a75f0b031181d1be2440cb58e4917e539",
+    "samples": 5000
+   }
+  },
+  {
+   "runId": "d1f7b2f9-5006-455e-9dad-1256a52deb2d",
+   "kp": 4,
+   "status": "completed",
+   "metrics": {
+    "riseTimeS": {
+     "available": true,
+     "value": 0.0015675800006292224,
+     "unit": "s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "overshootPct": {
+     "available": true,
+     "value": 35.92518517882293,
+     "unit": "%",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "settlingTimeS": {
+     "available": false,
+     "value": null,
+     "unit": "s",
+     "reason": "NOT_SETTLED"
+    },
+    "steadyStateError": {
+     "available": true,
+     "value": 0.03301612737823745,
+     "unit": "rad/s",
+     "samples": 250,
+     "basis": "actual"
+    },
+    "rmsError": {
+     "available": true,
+     "value": 0.06683224814076247,
+     "unit": "rad/s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "peakTorqueNm": {
+     "available": true,
+     "value": 6,
+     "unit": "N m",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "saturationRatio": {
+     "available": true,
+     "value": 0.0004105933073290905,
+     "unit": "ratio",
+     "samples": 4871,
+     "basis": "actual"
+    }
+   },
+   "trace": {
+    "chunks": 11,
+    "sha256": "13811ef2738c8ee9441f22e49627c9db16df9d79e2ebb1407948e93c7f502d97",
+    "samples": 5000
+   }
+  },
+  {
+   "runId": "6e3aa199-b649-4075-94ef-5a23b4e7e430",
+   "kp": 4,
+   "status": "completed",
+   "metrics": {
+    "riseTimeS": {
+     "available": true,
+     "value": 0.0015675800006292224,
+     "unit": "s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "overshootPct": {
+     "available": true,
+     "value": 35.92518517882293,
+     "unit": "%",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "settlingTimeS": {
+     "available": false,
+     "value": null,
+     "unit": "s",
+     "reason": "NOT_SETTLED"
+    },
+    "steadyStateError": {
+     "available": true,
+     "value": 0.03301612737823745,
+     "unit": "rad/s",
+     "samples": 250,
+     "basis": "actual"
+    },
+    "rmsError": {
+     "available": true,
+     "value": 0.06683224814076247,
+     "unit": "rad/s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "peakTorqueNm": {
+     "available": true,
+     "value": 6,
+     "unit": "N m",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "saturationRatio": {
+     "available": true,
+     "value": 0.0004105933073290905,
+     "unit": "ratio",
+     "samples": 4871,
+     "basis": "actual"
+    }
+   },
+   "trace": {
+    "chunks": 11,
+    "sha256": "1ea9e9b83632525d90b82ec6da039ca5ad5dd40a42b08cb54ac45b0056159b76",
+    "samples": 5000
+   }
+  },
+  {
+   "runId": "e99e50b8-ba08-41c1-913e-e77aaf54d36d",
+   "kp": 3,
+   "status": "completed",
+   "metrics": {
+    "riseTimeS": {
+     "available": true,
+     "value": 0.07959579308420173,
+     "unit": "s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "overshootPct": {
+     "available": true,
+     "value": 0,
+     "unit": "%",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "settlingTimeS": {
+     "available": false,
+     "value": null,
+     "unit": "s",
+     "reason": "NOT_SETTLED"
+    },
+    "steadyStateError": {
+     "available": true,
+     "value": 0.044904044741270965,
+     "unit": "rad/s",
+     "samples": 250,
+     "basis": "actual"
+    },
+    "rmsError": {
+     "available": true,
+     "value": 0.08328601699962616,
+     "unit": "rad/s",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "peakTorqueNm": {
+     "available": true,
+     "value": 6,
+     "unit": "N m",
+     "samples": 4871,
+     "basis": "actual"
+    },
+    "saturationRatio": {
+     "available": true,
+     "value": 0.00020529665366454526,
+     "unit": "ratio",
+     "samples": 4871,
+     "basis": "actual"
+    }
+   },
+   "trace": {
+    "chunks": 11,
+    "sha256": "fe3a889023e8cfe5f409b58e7eb3c132f0ff4cf4e3a6f5bdc88f74646f607330",
+    "samples": 5000
+   }
+  }
+ ],
+ "suggestion": {
+  "runId": "c595db4a-2ca4-45e1-a59f-b2461e462105",
+  "loop": {
+   "kp": 0.8743950000000001,
+   "ki": 2.1859875000000004,
+   "kd": 0,
+   "integralLimit": 6,
+   "slewLimit": null
+  },
+  "status": "completed",
+  "metrics": {
+   "riseTimeS": {
+    "available": true,
+    "value": 0.1665263424869674,
+    "unit": "s",
+    "samples": 4871,
+    "basis": "actual"
+   },
+   "overshootPct": {
+    "available": true,
+    "value": 11.794252345044542,
+    "unit": "%",
+    "samples": 4871,
+    "basis": "actual"
+   },
+   "settlingTimeS": {
+    "available": false,
+    "value": null,
+    "unit": "s",
+    "reason": "NOT_SETTLED"
+   },
+   "steadyStateError": {
+    "available": true,
+    "value": 0.0013555100950959353,
+    "unit": "rad/s",
+    "samples": 250,
+    "basis": "actual"
+   },
+   "rmsError": {
+    "available": true,
+    "value": 0.14097100540509536,
+    "unit": "rad/s",
+    "samples": 4871,
+    "basis": "actual"
+   },
+   "peakTorqueNm": {
+    "available": true,
+    "value": 1.7575341909053581,
+    "unit": "N m",
+    "samples": 4871,
+    "basis": "actual"
+   },
+   "saturationRatio": {
+    "available": true,
+    "value": 0,
+    "unit": "ratio",
+    "samples": 4871,
+    "basis": "actual"
+   }
+  },
+  "trace": {
+   "chunks": 11,
+   "sha256": "b80a8b3b8a8aaa8791fe27b762db3e59c4948fb9e960ba97d2c30a1f8d269f26",
+   "samples": 5000
+  }
+ },
+ "trapezoid": {
+  "runId": "7dcb4b08-ec81-4596-872a-99f4cc3102b9",
+  "signal": {
+   "kind": "trapezoid",
+   "distance": 4,
+   "peakVelocity": 2,
+   "acceleration": 10,
+   "atTick": 10
+  },
+  "status": "completed",
+  "metrics": {
+   "riseTimeS": {
+    "available": false,
+    "value": null,
+    "unit": "s",
+    "reason": "SIGNAL_NOT_STEP"
+   },
+   "overshootPct": {
+    "available": false,
+    "value": null,
+    "unit": "%",
+    "reason": "SIGNAL_NOT_STEP"
+   },
+   "settlingTimeS": {
+    "available": false,
+    "value": null,
+    "unit": "s",
+    "reason": "SIGNAL_NOT_STEP"
+   },
+   "steadyStateError": {
+    "available": false,
+    "value": null,
+    "unit": "rad/s",
+    "reason": "SIGNAL_NOT_STEP"
+   },
+   "rmsError": {
+    "available": true,
+    "value": 0.29070042398682144,
+    "unit": "rad/s",
+    "samples": 1111,
+    "basis": "actual"
+   },
+   "peakTorqueNm": {
+    "available": true,
+    "value": 1.0642940901875584,
+    "unit": "N m",
+    "samples": 4871,
+    "basis": "actual"
+   },
+   "saturationRatio": {
+    "available": true,
+    "value": 0,
+    "unit": "ratio",
+    "samples": 1111,
+    "basis": "actual"
+   }
+  },
+  "trace": {
+   "chunks": 11,
+   "sha256": "7ff3c756d9f229302967fa0348ff1513fe7050190f808fe7eb34ee5717a715aa",
+   "samples": 5000
+  }
+ },
+ "serverRefusal": {
+  "status": 422,
+  "body": {
+   "error": "INVALID_BENCH_REQUEST",
+   "reasonCodes": [
+    "SIGNAL_TOO_LONG"
+   ],
+   "issues": [
+    {
+     "path": "/bench",
+     "code": "SIGNAL_TOO_LONG",
+     "message": "Invalid bench request"
+    }
+   ]
+  }
+ },
+ "exported": {
+  "sources": {
+   "loop": {
+    "kind": "tuned_in_simulation",
+    "benchRunId": "d1f7b2f9-5006-455e-9dad-1256a52deb2d",
+    "scenarioId": "MJ-BENCH-WHEEL",
+    "traceSha256": "13811ef2738c8ee9441f22e49627c9db16df9d79e2ebb1407948e93c7f502d97",
+    "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+    "axisIds": [
+     "amr-1/wheel-left",
+     "amr-1/wheel-right"
+    ],
+    "driveModelDigest": "cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405"
+   },
+   "limits": {
+    "kind": "tuned_in_simulation",
+    "benchRunId": "d1f7b2f9-5006-455e-9dad-1256a52deb2d",
+    "scenarioId": "MJ-BENCH-WHEEL",
+    "traceSha256": "13811ef2738c8ee9441f22e49627c9db16df9d79e2ebb1407948e93c7f502d97",
+    "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+    "axisIds": [
+     "amr-1/wheel-left",
+     "amr-1/wheel-right"
+    ],
+    "driveModelDigest": "cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405"
+   },
+   "controller": {
+    "kind": "assumed",
+    "documentId": "docs/research/virtual-drive-spike/results.json",
+    "revision": "1",
+    "locator": "section 5",
+    "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+   }
+  }
+ },
+ "j3": {
+  "runId": "fd021885-0cba-4c15-8308-250afe778379",
+  "status": "drive_fault",
+  "fault": {
+   "tick": 15,
+   "axisId": "xarm-1/J3",
+   "code": "OVERSPEED"
+  },
+  "metrics": {
+   "riseTimeS": {
+    "available": false,
+    "value": null,
+    "unit": "s",
+    "reason": "DRIVE_FAULT"
+   },
+   "overshootPct": {
+    "available": false,
+    "value": null,
+    "unit": "%",
+    "reason": "DRIVE_FAULT"
+   },
+   "settlingTimeS": {
+    "available": false,
+    "value": null,
+    "unit": "s",
+    "reason": "DRIVE_FAULT"
+   },
+   "steadyStateError": {
+    "available": false,
+    "value": null,
+    "unit": "rad",
+    "reason": "DRIVE_FAULT"
+   },
+   "rmsError": {
+    "available": false,
+    "value": null,
+    "unit": "rad",
+    "reason": "DRIVE_FAULT"
+   },
+   "peakTorqueNm": {
+    "available": false,
+    "value": null,
+    "unit": "N m",
+    "reason": "DRIVE_FAULT"
+   },
+   "saturationRatio": {
+    "available": false,
+    "value": null,
+    "unit": "ratio",
+    "reason": "DRIVE_FAULT"
+   }
+  }
+ }
+}

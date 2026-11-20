@@ -1,0 +1,113 @@
+{
+  "purpose": "Exact-source-diff classifications for settled final V07 review packages; no general log or path exemption",
+  "scannerCommit": "3411b832caf74b1a390c9749146da2afb7c632bf",
+  "scannerSha256": "bd1ca33156fa11d0e4c1f2c47655fa272870e12ee2b80c12483f0fab3f454eab",
+  "reviewedFiles": [
+    {
+      "name": "review-final-fix-lab-b0512b4..6973aa2.diff",
+      "sha256": "f848f8ccf84876e39fa649861b1095b808f5ec150d655a9000f6bb880807638a",
+      "matches": [
+        {
+          "sha256": "756477ff5006dd37f01028e9d16c0bb904ac159a6e22c6622e612936c07792d2",
+          "line": 260,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        }
+      ]
+    },
+    {
+      "name": "review-final-fix-source-93551be8..34cf316b.diff",
+      "sha256": "1ecc73dbc828d03532289897e9eec3f1c5f83f9509c97d4247141f76aaaac307",
+      "matches": [
+        {
+          "sha256": "d2569784e6c723de4a8c89f81245e494b4f7ce0cd2e5031d60d2f7475ddd8582",
+          "line": 130,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        },
+        {
+          "sha256": "3021d90eb9437b2d8f30e8363695c4418b5e5f1870801b5c317e9398ee0f572d",
+          "line": 133,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        },
+        {
+          "sha256": "7bc619923177dd31cf750eaec08789594cfeeeaf1dc31d32a690cb7bf26be75d",
+          "line": 146,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        }
+      ]
+    },
+    {
+      "name": "review-final-lab-e352c5d..b0512b4.diff",
+      "sha256": "e3ad3e88c724fd0b5e7fd81c674b163a2ec6d2b7ef680908a094275132c76b86",
+      "matches": [
+        {
+          "sha256": "1be21bdb87b40645234e6e58606ca2e6e4a71b31ca63496af8586ab6975c71e1",
+          "line": 598,
+          "reason": "Source property expression"
+        },
+        {
+          "sha256": "f7ff9284a6372008e937207df4afa7f62c5d58aff67d28cabee5d683feb9647e",
+          "line": 2668,
+          "reason": "Source property expression"
+        },
+        {
+          "sha256": "f7ff9284a6372008e937207df4afa7f62c5d58aff67d28cabee5d683feb9647e",
+          "line": 2768,
+          "reason": "Source property expression"
+        },
+        {
+          "sha256": "e2eba38d418570f8f95060e0024cc5b8acfff53528b707135847db0f79c247da",
+          "line": 3599,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        },
+        {
+          "sha256": "756477ff5006dd37f01028e9d16c0bb904ac159a6e22c6622e612936c07792d2",
+          "line": 3630,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        }
+      ]
+    },
+    {
+      "name": "review-final-source-a93ae08..93551be8.diff",
+      "sha256": "0a86f19a39e896cf481af816822a2b7453d8a3646aec90b68508959a76fb7274",
+      "matches": [
+        {
+          "sha256": "ad7e3620721b1e41224433ed6e97150d8c6fc4da921e50fc7bad14f433e04249",
+          "line": 15486,
+          "reason": "Source property expression"
+        }
+      ]
+    },
+    {
+      "name": "review-lab-aba95e6..32f4254.diff",
+      "sha256": "297b3ffbb54bb896a17c6a7eb84a032bad0c9c2a574f4cf9083a169b82905d8f",
+      "matches": [
+        {
+          "sha256": "1be21bdb87b40645234e6e58606ca2e6e4a71b31ca63496af8586ab6975c71e1",
+          "line": 174,
+          "reason": "Source property expression"
+        },
+        {
+          "sha256": "756477ff5006dd37f01028e9d16c0bb904ac159a6e22c6622e612936c07792d2",
+          "line": 817,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        }
+      ]
+    },
+    {
+      "name": "review-scanner-34cf316b..3411b832.diff",
+      "sha256": "8824c9eb0ae58fb4949b14be2e8f67359547fb746f241af43f460245a66ec9bf",
+      "matches": [
+        {
+          "sha256": "3021d90eb9437b2d8f30e8363695c4418b5e5f1870801b5c317e9398ee0f572d",
+          "line": 18,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        },
+        {
+          "sha256": "7bc619923177dd31cf750eaec08789594cfeeeaf1dc31d32a690cb7bf26be75d",
+          "line": 44,
+          "reason": "Committed unit-test synthetic value or quoted private-key header without key material"
+        }
+      ]
+    }
+  ]
+}

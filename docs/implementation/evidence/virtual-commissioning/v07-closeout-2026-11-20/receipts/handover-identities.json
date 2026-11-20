@@ -1,0 +1,10 @@
+{
+  "accepted": false,
+  "qualifiedSource": "34cf316b822da231b869ff052527630d8450c3c2",
+  "sourceTooling": "3411b832caf74b1a390c9749146da2afb7c632bf",
+  "lab": "6973aa21fc708dd99e04ebfd3051a7a193a90ace",
+  "finalReviewSha256": "80e7a4e8b4043bf318d734ec7ca2bbce12344515067f15eca9b0aee4bf39c004",
+  "handoverSha256": "6af0746b1f9617d6a357b7bae429638281be3b750e8298f4ac9bb01c522dcc86",
+  "workspaceHandoverSha256": "3abb519b000ceeb4a207a0ce431f4f4ac129e356935d648404c92ff7a275861b",
+  "scope": "Doc commit/reference publication checked separately; qualified runtime is unchanged"
+}

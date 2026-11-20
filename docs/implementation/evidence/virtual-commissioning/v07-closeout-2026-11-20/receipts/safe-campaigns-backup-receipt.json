@@ -1,0 +1,191 @@
+{
+  "releaseId": 452762939,
+  "draft": true,
+  "accepted": false,
+  "authenticatedReadback": true,
+  "files": [
+    {
+      "name": "r4-cil-v1-4b36956-verification.tar.gz",
+      "bytes": 192464922,
+      "sha256": "a32336d06aeee7de597018758ddd7cced4ce17b635bc473c1198501eb2dd053c"
+    },
+    {
+      "name": "r4-cil-v1-4b36956-verification.members.json",
+      "bytes": 666797,
+      "sha256": "b4ec2f84dbe9006bc49d38b50f0c3c8be688a86b5d576a39746ce90e4c90253b"
+    },
+    {
+      "name": "r4-cil-v1-5e93570-verification.tar.gz",
+      "bytes": 188443623,
+      "sha256": "07657edfa0d70a8c4168436f078362ed764f58b621297ad3e97636fa5fc90b7a"
+    },
+    {
+      "name": "r4-cil-v1-5e93570-verification.members.json",
+      "bytes": 656640,
+      "sha256": "369512671e339871b1dc7adc5ecc924f35673f8218dbb47832f7d99104790435"
+    },
+    {
+      "name": "r4-cil-v2-b74755e9-verification.tar.gz",
+      "bytes": 267793860,
+      "sha256": "bea0738434628107549c9c5e14ef1b0373aaa46fc821718a0c56f16b18f953b5"
+    },
+    {
+      "name": "r4-cil-v2-b74755e9-verification.members.json",
+      "bytes": 1011544,
+      "sha256": "4f21b8ced27efd5599f57e118526bd5599529d09af1bd1dc3338e05fac6cfb81"
+    },
+    {
+      "name": "r4-bench-v2-34cf316b.tar.gz",
+      "bytes": 23337625,
+      "sha256": "397cd46b11e010e0595d63d323892b5da100a32b2695aab75b33f879dd2180e0"
+    },
+    {
+      "name": "r4-bench-v2-34cf316b.members.json",
+      "bytes": 146193,
+      "sha256": "1cff9ec362262ad7415214c1221506704eb60d5f5efac974829b832c6a262974"
+    },
+    {
+      "name": "corrected-transfer-scan.json",
+      "bytes": 2658354,
+      "sha256": "2d7a2426bc5b076d2c4e03460f52b4596d7df2eba1b4d5371e62282d460b033f"
+    },
+    {
+      "name": "SAFE-CAMPAIGNS-SHA256SUMS",
+      "bytes": 933,
+      "sha256": "6ffadf20fdbadb1cf5f5d4ad917269f418079b87b69a60189519b14de248ce5e"
+    }
+  ],
+  "restored": [
+    {
+      "version": 1,
+      "extractedAt": "2026-11-20T16:36:46.429794+00:00",
+      "source": "/private/tmp/r4-v07-public-evidence-20261120/r4-cil-v1-4b36956-verification",
+      "archive": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v1-4b36956-verification.tar.gz",
+      "archiveSha256": "a32336d06aeee7de597018758ddd7cced4ce17b635bc473c1198501eb2dd053c",
+      "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v1-4b36956-verification.members.json",
+      "memberIndexSha256": "b4ec2f84dbe9006bc49d38b50f0c3c8be688a86b5d576a39746ce90e4c90253b",
+      "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-safe-r4-cil-v1-4b36956-verification",
+      "verifiedFiles": 2357,
+      "verifiedBytes": 403268113,
+      "declaredSymlinksNotMaterialized": [],
+      "status": "byte_verified_only; public readback receipt is separate"
+    },
+    {
+      "version": 1,
+      "extractedAt": "2026-11-20T16:36:48.592118+00:00",
+      "source": "/private/tmp/r4-v07-public-evidence-20261120/r4-cil-v1-5e93570-verification",
+      "archive": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v1-5e93570-verification.tar.gz",
+      "archiveSha256": "07657edfa0d70a8c4168436f078362ed764f58b621297ad3e97636fa5fc90b7a",
+      "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v1-5e93570-verification.members.json",
+      "memberIndexSha256": "369512671e339871b1dc7adc5ecc924f35673f8218dbb47832f7d99104790435",
+      "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-safe-r4-cil-v1-5e93570-verification",
+      "verifiedFiles": 2322,
+      "verifiedBytes": 396379865,
+      "declaredSymlinksNotMaterialized": [],
+      "status": "byte_verified_only; public readback receipt is separate"
+    },
+    {
+      "version": 1,
+      "extractedAt": "2026-11-20T16:36:51.586840+00:00",
+      "source": "/private/tmp/r4-v07-public-evidence-20261120/r4-cil-v2-b74755e9-verification",
+      "archive": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v2-b74755e9-verification.tar.gz",
+      "archiveSha256": "bea0738434628107549c9c5e14ef1b0373aaa46fc821718a0c56f16b18f953b5",
+      "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-cil-v2-b74755e9-verification.members.json",
+      "memberIndexSha256": "4f21b8ced27efd5599f57e118526bd5599529d09af1bd1dc3338e05fac6cfb81",
+      "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-safe-r4-cil-v2-b74755e9-verification",
+      "verifiedFiles": 3598,
+      "verifiedBytes": 532910046,
+      "declaredSymlinksNotMaterialized": [],
+      "status": "byte_verified_only; public readback receipt is separate"
+    },
+    {
+      "version": 1,
+      "extractedAt": "2026-11-20T16:36:51.964295+00:00",
+      "source": "/Users/hoangpham/source/prv/robot/evidence-archive/r4-bench-v2-34cf316b",
+      "archive": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-bench-v2-34cf316b.tar.gz",
+      "archiveSha256": "397cd46b11e010e0595d63d323892b5da100a32b2695aab75b33f879dd2180e0",
+      "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/safe-campaigns-readback/r4-bench-v2-34cf316b.members.json",
+      "memberIndexSha256": "1cff9ec362262ad7415214c1221506704eb60d5f5efac974829b832c6a262974",
+      "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-safe-r4-bench-v2-34cf316b",
+      "verifiedFiles": 517,
+      "verifiedBytes": 84956402,
+      "declaredSymlinksNotMaterialized": [],
+      "status": "byte_verified_only; public readback receipt is separate"
+    }
+  ],
+  "verifiedFiles": 8794,
+  "verifiedBytes": 1417514426,
+  "removedRawAssets": [
+    {
+      "id": 772044993,
+      "name": "r4-cil-v1-4b36956.tar.gz",
+      "originalSha256": "aeca4a63f04e91163d32c1c8e8249e90dc415811e23da6df7a740258b4e98a39"
+    },
+    {
+      "id": 772044994,
+      "name": "r4-cil-v1-5e93570.tar.gz",
+      "originalSha256": "6f62f4c2a2e9931c9de55cb6c943f4e57b419069963f49cc9c916433b96a9d9f"
+    },
+    {
+      "id": 772412822,
+      "name": "r4-cil-v2-b74755e9.tar.gz",
+      "originalSha256": "f6c41fa3f73a2250e65c8d52e70b38c9128e771f2e3fc2bc5dc1e221643192f9"
+    }
+  ],
+  "replacementCompletedAt": "2026-11-20T16:37:03.314079+00:00",
+  "remoteRawAssetsAbsent": true,
+  "priorAccess": "Original simulation signing keys were available to authorized draft readers. Removing the assets cannot revoke any copies previously downloaded. No unauthorized access or production credential disclosure was established.",
+  "originalLocalRecords": "Unchanged; retained locally. Public verification copies preserve journals/signatures and carry member-level before/after provenance.",
+  "remoteSafeAssets": [
+    {
+      "id": 772535605,
+      "name": "corrected-transfer-scan.json",
+      "size": 2658354
+    },
+    {
+      "id": 772535476,
+      "name": "r4-bench-v2-34cf316b.members.json",
+      "size": 146193
+    },
+    {
+      "id": 772535425,
+      "name": "r4-bench-v2-34cf316b.tar.gz",
+      "size": 23337625
+    },
+    {
+      "id": 772535363,
+      "name": "r4-cil-v1-4b36956-verification.members.json",
+      "size": 666797
+    },
+    {
+      "id": 772535355,
+      "name": "r4-cil-v1-4b36956-verification.tar.gz",
+      "size": 192464922
+    },
+    {
+      "id": 772535381,
+      "name": "r4-cil-v1-5e93570-verification.members.json",
+      "size": 656640
+    },
+    {
+      "id": 772535358,
+      "name": "r4-cil-v1-5e93570-verification.tar.gz",
+      "size": 188443623
+    },
+    {
+      "id": 772535417,
+      "name": "r4-cil-v2-b74755e9-verification.members.json",
+      "size": 1011544
+    },
+    {
+      "id": 772535362,
+      "name": "r4-cil-v2-b74755e9-verification.tar.gz",
+      "size": 267793860
+    },
+    {
+      "id": 772535759,
+      "name": "SAFE-CAMPAIGNS-SHA256SUMS",
+      "size": 933
+    }
+  ]
+}

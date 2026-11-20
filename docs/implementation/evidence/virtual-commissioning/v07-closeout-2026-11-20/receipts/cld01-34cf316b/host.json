@@ -1,0 +1,6 @@
+{
+  "platform": "Darwin",
+  "arch": "arm64",
+  "dockerEndpoint": "unix:///Users/hoangpham/.orbstack/run/docker.sock",
+  "docker": "linux/arm64"
+}

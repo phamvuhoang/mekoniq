@@ -1,0 +1,23 @@
+{
+  "sourceCommit": "b74755e96e9a364ead530f66f755d3798f35bd2a",
+  "campaign": "cil-v2",
+  "registrySha256": "7f81f12cd09b27c5a13912a4e7131d1916a4d8887d9e1036c339d6903cee6230",
+  "out": "/Users/hoangpham/source/prv/robot/evidence-archive/r4-cil-v2-b74755e9",
+  "accepted": false,
+  "phase": "verify",
+  "command": [
+    "perl",
+    "-e",
+    "alarm 7200; exec @ARGV",
+    "node",
+    "scripts/lab-mujoco.mjs",
+    "verify",
+    "--input",
+    "../evidence-archive/r4-cil-v2-b74755e9"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 63.061,
+  "sourceCommitAfter": "b74755e96e9a364ead530f66f755d3798f35bd2a",
+  "cleanAfter": true,
+  "registryUnchanged": true
+}

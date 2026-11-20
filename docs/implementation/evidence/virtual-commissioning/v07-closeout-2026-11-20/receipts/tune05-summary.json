@@ -1,0 +1,21 @@
+{
+  "accepted": false,
+  "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+  "labCommit": "6973aa21fc708dd99e04ebfd3051a7a193a90ace",
+  "command": [
+    "perl",
+    "-e",
+    "alarm 1800; exec @ARGV",
+    "pnpm",
+    "test:unit"
+  ],
+  "exitCode": 0,
+  "test": "tests/unit/gain-suggest.test.ts",
+  "testsPassed": 7,
+  "log": "source-34cf316b/unit.log",
+  "logSha256": "27b62eb148f88f880ad33391528d355a327b3c38799626ecd825c8b035cc902e",
+  "benchReadback": "campaigns-34cf316b/bench-v2-verify.log",
+  "benchReadbackSha256": "0f773719d4892953b4f007e3c43594ae43d2c8f57d2cb290c2ad5d2c81644b6a",
+  "uiEvidence": "lab-evidence/r4-v07-closeout-final-fix/clean-cookie/V07a-results.json",
+  "scope": "Formula/assumption vectors, durable trace/inertia recomputation, suggestion label/apply; no physical calibration"
+}

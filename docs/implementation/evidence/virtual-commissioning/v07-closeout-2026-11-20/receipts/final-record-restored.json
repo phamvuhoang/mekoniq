@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "extractedAt": "2026-11-20T16:49:53.514674+00:00",
+  "source": "/private/tmp/r4-v07-closeout-record",
+  "archive": "/private/tmp/r4-v07-offmachine-20261120/final-record-readback/r4-v07-closeout-final-record.tar.gz",
+  "archiveSha256": "b49b332d141a132d301e6dd9682f3d92ecc33a522b6bd4779b6439e82876497f",
+  "memberIndex": "/private/tmp/r4-v07-offmachine-20261120/final-record-readback/r4-v07-closeout-final-record.members.json",
+  "memberIndexSha256": "066f268deaa01e95e5416af13a2f219501184991fef905c96c8196e51d78b858",
+  "destination": "/private/tmp/r4-v07-offmachine-20261120/restored-final-record",
+  "verifiedFiles": 694,
+  "verifiedBytes": 43435920,
+  "declaredSymlinksNotMaterialized": [],
+  "status": "byte_verified_only; public readback receipt is separate"
+}

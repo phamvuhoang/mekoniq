@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+  "labPinCommit": "7357cb0845b5de626018bdcabda1b529b18f2905",
+  "labUiCommit": "6973aa21fc708dd99e04ebfd3051a7a193a90ace",
+  "workflowRun": 44774073866,
+  "jobId": 136419069915,
+  "url": "https://github.com/phamvuhoang/mekoniq/actions/runs/44774073866",
+  "artifactId": 14648681745,
+  "artifactName": "r4-cld02-34cf316b822da231b869ff052527630d8450c3c2-44774073866-1",
+  "zipBytes": 468789,
+  "zipSha256": "063a3b4df7ab9ea3822505280b24f946a8b606bc0b5a9e687601e7a04ec798c9",
+  "verifiedChecksumEntries": 30,
+  "testResult": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "266",
+    "time": "37.015",
+    "timestamp": "2026-11-20T16:31:40.616023+00:00",
+    "hostname": "bb6bfdcf34fe"
+  },
+  "stageExits": {
+    "install-exit.txt": 0,
+    "build-exit.txt": 0,
+    "pytest-exit.txt": 0,
+    "guest-exit.txt": 0,
+    "receipt-exit.txt": 0,
+    "capture-exit.txt": 0,
+    "qualification-exit.txt": 0,
+    "export-exit.txt": 0
+  },
+  "image": {
+    "Id": "sha256:eeee5825f442ffaa08fddce08525cf3f3aff710d606f8d402f5c4bb5ad44703b",
+    "Os": "linux",
+    "Architecture": "amd64",
+    "revision": "34cf316b822da231b869ff052527630d8450c3c2"
+  },
+  "runtime": {
+    "sourceCommit": "34cf316b822da231b869ff052527630d8450c3c2",
+    "schemaHash": "8a1f111d006484d099f4c96d8c7d9386143998dab11ee20b83c5ba730cd2bbfd",
+    "artifactSha256": "90068fd8e71724e041dcc1c8aded61a36462fb8cc1d0d2b8646b49c7a7b69457",
+    "dirty": false
+  },
+  "host": "GitHub-hosted Ubuntu24.04 / Intel Xeon Platinum8573C / Linuxx86_64 under Microsoft virtualization",
+  "nativeInstructionSet": true,
+  "dockerEndpoint": "unix:///var/run/docker.sock",
+  "dockerPlatform": "linux/amd64",
+  "sameHostBaselineWorker": "a93ae08d95e07e4d0e633cb01aaf848603a0fc51",
+  "sameHostBaselineCorpus": "edb11dd990958fbea5250d1d8e6b932b5a39bf5c",
+  "lockedMuJoCo": "3.17.0",
+  "python": "3.11.2",
+  "lockedNumPy": "2.4.6",
+  "lockedPytest": "9.2.0"
+}

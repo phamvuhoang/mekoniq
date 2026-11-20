@@ -1,0 +1,114 @@
+{
+  "accepted": false,
+  "adapterSha256": "ba0f0cbc7b5c73040e9c0a5d5a7ebe8ad200d15abaa67723c2d67896496d4410",
+  "classificationSha256": "0342739604b167cd2103520de868a550eb65f76864a3f9474f1b0beb0ec69e53",
+  "scannerSha256": "bd1ca33156fa11d0e4c1f2c47655fa272870e12ee2b80c12483f0fab3f454eab",
+  "checks": [
+    {
+      "case": "reviewed:review-final-fix-lab-b0512b4..6973aa2.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-final-fix-lab-b0512b4..6973aa2.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-final-fix-lab-b0512b4..6973aa2.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "reviewed:review-final-fix-source-93551be8..34cf316b.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-final-fix-source-93551be8..34cf316b.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-final-fix-source-93551be8..34cf316b.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "reviewed:review-final-lab-e352c5d..b0512b4.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-final-lab-e352c5d..b0512b4.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-final-lab-e352c5d..b0512b4.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "reviewed:review-final-source-a93ae08..93551be8.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-final-source-a93ae08..93551be8.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-final-source-a93ae08..93551be8.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "reviewed:review-lab-aba95e6..32f4254.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-lab-aba95e6..32f4254.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-lab-aba95e6..32f4254.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "reviewed:review-scanner-34cf316b..3411b832.diff",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unapproved-digest:review-scanner-34cf316b..3411b832.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "added-token:review-scanner-34cf316b..3411b832.diff",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "ordinary-log",
+      "exitCode": 0,
+      "expectedPass": true
+    },
+    {
+      "case": "unknown-unlabelled-token",
+      "exitCode": 1,
+      "expectedPass": false
+    },
+    {
+      "case": "wrong-match-sha",
+      "exitCode": 1,
+      "expectedPass": false
+    }
+  ],
+  "passed": 21
+}
