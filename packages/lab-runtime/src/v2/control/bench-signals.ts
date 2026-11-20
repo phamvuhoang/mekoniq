@@ -1,5 +1,5 @@
 // The signals of a single-axis bench run (R4-A §6) and the rules a request must meet before a world is created. Pure: the same numbers on the Mac runtime and in the cloud image.
-import {validateBenchRequestShape,validateBenchSignalShape,type BenchRequestV1,type BenchSignal,type Check} from './drive-io';
+import {checkReasons,validateBenchRequestShape,validateBenchSignalShape,type BenchRequestV1,type BenchSignal,type Check} from './drive-io';
 export type {BenchSignal};
 
 export const BENCH_MAX_TICKS=500;
@@ -14,13 +14,12 @@ export const SUGGEST_OPTIONS={bandwidthRadS:[5,10,20,40],damping:[0.7,1]} as con
 export const BENCH_WHEEL_DIRECTION='forward' as const;
 
 type Mode='csp'|'csv';
-const done=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});
 const registered=(x:number,mode:Mode)=>(mode==='csv'?BENCH_AMPLITUDES.wheelRadS:BENCH_AMPLITUDES.jointRad).some(a=>a===Math.abs(x));
 
 /** The velocity profile of a trapezoid: it accelerates at `acceleration` to `peakVelocity` (less, for a short distance: a triangle), cruises, and brakes; its area is |distance|. */
 function profile(s:Extract<BenchSignal,{kind:'trapezoid'}>){
- const d=Math.abs(s.distance),a=s.acceleration,vp=Math.min(s.peakVelocity,Math.sqrt(d*a)),ta=vp/a,tc=d/vp-vp/a,sign=Math.sign(s.distance);
- return {durationS:2*ta+tc,velocity(t:number){return sign*(t<=0?0:t<ta?a*t:t<ta+tc?vp:t<2*ta+tc?vp-a*(t-ta-tc):0);},
+ const d=Math.abs(s.distance),a=s.acceleration,vp=Math.min(s.peakVelocity,Math.sqrt(d*a)),ta=vp/a,tc=Math.max(0,d/vp-vp/a),sign=Math.sign(s.distance);
+ return {durationS:2*ta+tc,
   position(t:number){const u=Math.min(Math.max(t,0),2*ta+tc);return sign*(u<ta?a*u*u/2:u<ta+tc?vp*ta/2+vp*(u-ta):d-a*(2*ta+tc-u)**2/2);}};
 }
 /** The tick after which the commanded signal no longer changes: the end of the motion of a trapezoid, the length of a hold, the step tick of a step. */
@@ -33,7 +32,7 @@ export const benchAnchorTick=(model:{axes:readonly {enableDelaySubsteps:number}[
 
 /** The reason codes (empty: admitted) for one signal on one axis: shape, a registered size, a tick inside the bench, a motion that ends inside it and, for a position axis with limits, a target inside them. `start` is the position the axis rests at.
  *  With `anchorTick` (the engine tick of signal tick 0, benchAnchorTick), the signal must also end inside the bench after the drive's enable sequence: TICK_OUT_OF_RANGE otherwise. */
-export function validateBenchSignal(signal:unknown,axis:{mode:Mode;lower?:number;upper?:number;start?:number;anchorTick?:number}):Check{
+export function validateBenchSignal(signal:unknown,axis:{mode:Mode;lower?:number;upper?:number;start?:number;anchorTick:number}):Check{
  const shape=validateBenchSignalShape(signal);
  if(!shape.ok)return shape;
  const s=signal as BenchSignal,codes=new Set<string>();
@@ -45,22 +44,25 @@ export function validateBenchSignal(signal:unknown,axis:{mode:Mode;lower?:number
   if(s.distance===0)codes.add('DISTANCE_ZERO');
   else if(s.atTick<BENCH_MAX_TICKS&&benchMotionEndTick(s)>BENCH_MAX_TICKS)codes.add('SIGNAL_TOO_LONG');
  }
- if(axis.anchorTick!==undefined&&!codes.has('TICK_OUT_OF_RANGE')&&!codes.has('SIGNAL_TOO_LONG')&&axis.anchorTick+benchSignalLastTick(s)>BENCH_MAX_TICKS)codes.add('TICK_OUT_OF_RANGE');
+ if(!Number.isSafeInteger(axis.anchorTick)||axis.anchorTick<1||axis.anchorTick>BENCH_MAX_TICKS)codes.add('ANCHOR_TICK_INVALID');
+ else if(!codes.has('TICK_OUT_OF_RANGE')&&!codes.has('SIGNAL_TOO_LONG')&&axis.anchorTick+benchSignalLastTick(s)>BENCH_MAX_TICKS)codes.add('TICK_OUT_OF_RANGE');
  if(axis.mode==='csp'&&(s.kind==='step'||s.kind==='trapezoid')){
   const far=(axis.start??0)+(s.kind==='step'?s.amplitude:s.distance);
   if((axis.lower!==undefined&&far<axis.lower)||(axis.upper!==undefined&&far>axis.upper))codes.add('JOINT_LIMIT_EXCEEDED');
  }
- return done(codes);
+ return checkReasons(codes);
 }
 
 /** The command for `tick`. csp: a position (rad), `start` plus the step or the integral of the velocity profile; csv: a speed (rad/s), `start` is ignored (a wheel bench starts at rest), a step is its amplitude
- *  and a trapezoid is the velocity profile itself, with the area |distance|. Sampled at the tick (a step takes effect on its tick). */
+ *  and a trapezoid is the mean speed over the fixed tick interval, so its discrete integral is the requested displacement (a step takes effect on its tick). */
 export function benchTarget(signal:BenchSignal,start:number,tick:number,mode:Mode='csp'):number{
+ if(!Number.isFinite(start)||!Number.isSafeInteger(tick)||tick<0||!validateBenchSignalShape(signal).ok||
+    signal.kind==='trapezoid'&&signal.distance===0||signal.kind==='step'&&signal.amplitude===0)throw new RangeError('BENCH_SAMPLE_INVALID');
  const base=mode==='csp'?start:0;
  if(signal.kind==='hold')return base;
  if(signal.kind==='step')return tick>=signal.atTick?base+signal.amplitude:base;
  const p=profile(signal),t=(tick-signal.atTick)*BENCH_TICK_S;
- return mode==='csp'?base+p.position(t):p.velocity(t);
+ return mode==='csp'?base+p.position(t):(p.position(t+BENCH_TICK_S)-p.position(t))/BENCH_TICK_S;
 }
 
 /** The axes a bench request can name, and the drive mode of each: the two wheels (speed) or one arm axis (position). */
@@ -73,10 +75,10 @@ export function validateBenchRequest(request:unknown,plant:{anchorTick:number;li
  if(!shape.ok)return shape;
  const r=request as BenchRequestV1,codes=new Set<string>();
  if((r.axis==='wheels')!==(r.scenarioId==='MJ-BENCH-WHEEL'))codes.add('AXIS_SCENARIO_MISMATCH');
- if(codes.size)return done(codes);
+ if(codes.size)return checkReasons(codes);
  const limits=plant.limits;
- if(r.axis!=='wheels'&&!(limits&&[limits.lower,limits.upper,limits.start].every(Number.isFinite)))return done(codes.add('AXIS_LIMITS_REQUIRED'));
+ if(r.axis!=='wheels'&&!(limits&&[limits.lower,limits.upper,limits.start].every(Number.isFinite)))return checkReasons(codes.add('AXIS_LIMITS_REQUIRED'));
  if(r.axis==='wheels'&&(r.signal.kind==='step'&&r.signal.amplitude<0||r.signal.kind==='trapezoid'&&r.signal.distance<0))codes.add('WHEEL_REVERSE_UNSUPPORTED');
  for(const c of validateBenchSignal(r.signal,{mode:benchAxisMode(r.axis),anchorTick:plant.anchorTick,...(r.axis==='wheels'?{}:limits)}).reasonCodes)codes.add(c);
- return done(codes);
+ return checkReasons(codes);
 }

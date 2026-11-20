@@ -141,3 +141,10 @@ test('a trapezoid\'s tracking error and saturation ratio are measured over its m
  expect(value(m.peakTorqueNm)).toBe(9);   // the ruling moves the two above only: the peak torque keeps the window from the start to the end of the bench
  expect(m.riseTimeS).toMatchObject({available:false,reason:'SIGNAL_NOT_STEP'});
 });
+
+test('settling requires 250 ms of observed intervals after entering the band at index 5',()=>{
+ const samples=Array.from({length:131},(_,i)=>({target:1,actual:i<5?0:1,feedback:null,torqueNm:0}));
+ const settle=(n:number)=>stepResponseMetrics({axisId:'a',dtS:0.002,samples:samples.slice(0,n)},unit,{...policy,holdWindowS:0.25}).settlingTimeS;
+ expect(settle(130)).toMatchObject({available:false,reason:'NOT_SETTLED'});
+ expect(settle(131)).toMatchObject({available:true,value:0.01});
+});

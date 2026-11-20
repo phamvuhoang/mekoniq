@@ -32,11 +32,11 @@ function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instan
  for(const e of validate.errors??[]){if(['if','oneOf','anyOf'].includes(e.keyword))continue;codes.add(e.keyword==='additionalProperties'?'UNKNOWN_FIELD':e.keyword==='required'?'FIELD_REQUIRED':e.keyword==='maximum'&&/\/(atTick|ticks)$/.test(e.instancePath)?'TICK_OUT_OF_RANGE':'INVALID_FIELD');}
  if(!codes.size)codes.add('INVALID_FIELD');
 }
-const done=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});
+export const checkReasons=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});
 const duplicates=(ids:string[])=>new Set(ids).size!==ids.length;
 
 /** The shape of a bench request or of one bench signal: closed fields, finite numbers, registered axis, scenario and experiment ids. Cross-field rules are in bench-signals.ts. */
-const shapeOnly=(validate:unknown,value:unknown):Check=>{const codes=new Set<string>();if(nonFinite(value))codes.add('NON_FINITE_NUMBER');shapeCodes(validate as never,value,codes);return done(codes);};
+const shapeOnly=(validate:unknown,value:unknown):Check=>{const codes=new Set<string>();if(nonFinite(value))codes.add('NON_FINITE_NUMBER');shapeCodes(validate as never,value,codes);return checkReasons(codes);};
 export const validateBenchRequestShape=(value:unknown):Check=>shapeOnly(benchRequestShape,value);
 export const validateBenchSignalShape=(value:unknown):Check=>shapeOnly(benchSignalShape,value);
 /** The bench scenarios and the axes a bench request can name, in the schema's order (the bench catalog of health lists them). */
@@ -50,7 +50,7 @@ export function validateDriveModel(value:unknown):Check{
  const m=value as DriveModelV1;
  if(Array.isArray(m?.axes)&&duplicates(m.axes.map(a=>a?.axisId)))codes.add('DRIVE_AXIS_DUPLICATE');
  if(m&&typeof m==='object'&&typeof m.digest==='string'&&!nonFinite(value)&&driveDocumentDigest(m)!==m.digest)codes.add('DIGEST_MISMATCH');
- return done(codes);
+ return checkReasons(codes);
 }
 
 /** A tuning envelope document: shape, finite bounds with min <= max, unique axes, digest. */
@@ -64,7 +64,7 @@ export function validateTuningEnvelope(value:unknown):Check{
   for(const a of e.axes){for(const k of ['kp','ki','kd','integralLimit','slewLimit','accelerationLimit'] as const)if(a?.[k]&&a[k]!.min>a[k]!.max)codes.add('ENVELOPE_BOUND_INVALID');if(a?.integralLimit&&a.integralLimit.min<=0)codes.add('ENVELOPE_BOUND_INVALID');}
  }
  if(e&&typeof e==='object'&&typeof e.digest==='string'&&!nonFinite(value)&&driveDocumentDigest(e)!==e.digest)codes.add('DIGEST_MISMATCH');
- return done(codes);
+ return checkReasons(codes);
 }
 
 /** A control profile against the drive model it is declared for and the server's envelope. One rule table per drive mode, the same as the worker's `actuator_spec` (shared vectors in robotics/simulation-mujoco/tests/data):
@@ -75,7 +75,7 @@ export function validateControlProfile(value:unknown,model:DriveModelV1,envelope
  if(nonFinite(value))codes.add('NON_FINITE_NUMBER');
  shapeCodes(profileShape as never,value,codes);
  const p=value as ControlProfileV1;
- if(!p||typeof p!=='object'||!Array.isArray(p.axes))return done(codes);
+ if(!p||typeof p!=='object'||!Array.isArray(p.axes))return checkReasons(codes);
  const ids=p.axes.map(a=>a?.axisId);
  if(duplicates(ids))codes.add('DRIVE_AXIS_DUPLICATE');
  const modelAxes=new Map(model.axes.map(a=>[a.axisId,a]));
@@ -93,7 +93,7 @@ export function validateControlProfile(value:unknown,model:DriveModelV1,envelope
   if(!env){codes.add('ENVELOPE_AXIS_MISSING');continue;}
   for(const c of withinEnvelope(a,env))codes.add(c);
  }
- return done(codes);
+ return checkReasons(codes);
 }
 
 /** `engine.driveModelRef` and `engine.controlProfileRef` come as a pair or not at all; each ref is a bundle path, never a URL or an escaping path. */

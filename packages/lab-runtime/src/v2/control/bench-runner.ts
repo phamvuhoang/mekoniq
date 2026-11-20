@@ -32,7 +32,7 @@ import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchSignalLastTic
 import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
 import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {gainSuggestions} from './gain-suggest';
-import {stepResponseMetrics} from './tuning-metrics';
+import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const DRIVE='fixtures/drive-v1',SERVE='fixtures/serve-payload-v1',ARM_ID='xarm-1',WHEELS=['amr-1/wheel-left','amr-1/wheel-right'];
@@ -214,26 +214,24 @@ export async function readBenchTrace(directory:string,identity:BenchTraceIdentit
 
 // ---- metrics and the result ----------------------------------------------------------------------------------------------------------------------------------
 type Outcome={status:'completed'}|{status:'drive_fault';fault:{tick:number;axisId:string;code:string}}|{status:'unstable';unstable:{tick:number;warning:string}}|{status:'collision';collision:{tick:number;ids:string[]}};
-const METRIC_UNITS=(mode:'csp'|'csv'):Record<string,string>=>({riseTimeS:'s',overshootPct:'%',settlingTimeS:'s',steadyStateError:mode==='csp'?'rad':'rad/s',rmsError:mode==='csp'?'rad':'rad/s',peakTorqueNm:'N m',saturationRatio:'ratio'});
-const allUnavailable=(mode:'csp'|'csv',reason:string)=>Object.fromEntries(Object.entries(METRIC_UNITS(mode)).map(([k,unit])=>[k,{available:false,value:null,unit,reason} as ControlMetric]));
 /** The signal starts at the start of tick `anchor + atTick` (a hold: `anchor`), the anchor being the first tick commanded after every axis reported enabled. Its time origin t0S is the end of the tick before it:
  * sample 10·start − 1 of the trace (tick 0's first substep is sample 0), and y0 is the true state there. A step gets the step metrics of contracts §5; a trapezoid and a hold the tracking error, the peak torque and the
  * saturation ratio from their start (what §6.1 lists for them): the tracking error and the saturation ratio up to the end of the motion (a trapezoid's motion end, a hold's last tick: §6.1 "sai số bám khi chạy",
  * not the stationary tail), the peak torque to the end of the bench; the step metrics are SIGNAL_NOT_STEP. A drive fault, an unstable plant or a collision: every metric unavailable with that reason (no metric of the part before).
  * A signal that did not run to its end inside the trace (a step that never landed, a motion or a hold cut by the end of the bench) has no metric either: SIGNAL_TRUNCATED. */
 export function benchMetrics(trace:DriveTrace,signal:BenchRequestV1['signal'],anchor:number|null,mode:'csp'|'csv',policy:Policy,outcome:Outcome['status']):Record<string,ControlMetric>{
- if(outcome!=='completed')return allUnavailable(mode,{drive_fault:'DRIVE_FAULT',unstable:'PLANT_UNSTABLE',collision:'COLLISION'}[outcome]);
- if(anchor===null)return allUnavailable(mode,'SIGNAL_NOT_STARTED');
+ if(outcome!=='completed')return unavailableMetrics(mode,{drive_fault:'DRIVE_FAULT',unstable:'PLANT_UNSTABLE',collision:'COLLISION'}[outcome]);
+ if(anchor===null)return unavailableMetrics(mode,'SIGNAL_NOT_STARTED');
  // a signal whose landing (a step), motion end (a trapezoid) or last tick (a hold) is past the last recorded tick did not run as asked: no metric of it (admission refuses one that cannot fit)
  const lastTick=trace.samples.length/BENCH_TRACE_LIMITS.substeps-1;
- if(anchor+benchSignalLastTick(signal)>lastTick)return allUnavailable(mode,'SIGNAL_TRUNCATED');
+ if(anchor+benchSignalLastTick(signal)>lastTick)return unavailableMetrics(mode,'SIGNAL_TRUNCATED');
  const i0=BENCH_TRACE_LIMITS.substeps*(anchor+(signal.kind==='hold'?0:signal.atTick))-1,origin=trace.samples[i0];
- if(!origin)return allUnavailable(mode,'TRACE_GAP');
+ if(!origin)return unavailableMetrics(mode,'TRACE_GAP');
  const at={t0S:i0*trace.dtS,y0:origin.actual};
  if(signal.kind==='step')return stepResponseMetrics(trace,{...at,amplitude:signal.amplitude},policy,mode);
  // the tracking error, the peak torque and the saturation ratio do not depend on the amplitude (any non-zero one gives the same); the rest is a step's
- const motion=stepResponseMetrics({...trace,samples:trace.samples.slice(0,BENCH_TRACE_LIMITS.substeps*(anchor+benchSignalLastTick(signal)+1))},{...at,amplitude:1},policy,mode),units=METRIC_UNITS(mode);
- return {...Object.fromEntries(['riseTimeS','overshootPct','settlingTimeS','steadyStateError'].map(k=>[k,{available:false,value:null,unit:units[k]!,reason:'SIGNAL_NOT_STEP'}])),rmsError:motion.rmsError,
+ const motion=stepResponseMetrics({...trace,samples:trace.samples.slice(0,BENCH_TRACE_LIMITS.substeps*(anchor+benchSignalLastTick(signal)+1))},{...at,amplitude:1},policy,mode);
+ return {...unavailableMetrics(mode,'SIGNAL_NOT_STEP'),rmsError:motion.rmsError,
   peakTorqueNm:stepResponseMetrics(trace,{...at,amplitude:1},policy,mode).peakTorqueNm,saturationRatio:motion.saturationRatio};
 }
 

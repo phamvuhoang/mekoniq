@@ -6,8 +6,8 @@ import {expect,test} from 'vitest';
 import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_TICK_S,SUGGEST_OPTIONS,benchAnchorTick,benchMotionEndTick,benchTarget,validateBenchRequest,validateBenchSignal,type BenchSignal} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import type {ControlProfileV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 
-const csv={mode:'csv' as const},csp={mode:'csp' as const,lower:-1,upper:1,start:0.5};
-const codes=(s:unknown,a:Parameters<typeof validateBenchSignal>[1])=>validateBenchSignal(s,a).reasonCodes;
+const csv={anchorTick:1,mode:'csv' as const},csp={anchorTick:1,mode:'csp' as const,lower:-1,upper:1,start:0.5};
+const codes=(s:unknown,a:Omit<Parameters<typeof validateBenchSignal>[1],'anchorTick'>)=>validateBenchSignal(s,{anchorTick:1,...a}).reasonCodes;
 const profile=JSON.parse(readFileSync('robotics/simulation-mujoco/fixtures/drive-v1/serve-control-v1.json','utf8')) as ControlProfileV1;
 const req=(o:object={})=>({schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'wheels',signal:{kind:'step',amplitude:2,atTick:5},driveExperimentId:'drive-nominal-v1',controlProfile:profile,...o});
 
@@ -65,7 +65,7 @@ test('benchTarget of a speed axis: the commanded velocity profile has the area o
  expect(area({kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick:2})).toBeCloseTo(5,9);
  expect(area({kind:'trapezoid',distance:-5,peakVelocity:2,acceleration:10,atTick:2})).toBeCloseTo(-5,9);
  expect(area({kind:'trapezoid',distance:0.5,peakVelocity:2,acceleration:5,atTick:2})).toBeCloseTo(0.5,2);   // triangular: breakpoints between ticks
- expect(benchTarget({kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick:2},0,2,'csv')).toBe(0);
+ expect(benchTarget({kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick:2},0,2,'csv')).toBeCloseTo(0.1,12);
 });
 
 test('a bench request: wheels only on the wheel scenario, a joint or the gripper only on the arm scenario',()=>{
@@ -119,4 +119,24 @@ test('a wheel bench runs forward only: a reverse step or trapezoid distance is W
 test('lab-mujoco bench: a seed above 2^32-1 is a usage error (exit 2) before anything runs',()=>{
  const r=spawnSync(process.execPath,['scripts/lab-mujoco.mjs','bench','--axis','wheels','--signal','{"kind":"step","amplitude":2,"atTick":10}','--profile','robotics/simulation-mujoco/fixtures/drive-v1/serve-control-v1.json','--out',join(tmpdir(),'lab-mujoco-seed-never-written'),'--seed','4294967296'],{encoding:'utf8',timeout:120000});
  expect(r.status,r.stderr).toBe(2);expect(r.stderr).toMatch(/^usage:/);
+});
+
+test.each([0.01,0.015,0.5,5.013])('a wheel trapezoid commands its full distance %s over exact tick intervals',distance=>{
+ const s={kind:'trapezoid' as const,distance,peakVelocity:2,acceleration:100,atTick:5};
+ const v=Array.from({length:500},(_,t)=>benchTarget(s,0,t,'csv'));
+ expect(v[4]).toBe(0);expect(v[5]).toBeGreaterThan(0);
+ expect(v.reduce((sum,x)=>sum+x*0.02,0)).toBeCloseTo(distance,12);
+ expect(v.slice(benchMotionEndTick(s)).every(x=>Math.abs(x)<1e-12)).toBe(true);
+});
+test('a direct sampler rejects zero distance and invalid numbers',()=>{
+ const s={kind:'trapezoid' as const,distance:0.01,peakVelocity:2,acceleration:100,atTick:5};
+ for(const bad of [{distance:0},{peakVelocity:0},{acceleration:0},{distance:Infinity},{acceleration:NaN}]){
+  expect(()=>benchTarget({...s,...bad},0,5,'csv')).toThrow(RangeError);
+ }
+ expect(()=>benchTarget(s,NaN,5)).toThrow(RangeError);expect(()=>benchTarget(s,0,Infinity)).toThrow(RangeError);
+});
+test('bench admission requires a valid engine anchor',()=>{
+ for(const anchorTick of [undefined,NaN,0,1.5,Infinity]){
+  expect(validateBenchRequest(req(),{anchorTick:anchorTick as number}).reasonCodes).toEqual(['ANCHOR_TICK_INVALID']);
+ }
 });
