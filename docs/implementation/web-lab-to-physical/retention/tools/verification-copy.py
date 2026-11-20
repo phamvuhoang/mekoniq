@@ -31,16 +31,17 @@ MAX_EXPANDED = 8*1024**3
 PUBLIC = ('kty','crv','x','y')
 CASE_KEY = re.compile(r'(?:cell/[\w-]+|(?:fd01|repeat)-[\w-]+(?:/baseline)?)/run/signing-key\.json\Z')
 SECRET_NAME = re.compile(r'(?:\.env(?:\..+)?|id_(?:rsa|ed25519)|.*\.(?:pem|key|p12|pfx|jks|der)|(?:credentials|private[-_]key|session[-_]token)\.json)\Z',re.I)
+GITHUB_PREFIXES = (b'github_pat_', b'ghp_', b'gho_', b'ghu_', b'ghs_', b'ghr_')
 SECRET_HINTS = (b'token',b'password',b'credential',b'authorization',b'bearer ',b'pairing',b'cookie',
                 b'secret',b'private',b'"kty"',b'"d"',b'api_key',b'apikey',b'accesskey',b'signingkey',
-                b'mekoniq_lab',b'access_key',b'access-key',b'github_pat_',b'ghp_',b'akia',b'asia',b'eyj')
+                b'mekoniq_lab',b'access_key',b'access-key',*GITHUB_PREFIXES,b'akia',b'asia',b'eyj')
 CREDENTIAL = re.compile(
     rb"""(?:\b(?:authorization\s*[:=]\s*["']?bearer\s+|bearer\s+)(?:[a-z0-9_-]{16,})"""
     rb"""|\b(?:mekoniq_lab(?:_v2)?_session|mekoniq_lab_session_v2)\s*=\s*[a-z0-9_-]+"""
     rb"""|\bpairing\s+(?:code|token)(?:\s*\([^\r\n)]{0,80}\))?\s*[:=]\s*["']?[a-z0-9_-]+"""
     rb"""|\b(?:mekoniq_lab_access_key|lab_test_pairing_token|csrf[-_]?token|reclaim[-_]?token|session[-_]?token|pairing[-_]?(?:code|token)|access[-_]?token|refresh[-_]?token|api[-_]?key|access[-_]?key|private[-_]?key|signing[-_]?key|password|client[-_]?secret|secret[-_]?access[-_]?key|credentials|token|secret)"""
     rb"""["']?\s*[:=]\s*(?:["'][a-z0-9_+/=.-]{3,}["']|[a-z0-9_+/.-]{8,}(?=[\s,;]|$))"""
-    rb"""|-----begin [^-\r\n]{0,64}private key-----|\b(?:github_pat_|gh[pousr]_)[a-z0-9_]{20,}"""
+    rb"""|-----begin [^-\r\n]{0,64}private key-----|\b(?:""" + b'|'.join(GITHUB_PREFIXES) + rb""")[a-z0-9_]{20,}"""
     rb"""|\b(?:akia|asia)[a-z0-9]{16}\b|\beyj[a-z0-9_-]{8,}\.eyj[a-z0-9_-]{8,}\.[a-z0-9_-]{8,}"""
     rb"""|["'](?:d|dp|dq|qi)["']\s*:\s*["'][a-z0-9_+/=-]{16,}["']"""
     rb"""|["']kty["']\s*:\s*["'](?:ec|rsa|oct|okp)["'])""",re.I)

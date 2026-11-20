@@ -113,6 +113,19 @@ class VerificationCopyTest(unittest.TestCase):
         with ZipFile(z,'w') as ar:ar.writestr('job.log',f'mekoniq_lab_session={secret}')
         result=self.invoke('scan',z);self.assertIn(b'SENSITIVE',result.stderr);self.assertNotIn(secret.encode(),result.stderr)
 
+    def test_scans_unlabelled_github_credentials_at_family_and_length_boundaries(self):
+        path=self.folder/'job.log'
+        for prefix in ('ghp_', 'gho_', 'ghu_', 'ghs_', 'ghr_', 'github_pat_'):
+            for size,leading,refused in ((19,b'',False),(20,b'',True),(21,b'(',True),(20,b'x',False)):
+                with self.subTest(family=prefix,length=size,leading=leading):
+                    sample=prefix.encode()+b'a'*size
+                    path.write_bytes(leading+sample+b'\n')
+                    result=self.invoke('scan',path)
+                    self.assertEqual(result.returncode,1 if refused else 0)
+                    if refused:
+                        self.assertIn(b'SENSITIVE_CONTENT',result.stderr)
+                    self.assertFalse(sample in result.stdout or sample in result.stderr)
+
     def test_scans_sqlite_rows_in_scratch_and_leaves_original_bytes_untouched(self):
         file=self.folder/'store.db'
         with sqlite3.connect(file) as db:
