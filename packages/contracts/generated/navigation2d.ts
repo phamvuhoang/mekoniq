@@ -515,7 +515,7 @@ export type BenchSignal =
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "ControlEvidenceV1".
  */
-export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1;
+export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1 | FaultOracleV1;
 
 export interface Navigation2DContracts {}
 /**
@@ -2974,6 +2974,7 @@ export interface FaultReportV1 {
   documentType: 'fault-report';
   runId: string;
   scheduleDigest: Digest;
+  oracleDigest: Digest;
   /**
    * @minItems 0
    * @maxItems 16
@@ -2982,10 +2983,45 @@ export interface FaultReportV1 {
     entryId: string;
     faultId: string;
     targetId: string;
-    status: 'fired' | 'not_fired' | 'evidence_invalid';
-    appliedTick: number | null;
-    detection: 'detected' | 'not_detected' | 'not_applicable';
-    detectedTick: number | null;
+    params: {
+      [k: string]: number;
+    };
+    durationMs: number;
+    injection: {
+      appliedTick: number | null;
+      endedTick: number | null;
+    };
+    detection: {
+      by: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+      code: string | null;
+      tick: number | null;
+      latencyTicks: number | null;
+    };
+    firstCommandChangeTick: number | null;
+    plantResponse: {
+      axisState: string | null;
+      axisFault: string | null;
+      peakActualSpeedRadS: number | null;
+      ticksToRest: number | null;
+      baseTravelM: number | null;
+    };
+    verdict: 'detected_in_time' | 'detected_late' | 'not_detected' | 'not_fired';
+  }[];
+  /**
+   * @minItems 6
+   * @maxItems 6
+   */
+  invariants: {
+    id:
+      | 'NO_FALSE_SERVE'
+      | 'NO_RESEND_AFTER_UNKNOWN'
+      | 'NO_MOTION_BEFORE_ENABLED'
+      | 'CUSTODY_UNCHANGED'
+      | 'LATCH_HELD'
+      | 'TORQUE_ZERO_AFTER_TIMEOUT';
+    result: 'pass' | 'violated' | 'not_applicable';
+    tick: number | null;
+    evidence: string;
   }[];
   /**
    * @minItems 0
@@ -3016,6 +3052,46 @@ export interface ControlOracleV1 {
     thresholdRadS: number;
   };
   minAmplitudeQuanta: number;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultOracleV1".
+ */
+export interface FaultOracleV1 {
+  schemaVersion: 1;
+  documentType: 'fault-oracle';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 8
+   * @maxItems 8
+   */
+  faults: {
+    faultId:
+      | 'encoder-dropout'
+      | 'motor-weak'
+      | 'drive-trip'
+      | 'command-delay'
+      | 'command-loss'
+      | 'grip-weak'
+      | 'lidar-noise'
+      | 'drive-reset';
+    required: boolean;
+    detector: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+    /**
+     * @maxItems 4
+     */
+    codes: string[];
+    deadlineTicks: number | null;
+  }[];
+  invariantPolicy: {
+    holdToleranceRad: number;
+    torqueEpsNm: number;
+    timeoutSettleTicks: number;
+  };
   source: SourceRef;
 }
 /**

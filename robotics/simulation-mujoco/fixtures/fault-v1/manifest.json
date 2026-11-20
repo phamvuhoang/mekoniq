@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "documentType": "fault-fixture-manifest",
+  "id": "fault-v1",
+  "generator": "scripts/generate-fault-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "fault-oracle-v1.json",
+      "sha256": "0956d5e6e2f47980f9176344f757a1f5e4f26af61200fb95be015100b69279ff",
+      "bytes": 2046
+    },
+    {
+      "path": "README.md",
+      "sha256": "a05513925ab9eebdf1956058d8050f9df002661b10649077072e240b7dad4f31",
+      "bytes": 656
+    }
+  ]
+}

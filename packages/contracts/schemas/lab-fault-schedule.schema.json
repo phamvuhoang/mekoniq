@@ -64,6 +64,16 @@
       "type": "number",
       "minimum": 1,
       "maximum": 60000
+    },
+    "params": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      },
+      "maxProperties": 4,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9]{0,39}$"
+      }
     }
   },
   "required": [

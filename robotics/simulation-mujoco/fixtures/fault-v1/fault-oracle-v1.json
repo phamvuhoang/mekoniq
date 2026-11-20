@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "documentType": "fault-oracle",
+  "id": "fault-oracle-v1",
+  "revision": 1,
+  "digest": "86c2574b49c0a6cb795032e1e00b703e790a431201694041b7c7037eae6ec092",
+  "calibration": "not_calibrated",
+  "faults": [
+    {
+      "faultId": "encoder-dropout",
+      "required": true,
+      "detector": "drive",
+      "codes": [
+        "FEEDBACK_LOSS"
+      ],
+      "deadlineTicks": 3
+    },
+    {
+      "faultId": "motor-weak",
+      "required": false,
+      "detector": "controller",
+      "codes": [
+        "TRACKING_DEGRADED"
+      ],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "drive-trip",
+      "required": true,
+      "detector": "controller",
+      "codes": [
+        "DRIVE_FAULT"
+      ],
+      "deadlineTicks": 2
+    },
+    {
+      "faultId": "command-delay",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "command-loss",
+      "required": true,
+      "detector": "drive",
+      "codes": [
+        "COMMAND_TIMEOUT"
+      ],
+      "deadlineTicks": 5
+    },
+    {
+      "faultId": "grip-weak",
+      "required": true,
+      "detector": "arm_program",
+      "codes": [
+        "ARM_GRIP_NOT_ESTABLISHED"
+      ],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "lidar-noise",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    },
+    {
+      "faultId": "drive-reset",
+      "required": false,
+      "detector": null,
+      "codes": [],
+      "deadlineTicks": null
+    }
+  ],
+  "invariantPolicy": {
+    "holdToleranceRad": 0.02,
+    "torqueEpsNm": 1e-9,
+    "timeoutSettleTicks": 2
+  },
+  "source": {
+    "kind": "assumed",
+    "documentId": "robotics/simulation-mujoco/fixtures/drive-v1/serve-drive-nominal-v1.json",
+    "revision": "1",
+    "locator": "feedbackLossSubsteps and watchdogTicks of the nominal drive: oracle deadlines are test policy, not safety parameters",
+    "contentSha256": "4ce6154593ec018d8c186abe40ee5eb2f4a3b1c861dcc81cf3f4667239ad314b"
+  }
+}

@@ -10,3 +10,8 @@ export function actorStream(seed:number,actorId:string):Stream {
  const u32=()=>{const r=Math.imul(rotl(Math.imul(b,5),7),9)>>>0,t=b<<9;c^=a;d^=b;b^=c;a^=d;c^=t;d=rotl(d,11);return r;};
  return {next:()=>u32()/2**32,int(min,max){if(!Number.isSafeInteger(min)||!Number.isSafeInteger(max)||max<min)throw new Error('INVALID_RANGE');return min+Math.floor(u32()/2**32*(max-min+1));}};
 }
+/** One Box-Muller pair from exactly two uniforms (u1 in (0,1], so log never sees 0): the draw rule R4 fixes for sensor noise and perception (contracts §6). */
+export function gaussianPair(stream:Stream):[number,number]{
+ const u1=1-stream.next(),u2=stream.next(),r=Math.sqrt(-2*Math.log(u1));
+ return [r*Math.cos(2*Math.PI*u2),r*Math.sin(2*Math.PI*u2)];
+}

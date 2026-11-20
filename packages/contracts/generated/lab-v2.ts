@@ -788,6 +788,9 @@ export interface FaultScheduleEntry {
         value: 'brew' | 'grasp' | 'handoff' | 'delivery';
       };
   durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
 }
 
 export interface LabProjectV2 {
