@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 9c9175d389280975c1a749e6d6203ead1a20f33d (sha256 64a085792f8249f5227a9300034172f4f60077e87da07bd26d1703cf73382c0a). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 51013413d5edf6f21c93070dbf1bc0845558653a (sha256 efea001b95ada919a0ea57d20168aab961099747ed22652917453f4b3be57e56). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2774,6 +2774,19 @@ export interface TuningEnvelopeV1 {
   source: SourceRef;
 }
 /**
+ * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TunedSourceRef".
+ */
+export interface TunedSourceRef {
+  kind: 'tuned_in_simulation';
+  benchRunId: string;
+  scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
+  traceSha256: Digest;
+  sourceCommit: string;
+}
+/**
  * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2803,8 +2816,14 @@ export interface ControlProfileV1 {
    */
   controllers: ControllerConfig[];
   sources: {
-    loop: SourceRef;
-    limits: SourceRef;
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    loop: SourceRef | TunedSourceRef;
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    limits: SourceRef | TunedSourceRef;
     controller: SourceRef;
   };
 }
@@ -2887,6 +2906,10 @@ export interface TuningResultV11 {
     basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
     provenance: 'assumed';
   } | null;
+  /**
+   * Starting gains from the effective inertia (V07pre, D4): one entry per registered (bandwidthRadS, damping) pair of the health signal catalog's suggestOptions, bandwidth first, computed by the server with the envelope of axisIds[0] (for a wheel bench, the left wheel's). null when the result has no effective inertia. A model-based starting point, not calibrated.
+   */
+  suggestions?: GainSuggestion[] | null;
   policy: {
     finalWindowS: number;
     settleBand: number;
@@ -2904,6 +2927,28 @@ export interface TuningResultV11 {
     samples: number;
   };
   accepted: false;
+}
+/**
+ * suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "GainSuggestion".
+ */
+export interface GainSuggestion {
+  bandwidthRadS: number;
+  damping: number;
+  loop: {
+    kp: number;
+    ki: number;
+    kd: number;
+    integralLimit: number | null;
+    slewLimit: null;
+  };
+  accelerationLimit: null;
+  /**
+   * @maxItems 3
+   */
+  clamped: ('kp' | 'ki' | 'kd')[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
