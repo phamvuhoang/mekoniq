@@ -1,5 +1,6 @@
 // Portable IR-SIM provider: operator opt-in (MEKONIQ_LAB_IRSIM=1, independent of the LinkForge flag), a real worker describe at boot, and per-request readiness
 // from the admitted bundle plus a real create smoke. Nothing here falls back to mock or native providers; test doubles never make this provider installed.
+import {driveFaultContextOf} from '../control/fault-context';
 import {mkdir,mkdtemp,rm,statfs,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {dirname,join,resolve} from 'node:path';
@@ -47,7 +48,7 @@ export interface PortableSimulationOptions {enabled:boolean;python:string;worker
  webots?:WebotsProviderLike;
  benchIdleLeaseMs?:number;
  mujoco?:MujocoProviderLike;}
-export interface PortableSimulation {/** the bench catalog of health (V07pre), built from the bench runtime's worker root */benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;worldExperiments?:true;plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
+export interface PortableSimulation {/** present when the MuJoCo drive runtime is on: what a drive fault schedule may name (V08) */driveFaultContext?:import('../control/fault-context').DriveFaultContextOf;/** the bench catalog of health (V07pre), built from the bench runtime's worker root */benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;worldExperiments?:true;plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
 const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence quota
 const SMOKE_TTL_MS=60_000;
 const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
@@ -124,7 +125,7 @@ export async function portableSimulationFromOptions(o:PortableSimulationOptions)
   return pick(context,signal);
  }:undefined;
  const dispatch=plantDispatcher(catalog,plants,o.nativeFactory,arms);const simulationFactory:SimulationFactory=async(input,providers)=>{if(input.bench!==undefined||scenarioRegistry.get(input.scenarioId)?.bench){const runtime=runtimeFor(input.scenarioId);if(!runtime||benchInfo.reasonCodes.length)throw Error(benchInfo.reasonCodes[0]??'BACKEND_EXECUTION_DISABLED');return createBenchRun(input,{...providers,runtime,idleLeaseMs:benchInfo.idleLease.durationMs});}const set=catalog.sets[input.backendSetId];if(set?.execution?.composition==='single_world'&&input.backendSetId==='engineering-mujoco-cell-v1'&&!providers.worldPorts){if(!worldReady)throw Error('WORLD_COMPOSITION_UNAVAILABLE');return dispatch(input,{...providers,worldPorts:configuredWorld!.factory});}return dispatch(input,providers);};
- return {...base,...worldReady?{worldExperiments:true as const}:{},...mr||mobile?{benchInfo}:{},...catalogOfBench?{benchCatalog:catalogOfBench}:{},catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[],...mm?.plant&&mm.capability.installed?['mujoco_3d']:[]],plants,simulationFactory,...readinessChecks?{readinessChecks}:{}};
+ return {...base,...worldReady?{worldExperiments:true as const}:{},...mr||mobile?{benchInfo,driveFaultContext:driveFaultContextOf((mr??mobile)!.workerRoot)}:{},...catalogOfBench?{benchCatalog:catalogOfBench}:{},catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[],...mm?.plant&&mm.capability.installed?['mujoco_3d']:[]],plants,simulationFactory,...readinessChecks?{readinessChecks}:{}};
 }
 
 async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{

@@ -58,15 +58,15 @@ export const recordingHostArch=():HostArch=>process.arch==='arm64'?'arm64':'x86_
 
 const json=(v:unknown)=>JSON.stringify(v,null,2)+'\n';
 
-interface Trace {spawns:number;steps:{tick:number;velocities:number;driveCommands:DriveCommandV1[]}[];error:string|null}
+export interface Trace {spawns:number;steps:{tick:number;velocities:number;driveCommands:DriveCommandV1[]}[];error:string|null}
 
-async function readJson(root:string,path:string,max=64*1024*1024){
+export async function readJson(root:string,path:string,max=64*1024*1024){
  if(!/^[\w.-]+(?:\/[\w.-]+)*$/.test(path)||path.split('/').some(p=>p==='..'||p==='.'))throw Error('CIL_ARTIFACT_PATH');
  let cur=root;for(const part of path.split('/')){cur=join(cur,part);if((await lstat(cur)).isSymbolicLink())throw Error('CIL_ARTIFACT_PATH');}
  const st=await lstat(cur);if(!st.isFile()||st.size>max)throw Error('CIL_ARTIFACT_LIMIT');return JSON.parse(await readFile(cur,'utf8'));
 }
 
-async function setupMobile(o:{root:string;out:string}){
+export async function setupMobile(o:{root:string;out:string},only?:readonly (DriveExperimentId|null)[]){
  const workerRoot=join(o.root,'robotics/simulation-mujoco'),fixture=join(workerRoot,'fixtures/serve-payload-v1'),catalogRoot=join(o.out,'catalog');
  const c=JSON.parse(await readFile(join(fixture,'serve-3d-components.json'),'utf8')) as {components:Record<string,unknown>;models:Record<string,unknown>};
  for(const dir of ['components','models','documents'])await mkdir(join(catalogRoot,dir),{recursive:true});
@@ -75,7 +75,7 @@ async function setupMobile(o:{root:string;out:string}){
  await writeFile(join(catalogRoot,'catalog.json'),json({schemaVersion:1,id:campaign.id,components:Object.keys(c.components).map(digest=>({digest,file:`components/${digest}.json`})),quotes:[]}));
  const service=createEngineeringService({directory:join(o.out,'engineering'),catalogRoot,compiler:{version:'refused',runnable:()=>false,async compileResolved(){throw new Error('NATIVE_DISABLED');}},compilers:{[SET]:createMujocoCompiler({workerRoot})}});
  const compiled=new Map<string,{locked:LockedEngineering;scene:NavigationSceneV1}>();
- for(const experiment of [null,...experiments]){
+ for(const experiment of only??[null,...experiments]){
   const project:EngineeringProject={...JSON.parse(await readFile(join(fixture,'serve-3d-project.json'),'utf8')),requestedProfile:SET,...experiment?{driveExperimentId:experiment}:{}};
   const receipt=await service.compileEngineeringProject(project,OWNER);if(receipt.state!=='compiled')throw new Error(`CIL_COMPILE_FAILED:${JSON.stringify(receipt.problems)}`);
   const locked=await service.admitRun(OWNER,{bundleDigest:receipt.bundleDigest,projectDigest:receipt.projectDigest},SET,undefined);
@@ -86,13 +86,13 @@ async function setupMobile(o:{root:string;out:string}){
 }
 
 /** One MJ-FD01 run into `dir`: its bundle, its run directory, its report and the commands it sent. */
-async function runMobile(c:{service:Awaited<ReturnType<typeof setupMobile>>['service'];compiled:Awaited<ReturnType<typeof setupMobile>>['compiled'];runtime:Parameters<typeof mujocoMobilePlant>[0];catalog:typeof defaultCatalog;sourceCommit:string;signal?:AbortSignal},dir:string,experiment:string,seed:number){
+export async function runMobile(c:{service:Awaited<ReturnType<typeof setupMobile>>['service'];compiled:Awaited<ReturnType<typeof setupMobile>>['compiled'];runtime:Parameters<typeof mujocoMobilePlant>[0];catalog:typeof defaultCatalog;sourceCommit:string;signal?:AbortSignal},dir:string,experiment:string,seed:number,faults?:readonly import('../fault-schedule').FaultScheduleEntry[]){
  const {locked,scene}=c.compiled.get(experiment)!;await mkdir(dir,{recursive:true});
  const bundle=join(dir,'bundle');for(const path of ['navigation-scene.json',...scene.files.map(f=>f.path)]){await mkdir(join(bundle,path,'..'),{recursive:true});await writeFile(join(bundle,path),await c.service.bundleFile(locked.ref.bundleDigest,path));}
  const trace:Trace={spawns:0,steps:[],error:null},plant=mujocoMobilePlant(c.runtime),spawn=plant.spawn;
  plant.spawn=async o=>{trace.spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='step'){const p=req.payload as {targetTick:number;velocities:unknown[];driveCommands?:DriveCommandV1[]};trace.steps.push({tick:p.targetTick,velocities:p.velocities.length,driveCommands:structuredClone(p.driveCommands??[])});}return w.request(req);}};};
- const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:campaign.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:c.sourceCommit,engineering:locked},
-  {directory:join(dir,'run'),catalog:c.catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>c.service.bundleFile(d,p),plant,runtime:c.runtime});
+ const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:campaign.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:c.sourceCommit,engineering:locked,...faults?.length?{driveFaultSchedule:structuredClone([...faults])}:{}},
+  {directory:join(dir,'run'),catalog:c.catalog,...faults?.length?{faultCampaign:true as const}:{},enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>c.service.bundleFile(d,p),plant,runtime:c.runtime});
  let n=0,report:RunReport|undefined;
  try{
   await run.start();let v=await run.snapshot();
@@ -130,22 +130,22 @@ export async function runCilCampaign(o:{root:string;out:string;sourceCommit:stri
 }
 
 /** The records of a physics evidence directory, read with the admission of the bundle that run used. */
-async function readStream(dir:string,cp:{runId:string;plant:{snapshot:{bootId:string}};tick:number}){
+export async function readStream(dir:string,cp:{runId:string;plant:{snapshot:{bootId:string}};tick:number}){
  const scene=JSON.parse(await readFile(join(dir,'bundle/navigation-scene.json'),'utf8')) as NavigationSceneV1;
  const valid=validateNavigationDocument(scene);if(!valid.ok)throw Error('CIL_SCENE_INVALID');
  const prepared=await preparePhysicsAdmission(scene,async p=>readFile(join(dir,'bundle',p))),physicsDir=join(dir,'run/physics'),manifest=await readPhysicsManifest(physicsDir);
  const read=await readPhysicsEvidence(physicsDir,manifest,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:{runId:cp.runId,bootId:cp.plant.snapshot.bootId,sceneDigest:scene.sceneDigest,loadProfileDigest:prepared.loadProfileDigest,physicsProfileDigest:prepared.physicsProfileDigest},runTick:cp.tick});
  return {scene,read,prepared};
 }
-type Rec=Record<string,unknown>&{tick:number;drives?:DriveAxisSnapshot[]};
+export type Rec=Record<string,unknown>&{tick:number;drives?:DriveAxisSnapshot[]};
 const strip=(r:Rec)=>{const {drives:_d,...rest}=r;void _d;return rest;};
 
-async function replayMobile(dir:string,cp:{tick:number;runId:string;plant:{snapshot:{bootId:string}}},scene:NavigationSceneV1,docs:{model:DriveModelV1;control:ControlProfileV1},records:Rec[],trace:Trace){
+export async function replayMobile(dir:string,cp:{tick:number;runId:string;plant:{snapshot:{bootId:string}}},scene:NavigationSceneV1,docs:{model:DriveModelV1;control:ControlProfileV1},records:Rec[],trace:Trace,faults:readonly import('../fault-schedule').FaultScheduleEntry[]=[]){
  const manifest=await readJson(dir,'run/evidence/manifest.json');
  const nav=await readNavigationEvidence(join(dir,'run/evidence'),manifest,{scene,runTick:cp.tick});
  if(!nav.complete||manifest.runId!==cp.runId||manifest.sceneDigest!==scene.sceneDigest||manifest.boots?.length!==1||manifest.boots[0].bootId!==cp.plant.snapshot.bootId||nav.control.length!==cp.tick)throw Error('CIL_CONTROL_EVIDENCE');
  const robot=scene.robots[0]!,controller=mobileDrive(docs,{robotId:robot.robotId,...robot.model.kinematics});
- return replayMobileCommands(controller,robot.robotId,records,nav.control,trace.steps);
+ return replayMobileCommands(controller,robot.robotId,records,nav.control,trace.steps,faults);
 }
 
 export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<CilCampaignVerdict>{

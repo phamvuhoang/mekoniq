@@ -6,6 +6,8 @@ import {lstat,mkdir,opendir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {IncomingMessage,ServerResponse} from 'node:http';
 import {admitBackend,defaultCatalog,type CapabilityCatalog,type Access} from './capabilities';
+import {DRIVE_FAULTS,validateDriveFaultSchedule} from './control/drive-faults';
+import {validateFaultEntryShape,type FaultScheduleEntry} from './fault-schedule';
 import {classifyField,validateProjectV2,validateRunRequestV2,validateActionV2,type Issue} from './contracts';
 import {collectReadiness,type ReadinessProbe,type NativeReadinessChecks} from './readiness';
 import {offeredScenarios,requirementsByBackendSet,resolveBackends,scenarioOffered} from './scenario-matrix';
@@ -44,6 +46,8 @@ export interface V2Deps {
  wall?:WallClock;
  /** The bench catalog the runtime built at start from its MuJoCo worker root (bench-runner.ts benchCatalog); health lists the entries of the offered bench scenarios. */
  benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;
+ /** Present only when this runtime can run drive faults (a MuJoCo drive runtime): what a schedule may name for a request, and the switch for `faultCatalog` in health. */
+ driveFaultContext?:import('./control/fault-context').DriveFaultContextOf;
 }
 const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
@@ -53,7 +57,7 @@ const UUID='[0-9a-f-]{36}';
 const PAIRING_FAILURES=5,PAIRING_WINDOW_MS=60000;
 const codesOf=(issues:Issue[])=>[...new Set(issues.map(i=>i.code))];
 // the MuJoCo slot is taken: a conflict, as IR-SIM's; the engine could not create the cell: unavailable, not a runtime failure (the Webots codes keep 500)
-const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|^WORLD_TERMINAL$|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$)/.test(m)?422:500;
+const statusOf=(m:string)=>m==='SESSION_REQUIRED'?401:m==='RUN_NOT_FOUND'?404:m==='RECLAIM_READ_ONLY'?403:m==='BACKEND_EXECUTION_DISABLED'?501:m==='RUN_CLOSED'?410:m==='MUJOCO_ARM_CREATE_FAILED'?503:/CONFLICT|^WORLD_TERMINAL$|MISMATCH|ENGINEERING_CLOSURE_MISSING|INVALID_STATE|PAUSED|NOT_PENDING|DURATION_EXCEEDED|^IRSIM_CAPACITY$|^MUJOCO_CAPACITY$|^RECOVERY_(STATE_INVALID|CHECKPOINT_MISSING)$/.test(m)?409:/^(INVALID_|SCENARIO_|BACKEND_|ACTION_LIMIT|MODE_|FAULT_(SCHEDULE|BACKEND)_UNSUPPORTED$|FAULT_(UNKNOWN|TARGET_INVALID|PARAM_INVALID|OVERLAP|CAMPAIGN_ONLY|SCHEDULE_TOO_LONG|SCHEDULE_INVALID|TRIGGER_INVALID)$)/.test(m)?422:500;
 export function createV2Gateway(deps:V2Deps){
  const catalog=deps.catalog??defaultCatalog,enabled=new Set(deps.enabledBackends??[]);
  const sessions=new Map<string,{publicId:string;csrf:string;expiresAt:number}>();
@@ -120,6 +124,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
    ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
    ...benchHealth(),
+   ...deps.driveFaultContext?{faultCatalog:Object.entries(DRIVE_FAULTS).filter(([,f])=>!f.campaignOnly).map(([id,f])=>({id,layer:f.layer,target:f.target,appliedBy:f.appliedBy,params:structuredClone(f.params)}))}:{},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
@@ -257,7 +262,17 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
   if(method==='POST'&&!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
   if(route?.name==='validate'){
-   const result=validateProjectV2(await deps.readBody(request));
+   const body=await deps.readBody(request);
+   // R4 (V08): a body that carries driveFaultSchedule is a schedule check against the catalog and the experiment, not a project
+   if(Object.hasOwn(body,'driveFaultSchedule')){
+    const keys=Object.keys(body).filter(k=>!['driveFaultSchedule','backendSetId','scenarioId','driveExperimentId'].includes(k)),entries=body.driveFaultSchedule;
+    if(keys.length||!Array.isArray(entries)||entries.length>16||typeof body.backendSetId!=='string'||typeof body.scenarioId!=='string'||(body.driveExperimentId!==undefined&&typeof body.driveExperimentId!=='string')||!entries.every(e=>validateFaultEntryShape(e)))return deny(response,422,'INVALID_FAULT_SCHEDULE',['FAULT_SCHEDULE_INVALID']);
+    const ctx=await deps.driveFaultContext?.({mode:'simulation',backendSetId:body.backendSetId,scenarioId:body.scenarioId,...body.driveExperimentId?{driveExperimentId:body.driveExperimentId}:{}});
+    if(!ctx)return deny(response,422,'FAULT_BACKEND_UNSUPPORTED',['FAULT_BACKEND_UNSUPPORTED']);
+    const checked=validateDriveFaultSchedule(entries as FaultScheduleEntry[],{...ctx,campaign:false});
+    return checked.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_FAULT_SCHEDULE',checked.reasonCodes);
+   }
+   const result=validateProjectV2(body);
    return result.ok?send(response,200,{ok:true}):deny(response,422,'INVALID_PROJECT',codesOf(result.issues),result.issues);
   }
   if(route?.name==='create'){
@@ -272,6 +287,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
      if(r.mode!=='simulation')return deny(response,422,'ENGINEERING_MODE_INVALID',['MODE_BACKEND_MISMATCH']);
      try{engineering=await deps.engineering.admitRun(sessionId,r.engineeringRef,r.backendSetId,r.project);}catch(e){return engineeringFailed(response,e);}
+   }
+   // drive faults are checked against what the request's drive runs on before anything is built; the runner checks again against the scene it really runs
+   if(r.driveFaultSchedule?.length){
+    const ctx=await deps.driveFaultContext?.({mode:r.mode,backendSetId:r.backendSetId,scenarioId:r.scenarioId,...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{}});
+    if(!ctx)return deny(response,422,'FAULT_BACKEND_UNSUPPORTED',['FAULT_BACKEND_UNSUPPORTED']);
+    const checked=validateDriveFaultSchedule(r.driveFaultSchedule as FaultScheduleEntry[],{...ctx,campaign:false});
+    if(!checked.ok)return deny(response,422,'INVALID_FAULT_SCHEDULE',checked.reasonCodes);
    }
    const project=engineering?engineering.runtimeProjection.project:r.project!;
    const set=Object.hasOwn(catalog.sets,r.backendSetId)?catalog.sets[r.backendSetId]:undefined;
@@ -298,7 +320,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
-    const input:RunManifestInput={project,...r.bench?{bench:r.bench as unknown as NonNullable<RunManifestInput['bench']>}:{},scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...engineering?{engineering}:{}};
+    const input:RunManifestInput={project,...r.bench?{bench:r.bench as unknown as NonNullable<RunManifestInput['bench']>}:{},scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...r.driveFaultSchedule?.length?{driveFaultSchedule:r.driveFaultSchedule as FaultScheduleEntry[]}:{},...engineering?{engineering}:{}};
     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run

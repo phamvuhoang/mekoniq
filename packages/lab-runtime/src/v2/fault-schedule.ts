@@ -4,6 +4,8 @@ import type {FaultScheduleEntry} from '../../../contracts/generated/lab-v2';
 export type {FaultScheduleEntry};
 export type FaultPhase='brew'|'grasp'|'handoff'|'delivery';
 const shape=new Ajv({strict:true}).compile<FaultScheduleEntry>(schema);
+/** The entry shape alone (the run-scoped drive schedule is admitted with it, then against the catalog). */
+export const validateFaultEntryShape=shape;
 export const COFFEE_FAULT_IDS=['ice-jam','milk-empty','dose-low','measure-unknown','measure-missing','measure-outlier','milk-expired','milk-warm','milk-unknown','cup-removed','coffee-reboot','drop-ack','duplicate-completion','machine-not-ready'];
 export const ARM_FAULT_IDS=['arm-reboot','arm-drop','arm-following-error','arm-stop','arm-estop','arm-reset','arm-collision'];
 export const AMR_FAULT_IDS=['collide','reboot','duplicate-arrival','localization-lost','map-changed','dock-offset','reorder-observations','delay-observation','crash-after-commit'];
