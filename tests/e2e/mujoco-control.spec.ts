@@ -85,7 +85,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  // 4. export: the profile of that bench, sourced to it; then another value, then the file: the draft is the file's
  const download=page.waitForEvent('download');await page.locator('[data-action="twin-ctl-export"]').click();const file=await (await download).path();
  const exported=JSON.parse(readFileSync(file,'utf8'));
- expect(exported.sources.loop).toEqual({kind:'tuned_in_simulation',benchRunId:b.id,scenarioId:'MJ-BENCH-WHEEL',traceSha256:b.tuning.trace.sha256,sourceCommit:exported.sources.loop.sourceCommit});
+ expect(exported.sources.loop).toEqual({kind:'tuned_in_simulation',benchRunId:b.id,scenarioId:'MJ-BENCH-WHEEL',traceSha256:b.tuning.trace.sha256,sourceCommit:exported.sources.loop.sourceCommit,axisIds:b.tuning.axisIds,driveModelDigest:b.tuning.plant.driveModelDigest});
  expect(exported.sources.loop.sourceCommit).toMatch(/^[0-9a-f]{40}$/);expect(exported.sources.limits).toEqual(exported.sources.loop);
  expect(exported).toMatchObject({calibration:'not_calibrated',plantModelDigest:b.tuning.plant.plantModelDigest});expect(exported.driveModelDigests).toContain(b.tuning.plant.driveModelDigest);
  expect(exported.axes.map((x:{loop:{kp:number}})=>x.loop.kp)).toEqual([4,4]);

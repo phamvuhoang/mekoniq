@@ -84,11 +84,12 @@ export function benchDraft(base:ControlProfileV1,control:AxisControl,axisIds:rea
  return seal({...structuredClone(base),revision:base.revision+1,axes:base.axes.map(a=>axisIds.includes(a.axisId)?{axisId:a.axisId,loop:{...control.loop},accelerationLimit:control.accelerationLimit}:structuredClone(a))});
 }
 /** The profile of a bench that ran: exactly its draft (else EXPORT_RESULT_MISMATCH: it would not be the profile that bench measured), with the loop and limits
- *  sourced to that bench run, its recorded trace and the runtime commit (TunedSourceRef), not calibrated, sealed. */
+ *  sourced to that bench run, its recorded trace, the runtime commit, the axes it traced and the drive model it ran (TunedSourceRef), not calibrated, sealed.
+ *  The sources are profile-wide: a later export from a bench of another axis replaces this attribution. */
 export function exportControlProfile(base:ControlProfileV1,control:AxisControl,result:TuningResultV1,source:{scenarioId:BenchScenarioId;sourceCommit:string}):string{
  const draft=benchDraft(base,control,result.axisIds);
  if(draft.digest!==result.plant.controlProfileDigest)throw new Error('EXPORT_RESULT_MISMATCH');
- const tuned:TunedSourceRef={kind:'tuned_in_simulation',benchRunId:result.runId,scenarioId:source.scenarioId,traceSha256:result.trace.sha256,sourceCommit:source.sourceCommit};
+ const tuned:TunedSourceRef={kind:'tuned_in_simulation',benchRunId:result.runId,scenarioId:source.scenarioId,traceSha256:result.trace.sha256,sourceCommit:source.sourceCommit,axisIds:[...result.axisIds],driveModelDigest:result.plant.driveModelDigest};
  return JSON.stringify(seal({...draft,calibration:'not_calibrated',sources:{...draft.sources,loop:tuned,limits:{...tuned}}}),null,2)+'\n';
 }
 const ajv=new Ajv({strict:false,allErrors:false,discriminator:true});

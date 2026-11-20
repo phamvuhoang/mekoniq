@@ -79,8 +79,12 @@ test('export: the run draft with tuned_in_simulation sources naming the bench, i
  const control={axisId:'amr-1/wheel-left',loop:{kp:4,ki:0,kd:0,integralLimit:null,slewLimit:null},accelerationLimit:null},draft=benchDraft(serve,control,WHEELS);
  expect(draft.axes.map(a=>a.loop.kp)).toEqual([4,4]);expect(draft.revision).toBe(serve.revision+1);expect(draft.digest).toBe(profileDigest(draft));
  const result=tuning({plant:{...tuning().plant,controlProfileDigest:draft.digest}}),text=exportControlProfile(serve,control,result,{scenarioId:'MJ-BENCH-WHEEL',sourceCommit:'5'.repeat(40)}),p=JSON.parse(text) as ControlProfileV1;
- const tuned={kind:'tuned_in_simulation',benchRunId:'bench-1',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'e'.repeat(64),sourceCommit:'5'.repeat(40)};
+ // final-fix V07 I1: the attribution names exactly what the bench tuned: its traced axes and the drive model it ran
+ const tuned={kind:'tuned_in_simulation',benchRunId:'bench-1',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'e'.repeat(64),sourceCommit:'5'.repeat(40),axisIds:WHEELS,driveModelDigest:NOMINAL};
  expect(p.sources).toEqual({loop:tuned,limits:tuned,controller:serve.sources.controller});
+ const j3=benchDraft(xarm,{axisId:'xarm-1/J3',loop:{kp:4000,ki:0,kd:90,integralLimit:null,slewLimit:null},accelerationLimit:null},['xarm-1/J3']);
+ const arm=JSON.parse(exportControlProfile(xarm,{axisId:'xarm-1/J3',loop:{kp:4000,ki:0,kd:90,integralLimit:null,slewLimit:null},accelerationLimit:null},tuning({axisIds:['xarm-1/J3'],plant:{plantModelDigest:xarm.plantModelDigest,driveModelDigest:xarm.driveModelDigests[1]!,controlProfileDigest:j3.digest,load:'empty'}}),{scenarioId:'MJ-BENCH-ARM',sourceCommit:'5'.repeat(40)})) as ControlProfileV1;
+ expect(arm.sources.loop).toMatchObject({axisIds:['xarm-1/J3'],driveModelDigest:xarm.driveModelDigests[1]});
  expect(p).toMatchObject({calibration:'not_calibrated',plantModelDigest:serve.plantModelDigest,driveModelDigests:serve.driveModelDigests,id:serve.id,revision:serve.revision+1});
  expect(p.axes.map(a=>a.loop.kp)).toEqual([4,4]);expect(p.digest).toBe(profileDigest(p));
  expect(importControlProfile(text,{plantModelDigest:serve.plantModelDigest,driveModelDigest:NOMINAL})).toEqual({ok:true,profile:p});
@@ -184,6 +188,8 @@ test('Ruling 7: a finished bench\'s report and trace are read once, then it is a
  for(let i=0;i<3;i++)w.html();
  expect(calls.filter(c=>c.startsWith('trace')||c.startsWith('report'))).toHaveLength(2);
  const html=w.html();expect(html).toContain('Completed');expect(html).toContain('data-testid="control-plot-response"');expect(html.match(/<polyline/g)!.length).toBeGreaterThanOrEqual(5);
+ // final-fix V07 I1: the export note names the tuned axes and that the attribution is profile-wide
+ expect(html).toContain('for the tuned axes amr-1/wheel-left, amr-1/wheel-right');expect(html).toContain('a later export from another axis replaces this attribution');
 });
 test('Ruling 7: cancel says "stopping" until the runtime confirms; the cancel carries the revision of the step that was in flight',async()=>{
  const {w,calls,actions,pending,run,idle}=bench({deferStep:true});

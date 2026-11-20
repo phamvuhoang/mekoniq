@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 51013413d5edf6f21c93070dbf1bc0845558653a (sha256 efea001b95ada919a0ea57d20168aab961099747ed22652917453f4b3be57e56). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 77b38f711aab37b2f3348aae8c4a78281b75bb1f (sha256 90948b0b50041223736bc9100b79cada8488ce2825d613cd176f0ca2bc60006c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -2774,7 +2774,7 @@ export interface TuningEnvelopeV1 {
   source: SourceRef;
 }
 /**
- * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.
+ * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256), the source commit of the runtime that ran it, the axes it traced and the drive model it ran (final-fix V07 I1: sources are profile-wide, so the attribution names exactly what was tuned). Simulated and not calibrated, like everything on the bench.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "TunedSourceRef".
@@ -2785,6 +2785,14 @@ export interface TunedSourceRef {
   scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
   traceSha256: Digest;
   sourceCommit: string;
+  /**
+   * The axes that bench traced (TuningResultV1.axisIds): the values of these axes were tuned on it; the other axes of the profile keep values that bench did not measure.
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  driveModelDigest: Digest;
 }
 /**
  * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.
