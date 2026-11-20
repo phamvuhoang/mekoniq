@@ -28,9 +28,10 @@ import {physicsDirectoryBytes,readBoundedPhysicsFile} from '../simulation3d/phys
 import {buildArmCellScene,readXArmFixture,writeArmCellBundle} from '../simulation3d/arm-cell-scene';
 import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
-import {BENCH_MAX_TICKS,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
-import {driveExperiment} from './drive-experiments';
-import {validateBenchRequestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
+import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
+import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {gainSuggestions} from './gain-suggest';
 import {stepResponseMetrics} from './tuning-metrics';
 
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
@@ -41,10 +42,10 @@ type Sample=NonNullable<DriveTrace['samples'][number]>;
 type Policy={finalWindowS:number;settleBand:number;holdWindowS:number};
 
 // ---- the plant ---------------------------------------------------------------------------------------------------------------------------------------------
-/** What the server knows of a bench plant before any engine: the experiment's drive model (its bytes as committed), the envelope, the plant the profile must be sealed for, the traced axes, where every
- * axis rests (the arm's home, the gripper open, a wheel at rest) and, for an arm axis, its limits. */
-export interface BenchPlant {kind:'amr'|'arm';axisIds:string[];/** the engine tick of signal tick 0 the drive model's enable sequence gives (benchAnchorTick) */anchorTick:number;model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
-export async function benchPlant(workerRoot:string,bench:BenchRequestV1):Promise<BenchPlant>{
+/** What the server knows of a bench plant before any engine: its id, revision and bench load, the experiment's drive model (its bytes as committed), the envelope, the plant the profile must be sealed for,
+ * the traced axes, where every axis rests (the arm's home, the gripper open, a wheel at rest) and, for an arm axis, its limits. */
+export interface BenchPlant {kind:'amr'|'arm';id:string;revision:number;/** both benches run without a load (ruling 14; the arm's cup stays parked) */load:'empty';axisIds:string[];/** the engine tick of signal tick 0 the drive model's enable sequence gives (benchAnchorTick) */anchorTick:number;model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
+export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>):Promise<BenchPlant>{
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
  const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
  const envelope=JSON.parse((await file(join(DRIVE,'tuning-envelope-v1.json'))).toString()) as TuningEnvelopeV1;
@@ -52,13 +53,13 @@ export async function benchPlant(workerRoot:string,bench:BenchRequestV1):Promise
  if(kind==='amr'){
   // D2: the AMR's plant is its physical model, whatever the load
   const scene=JSON.parse((await file(join(SERVE,'navigation-scene.json'))).toString()) as NavigationSceneV1;
-  return {kind,axisIds:[...WHEELS],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:scene.robots[0]!.model.physicalModelDigest,start:Object.fromEntries(model.axes.map(a=>[a.axisId,0]))};
+  return {kind,id:'serve-payload-v1',revision:1,load:'empty',axisIds:[...WHEELS],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:scene.robots[0]!.model.physicalModelDigest,start:Object.fromEntries(model.axes.map(a=>[a.axisId,0]))};
  }
- const f=readXArmFixture(workerRoot),component=JSON.parse(f.componentText) as {joints:{id:string;limits?:{lower?:{value:number};upper?:{value:number}}}[]};
+ const f=readXArmFixture(workerRoot),component=JSON.parse(f.componentText) as {id:string;revision:string;joints:{id:string;limits?:{lower?:{value:number};upper?:{value:number}}}[]};
  // the home keyframe (compile.py): the joints at the fixture's home, every gripper joint at 0 (open). The gripper axis is its drive joint, in rad (0 open .. 0.85 closed), so it shares the joint amplitudes
  const start:Record<string,number>={...Object.fromEntries(f.programs.waypoints.home!.map((q,k)=>[`${ARM_ID}/J${k+1}`,q])),[`${ARM_ID}/gripper`]:0};
  const axisId=`${ARM_ID}/${bench.axis}`,lim=component.joints.find(j=>j.id===(bench.axis==='gripper'?f.physics.gripper.driveJoint:bench.axis))?.limits;
- return {kind,axisIds:[axisId],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
+ return {kind,id:component.id,revision:Number(component.revision),load:'empty',axisIds:[axisId],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
   ...lim?.lower&&lim.upper&&start[axisId]!==undefined?{limits:{lower:lim.lower.value,upper:lim.upper.value,start:start[axisId]!}}:{}};
 }
 
@@ -73,6 +74,34 @@ export async function admitBench(bench:unknown,workerRoot:string):Promise<BenchP
  if(b.controlProfile.plantModelDigest!==plant.plantModelDigest)codes.add('DRIVE_PLANT_MISMATCH');
  if(codes.size)throw Error(`INVALID_BENCH_REQUEST:${[...codes].sort().join(',')}`);
  return plant;
+}
+
+/** What the Lab reads instead of re-typing plant facts (health benchCatalog, V07pre), built by benchPlant from the same worker root admission reads, so every number is the one admission uses: per bench
+ * scenario the plant (id, revision, load, plantModelDigest), every axis a request can name (axisIds as the bench names them, mode, unit; a joint's limits and rest, the numbers of JOINT_LIMIT_EXCEEDED; the
+ * wheels forward only), every registered drive experiment's anchor tick and drive model digest, and the starting draft: the registry's control profile of that plant, sealed for it (D2). An arm axis without
+ * limits is left out (admission refuses it: AXIS_LIMITS_REQUIRED). */
+export type BenchCatalogAxis={axis:'wheels';axisIds:string[];mode:'csv';unit:'rad/s';direction:typeof BENCH_WHEEL_DIRECTION}|{axis:Exclude<BenchRequestV1['axis'],'wheels'>;axisIds:string[];mode:'csp';unit:'rad';lowerRad:number;upperRad:number;startRad:number};
+export interface BenchCatalogEntry {plant:{id:string;revision:number;load:string;plantModelDigest:string};axes:BenchCatalogAxis[];experiments:Record<string,{anchorTick:number;driveModelDigest:string}>;startingProfile:ControlProfileV1}
+export type BenchCatalog=Record<BenchRequestV1['scenarioId'],BenchCatalogEntry>;
+export async function benchCatalog(workerRoot:string):Promise<BenchCatalog>{
+ const experiments=Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[],out={} as BenchCatalog;
+ for(const scenarioId of BENCH_SCENARIO_IDS){
+  const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId});
+  const runs:[DriveExperimentId,BenchPlant][]=[];for(const id of experiments)runs.push([id,await at(names[0]!,id)]);
+  const p=runs[0]![1],files=new Set(experiments.map(id=>p.kind==='amr'?DRIVE_EXPERIMENTS[id].mobileControl:DRIVE_EXPERIMENTS[id].armControl));
+  // one tuning per plant: the experiments vary the device (drive-experiments.ts), so one starting draft per bench
+  if(files.size!==1)throw Error('BENCH_STARTING_PROFILE_AMBIGUOUS');
+  const startingProfile=JSON.parse(await readFile(join(workerRoot,DRIVE,[...files][0]!),'utf8')) as ControlProfileV1;
+  if(startingProfile.plantModelDigest!==p.plantModelDigest)throw Error('BENCH_STARTING_PROFILE_PLANT_MISMATCH');
+  const axes:BenchCatalogAxis[]=[];
+  for(const axis of names){
+   const q=await at(axis,experiments[0]!);
+   if(axis==='wheels')axes.push({axis,axisIds:q.axisIds,mode:'csv',unit:'rad/s',direction:BENCH_WHEEL_DIRECTION});
+   else if(q.limits)axes.push({axis,axisIds:q.axisIds,mode:'csp',unit:'rad',lowerRad:q.limits.lower,upperRad:q.limits.upper,startRad:q.limits.start});
+  }
+  out[scenarioId]={plant:{id:p.id,revision:p.revision,load:p.load,plantModelDigest:p.plantModelDigest},axes,experiments:Object.fromEntries(runs.map(([id,x])=>[id,{anchorTick:x.anchorTick,driveModelDigest:x.model.digest}])),startingProfile};
+ }
+ return out;
 }
 
 /** The worker's bundle: the plant's scene and files from the fixture, the drive model's committed bytes and the draft as it was submitted (JSON.stringify of the request's object: never re-sealed). */
@@ -373,7 +402,9 @@ class BenchRun implements ScenarioRun {
   const tuning:TuningResultV1={schemaVersion:1,documentType:'tuning-result',runId:this.id,status:o.status,unstable:o.status==='unstable'?o.unstable:null,fault:o.status==='drive_fault'?o.fault:null,
    collision:o.status==='collision'?o.collision:null,axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,
    engine:s.engine??{id:this.backends()[0]!,version:this.providers.runtime.engineVersion},
-   plant:{plantModelDigest:this.plant.plantModelDigest,driveModelDigest:this.plant.model.digest,controlProfileDigest:this.bench.controlProfile.digest,load:'empty'},effectiveInertia:s.inertia,policy:{...this.plant.policy},
+   plant:{plantModelDigest:this.plant.plantModelDigest,driveModelDigest:this.plant.model.digest,controlProfileDigest:this.bench.controlProfile.digest,load:this.plant.load},effectiveInertia:s.inertia,
+   // V07pre: the starting gains from that inertia, with the envelope of the first traced axis (the left wheel's for a wheel bench), so the Lab never computes them
+   suggestions:s.inertia?gainSuggestions({mode,inertiaKgM2:s.inertia.valueKgM2},this.plant.envelope.axes.find(a=>a.axisId===this.plant.axisIds[0])!):null,policy:{...this.plant.policy},
    metrics:benchMetrics(first,this.bench.signal,s.anchor,mode,this.plant.policy,o.status),
    trace:{chunks:read.manifest.chunks.length,sha256:read.manifestSha256,samples:first.samples.slice(BENCH_TRACE_LIMITS.substeps).filter(x=>x!==null).length},accepted:false};
   if(!validateControlEvidenceShape(tuning))throw Error('TUNING_RESULT_INVALID');
@@ -382,12 +413,12 @@ class BenchRun implements ScenarioRun {
  private async buildReport():Promise<RunReport&{tuning:TuningResultV1|null;bench:{request:Omit<BenchRequestV1,'controlProfile'>&{controlProfile:{id:string;revision:number;digest:string}};anchorTick:number|null;sceneDigest:string;traceIssues:string[]}}>{
   if(this.st.closed)throw Error('RUN_CLOSED');
   const s=this.st,v=this.view(),{tuning,issues}=await this.tuning(),o=this.providers.runtime,backends=[{id:this.backends()[0]!,version:o.engineVersion,model:'mujoco_drive_bench',dynamics:true}];
-  const {controlProfile:cp,...request}=this.bench,fixture=this.plant.kind==='amr'?'serve-payload-v1':'xarm6-g2-v1';
+  const {controlProfile:cp,...request}=this.bench,fixture=this.plant.id;
   return {schemaVersion:2,
    manifest:{runId:this.id,sourceCommit:this.input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:BENCH_SET_ID,backends,prng:{...PRNG},clock:{tickMs:TICK_MS},seed:this.input.seed,
     scenario:{id:this.scenario.id,revision:this.scenario.revision,hash:scenarioHash(this.scenario)},
     // a bench has no project: its world is the scene the server built from the fixture
-    project:{id:`bench:${fixture}`,revision:1,hash:this.sceneDigest},world:{id:fixture,revision:1,hash:this.sceneDigest},assets:[],hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(this.bench),
+    project:{id:`bench:${fixture}`,revision:1,hash:this.sceneDigest},world:{id:fixture,revision:this.plant.revision,hash:this.sceneDigest},assets:[],hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(this.bench),
     adapterHash:hashJson({sourceCommit:this.input.sourceCommit,backends,workerLockDigest:o.lockDigest,sceneDigest:this.sceneDigest}),configuration:{revision:1,hash:hashJson({signal:this.bench.signal,axisIds:this.plant.axisIds,start:this.plant.start,maxTicks:BENCH_MAX_TICKS})},recipes:[],
     models:[{id:'mujoco_3d',revision:o.engineVersion,hash:this.sceneDigest,provenance:'simulated_plant'},{id:this.plant.model.id,revision:String(this.plant.model.revision),hash:this.plant.model.digest,provenance:'assumed'}],
     profiles:[{id:cp.id,revision:cp.revision,hash:cp.digest,provenance:'draft'}],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'SIMULATED_PLANT'}},

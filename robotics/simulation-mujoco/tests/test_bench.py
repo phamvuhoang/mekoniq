@@ -273,6 +273,28 @@ def test_bench_documents_are_bound_to_the_bench_plant(tmp_path, kind, control):
     assert not r["ok"] and r["error"]["code"] == "DRIVE_DOCUMENT_INVALID" and b.factory_calls == 0, r
 
 
+def tuned(name, **edit):
+    """A registry profile whose loop and limits come from a bench run (V07pre: kind tuned_in_simulation), resealed; `edit` changes the tuned source."""
+    d = json.loads((DRIVE / name).read_text())
+    ref = {"kind": "tuned_in_simulation", "benchRunId": "3f2b1c4d-0000-4000-8000-000000000001", "scenarioId": "MJ-BENCH-WHEEL", "traceSha256": "d" * 64, "sourceCommit": "e" * 40, **edit}
+    return seal({**d, "sources": {**d["sources"], "loop": ref, "limits": ref}})
+
+
+@pytest.mark.parametrize("kind,name", [("wheel", "serve-control-v1.json"), ("arm", "xarm6-control-v1.json")])
+def test_a_profile_tuned_in_simulation_passes_the_worker_schema_check_and_a_malformed_tuned_source_does_not(tmp_path, kind, name):
+    axes = WHEELS if kind == "wheel" else ["xarm-1/J3"]
+    def fresh(name):
+        (tmp_path / name).mkdir()
+        return tmp_path / name
+    ok = Bench(fresh("ok"), kind, axes, control=tuned(name))
+    r = ok.create()
+    assert r["ok"], r
+    for i, edit in enumerate(({"traceSha256": "D" * 64}, {"sourceCommit": "e" * 39}, {"scenarioId": "MJ-BV01"}, {"locator": "x"})):
+        b = Bench(fresh(str(i)), kind, axes, control=tuned(name, **edit))
+        r = b.create()
+        assert not r["ok"] and r["error"]["code"] == "SCENE_SCHEMA_INVALID" and b.factory_calls == 0, (edit, r)
+
+
 @pytest.mark.parametrize("ref,edit,code", [
     ("controlProfileRef", lambda r: {**r, "sha256": "0" * 64}, "SCENE_FILE_MISMATCH"),
     ("driveModelRef", lambda r: {**r, "path": "../bench-drive.json"}, "SCENE_PATH_REJECTED"),

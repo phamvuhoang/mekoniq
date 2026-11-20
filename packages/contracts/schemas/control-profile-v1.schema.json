@@ -61,10 +61,34 @@
       "additionalProperties": false,
       "properties": {
         "loop": {
-          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          "type": "object",
+          "description": "An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).",
+          "discriminator": {
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            },
+            {
+              "$ref": "#/definitions/TunedSourceRef"
+            }
+          ]
         },
         "limits": {
-          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          "type": "object",
+          "description": "An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).",
+          "discriminator": {
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+            },
+            {
+              "$ref": "#/definitions/TunedSourceRef"
+            }
+          ]
         },
         "controller": {
           "$ref": "engineering-component.schema.json#/definitions/SourceRef"
@@ -318,6 +342,42 @@
         "source"
       ],
       "title": "TuningEnvelopeV1"
+    },
+    "TunedSourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.",
+      "properties": {
+        "kind": {
+          "const": "tuned_in_simulation"
+        },
+        "benchRunId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "scenarioId": {
+          "enum": [
+            "MJ-BENCH-WHEEL",
+            "MJ-BENCH-ARM"
+          ]
+        },
+        "traceSha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      },
+      "required": [
+        "kind",
+        "benchRunId",
+        "scenarioId",
+        "traceSha256",
+        "sourceCommit"
+      ],
+      "title": "TunedSourceRef"
     }
   }
 }

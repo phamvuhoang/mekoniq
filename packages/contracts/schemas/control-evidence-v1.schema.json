@@ -368,6 +368,22 @@
             }
           ]
         },
+        "suggestions": {
+          "description": "Starting gains from the effective inertia (V07pre, D4): one entry per registered (bandwidthRadS, damping) pair of the health signal catalog's suggestOptions, bandwidth first, computed by the server with the envelope of axisIds[0] (for a wheel bench, the left wheel's). null when the result has no effective inertia. A model-based starting point, not calibrated.",
+          "anyOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/definitions/GainSuggestion"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "policy": {
           "type": "object",
           "additionalProperties": false,
@@ -742,6 +758,83 @@
         "source"
       ],
       "title": "ControlOracleV1"
+    },
+    "GainSuggestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "GainSuggestion",
+      "description": "suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).",
+      "properties": {
+        "bandwidthRadS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "damping": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kp": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ki": {
+              "type": "number",
+              "minimum": 0
+            },
+            "kd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "integralLimit": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "slewLimit": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "kp",
+            "ki",
+            "kd",
+            "integralLimit",
+            "slewLimit"
+          ]
+        },
+        "accelerationLimit": {
+          "type": "null"
+        },
+        "clamped": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "kp",
+              "ki",
+              "kd"
+            ]
+          }
+        }
+      },
+      "required": [
+        "bandwidthRadS",
+        "damping",
+        "loop",
+        "accelerationLimit",
+        "clamped"
+      ]
     }
   }
 }

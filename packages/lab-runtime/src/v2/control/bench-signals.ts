@@ -10,6 +10,8 @@ export const BENCH_TICK_S=0.02,BENCH_SUBSTEPS=10;
 /** Registered sizes: a speed (csv) step or peak in rad/s, a position (csp) step or distance in rad; the sign is free for a joint, a wheel bench runs forward only (validateBenchRequest: WHEEL_REVERSE_UNSUPPORTED). */
 export const BENCH_AMPLITUDES={wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]} as const;
 export const SUGGEST_OPTIONS={bandwidthRadS:[5,10,20,40],damping:[0.7,1]} as const;
+/** A wheel bench signal runs forward only (validateBenchRequest: WHEEL_REVERSE_UNSUPPORTED); health says so (benchSignals.wheelDirection, benchCatalog's wheel axis). */
+export const BENCH_WHEEL_DIRECTION='forward' as const;
 
 type Mode='csp'|'csv';
 const done=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});

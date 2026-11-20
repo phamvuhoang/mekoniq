@@ -10,9 +10,10 @@ import {mujocoFromOptions,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../pac
 import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
-import {benchAnchorTick} from '../../packages/lab-runtime/src/v2/control/bench-signals';
-import {benchMetrics,createBenchRun,openBenchTrace,readBenchTrace,BENCH_TRACE_LIMITS,type BenchProviders,type BenchTraceIdentity} from '../../packages/lab-runtime/src/v2/control/bench-runner';
-import {sealDriveDocument,validateControlEvidenceShape,type ControlProfileV1,type DriveTrace,type TuningResultV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
+import {benchAnchorTick,SUGGEST_OPTIONS} from '../../packages/lab-runtime/src/v2/control/bench-signals';
+import {suggestGains} from '../../packages/lab-runtime/src/v2/control/gain-suggest';
+import {benchCatalog,benchMetrics,createBenchRun,openBenchTrace,readBenchTrace,BENCH_TRACE_LIMITS,type BenchCatalog,type BenchProviders,type BenchTraceIdentity} from '../../packages/lab-runtime/src/v2/control/bench-runner';
+import {sealDriveDocument,validateControlEvidenceShape,type ControlProfileV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {mujocoProcessScope,mujocoPython,mujocoReady,mujocoRoot,mujocoTemp,removeMujocoDirs} from '../support/mujoco-arm';
@@ -25,6 +26,9 @@ const wheel=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-
 const arm=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:10},driveExperimentId:'drive-nominal-v1',controlProfile:doc<ControlProfileV1>('xarm6-control-v1.json'),...o} as Bench);
 const input=(bench:Bench,seed=7):RunManifestInput=>({project:undefined,scenarioId:bench.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:'test-commit',bench});
 type Report=Awaited<ReturnType<ScenarioRun['report']>>&{tuning:TuningResultV1|null;bench:{anchorTick:number|null;traceIssues:string[]}};
+/** V07pre: the gains suggested from the inertia the result reports, computed here with suggestGains itself (the first traced axis' envelope: the left wheel's for a wheel bench). */
+const expectedSuggestions=(t:TuningResultV1,mode:'csp'|'csv')=>{const env=doc<TuningEnvelopeV1>('tuning-envelope-v1.json').axes.find(a=>a.axisId===t.axisIds[0])!;
+ return SUGGEST_OPTIONS.bandwidthRadS.flatMap(w=>SUGGEST_OPTIONS.damping.map(z=>({bandwidthRadS:w,damping:z,...suggestGains({mode,inertiaKgM2:t.effectiveInertia!.valueKgM2,bandwidthRadS:w,damping:z},env),accelerationLimit:null})));};
 /** MEKONIQ_BENCH_LOG=1 prints the results the V06c report quotes; quiet otherwise. */
 const show=(x:unknown)=>{if(process.env.MEKONIQ_BENCH_LOG==='1')console.log(JSON.stringify(x));};
 
@@ -101,6 +105,8 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
    plant:{plantModelDigest:b.controlProfile.plantModelDigest,driveModelDigest:doc<{digest:string}>('serve-drive-nominal-v1.json').digest,controlProfileDigest:b.controlProfile.digest,load:'empty'},
    effectiveInertia:{basis:'wheel_straight_line',provenance:'assumed'},policy:doc<{metricPolicy:object}>('control-oracle-v1.json').metricPolicy,trace:{samples:5000}});
   expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.0874395,6);
+  expect(t.suggestions).toEqual(expectedSuggestions(t,'csv'));expect(t.axisIds[0]).toBe('amr-1/wheel-left');
+  expect(report.bench.anchorTick).toBe((await benchCatalog(mujocoRoot))['MJ-BENCH-WHEEL'].experiments['drive-nominal-v1']!.anchorTick);   // V07pre: the anchor health announces is the run's
   expect(t.metrics.riseTimeS).toMatchObject({available:true,unit:'s',basis:'actual'});
   expect(report.manifest.backends.map(x=>x.id)).toEqual(['mujoco_3d']);expect(report.bench.traceIssues).toEqual([]);
   // D2: the bytes the worker read are the bytes the request carried (JSON of the submitted object), and the create named exactly them
@@ -108,7 +114,7 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(bytes.toString()).toBe(JSON.stringify(b.controlProfile));expect(seen.create!.bench.controlProfileRef.sha256).toBe(sha(bytes));
   // the server's rest positions are where the drive itself starts (tick 0's applied target), so a holding axis never moves
   expect(seen.tick0!.drives.map(d=>[d.axisId,d.targetApplied])).toEqual(WHEELS.map(a=>[a,0]));
-  show({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}});
+  show({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia,suggestions:t.suggestions}});
  },120_000);
  test('a J3 step of 0.1 rad completes, with the J3 inertia at home; the arm holds at home and the gripper open',async()=>{
   const seen:{tick0?:{drives:{axisId:string;targetApplied:number}[]}}={},enabled:number[]=[],moved:number[]=[];
@@ -120,14 +126,21 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(view.run.status).toBe('completed');
   const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
   expect(t).toMatchObject({status:'completed',axisIds:['xarm-1/J3'],effectiveInertia:{basis:'mass_matrix_diagonal',provenance:'assumed'},plant:{plantModelDigest:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a',load:'empty'},trace:{samples:5000}});
-  expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.7127244,6);
+  expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.7127244,6);expect(t.suggestions).toEqual(expectedSuggestions(t,'csp'));
   expect(t.metrics.riseTimeS.available).toBe(true);expect(t.metrics.settlingTimeS.available).toBe(true);
   const home=(JSON.parse(readFileSync(join(mujocoRoot,'fixtures/xarm6-g2-v1/programs.json'),'utf8')) as {programs:{waypoints:{home:number[]}}}).programs.waypoints.home;
   for(const [i,d] of seen.tick0!.drives.entries())expect(d.targetApplied,d.axisId).toBeCloseTo(i<6?home[i]!:0,9);
   // the anchor (ruling 3): the first tick commanded after every axis reported enabled (the nominal drive's 25-substep enable sequence ends in tick 3); the step lands atTick ticks later
   expect(report.bench.anchorTick).toBe(enabled[0]!+1);expect(enabled[0]).toBe(3);expect(moved[0]).toBe(report.bench.anchorTick!+10);
   expect(report.bench.anchorTick).toBe(benchAnchorTick(doc('xarm6-drive-nominal-v1.json')));expect(t.engine).toEqual({id:'mujoco_arm',version:'3.17.0',hostArch:HOST});
-  show({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}});
+  show({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia,suggestions:t.suggestions}});
+ },120_000);
+ test('V07pre: a draft whose loop and limits are tuned_in_simulation passes the worker\'s own schema check, runs to completion and reached the worker byte for byte',async()=>{
+  const base=doc<ControlProfileV1>('serve-control-v1.json'),source={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40)};
+  const tuned=sealDriveDocument({...base,revision:2,sources:{...base.sources,loop:source,limits:source}} as ControlProfileV1);
+  const {report,directory}=await bench(wheel({controlProfile:tuned}),undefined,'wheel tuned draft');
+  expect(report.tuning).toMatchObject({status:'completed',plant:{controlProfileDigest:tuned.digest}});
+  expect((await readFile(join(directory,'bundle/bench-control.json'))).toString()).toBe(JSON.stringify(tuned));
  },120_000);
  test('kp far above the envelope ceiling, written straight into the profile file, ends the bench as drive_fault OVERSPEED; the slot is free and a second bench run starts right after',async()=>{
   const envelope=doc<{axes:{axisId:string;kp:{max:number}}[]}>('tuning-envelope-v1.json'),ceiling=envelope.axes.find(a=>a.axisId==='xarm-1/J3')!.kp.max;
@@ -193,16 +206,18 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   const directory=await mujocoTemp('mj-bench-gw-');
   const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
   const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory,mujoco:{arm:p.arm,mobile:p.mobile}});
-  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks}});
+  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks,...sim.benchCatalog?{benchCatalog:sim.benchCatalog}:{}}});
   try{
-   const health=await (await fetch(g.url+'/lab/v2/health')).json() as {scenarioIds:string[];backendSets:{id:string}[];tuningEnvelope:{revision:number};benchSignals:object};
+   const health=await (await fetch(g.url+'/lab/v2/health')).json() as {scenarioIds:string[];backendSets:{id:string}[];tuningEnvelope:{revision:number};benchSignals:object;benchCatalog:BenchCatalog};
    expect(health.scenarioIds).toEqual(expect.arrayContaining(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']));expect(health.backendSets.map(s=>s.id)).toContain(SET);
    expect(health.tuningEnvelope).toEqual(doc('tuning-envelope-v1.json'));expect(health.tuningEnvelope.revision).toBe(2);
-   expect(health.benchSignals).toEqual({kinds:['step','trapezoid','hold'],maxTicks:500,amplitudes:{wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]},suggestOptions:{bandwidthRadS:[5,10,20,40],damping:[0.7,1]}});
+   expect(health.benchSignals).toEqual({kinds:['step','trapezoid','hold'],maxTicks:500,amplitudes:{wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]},suggestOptions:{bandwidthRadS:[5,10,20,40],damping:[0.7,1]},wheelDirection:'forward'});
+   // V07pre: the catalog the runtime built from its own worker root, with the starting draft the Lab sends unchanged below
+   expect(Object.keys(health.benchCatalog)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);expect(health.benchCatalog['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
    const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});
    const h={cookie:paired.headers.get('set-cookie')!.split(';')[0]!,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':String((await paired.json() as {csrfToken:string}).csrfToken)};
    const call=async(path:string,body?:unknown)=>{const r=await fetch(g.url+'/lab/v2'+path,{method:body?'POST':'GET',headers:h,...body?{body:JSON.stringify(body)}:{}});return {status:r.status,body:await r.json() as Record<string,unknown>};};
-   const b=arm({axis:'J2',signal:{kind:'step',amplitude:-0.05,atTick:20}});
+   const b=arm({axis:'J2',signal:{kind:'step',amplitude:-0.05,atTick:20},controlProfile:health.benchCatalog['MJ-BENCH-ARM'].startingProfile});
    const created=await call('/runs',{scenarioId:'MJ-BENCH-ARM',scenarioRevision:1,seed:3,mode:'simulation',access:'simulated',backendSetId:SET,runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)},bench:b});
    expect(created.status,JSON.stringify(created.body)).toBe(201);
    const id=(created.body.run as {id:string}).id;
@@ -226,6 +241,10 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
    expect(trace.body.issues).toEqual([]);expect(trace.body.traces.map(x=>[x.axisId,x.dtS,x.samples.length])).toEqual([['xarm-1/J2',0.002,5010]]);expect(trace.body.traces[0]!.samples.every(x=>x!==null)).toBe(true);
    const t=report.body.tuning as TuningResultV1,anchor=(report.body.bench as {anchorTick:number}).anchorTick;
    expect(benchMetrics(trace.body.traces[0]!,b.signal,anchor,'csp',t.policy,'completed')).toEqual(t.metrics);
+   // the anchor health announced for this plant and experiment is the one the run really had (the first tick commanded after every axis reported enabled)
+   expect(anchor).toBe(health.benchCatalog['MJ-BENCH-ARM'].experiments['drive-nominal-v1']!.anchorTick);
+   const j2=health.benchCatalog['MJ-BENCH-ARM'].axes.find(a=>a.axis==='J2')!;if(j2.mode!=='csp')throw Error('J2 is a position axis');
+   expect(trace.body.traces[0]!.samples[0]!.target).toBeCloseTo(j2.startRad,9);   // tick 0 holds the axis at the rest health announced
    expect(t.metrics.riseTimeS.available).toBe(true);
   }finally{await g.close();}
  },180_000);

@@ -39,6 +39,8 @@ const duplicates=(ids:string[])=>new Set(ids).size!==ids.length;
 const shapeOnly=(validate:unknown,value:unknown):Check=>{const codes=new Set<string>();if(nonFinite(value))codes.add('NON_FINITE_NUMBER');shapeCodes(validate as never,value,codes);return done(codes);};
 export const validateBenchRequestShape=(value:unknown):Check=>shapeOnly(benchRequestShape,value);
 export const validateBenchSignalShape=(value:unknown):Check=>shapeOnly(benchSignalShape,value);
+/** The bench scenarios and the axes a bench request can name, in the schema's order (the bench catalog of health lists them). */
+export const BENCH_SCENARIO_IDS=benchRequestSchema.properties.scenarioId.enum as BenchRequestV1['scenarioId'][],BENCH_AXES=benchRequestSchema.properties.axis.enum as BenchRequestV1['axis'][];
 
 /** A device model: shape, finite numbers, unique axis ids and a matching digest. */
 export function validateDriveModel(value:unknown):Check{

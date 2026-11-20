@@ -2773,6 +2773,19 @@ export interface TuningEnvelopeV1 {
   source: SourceRef;
 }
 /**
+ * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TunedSourceRef".
+ */
+export interface TunedSourceRef {
+  kind: 'tuned_in_simulation';
+  benchRunId: string;
+  scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
+  traceSha256: Digest;
+  sourceCommit: string;
+}
+/**
  * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2802,8 +2815,14 @@ export interface ControlProfileV1 {
    */
   controllers: ControllerConfig[];
   sources: {
-    loop: SourceRef;
-    limits: SourceRef;
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    loop: SourceRef | TunedSourceRef;
+    /**
+     * An engineering source (SourceRef), or the bench run the values were tuned on (TunedSourceRef, V07pre).
+     */
+    limits: SourceRef | TunedSourceRef;
     controller: SourceRef;
   };
 }
@@ -2886,6 +2905,10 @@ export interface TuningResultV11 {
     basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
     provenance: 'assumed';
   } | null;
+  /**
+   * Starting gains from the effective inertia (V07pre, D4): one entry per registered (bandwidthRadS, damping) pair of the health signal catalog's suggestOptions, bandwidth first, computed by the server with the envelope of axisIds[0] (for a wheel bench, the left wheel's). null when the result has no effective inertia. A model-based starting point, not calibrated.
+   */
+  suggestions?: GainSuggestion[] | null;
   policy: {
     finalWindowS: number;
     settleBand: number;
@@ -2903,6 +2926,28 @@ export interface TuningResultV11 {
     samples: number;
   };
   accepted: false;
+}
+/**
+ * suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "GainSuggestion".
+ */
+export interface GainSuggestion {
+  bandwidthRadS: number;
+  damping: number;
+  loop: {
+    kp: number;
+    ki: number;
+    kd: number;
+    integralLimit: number | null;
+    slewLimit: null;
+  };
+  accelerationLimit: null;
+  /**
+   * @maxItems 3
+   */
+  clamped: ('kp' | 'ki' | 'kd')[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

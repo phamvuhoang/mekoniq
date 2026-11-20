@@ -2,11 +2,13 @@
 // worker interpreter does not exist, so anything that tried to start a plant would fail; every refusal here happens before that, and the one run created is never started.
 import {afterAll,beforeAll,expect,test} from 'vitest';
 import {readFileSync} from 'node:fs';
-import {readdir} from 'node:fs/promises';
+import {readdir,readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {join,resolve} from 'node:path';
 import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
 import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
-import {benchReadiness,createBenchRun} from '../../packages/lab-runtime/src/v2/control/bench-runner';
+import {admitBench,benchCatalog,benchReadiness,createBenchRun,type BenchCatalog} from '../../packages/lab-runtime/src/v2/control/bench-runner';
+import {BENCH_AMPLITUDES,BENCH_MAX_TICKS} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import {sealDriveDocument,type ControlProfileV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 import {MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
@@ -23,20 +25,21 @@ const wheel=(o:object={})=>({schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'w
 const refusal=(codes:string[])=>({error:'INVALID_BENCH_REQUEST',reasonCodes:codes,issues:codes.map(code=>({path:'/bench',code,message:'Invalid bench request'}))});
 const runRequest=(bench:unknown,o:object={})=>({scenarioId:(bench as {scenarioId?:string})?.scenarioId??'MJ-BENCH-ARM',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:SET,runtimeIdentity:identity,bench,...o});
 
-let g:LabGateway,directory:string,factoryCalls=0;
+let g:LabGateway,directory:string,factoryCalls=0,served:BenchCatalog;
 beforeAll(async()=>{
- directory=await mujocoTemp('lab-bench-sec-');
- g=await startLabGateway({port:0,directory,...identity,v2:{catalog,enabledBackends:['mujoco_arm','mujoco_3d','mock_amr'],portableChecks:benchReadiness(runtime),
+ directory=await mujocoTemp('lab-bench-sec-');served=await benchCatalog(mujocoRoot);
+ g=await startLabGateway({port:0,directory,...identity,v2:{catalog,enabledBackends:['mujoco_arm','mujoco_3d','mock_amr'],portableChecks:benchReadiness(runtime),benchCatalog:served,
   simulationFactory:(input,providers)=>{factoryCalls++;return createBenchRun(input,{...providers,runtime});}}});
 });
 afterAll(async()=>{await g.close();await removeMujocoDirs();});
-async function session(){
- const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});
+/** A paired session on `on` (default g; a gateway allows 10 sessions, so the V07pre tests below pair on a gateway of their own). */
+async function session(on:LabGateway=g){
+ const r=await fetch(on.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:on.issuePairingToken()})});
  const body=await r.json() as {csrfToken:string;sessionId:string};
  const h={cookie:r.headers.get('set-cookie')!.split(';')[0]!,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':body.csrfToken};
- return {sessionId:body.sessionId,call:async(path:string,body?:unknown,headers:Record<string,string>=h)=>{const x=await fetch(g.url+'/lab/v2'+path,{method:body===undefined?'GET':'POST',headers,...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:x.status,body:await x.json() as {error?:string;reasonCodes?:string[];issues?:unknown[];run?:{id:string;runRevision:number};writer?:unknown}};},h};
+ return {sessionId:body.sessionId,call:async(path:string,body?:unknown,headers:Record<string,string>=h)=>{const x=await fetch(on.url+'/lab/v2'+path,{method:body===undefined?'GET':'POST',headers,...body!==undefined?{body:JSON.stringify(body)}:{}});return {status:x.status,body:await x.json() as {error?:string;reasonCodes?:string[];issues?:unknown[];run?:{id:string;runRevision:number};writer?:unknown}};},h};
 }
-const runDirs=async()=>(await readdir(directory)).filter(n=>/^[0-9a-f-]{36}$/.test(n));
+const runDirs=async(root=directory)=>(await readdir(root)).filter(n=>/^[0-9a-f-]{36}$/.test(n));
 
 test('bench on a run that is not a bench, a bench scenario without bench or off its set, and a bench with a project are 422 BENCH_SCOPE_INVALID',async()=>{
  const {call}=await session();
@@ -127,4 +130,70 @@ test('the recorded trace (GET /runs/:id/trace) is behind the report\'s gate: own
  const mission=await a.call('/runs',{project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:42,mode:'mock',backendSetId:'mock-amr',access:'simulated',runtimeIdentity:identity});expect(mission.status,JSON.stringify(mission.body)).toBe(201);
  expect(await a.call(`/runs/${mission.body.run!.id}/trace`)).toMatchObject({status:409,body:{error:'TRACE_UNSUPPORTED'}});
  expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
+});
+
+// ---- V07pre: what the Lab's Control tab reads from the server ----------------------------------------------------------------------------------------------------
+const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
+let v:LabGateway,vdir:string;
+beforeAll(async()=>{vdir=await mujocoTemp('lab-bench-v07pre-');v=await startLabGateway({port:0,directory:vdir,...identity,v2:{catalog,enabledBackends:['mujoco_arm','mujoco_3d'],portableChecks:benchReadiness(runtime),benchCatalog:served,simulationFactory:(input,providers)=>createBenchRun(input,{...providers,runtime})}});});
+afterAll(async()=>{await v.close();});
+const tunedSource={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-ARM',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40)};
+test('a draft whose loop and limits are tuned_in_simulation is admitted as a bench draft and its bytes are the ones the worker will read; a malformed tuned source is 422 before any run exists',async()=>{
+ const {call}=await session(v),base=doc<ControlProfileV1>('xarm6-control-v1.json');
+ const tuned=sealDriveDocument({...base,revision:2,sources:{...base.sources,loop:tunedSource,limits:tunedSource}} as ControlProfileV1);
+ const before=await runDirs(vdir),created=await call('/runs',runRequest(arm({controlProfile:tuned})));expect(created.status,JSON.stringify(created.body)).toBe(201);
+ const [dir]=(await runDirs(vdir)).filter(d=>!before.includes(d));
+ expect((await readFile(join(vdir,dir!,'bundle/bench-control.json'))).toString()).toBe(JSON.stringify(tuned));   // D2: never re-sealed, byte for byte
+ const after=await runDirs(vdir);
+ for(const bad of [{...tunedSource,traceSha256:'x'},{...tunedSource,sourceCommit:'e'.repeat(39)},{...tunedSource,scenarioId:'MJ-BV01'},{...tunedSource,extra:1}]){
+  const r=await call('/runs',runRequest(arm({controlProfile:sealDriveDocument({...base,sources:{...base.sources,loop:bad}} as never)})));
+  expect(r,JSON.stringify(bad)).toMatchObject({status:422,body:{error:'INVALID_RUN_REQUEST'}});
+ }
+ expect(await runDirs(vdir)).toEqual(after);   // refused by the shape check, before the factory
+});
+test('health carries the bench catalog admission uses: the plant and its digest, every selectable axis (mode, unit, a joint\'s limits and rest; the wheels forward only), every experiment\'s anchor and drive model digest, and the starting draft',async()=>{
+ const health=await (await fetch(v.url+'/lab/v2/health')).json() as {benchCatalog:BenchCatalog;benchSignals:{wheelDirection:string}};
+ const c=health.benchCatalog,component=readFileSync(join(mujocoRoot,'fixtures/xarm6-g2-v1/component.json'));
+ expect(c).toEqual(served);expect(Object.keys(c)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);expect(health.benchSignals.wheelDirection).toBe('forward');
+ expect(c['MJ-BENCH-WHEEL'].plant).toEqual({id:'serve-payload-v1',revision:1,load:'empty',plantModelDigest:JSON.parse(readFileSync(join(mujocoRoot,'fixtures/serve-payload-v1/physical-model-amr-1.json'),'utf8')).modelDigest});
+ expect(c['MJ-BENCH-ARM'].plant).toEqual({id:'xarm6-g2-v1',revision:1,load:'empty',plantModelDigest:sha(component)});
+ expect(c['MJ-BENCH-WHEEL'].axes).toEqual([{axis:'wheels',axisIds:['amr-1/wheel-left','amr-1/wheel-right'],mode:'csv',unit:'rad/s',direction:'forward'}]);
+ expect(c['MJ-BENCH-ARM'].axes.map(a=>[a.axis,a.axisIds,a.mode,a.unit])).toEqual(['J1','J2','J3','J4','J5','J6','gripper'].map(j=>[j,[`xarm-1/${j}`],'csp','rad']));
+ expect(c['MJ-BENCH-WHEEL'].startingProfile).toEqual(doc('serve-control-v1.json'));expect(c['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
+ for(const [scenarioId,s] of Object.entries(c)){
+  const kind=scenarioId==='MJ-BENCH-WHEEL'?'serve':'xarm6';
+  expect(Object.keys(s.experiments)).toEqual(['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1']);
+  for(const [driveExperimentId,e] of Object.entries(s.experiments)){
+   const file=kind==='xarm6'&&driveExperimentId==='drive-torque-limited-v1'?'xarm6-drive-nominal-v1.json':`${kind}-${driveExperimentId}.json`;
+   expect(e.driveModelDigest,driveExperimentId).toBe(doc<{digest:string}>(file).digest);expect(s.startingProfile.driveModelDigests).toContain(e.driveModelDigest);
+   // the anchor is the one admission counts ticks from: the last step tick that fits is admitted, one more is TICK_OUT_OF_RANGE
+   const at=(atTick:number)=>({schemaVersion:1,scenarioId,axis:s.axes[0]!.axis,driveExperimentId,controlProfile:s.startingProfile,signal:{kind:'step',amplitude:scenarioId==='MJ-BENCH-WHEEL'?BENCH_AMPLITUDES.wheelRadS[0]:BENCH_AMPLITUDES.jointRad[0],atTick}});
+   await expect(admitBench(at(BENCH_MAX_TICKS-e.anchorTick),mujocoRoot),`${scenarioId} ${driveExperimentId}`).resolves.toMatchObject({anchorTick:e.anchorTick});
+   await expect(admitBench(at(BENCH_MAX_TICKS-e.anchorTick+1),mujocoRoot)).rejects.toThrow('TICK_OUT_OF_RANGE');
+  }
+ }
+ // every joint, every registered size, both signs: the catalog's limits and rest predict admission exactly (only the gripper, resting open at its lower limit, has a step that falls outside)
+ const refused:string[]=[];
+ for(const a of c['MJ-BENCH-ARM'].axes)for(const amplitude of BENCH_AMPLITUDES.jointRad.flatMap(x=>[x,-x])){
+  if(a.mode!=='csp')throw Error('position axis expected');
+  const inside=a.startRad+amplitude>=a.lowerRad&&a.startRad+amplitude<=a.upperRad,bench=arm({axis:a.axis,controlProfile:c['MJ-BENCH-ARM'].startingProfile,signal:{kind:'step',amplitude,atTick:10}});
+  if(inside)await expect(admitBench(bench,mujocoRoot),`${a.axis} ${amplitude}`).resolves.toBeDefined();
+  else{refused.push(`${a.axis} ${amplitude}`);await expect(admitBench(bench,mujocoRoot),`${a.axis} ${amplitude}`).rejects.toThrow('INVALID_BENCH_REQUEST:JOINT_LIMIT_EXCEEDED');}
+ }
+ expect(refused).toEqual(['gripper -0.05','gripper -0.1','gripper -0.2']);
+ // and over HTTP, from the starting draft as health served it: inside the gripper's range is created, just outside it is refused
+ const {call}=await session(v),gripper=(amplitude:number)=>runRequest(arm({axis:'gripper',controlProfile:c['MJ-BENCH-ARM'].startingProfile,signal:{kind:'step',amplitude,atTick:10}}));
+ expect((await call('/runs',gripper(0.05))).status).toBe(201);
+ expect(await call('/runs',gripper(-0.05))).toEqual({status:422,body:refusal(['JOINT_LIMIT_EXCEEDED'])});
+});
+test('without an offered bench scenario health has no envelope, signal catalog or bench catalog; with one plant only, the catalog lists that plant only',async()=>{
+ for(const [installed,keys] of [[[],null],[['mujoco_3d'],['MJ-BENCH-WHEEL']]] as const){
+  const cat={...defaultCatalog,backends:defaultCatalog.backends.map(b=>(installed as readonly string[]).includes(b.id)?{...b,installed:true,compatible:true,reachable:true,reason:undefined}:b)};
+  const other=await startLabGateway({port:0,directory:await mujocoTemp('lab-bench-health-'),...identity,v2:{catalog:cat,enabledBackends:[...installed],benchCatalog:served}});
+  try{
+   const health=await (await fetch(other.url+'/lab/v2/health')).json() as Record<string,unknown>;
+   if(keys===null)for(const k of ['tuningEnvelope','benchSignals','benchCatalog'])expect(health,k).not.toHaveProperty(k);
+   else expect(Object.keys(health.benchCatalog as object)).toEqual(keys);
+  }finally{await other.close();}
+ }
 });

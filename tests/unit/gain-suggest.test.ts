@@ -1,5 +1,5 @@
 import {expect,test} from 'vitest';
-import {suggestGains} from '../../packages/lab-runtime/src/v2/control/gain-suggest';
+import {gainSuggestions,suggestGains} from '../../packages/lab-runtime/src/v2/control/gain-suggest';
 import {withinEnvelope} from '../../packages/lab-runtime/src/v2/control/tuning-envelope';
 import type {AxisEnvelope} from '../../packages/lab-runtime/src/v2/control/drive-io';
 
@@ -39,4 +39,11 @@ test('a csp axis whose envelope forces ki above zero gets an integral limit; one
 });
 test('inertia, bandwidth and damping must be finite and positive',()=>{
  for(const bad of [0,-1,NaN,Infinity])for(const k of ['inertiaKgM2','bandwidthRadS','damping'] as const)expect(()=>suggestGains({mode:'csp',inertiaKgM2:0.5,bandwidthRadS:20,damping:1,[k]:bad},wide),`${k} ${bad}`).toThrow('SUGGEST_INPUT_INVALID');
+});
+test('V07pre: the suggestions of a bench result are suggestGains at every registered (bandwidth, damping) pair, bandwidth first, with no acceleration limit (D4 does not size one)',()=>{
+ for(const [mode,env] of [['csv',csvEnv],['csp',wide]] as const){
+  const s=gainSuggestions({mode,inertiaKgM2:0.05},env);
+  expect(s.map(x=>[x.bandwidthRadS,x.damping])).toEqual([[5,0.7],[5,1],[10,0.7],[10,1],[20,0.7],[20,1],[40,0.7],[40,1]]);
+  for(const x of s)expect(x).toEqual({bandwidthRadS:x.bandwidthRadS,damping:x.damping,...suggestGains({mode,inertiaKgM2:0.05,bandwidthRadS:x.bandwidthRadS,damping:x.damping},env),accelerationLimit:null});
+ }
 });

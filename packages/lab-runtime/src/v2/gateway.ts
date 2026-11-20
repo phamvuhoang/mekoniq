@@ -16,7 +16,8 @@ import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 import tuningEnvelope from '../../../../robotics/simulation-mujoco/fixtures/drive-v1/tuning-envelope-v1.json';
-import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,SUGGEST_OPTIONS} from './control/bench-signals';
+import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,BENCH_WHEEL_DIRECTION,SUGGEST_OPTIONS} from './control/bench-signals';
+import type {BenchCatalog} from './control/bench-runner';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
 export interface V2Deps {
  worldExperiments?:boolean;sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
@@ -42,6 +43,8 @@ export interface V2Deps {
  engineering?:EngineeringService;
  /** Wall clock of paced steps, handed to every run this gateway opens (tests count its calls); runs default to the real one. */
  wall?:WallClock;
+ /** The bench catalog the runtime built at start from its MuJoCo worker root (bench-runner.ts benchCatalog); health lists the entries of the offered bench scenarios. */
+ benchCatalog?:BenchCatalog;
 }
 const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
@@ -102,6 +105,12 @@ export function createV2Gateway(deps:V2Deps){
   return deny(response,status,error,codes,error==='INVALID_BENCH_REQUEST'?codes.map(code=>({path:'/bench',code,message:'Invalid bench request'})):undefined);};
 const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
+ // R4.2 bench (V06, V07pre): the envelope (revision 2) a draft is checked against, the closed signal catalog and the bench catalog, so the Lab reads them instead of hardcoding; only where a bench scenario is offered
+ const benchHealth=()=>{
+  const ids=offeredScenarios(catalog).filter(([,d])=>d.bench).map(([id])=>id),served=deps.benchCatalog;
+  return ids.length?{tuningEnvelope:structuredClone(tuningEnvelope),benchSignals:{kinds:[...BENCH_SIGNAL_KINDS],maxTicks:BENCH_MAX_TICKS,amplitudes:structuredClone(BENCH_AMPLITUDES),suggestOptions:structuredClone(SUGGEST_OPTIONS),wheelDirection:BENCH_WHEEL_DIRECTION},
+   ...served?{benchCatalog:Object.fromEntries(ids.filter(id=>Object.hasOwn(served,id)).map(id=>[id,structuredClone(served[id as keyof BenchCatalog])]))}:{}}:{};
+ };
  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
  const handle=async function handle(request:IncomingMessage,response:ServerResponse,path:string,origin:string|undefined){
   const method=request.method,{send}=deps,sub=path.slice('/lab/v2'.length);
@@ -111,8 +120,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxConcurrentDownloads:4,maxDownloadBytes:16*1024*1024,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
    ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
    ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
-   // R4.2 bench (V06): the envelope (revision 2) a draft is checked against and the closed signal catalog, so the Lab reads them instead of hardcoding; only where a bench scenario is offered
-   ...offeredScenarios(catalog).some(([,d])=>d.bench)?{tuningEnvelope:structuredClone(tuningEnvelope),benchSignals:{kinds:[...BENCH_SIGNAL_KINDS],maxTicks:BENCH_MAX_TICKS,amplitudes:structuredClone(BENCH_AMPLITUDES),suggestOptions:structuredClone(SUGGEST_OPTIONS)}}:{},
+   ...benchHealth(),
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
