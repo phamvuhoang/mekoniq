@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ ffe869cd6e8e69c3e3a7a6a08e5569b6860d7f73 (sha256 a821f2cab94ac4db3ce66ad3e72503f33e3b6a15fac1291c89d0f7f10ec49316). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 9c9175d389280975c1a749e6d6203ead1a20f33d (sha256 64a085792f8249f5227a9300034172f4f60077e87da07bd26d1703cf73382c0a). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -488,7 +488,7 @@ export type ControlMetric =
       reason: string;
     };
 /**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning). The object of the other two results is null.
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "TuningResultV1".
@@ -2840,7 +2840,7 @@ export interface TuningResultV11 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
-  status: 'completed' | 'drive_fault' | 'unstable';
+  status: 'completed' | 'drive_fault' | 'unstable' | 'collision';
   unstable: {
     tick: number;
     warning: string;
@@ -2849,6 +2849,14 @@ export interface TuningResultV11 {
     tick: number;
     axisId: DriveAxisId;
     code: string;
+  } | null;
+  collision: {
+    tick: number;
+    /**
+     * @minItems 1
+     * @maxItems 64
+     */
+    ids: string[];
   } | null;
   /**
    * @minItems 1
@@ -2860,6 +2868,10 @@ export interface TuningResultV11 {
   engine: {
     id: string;
     version: string;
+    /**
+     * The architecture the worker reported (contracts §1): bit identity of two results only means something within one.
+     */
+    hostArch?: 'arm64' | 'x86_64';
   };
   /**
    * load is the bench load id (for example empty): two runs under different loads are not comparable.
