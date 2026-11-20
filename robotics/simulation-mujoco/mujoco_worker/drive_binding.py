@@ -36,6 +36,9 @@ class DriveBinding:
         self.base_loss = model.dof_frictionloss[self.dof].copy()
         self.base_solimp, self.base_solref = model.dof_solimp[self.dof].copy(), model.dof_solref[self.dof].copy()
         self.brake_nm = [a["brakeTorqueNm"] for a in group.axes]
+        # motor-weak / grip-weak on an arm axis or the gripper: its compiled force limit times the injected scale (a wheel's limit is rewritten every substep by the engine, through scale_limits)
+        self.base_range = model.actuator_forcerange[self.acts].copy()
+        self.range_scale = [1.0] * group.n
         self.active = None
         self.wheel = []   # (position in the group, actuator id) of the axes the engine limits per substep
         self.last = None
@@ -50,6 +53,10 @@ class DriveBinding:
         """substep() of the group on the true state, then applied to the model. Returns the group's answer."""
         pos, vel = self.true_state()
         out = self.g.substep(pos, vel)
+        for i, scale in enumerate(self.g.fault_scale):
+            if scale != self.range_scale[i]:
+                self.m.actuator_forcerange[self.acts[i]] = self.base_range[i] * scale
+                self.range_scale[i] = scale
         active = out["active"]
         if self.active is None or active != self.active:
             self._switch(active, pos)
@@ -94,7 +101,7 @@ class DriveBinding:
                     d.act[self.actadr[i]:self.actadr[i] + self.actnum[i]] = 0.0
 
     def scale_limits(self, k, lo, hi):
-        s = self.g.scale[k]
+        s = self.g.scale[k] * self.g.fault_scale[k]   # the model's torque scale times an injected motor-weak or grip-weak (1.0 otherwise: the product is exact)
         return lo * s, hi * s
 
 

@@ -11,12 +11,15 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
  */
 export async function generateFaultFixture(outDir){
  const {sealDriveDocument}=await tsImport('../packages/lab-runtime/src/v2/control/drive-io.ts',import.meta.url);
+ const {DRIVE_FAULTS}=await tsImport('../packages/lab-runtime/src/v2/control/drive-faults.ts',import.meta.url);
  const nominal=await readFile(join(root,'robotics/simulation-mujoco/fixtures/drive-v1/serve-drive-nominal-v1.json'));
  const source=locator=>({kind:'assumed',documentId:'robotics/simulation-mujoco/fixtures/drive-v1/serve-drive-nominal-v1.json',revision:'1',locator,contentSha256:hash(nominal)});
  const files=new Map(),json=(name,v)=>files.set(name,JSON.stringify(v,null,2)+'\n');
  // deadlines in ticks after the application tick, with one tick of slack over the nominal drive: feedbackLossSubsteps 25 trips in the third tick, watchdogTicks 5 in the fifth, the controller
  // reads a trip from the feedback of the tick after it
  const fault=(faultId,required,detector,codes,deadlineTicks)=>({faultId,required,detector,codes,deadlineTicks});
+ // the bounds the server admits a schedule against, in one file the worker reads to check them again before it applies anything (one source, two readers)
+ json('fault-catalog-v1.json',{schemaVersion:1,documentType:'fault-catalog',id:'fault-catalog-v1',faults:DRIVE_FAULTS});
  json('fault-oracle-v1.json',sealDriveDocument({schemaVersion:1,documentType:'fault-oracle',id:'fault-oracle-v1',revision:1,digest:'',calibration:'not_calibrated',
   faults:[fault('encoder-dropout',true,'drive',['FEEDBACK_LOSS'],3),fault('motor-weak',false,'controller',['TRACKING_DEGRADED'],null),fault('drive-trip',true,'controller',['DRIVE_FAULT'],2),
    fault('command-delay',false,null,[],null),fault('command-loss',true,'drive',['COMMAND_TIMEOUT'],5),fault('grip-weak',true,'arm_program',['ARM_GRIP_NOT_ESTABLISHED'],null),

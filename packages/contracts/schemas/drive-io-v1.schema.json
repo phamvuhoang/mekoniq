@@ -375,6 +375,118 @@
       ],
       "title": "DriveTrace",
       "description": "One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw."
+    },
+    "FaultInjectionV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "faultId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4
+        },
+        "phase": {
+          "enum": [
+            "start",
+            "end"
+          ]
+        }
+      },
+      "required": [
+        "entryId",
+        "faultId",
+        "targetId",
+        "params",
+        "phase"
+      ]
+    },
+    "FaultReceiptV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "faultId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4
+        },
+        "phase": {
+          "enum": [
+            "start",
+            "end"
+          ]
+        },
+        "appliedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneDigest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "requestDigest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "entryId",
+        "faultId",
+        "targetId",
+        "params",
+        "phase",
+        "appliedTick",
+        "runId",
+        "bootId",
+        "sceneDigest",
+        "requestDigest"
+      ]
     }
   }
 }

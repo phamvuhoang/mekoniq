@@ -6,6 +6,11 @@
   "calibration": "not_calibrated",
   "files": [
     {
+      "path": "fault-catalog-v1.json",
+      "sha256": "e7c528935b54532d0598c61905956d0971eabf75d5d4dd29f0310ffbf75d1358",
+      "bytes": 2820
+    },
+    {
       "path": "fault-oracle-v1.json",
       "sha256": "0956d5e6e2f47980f9176344f757a1f5e4f26af61200fb95be015100b69279ff",
       "bytes": 2046

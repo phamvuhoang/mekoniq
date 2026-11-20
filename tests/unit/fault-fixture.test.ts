@@ -13,7 +13,7 @@ test('generation is byte deterministic and the committed fixture is what the gen
  const dir=await mkdtemp(join(tmpdir(),'fault-fixture-'));
  try{
   await generateFaultFixture(join(dir,'a'));await generateFaultFixture(join(dir,'b'));
-  const names=await readdir(join(dir,'a'));expect(names.sort()).toEqual(['README.md','fault-oracle-v1.json','manifest.json']);
+  const names=await readdir(join(dir,'a'));expect(names.sort()).toEqual(['README.md','fault-catalog-v1.json','fault-oracle-v1.json','manifest.json']);
   for(const n of names){const a=await readFile(join(dir,'a',n));expect(a.equals(await readFile(join(dir,'b',n))),n).toBe(true);expect(a.equals(await readFile(FX+n)),n).toBe(true);}
  }finally{await rm(dir,{recursive:true,force:true});}
 });
@@ -25,4 +25,8 @@ test('the manifest hashes every file and the oracle is sealed, assumed, not cali
  expect(o.faults.map(f=>f.faultId).sort()).toEqual(Object.keys(DRIVE_FAULTS).sort());
  // a required fault must name a detector, its codes and (but for the arm program's own stop) a deadline; an optional one with no detector names no codes
  for(const f of o.faults){if(f.required){expect(f.detector,f.faultId).not.toBeNull();expect(f.codes.length,f.faultId).toBeGreaterThan(0);}if(f.detector===null)expect(f.codes,f.faultId).toEqual([]);}
+});
+test('the catalog the worker reads is the one the server validates against',async()=>{
+ const c=JSON.parse(await readFile(FX+'fault-catalog-v1.json','utf8')) as {documentType:string;faults:unknown};
+ expect(c.documentType).toBe('fault-catalog');expect(c.faults).toEqual(JSON.parse(JSON.stringify(DRIVE_FAULTS)));
 });

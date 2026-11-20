@@ -9,6 +9,7 @@ cannot produce a COMMAND_TIMEOUT. The numbers (overspeed factor, quick-stop rest
 import math
 from collections import deque
 
+from . import drive_faults
 from .protocol import DRIVE_REFUSALS, WorkerError  # noqa: F401  (the refusal codes this module raises)
 
 DISABLED, READY, ENABLED, QUICK_STOP, FAULT = "disabled", "ready", "enabled", "quick_stop", "fault"
@@ -95,6 +96,10 @@ class DriveGroup:
         self.fe_count = [0] * self.n
         self.dropout = [False] * self.n
         self.loss_count = [0] * self.n
+        # fault injection (V08): the force-limit scale of an axis, its extra command delay, an injected reset edge, the open and finished entries, the step's staged injections and their receipts
+        self.fault_scale = [1.0] * self.n
+        self.forced_reset = [False] * self.n
+        self.fault_open, self.fault_done, self.staged, self.receipts = {}, set(), None, []
         self.tick = 0
         self.ready = False
         self.traced, self.samples = [], []   # bench only: the traced axes (indices) and this tick's samples of each
@@ -153,10 +158,14 @@ class DriveGroup:
     def begin_tick(self, commands):
         """Admit the whole command set or refuse it (WorkerError with a DRIVE_* code) before any state changes."""
         by_id = self.check(commands)
+        if self.staged:
+            self.receipts.extend(drive_faults.apply(self, self.staged, self.tick))
+        self.staged = None
         for i, a in enumerate(self.axes):
             c = by_id[a["axisId"]]
             fresh = c["seq"] > self.seq[i]
-            edge = fresh and c["faultReset"] and not self.accepted[i]["faultReset"]
+            edge = (fresh and c["faultReset"] and not self.accepted[i]["faultReset"]) or self.forced_reset[i]
+            self.forced_reset[i] = False
             if fresh:
                 self.seq[i] = c["seq"]
                 self.accepted[i] = c.copy()
@@ -200,6 +209,14 @@ class DriveGroup:
 
     def _trip(self, i, code):
         self.state[i], self.fault[i] = FAULT, code
+
+    def stage_faults(self, injections):
+        """Admit this step's `faultInjections` against the catalog (WorkerError FAULT_* on any refusal, nothing changed) and hold them for the next begin_tick, which applies them before the tick runs."""
+        self.staged = drive_faults.check(self, injections) if injections else None
+
+    def take_fault_receipts(self):
+        out, self.receipts = self.receipts, []
+        return out
 
     def set_feedback_valid(self, axis_id, valid):
         """A hook for fault injection (V08): the encoder of one axis stops (or resumes) delivering."""
@@ -280,7 +297,7 @@ class DriveGroup:
             else:
                 ctrl[i] = t
             target[i], active[i], braked[i] = t, on, (not on) and a["onDisable"] == "brake"
-        return {"ctrl": ctrl, "ctrl1": ctrl1, "target": target, "force_scale": self.scale, "active": active, "braked": braked}
+        return {"ctrl": ctrl, "ctrl1": ctrl1, "target": target, "force_scale": [s * f for s, f in zip(self.scale, self.fault_scale)], "active": active, "braked": braked}
 
     # ---- after the caller's mj_step ----------------------------------------------------------------------------------------------------------------------
     def sample(self, true_pos, true_vel, torque, saturated):

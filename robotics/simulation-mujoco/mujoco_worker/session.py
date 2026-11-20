@@ -627,14 +627,29 @@ class WorkerSession:
             raise WorkerError("INVALID_REQUEST", "driveCommands need a scene with a drive model and a control profile")
         if not self.world and (p.get("worldInteractions") or p.get("worldPerturbations") or p.get("worldControl")):
             raise WorkerError("INVALID_REQUEST", "world interactions require a shared world")
-        if self.world:
-            snap = self._step_world(p)
-        elif self.mobile:
-            snap = self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1)
-        elif self.drive_on:
-            snap = self._advance(None, None, [], tick=self.tick + 1, commands=self._check_arm_drive_step(p))
-        else:
-            snap = self._advance(*self._check_step(p), tick=self.tick + 1)
+        injections = p.get("faultInjections")
+        if injections and not self.drive_on:
+            raise WorkerError("INVALID_REQUEST", "faultInjections need a scene with a drive model and a control profile")
+        group = self.engine.drive.g if self.drive_on else None
+        try:
+            if injections:
+                group.stage_faults(injections)   # admitted whole before anything runs; the drive applies them at the start of this tick
+            if self.world:
+                snap = self._step_world(p)
+            elif self.mobile:
+                snap = self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1)
+            elif self.drive_on:
+                snap = self._advance(None, None, [], tick=self.tick + 1, commands=self._check_arm_drive_step(p))
+            else:
+                snap = self._advance(*self._check_step(p), tick=self.tick + 1)
+        finally:
+            if group is not None:
+                group.staged = None   # a step that was refused applies nothing, now or on a later tick
+        if group is not None:
+            receipts = group.take_fault_receipts()
+            if receipts:
+                digest = hashlib.sha256(rfc8785.dumps(p)).hexdigest()
+                snap["faultReceipts"] = [{**r, "runId": self.run_id, "bootId": self.boot_id, "sceneDigest": self.scene["sceneDigest"], "requestDigest": digest} for r in receipts]
         self.tick += 1
         return snap
 

@@ -367,6 +367,22 @@
           "items": {
             "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisSnapshot"
           }
+        },
+        "faultIntents": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/FaultInjectionV1"
+          }
+        },
+        "faultReceipts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 32,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/FaultReceiptV1"
+          }
         }
       },
       "required": [

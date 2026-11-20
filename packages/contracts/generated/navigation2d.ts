@@ -393,6 +393,11 @@ export type Sim3DRequestV1 =
          * @maxItems 16
          */
         driveCommands?: DriveCommandV1[];
+        /**
+         * @minItems 0
+         * @maxItems 32
+         */
+        faultInjections?: FaultInjectionV1[];
       };
     }
   | {
@@ -1380,6 +1385,11 @@ export interface Sim3DSnapshotV1 {
    * @maxItems 2
    */
   driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1543,6 +1553,16 @@ export interface PhysicsTickRecord {
    * @maxItems 16
    */
   drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultIntents?: FaultInjectionV1[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1628,6 +1648,37 @@ export interface DriveAxisSnapshot {
   actualVelocityRadS: number;
   saturatedSubsteps: number;
   followingErrorRad: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultInjectionV1".
+ */
+export interface FaultInjectionV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultReceiptV1".
+ */
+export interface FaultReceiptV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+  appliedTick: number;
+  runId: string;
+  bootId: string;
+  sceneDigest: string;
+  requestDigest: string;
 }
 export interface WorldStep {
   workerPid: number;
@@ -1741,6 +1792,11 @@ export interface Sim3DWireSnapshotV1 {
    * @maxItems 2
    */
   driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2336,6 +2392,16 @@ export interface WorldEvidenceRecord {
    * @maxItems 16
    */
   drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultIntents?: FaultInjectionV1[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
