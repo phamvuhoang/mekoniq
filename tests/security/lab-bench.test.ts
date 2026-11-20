@@ -179,7 +179,7 @@ test('health carries the bench catalog admission uses: the plant and its digest,
  expect(c['MJ-BENCH-ARM'].plant).toEqual({id:'xarm6-g2-v1',revision:1,load:'empty',plantModelDigest:sha(component)});
  expect(c['MJ-BENCH-WHEEL'].axes).toEqual([{axis:'wheels',axisIds:['amr-1/wheel-left','amr-1/wheel-right'],mode:'csv',unit:'rad/s',direction:'forward',quantity:'wheel_angular_speed',inertiaAssumption:'straight_line_no_slip'}]);
  expect(c['MJ-BENCH-ARM'].axes.map(a=>[a.axis,a.axisIds,a.mode,a.unit])).toEqual(['J1','J2','J3','J4','J5','J6','gripper'].map(j=>[j,[`xarm-1/${j}`],'csp','rad']));
- expect(c['MJ-BENCH-WHEEL'].startingProfile).toEqual(doc('serve-control-v1.json'));expect(c['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
+ expect(c['MJ-BENCH-WHEEL'].startingProfile).toEqual(doc('serve-control-v2.json'));expect(c['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
  for(const [scenarioId,s] of Object.entries(c)){
   const kind=scenarioId==='MJ-BENCH-WHEEL'?'serve':'xarm6';
   expect(Object.keys(s.experiments)).toEqual(['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1']);

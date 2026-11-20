@@ -61,9 +61,9 @@ export async function runBenchCampaign(o:{root:string;out:string;sourceCommit:st
 
 /** `workerRoot`: where the plant fixtures are (the drive model, the starting profile, the envelope and the metric policy): this checkout's, the commit the campaign names. */
 export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoot=WORKER_ROOT):Promise<BenchCampaignVerdict>{
- const selected=BENCH_CASES.filter(c=>!onlyCase||c.id===onlyCase);
- const v:BenchCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[],runs:[]};let source:string|undefined,host:string|undefined,table:typeof historical|typeof campaign=campaign;
+ const v:BenchCampaignVerdict={expectedRuns:0,completedCases:0,missingArtifacts:[],issues:[],runs:[]};let source:string|undefined,host:string|undefined,table:typeof historical|typeof campaign=campaign;
  try{const c=await readJson(root,'campaign.json');table=c.campaign?.id===historical.id?historical:campaign;if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(table)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;host=c.hostArch;}catch{v.issues.push('BENCH_CAMPAIGN_IDENTITY');return v;}
+ const selected=(table.runs as BenchCase[]).filter(c=>!onlyCase||c.id===onlyCase);v.expectedRuns=selected.length;
  const names=table===campaign?campaign.startingProfiles:{'MJ-BENCH-WHEEL':'serve-control-v1.json','MJ-BENCH-ARM':'xarm6-control-v1.json'};
  for(const spec of selected){
   const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};

@@ -55,7 +55,8 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
  if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
  let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
-  wheel:[config.axisLeft,config.axisRight].map((id,i)=>Math.min(d.model.axes.find(a=>a.axisId===id)?.velocityLimitRadS??0,i?robot.maxWheelRadps.right:robot.maxWheelRadps.left)) as [number,number],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});
+  // Scene wheel limits include the physical actuator range. Drive rated speed belongs to the independent OVERSPEED monitor.
+  wheel:[robot.maxWheelRadps.left,robot.maxWheelRadps.right],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});
  return {navigation:routeCorrectionOptions(d.control),manifest:driveManifest(d),model:d.model,fresh:()=>mobileDrive(d,robot),step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});

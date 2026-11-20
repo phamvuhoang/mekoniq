@@ -58,8 +58,8 @@ test('a fresh disk reader recovers the recorded cell report and exposes a damage
  expect(await readWorldDriveReport(copy,a,identity)).toEqual(expected);
  const {readWorldEvidence}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
  const {records}=await readWorldEvidence(join(copy,'world-evidence'),a),rows=structuredClone(records.slice(0,2));
- for(const field of ['jointTargets','gripperTargets','velocities'] as const){
-  const command=structuredClone(records[1]!.command!);command[field]=[];rows[1]!.command=command;
+ for(const field of ['jointTargets','gripperTargets','velocities'] as const)for(const duplicate of [false,true]){
+  const command=structuredClone(records[1]!.command!);Object.assign(command,{[field]:duplicate?[...command[field]!,...command[field]!]:[]});rows[1]!.command=command;
   const incomplete=buildWorldDriveReport(a,rows,[]);
   expect(incomplete).toMatchObject({complete:false,ticks:1,events:[],issues:['WORLD_DRIVE_SETPOINT_INVALID']});
   expect(incomplete.axes).toHaveLength(9);expect(incomplete.axes.every(x=>!x.trackingRms.available)).toBe(true);
@@ -70,4 +70,33 @@ test('a fresh disk reader recovers the recorded cell report and exposes a damage
  expect(damaged).toMatchObject({complete:false,ticks:0,events:[]});expect(damaged.issues).toContain('WORLD_EVIDENCE_HASH_MISMATCH');
  await rm(join(copy,'mujoco-world/bundle/lab-world-scene.json'));
  expect(await readRetainedWorldDriveReport(copy,{...identity,sceneDigest:checkpoint.world.snapshot.sceneDigest})).toMatchObject({complete:false,axes:[],ticks:0,issues:['WORLD_RETAINED_BUNDLE_UNAVAILABLE']});
+});
+
+test.each(['missing-header','loss-attention','foreign-world'] as const)('standalone cell verification binds the registered fault and Source run (%s)',async variant=>{
+ const {verifyCellCampaign}=await import('../../packages/lab-runtime/src/v2/simulation3d/cell-campaign');
+ const copy=await mkdtemp(join(dir,'cell-binding-'));await cp(join(dir,cell,'cell'),copy,{recursive:true});
+ const caseDir=join(copy,'lost-ack');
+ if(variant==='missing-header'){
+  const path=join(copy,'campaign.json'),header=await read(path);delete header.driveExperimentId;delete header.driveProfileRegistry;delete header.hostArch;await save(path,header);
+  const file=join(caseDir,'report.json'),report=await read(file);report.driveEvidence.events=[{tick:0,code:'DRIVE_FAULT'}];await save(file,report);
+ }else if(variant==='loss-attention'){
+  for(const name of ['run/run.json','report.json']){
+   const file=join(caseDir,name),doc=await read(file);for(const a of doc.attention)if(a.reason==='WORLD_UNKNOWN')a.reason='OTHER';await save(file,doc);
+  }
+ }else{
+  const {createHash}=await import('node:crypto'),{gunzipSync,gzipSync}=await import('node:zlib');
+  const {hashJson}=await import('../../packages/lab-runtime/src/v2/hash');
+  const world=join(caseDir,'run/world-evidence'),manifest=await read(join(world,'manifest.json')),trace=await read(join(caseDir,'trace.json'));
+  const steps=trace.requests.filter((r:{op:string})=>r.op==='step');manifest.runId='891c3170-3213-4dfc-b9b1-39995f52606b';
+  for(const ref of manifest.chunks){
+   const file=join(world,ref.path),rows=gunzipSync(await readFile(file)).toString().trimEnd().split('\n').map(line=>JSON.parse(line));
+   for(const row of rows){const snap=row.snapshot;snap.runId=manifest.runId;if(snap.tick)steps[snap.tick-1].responseDigest=hashJson(snap);}
+   const b=gzipSync(rows.map(row=>JSON.stringify(row)+'\n').join(''));await writeFile(file,b);ref.bytes=b.length;ref.sha256=createHash('sha256').update(b).digest('hex');
+  }
+  await save(join(world,'manifest.json'),manifest);await save(join(caseDir,'trace.json'),trace);
+ }
+ const path=join(caseDir,'case.json'),rec=await read(path);rec.artifacts=await cellArtifacts(caseDir);await save(path,rec);
+ const v=await verifyCellCampaign(copy,['lost-ack']);
+ expect(v.completedCases).toBe(0);
+ expect(v.issues).toEqual(['lost-ack:'+({'missing-header':'CELL_DRIVE_IDENTITY','loss-attention':'CELL_FAULT_CODE','foreign-world':'CELL_WORLD_RUN_BINDING'}[variant])]);
 });

@@ -62,3 +62,15 @@ test('an exhausted route corrects a stopped out-of-window pose without extending
  expect(init().advance(observation(1,1.8,.01),{},false).velocities[0]?.vMps).toBe(0);
  const cancelled=init();cancelled.cancel('amr-1','park');expect(cancelled.advance(observation(1,1.8),{}).decisions[0]?.status).toBe('cancelled');
 });
+
+test.each([true,false])('revision two preserves the physical no-progress deadline when a replacement route is denied and then granted (exhausted %s)',exhausted=>{
+ const s=structuredClone(scene);s.robots[0].model.sensors=[];s.policy.parameters.noProgressTicks=8;s.policy.parameters.replanEveryTicks=1;
+ s.zones=[{id:'bay',polygonM:[[1.7,1.2],[2.2,1.2],[2.2,1.8],[1.7,1.8]]}];
+ const c=createNavigationController(s,{exhaustedRouteRevision:1});
+ const snap=(tick:number,x:number)=>({tick,robots:[{robotId:'amr-1',poseDriveMap:[x,1.5,0],bodyVelocity:[0,0],scans:[],collisionIds:[]}]}) as never;
+ c.setGoal({robotId:'amr-1',commandId:'park',target:[2,1.5,0]});c.advance(snap(0,exhausted?2:1.8),{bay:'amr-1'});
+ const denied=c.advance(snap(1,1.8),{bay:null});expect(denied.decisions[0]?.status).toBe('executing');expect(denied.velocities[0]?.vMps).toBe(0);
+ const granted=c.advance(snap(2,1.8),{bay:'amr-1'});expect(granted.velocities[0]?.vMps).toBeGreaterThan(0);
+ let blocked;for(let t=3;t<=8;t++){const d=c.advance(snap(t,1.8),{bay:'amr-1'}).decisions[0];if(d?.status==='blocked')blocked={...d,t};}
+ expect(blocked).toMatchObject({t:8,reason:'NO_PROGRESS'});
+});

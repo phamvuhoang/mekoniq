@@ -5,6 +5,7 @@ import {afterAll,beforeAll,describe,expect,test} from 'vitest';
 import {cp,mkdtemp,readFile,readdir,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
+import historical from '../../robotics/simulation-mujoco/campaigns/bench-v1.json';
 import {BENCH_CAMPAIGN,BENCH_CASES,runBenchCampaign,verifyBenchCampaign} from '../../packages/lab-runtime/src/v2/control/bench-campaign';
 import {admitBench,benchCatalog} from '../../packages/lab-runtime/src/v2/control/bench-runner';
 import {BENCH_AXES} from '../../packages/lab-runtime/src/v2/control/drive-io';
@@ -24,6 +25,14 @@ test('the registered campaign is one step and one trapezoid per bench axis (16 r
   await expect(admitBench({schemaVersion:1,scenarioId:c.scenarioId,axis:c.axis,signal:c.signal,driveExperimentId:BENCH_CAMPAIGN.driveExperimentId,controlProfile:served[c.scenarioId].startingProfile},mujocoRoot),c.id).resolves.toMatchObject({axisIds:expect.any(Array)});
  }
  expect(BENCH_CAMPAIGN).toMatchObject({accepted:false,calibration:'not_calibrated',driveExperimentId:'drive-nominal-v1'});
+});
+
+test('bench-v1 selects its own run even if bench-v2 drops it',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'bench-version-')),last=BENCH_CASES.pop()!;
+ try{
+  await write(join(dir,'campaign.json'),{campaign:historical,sourceCommit:COMMIT,hostArch:'arm64',accepted:false,execution:'actual_mujoco',calibration:'not_calibrated'});
+  expect(await verifyBenchCampaign(dir,last.id)).toMatchObject({expectedRuns:1,completedCases:0,missingArtifacts:[last.id]});
+ }finally{BENCH_CASES.push(last);await rm(dir,{recursive:true,force:true});}
 });
 
 describe.skipIf(!mujocoReady)('a recorded bench case on the real engine',()=>{

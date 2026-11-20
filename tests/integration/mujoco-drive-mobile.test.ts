@@ -18,11 +18,11 @@ test('a project without driveExperimentId compiles to the same bundle as before:
 test('the first run on drive-nominal-v1 starts the drive, serves 1, and its manifest says controller_in_the_loop',async()=>{
  const {run,steps,service,receipt}=await setup({driveExperimentId:'drive-nominal-v1'});
  const scene=JSON.parse(Buffer.from(await service.bundleFile(receipt.bundleDigest!,'navigation-scene.json')).toString());
- expect(scene.engine.driveModelRef.path).toBe('serve-drive-nominal-v1.json');expect(scene.files.map((f:{path:string})=>f.path)).toContain('serve-control-v1.json');
+ expect(scene.engine.driveModelRef.path).toBe('serve-drive-nominal-v1.json');expect(scene.files.map((f:{path:string})=>f.path)).toContain('serve-control-v2.json');
  await run.start();const v=await finish(run);
  const report=await run.report();
  expect(report.outcome,JSON.stringify(v.attention)).toMatchObject({status:'completed',served:'1'});
- expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1',controllers:[{id:'diff-drive-base-v1',revision:1}]});
+ expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1',controllers:[{id:'diff-drive-base-v1',revision:2},{id:'exhausted-route-correction',revision:1}]});
  expect(report.manifest.drive!.driveModelDigest).toMatch(/^[0-9a-f]{64}$/);
  expect(['arm64','x86_64']).toContain(report.manifest.drive!.hostArch);   // the worker's own architecture (contracts §1)
  // the drive was not ready before its enable sequence ended: no wheel moved before both axes were enabled
@@ -55,7 +55,7 @@ async function scratchRoot(edit:(m:DriveModelV1)=>void){
  const dir=await temp(),fx=join(dir,'fixtures');await mkdir(join(fx,'xarm6-g2-v1'),{recursive:true});
  await cp(join(root,'fixtures/serve-payload-v1'),join(fx,'serve-payload-v1'),{recursive:true});await cp(join(root,'fixtures/xarm6-g2-v1/cell-layout.json'),join(fx,'xarm6-g2-v1/cell-layout.json'));
  await cp(join(root,'fixtures/drive-v1'),join(fx,'drive-v1'),{recursive:true});
- const mp=join(fx,'drive-v1/serve-drive-nominal-v1.json'),cpth=join(fx,'drive-v1/serve-control-v1.json');
+ const mp=join(fx,'drive-v1/serve-drive-nominal-v1.json'),cpth=join(fx,'drive-v1/serve-control-v2.json');
  const m=JSON.parse(await readFile(mp,'utf8')) as DriveModelV1;edit(m);const sealed=sealDriveDocument(m);
  const c=JSON.parse(await readFile(cpth,'utf8')) as ControlProfileV1;
  await writeFile(mp,JSON.stringify(sealed,null,2)+'\n');await writeFile(cpth,JSON.stringify(sealDriveDocument({...c,driveModelDigests:[sealed.digest]}),null,2)+'\n');

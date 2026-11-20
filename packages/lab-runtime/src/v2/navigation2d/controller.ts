@@ -260,8 +260,9 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
     if(zonesKey!==goal.zonesKey&&goal.steps&&!goal.waiting&&!zoneObstacles.some(z=>routeNear(robotId,goal,pose,z)))goal.zonesKey=zonesKey;
     const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
     const stopped=Math.abs(vel[0])<=pol.stoppedLinearMps&&Math.abs(vel[1])<=pol.stoppedAngularRadps;
-    const correct=options.exhaustedRouteRevision===1&&allowRouteCorrection&&stopped&&!goal.waiting&&goal.steps!==null&&goal.stepIndex>=goal.steps.length&&(dist>pol.goalPositionToleranceM||yawErr>pol.goalYawToleranceRad);
-    const needsPlan=correct||(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
+    const revised=options.exhaustedRouteRevision===1;
+    const correct=revised&&allowRouteCorrection&&stopped&&!goal.waiting&&goal.steps!==null&&goal.stepIndex>=goal.steps.length&&(dist>pol.goalPositionToleranceM||yawErr>pol.goalYawToleranceRad);
+    const needsPlan=(!revised||allowRouteCorrection)&&(correct||(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks));
     if(needsPlan){
      const global=!goal.steps;
      const fixed=[...statics,...zoneObstacles];
@@ -270,7 +271,7 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
      if(global&&!goal.staticOk){const base=staticPlan(robotId,goal,pose);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
      result??=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
-     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=correct?remaining(goal,pose,dist):Infinity;}
+     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=revised&&!global?remaining(goal,pose,dist):Infinity;}
      else if(!goal.staticOk||result.reason==='PLANNER_BUDGET_EXCEEDED'){
       goals.delete(robotId);stop();
       decisions.push({robotId,commandId:goal.commandId,status:result.reason==='no_path'?'no_path':'blocked',reason:result.reason==='no_path'?'NO_PATH':result.reason});continue;
@@ -311,8 +312,12 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
     // progress and deadline
     const metric=remaining(goal,pose,dist);
     // waiting for a reservation (no route exists until the zone is granted) is the domain's timeout to enforce, not lack of progress; the goal deadline still bounds it
-    if(!goal.steps||goal.zoneWait)reason??='RESERVATION_PENDING';
-    else if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
+    if(!goal.steps||goal.zoneWait){
+     reason??='RESERVATION_PENDING';
+     // The initial reservation wait has no physical route. Once revision two has a route,
+     // waiting for a replacement keeps consuming that goal's original no-progress budget.
+     if(revised&&goal.steps)goal.stagnant++;
+    }else if(metric<goal.best-0.01){goal.best=metric;goal.stagnant=0;}else goal.stagnant+=1;
     if(goal.stagnant>=pol.noProgressTicks&&(goal.hold===0||approachDirection==='reverse')){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:reason??'NO_PROGRESS'});continue;}
     if(tick-goal.startTick>=pol.goalDeadlineTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'blocked',reason:'GOAL_DEADLINE'});continue;}
     if(!hold&&goal.waiting)goal.waiting=false;

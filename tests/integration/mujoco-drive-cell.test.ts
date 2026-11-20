@@ -1,6 +1,6 @@
 // V04, cell: MJ-CELL-BV01 through the two controllers and a virtual drive on nine axes, on the real engine.
 import {afterEach,expect,test} from 'vitest';
-import {rm} from 'node:fs/promises';
+import {readFile,rm,writeFile} from 'node:fs/promises';
 import {openCell,cellUntil,cellCampaign} from '../support/mujoco-cell';
 import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
 
@@ -18,7 +18,7 @@ test('MJ-CELL-BV01 on drive-nominal-v1, seed 7, serves two coffees through the c
  expect(report.outcome,JSON.stringify(report.attention)).toMatchObject({status:'completed',served:'2'});expect(report.attention).toEqual([]);
  expect(report.manifest.drive).toMatchObject({testLevel:'controller_in_the_loop',experimentId:'drive-nominal-v1'});
  expect(['arm64','x86_64']).toContain(report.manifest.drive!.hostArch);   // the worker's own architecture, recorded for every drive run (contracts §1)
- expect(report.manifest.drive!.controllers.map(c=>c.id)).toEqual(['joint-trajectory-follower-v1','diff-drive-base-v1']);
+ expect(report.manifest.drive!.controllers).toEqual([{id:'joint-trajectory-follower-v1',revision:1},{id:'diff-drive-base-v1',revision:2},{id:'exhausted-route-correction',revision:1}]);
  // the saved report carries the drive section (once, at the root) built from the recorded stream: 9 axes, all enabled, no faults
  expect(report.driveEvidence).toMatchObject({testLevel:'controller_in_the_loop',complete:true,issues:[]});expect(report.driveEvidence!.axes).toHaveLength(9);expect(report.driveEvidence!.axes.every(a=>a.faults.length===0&&a.enabledAtTick!==null)).toBe(true);expect((report.coffee as {driveEvidence?:unknown}).driveEvidence).toBeUndefined();
  expect(saved.report.manifest.drive!.testLevel).toBe('controller_in_the_loop');
@@ -90,4 +90,15 @@ test('CIL05 (cell): a command stream that goes quiet for J2 while the hand holds
  const gripper=after.map(r=>r.command!.driveCommands!.find(c=>c.axisId.endsWith('/gripper'))!.target);
  for(let k=1;k<gripper.length;k++)expect(gripper[k]!,`tick ${after[k]!.snapshot.tick}`).toBeGreaterThanOrEqual(gripper[k-1]!);   // never towards open (the open end of the range is 0)
  expect(read.records.every(r=>r.command?.driveCommands?.every(c=>!c.faultReset)??true)).toBe(true);
+},deadline);
+
+test('a live cell reports an unavailable retained bundle at its committed horizon',async()=>{
+ const h=await openCell(7,'drive-hot-bundle',{},{driveExperimentId:'drive-nominal-v1'});open.push(h);
+ await h.run.start();await act(h,'step',{ticks:3});
+ expect((await h.run.report()).driveEvidence).toMatchObject({complete:true,ticks:4});
+ const driveFile=h.directory+'/mujoco-world/bundle/world-drive-nominal-v1.json',original=await readFile(driveFile),damaged=Buffer.from(original);
+ damaged[0]=32;await writeFile(driveFile,damaged);
+ expect((await h.run.report()).driveEvidence).toMatchObject({complete:false,ticks:0,axes:[],events:[],issues:['WORLD_CLOSURE_INVALID']});
+ await writeFile(driveFile,original);await rm(h.directory+'/mujoco-world/bundle/lab-world-scene.json');
+ expect((await h.run.report()).driveEvidence).toMatchObject({complete:false,ticks:0,axes:[],events:[],issues:['WORLD_RETAINED_BUNDLE_UNAVAILABLE']});
 },deadline);
