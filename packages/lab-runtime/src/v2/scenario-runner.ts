@@ -3,7 +3,8 @@ import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
-import {retainedWorldArmReports} from './simulation3d/world-arm-report';
+import {readWorldDriveReport} from './simulation3d/world-drive-report';
+import {readRetainedWorldAdmission,retainedWorldArmReports} from './simulation3d/world-arm-report';
 import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
 import type {ArmReportBlock} from './beverage/arm-plant-report';
 import {stepWorldOnce} from './simulation3d/world-step';
@@ -232,7 +233,12 @@ class Run implements ScenarioRun {
      for(const r of c.plant.robots){r.stale=true;r.moving=false;r.hold='WORLD_UNKNOWN';}
      if(!c.attention.some(a=>a.reason==='WORLD_RESTART_UNKNOWN'))c.attention.push({reason:'WORLD_RESTART_UNKNOWN',tick:c.tick});
      ports={adapters:[],async advance(){throw new Error('WORLD_TERMINAL');},async recover(){},snapshot:()=>({coffee:c.coffee!.plant,arm:c.coffee!.arm}),drain:()=>[],transferEvidence:()=>null,report:()=>({cupLedger:[],arm:null}),async close(){}};
-     if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){const retained=await retainedWorldArmReports({directory:this.dir,runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});}
+     if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){
+      const identity={runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!};
+      const retained=await retainedWorldArmReports({directory:this.dir,...identity,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});
+      if(c.manifest.drive)ports.driveReport=async()=>readWorldDriveReport(this.dir,await readRetainedWorldAdmission(this.dir,identity.sceneDigest),{...identity,publicCommittedTick:c.tick});
+      ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
+     }
     }else{
      this.world=await this.worldConfig.factory({manifest:this.worldConfig.manifest,runId:c.runId,directory:this.dir,state:c.coffee,context,newBootId:randomUUID});
      if(!this.world.evidence)throw new Error('WORLD_RECORDER_REQUIRED');if(this.world.metadata){Object.assign(c.manifest,structuredClone(this.world.metadata));c.manifest.calibration.reason='WORLD_NOMINAL_ASSUMED';}

@@ -23,9 +23,9 @@ const write=(p:string,v:unknown)=>writeFile(p,JSON.stringify(v,null,2)+'\n');
 const reseal=async(d:string)=>{const dir=join(d,CASE),rec=await json(join(dir,'case.json'));rec.artifacts=await cellArtifacts(dir);await write(join(dir,'case.json'),rec);};
 const issues=async(d:string)=>(await verifyCilCampaign(d,CASE)).issues.join('|');
 
-test('the registered campaign is 26 runs: 15 + 3 repeats + 8 cell cases',()=>{
- expect(CIL_CASES).toHaveLength(26);expect(CIL_CASES.filter(c=>c.kind==='mobile')).toHaveLength(15);expect(CIL_CASES.filter(c=>c.kind==='repeat')).toHaveLength(3);expect(CIL_CASES.filter(c=>c.kind==='cell')).toHaveLength(8);
- expect(new Set(CIL_CASES.map(c=>c.id)).size).toBe(26);
+test('the registered campaign is 38 runs: 15 + 15 repeats + 8 cell cases',()=>{
+ expect(CIL_CASES).toHaveLength(38);expect(CIL_CASES.filter(c=>c.kind==='mobile')).toHaveLength(15);expect(CIL_CASES.filter(c=>c.kind==='repeat')).toHaveLength(15);expect(CIL_CASES.filter(c=>c.kind==='cell')).toHaveLength(8);
+ expect(new Set(CIL_CASES.map(c=>c.id)).size).toBe(38);
 });
 test('a recorded case verifies and its drive physics equals the legacy path bit for bit',async()=>{
  const v=await verifyCilCampaign(recorded,CASE);
@@ -39,12 +39,12 @@ test('verification refuses a missing run, a missing evidence file, an edited fil
 });
 test('verification catches an edit the inventory was re-made for: a result that does not match the oracle, a drive section not built from the stream, another seed or experiment, a faultReset',async()=>{
  const dir=(d:string)=>join(d,CASE);
- let d=await copy();let r=await json(join(dir(d),'report.json'));r.outcome.served='0';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toMatch(/CIL_SERVED|CIL_RUN_IDENTITY/);
+ let d=await copy();let r=await json(join(dir(d),'report.json'));r.outcome.served='0';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toMatch(/CIL_OUTCOME_NOT_FROM_JOURNAL/);
  d=await copy();r=await json(join(dir(d),'report.json'));r.driveEvidence.axes[0].trackingRms.value+=0.5;await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toContain('CIL_DRIVE_REPORT_NOT_FROM_STREAM');
  d=await copy();const run=await json(join(dir(d),'run/run.json'));run.manifest.seed=19;await write(join(dir(d),'run/run.json'),run);await reseal(d);expect(await issues(d)).toContain('CIL_RUN_IDENTITY');
  d=await copy();r=await json(join(dir(d),'report.json'));r.manifest.drive.experimentId='drive-nominal-v1';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toContain('CIL_MANIFEST_DRIVE');
  d=await copy();const t=await json(join(dir(d),'trace.json'));t.steps[10].driveCommands[0].faultReset=true;await write(join(dir(d),'trace.json'),t);await reseal(d);expect(await issues(d)).toContain('CIL_COMMAND_TRACE');
- d=await copy();r=await json(join(dir(d),'report.json'));r.attention=[{reason:'X'}];r.outcome.status='needs_attention';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toMatch(/CIL_OUTCOME_STATUS|CIL_RUN_IDENTITY|CIL_DRIVE/);
+ d=await copy();r=await json(join(dir(d),'report.json'));r.attention=[{reason:'X'}];r.outcome.status='needs_attention';await write(join(dir(d),'report.json'),r);await reseal(d);expect(await issues(d)).toMatch(/CIL_OUTCOME_NOT_FROM_JOURNAL/);
 });
 test('the architecture is recorded: a drive run without it, or with another than the campaign\'s, is refused (contracts §1)',async()=>{
  const campaign=await json(join(recorded,'campaign.json'));expect(['arm64','x86_64']).toContain(campaign.hostArch);
@@ -71,7 +71,8 @@ test.skipIf(!process.env.CIL_RECORDED_DIR&&process.env.CIL_RECORD_FULL!=='1')('t
  const dir=process.env.CIL_RECORDED_DIR??join(await mkdtemp(join(tmpdir(),'cil-full-')),'c');
  if(!process.env.CIL_RECORDED_DIR)await runCilCampaign({root,out:dir,sourceCommit:COMMIT});
  const result=await verifyCilCampaign(dir);
- expect(result.issues).toEqual([]);expect(result.expectedRuns).toBe(26);expect(result.completedCases).toBe(26);expect(result.missingArtifacts).toEqual([]);
- expect(result.equivalence.every(e=>e.bitIdentical)).toBe(true);expect(result.equivalence).toHaveLength(4);
+ const historical=(await json(join(dir,'campaign.json'))).campaign.id==='cil-v1';
+ expect(result.issues).toEqual([]);expect(result.expectedRuns).toBe(historical?26:38);expect(result.completedCases).toBe(result.expectedRuns);expect(result.missingArtifacts).toEqual([]);
+ expect(result.equivalence.every(e=>e.bitIdentical)).toBe(true);expect(result.equivalence).toHaveLength(historical?4:8);
  expect(result.faultCases).toHaveLength(5);expect(result.faultCases.every(c=>c.detected&&!c.falseServed)).toBe(true);
 },4*60*60*1000);

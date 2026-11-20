@@ -31,8 +31,8 @@ const read=async<T,>(workerRoot:string,name:string)=>{const bytes=await readFile
 
 /** The AMR's drive documents of an experiment. The model is the fixture's, byte for byte. The control profile is the fixture's bound to the plant the bundle was compiled for (`plantModelDigest`);
  * without a plant it is byte for byte too. */
-export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDigest?:string):Promise<DriveBundle>{
- const e=driveExperiment(id),m=await read<DriveModelV1>(workerRoot,e.mobileModel),c=await read<ControlProfileV1>(workerRoot,e.mobileControl);
+export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDigest?:string,historical=false):Promise<DriveBundle>{
+ const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},m=await read<DriveModelV1>(workerRoot,e.mobileModel),c=await read<ControlProfileV1>(workerRoot,e.mobileControl);
  const control=plantModelDigest&&plantModelDigest!==c.doc.plantModelDigest?sealDriveDocument({...c.doc,plantModelDigest}):c.doc,cb=control===c.doc?c.bytes:json(control);
  return {files:[{path:e.mobileModel,bytes:m.bytes},{path:e.mobileControl,bytes:cb}],refs:{driveModelRef:ref(m.doc,e.mobileModel,m.bytes),controlProfileRef:ref(control,e.mobileControl,cb)},model:m.doc,control};
 }
@@ -42,8 +42,8 @@ export const worldPlantDigest=(scene:{navigation:{robots:{model:{physicalModelDi
 
 /** One combined drive model and control profile for the nine axes of the cell world: the arm's axes (renamed to the scene's arm id) and the AMR's. A registry fixture may be re-sealed for the plant it runs on (D2): the
  * profile is sealed with `plantModelDigest`, the world's own. Only registry fixtures are ever re-sealed; a profile a person sends is admitted as it is or refused. */
-export async function worldDriveBundle(workerRoot:string,id:string,armId:string,plantModelDigest:string):Promise<DriveBundle>{
- const e=driveExperiment(id),sm=await read<DriveModelV1>(workerRoot,e.mobileModel),sc=await read<ControlProfileV1>(workerRoot,e.mobileControl),am=await read<DriveModelV1>(workerRoot,e.armModel),ac=await read<ControlProfileV1>(workerRoot,e.armControl);
+export async function worldDriveBundle(workerRoot:string,id:string,armId:string,plantModelDigest:string,historical=false):Promise<DriveBundle>{
+ const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},sm=await read<DriveModelV1>(workerRoot,e.mobileModel),sc=await read<ControlProfileV1>(workerRoot,e.mobileControl),am=await read<DriveModelV1>(workerRoot,e.armModel),ac=await read<ControlProfileV1>(workerRoot,e.armControl);
  const rename=<T extends {axisId:string}>(axes:T[])=>axes.map(a=>({...a,axisId:a.axisId.replace(/^xarm-1\//,`${armId}/`)}));
  const model=sealDriveDocument({...am.doc,id:`world-${id}`,axes:[...rename(am.doc.axes),...sm.doc.axes]});
  const control=sealDriveDocument({...ac.doc,id:`world-${id}-control`,plantModelDigest,driveModelDigests:[model.digest],axes:[...rename(ac.doc.axes),...sc.doc.axes],controllers:[...ac.doc.controllers,...sc.doc.controllers]});

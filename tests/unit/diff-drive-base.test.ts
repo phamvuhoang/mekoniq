@@ -91,7 +91,7 @@ import {mobileDrive} from '../../packages/lab-runtime/src/v2/control/drive-run';
 import {mobileDriveBundle} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
 import type {DriveAxisSnapshot} from '../../packages/lab-runtime/src/v2/control/drive-io';
 const workerRoot='robotics/simulation-mujoco';
-const wheels={robotId:'amr-1',wheelRadiusM:0.09,wheelSeparationM:0.36,maxLinearMps:.6,maxAngularRadps:1.2};
+const wheels={robotId:'amr-1',wheelRadiusM:0.09,wheelSeparationM:0.36,maxLinearMps:.6,maxAngularRadps:1.2,maxWheelRadps:{left:20,right:20}};
 test('nominal emitted wheel commands respect acceleration and jerk through arrival, small steps, reversal, slowdown and stop release',async()=>{
  const docs=await mobileDriveBundle(workerRoot,'drive-nominal-v1'),drive=mobileDrive(docs,wheels);
  let tick=0,vel=[0,0],acc=[0,0];
@@ -132,5 +132,12 @@ test('already feasible navigation commands reach the wire on the requested tick'
   const r=drive.step(tick,{vMps:wheelSpeed,omegaRadps:0},{drives:fb('enabled') as DriveAxisSnapshot[]});
   // Every requested increment itself admits braking to a steady target within its last interval.
   expect(r.commands[0]!.target*wheels.wheelRadiusM).toBeCloseTo(wheelSpeed,13);
+ }
+});
+test('revision two commands respect the tighter individual wheel limit of the admitted scene',async()=>{
+ const drive=mobileDrive(await mobileDriveBundle(workerRoot,'drive-nominal-v1'),{...wheels,maxWheelRadps:{left:2,right:3}});
+ for(let i=0;i<80;i++){
+  const {commands}=drive.step(i,{vMps:.4,omegaRadps:.5},{drives:fb('enabled') as DriveAxisSnapshot[]});
+  expect(Math.abs(commands[0]!.target)).toBeLessThanOrEqual(2+1e-12);expect(Math.abs(commands[1]!.target)).toBeLessThanOrEqual(3+1e-12);
  }
 });

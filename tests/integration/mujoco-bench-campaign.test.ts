@@ -16,9 +16,9 @@ const json=async(p:string)=>JSON.parse(await readFile(p,'utf8')) as Record<strin
 const write=(p:string,v:unknown)=>writeFile(p,JSON.stringify(v,null,2)+'\n');
 
 test('the registered campaign is one step and one trapezoid per bench axis (16 runs), the starting profile, drive-nominal-v1; every signal is admitted and every run names a declared expectation',async()=>{
- expect(BENCH_CASES).toHaveLength(16);expect(new Set(BENCH_CASES.map(c=>c.id)).size).toBe(16);
+ expect(BENCH_CAMPAIGN.id).toBe('bench-v2');expect(BENCH_CASES).toHaveLength(16);expect(new Set(BENCH_CASES.map(c=>c.id)).size).toBe(16);
  for(const axis of BENCH_AXES)expect(BENCH_CASES.filter(c=>c.axis===axis).map(c=>c.signal.kind).sort(),axis).toEqual(['step','trapezoid']);
- const served=await benchCatalog(mujocoRoot);
+ const served=await benchCatalog(mujocoRoot);expect(served['MJ-BENCH-WHEEL'].startingProfile.id).toBe('serve-control-v2');
  for(const c of BENCH_CASES){
   expect(Object.keys(BENCH_CAMPAIGN.expectations),c.id).toContain(c.expect);
   await expect(admitBench({schemaVersion:1,scenarioId:c.scenarioId,axis:c.axis,signal:c.signal,driveExperimentId:BENCH_CAMPAIGN.driveExperimentId,controlProfile:served[c.scenarioId].startingProfile},mujocoRoot),c.id).resolves.toMatchObject({axisIds:expect.any(Array)});

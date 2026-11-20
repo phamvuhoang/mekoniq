@@ -5,6 +5,7 @@ import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {splitDriveSnapshot,validateControlProfile,validateDriveModel,validateDriveRefs,type ControlProfileV1,type DriveAxisSnapshot,type DriveCommandV1,type DriveModelV1,type TuningEnvelopeV1} from './drive-io';
 import {diffDriveBaseV1,initDiffDriveRevision2,type DiffDriveBaseConfig,type DiffDriveBaseState} from './diff-drive-base';
+import {hashJson} from '../hash';
 import type {ControllerEvent} from './controller';
 
 export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
@@ -42,11 +43,11 @@ export const routeCorrectionOptions=(profile?:{controllers:{controllerId:string;
 export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string,hostArch?:HostArch):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
  controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{},...hostArch?{hostArch}:{}});
 
-export interface MobileDrive {readonly navigation:ReturnType<typeof routeCorrectionOptions>;readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
+export interface MobileDrive {readonly navigation:ReturnType<typeof routeCorrectionOptions>;readonly manifest:DriveManifest;readonly model:DriveModelV1;fresh():MobileDrive;
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
  step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
-export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number;maxLinearMps:number;maxAngularRadps:number}):MobileDrive{
+export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number;maxLinearMps:number;maxAngularRadps:number;maxWheelRadps:{left:number;right:number}}):MobileDrive{
  const ctl=d.control.controllers.find(c=>c.controllerId===diffDriveBaseV1.id);
  if(!ctl||![1,2].includes(ctl.revision))throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
  const accelMps2=ctl.params.maxAccelerationMps2;
@@ -54,13 +55,28 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
  if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
  let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
-  wheel:[config.axisLeft,config.axisRight].map(id=>d.model.axes.find(a=>a.axisId===id)?.velocityLimitRadS??0) as [number,number],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});const events:ControllerEvent[]=[];
- return {navigation:routeCorrectionOptions(d.control),manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
+  wheel:[config.axisLeft,config.axisRight].map((id,i)=>Math.min(d.model.axes.find(a=>a.axisId===id)?.velocityLimitRadS??0,i?robot.maxWheelRadps.right:robot.maxWheelRadps.left)) as [number,number],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});
+ return {navigation:routeCorrectionOptions(d.control),manifest:driveManifest(d),model:d.model,fresh:()=>mobileDrive(d,robot),step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});
-  state=r.state;events.push(...r.events);
+  state=r.state;
   return {commands:r.commands,events:r.events,odometry:state.odometry};
  }};
+}
+
+/** Replay the profile against acknowledged feedback and the setpoint recorded for each tick.
+ * A wire trace, when supplied, must match every field of both commands. */
+export function replayMobileCommands(controller:MobileDrive,robotId:string,records:readonly {tick:number;drives?:readonly DriveAxisSnapshot[]}[],controls:readonly {tick:number;targetTick:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]}[],wire?:readonly {tick:number;velocities:number;driveCommands:DriveCommandV1[]}[]){
+ const events:ControllerEvent[]=[];
+ if(controls.length!==records.length-1||(wire&&wire.length!==controls.length))throw Error('CIL_COMMAND_TRACE');
+ for(const [i,c] of controls.entries()){
+  const v=c.velocities[0],s=wire?.[i],next=records[i+1]!;
+  if(c.tick!==i||c.targetTick!==i+1||c.velocities.length!==1||v?.robotId!==robotId||records[i]!.tick!==i||next.tick!==i+1||!next.drives||next.drives.some(d=>d.commandSeq!==next.tick))throw Error('CIL_COMMAND_TRACE');
+  const out=controller.step(i,v,records[i]!);
+  if(wire&&(!s||s.tick!==i+1||s.velocities!==0||hashJson(s.driveCommands)!==hashJson(out.commands)))throw Error('CIL_COMMAND_TRACE');
+  events.push(...out.events);
+ }
+ return events;
 }
 
 /** The step a drive world sends: the controllers' setpoints (velocities, joint and gripper targets) stay in the evidence and are not sent. */

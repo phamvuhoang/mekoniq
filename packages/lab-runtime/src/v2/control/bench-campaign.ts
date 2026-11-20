@@ -1,4 +1,4 @@
-/** The bench campaign `bench-v1` (R4.2, contracts §9 "Bench: mỗi trục đăng ký một step và một trapezoid với profile khởi điểm"): for each of the 8 bench axes one step and one trapezoid with the
+/** The bench campaign `bench-v2` (R4.2, contracts §9 "Bench: mỗi trục đăng ký một step và một trapezoid với profile khởi điểm"): for each of the 8 bench axes one step and one trapezoid with the
  * served starting profile and drive-nominal-v1, 16 single-axis benches on the real engine. Every run keeps its own artifacts (bundle, trace chunks and manifest, report). Verification re-reads every
  * trace (chunk sizes and hashes, through readBenchTrace) and recomputes the metrics and the gain suggestions from it; it never trusts the report's numbers, and the oracle is the campaign file's, locked
  * before the recording. Pass-all of the suite is not a substitute for a run's artifact. */
@@ -6,7 +6,8 @@ import {lstat,mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import campaign from '../../../../../robotics/simulation-mujoco/campaigns/bench-v1.json';
+import historical from '../../../../../robotics/simulation-mujoco/campaigns/bench-v1.json';
+import campaign from '../../../../../robotics/simulation-mujoco/campaigns/bench-v2.json';
 import {BENCH_SET_ID} from '../capabilities';
 import {hashJson} from '../hash';
 import {mujocoFromOptions} from '../simulation3d/mujoco';
@@ -14,7 +15,7 @@ import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {benchCatalog,benchMetrics,benchPlant,benchWheelMeasurement,createBenchRun,readBenchTrace,BENCH_TRACE_LIMITS} from './bench-runner';
 import {BENCH_MAX_TICKS,benchAxisMode,benchSignalLastTick} from './bench-signals';
 import {gainSuggestions} from './gain-suggest';
-import type {BenchRequestV1,BenchSignal,TuningResultV1} from './drive-io';
+import type {BenchRequestV1,BenchSignal,ControlProfileV1,TuningResultV1} from './drive-io';
 
 export const BENCH_CAMPAIGN=campaign;
 export interface BenchCase {id:string;scenarioId:BenchRequestV1['scenarioId'];axis:BenchRequestV1['axis'];signal:BenchSignal;expect:keyof typeof campaign.expectations}
@@ -61,9 +62,9 @@ export async function runBenchCampaign(o:{root:string;out:string;sourceCommit:st
 /** `workerRoot`: where the plant fixtures are (the drive model, the starting profile, the envelope and the metric policy): this checkout's, the commit the campaign names. */
 export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoot=WORKER_ROOT):Promise<BenchCampaignVerdict>{
  const selected=BENCH_CASES.filter(c=>!onlyCase||c.id===onlyCase);
- const v:BenchCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[],runs:[]};let source:string|undefined,host:string|undefined;
- try{const c=await readJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(campaign)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;host=c.hostArch;}catch{v.issues.push('BENCH_CAMPAIGN_IDENTITY');}
- const served=await benchCatalog(workerRoot);
+ const v:BenchCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[],runs:[]};let source:string|undefined,host:string|undefined,table:typeof historical|typeof campaign=campaign;
+ try{const c=await readJson(root,'campaign.json');table=c.campaign?.id===historical.id?historical:campaign;if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(table)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;host=c.hostArch;}catch{v.issues.push('BENCH_CAMPAIGN_IDENTITY');return v;}
+ const names=table===campaign?campaign.startingProfiles:{'MJ-BENCH-WHEEL':'serve-control-v1.json','MJ-BENCH-ARM':'xarm6-control-v1.json'};
  for(const spec of selected){
   const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};
   try{
@@ -71,9 +72,9 @@ export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoo
    check(hashJson(await cellArtifacts(dir))===hashJson(rec.artifacts),'BENCH_ARTIFACT_INVENTORY');
    const report=await readJson(dir,'report.json') as Report,t=report.tuning;check(t,'BENCH_NO_RESULT');
    // identity: commit, scenario, seed, signal, the starting profile and drive model the plant serves (their bundle bytes too), the traced axes, the engine's architecture
-   const profile=served[spec.scenarioId].startingProfile,plant=await benchPlant(workerRoot,{scenarioId:spec.scenarioId,axis:spec.axis,driveExperimentId:campaign.driveExperimentId as BenchRequestV1['driveExperimentId']});
-   check(report.manifest.sourceCommit===source&&report.manifest.scenario.id===spec.scenarioId&&report.manifest.seed===campaign.seed&&t!.seed===campaign.seed&&report.manifest.runId===t!.runId,'BENCH_RUN_IDENTITY');
-   check(hashJson(report.bench.request as never)===hashJson({schemaVersion:1,scenarioId:spec.scenarioId,axis:spec.axis,signal:spec.signal,driveExperimentId:campaign.driveExperimentId,controlProfile:{id:profile.id,revision:profile.revision,digest:profile.digest}})&&hashJson(t!.signal as never)===hashJson(spec.signal as never),'BENCH_REQUEST_IDENTITY');
+   const profile=JSON.parse(await readFile(join(workerRoot,'fixtures/drive-v1',names[spec.scenarioId]),'utf8')) as ControlProfileV1,plant=await benchPlant(workerRoot,{scenarioId:spec.scenarioId,axis:spec.axis,driveExperimentId:table.driveExperimentId as BenchRequestV1['driveExperimentId']});
+   check(report.manifest.sourceCommit===source&&report.manifest.scenario.id===spec.scenarioId&&report.manifest.seed===table.seed&&t!.seed===table.seed&&report.manifest.runId===t!.runId,'BENCH_RUN_IDENTITY');
+   check(hashJson(report.bench.request as never)===hashJson({schemaVersion:1,scenarioId:spec.scenarioId,axis:spec.axis,signal:spec.signal,driveExperimentId:table.driveExperimentId,controlProfile:{id:profile.id,revision:profile.revision,digest:profile.digest}})&&hashJson(t!.signal as never)===hashJson(spec.signal as never),'BENCH_REQUEST_IDENTITY');
    check(t!.plant.controlProfileDigest===profile.digest&&(await readFile(join(dir,'run/bundle/bench-control.json'),'utf8'))===JSON.stringify(profile),'BENCH_PROFILE_IDENTITY');
    check(t!.plant.driveModelDigest===plant.model.digest&&(await readFile(join(dir,'run/bundle/bench-drive.json'))).equals(plant.modelBytes)&&t!.plant.plantModelDigest===plant.plantModelDigest&&t!.plant.load===plant.load,'BENCH_PLANT_IDENTITY');
    check(hashJson(t!.axisIds)===hashJson(plant.axisIds),'BENCH_AXIS_IDENTITY');
@@ -95,10 +96,10 @@ export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoo
    const env=plant.envelope.axes.find(a=>a.axisId===plant.axisIds[0])!;
    check(t!.effectiveInertia?t!.effectiveInertia.valueKgM2>0&&hashJson(t!.suggestions as never)===hashJson(gainSuggestions({mode:benchAxisMode(spec.axis),inertiaKgM2:t!.effectiveInertia.valueKgM2},env) as never):t!.suggestions===null,'BENCH_SUGGESTIONS_NOT_FROM_INERTIA');
    // the oracle, as the campaign file declared it before the recording
-   const oracle=campaign.expectations[spec.expect] as {status:string;metrics:Record<string,string>};
+   const oracle=table.expectations[spec.expect] as {status:string;metrics:Record<string,string>};
    check(t!.status===oracle.status,'BENCH_ORACLE_STATUS:'+t!.status);
    for(const [k,want] of Object.entries(oracle.metrics)){const m=t!.metrics[k];check(m&&(want==='either'||(want==='available'?m.available:!m.available&&m.reason===want)),`BENCH_ORACLE_METRIC:${k}:${m?.available?'available':m?.reason}`);}
-   if(t!.status==='completed')check(samples===campaign.oracles.trace.samplesPerAxis,'BENCH_ORACLE_TRACE:'+samples);
+   if(t!.status==='completed')check(samples===table.oracles.trace.samplesPerAxis,'BENCH_ORACLE_TRACE:'+samples);
    v.runs.push({id:spec.id,status:t!.status,metrics:Object.fromEntries(Object.entries(t!.metrics).map(([k,m])=>[k,m.available?m.value:m.reason]))});
    v.completedCases++;
   }catch(e){v.missingArtifacts.push(spec.id);v.issues.push(`${spec.id}:${(e as Error).message}`);v.runs.push({id:spec.id,status:null,metrics:{}});}

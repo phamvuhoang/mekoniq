@@ -1,6 +1,6 @@
 import {buildDriveEvidence} from '../control/drive-report';
 import {experimentOfMobileModel} from '../control/drive-experiments';
-import {admitDriveDocuments,mobileDrive,driveManifest,type MobileDrive} from '../control/drive-run';
+import {admitDriveDocuments,mobileDrive,driveManifest,replayMobileCommands,type MobileDrive} from '../control/drive-run';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
 import {physicsMetrics} from '../simulation3d/physics-metrics';
 // Fixed-step scenario runner for a plant port (IR-SIM today). The source runner is the only scheduler; per fixed 20 ms tick:
@@ -720,7 +720,13 @@ class FixedStepRun implements ScenarioRun {
   if(this.cp.plant.status==='lost')manifest.terminalReason??=this.cp.plant.reason??'PLANT_LOST';
   if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
   const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
-  if(this.drive)this.driveEvidence=buildDriveEvidence(this.drive.model,read.records.map(r=>({tick:r.tick,drives:(r as {drives?:never}).drives??[]})),{complete:read.complete,issues:read.issues,events:this.drive.events});
+  if(this.drive){
+   const rows=read.records.map(r=>({tick:r.tick,drives:(r as {drives?:import('../control/drive-io').DriveAxisSnapshot[]}).drives??[]}));
+   const issues=[...read.issues];let events:import('../control/controller').ControllerEvent[]=[];
+   if(!navigation.complete)issues.push('CIL_CONTROL_EVIDENCE');
+   else try{events=replayMobileCommands(this.drive.fresh(),this.scene.robots[0]!.robotId,rows,navigation.control);}catch(e){issues.push((e as Error).message);}
+   this.driveEvidence=buildDriveEvidence(this.drive.model,rows,{complete:read.complete&&!issues.length,issues,events});
+  }
   return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};
  }
  async close(){await this.queue;if(!this.closed){this.closed=true;const w=this.worker;this.worker=undefined;try{await this.physicsRec?.flush().catch(()=>{});await this.rec.flush().catch(()=>{});await w?.close('RUN_CLOSED');}finally{this.releaseSlot();await this.rec.close().catch(()=>{});await this.source.close();}}}
