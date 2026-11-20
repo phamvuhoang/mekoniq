@@ -3043,10 +3043,38 @@ export interface BenchTraceIdentity {
    * @minItems 1
    * @maxItems 2
    */
-  axisIds: string[];
+  axisIds: DriveAxisId[];
   plantModelDigest: Digest;
   driveModelDigest: Digest;
   controlProfileDigest: Digest;
+}
+/**
+ * One hashed NDJSON record. Optional bodyForwardMps is the chassis forward speed observed at the end of this same wheel tick. Older wheel traces omit it.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceTick".
+ */
+export interface BenchTraceTick {
+  tick: number;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axes: {
+    axisId: DriveAxisId;
+    /**
+     * @minItems 10
+     * @maxItems 10
+     */
+    samples: {
+      target: number;
+      actual: number;
+      feedback: number | null;
+      torqueNm: number;
+      saturated: boolean;
+    }[];
+  }[];
+  bodyForwardMps?: number;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

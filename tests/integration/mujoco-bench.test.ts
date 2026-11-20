@@ -3,6 +3,7 @@
 // or whose step answer names a collision (admission refuses the reverse wheel signal that drove the real AMR into boundary-west at tick 453, final-fix-report F1).
 import {afterAll,afterEach,beforeAll,describe,expect,test} from 'vitest';
 import {createHash} from 'node:crypto';
+import {gzipSync,gunzipSync} from 'node:zlib';
 import {cp,readFile,writeFile} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -10,6 +11,7 @@ import {mujocoFromOptions,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../pac
 import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {benchAnchorTick,SUGGEST_OPTIONS} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import {suggestGains} from '../../packages/lab-runtime/src/v2/control/gain-suggest';
 import {benchCatalog,benchMetrics,createBenchRun,openBenchTrace,readBenchTrace,BENCH_TRACE_LIMITS,type BenchCatalog,type BenchProviders,type BenchTraceIdentity} from '../../packages/lab-runtime/src/v2/control/bench-runner';
@@ -52,7 +54,7 @@ describe('the durable bench trace (no engine)',()=>{
   expect(read.issues).toEqual(['TRACE_GAP:200-200:OBSERVATION_LOST']);
   expect(samples.slice(2000,2010)).toEqual(Array(10).fill(null));expect(samples[1999]).toBeTruthy();expect(samples[2010]).toBeTruthy();
   for(const invalid of [
-   {...m,gaps:[null]}, {...m,gaps:[gap]}, {...m,coverage:{firstTick:1,lastTick:210,complete:true}},
+   {...m,gaps:[null]}, {...m,gaps:[gap]}, {...m,chunks:m.chunks.map(c=>({...c,bytes:16*1024*1024}))}, {...m,coverage:{firstTick:1,lastTick:210,complete:true}},
    {...m,coverage:{...m.coverage,lastTick:199}}, {...m,chunks:[m.chunks[0],{...m.chunks[1],firstTick:99},m.chunks[2]]},
    {...m,chunks:[m.chunks[0],m.chunks[2]]}, {...m,chunks:[{...m.chunks[0],lastTick:-1}]}, {...m,gaps:[{...gap,lastTick:199}]},
   ]){
@@ -74,6 +76,17 @@ describe('the durable bench trace (no engine)',()=>{
   expect(read.issues).toContain('TRACE_TERMINAL:TRACE_SAMPLE_CAP');
   expect(read.manifestSha256).toBe(sha(await readFile(join(dir,'manifest.json'))));
  });
+ test('a shortened chunk with a matching hash and size supplies no samples from its claimed range',async()=>{
+  const dir=join(await mujocoTemp('bench-truncated-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:2});
+  for(let t=0;t<3;t++)await rec.append(t,tick(t));await rec.finish(null);
+  const m=rec.manifest(),c=m.chunks[0]!,path=join(dir,c.path),rows=gunzipSync(await readFile(path)).toString().split('\n');
+  const bytes=gzipSync(rows[0]+'\n');c.sha256=sha(bytes);c.bytes=bytes.length;
+  await writeFile(path,bytes);await writeFile(join(dir,'manifest.json'),JSON.stringify(m));
+  const r=await readBenchTrace(dir,identity,2);expect(r.issues).toEqual([`TRACE_CHUNK_INVALID:${c.path}:TRACE_TRUNCATED`]);
+  const nonJson=gzipSync('invalid row\n{}\n');c.sha256=sha(nonJson);c.bytes=nonJson.length;await writeFile(path,nonJson);await writeFile(join(dir,'manifest.json'),JSON.stringify(m));
+  expect((await readBenchTrace(dir,identity,2)).issues).toEqual([`TRACE_CHUNK_INVALID:${c.path}:TRACE_RECORD_INVALID`]);
+  expect(r.traces[0]!.samples.slice(0,20)).toEqual(Array(20).fill(null));expect(r.traces[0]!.samples.slice(20).every(s=>s!==null)).toBe(true);
+ });
  test('a bad chunk is a gap of null samples (its whole tick range), so the metrics whose window holds it are TRACE_GAP; a tail that never became durable is missing too',async()=>{
   const dir=join(await mujocoTemp('bench-gap-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:50});
   for(let t=0;t<=120;t++)await rec.append(t,tick(t,k=>k<300?0:0.1));   // a step of 0.1 at sample 300 (tick 30)
@@ -94,11 +107,11 @@ describe('the durable bench trace (no engine)',()=>{
 });
 
 describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
- let runtime:MujocoRuntimeOptions;
+ let runtime:MujocoRuntimeOptions,probed:Awaited<ReturnType<typeof mujocoFromOptions>>;
  const timings:{label:string;ms:number}[]=[];
  beforeAll(async()=>{
   const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:await mujocoTemp('mj-bench-probe-'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
-  if(!p.arm.runtime)throw Error(`MUJOCO_NOT_INSTALLED: ${p.arm.capability.reason}`);runtime=p.arm.runtime;
+  if(!p.arm.runtime)throw Error(`MUJOCO_NOT_INSTALLED: ${p.arm.capability.reason}`);runtime=p.arm.runtime;probed=p;
  },60_000);
  const open:ScenarioRun[]=[];
  afterEach(async()=>{for(const r of open.splice(0))await r.close();});
@@ -187,22 +200,41 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   const reread=await resultRun.report() as Report;
   expect(reread.tuning!.metrics.rmsError).toMatchObject({available:false,reason:'TRACE_GAP'});
   expect(reread.tuning!.trace.samples).toBe(4990);expect(reread.bench.traceIssues).toEqual(['TRACE_GAP:200-200:OBSERVATION_LOST']);
+  const last=manifest.chunks.at(-1),chunkPath=join(directory,'trace',last.path);
+  const rows=gunzipSync(await readFile(chunkPath)).toString().trimEnd().split('\n').map(x=>JSON.parse(x));
+  expect(rows.at(-1).bodyForwardMps).toBe(t.wheelMeasurement!.comparison!.bodyForwardMps);
+  const writeRows=async()=>{const b=gzipSync(rows.map(row=>JSON.stringify(row)+'\n').join(''));last.sha256=sha(b);last.bytes=b.length;await writeFile(chunkPath,b);await writeFile(path,JSON.stringify(manifest));};
+  rows.at(-1).bodyForwardMps=0.073;await writeRows();
+  expect(((await resultRun.report() as Report).tuning!.wheelMeasurement!.comparison)).toMatchObject({tick:500,bodyForwardMps:0.073});
+  manifest.gaps.push({firstTick:500,lastTick:500,reason:'BODY_GAP'});await writeRows();
+  expect((await resultRun.report() as Report).tuning!.wheelMeasurement!.comparison).toBeNull();
+  manifest.gaps.pop();delete rows.at(-1).bodyForwardMps;await writeRows();
+  expect((await resultRun.report() as Report).tuning!.wheelMeasurement!.comparison).toBeNull();
+  rows.at(-1).bodyForwardMps='invalid';await writeRows();
+  const corrupt=await resultRun.report() as Report;
+  expect(corrupt.bench.traceIssues).toContain(`TRACE_CHUNK_INVALID:${last.path}:TRACE_RECORD_INVALID`);
+  expect(corrupt.tuning!.wheelMeasurement!.comparison).toBeNull();
   show({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia,suggestions:t.suggestions}});
  },120_000);
  test('a J3 step of 0.1 rad completes, with the J3 inertia at home; the arm holds at home and the gripper open',async()=>{
-  const seen:{tick0?:{drives:{axisId:string;targetApplied:number}[]}}={},enabled:number[]=[],moved:number[]=[];
+  const home=(JSON.parse(readFileSync(join(mujocoRoot,'fixtures/xarm6-g2-v1/programs.json'),'utf8')) as {programs:{waypoints:{home:number[]}}}).programs.waypoints.home;
+  const seen:{first?:number[];tick0?:{drives:{axisId:string;targetApplied:number}[];driveTrace:DriveTrace[]}}={},enabled:number[]=[],moved:number[]=[];
   const {report,view}=await bench(arm(),async(req,next)=>{
    const r=await next() as {result:{tick:number;drives:{state:string}[]}};if(req.op==='create')seen.tick0=r.result as never;
    if(req.op==='step'||req.op==='create'){const p=req.payload as {targetTick?:number;driveCommands?:{axisId:string;target:number}[]};if(r.result.drives.every(d=>d.state==='enabled'))enabled.push(r.result.tick);
-    const j3=p.driveCommands?.find(c=>c.axisId==='xarm-1/J3');if(j3&&Math.abs(j3.target-seen.tick0!.drives[2]!.targetApplied)>1e-12)moved.push(p.targetTick!);}
+    if(p.targetTick===1)seen.first=p.driveCommands!.map(c=>c.target);
+    const j3=p.driveCommands?.find(c=>c.axisId==='xarm-1/J3');if(j3&&Math.abs(j3.target-home[2]!)>1e-12)moved.push(p.targetTick!);}
    return r;});
   expect(view.run.status).toBe('completed');
   const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
   expect(t).toMatchObject({status:'completed',axisIds:['xarm-1/J3'],effectiveInertia:{basis:'mass_matrix_diagonal',provenance:'assumed'},plant:{plantModelDigest:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a',load:'empty'},trace:{samples:5000}});
   expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.7127244,6);expect(t.suggestions).toEqual(expectedSuggestions(t,'csp'));
   expect(t.metrics.riseTimeS.available).toBe(true);expect(t.metrics.settlingTimeS.available).toBe(true);
-  const home=(JSON.parse(readFileSync(join(mujocoRoot,'fixtures/xarm6-g2-v1/programs.json'),'utf8')) as {programs:{waypoints:{home:number[]}}}).programs.waypoints.home;
-  for(const [i,d] of seen.tick0!.drives.entries())expect(d.targetApplied,d.axisId).toBeCloseTo(i<6?home[i]!:0,9);
+  expect(seen.first).toEqual([...home,0]);   // all seven issued holds
+  const priming=seen.tick0!.driveTrace[0]!.samples;
+  expect(priming[0]!.target).toBeCloseTo(home[2]!,12);
+  for(let k=1;k<priming.length;k++)expect(priming[k]!.target).toBe(priming[k-1]!.actual);
+  expect(seen.tick0!.drives[2]!.targetApplied).toBe(priming.at(-1)!.target);
   // the anchor (ruling 3): the first tick commanded after every axis reported enabled (the nominal drive's 25-substep enable sequence ends in tick 3); the step lands atTick ticks later
   expect(report.bench.anchorTick).toBe(enabled[0]!+1);expect(enabled[0]).toBe(3);expect(moved[0]).toBe(report.bench.anchorTick!+10);
   expect(report.bench.anchorTick).toBe(benchAnchorTick(doc('xarm6-drive-nominal-v1.json')));expect(t.engine).toEqual({id:'mujoco_arm',version:'3.17.0',hostArch:HOST});
@@ -275,11 +307,46 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   await expect(run.action({actionId:'step-2',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('INVALID_STATE:RUN_FINISHED');
   expect((await bench(arm(),undefined,'J3 after cancel')).report.tuning!.status).toBe('completed');
  },180_000);
+ test('bench readiness and health use the admitted provider identity and fixtures',async()=>{
+  const root=await mujocoTemp('bench-provider-');await cp(mujocoRoot,root,{recursive:true});
+  const options={enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory:root};
+  const setup=async(armRuntime:MujocoRuntimeOptions,mobileRuntime:MujocoRuntimeOptions)=>portableSimulationFromOptions({...options,mujoco:{arm:{...probed.arm,runtime:armRuntime},mobile:{...probed.mobile,plant:{...probed.mobile.plant!,runtime:mobileRuntime}}}});
+  const checked=async(sim:Awaited<ReturnType<typeof setup>>,reason:string)=>{
+   const checks=await sim.readinessChecks!({scenarioId:'MJ-BENCH-WHEEL',backendSetId:SET},new AbortController().signal);
+   expect(checks.flatMap(row=>row.reasonCodes)).toEqual([reason]);
+   expect(sim.benchCatalog).toBeUndefined();expect(sim.benchInfo?.reasonCodes).toEqual([reason]);
+   await expect(sim.simulationFactory(input(wheel()),{directory:join(root,'unused'),catalog:sim.catalog,enabledBackends:sim.enabledBackends})).rejects.toThrow(reason);
+  };
+  for(const change of [{lockDigest:'c'.repeat(64)},{engineVersion:'other'},{schemaDir:root},{python:'other'},{workerRoot:root}]){
+   await checked(await setup(runtime,{...runtime,...change}),'BENCH_PROVIDER_MISMATCH');
+  }
+  const copied={...runtime,workerRoot:root},envPath=join(root,'fixtures/drive-v1/tuning-envelope-v1.json'),env=JSON.parse(await readFile(envPath,'utf8'));
+  env.revision+=1;env.axes[0].kp.max=19;await writeFile(envPath,JSON.stringify(sealDriveDocument(env)));
+  const healthy=await setup(copied,copied);
+  const gw=await startLabGateway({port:0,directory:await mujocoTemp('bench-provider-gw-'),sourceCommit:'test',schemaHash:'a'.repeat(64),v2:{...healthy,portableChecks:healthy.readinessChecks}});
+  try{
+   const h=await (await fetch(gw.url+'/lab/v2/health')).json();
+   expect(h.tuningEnvelope).toEqual(sealDriveDocument(env));expect(h.benchReadiness.reasonCodes).toEqual([]);
+   expect(h.benchIdleLease).toEqual({durationMs:60000,expiryReason:'BENCH_IDLE_EXPIRED'});
+  }finally{await gw.close();}
+  const scenePath=join(root,'fixtures/serve-payload-v1/navigation-scene.json'),scene=JSON.parse(await readFile(scenePath,'utf8'));
+  scene.clock.tickMs=40;await writeFile(scenePath,JSON.stringify(scene));
+  await checked(await setup(copied,copied),'BENCH_CLOCK_MISMATCH');scene.clock.tickMs=20;await writeFile(scenePath,JSON.stringify(scene));
+  const fx=join(root,'fixtures/xarm6-g2-v1'),componentPath=join(fx,'component.json'),manifestPath=join(fx,'manifest.json');
+  const component=JSON.parse(await readFile(componentPath,'utf8')),manifest=JSON.parse(await readFile(manifestPath,'utf8'));
+  for(const revision of ['invalid',0,1.5]){
+   component.revision=revision;const bytes=JSON.stringify(component),row=manifest.files.find((r:{path:string})=>r.path==='component.json');
+   row.bytes=Buffer.byteLength(bytes);row.sha256=sha(bytes);manifest.componentDigest=hashJson(component);
+   await writeFile(componentPath,bytes);await writeFile(manifestPath,JSON.stringify(manifest));
+   await checked(await setup(copied,copied),'BENCH_COMPONENT_REVISION_INVALID');
+  }
+  await writeFile(envPath,'{}');await checked(await setup(copied,copied),'BENCH_ENVELOPE_INVALID');
+ },120000);
  test('over HTTP: the bench set is in health with the envelope and the signal catalog, a session creates, starts, steps and reads the report of an arm bench',async()=>{
   const directory=await mujocoTemp('mj-bench-gw-');
   const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
   const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory,mujoco:{arm:p.arm,mobile:p.mobile}});
-  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks,...sim.benchCatalog?{benchCatalog:sim.benchCatalog}:{}}});
+  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks,benchInfo:sim.benchInfo,...sim.benchCatalog?{benchCatalog:sim.benchCatalog}:{}}});
   try{
    const health=await (await fetch(g.url+'/lab/v2/health')).json() as {scenarioIds:string[];backendSets:{id:string}[];tuningEnvelope:{revision:number};benchSignals:object;benchCatalog:BenchCatalog};
    expect(health.scenarioIds).toEqual(expect.arrayContaining(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']));expect(health.backendSets.map(s=>s.id)).toContain(SET);

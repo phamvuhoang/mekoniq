@@ -4,6 +4,7 @@
 // A bench ends in one of four results (ruling 8, final-fix F1): completed, drive_fault (an axis latched a fault), unstable (the engine reported instability) or collision (a snapshot named a contact the plant
 // does not allow). The non-completed ones are results: the worker is closed, the engine slot released, and nothing lowers a gain or runs again by itself. A lost or refused step is not a result: the run needs
 // attention and has no tuning. GET /lab/v2/runs/:id/trace serves the trace as read back (trace()), never from memory.
+import type {BenchTraceIdentity,BenchTraceManifest,BenchTraceTick} from '../../../../contracts/generated/navigation2d';
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -28,9 +29,9 @@ import {physicsDirectoryBytes,readBoundedPhysicsFile} from '../simulation3d/phys
 import {buildArmCellScene,readXArmFixture,writeArmCellBundle} from '../simulation3d/arm-cell-scene';
 import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
-import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
+import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchAxisMode,benchAxisUnit,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
 import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
-import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateTuningEnvelope,validateTraceManifestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateDriveModel,validateTuningEnvelope,validateTraceManifestShape,validateTraceIdentityShape,validateTraceTickShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {gainSuggestions} from './gain-suggest';
 import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
@@ -38,38 +39,43 @@ const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const DRIVE='fixtures/drive-v1',SERVE='fixtures/serve-payload-v1',ARM_ID='xarm-1',WHEELS=['amr-1/wheel-left','amr-1/wheel-right'];
 /** Spec §6.1 and contracts §7: 5,000 samples per axis (ticks 1–500; tick 0, the priming tick, is the pre-signal baseline: ruling 15), 16 MiB compressed. */
 export const BENCH_TRACE_LIMITS={samplesPerAxis:5000,maxBytes:16*1024*1024,chunkTicks:50,substeps:10,dtS:0.002} as const;
-type Sample=NonNullable<DriveTrace['samples'][number]>;
+type Sample=BenchTraceTick['axes'][number]['samples'][number];
 type Policy={finalWindowS:number;settleBand:number;holdWindowS:number};
 
 // ---- the plant ---------------------------------------------------------------------------------------------------------------------------------------------
 /** What the server knows of a bench plant before any engine: its id, revision and bench load, the experiment's drive model (its bytes as committed), the envelope, the plant the profile must be sealed for,
  * the traced axes, where every axis rests (the arm's home, the gripper open, a wheel at rest) and, for an arm axis, its limits. */
 export interface BenchPlant {wheelRadiusM?:number;kind:'amr'|'arm';id:string;revision:number;/** both benches run without a load (ruling 14; the arm's cup stays parked) */load:'empty';axisIds:string[];/** the engine tick of signal tick 0 the drive model's enable sequence gives (benchAnchorTick) */anchorTick:number;model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
-export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>):Promise<BenchPlant>{
+export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>,engineVersion?:string):Promise<BenchPlant>{
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
  const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
+ if(!validateDriveModel(model).ok)throw Error('BENCH_DRIVE_MODEL_INVALID');
  const envelope=JSON.parse((await file(join(DRIVE,'tuning-envelope-v1.json'))).toString()) as TuningEnvelopeV1;
  if(!validateTuningEnvelope(envelope,model.axes).ok)throw Error('BENCH_ENVELOPE_INVALID');
  const policy=(JSON.parse((await file(join(DRIVE,'control-oracle-v1.json'))).toString()) as {metricPolicy:Policy}).metricPolicy;
  if(kind==='amr'){
   // D2: the AMR's plant is its physical model, whatever the load
   const scene=JSON.parse((await file(join(SERVE,'navigation-scene.json'))).toString()) as NavigationSceneV1;
+  if(scene.clock?.tickMs!==TICK_MS||scene.engine?.id!=='mujoco_3d'||scene.engine.timestepMs!==BENCH_TRACE_LIMITS.dtS*1000||scene.engine.substeps!==BENCH_TRACE_LIMITS.substeps)throw Error('BENCH_CLOCK_MISMATCH');
+  if(engineVersion!==undefined&&scene.engine.version!==engineVersion)throw Error('BENCH_PROVIDER_MISMATCH');
   return {kind,wheelRadiusM:scene.robots[0]!.model.kinematics.wheelRadiusM,id:'serve-payload-v1',revision:1,load:'empty',axisIds:[...WHEELS],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:scene.robots[0]!.model.physicalModelDigest,start:Object.fromEntries(model.axes.map(a=>[a.axisId,0]))};
  }
  const f=readXArmFixture(workerRoot),component=JSON.parse(f.componentText) as {id:string;revision:string;joints:{id:string;limits?:{lower?:{value:number};upper?:{value:number}}}[]};
  // the home keyframe (compile.py): the joints at the fixture's home, every gripper joint at 0 (open). The gripper axis is its drive joint, in rad (0 open .. 0.85 closed), so it shares the joint amplitudes
  const start:Record<string,number>={...Object.fromEntries(f.programs.waypoints.home!.map((q,k)=>[`${ARM_ID}/J${k+1}`,q])),[`${ARM_ID}/gripper`]:0};
  const axisId=`${ARM_ID}/${bench.axis}`,lim=component.joints.find(j=>j.id===(bench.axis==='gripper'?f.physics.gripper.driveJoint:bench.axis))?.limits;
- return {kind,id:component.id,revision:Number(component.revision),load:'empty',axisIds:[axisId],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
+ const revision=Number(component.revision);
+ if(!['number','string'].includes(typeof component.revision)||!Number.isSafeInteger(revision)||revision<1)throw Error('BENCH_COMPONENT_REVISION_INVALID');
+ return {kind,id:component.id,revision,load:'empty',axisIds:[axisId],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
   ...lim?.lower&&lim.upper&&start[axisId]!==undefined?{limits:{lower:lim.lower.value,upper:lim.upper.value,start:start[axisId]!}}:{}};
 }
 
 /** Admission of a bench request against its plant, before any directory, slot or engine (ruling 2): shape and signal (registered amplitude, the joint limits, and ticks: the signal must end
  * by engine tick 500 counted from the anchor the drive model's enable sequence gives, else TICK_OUT_OF_RANGE), the draft profile against the experiment's
  * drive model and the envelope (validateControlProfile calls withinEnvelope), and the plant it is sealed for. Refusals are INVALID_BENCH_REQUEST with their codes (a 422). */
-export async function admitBench(bench:unknown,workerRoot:string):Promise<BenchPlant>{
+export async function admitBench(bench:unknown,workerRoot:string,engineVersion?:string):Promise<BenchPlant>{
  const shape=validateBenchRequestShape(bench);if(!shape.ok)throw Error(`INVALID_BENCH_REQUEST:${shape.reasonCodes.join(',')}`);
- const b=bench as BenchRequestV1,plant=await benchPlant(workerRoot,b),codes=new Set<string>();
+ const b=bench as BenchRequestV1,plant=await benchPlant(workerRoot,b,engineVersion),codes=new Set<string>();
  for(const c of [validateBenchRequest(b,{anchorTick:plant.anchorTick,...plant.limits?{limits:plant.limits}:{}}),validateControlProfile(b.controlProfile,plant.model,plant.envelope)])for(const x of c.reasonCodes)codes.add(x);
  // D2: a draft is never re-sealed for the plant; one sealed for another plant is refused
  if(b.controlProfile.plantModelDigest!==plant.plantModelDigest)codes.add('DRIVE_PLANT_MISMATCH');
@@ -87,28 +93,39 @@ export async function admitBench(bench:unknown,workerRoot:string):Promise<BenchP
  * scenario the plant (id, revision, load, plantModelDigest), every axis a request can name (axisIds as the bench names them, mode, unit; a joint's limits and rest, the numbers of JOINT_LIMIT_EXCEEDED; the
  * wheels forward only), every registered drive experiment's anchor tick and drive model digest, and the starting draft: the registry's control profile of that plant, sealed for it (D2). An arm axis without
  * limits is left out (admission refuses it: AXIS_LIMITS_REQUIRED). */
-export type BenchCatalogAxis={axis:'wheels';axisIds:string[];mode:'csv';unit:'rad/s';direction:typeof BENCH_WHEEL_DIRECTION}|{axis:Exclude<BenchRequestV1['axis'],'wheels'>;axisIds:string[];mode:'csp';unit:'rad';lowerRad:number;upperRad:number;startRad:number};
-export interface BenchCatalogEntry {plant:{id:string;revision:number;load:string;plantModelDigest:string};axes:BenchCatalogAxis[];experiments:Record<string,{anchorTick:number;driveModelDigest:string}>;startingProfile:ControlProfileV1}
+const wheelMeasurement={quantity:'wheel_angular_speed',inertiaAssumption:'straight_line_no_slip'} as const;
+export type BenchCatalogAxis={axis:'wheels';axisIds:string[];mode:'csv';unit:'rad/s';direction:typeof BENCH_WHEEL_DIRECTION}&typeof wheelMeasurement|{axis:Exclude<BenchRequestV1['axis'],'wheels'>;axisIds:string[];mode:'csp';unit:'rad';lowerRad:number;upperRad:number;startRad:number};
+export interface BenchCatalogEntry {plant:{id:string;revision:number;load:string;plantModelDigest:string};axes:BenchCatalogAxis[];experiments:Record<DriveExperimentId,{anchorTick:number;driveModelDigest:string}>;startingProfile:ControlProfileV1}
 export type BenchCatalog=Record<BenchRequestV1['scenarioId'],BenchCatalogEntry>;
-export async function benchCatalog(workerRoot:string):Promise<BenchCatalog>{
- const experiments=Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[],out={} as BenchCatalog;
- for(const scenarioId of BENCH_SCENARIO_IDS){
-  const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId});
+export interface BenchInfo {tuningEnvelope?:TuningEnvelopeV1;reasonCodes:string[];idleLease:{durationMs:number;expiryReason:string}}
+export async function loadBenchCatalog(workerRoot:string,scenarios:readonly BenchRequestV1['scenarioId'][],engineVersion?:string){
+ let tuningEnvelope:TuningEnvelopeV1|undefined;
+ const experiments=Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[],out:Partial<BenchCatalog>={};
+ for(const scenarioId of scenarios){
+  const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId},engineVersion);
   const runs:[DriveExperimentId,BenchPlant][]=[];for(const id of experiments)runs.push([id,await at(names[0]!,id)]);
   const p=runs[0]![1],files=new Set(experiments.map(id=>p.kind==='amr'?DRIVE_EXPERIMENTS[id].mobileControl:DRIVE_EXPERIMENTS[id].armControl));
   // one tuning per plant: the experiments vary the device (drive-experiments.ts), so one starting draft per bench
   if(files.size!==1)throw Error('BENCH_STARTING_PROFILE_AMBIGUOUS');
   const startingProfile=JSON.parse(await readFile(join(workerRoot,DRIVE,[...files][0]!),'utf8')) as ControlProfileV1;
   if(startingProfile.plantModelDigest!==p.plantModelDigest)throw Error('BENCH_STARTING_PROFILE_PLANT_MISMATCH');
+  for(const [,plant] of runs){
+   if(tuningEnvelope&&tuningEnvelope.digest!==plant.envelope.digest)throw Error('BENCH_ENVELOPE_INVALID');
+   tuningEnvelope=plant.envelope;
+   if(!validateControlProfile(startingProfile,plant.model,plant.envelope).ok)throw Error('BENCH_STARTING_PROFILE_INVALID');
+  }
   const axes:BenchCatalogAxis[]=[];
   for(const axis of names){
    const q=await at(axis,experiments[0]!);
-   if(axis==='wheels')axes.push({axis,axisIds:q.axisIds,mode:'csv',unit:'rad/s',direction:BENCH_WHEEL_DIRECTION});
-   else if(q.limits)axes.push({axis,axisIds:q.axisIds,mode:'csp',unit:'rad',lowerRad:q.limits.lower,upperRad:q.limits.upper,startRad:q.limits.start});
+   if(axis==='wheels')axes.push({axis,axisIds:q.axisIds,mode:benchAxisMode(axis),unit:benchAxisUnit(benchAxisMode(axis)),direction:BENCH_WHEEL_DIRECTION,...wheelMeasurement});
+   else if(q.limits)axes.push({axis,axisIds:q.axisIds,mode:benchAxisMode(axis),unit:benchAxisUnit(benchAxisMode(axis)),lowerRad:q.limits.lower,upperRad:q.limits.upper,startRad:q.limits.start});
   }
-  out[scenarioId]={plant:{id:p.id,revision:p.revision,load:p.load,plantModelDigest:p.plantModelDigest},axes,experiments:Object.fromEntries(runs.map(([id,x])=>[id,{anchorTick:x.anchorTick,driveModelDigest:x.model.digest}])),startingProfile};
+  out[scenarioId]={plant:{id:p.id,revision:p.revision,load:p.load,plantModelDigest:p.plantModelDigest},axes,experiments:Object.fromEntries(runs.map(([id,x])=>[id,{anchorTick:x.anchorTick,driveModelDigest:x.model.digest}])) as BenchCatalogEntry['experiments'],startingProfile};
  }
- return out;
+ return {catalog:out,tuningEnvelope};
+}
+export async function benchCatalog(workerRoot:string):Promise<BenchCatalog>{
+ return (await loadBenchCatalog(workerRoot,BENCH_SCENARIO_IDS)).catalog as BenchCatalog;
 }
 
 /** The worker's bundle: the plant's scene and files from the fixture, the drive model's committed bytes and the draft as it was submitted (JSON.stringify of the request's object: never re-sealed). */
@@ -133,7 +150,6 @@ async function writeBenchBundle(dir:string,workerRoot:string,bench:BenchRequestV
 }
 
 // ---- the durable trace -------------------------------------------------------------------------------------------------------------------------------------
-import type {BenchTraceIdentity,BenchTraceManifest} from '../../../../contracts/generated/navigation2d';
 export type {BenchTraceIdentity,BenchTraceManifest};
 const MANIFEST='manifest.json',SAMPLE_KEYS=['actual','feedback','saturated','target','torqueNm'];
 const finite=(x:unknown)=>typeof x==='number'&&Number.isFinite(x);
@@ -147,7 +163,7 @@ function tickAxes(value:unknown,axisIds:readonly string[]):{axisId:string;sample
   return {axisId:axisIds[k]!,samples:a.samples as Sample[]};
  });
 }
-export interface BenchTraceRecorder {directory:string;manifest():BenchTraceManifest;append(tick:number,trace:unknown):Promise<void>;flush():Promise<void>;finish(reason:string|null):Promise<void>;gap(firstTick:number,lastTick:number,reason:string):Promise<void>}
+export interface BenchTraceRecorder {directory:string;manifest():BenchTraceManifest;append(tick:number,trace:unknown,bodyForwardMps?:number):Promise<void>;flush():Promise<void>;finish(reason:string|null):Promise<void>;gap(firstTick:number,lastTick:number,reason:string):Promise<void>}
 /** A failed append, chunk or manifest write ends the recording with its reason (a gap, never a silent cut). The sample cap counts ticks 1–500 (ruling 15). */
 export async function openBenchTrace(directory:string,identity:BenchTraceIdentity,o:{maxBytes?:number;chunkTicks?:number}={}):Promise<BenchTraceRecorder>{
  const maxBytes=o.maxBytes??BENCH_TRACE_LIMITS.maxBytes,chunkTicks=o.chunkTicks??BENCH_TRACE_LIMITS.chunkTicks;
@@ -169,36 +185,39 @@ export async function openBenchTrace(directory:string,identity:BenchTraceIdentit
  const failed=async(e:unknown)=>{await end((e as Error).message);throw e;};
  await save();
  return {directory,manifest:()=>structuredClone(m),
-  append:(tick,trace)=>serial(async()=>{
+  append:(tick,trace,bodyForwardMps)=>serial(async()=>{
    if(m.terminalReason)throw Error('TRACE_RECORDER_TERMINAL');
    try{
     if(tick!==last+1)throw Error('TRACE_TICK_ORDER');
+    if(bodyForwardMps!==undefined&&!finite(bodyForwardMps))throw Error('TRACE_RECORD_INVALID');
     const axes=tickAxes(trace,identity.axisIds);
     if(tick>0&&counted+BENCH_TRACE_LIMITS.substeps>BENCH_TRACE_LIMITS.samplesPerAxis)throw Error('TRACE_SAMPLE_CAP');
     if(tick>0)counted+=BENCH_TRACE_LIMITS.substeps;
-    lines.push(JSON.stringify({tick,axes})+'\n');last=tick;if(lines.length>=chunkTicks)await flush();
+    lines.push(JSON.stringify({tick,axes,...bodyForwardMps!==undefined?{bodyForwardMps}:{}} satisfies BenchTraceTick)+'\n');last=tick;if(lines.length>=chunkTicks)await flush();
    }catch(e){m.gaps.push({firstTick:tick,lastTick:tick,reason:(e as Error).message.slice(0,200)});await failed(e);}
   }),
   flush:()=>serial(()=>flush().catch(failed)),
   finish:reason=>serial(async()=>{await flush().catch(failed);if(reason)m.terminalReason??=reason.slice(0,200);m.coverage.complete=!m.terminalReason&&!m.gaps.length&&last>=0;await save();}),
   gap:(firstTick,lastTick,reason)=>serial(async()=>{m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);})};
 }
-export interface BenchTraceRead {manifest:BenchTraceManifest|null;manifestSha256:string|null;traces:DriveTrace[];issues:string[]}
+export interface BenchTraceRead {bodyForwardMps:number|null;manifest:BenchTraceManifest|null;manifestSha256:string|null;traces:DriveTrace[];issues:string[]}
 /** The trace of ticks 0..runTick as read back now: bounded reads, every chunk checked against its listed size and sha256 and its ticks against its place. A tick no valid chunk holds (a gap, a bad chunk, a tail
  * that never became durable) is 10 null samples per axis, so a metric whose window contains it is TRACE_GAP (tuning-metrics.ts); nothing is skipped over. */
 export async function readBenchTrace(directory:string,identity:BenchTraceIdentity,runTick:number):Promise<BenchTraceRead>{
- if(!Number.isSafeInteger(runTick)||runTick<0||runTick>BENCH_MAX_TICKS)return {manifest:null,manifestSha256:null,traces:[],issues:['TRACE_RUN_TICK_INVALID']};
- const n=(runTick+1)*BENCH_TRACE_LIMITS.substeps,traces:DriveTrace[]=identity.axisIds.map(axisId=>({axisId,dtS:BENCH_TRACE_LIMITS.dtS,samples:Array<Sample|null>(Math.max(0,n)).fill(null)}));
- const none=(issue:string):BenchTraceRead=>({manifest:null,manifestSha256:null,traces,issues:[issue]});
+ if(!Number.isSafeInteger(runTick)||runTick<0||runTick>BENCH_MAX_TICKS)return {bodyForwardMps:null,manifest:null,manifestSha256:null,traces:[],issues:['TRACE_RUN_TICK_INVALID']};
+ if(!validateTraceIdentityShape(identity))return {bodyForwardMps:null,manifest:null,manifestSha256:null,traces:[],issues:['TRACE_IDENTITY_MISMATCH']};
+ const n=(runTick+1)*BENCH_TRACE_LIMITS.substeps,traces:DriveTrace[]=identity.axisIds.map(axisId=>({axisId,dtS:BENCH_TRACE_LIMITS.dtS,samples:Array<Sample|null>(n).fill(null)}));
+ const none=(issue:string):BenchTraceRead=>({bodyForwardMps:null,manifest:null,manifestSha256:null,traces,issues:[issue]});
  let bytes:Buffer,m:BenchTraceManifest;
  try{bytes=await readBoundedPhysicsFile(directory,MANIFEST,READ_LIMITS.manifestBytes);m=JSON.parse(bytes.toString()) as BenchTraceManifest;}catch{return none('TRACE_MANIFEST_UNREADABLE');}
  if(!validateTraceManifestShape(m))return none('TRACE_MANIFEST_INVALID');
  if(hashJson(m.identity)!==hashJson(identity))return none('TRACE_IDENTITY_MISMATCH');
  // Chunk ranges partition the durable prefix. A gap may invalidate a retained chunk's samples or describe the next unconfirmed tick.
- let next=0;
+ let next=0,compressed=bytes.length;
  const paths=new Set<string>();
  for(const c of m.chunks){
   if(c.firstTick!==next||c.lastTick<c.firstTick||paths.has(c.path))return none('TRACE_MANIFEST_INVALID');
+  compressed+=c.bytes;if(compressed>BENCH_TRACE_LIMITS.maxBytes)return none('TRACE_MANIFEST_INVALID');
   next=c.lastTick+1;paths.add(c.path);
  }
  if(m.coverage.lastTick!==next-1||m.coverage.lastTick>runTick||m.coverage.complete&&(next===0||m.gaps.length>0||m.terminalReason!==null))return none('TRACE_MANIFEST_INVALID');
@@ -208,20 +227,39 @@ export async function readBenchTrace(directory:string,identity:BenchTraceIdentit
   previousGapEnd=g.lastTick;
  }
  const issues=[...m.terminalReason?[`TRACE_TERMINAL:${String(m.terminalReason).slice(0,200)}`]:[],...m.gaps.map(g=>`TRACE_GAP:${g.firstTick}-${g.lastTick}:${String(g.reason).slice(0,100)}`)];
- let inflated=0;
+ let inflated=0,bodyForwardMps:number|null=null;
  for(const c of m.chunks){
   try{
-   const b=await readBoundedPhysicsFile(directory,c.path,READ_LIMITS.chunkBytes);if(b.length!==c.bytes||sha(b)!==c.sha256)throw Error('TRACE_HASH_MISMATCH');
-   const body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)});inflated+=body.length;
+   const b=await readBoundedPhysicsFile(directory,c.path,READ_LIMITS.chunkBytes).catch(()=>{throw Error('TRACE_CHUNK_UNREADABLE');});if(b.length!==c.bytes||sha(b)!==c.sha256)throw Error('TRACE_HASH_MISMATCH');
+   let body:Buffer;try{body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated,(c.lastTick-c.firstTick+1)*(READ_LIMITS.lineBytes+1))});}catch{throw Error('TRACE_COMPRESSION_INVALID');}
+   inflated+=body.length;
    const rows=body.toString('utf8').split('\n');if(rows.pop()!==''||rows.length!==c.lastTick-c.firstTick+1)throw Error('TRACE_TRUNCATED');
-   const ticks=rows.map((row,i)=>{if(Buffer.byteLength(row)>READ_LIMITS.lineBytes)throw Error('TRACE_READ_LIMIT');const x=JSON.parse(row) as {tick:unknown;axes:unknown};if(x.tick!==c.firstTick+i||Object.keys(x).length!==2)throw Error('TRACE_TICK_ORDER');return tickAxes(x.axes,identity.axisIds);});
-   ticks.forEach((axes,i)=>{const tick=c.firstTick+i;if(tick<=runTick)axes.forEach((a,k)=>a.samples.forEach((s,j)=>{traces[k]!.samples[tick*BENCH_TRACE_LIMITS.substeps+j]=s;}));});
-  }catch(e){issues.push(`TRACE_CHUNK_INVALID:${String(c?.path).slice(0,80)}:${(e as Error).message.slice(0,80)}`);}
-
+   const ticks=rows.map((row,i)=>{
+    if(Buffer.byteLength(row)>READ_LIMITS.lineBytes)throw Error('TRACE_READ_LIMIT');
+    let x:BenchTraceTick;try{x=JSON.parse(row) as BenchTraceTick;}catch{throw Error('TRACE_RECORD_INVALID');}
+    if(!validateTraceTickShape(x))throw Error('TRACE_RECORD_INVALID');
+    if(x.tick!==c.firstTick+i)throw Error('TRACE_TICK_ORDER');
+    return {tick:x.tick,axes:tickAxes(x.axes,identity.axisIds),bodyForwardMps:x.bodyForwardMps};
+   });
+   for(const t of ticks){
+    t.axes.forEach((a,k)=>a.samples.forEach((s,j)=>{traces[k]!.samples[t.tick*BENCH_TRACE_LIMITS.substeps+j]=s;}));
+    if(t.tick===runTick)bodyForwardMps=t.bodyForwardMps??null;
+   }
+  }catch(e){issues.push(`TRACE_CHUNK_INVALID:${c.path}:${(e as Error).message.slice(0,80)}`);}
  }
- for(const g of m.gaps)for(const trace of traces)trace.samples.fill(null,g.firstTick*BENCH_TRACE_LIMITS.substeps,(g.lastTick+1)*BENCH_TRACE_LIMITS.substeps);
+ for(const g of m.gaps){
+  for(const trace of traces)trace.samples.fill(null,g.firstTick*BENCH_TRACE_LIMITS.substeps,(g.lastTick+1)*BENCH_TRACE_LIMITS.substeps);
+  if(g.firstTick<=runTick&&g.lastTick>=runTick)bodyForwardMps=null;
+ }
  if(m.coverage.lastTick<runTick)issues.push('TRACE_TAIL_MISSING');
- return {manifest:m,manifestSha256:sha(bytes),traces,issues};
+ return {manifest:m,manifestSha256:sha(bytes),traces,issues,bodyForwardMps};
+}
+
+export function benchWheelMeasurement(read:BenchTraceRead,tick:number,radiusM:number|undefined):NonNullable<TuningResultV1['wheelMeasurement']>{
+ const left=read.traces[0]?.samples.at(-1)?.actual,right=read.traces[1]?.samples.at(-1)?.actual;
+ const comparison=radiusM&&read.bodyForwardMps!==null&&left!==undefined&&right!==undefined
+  ?{tick,bodyForwardMps:read.bodyForwardMps,wheelSurfaceMps:(left+right)*radiusM/2}:null;
+ return {...wheelMeasurement,comparison};
 }
 
 // ---- metrics and the result ----------------------------------------------------------------------------------------------------------------------------------
@@ -258,12 +296,15 @@ export const benchReadiness=(runtime:Pick<MujocoRuntimeOptions,'engineVersion'|'
 /** `runtime`: the operator's MuJoCo options (never a request field). `spawn`: a test/fault option (a protocol double around the real worker), never exposed through a request. */
 export const BENCH_IDLE_LEASE_MS=60_000;
 const IDLE_REASON='BENCH_IDLE_EXPIRED';
+export function benchIdleLease(durationMs=BENCH_IDLE_LEASE_MS){
+ if(!Number.isSafeInteger(durationMs)||durationMs<1||durationMs>2_147_483_647)throw Error('INVALID_BENCH_IDLE_LEASE');
+ return {durationMs,expiryReason:IDLE_REASON};
+}
 interface LeaseClock {now():number;schedule(fn:()=>void,delayMs:number):()=>void}
 const hostLeaseClock:LeaseClock={now:()=>performance.now(),schedule(fn,delayMs){const timer=setTimeout(fn,delayMs);timer.unref();return ()=>clearTimeout(timer);}};
 export interface BenchProviders extends RunProviders {idleLeaseMs?:number;leaseClock?:LeaseClock;runtime:MujocoRuntimeOptions;spawn?:(o:SpawnOptions)=>Promise<IRSimWorkerClient>}
 export async function createBenchRun(input:RunManifestInput&{bench?:unknown},providers:BenchProviders):Promise<ScenarioRun>{
- const idleMs=providers.idleLeaseMs??BENCH_IDLE_LEASE_MS;
- if(!Number.isSafeInteger(idleMs)||idleMs<1||idleMs>2_147_483_647)throw Error('INVALID_BENCH_IDLE_LEASE');
+ benchIdleLease(providers.idleLeaseMs);
  const scenario=scenarioRegistry.get(input.scenarioId);
  if(!scenario?.bench||input.backendSetId!==BENCH_SET_ID||input.bench===undefined)throw Error('BENCH_SCOPE_INVALID');
  if(input.mode!=='simulation'||input.access!=='simulated')throw Error('MODE_BACKEND_MISMATCH');
@@ -271,11 +312,11 @@ export async function createBenchRun(input:RunManifestInput&{bench?:unknown},pro
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw Error('INVALID_SEED');
  const required=resolveBackends(scenario,'simulation',BENCH_SET_ID,providers.catalog);
  if(!required.ok||!required.required.every(b=>(providers.enabledBackends??[]).includes(b)))throw Error('BACKEND_EXECUTION_DISABLED');
- // ponytail: a bench is ≤ 10 s of simulation and keeps no checkpoint; a cold reclaim after a restart is refused (its trace and bundle stay on disk). Add a read-only reopen when someone needs one.
+ // Benches keep durable trace and bundle evidence but no execution checkpoint. Cold read-only review is documented in lab-runtime-single-host.md.
  if(providers.reclaimOnly)throw Error('RECOVERY_CHECKPOINT_MISSING');
  const bench=input.bench as BenchRequestV1;
  if(bench.scenarioId!==scenario.id)throw Error('INVALID_BENCH_REQUEST:BENCH_SCOPE_INVALID');
- const plant=await admitBench(bench,providers.runtime.workerRoot);
+ const plant=await admitBench(bench,providers.runtime.workerRoot,providers.runtime.engineVersion);
  const dir=providers.directory;await mkdir(dir,{recursive:true,mode:0o700});if((await readdir(dir)).length)throw Error('RECOVERY_CHECKPOINT_MISSING');
  const {sceneDigest,create}=await writeBenchBundle(join(dir,'bundle'),providers.runtime.workerRoot,bench,plant,input.seed);
  const runId=randomUUID(),identity:BenchTraceIdentity={runId,axisIds:plant.axisIds,plantModelDigest:plant.plantModelDigest,driveModelDigest:plant.model.digest,controlProfileDigest:bench.controlProfile.digest};
@@ -291,7 +332,6 @@ class BenchRun implements ScenarioRun {
   receipts:{} as Record<string,{hash:string;view:RunView}>,engine:null as TuningResultV1['engine']|null,inertia:null as TuningResultV1['effectiveInertia']};
  private deadline=0;
  private cancelLease?:()=>void;
- private bodyForwardMps:number|null=null;
  private get leaseClock(){return this.providers.leaseClock??hostLeaseClock;}
  private get idleMs(){return this.providers.idleLeaseMs??BENCH_IDLE_LEASE_MS;}
  private progress(){
@@ -399,9 +439,8 @@ class BenchRun implements ScenarioRun {
  private async observe(snap:{tick:number;drives?:DriveAxisSnapshot[];driveTrace?:unknown;robots?:{collisionIds:string[];bodyVelocity?:number[]}[];arms?:{collisionIds:string[]}[]},tick:number):Promise<boolean>{
   const drives=snap.drives;
   if(snap.tick!==tick||!Array.isArray(drives)||drives.length!==this.plant.model.axes.length||drives.some((d,i)=>d.axisId!==this.plant.model.axes[i]!.axisId))throw Error('SNAPSHOT_INVALID');
-  await this.rec.append(tick,snap.driveTrace);
+  await this.rec.append(tick,snap.driveTrace,this.plant.kind==='amr'?snap.robots?.[0]?.bodyVelocity?.[0]:undefined);
   this.st.tick=tick;
-  this.bodyForwardMps=snap.robots?.[0]?.bodyVelocity?.[0]??null;
   // F1: a contact the plant does not allow ends the bench as that result (collisionIds, schema-checked by the worker client, already leave out what the plant allows); a response measured
   // against a wall is no response. Before a fault of the same tick: the contact explains the fault, not the other way round
   const hit=[...new Set([...snap.robots??[],...snap.arms??[]].flatMap(x=>x.collisionIds))].sort();
@@ -448,14 +487,11 @@ class BenchRun implements ScenarioRun {
   const read=await readBenchTrace(this.rec.directory,this.identity,s.tick);
   if(!read.manifest||!read.manifestSha256||(!read.manifest.chunks.length&&!(s.outcome.status==='unstable'&&s.outcome.unstable.tick===0)))return {tuning:null,issues:read.issues};
   const o=s.outcome,first=read.traces[0]!,mode=this.mode[this.plant.axisIds[0]!]!;
-  const rimSpeeds=read.traces.map(t=>t.samples.at(-1)?.actual);
-  const comparison=this.plant.wheelRadiusM&&this.bodyForwardMps!==null&&rimSpeeds.length===2&&rimSpeeds.every(x=>x!==undefined)
-   ?{tick:s.tick,bodyForwardMps:this.bodyForwardMps,wheelSurfaceMps:(rimSpeeds[0]!+rimSpeeds[1]!)*this.plant.wheelRadiusM/2}:null;
   const tuning:TuningResultV1={schemaVersion:1,documentType:'tuning-result',runId:this.id,status:o.status,unstable:o.status==='unstable'?o.unstable:null,fault:o.status==='drive_fault'?o.fault:null,
    collision:o.status==='collision'?o.collision:null,axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,
    engine:s.engine??{id:this.backends()[0]!,version:this.providers.runtime.engineVersion},
    plant:{plantModelDigest:this.plant.plantModelDigest,driveModelDigest:this.plant.model.digest,controlProfileDigest:this.bench.controlProfile.digest,load:this.plant.load},effectiveInertia:s.inertia,
-   ...mode==='csv'?{wheelMeasurement:{quantity:'wheel_angular_speed' as const,inertiaAssumption:'straight_line_no_slip' as const,comparison}}:{},
+   ...mode==='csv'?{wheelMeasurement:benchWheelMeasurement(read,s.tick,this.plant.wheelRadiusM)}:{},
    // V07pre: the starting gains from that inertia, with the envelope of the first traced axis (the left wheel's for a wheel bench), so the Lab never computes them
    suggestions:s.inertia?gainSuggestions({mode,inertiaKgM2:s.inertia.valueKgM2},this.plant.envelope.axes.find(a=>a.axisId===this.plant.axisIds[0])!):null,policy:{...this.plant.policy},
    metrics:benchMetrics(first,this.bench.signal,s.anchor,mode,this.plant.policy,o.status),
@@ -480,6 +516,6 @@ class BenchRun implements ScenarioRun {
    coverage:{businessSimulation:false,kinematicModel:true,dynamics:true,nativeExecution:false,physicalStop:false,sensorEvidence:false,eventStream:true},
    limitations:['Bench run (R4.2): no mission, journal or custody; the response is computed on the TRUE state of the 500 Hz trace as read back from its immutable chunks (basis actual).',
     'MuJoCo 3.17.0 with a virtual drive: every drive, gain and plant value is assumed, not_calibrated.','A drive fault, engine instability or a contact the plant does not allow ends the bench as that result: no gain is lowered and nothing is run again by itself.'],
-   telemetry:this.telemetry.report(),tuning,bench:{request:{...request,controlProfile:{id:cp.id,revision:cp.revision,digest:cp.digest}},anchorTick:s.anchor,sceneDigest:this.sceneDigest,traceIssues:issues,idleLease:{durationMs:this.idleMs,expiryReason:IDLE_REASON}}};
+   telemetry:this.telemetry.report(),tuning,bench:{request:{...request,controlProfile:{id:cp.id,revision:cp.revision,digest:cp.digest}},anchorTick:s.anchor,sceneDigest:this.sceneDigest,traceIssues:issues,idleLease:benchIdleLease(this.idleMs)}};
  }
 }

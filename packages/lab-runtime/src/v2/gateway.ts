@@ -15,9 +15,8 @@ import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream'
 import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
 import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
-import tuningEnvelope from '../../../../robotics/simulation-mujoco/fixtures/drive-v1/tuning-envelope-v1.json';
 import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,BENCH_WHEEL_DIRECTION,SUGGEST_OPTIONS} from './control/bench-signals';
-import type {BenchCatalog} from './control/bench-runner';
+import {benchIdleLease,type BenchCatalog,type BenchInfo} from './control/bench-runner';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
 export interface V2Deps {
  worldExperiments?:boolean;sourceCommit:string;schemaHash:string;now:()=>number;catalog?:CapabilityCatalog;
@@ -44,7 +43,7 @@ export interface V2Deps {
  /** Wall clock of paced steps, handed to every run this gateway opens (tests count its calls); runs default to the real one. */
  wall?:WallClock;
  /** The bench catalog the runtime built at start from its MuJoCo worker root (bench-runner.ts benchCatalog); health lists the entries of the offered bench scenarios. */
- benchCatalog?:BenchCatalog;
+ benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;
 }
 const COOKIE='mekoniq_lab_session_v2';
 // Local demo pairing may only drive simulations and read-only shadow; hil/live belong to native provisioning.
@@ -108,7 +107,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
  // R4.2 bench (V06, V07pre): the envelope (revision 2) a draft is checked against, the closed signal catalog and the bench catalog, so the Lab reads them instead of hardcoding; only where a bench scenario is offered
  const benchHealth=()=>{
   const ids=offeredScenarios(catalog).filter(([,d])=>d.bench).map(([id])=>id),served=deps.benchCatalog;
-  return ids.length?{tuningEnvelope:structuredClone(tuningEnvelope),benchSignals:{kinds:[...BENCH_SIGNAL_KINDS],maxTicks:BENCH_MAX_TICKS,amplitudes:structuredClone(BENCH_AMPLITUDES),suggestOptions:structuredClone(SUGGEST_OPTIONS),wheelDirection:BENCH_WHEEL_DIRECTION},
+  return ids.length?{...deps.benchInfo?.tuningEnvelope?{tuningEnvelope:structuredClone(deps.benchInfo.tuningEnvelope)}:{},benchReadiness:{reasonCodes:deps.benchInfo?.reasonCodes??['BENCH_CATALOG_UNAVAILABLE']},benchIdleLease:deps.benchInfo?.idleLease??benchIdleLease(),benchSignals:{kinds:[...BENCH_SIGNAL_KINDS],maxTicks:BENCH_MAX_TICKS,amplitudes:structuredClone(BENCH_AMPLITUDES),suggestOptions:structuredClone(SUGGEST_OPTIONS),wheelDirection:BENCH_WHEEL_DIRECTION},
    ...served?{benchCatalog:Object.fromEntries(ids.filter(id=>Object.hasOwn(served,id)).map(id=>[id,structuredClone(served[id as keyof BenchCatalog])]))}:{}}:{};
  };
  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});

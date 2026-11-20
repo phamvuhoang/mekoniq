@@ -22,7 +22,7 @@ import type {WebotsRuntimeOptions} from '../simulation3d/webots';
 import {mujocoArmPorts,mujocoArmProgram} from '../simulation3d/mujoco-arm-ports';
 import type {MujocoRuntimeOptions} from '../simulation3d/mujoco';
 import {BENCH_SET_ID} from '../capabilities';
-import {benchCatalog,benchReadiness,createBenchRun,type BenchCatalog} from '../control/bench-runner';
+import {benchIdleLease,loadBenchCatalog,benchReadiness,createBenchRun,type BenchCatalog,type BenchInfo} from '../control/bench-runner';
 
 /** The server catalog with irsim_2d marked usable (`usable`) or left unconfigured. Production code sets it usable only after a real worker describe. */
 export const portableCatalog=(usable:boolean,base:CapabilityCatalog=defaultCatalog,reason?:string):CapabilityCatalog=>({...base,backends:base.backends.map(b=>{
@@ -45,8 +45,9 @@ export interface PortableSimulationOptions {enabled:boolean;python:string;worker
  /** Test/fault option: the worker entry (a double). Never exposed through a request. */entry?:string[];
  /** Live IR-SIM workers allowed on this host at once (default 2, workers-runtime §6). */maxActiveRuns?:number;
  webots?:WebotsProviderLike;
+ benchIdleLeaseMs?:number;
  mujoco?:MujocoProviderLike;}
-export interface PortableSimulation {/** the bench catalog of health (V07pre), built from the bench runtime's worker root */benchCatalog?:BenchCatalog;worldExperiments?:true;plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
+export interface PortableSimulation {/** the bench catalog of health (V07pre), built from the bench runtime's worker root */benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;worldExperiments?:true;plants?:PlantTable;catalog:CapabilityCatalog;enabledBackends:string[];simulationFactory:SimulationFactory;readinessChecks?:NativeReadinessChecks;unavailable?:string;describe?:{packageVersion:string;pythonVersion:string;lockDigest:string}}
 const MIN_FREE_BYTES=2*100*1024*1024; // two active runs at the 100 MiB evidence quota
 const SMOKE_TTL_MS=60_000;
 const sha256=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
@@ -90,23 +91,40 @@ export async function portableSimulationFromOptions(o:PortableSimulationOptions)
  const plants:PlantTable={...base.plants,...w?.plant?{[WEBOTS_ID]:w.plant}:{},...mm?.plant?{mujoco_3d:mm.plant}:{}},live=!!w?.plant&&w.capability.installed;
  const wr=w?.arm?.capability.installed?w.arm.runtime:undefined,mr=m?.capability.installed?m.runtime:undefined;
  const arms:ArmPlantTable={...wr?{[WEBOTS_ARM_ID]:{ports:run=>webotsArmPorts(wr,run)}}:{},...mr?{[MUJOCO_ARM_ID]:{ports:run=>mujocoArmPorts(mr,run),program:()=>mujocoArmProgram(mr)}}:{}};
- const configuredWorld=o.mujoco?.world,worldReady=!!configuredWorld&&!!mr&&!!mm?.plant&&mm.capability.installed&&['python','workerRoot','lockDigest','engineVersion','schemaDir'].every(k=>configuredWorld.runtime[k as keyof MujocoRuntimeOptions]===mr[k as keyof MujocoRuntimeOptions]&&configuredWorld.runtime[k as keyof MujocoRuntimeOptions]===mm.plant!.runtime[k as keyof MujocoRuntimeOptions]);
+ const mobile=mm?.plant&&mm.capability.installed?mm.plant.runtime:undefined;
+ const sameRuntime=(a:MujocoRuntimeOptions,b:MujocoRuntimeOptions)=>(['python','workerRoot','lockDigest','engineVersion','schemaDir'] as const).every(k=>a[k]===b[k]);
+ const configuredWorld=o.mujoco?.world,worldReady=!!configuredWorld&&!!mr&&!!mobile&&sameRuntime(configuredWorld.runtime,mr)&&sameRuntime(configuredWorld.runtime,mobile);
  const ir=base.readinessChecks,wb=w?.readinessChecks,wa=w?.arm?.readinessChecks,ma=m?.readinessChecks,mb=mm?.readinessChecks;
- // the bench runs on whichever MuJoCo provider is live (one runtime behind both); the gateway has already required the backend of the bench's role
- const benchRuntime=mr??(mm?.plant&&mm.capability.installed?mm.plant.runtime:undefined);
- // V07pre: built once at start from the worker root the bench reads; a fixture that cannot be read leaves health without a catalog (logged; a bench reads the same files, so it could not run either)
- const catalogOfBench=benchRuntime?await benchCatalog(benchRuntime.workerRoot).catch((e:unknown)=>{process.stderr.write(`bench catalog unavailable: ${e instanceof Error?e.message:String(e)}\n`);return undefined;}):undefined;
- const readinessChecks:NativeReadinessChecks|undefined=ir||wb||wa||ma||mb||configuredWorld?.readinessChecks?async(context,signal)=>{
-  // a bench (R4.2) asks the MuJoCo engine slot only: its plant is a server fixture, so there is no project to build a scene from and no smoke to run
-  if(scenarioRegistry.get(context.scenarioId)?.bench&&context.backendSetId===BENCH_SET_ID&&benchRuntime)return benchReadiness(benchRuntime)(context,signal);
+ const runtimeFor=(id:string)=>id==='MJ-BENCH-WHEEL'?mobile:mr;
+ const benchInfo:BenchInfo={reasonCodes:[],idleLease:benchIdleLease(o.benchIdleLeaseMs)};
+ let catalogOfBench:Partial<BenchCatalog>|undefined;
+ if(mr||mobile){
+  try{
+   if(mr&&mobile&&!sameRuntime(mr,mobile))throw Error('BENCH_PROVIDER_MISMATCH');
+   if(catalog.sets[BENCH_SET_ID]?.execution?.clock!=='source_fixed_step')throw Error('BENCH_CLOCK_MISMATCH');
+   const runtime=(mobile??mr)!;
+   const loaded=await loadBenchCatalog(runtime.workerRoot,[...mobile?['MJ-BENCH-WHEEL' as const]:[],...mr?['MJ-BENCH-ARM' as const]:[]],runtime.engineVersion);
+   catalogOfBench=loaded.catalog;benchInfo.tuningEnvelope=loaded.tuningEnvelope;
+  }catch(e){
+   const known=['BENCH_PROVIDER_MISMATCH','BENCH_CLOCK_MISMATCH','BENCH_COMPONENT_REVISION_INVALID','BENCH_ENVELOPE_INVALID','BENCH_DRIVE_MODEL_INVALID','BENCH_STARTING_PROFILE_INVALID','BENCH_STARTING_PROFILE_PLANT_MISMATCH','BENCH_STARTING_PROFILE_AMBIGUOUS'];
+   const message=e instanceof Error?e.message:'';
+   benchInfo.reasonCodes=[known.includes(message)?message:'BENCH_CATALOG_UNAVAILABLE'];
+  }
+ }
+ const readinessChecks:NativeReadinessChecks|undefined=mr||mobile||ir||wb||wa||ma||mb||configuredWorld?.readinessChecks?async(context,signal)=>{
+  if(scenarioRegistry.get(context.scenarioId)?.bench&&context.backendSetId===BENCH_SET_ID){
+   const runtime=runtimeFor(context.scenarioId);
+   if(!runtime||benchInfo.reasonCodes.length)return [{id:'runner',status:'blocked',reasonCodes:benchInfo.reasonCodes.length?benchInfo.reasonCodes:['BACKEND_EXECUTION_DISABLED'],evidenceRef:null}];
+   return benchReadiness(runtime)(context,signal);
+  }
   const selected=Object.hasOwn(catalog.sets,context.backendSetId)?catalog.sets[context.backendSetId]:undefined;if(selected?.execution?.composition==='single_world'){if(!worldReady)return [{id:'runner',status:'blocked' as const,reasonCodes:['WORLD_COMPOSITION_UNAVAILABLE'],evidenceRef:null}];return configuredWorld!.readinessChecks(context,signal);}
   const providers=selected?.providers,
    pick=providers?.arm===WEBOTS_ARM_ID?wa:providers?.arm===MUJOCO_ARM_ID&&m?ma:providers?.amr===WEBOTS_ID?wb:providers?.amr==='mujoco_3d'?mb:ir; // without the MuJoCo option a set is routed as before
   if(!pick)throw new Error('PORTABLE_PROVIDER_UNAVAILABLE');
   return pick(context,signal);
  }:undefined;
- const dispatch=plantDispatcher(catalog,plants,o.nativeFactory,arms);const simulationFactory:SimulationFactory=async(input,providers)=>{if(input.bench!==undefined||scenarioRegistry.get(input.scenarioId)?.bench){if(!benchRuntime)throw Error('BACKEND_EXECUTION_DISABLED');return createBenchRun(input,{...providers,runtime:benchRuntime});}const set=catalog.sets[input.backendSetId];if(set?.execution?.composition==='single_world'&&input.backendSetId==='engineering-mujoco-cell-v1'&&!providers.worldPorts){if(!worldReady)throw Error('WORLD_COMPOSITION_UNAVAILABLE');return dispatch(input,{...providers,worldPorts:configuredWorld!.factory});}return dispatch(input,providers);};
- return {...base,...worldReady?{worldExperiments:true as const}:{},...catalogOfBench?{benchCatalog:catalogOfBench}:{},catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[],...mm?.plant&&mm.capability.installed?['mujoco_3d']:[]],plants,simulationFactory,...readinessChecks?{readinessChecks}:{}};
+ const dispatch=plantDispatcher(catalog,plants,o.nativeFactory,arms);const simulationFactory:SimulationFactory=async(input,providers)=>{if(input.bench!==undefined||scenarioRegistry.get(input.scenarioId)?.bench){const runtime=runtimeFor(input.scenarioId);if(!runtime||benchInfo.reasonCodes.length)throw Error(benchInfo.reasonCodes[0]??'BACKEND_EXECUTION_DISABLED');return createBenchRun(input,{...providers,runtime,idleLeaseMs:benchInfo.idleLease.durationMs});}const set=catalog.sets[input.backendSetId];if(set?.execution?.composition==='single_world'&&input.backendSetId==='engineering-mujoco-cell-v1'&&!providers.worldPorts){if(!worldReady)throw Error('WORLD_COMPOSITION_UNAVAILABLE');return dispatch(input,{...providers,worldPorts:configuredWorld!.factory});}return dispatch(input,providers);};
+ return {...base,...worldReady?{worldExperiments:true as const}:{},...mr||mobile?{benchInfo}:{},...catalogOfBench?{benchCatalog:catalogOfBench}:{},catalog,enabledBackends:[...base.enabledBackends,...live?[WEBOTS_ID]:[],...wr?[WEBOTS_ARM_ID]:[],...mr?[MUJOCO_ARM_ID]:[],...mm?.plant&&mm.capability.installed?['mujoco_3d']:[]],plants,simulationFactory,...readinessChecks?{readinessChecks}:{}};
 }
 
 async function irsimPortable(o:PortableSimulationOptions):Promise<PortableSimulation>{

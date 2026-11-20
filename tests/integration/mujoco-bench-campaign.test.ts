@@ -40,6 +40,18 @@ describe.skipIf(!mujocoReady)('a recorded bench case on the real engine',()=>{
   expect(v).toMatchObject({expectedRuns:1,completedCases:1,missingArtifacts:[],issues:[]});expect(v.runs[0]).toMatchObject({id:CASE,status:'completed'});
   const c=await json(join(recorded,'campaign.json'));expect(c).toMatchObject({sourceCommit:COMMIT,accepted:false,execution:'actual_mujoco',hostArch:process.arch==='arm64'?'arm64':'x86_64'});
  });
+ test('verification recomputes the wheel/body comparison from the recorded wheel tick',async()=>{
+  const id='wheels-step',dir=await mkdtemp(join(tmpdir(),'bench-body-')),out=join(dir,'campaign');
+  try{
+   const record=await runBenchCampaign({root,out,sourceCommit:COMMIT,caseId:id});
+   expect(record.issues).toEqual([]);
+   const run=join(out,id),p=join(run,'report.json'),report=await json(p);
+   expect(report.tuning.wheelMeasurement.comparison).toMatchObject({tick:500,bodyForwardMps:expect.any(Number)});
+   report.tuning.wheelMeasurement.comparison.bodyForwardMps+=0.01;await write(p,report);
+   const rec=await json(join(run,'case.json'));rec.artifacts=await cellArtifacts(run);await write(join(run,'case.json'),rec);
+   expect((await verifyBenchCampaign(out,id)).issues).toContain(id+':BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
+  }finally{await rm(dir,{recursive:true,force:true});}
+ },120000);
  test('verification refuses a missing run, an edited or removed file (inventory) and a campaign of another identity or commit',async()=>{
   let d=await copy();await rm(join(d,CASE),{recursive:true});expect(await issues(d)).toContain(CASE);
   d=await copy();const chunk=(await readdir(join(d,CASE,'run/trace'))).find(n=>n.endsWith('.ndjson.gz'))!;await rm(join(d,CASE,'run/trace',chunk));expect(await issues(d)).toContain('BENCH_ARTIFACT_INVENTORY');

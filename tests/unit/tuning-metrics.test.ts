@@ -123,7 +123,7 @@ test('a bench signal that does not end inside the recorded trace has no metric a
  expect(truncated(benchMetrics(trace,{kind:'step',amplitude:0.1,atTick:497},4,'csp',p,'completed'))).toBe(true);
  // landing on the last tick is a step that ran (its window is that tick)
  const last=benchMetrics(trace,{kind:'step',amplitude:0.1,atTick:496},4,'csp',p,'completed');
- expect(last.rmsError).toMatchObject({available:true,samples:11});expect(last.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});
+ expect(last.rmsError).toMatchObject({available:true,samples:11});expect(last.settlingTimeS).toMatchObject({available:false,reason:'WINDOW_INVALID'});expect(last.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});
  // a trapezoid whose motion (135 ticks) ends after the last tick, against one that ends on it; a hold longer than what ran
  const trap=(atTick:number)=>({kind:'trapezoid' as const,distance:5,peakVelocity:2,acceleration:10,atTick});
  expect(truncated(benchMetrics(trace,trap(362),4,'csv',p,'completed'))).toBe(true);expect(benchMetrics(trace,trap(361),4,'csv',p,'completed').rmsError.available).toBe(true);

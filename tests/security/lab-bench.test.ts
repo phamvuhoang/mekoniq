@@ -177,7 +177,7 @@ test('health carries the bench catalog admission uses: the plant and its digest,
  expect(c).toEqual(served);expect(Object.keys(c)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);expect(health.benchSignals.wheelDirection).toBe('forward');
  expect(c['MJ-BENCH-WHEEL'].plant).toEqual({id:'serve-payload-v1',revision:1,load:'empty',plantModelDigest:JSON.parse(readFileSync(join(mujocoRoot,'fixtures/serve-payload-v1/physical-model-amr-1.json'),'utf8')).modelDigest});
  expect(c['MJ-BENCH-ARM'].plant).toEqual({id:'xarm6-g2-v1',revision:1,load:'empty',plantModelDigest:sha(component)});
- expect(c['MJ-BENCH-WHEEL'].axes).toEqual([{axis:'wheels',axisIds:['amr-1/wheel-left','amr-1/wheel-right'],mode:'csv',unit:'rad/s',direction:'forward'}]);
+ expect(c['MJ-BENCH-WHEEL'].axes).toEqual([{axis:'wheels',axisIds:['amr-1/wheel-left','amr-1/wheel-right'],mode:'csv',unit:'rad/s',direction:'forward',quantity:'wheel_angular_speed',inertiaAssumption:'straight_line_no_slip'}]);
  expect(c['MJ-BENCH-ARM'].axes.map(a=>[a.axis,a.axisIds,a.mode,a.unit])).toEqual(['J1','J2','J3','J4','J5','J6','gripper'].map(j=>[j,[`xarm-1/${j}`],'csp','rad']));
  expect(c['MJ-BENCH-WHEEL'].startingProfile).toEqual(doc('serve-control-v1.json'));expect(c['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
  for(const [scenarioId,s] of Object.entries(c)){

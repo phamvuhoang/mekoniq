@@ -1,4 +1,5 @@
 // Step-response metrics of a bench trace (R4-A §6, contracts §5). Computed on the TRUE state (`actual`, basis 'actual'); a missing substep (a null sample) is never skipped over: a metric whose window contains one is TRACE_GAP.
+import {benchAxisUnit} from './bench-signals';
 import type {ControlMetric,DriveTrace} from './drive-io';
 
 type Sample=NonNullable<DriveTrace['samples'][number]>;
@@ -7,7 +8,7 @@ export const unavailableMetric=(unit:string,reason:string):ControlMetric=>({avai
 const yes=(value:number,unit:string,samples:number):ControlMetric=>({available:true,value,unit,samples,basis:'actual'});
 
 export const metricUnits=(mode:'csp'|'csv')=>{
- const u=mode==='csp'?'rad':'rad/s';
+ const u=benchAxisUnit(mode);
  return {riseTimeS:'s',overshootPct:'%',settlingTimeS:'s',steadyStateError:u,rmsError:u,peakTorqueNm:'N m',saturationRatio:'ratio'};
 };
 export function unavailableMetrics(mode:'csp'|'csv',reason:string):Record<Names,ControlMetric>{
@@ -36,7 +37,7 @@ export function stepResponseMetrics(trace:DriveTrace,signal:{t0S:number;y0:numbe
   out.riseTimeS=c10!==null&&c90!==null?yes((c90-c10)*dtS,'s',m):unavailableMetric('s','TARGET_NOT_REACHED');
   out.overshootPct=c90!==null?yes(Math.max(0,(Math.max(...yn)-1)*100),'%',m):unavailableMetric('%','TARGET_NOT_REACHED');   // contracts §5: like the rise time, undefined until the response reaches its target
   let last=-1;yn.forEach((y,i)=>{if(Math.abs(y-1)>policy.settleBand)last=i;});
-  out.settlingTimeS=(m-1-(last+1))*dtS>=policy.holdWindowS?yes((last+1)*dtS,'s',m):unavailableMetric('s','NOT_SETTLED');
+  out.settlingTimeS=(m-1-(last+1))*dtS>=policy.holdWindowS?yes((last+1)*dtS,'s',m):unavailableMetric('s',(m-1)*dtS<policy.holdWindowS?'WINDOW_INVALID':'NOT_SETTLED');
   out.rmsError=yes(Math.sqrt(w.reduce((a,s)=>a+(s.target-s.actual)**2,0)/m),u,m);
   out.peakTorqueNm=yes(Math.max(...w.map(s=>Math.abs(s.torqueNm))),'N m',m);
   out.saturationRatio=w.some(s=>s.saturated===undefined)?unavailableMetric('ratio','SATURATION_NOT_TRACED'):yes(w.filter(s=>s.saturated).length/m,'ratio',m);

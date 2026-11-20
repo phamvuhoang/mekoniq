@@ -11,7 +11,7 @@ import {BENCH_SET_ID} from '../capabilities';
 import {hashJson} from '../hash';
 import {mujocoFromOptions} from '../simulation3d/mujoco';
 import {cellArtifacts} from '../simulation3d/cell-campaign';
-import {benchCatalog,benchMetrics,benchPlant,createBenchRun,readBenchTrace,BENCH_TRACE_LIMITS} from './bench-runner';
+import {benchCatalog,benchMetrics,benchPlant,benchWheelMeasurement,createBenchRun,readBenchTrace,BENCH_TRACE_LIMITS} from './bench-runner';
 import {BENCH_MAX_TICKS,benchAxisMode,benchSignalLastTick} from './bench-signals';
 import {gainSuggestions} from './gain-suggest';
 import type {BenchRequestV1,BenchSignal,TuningResultV1} from './drive-io';
@@ -82,6 +82,8 @@ export async function verifyBenchCampaign(root:string,onlyCase?:string,workerRoo
    // the trace as read back now: every chunk's size and sha256 against its manifest, its ticks against their place; complete, and the manifest the result names
    const read=await readBenchTrace(join(dir,'run/trace'),{runId:t!.runId,axisIds:plant.axisIds,plantModelDigest:plant.plantModelDigest,driveModelDigest:plant.model.digest,controlProfileDigest:profile.digest},report.outcome.tick);
    check(!read.issues.length&&read.manifest?.coverage.complete&&read.manifest.coverage.lastTick===report.outcome.tick,'BENCH_TRACE_INCOMPLETE:'+read.issues.join(','));
+   if(read.bodyForwardMps!==null||t!.wheelMeasurement!==undefined)
+    check(spec.axis==='wheels'&&hashJson(t!.wheelMeasurement??null)===hashJson(benchWheelMeasurement(read,report.outcome.tick,plant.wheelRadiusM)),'BENCH_WHEEL_COMPARISON_NOT_FROM_TRACE');
    const first=read.traces[0]!,samples=first.samples.slice(BENCH_TRACE_LIMITS.substeps).filter(x=>x!==null).length;
    check(read.manifestSha256===t!.trace.sha256&&read.manifest!.chunks.length===t!.trace.chunks&&samples===t!.trace.samples,'BENCH_TRACE_NOT_THE_RESULTS');
    // the result's status against the run: a completed step or trapezoid ran to the bench's last tick; any other result ended on the tick it names

@@ -18,6 +18,8 @@ const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});
 for(const [key,schema] of Object.entries({'drive-trace-manifest-v1.schema.json':traceManifestSchema,'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema,'bench-request-v1.schema.json':benchRequestSchema}))ajv.addSchema(schema,key);
 const modelShape=ajv.getSchema('drive-model-v1.schema.json')!,profileShape=ajv.getSchema('control-profile-v1.schema.json')!,envelopeShape=ajv.getSchema('control-profile-v1.schema.json#/definitions/TuningEnvelopeV1')!,refShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveDocumentRef')!;
 const benchRequestShape=ajv.getSchema('bench-request-v1.schema.json')!,benchSignalShape=ajv.getSchema('bench-request-v1.schema.json#/definitions/BenchSignal')!;
+export const validateTraceTickShape=ajv.getSchema('drive-trace-manifest-v1.schema.json#/definitions/BenchTraceTick')!;
+export const validateTraceIdentityShape=ajv.getSchema('drive-trace-manifest-v1.schema.json#/definitions/BenchTraceIdentity')!;
 export const validateTraceManifestShape=ajv.getSchema('drive-trace-manifest-v1.schema.json')!;
 export const validateControlEvidenceShape=ajv.getSchema('control-evidence-v1.schema.json')!;
 export const validateDriveAxisSnapshotShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveAxisSnapshot')!;

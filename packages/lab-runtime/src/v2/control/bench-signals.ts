@@ -31,7 +31,7 @@ export const benchSignalLastTick=(s:BenchSignal):number=>s.kind==='hold'?s.ticks
 export const benchAnchorTick=(model:{axes:readonly {enableDelaySubsteps:number}[]}):number=>1+Math.ceil(Math.max(0,...model.axes.map(a=>a.enableDelaySubsteps))/BENCH_SUBSTEPS);
 
 /** The reason codes (empty: admitted) for one signal on one axis: shape, a registered size, a tick inside the bench, a motion that ends inside it and, for a position axis with limits, a target inside them. `start` is the position the axis rests at.
- *  With `anchorTick` (the engine tick of signal tick 0, benchAnchorTick), the signal must also end inside the bench after the drive's enable sequence: TICK_OUT_OF_RANGE otherwise. */
+ *  The required `anchorTick` identifies the engine tick of signal tick 0. The signal must end inside the bench after the drive's enable sequence: TICK_OUT_OF_RANGE otherwise. */
 export function validateBenchSignal(signal:unknown,axis:{mode:Mode;lower?:number;upper?:number;start?:number;anchorTick:number}):Check{
  const shape=validateBenchSignalShape(signal);
  if(!shape.ok)return shape;
@@ -66,7 +66,11 @@ export function benchTarget(signal:BenchSignal,start:number,tick:number,mode:Mod
 }
 
 /** The axes a bench request can name, and the drive mode of each: the two wheels (speed) or one arm axis (position). */
-export const benchAxisMode=(axis:BenchRequestV1['axis']):Mode=>axis==='wheels'?'csv':'csp';
+export function benchAxisMode(axis:'wheels'):'csv';
+export function benchAxisMode(axis:Exclude<BenchRequestV1['axis'],'wheels'>):'csp';
+export function benchAxisMode(axis:BenchRequestV1['axis']):Mode;
+export function benchAxisMode(axis:BenchRequestV1['axis']):Mode{return axis==='wheels'?'csv':'csp';}
+export const benchAxisUnit=<M extends Mode>(mode:M)=>({csv:'rad/s',csp:'rad'} as const)[mode];
 /** Shape plus the cross-field rules a schema cannot say: `wheels` only on MJ-BENCH-WHEEL, a joint or the gripper only on MJ-BENCH-ARM, a wheel signal forward only (the AMR has 1.5 m of floor behind it: a reverse
  *  step drove it into boundary-west, final-fix-report F1; a negative peak is the schema's refusal), and a signal the axis admits. `plant.anchorTick` is the engine tick of signal tick 0 for the experiment's drive (benchAnchorTick);
  *  `plant.limits` are the joint limits and rest position the server knows: required for a joint or the gripper (without them: AXIS_LIMITS_REQUIRED, never a request admitted unchecked), ignored for the wheels. The control profile against its model and the envelope is the caller's check (validateControlProfile, which calls withinEnvelope). */
