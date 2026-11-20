@@ -1,8 +1,6 @@
 // Gain suggestion (R4-A §6, D4): one second-order form for both modes, then clamped into the axis envelope. The inertia is whatever the worker reports (the basis is the worker's business); this module never computes J.
 import type {AxisEnvelope} from './drive-io';
 
-/** The registered options the UI and the server offer for a suggestion. */
-export const SUGGEST_OPTIONS={bandwidthRadS:[5,10,20,40],damping:[0.7,1]} as const;
 export interface SuggestedLoop {kp:number;ki:number;kd:number;integralLimit:number|null;slewLimit:null}
 
 /** csp: kp = J wn^2, kd = 2 zeta wn J, ki = 0 (a PD loop on position). csv: a PI loop on speed, J s^2 + kp s + ki, so kp = 2 zeta wn J, ki = J wn^2, kd = 0, integral limit at the envelope's ceiling.

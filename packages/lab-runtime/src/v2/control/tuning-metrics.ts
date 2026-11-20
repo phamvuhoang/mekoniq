@@ -8,8 +8,8 @@ const yes=(value:number,unit:string,samples:number):ControlMetric=>({available:t
 
 /** `signal`: where the step starts (`t0S`, seconds from the first sample), the value it starts from and its signed size. `policy`: the trailing window the steady state is read from, the settling band (a fraction of the amplitude, inclusive)
  *  and how long the response must stay in the band to count as settled. `mode` only names the unit of the position or speed metrics. Time metrics are measured from t0S.
- *  riseTimeS: 10 % to 90 % (NOT_REACHED); overshootPct: peak beyond the final value in % of the amplitude (0 when none); settlingTimeS: the time after which the response stays in the band for at least holdWindowS, else NOT_SETTLED;
- *  steadyStateError: target minus the mean of the final window, defined only when the whole window is in the band (else NOT_SETTLED); rmsError: sqrt(mean((target - actual)^2)); peakTorqueNm: max |torque|; saturationRatio: the share of samples flagged saturated. */
+ *  riseTimeS: 10 % to 90 % (TARGET_NOT_REACHED); overshootPct: peak beyond the target y0 + amplitude in % of the amplitude (0 when none); settlingTimeS: the time after which the response stays in the band for at least holdWindowS, else NOT_SETTLED;
+ *  steadyStateError: (y0 + amplitude) minus the final value, the mean of `actual` over the final window; the final value (so the error) is NOT_SETTLED only when the standard deviation of `actual` in that window exceeds settleBand * |amplitude| (contracts §5; a response that settles away from its target has an error, not NOT_SETTLED); rmsError: sqrt(mean((target - actual)^2)); peakTorqueNm: max |torque|; saturationRatio: the share of samples flagged saturated. */
 export function stepResponseMetrics(trace:DriveTrace,signal:{t0S:number;y0:number;amplitude:number},policy:{finalWindowS:number;settleBand:number;holdWindowS:number},mode:'csp'|'csv'='csp'):Record<Names,ControlMetric>{
  const u=mode==='csp'?'rad':'rad/s',units:Record<Names,string>={riseTimeS:'s',overshootPct:'%',settlingTimeS:'s',steadyStateError:u,rmsError:u,peakTorqueNm:'N m',saturationRatio:'ratio'};
  const all=(reason:string)=>Object.fromEntries((Object.keys(units) as Names[]).map(k=>[k,no(units[k],reason)])) as Record<Names,ControlMetric>;
@@ -26,7 +26,7 @@ export function stepResponseMetrics(trace:DriveTrace,signal:{t0S:number;y0:numbe
   // 10 % and 90 % crossings, linearly interpolated between samples; the first sample may already be past 10 %
   const cross=(level:number)=>{const i=yn.findIndex(y=>y>=level);return i<0?null:i===0?0:i-1+(level-yn[i-1]!)/(yn[i]!-yn[i-1]!);};
   const c10=cross(0.1),c90=cross(0.9);
-  out.riseTimeS=c10!==null&&c90!==null?yes((c90-c10)*dtS,'s',m):no('s','NOT_REACHED');
+  out.riseTimeS=c10!==null&&c90!==null?yes((c90-c10)*dtS,'s',m):no('s','TARGET_NOT_REACHED');
   out.overshootPct=yes(Math.max(0,(Math.max(...yn)-1)*100),'%',m);
   let last=-1;yn.forEach((y,i)=>{if(Math.abs(y-1)>policy.settleBand)last=i;});
   out.settlingTimeS=(m-(last+1))*dtS>=policy.holdWindowS?yes((last+1)*dtS,'s',m):no('s','NOT_SETTLED');
@@ -37,6 +37,9 @@ export function stepResponseMetrics(trace:DriveTrace,signal:{t0S:number;y0:numbe
  const f=iFinal>=i0?win(iFinal):undefined;   // the final window must lie after the step
  if(f===undefined)out.steadyStateError=no(u,'WINDOW_INVALID');
  else if(f===null)out.steadyStateError=no(u,'TRACE_GAP');
- else out.steadyStateError=f.every(s=>Math.abs((s.actual-y0)/amplitude-1)<=policy.settleBand)?yes(y0+amplitude-f.reduce((a,s)=>a+s.actual,0)/f.length,u,f.length):no(u,'NOT_SETTLED');
+ else{
+  const mean=f.reduce((x,q)=>x+q.actual,0)/f.length,sd=Math.sqrt(f.reduce((x,q)=>x+(q.actual-mean)**2,0)/f.length);
+  out.steadyStateError=sd>policy.settleBand*Math.abs(amplitude)?no(u,'NOT_SETTLED'):yes(y0+amplitude-mean,u,f.length);
+ }
  return out;
 }

@@ -25,11 +25,20 @@ test('a response that never enters the 2 % band has no settling time',()=>{
  const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},{t0S:0,y0:0,amplitude:1},{finalWindowS:0.2,settleBand:0.02,holdWindowS:0.2});
  expect(m.settlingTimeS).toEqual({available:false,value:null,unit:'s',reason:'NOT_SETTLED'});
 });
-test('not settled means no settling time, no steady-state error; the other metrics stay available',()=>{
- const samples=Array.from({length:500},(_,k)=>({target:1,actual:Math.min(1,k/100)*0.85,feedback:null,torqueNm:2}));   // ends at 0.85: outside the band, never at 90 %
+test('settling away from the target: no settling time, but the final value and its error exist (contracts §5)',()=>{
+ const samples=Array.from({length:500},(_,k)=>({target:1,actual:Math.min(1,k/100)*0.85,feedback:null,torqueNm:2}));   // flat at 0.85: outside the band, never at 90 %
  const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy);
- expect(m.settlingTimeS).toMatchObject({available:false,reason:'NOT_SETTLED'});expect(m.steadyStateError).toMatchObject({available:false,reason:'NOT_SETTLED'});
- expect(m.riseTimeS).toMatchObject({available:false,reason:'NOT_REACHED'});
+ expect(m.settlingTimeS).toMatchObject({available:false,reason:'NOT_SETTLED'});
+ expect(value(m.steadyStateError)).toBeCloseTo(0.15,12);
+ expect(m.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});expect(value(m.overshootPct)).toBe(0);
+});
+test('a final window that still moves (standard deviation above band * |A|) has no final value and no error; a gap or a small ripple does not decide it',()=>{
+ const osc=Array.from({length:500},(_,k)=>({target:1,actual:1+0.1*Math.sin(k/5),feedback:null,torqueNm:0}));
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples:osc},unit,policy).steadyStateError).toMatchObject({available:false,reason:'NOT_SETTLED'});
+ const ripple=(a:number)=>Array.from({length:500},(_,k)=>({target:1,actual:1+a*(k%2?1:-1),feedback:null,torqueNm:0}));   // sd = a
+ expect(value(stepResponseMetrics({axisId:'a',dtS:0.002,samples:ripple(0.015)},unit,policy).steadyStateError)).toBeCloseTo(0,12);
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples:ripple(0.03)},unit,policy).steadyStateError).toMatchObject({available:false,reason:'NOT_SETTLED'});
+ expect(value(stepResponseMetrics({axisId:'a',dtS:0.002,samples:ripple(0.03)},{...unit,amplitude:2,y0:-1},policy).steadyStateError)).toBeCloseTo(0,12);   // the threshold scales with |A|
 });
 test('rise time is the 10 % to 90 % interval, overshoot is 0 for a response that stays below the target',()=>{
  const dtS=0.002,samples=Array.from({length:1500},(_,k)=>({target:1,actual:1-Math.exp(-k*dtS/0.1),feedback:null,torqueNm:0}));   // first order, tau 0.1: rise = tau ln 9
