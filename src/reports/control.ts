@@ -61,7 +61,8 @@ export function tuningStatus(t:TuningResultV1):string{
  if(t.status==='drive_fault'&&t.fault)return `${tr('Lỗi drive','ドライブ故障','Drive fault')} · tick ${t.fault.tick} · ${t.fault.axisId} · ${t.fault.code}: ${faultWords(t.fault.code)}`;
  if(t.status==='unstable'&&t.unstable)return `${tr('Bất ổn','不安定','Unstable')} · tick ${t.unstable.tick}: ${tr('engine báo','エンジンの報告','the engine reported')} “${t.unstable.warning}”. ${tr('Đây là kết quả của gain này, không phải sự cố; không tự hạ gain.','このゲインの結果であり障害ではありません。ゲインは自動で下げません。','This is the result of these gains, not an incident; no gain is lowered for you.')}`;
  if(t.status==='collision'&&t.collision)return `${tr('Va chạm','衝突','Collision')} · tick ${t.collision.tick}: ${t.collision.ids.join(', ')}`;
- return tr('Hoàn tất','完了','Completed');
+ // M5: a result without its detail object (a non-conforming runtime) still says its own status
+ return t.status==='completed'?tr('Hoàn tất','完了','Completed'):({drive_fault:tr('Lỗi drive','ドライブ故障','Drive fault'),unstable:tr('Bất ổn','不安定','Unstable'),collision:tr('Va chạm','衝突','Collision')} as Record<string,string>)[t.status]??String(t.status);
 }
 const value=(m:ControlMetric|undefined)=>!m?'—':m.available?m.unit==='ratio'?`${sig(m.value*100)} %`:`${sig(m.value)} ${m.unit}`:`${tr('Không khả dụng','利用不可','Unavailable')}: ${reasonWords(m.reason)} (${m.reason})`;
 const delta=(a:ControlMetric|undefined,b:ControlMetric|undefined)=>{if(!a?.available||!b?.available)return '—';const d=b.unit==='ratio'?(b.value-a.value)*100:b.value-a.value;return `${d>0?'+':d<0?'−':''}${sig(Math.abs(d))} ${b.unit==='ratio'?'%':b.unit}`;};

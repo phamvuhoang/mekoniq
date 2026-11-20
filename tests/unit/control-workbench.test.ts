@@ -8,7 +8,7 @@ vi.stubGlobal('localStorage',{getItem:(k:string)=>store.get(k)??null,setItem:(k:
 vi.stubGlobal('innerWidth',1440);
 vi.stubGlobal('matchMedia',()=>({matches:false}));
 vi.stubGlobal('document',{documentElement:{lang:'en'},getElementById:()=>null,querySelector:()=>null,activeElement:null,addEventListener(){},removeEventListener(){}});
-vi.stubGlobal('location',{origin:'http://127.0.0.1:4175',hostname:'127.0.0.1'});
+vi.stubGlobal('location',{origin:'http://127.0.0.1:4175',hostname:'127.0.0.1',hash:'#twin'});
 import type {ControlProfileV1,DriveTrace,TuningEnvelopeV1,TuningResultV1} from '../../src/shared/navigation2d';
 import type {RunView,TwinHealth,TwinRuntime} from '../../src/scenarios/controls';
 import {TwinRuntimeError} from '../../src/scenarios/controls';
@@ -143,22 +143,22 @@ type Panel={phase:string;importText(t:string):void};
 type H={health:TwinHealth|null;healthChecked:boolean;control:Panel};
 const workspaces:InstanceType<typeof TwinWorkspace>[]=[];
 afterEach(()=>{for(const w of workspaces.splice(0))w.leave();});
-function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeError;result?:(draftDigest:string,n:number)=>TuningResultV1;h?:TwinHealth;traceError?:Error;reportFailures?:number;proofs?:string[];startError?:Error;ownerOnly?:boolean;reclaimError?:Error;reportFailFor?:string}={}){
- const proofs=new Set(o.proofs??[]),owned=new Set<string>();let reportFailures=o.reportFailures??0;
+function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeError;result?:(draftDigest:string,n:number)=>TuningResultV1;h?:TwinHealth;traceError?:Error;reportFailures?:number;proofs?:string[];startError?:Error;ownerOnly?:boolean;reclaimError?:Error;reportFailFor?:string;stepError?:Error;archiveFailures?:number;paired?:boolean}={}){
+ const proofs=new Set(o.proofs??[]),owned=new Set<string>();let reportFailures=o.reportFailures??0,archiveFailures=o.archiveFailures??0;
  const calls:string[]=[],created:{bench:{controlProfile:ControlProfileV1;signal:unknown;axis:string}}[]=[],actions:{kind:string;revision:number}[]=[],pending:Record<string,{resolve:(v?:unknown)=>void}>={};
  let n=0;
  const view=(id:string,status:RunView['run']['status'],tick:number,revision:number):RunView=>({run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:BENCH_SET,backends:['mujoco_3d'],status,runRevision:revision,eventCursor:null,telemetryCursor:null,fidelity:'modeled',ageMs:0,sourceCommit:'5'.repeat(40),scenarioId:'MJ-BENCH-WHEEL',scenarioRevision:1,seed:7},tick,simTimeNs:String(tick*20_000_000),model:'mujoco_drive_bench',entities:[],workload:[],awaiting:[],attention:[],served:'0',coffee:null});
  const wait=async<T,>(key:string,v:T,defer?:boolean)=>{if(!defer)return v;const d=deferred<unknown>();pending[key]={resolve:()=>d.resolve(undefined)};await d.promise;delete pending[key];return v;};
- const rt={paired:true,get recoverableRunIds(){return [...proofs];},target:{base:'/lab/v2',kind:'same_origin'},forget(){},pair:async()=>{},health:async()=>o.h??health(),get:async()=>{throw new Error('not used');},
+ const rt={paired:o.paired??true,get recoverableRunIds(){return [...proofs];},target:{base:'/lab/v2',kind:'same_origin'},forget(){},pair:async()=>{},health:async()=>o.h??health(),get:async()=>{throw new Error('not used');},
   create:async(r:{bench:never})=>{calls.push('create');if(o.refuse)throw o.refuse;created.push(structuredClone(r));const id=`bench-${++n}`;proofs.add(id);owned.add(id);return wait('create',view(id,'ready',0,0),o.deferCreate);},
   action:async(v:RunView,kind:string)=>{calls.push(`${kind} ${v.run.id}`);actions.push({kind,revision:v.run.runRevision});const r=v.run.runRevision+1;
    if(kind==='start'){if(o.startError)throw o.startError;return view(v.run.id,'running',0,r);}
    if(kind==='cancel')return view(v.run.id,'cancelled',v.tick,r);
-   const tick=v.tick+50;return wait('step',view(v.run.id,tick>=500?'completed':'running',Math.min(tick,500),r),o.deferStep);},
+   if(o.stepError)throw o.stepError;const tick=v.tick+50;return wait('step',view(v.run.id,tick>=500?'completed':'running',Math.min(tick,500),r),o.deferStep);},
   report:async(id:string)=>{calls.push(`report ${id}`);if(reportFailures>0||id===o.reportFailFor){reportFailures--;throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);}const i=Number(id.split('-')[1])-1,digest=created[i]!.bench.controlProfile.digest;return {tuning:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
   trace:async(id:string)=>{calls.push(`trace ${id}`);if(o.traceError)throw o.traceError;return {traces:[{axisId:'amr-1/wheel-left',dtS:0.002,samples:Array.from({length:5010},(_,j)=>({target:j<140?0:2,actual:2*(1-Math.exp(-Math.max(0,j-140)/60)),feedback:2*(1-Math.exp(-Math.max(0,j-145)/60)),torqueNm:1,saturated:j===150}))}],issues:[]};},
   // the gateway answers a session that does not own the run 404 (readable() before the owner check); reclaim with the proof makes this session the owner
-  archive:async(id:string)=>{calls.push(`archive ${id}`);if(o.ownerOnly&&!owned.has(id))throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);},
+  archive:async(id:string)=>{calls.push(`archive ${id}`);if(o.ownerOnly&&!owned.has(id))throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);if(archiveFailures>0){archiveFailures--;throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);}},
   reclaim:async(id:string)=>{calls.push(`reclaim ${id}`);if(o.reclaimError)throw o.reclaimError;owned.add(id);return view(id,'needs_attention',0,1);},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
  };
  const w=new TwinWorkspace(()=>{},rt as unknown as TwinRuntime),h=w as unknown as H;workspaces.push(w);
@@ -286,7 +286,8 @@ test('Fix 3: a report that cannot be read leaves the finished bench open with "r
 });
 test('Fix 4: strings from health and from a result are rendered inert',async()=>{
  const evil='"><x-evil data-evil="1">',h=health(),wheel=h.benchCatalog!['MJ-BENCH-WHEEL']!,nominal=wheel.experiments['drive-nominal-v1']!;
- const hostile=health({benchSignals:{...h.benchSignals!,kinds:['step',evil as never],amplitudes:{wheelRadS:[2,evil as never],jointRad:[0.05]}},
+ // (a non-number amplitude is a malformed catalog since final-fix V07 M2: BENCH_CATALOG_INVALID, never rendered; see the M2 test)
+ const hostile=health({benchSignals:{...h.benchSignals!,kinds:['step',evil as never],amplitudes:{wheelRadS:[2],jointRad:[0.05]}},
   tuningEnvelope:{...envelope,axes:envelope.axes.map(a=>a.axisId==='amr-1/wheel-left'?{...a,kp:{min:0,max:evil as never}}:a)},
   benchCatalog:{'MJ-BENCH-WHEEL':{...wheel,plant:{...wheel.plant,id:evil},experiments:{'drive-nominal-v1':nominal,[evil]:nominal} as never,axes:[...wheel.axes,{...wheel.axes[0]!,axis:evil as never,unit:evil as never}]}}});
  const {w,run,idle}=bench({h:hostile,result:(digest)=>tuning({suggestions:[{...SUGGESTIONS[0]!,bandwidthRadS:evil as never,damping:evil as never,clamped:[evil as never]}],plant:{...tuning().plant,controlProfileDigest:digest}})});
@@ -313,7 +314,7 @@ test('Fix 5: an engine held by another MuJoCo run is said in words in three lang
  cap.w.click('twin-ctl-free-engine');
  await vi.waitFor(()=>expect(cap.calls).toContain('archive cell-run'));
  await vi.waitFor(()=>expect(cap.w.html()).not.toContain('twin-ctl-free-engine'));
- expect(cap.w.html()).toContain('the engine is free');expect(cap.w.html()).toMatch(/id="twin-ctl-kp"[^>]*value="3"/);
+ expect(cap.w.html()).toContain('The twin’s run is closed');expect(cap.w.html()).not.toContain('the engine is free');expect(cap.w.html()).toMatch(/id="twin-ctl-kp"[^>]*value="3"/);
 });
 
 // ---- fix round 2 ----
@@ -366,4 +367,105 @@ test('R2-5: a metric\'s availability from a report is written escaped',()=>{
  const evil='"><x-evil data-evil="1">';
  const html=tuningHtml(tuning({metrics:{...tuning().metrics,riseTimeS:{available:evil as never,value:0.1,unit:'s',samples:1,basis:'actual'}}}));
  expect(html).not.toContain('<x-evil');expect(html).not.toContain('data-evil="1"');
+});
+
+// ---- final-fix V07 ----
+test('I2: a step lost in transit and an archive that fails right after keep the proof and the mark; the bench is listed with Read again / Close without reading; a close that succeeds forgets it',async()=>{
+ const {w,calls,run,idle}=bench({stepError:new TypeError('Failed to fetch'),archiveFailures:1});
+ run();await idle();
+ expect(calls).toEqual(['create','start bench-1','step bench-1','archive bench-1']);
+ expect(marks().map(m=>m.id)).toEqual(['bench-1']);expect(w.html()).toContain('ARCHIVE_FAILED');
+ let html=w.html();expect(html).toMatch(/data-action="twin-ctl-reread" data-value="bench-1"/);expect(html).toMatch(/data-action="twin-ctl-unread-close" data-value="bench-1"/);
+ expect(html).not.toMatch(/data-action="twin-reclaim" data-value="bench-1"/);
+ // a later bench does not push it out of the list
+ for(let i=0;i<9;i++){run();await idle();}
+ expect(w.html()).toMatch(/data-action="twin-ctl-unread-close" data-value="bench-1"/);
+ w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(calls).toContain('drop bench-1'));await idle();
+ html=w.html();expect(html).not.toContain('data-value="bench-1"');expect(marks()).toEqual([]);
+});
+test('I2: Close without reading that fails again keeps the bench listed; only an archive that succeeds (or "not held") forgets it',async()=>{
+ const {w,calls,run,idle}=bench({stepError:new TypeError('Failed to fetch'),archiveFailures:2});
+ run();await idle();
+ w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(calls.filter(c=>c==='archive bench-1')).toHaveLength(2));await idle();
+ expect(calls).not.toContain('drop bench-1');expect(marks().map(m=>m.id)).toEqual(['bench-1']);expect(w.html()).toMatch(/data-action="twin-ctl-unread-close" data-value="bench-1"/);
+ await vi.waitFor(()=>expect(w.html()).toMatch(/data-action="twin-ctl-reread" data-value="bench-1">/));   // enabled again once the close attempt is over
+ w.click('twin-ctl-reread','bench-1');await vi.waitFor(()=>expect(calls).toContain('drop bench-1'));await idle();
+ expect(marks()).toEqual([]);expect(w.html()).not.toMatch(/data-action="twin-ctl-unread-close"/);
+});
+test('M1: the Control panel is light while another tab is open (no plot is re-serialized on a twin repaint); its plots come back with the tab',async()=>{
+ const {w,run,idle}=bench();run();await idle();
+ expect(w.html()).toContain('data-testid="control-plot-response"');
+ w.click('twin-inspector-tab','objects');
+ const html=w.html();expect(html).not.toContain('control-plot-response');expect(html).not.toContain('twin-ctl-form');expect(html).toContain('data-testid="control-bench"');
+ w.click('twin-inspector-tab','control');expect(w.html()).toContain('data-testid="control-plot-response"');
+});
+test('M2: a malformed bench block in health says BENCH_CATALOG_INVALID and the twin still renders; no run is offered',async()=>{
+ const h=health(),wheel=h.benchCatalog!['MJ-BENCH-WHEEL']!;
+ for(const bad of [health({benchCatalog:{'MJ-BENCH-WHEEL':{...wheel,startingProfile:{} as never}}}),health({benchSignals:{...h.benchSignals!,amplitudes:undefined as never}}),health({benchSignals:{...h.benchSignals!,kinds:'step' as never}}),
+  health({benchCatalog:{'MJ-BENCH-WHEEL':{...wheel,plant:undefined as never}}}),health({benchSignals:{...h.benchSignals!,amplitudes:{wheelRadS:'2' as never,jointRad:[0.05]}}})]){
+  const {w,calls,run}=bench({h:bad});
+  const html=w.html();expect(html).toContain('BENCH_CATALOG_INVALID');expect(html).toContain('data-testid="twin-scene"');
+  run();expect(calls).toEqual([]);
+ }
+});
+test('a stored Control tab is not restored on a runtime that offers no bench (Objects instead), and the viewport is never hidden while the bench is unavailable',async()=>{
+ const key='mekoniq-lab-twin-ui';
+ store.set(key,JSON.stringify({inspectorOpen:true,tab:'control'}));
+ const none=new TwinWorkspace(()=>{},{paired:true,recoverableRunIds:[],target:{base:'/lab/v2',kind:'same_origin'},health:async()=>health({benchCatalog:undefined})} as unknown as TwinRuntime);workspaces.push(none);
+ expect(none.html()).not.toMatch(/class="twin-main[^"]*control-open/);   // health not known yet: the twin stays in view
+ await none.checkHealth();
+ expect(none.html()).toMatch(/id="inspector-tab-objects"[^>]*aria-selected="true"/);
+ // a runtime with the bench keeps it
+ store.set(key,JSON.stringify({inspectorOpen:true,tab:'control'}));
+ const offered=new TwinWorkspace(()=>{},{paired:true,recoverableRunIds:[],target:{base:'/lab/v2',kind:'same_origin'},health:async()=>health()} as unknown as TwinRuntime);workspaces.push(offered);
+ await offered.checkHealth();expect(offered.html()).toMatch(/id="inspector-tab-control"[^>]*aria-selected="true"/);expect(offered.html()).toMatch(/class="twin-main[^"]*control-open/);
+ store.delete(key);
+ // the Control tab chosen while the bench is unavailable (unpaired, or no catalog) sits beside the viewport
+ for(const o of [{paired:false},{h:health({benchCatalog:undefined})}]){const {w}=bench(o);expect(w.html()).toContain('data-testid="control-unavailable"');expect(w.html()).not.toMatch(/class="twin-main[^"]*control-open/);}
+});
+test('while the Control tab has the main area the hidden twin takes no run keys and its run controls say they are the twin\'s',async()=>{
+ const {w}=bench(),spy=vi.spyOn(w,'click'),key=(k:string)=>(w as unknown as {onKey:(e:unknown)=>void}).onKey({key:k,ctrlKey:false,metaKey:false,altKey:false,repeat:false,target:null,defaultPrevented:false,preventDefault(){}});
+ for(const k of [' ','ArrowRight','f','w'])key(k);
+ expect(spy).not.toHaveBeenCalled();
+ key('i');expect(spy).toHaveBeenCalledWith('twin-inspector-toggle');
+ const shown=(html:string)=>/data-testid="transport-scope"[^>]*>([^<]*)</.exec(html)?.[1];
+ w.click('twin-inspector-tab','control');expect(shown(w.html())).toContain('Twin run');expect(w.html()).toMatch(/data-testid="scenario-picker"[^>]*title="Twin · /);
+ w.click('twin-inspector-tab','objects');expect(shown(w.html())).toBeUndefined();spy.mockClear();key(' ');expect(spy).toHaveBeenCalledWith('twin-toggle-play');
+});
+test('the one-click close of the twin\'s run does not reopen its streams, and only a run that holds the engine until it is closed is offered',async()=>{
+ const cap=bench({refuse:new TwinRuntimeError('BACKEND_UNAVAILABLE',['MUJOCO_CAPACITY'],422)});cap.run();await cap.idle();
+ const {view:mobile}=coffeeReplay();mobile.run={...mobile.run,id:'mobile-run',backendSetId:'engineering-mujoco-3d-v1',backends:['mujoco_3d'],status:'completed'};
+ let opened=0;Object.assign(cap.w,{view:mobile,openStreams:()=>{opened++;}});
+ expect(cap.w.html()).not.toContain('twin-ctl-free-engine');   // a finished mobile run has already given the engine back
+ const {view:cell,report:cellReport}=coffeeReplay();cell.run={...cell.run,id:'cell-run',backends:['mujoco_3d','mujoco_arm'],status:'completed'};cellReport.manifest.runId='cell-run';cellReport.outcome={...cellReport.outcome,tick:cell.tick,status:'completed'};
+ Object.assign(cap.w,{view:cell,report:cellReport});
+ cap.w.click('twin-ctl-free-engine');await vi.waitFor(()=>expect(cap.calls).toContain('archive cell-run'));await vi.waitFor(()=>expect(cap.w.html()).not.toContain('twin-ctl-free-engine'));
+ cap.w.mounted();cap.w.mounted();expect(opened).toBe(0);
+});
+test('the Lab loads where crypto.randomUUID is missing (a non-secure origin)',()=>{
+ const real=globalThis.crypto;vi.stubGlobal('crypto',{getRandomValues:(a:Uint8Array)=>real.getRandomValues(a)});
+ try{const w=new TwinWorkspace(()=>{},{paired:false,recoverableRunIds:[]} as unknown as TwinRuntime);workspaces.push(w);expect(w.html()).toContain('data-testid="twin-scene"');}
+ finally{vi.stubGlobal('crypto',real);}
+});
+test('M3: A/B compares with the most recent comparable result; a bench of another axis in between does not hide it',async()=>{
+ const {w,run,idle}=bench({result:(digest,i)=>i===1?tuning({runId:'bench-2',axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.05,atTick:10},plant:{...tuning().plant,plantModelDigest:xarm.plantModelDigest,controlProfileDigest:digest}}):tuning({runId:`bench-${i+1}`,plant:{...tuning().plant,controlProfileDigest:digest}})});
+ run();await idle();w.change('twin-ctl-axis-J3','J3');run();await idle();
+ expect(w.html()).toContain('data-testid="ab-changed"');
+ w.change('twin-ctl-axis-wheels','wheels');run();await idle();
+ const html=w.html();expect(html).toContain('data-testid="ab-delta"');expect(html).toContain('A · bench-1');expect(html).toContain('B · bench-3');
+});
+test('M4: an export that does not meet the schema (a runtime commit that is not 40 hex) is refused EXPORT_INVALID, never downloaded',()=>{
+ const control={axisId:'amr-1/wheel-left',loop:{kp:4,ki:0,kd:0,integralLimit:null,slewLimit:null},accelerationLimit:null},draft=benchDraft(serve,control,WHEELS);
+ const result=tuning({plant:{...tuning().plant,controlProfileDigest:draft.digest}});
+ expect(()=>exportControlProfile(serve,control,result,{scenarioId:'MJ-BENCH-WHEEL',sourceCommit:'test-commit'})).toThrow('EXPORT_INVALID');
+ expect(()=>exportControlProfile(serve,control,result,{scenarioId:'MJ-BENCH-WHEEL',sourceCommit:'5'.repeat(40)})).not.toThrow();
+});
+test('M5: a result whose detail object is missing says its own status, never "Completed"',()=>{
+ const all=Object.fromEntries(Object.entries(tuning().metrics).map(([k,m])=>[k,no('DRIVE_FAULT',m.unit)]));
+ for(const [status,word] of [['drive_fault','Drive fault'],['unstable','Unstable'],['collision','Collision']] as const){const html=tuningHtml(tuning({status,metrics:all}));expect(html,status).toContain(word);expect(html,status).not.toContain('Completed');}
+});
+test('M6: applying a suggestion keeps the acceleration limit the user typed',async()=>{
+ const {w,run,idle}=bench();run();await idle();
+ w.input('twin-ctl-accelerationLimit','7');w.change('twin-ctl-suggest','2');w.click('twin-ctl-suggest-apply');
+ const html=w.html();expect(html).toMatch(/id="twin-ctl-accelerationLimit"[^>]*value="7"/);expect(html).toMatch(new RegExp(`id="twin-ctl-kp"[^>]*value="${String(SUGGESTIONS[2]!.loop.kp).replace('.','\\.')}"`));
 });

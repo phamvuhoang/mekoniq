@@ -2333,6 +2333,7 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .twin-transport input[type="range"],.twin-transport-fill{flex:1 1 120px;min-height:44px}
 .twin-transport-fill{flex-basis:0}
 .twin-transport-time,.twin-measured{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.twin-transport-scope{font-size:12px;font-weight:600;color:var(--muted)}
 .twin-measured{color:var(--amber)}
 /* U03: disabled transport buttons look disabled in every state (the brand rules reset the global dimming) */
 .twin-transport .button:disabled,.twin-transport .button[aria-disabled="true"]{opacity:.45;cursor:default}

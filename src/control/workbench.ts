@@ -90,7 +90,10 @@ export function exportControlProfile(base:ControlProfileV1,control:AxisControl,r
  const draft=benchDraft(base,control,result.axisIds);
  if(draft.digest!==result.plant.controlProfileDigest)throw new Error('EXPORT_RESULT_MISMATCH');
  const tuned:TunedSourceRef={kind:'tuned_in_simulation',benchRunId:result.runId,scenarioId:source.scenarioId,traceSha256:result.trace.sha256,sourceCommit:source.sourceCommit,axisIds:[...result.axisIds],driveModelDigest:result.plant.driveModelDigest};
- return JSON.stringify(seal({...draft,calibration:'not_calibrated',sources:{...draft.sources,loop:tuned,limits:{...tuned}}}),null,2)+'\n';
+ const doc=seal({...draft,calibration:'not_calibrated',sources:{...draft.sources,loop:tuned,limits:{...tuned,axisIds:[...tuned.axisIds]}}});
+ // M4: a file neither the Lab nor the server would take back (e.g. a runtime commit that is not 40 hex) is never downloaded
+ if(!validProfile(doc))throw new Error('EXPORT_INVALID');
+ return JSON.stringify(doc,null,2)+'\n';
 }
 const ajv=new Ajv({strict:false,allErrors:false,discriminator:true});
 for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'control-profile-v1.schema.json':profileSchema}))ajv.addSchema(schema,key);

@@ -13,7 +13,7 @@ type Trace={axisId:string;dtS:number;samples:({target:number;actual:number;feedb
 /** The page's own number format for a metric (svg-plot sig: three significant digits; a ratio as %). */
 const shown=(m:Metric)=>m.available?m.unit==='ratio'?`${Number((m.value*100).toPrecision(3))} %`:`${Number(m.value.toPrecision(3))} ${m.unit}`:`(${m.reason})`;
 
-test('Control tab: a wheel bench, A/B after a gain change, export and import, bounds, hidden while running, three languages, 390/1024/1440',async({page})=>{
+test('Control tab: a wheel bench, A/B after a gain change, export and import, bounds, hidden while running, three languages, 390/1024/1440, a suggestion run, a trapezoid, a server refusal',async({page})=>{
  test.setTimeout(600000);page.setDefaultTimeout(30000);
  expect(token,'Run through scripts/test-irsim-e2e.mjs --provider mujoco --mujoco-mobile mujoco-control.spec.ts').toBeTruthy();
  const errors:string[]=[],creates:Request[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(isCreate(r))creates.push(r);});
@@ -89,6 +89,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  expect(exported.sources.loop.sourceCommit).toMatch(/^[0-9a-f]{40}$/);expect(exported.sources.limits).toEqual(exported.sources.loop);
  expect(exported).toMatchObject({calibration:'not_calibrated',plantModelDigest:b.tuning.plant.plantModelDigest});expect(exported.driveModelDigests).toContain(b.tuning.plant.driveModelDigest);
  expect(exported.axes.map((x:{loop:{kp:number}})=>x.loop.kp)).toEqual([4,4]);
+ await expect(page.locator('#twin-ctl-io-note')).toContainText('for the tuned axes amr-1/wheel-left, amr-1/wheel-right');
  await kp.fill('3');
  await page.locator('#twin-ctl-import').setInputFiles(file);
  await expect(kp).toHaveValue('4');await expect(page.getByTestId('control-plant')).toContainText(`${exported.id} r${exported.revision}`);
@@ -128,7 +129,33 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  expect(await scan()).toEqual([]);
  await response.scrollIntoViewIfNeeded();await shot(page,'390-bench');
- await page.setViewportSize({width:1440,height:900});await shot(page,'1440-final');
+ await page.setViewportSize({width:1440,height:900});await shot(page,'1440-final');expect(errors,'after 7').toEqual([]);
+
+ // 9 (final-fix V07 M7). A gain suggestion applied, then run: the bench carries exactly the suggested gains, and B − A is against the last comparable bench (d)
+ await page.getByRole('button',{name:'EN',exact:true}).click();await openInspector(page,'control');
+ const pick=d.tuning.suggestions[1] as {loop:{kp:number;ki:number;kd:number;integralLimit:number|null;slewLimit:number|null}};
+ await page.locator('#twin-ctl-suggest').selectOption('1');await page.locator('[data-action="twin-ctl-suggest-apply"]').click();
+ await expect(kp).toHaveValue(String(pick.loop.kp));await expect(page.locator('#twin-ctl-ki')).toHaveValue(String(pick.loop.ki));
+ const g=await runBench(runClick);
+ expect(g.request.bench.controlProfile.axes.map((x:{loop:unknown})=>x.loop)).toEqual([pick.loop,pick.loop]);
+ await expect(bench).toHaveAttribute('data-phase','idle');await expect(page.getByTestId('ab-delta')).toContainText(`A · ${d.id.slice(0,8)}`);
+ await checkPlots(g);await checkMetrics(g.tuning);await shot(page,'1440-suggestion');expect(errors,'after 9').toEqual([]);
+
+ // 10. a wheel trapezoid: the step metrics are SIGNAL_NOT_STEP, the tracking error, peak torque and saturation are measured; not compared with a step
+ await page.locator('#twin-ctl-kind').selectOption('trapezoid');await page.locator('#twin-ctl-size').selectOption('2');
+ await expect(page.locator('#twin-ctl-distance')).toHaveValue('4');await expect(page.locator('#twin-ctl-acceleration')).toHaveValue('10');await page.locator('#twin-ctl-atTick').fill('10');
+ const z=await runBench(runClick);
+ expect(z.request.bench.signal).toEqual({kind:'trapezoid',distance:4,peakVelocity:2,acceleration:10,atTick:10});
+ expect(z.tuning.status).toBe('completed');expect(z.tuning.metrics.riseTimeS).toMatchObject({available:false,reason:'SIGNAL_NOT_STEP'});expect(z.tuning.metrics.rmsError.available).toBe(true);
+ await expect(bench).toHaveAttribute('data-phase','idle');await checkMetrics(z.tuning);await checkPlots(z);await expect(page.getByTestId('ab-changed')).toContainText('signal');await shot(page,'1440-trapezoid');expect(errors,'after 10').toEqual([]);
+
+ // 11. a draft the UI admits but the server refuses: the same trapezoid from tick 400 ends its motion past tick 500 (the form checks the start tick only). The runtime's reason is shown at its field; no run exists
+ const runsBefore=creates.length;await page.locator('#twin-ctl-atTick').fill('400');
+ const refusedAt=page.waitForResponse(r=>isCreate(r.request()));await runClick();const refusal=await refusedAt;
+ expect(refusal.status()).toBe(422);const refusalBody=await refusal.json();expect(refusalBody.reasonCodes).toEqual(['SIGNAL_TOO_LONG']);expect(creates.length).toBe(runsBefore+1);
+ await expect(page.getByTestId('control-server-reasons')).toContainText('SIGNAL_TOO_LONG');await expect(page.locator('#twin-ctl-atTick-error')).toContainText('SIGNAL_TOO_LONG');
+ await expect(page.locator('#twin-ctl-atTick')).toHaveAttribute('aria-invalid','true');await expect(bench).toHaveAttribute('data-phase','idle');await shot(page,'1440-server-refusal');expect(errors,'after 11').toEqual([]);
+ await page.locator('#twin-ctl-atTick').fill('10');await page.locator('#twin-ctl-kind').selectOption('step');expect(errors,'after the reset').toEqual([]);
 
  // 8. an arm axis: J3 on a 0.2 rad step with the served starting gains. The page shows the result the runtime gave, its cause in words (a drive fault on OVERSPEED
  //    is the model's physics, not a bug), never a delta against the wheels, and exports only a completed bench
@@ -144,7 +171,9 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  if(j.tuning.status==='drive_fault'){await expect(status).toContainText(`${j.tuning.fault.code}`);if(j.tuning.fault.code==='OVERSPEED')await expect(status).toContainText('exceeded the drive’s speed limit');await expect(page.locator('[data-action="twin-ctl-export"]')).toBeDisabled();}
  else await expect(status).toContainText(j.tuning.status==='completed'?'Completed':j.tuning.status==='unstable'?'Unstable':'Collision');
  await checkMetrics(j.tuning);await expect(page.getByTestId('ab-changed')).toContainText('axis');await expect(page.getByTestId('ab-delta')).toHaveCount(0);
- if(dir)writeFileSync(`${dir}/V07a-results.json`,JSON.stringify({wheels:[a,b,c,d].map(r=>({runId:r.id,kp:r.request.bench.controlProfile.axes[0].loop.kp,status:r.tuning.status,metrics:r.tuning.metrics,trace:r.tuning.trace})),j3:{runId:j.id,status:j.tuning.status,fault:j.tuning.fault,metrics:j.tuning.metrics}},null,1));
+ if(dir)writeFileSync(`${dir}/V07a-results.json`,JSON.stringify({wheels:[a,b,c,d].map(r=>({runId:r.id,kp:r.request.bench.controlProfile.axes[0].loop.kp,status:r.tuning.status,metrics:r.tuning.metrics,trace:r.tuning.trace})),
+  suggestion:{runId:g.id,loop:pick.loop,status:g.tuning.status,metrics:g.tuning.metrics,trace:g.tuning.trace},trapezoid:{runId:z.id,signal:z.request.bench.signal,status:z.tuning.status,metrics:z.tuning.metrics,trace:z.tuning.trace},
+  serverRefusal:{status:refusal.status(),body:refusalBody},exported:{sources:exported.sources},j3:{runId:j.id,status:j.tuning.status,fault:j.tuning.fault,metrics:j.tuning.metrics}},null,1));
  await shot(page,'1440-j3');
  expect(errors).toEqual([]);
 });
