@@ -48,8 +48,10 @@ if [[ ${GITHUB_ACTIONS:-} == true ]]; then
   [[ $RUNNER_ARCH == X64 && $GITHUB_SHA == "$sha" ]] || die 'HOST_OR_SOURCE_MISMATCH'
 fi
 [[ -z $(git status --porcelain --untracked-files=all) ]] || die 'DIRTY_SOURCE_TREE'
-endpoint=${DOCKER_HOST:-$(docker context inspect --format '{{(index .Endpoints "docker").Host}}')}
-[[ $endpoint == unix://* ]] || die 'LOCAL_DOCKER_DAEMON_REQUIRED'
+endpoint=$(bash scripts/r4-cld02-docker-host.sh) || die 'LOCAL_DOCKER_DAEMON_REQUIRED'
+# Bind every client, including the child build script, to the socket recorded in host.txt.
+unset DOCKER_CONTEXT
+export DOCKER_HOST="$endpoint"
 daemon=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')
 {
   printf 'docker_endpoint=%s\ndaemon=%s\n' "$endpoint" "$daemon"
@@ -82,19 +84,7 @@ jq -e --arg sha "$sha" '.Os == "linux" and .Architecture == "amd64" and .revisio
 image=$(jq -r .Id "$out/image.json")
 guest=(docker run --rm --pull=never --platform linux/amd64 --network none --read-only --tmpfs /tmp -e PYTHONDONTWRITEBYTECODE=1)
 python=/opt/venv-mujoco/bin/python
-record guest "${guest[@]}" -i --entrypoint "$python" "$image" -B - <<'PY'
-import hashlib, importlib.metadata, platform, re, sys
-from pathlib import Path
-assert (platform.system(), platform.machine()) == ("Linux", "x86_64")
-print(platform.platform(), sys.version, sys.executable)
-assert sys.implementation.name == "cpython" and sys.version_info[:2] == (3, 11)
-lock = Path("/app/robotics/simulation-mujoco/requirements.lock").read_bytes()
-print("mujoco requirements.lock sha256", hashlib.sha256(lock).hexdigest())
-for package, locked in re.findall(r"^(\S+)==(\S+)", lock.decode(), re.MULTILINE):
-    installed = importlib.metadata.version(package)
-    print(package, installed, "locked", locked)
-    assert installed == locked, package
-PY
+record guest "${guest[@]}" -i --entrypoint "$python" "$image" -B - guest < scripts/check-r4-cld02.py
 "${guest[@]}" --entrypoint sha256sum "$image" /app/runtime.mjs "/app/$tool/requirements.lock" > "$out/image-file-hashes.txt"
 runtime_hash=$(jq -r .artifactSha256 "$out/runtime-manifest.json")
 lock_hash=$(sha256sum "$tool/requirements.lock" | cut -d' ' -f1)
@@ -120,12 +110,4 @@ record pytest perl -e 'alarm 900; exec @ARGV' "${current[@]}" --junitxml=/result
 if (( capture_status )); then exit "$capture_status"; fi
 if (( pytest_status )); then exit "$pytest_status"; fi
 # A skipped comparison or empty suite cannot close the native gate.
-python3 -B - "$out/pytest/full.xml" <<'PY'
-import sys
-import xml.etree.ElementTree as ET
-cases = ET.parse(sys.argv[1]).findall(".//testcase")
-required = {"test_the_legacy_path_gives_the_three_recorded_digests"}
-required.update(f"test_worker_responses_match_the_pre_fix_wire_bytes[{case}]" for case in ("mobile-no-drive", "mobile-cil", "arm-no-drive"))
-assert required <= {case.attrib["name"] for case in cases}, "missing native comparison"
-assert not any(case.find("skipped") is not None for case in cases), "native worker suite contained skipped tests"
-PY
+record receipt python3 -B scripts/check-r4-cld02.py receipt "$out/pytest/full.xml"
