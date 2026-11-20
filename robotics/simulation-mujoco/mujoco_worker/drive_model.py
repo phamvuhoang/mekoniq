@@ -24,6 +24,10 @@ def quantize(angle_rad, counts_per_rev):
     return round(angle_rad / step) * step
 
 
+def _finite_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
 def actuator_spec(axis_model, axis_control):
     """The engine actuator for one axis, by the mapping the V01 spike locked (docs/research/2026-11-virtual-drive-spike.md, section 2).
 
@@ -35,8 +39,8 @@ def actuator_spec(axis_model, axis_control):
     kp, ki, kd, limit, slew = loop["kp"], loop["ki"], loop["kd"], loop["integralLimit"], loop["slewLimit"]
     name = axis_model["axisId"]
     # one rule table per mode, the same as validateControlProfile (shared vectors: tests/data/control-profile-admission-v1.json)
-    if not all(isinstance(g, (int, float)) and math.isfinite(g) and g >= 0 for g in (kp, ki, kd)) or any(x is not None and not (isinstance(x, (int, float)) and math.isfinite(x) and x > 0) for x in (limit, slew, accel)):
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: a gain is negative or not finite, or a limit is not positive")
+    if not all(_finite_number(g) and g >= 0 for g in (kp, ki, kd)) or any(x is not None and not (_finite_number(x) and x > 0) for x in (limit, slew, accel)):
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: gains need finite non-negative numbers and limits need finite positive numbers")
     if (ki > 0) != (limit is not None):
         raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: an integralLimit exists exactly when ki > 0")
     if mode == "csp":
@@ -85,7 +89,6 @@ class DriveGroup:
         self.state = [ENABLED if b else DISABLED for b in self.boot_enabled]
         self.fault = [None] * self.n
         self.seq = [0] * self.n
-        self.reset_prev = [False] * self.n
         self.stale = [0] * self.n
         self.enable_sub = [0] * self.n
         self.qs_sub = [0] * self.n
@@ -116,8 +119,7 @@ class DriveGroup:
         self.saturated = [0] * self.n
         self.following = [None] * self.n
         self.sub = 0
-        self.enable_req = [b for b in self.boot_enabled]
-        self.quick_req = [False] * self.n
+        self.accepted = self.prime_commands()
         self.ready = True
 
     def prime_commands(self):
@@ -126,8 +128,8 @@ class DriveGroup:
 
     # ---- one tick ----------------------------------------------------------------------------------------------------------------------------------
     def check(self, commands):
-        """Pure: the commands of one tick by axis id, or a WorkerError with a DRIVE_* code. Changes nothing, so a session can refuse a tick before it spends anything (a one-shot disturbance,
-        a perturbation) and begin_tick() cannot refuse a set that was checked against the same state."""
+        """Validate the complete input and return its effective commands by axis id. A repeated sequence retains the previous command. This does not mutate the drive, so the session can
+        check admission before spending a one-shot disturbance or advancing the plant."""
         by_id = {}
         for c in commands:
             i = self.index.get(c["axisId"])
@@ -143,7 +145,7 @@ class DriveGroup:
                 raise WorkerError("DRIVE_TARGET_OUT_OF_RANGE", f"{c['axisId']}: {t} is outside [{lo}, {hi}]")
             if c["seq"] < self.seq[i]:
                 raise WorkerError("DRIVE_COMMAND_SEQ_INVALID", f"{c['axisId']}: seq {c['seq']} after {self.seq[i]}")
-            by_id[c["axisId"]] = c
+            by_id[c["axisId"]] = self.accepted[i] if c["seq"] == self.seq[i] else c
         for axis_id in self.ids:
             if axis_id not in by_id:
                 raise WorkerError("DRIVE_COMMAND_REQUIRED", axis_id)
@@ -155,13 +157,13 @@ class DriveGroup:
         for i, a in enumerate(self.axes):
             c = by_id[a["axisId"]]
             fresh = c["seq"] > self.seq[i]
-            self.seq[i] = c["seq"]
-            edge = c["faultReset"] and not self.reset_prev[i]
-            self.reset_prev[i] = c["faultReset"]
-            self.enable_req[i], self.quick_req[i] = c["enable"], c["quickStop"]
+            edge = fresh and c["faultReset"] and not self.accepted[i]["faultReset"]
+            if fresh:
+                self.seq[i] = c["seq"]
+                self.accepted[i] = c.copy()
             self.saturated[i] = 0
             if self.state[i] == FAULT:
-                if edge and self._cause_cleared(i, fresh):
+                if edge and self._cause_cleared(i):
                     self.state[i], self.fault[i] = DISABLED, None
                     self.stale[i], self.fe_count[i], self.loss_count[i] = 0, 0, 0
             elif self.state[i] == ENABLED and a["watchdogTicks"] is not None:
@@ -170,12 +172,12 @@ class DriveGroup:
                     self._trip(i, "COMMAND_TIMEOUT")
             else:
                 self.stale[i] = 0
-            # an axis that is not enabled acknowledges the command (seq above) and drops its target. Its command channel does not keep the target of before: it is brought to
-            # neutral (a velocity axis at 0, a position axis where it is), so that enabling it again, after a disable or a fault reset, never replays an old target
+            # An inactive axis acknowledges the sequence but drops its target. Keeping the channel neutral also prevents a repeated sequence from replaying a dropped target.
             self.accepting[i] = self.state[i] == ENABLED
             if self.accepting[i]:
                 self.prev_in[i] = self.cmd_in[i]
-                self.cmd_in[i] = c["target"]
+                if fresh:
+                    self.cmd_in[i] = c["target"]
             else:
                 self._neutral(i)
         self.sub = 0
@@ -183,15 +185,14 @@ class DriveGroup:
 
     def _neutral(self, i):
         n = self.pos[i] if self.axes[i]["mode"] == "csp" else 0.0
-        self.prev_in[i] = self.cmd_in[i] = self.applied[i] = self.ramp[i] = n
+        self.prev_in[i] = self.cmd_in[i] = self.ramp[i] = n
         ch = self.channel[i]
         for k in range(len(ch)):
             ch[k] = n
 
-    def _cause_cleared(self, i, fresh):
+    def _cause_cleared(self, i):
+        """Called on a fresh reset edge, which also clears the cause of a command timeout."""
         cause = self.fault[i]
-        if cause == "COMMAND_TIMEOUT":
-            return fresh
         if cause == "FEEDBACK_LOSS":
             return not self.dropout[i]
         if cause == "OVERSPEED":
@@ -229,14 +230,16 @@ class DriveGroup:
             out = ch[0]
             # 2. the state machine
             st = self.state[i]
-            want = self.enable_req[i] and not self.quick_req[i]
+            command = self.accepted[i]
+            quick = command["quickStop"]
+            want = command["enable"] and not quick
             if st == FAULT:
                 pass                                   # a fault is latched: only a rising faultReset (begin_tick) leaves it
             elif st == QUICK_STOP:
                 self.qs_sub[i] += 1
                 if self.qs_sub[i] >= a["quickStopSubsteps"] or abs(vel) < QUICK_STOP_REST_RADS:
                     st = DISABLED
-            elif st == ENABLED and self.quick_req[i]:
+            elif st == ENABLED and quick:
                 st, self.qs_sub[i], self.qs_hold[i] = QUICK_STOP, 0, pos
             elif not want:
                 st = DISABLED
@@ -261,13 +264,12 @@ class DriveGroup:
             # 3. ctrl and the limits
             on = st in (ENABLED, QUICK_STOP)
             if st == ENABLED:
-                self.applied[i] = out
                 t = out
             elif st == QUICK_STOP:
                 t = self.qs_hold[i] if a["mode"] == "csp" else 0.0
-                self.applied[i] = t
             else:
                 t = pos if a["mode"] == "csp" else 0.0
+            self.applied[i] = t
             if self.integrated[i]:
                 if on:
                     ref = self.pref[i] + t * self.dt

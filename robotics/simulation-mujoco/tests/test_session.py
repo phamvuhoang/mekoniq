@@ -223,7 +223,7 @@ def test_collisions_are_what_happened_during_the_tick_and_holding_is_read_at_its
 
 def test_an_engine_instability_warning_is_plant_unstable_before_any_clock_check(run):
     s, e, _ = run
-    e.unstable, e.time = "BADQVEL", 0.0  # MuJoCo resets the state (and its time) when it warns
+    e.unstable, e.time = "BADQVEL", 0.0  # simulate MuJoCo resetting the clock when it warns
     r = s.handle(step(0))
     assert not r["ok"] and r["error"]["code"] == "PLANT_UNSTABLE" and "BADQVEL" in r["error"]["detail"] and s.state == "failed"
 
@@ -242,9 +242,15 @@ def test_collisions_name_what_the_arm_touched_and_leave_out_grasping_and_resting
 
 def test_get_state_carries_the_readback_and_does_not_step(run):
     s, e, _ = run
-    r = s.handle(req("getState"))
-    assert r["ok"] and r["tick"] == 0 and len(e.calls) == 1 and r["result"]["model"]["arm"]["joints"][0]["forceN"] == 179.4445
-    check_schema(r)
+    advanced = s.handle(step(0, opening=0.05))
+    before = (s.tick, s.seq, e.time, list(e.calls))
+    for _ in range(2):
+        r = s.handle(req("getState", tick=1))
+        assert r["ok"] and r["tick"] == 1
+        assert r["result"]["model"]["arm"]["joints"][0]["forceN"] == 179.4445
+        assert {k: v for k, v in r["result"].items() if k != "model"} == advanced["result"]
+        assert (s.tick, s.seq, e.time, e.calls) == before
+        check_schema(r)
 
 
 def test_describe_names_the_engine_and_the_lock(tmp_path):

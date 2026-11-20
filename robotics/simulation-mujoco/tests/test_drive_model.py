@@ -138,6 +138,52 @@ def test_watchdog_counts_ticks_not_substeps_or_time(nominal_group):
     assert r.states() == ["enabled", "enabled"]
 
 
+@pytest.mark.parametrize("changed", [{"target": 2.0}, {"enable": False}, {"quickStop": True}])
+def test_a_repeated_seq_keeps_the_last_accepted_payload_and_advances_the_watchdog(nominal_group, changed):
+    r = nominal_group
+    r.enable_all()
+    first = r.tick(target=0.75)
+    for stale in range(1, 5):
+        repeated = r.tick(seq=r.seq, **{"target": 0.75, **changed})
+        assert [s["targetApplied"] for s in repeated] == [s["targetApplied"] for s in first] == [0.75] * r.n
+        assert [s["commandSeq"] for s in repeated] == [r.seq] * r.n
+        assert r.states() == ["enabled"] * r.n and r.g.stale == [stale] * r.n
+    assert [s["fault"] for s in r.tick(seq=r.seq, **changed)] == ["COMMAND_TIMEOUT"] * r.n
+
+
+def test_a_repeated_seq_cannot_enable_a_disabled_drive(nominal_group):
+    r = nominal_group
+    r.tick(enable=False)
+    for _ in range(4):
+        r.tick(seq=r.seq, enable=True)
+    assert r.states() == ["disabled"] * r.n
+
+
+def test_a_target_dropped_during_enable_does_not_become_active_on_a_repeated_seq(nominal_group):
+    r = nominal_group
+    r.tick(target=2.0)
+    for _ in range(3):
+        repeated = r.tick(seq=r.seq, target=2.0)
+    assert r.states() == ["enabled"] * r.n
+    assert [s["targetApplied"] for s in repeated] == [0.0] * r.n
+    assert [s["targetApplied"] for s in r.tick(target=2.0)] == [2.0] * r.n
+
+
+def test_a_repeated_seq_cannot_assert_or_release_fault_reset(nominal_group):
+    r = nominal_group
+    r.enable_all()
+    axis = "amr-1/wheel-left"
+    index = r.g.index[axis]
+    r.g.trip(axis)
+    assert r.tick(seq=r.seq, faultReset=True)[index]["fault"] == "EXTERNAL_TRIP"
+    assert r.tick(faultReset=True)[index]["fault"] is None
+    r.g.trip(axis)
+    assert r.tick(seq=r.seq, faultReset=False)[index]["fault"] == "EXTERNAL_TRIP"
+    assert r.tick(faultReset=True)[index]["fault"] == "EXTERNAL_TRIP"
+    r.tick(faultReset=False)
+    assert r.tick(faultReset=True)[index]["fault"] is None
+
+
 def test_a_held_faultReset_does_not_clear_a_second_fault(nominal_group):
     r = nominal_group
     r.enable_all()
@@ -161,10 +207,12 @@ def test_a_held_faultReset_does_not_clear_a_second_fault(nominal_group):
 def test_decreasing_seq_is_refused_before_any_mutation(nominal_group):
     r = nominal_group
     r.g.begin_tick(r.commands(seq=4, target=1.0))
-    before = r.snapshot()
+    before = copy.deepcopy(vars(r.g))
+    commands = r.commands(seq=5, target=2.0, enable=False, faultReset=True)
+    commands[-1]["seq"] = 3
     with pytest.raises(WorkerError) as e:
-        r.g.begin_tick(r.commands(seq=3, target=1.0))
-    assert e.value.code == "DRIVE_COMMAND_SEQ_INVALID" and r.snapshot() == before
+        r.g.begin_tick(commands)
+    assert e.value.code == "DRIVE_COMMAND_SEQ_INVALID" and vars(r.g) == before
 
 
 @pytest.mark.parametrize("mutate,code", [
@@ -305,11 +353,39 @@ def test_quick_stop_runs_down_and_disables(nominal_group):
     for _ in range(3):
         r.tick(target=5.0)
     assert r.vel[0] == 5.0
-    r.g.begin_tick(r.commands(quickStop=True)); r.run_substeps()
-    assert r.states() == ["quick_stop", "quick_stop"] or r.states() == ["disabled", "disabled"]
-    r.vel = [0.0, 0.0]
-    r.g.begin_tick(r.commands(quickStop=True)); r.run_substeps()
+    r.g.start_trace(r.g.ids)
+    r.log.clear()
+    stopped = r.tick(target=5.0, quickStop=True)
+    # A new quick-stop command first drives the target to zero while still active;
+    # the test plant then stops immediately, and the next substep disables the drive.
+    assert r.log[0]["active"] == [True] * r.n and r.log[1]["active"] == [False] * r.n
     assert r.states() == ["disabled", "disabled"]
+    assert [s["targetApplied"] for s in stopped] == [0.0] * r.n
+    assert [[s["target"] for s in t["samples"]] for t in r.g.trace()] == [[0.0] * SUB] * r.n
+
+
+@pytest.mark.parametrize("boundary", ["disable", "overspeed"])
+@pytest.mark.parametrize("mode", ["csv", "csp"])
+def test_inactive_telemetry_and_trace_report_the_actuator_target(mode, boundary):
+    r = (Rig() if mode == "csv" else Rig("xarm6-drive-nominal-v1.json", "xarm6-control-v1.json", servo=True))
+    axis = "amr-1/wheel-left" if mode == "csv" else "xarm-1/J2"
+    i = r.g.index[axis]
+    r.enable_all()
+    for _ in range(3):
+        r.tick(target=1.0)
+    r.g.start_trace([axis])
+    r.log.clear()
+    r.pos[i] = 0.4
+    if boundary == "overspeed":
+        r.vel[i] = 2 * r.model["axes"][i]["velocityLimitRadS"]
+    snap = r.tick(target=1.0, enable=boundary != "disable")[i]
+    assert snap["state"] == ("disabled" if boundary == "disable" else "fault")
+    assert snap["fault"] == (None if boundary == "disable" else "OVERSPEED")
+    assert all(not out["active"][i] for out in r.log)
+    expected = 0.0 if mode == "csv" else 0.4
+    assert [out["ctrl"][i] for out in r.log] == [expected] * SUB
+    assert [s["target"] for s in r.g.trace()[0]["samples"]] == [expected] * SUB
+    assert snap["targetApplied"] == expected
 
 
 def test_actuator_spec_follows_the_locked_mapping():
@@ -337,6 +413,21 @@ def test_actuator_spec_refuses_what_it_cannot_express():
         with pytest.raises(WorkerError) as e:
             actuator_spec(axis_m, axis_c)
         assert e.value.code == "DRIVE_DOCUMENT_INVALID"
+
+
+@pytest.mark.parametrize("kind,loop,acceleration", [
+    ("xarm6", {"kp": True}, None), ("xarm6", {"ki": False}, None), ("xarm6", {"kd": False}, None),
+    ("xarm6", {"ki": 1.0, "integralLimit": True}, None), ("xarm6", {"slewLimit": True}, None),
+    ("serve", {}, True),
+])
+def test_actuator_spec_refuses_boolean_gains_and_limits(kind, loop, acceleration):
+    model = doc(f"{kind}-drive-nominal-v1.json")["axes"][0]
+    control = doc(f"{kind}-control-v1.json")["axes"][0]
+    control["loop"].update(loop)
+    control["accelerationLimit"] = acceleration
+    with pytest.raises(WorkerError) as e:
+        actuator_spec(model, control)
+    assert e.value.code == "DRIVE_DOCUMENT_INVALID"
 
 
 def test_plan_actuators_gives_each_axis_its_own_group():

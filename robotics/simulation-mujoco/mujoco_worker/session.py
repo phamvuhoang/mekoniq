@@ -308,14 +308,14 @@ class WorkerSession:
 
     def _check_drive_commands(self, commands, kin):
         """Refuses a drive tick before anything is spent: the commands of every axis (DriveGroup.check, pure) and the (v, omega) the two wheel commands amount to against the admitted
-        navigation limits, as VELOCITY_TARGET_OUT_OF_RANGE always was on the velocity path. Returns the wheel commands' (v, omega)."""
+        navigation limits. Returns the effective command of each axis for the other admission checks."""
         g, mob = self.engine.drive.g, getattr(self.engine, "mobile", self.engine)
         by_id = g.check(commands)
         left, right = by_id[mob.rid + "/wheel-left"]["target"], by_id[mob.rid + "/wheel-right"]["target"]
         v, w = (left + right) / 2 * mob.radius, (right - left) * mob.radius / mob.separation
         if abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9):
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel commands exceed the admitted navigation limits")
-        return v, w
+        return by_id
 
     def _advance_world(self,q,opening,placements,v,w,tick,disturbance=None,commands=None):
         reading = self.engine.step(q,opening,placements,v,w,disturbance) if commands is None else self.engine.step(q,opening,placements,v,w,disturbance,commands)
@@ -350,8 +350,8 @@ class WorkerSession:
             if p.get("velocities") or p.get("jointTargets") or p.get("gripperTargets"):raise WorkerError("INVALID_REQUEST","a world with a drive model takes driveCommands, not velocities or arm targets")
             commands=p.get("driveCommands")
             if commands is None:raise WorkerError("DRIVE_COMMAND_REQUIRED","every tick needs one command per drive axis")
-            self._check_drive_commands(commands,nav["robots"][0]["model"]["kinematics"])
-            rid=nav["robots"][0]["robotId"];wheels=[c["target"] for c in commands if c["axisId"] in (rid+"/wheel-left",rid+"/wheel-right")]
+            effective = self._check_drive_commands(commands, nav["robots"][0]["model"]["kinematics"])
+            rid=nav["robots"][0]["robotId"];wheels=(effective[rid+"/wheel-left"]["target"],effective[rid+"/wheel-right"]["target"])
             v,w=(1.0,0.0) if any(x!=0 for x in wheels) else (0.0,0.0)   # only whether the wheels are asked to move matters to the interlock below
         else:
             velocities=p.get("velocities") or []
@@ -370,7 +370,7 @@ class WorkerSession:
         elif control is not None:raise WorkerError('WORLD_CONTROL_INVALID','unadmitted control context')
         if self.drive_on:
             # the dock-drift preset is admitted before release with a CLOSED commanded gripper: on a drive world the commanded opening is the gripper axis' command mapped back (closed = hi end of its range)
-            g=next(c for c in commands if c["axisId"]==self.scene["armCell"]["arm"]["armId"]+"/gripper");lo,hi=self.engine.arm.grip_range
+            g=effective[self.scene["armCell"]["arm"]["armId"]+"/gripper"];lo,hi=self.engine.arm.grip_range
             q,opening,checked=None,self.engine.opening_max_m*(1-(g["target"]-lo)/(hi-lo)),self._check_placements(p)
         else:q,opening,checked=self._check_step({**p,"velocities":[],"actorUpdates":[]})
         disturbances=p.get('worldPerturbations') or []

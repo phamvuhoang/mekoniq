@@ -101,8 +101,11 @@ class Bench:
         return [{"axisId": a["axisId"], "seq": self.s.tick + 1, "mode": a["mode"], "target": g.initial_target[i] + offsets.get(a["axisId"], 0.0), "enable": True, "quickStop": False,
                  "faultReset": False} for i, a in enumerate(g.axes)]
 
-    def step(self, offsets=None):
-        return self.s.handle(self.request("step", {"targetTick": self.s.tick + 1, "velocities": [], "actorUpdates": [], "driveCommands": self.commands(offsets)}))
+    def step(self, offsets=None, *, command_overrides=None):
+        commands = self.commands(offsets)
+        for c in commands:
+            c.update((command_overrides or {}).get(c["axisId"], {}))
+        return self.s.handle(self.request("step", {"targetTick": self.s.tick + 1, "velocities": [], "actorUpdates": [], "driveCommands": commands}))
 
     def readback(self):
         r = self.s.handle(self.request("getState", {}))
@@ -168,6 +171,82 @@ def test_the_feedback_of_a_traced_axis_is_null_while_its_encoder_delivers_nothin
     b.s.end()
 
 
+@pytest.mark.parametrize("ki", [0, 3000.0], ids=["slew-only", "slew-with-integral"])
+def test_admitted_j2_slew_hold_seeds_the_nonzero_reference_at_enable_and_reenable(tmp_path, monkeypatch, ki):
+    axis = "xarm-1/J2"
+    control = json.loads((DRIVE / "xarm6-control-v1.json").read_text())
+    c = next(a for a in control["axes"] if a["axisId"] == axis)
+    c["loop"].update(ki=ki, integralLimit=2.0 if ki else None, slewLimit=0.5)
+    b = Bench(tmp_path, "arm", [axis], control=seal(control))
+    b.start()
+    binding, real_step = b.s.engine.drive, mujoco.mj_step
+    i = binding.g.index[axis]
+    qadr, adr, n = binding.qadr[i], binding.actadr[i], binding.actnum[i]
+    assert n == (2 if ki else 1)
+    home = binding.g.initial_target[i]
+    assert abs(home) > 1.0
+    activations = []
+    was_active = False
+
+    def spy(model, data, *rest):
+        nonlocal was_active
+        active = binding.active[i]
+        if active and not was_active:
+            activations.append((float(data.qpos[qadr]), data.act[adr:adr + n].tolist()))
+        was_active = active
+        real_step(model, data, *rest)
+
+    monkeypatch.setattr(mujoco, "mj_step", spy)
+
+    def hold(position):
+        snapshots = []
+        for _ in range(25):
+            r = b.step({axis: position - home})
+            assert r["ok"], r
+            snapshots.append(r["result"]["drives"][i])
+        q, state = activations[-1]
+        assert state == ([q, 0.0] if ki else [q])
+        assert all(s["fault"] is None and abs(s["actualPositionRad"] - position) < 0.01 for s in snapshots)
+        assert snapshots[-1]["state"] == "enabled"
+
+    try:
+        hold(home)
+        for _ in range(8):
+            assert b.step(command_overrides={axis: {"enable": False}})["result"]["drives"][i]["state"] == "disabled"
+        hold(float(binding.d.qpos[qadr]))
+        assert len(activations) == 2
+    finally:
+        b.s.end()
+
+
+@pytest.mark.parametrize("flag", ["disable", "quick-stop"])
+def test_a_wheel_bench_trace_at_stop_matches_the_real_actuator_input(tmp_path, monkeypatch, flag):
+    axis = WHEELS[0]
+    b = Bench(tmp_path, "wheel", [axis])
+    b.start()
+    binding, real_step = b.s.engine.drive, mujoco.mj_step
+    i = binding.g.index[axis]
+    try:
+        for _ in range(15):
+            moving = b.step({a: 2.0 for a in WHEELS})["result"]["drives"][i]
+        assert moving["state"] == "enabled" and moving["targetApplied"] == 2.0 and moving["actualVelocityRadS"] > 0.5
+        observed = []
+
+        def spy(model, data, *rest):
+            observed.append((binding.active[i], float(data.ctrl[binding.adr0[i]])))
+            real_step(model, data, *rest)
+
+        monkeypatch.setattr(mujoco, "mj_step", spy)
+        flags = {"enable": False} if flag == "disable" else {"quickStop": True}
+        result = b.step({a: 2.0 for a in WHEELS}, command_overrides={a: flags for a in WHEELS})["result"]
+        assert observed == [(flag == "quick-stop", 0.0)] * 10
+        assert result["drives"][i]["state"] == ("disabled" if flag == "disable" else "quick_stop")
+        assert result["drives"][i]["targetApplied"] == observed[-1][1]
+        assert [s["target"] for s in result["driveTrace"][0]["samples"]] == [target for _, target in observed]
+    finally:
+        b.s.end()
+
+
 def test_a_run_without_bench_has_no_trace_and_no_effective_inertia(tmp_path):
     """A CIL mobile run (drive refs in the scene) and a legacy arm run: the bench fields never appear."""
     root = tmp_path / "cil"
@@ -224,21 +303,30 @@ def test_the_wire_schema_refuses_three_traced_axes_too(tmp_path):
     assert parse_line(json.dumps(ok), validator) == ok
 
 
-def test_a_bench_takes_its_drive_documents_from_one_source_only(tmp_path):
-    b = Bench(tmp_path, "wheel", WHEELS)
-    scene = json.loads((tmp_path / "navigation-scene.json").read_text())
+@pytest.mark.parametrize("kind,axes", [("wheel", WHEELS), ("arm", ["xarm-1/J3"])])
+def test_a_bench_takes_its_drive_documents_from_one_source_only(tmp_path, kind, axes):
+    b = Bench(tmp_path, kind, axes)
+    path = tmp_path / b.create_payload["sceneRef"]
+    scene = json.loads(path.read_text())
     scene["engine"]["driveModelRef"], scene["engine"]["controlProfileRef"] = b.bench["driveModelRef"], b.bench["controlProfileRef"]
     scene["sceneDigest"] = scene_digest_of(scene)
-    (tmp_path / "navigation-scene.json").write_text(json.dumps(scene))
+    path.write_text(json.dumps(scene))
     b.s.expected_scene_digest = scene["sceneDigest"]
     r = b.create()
-    assert not r["ok"] and r["error"]["code"] == "BENCH_DRIVE_CONFLICT" and b.factory_calls == 0, r
+    assert not r["ok"] and r["error"]["code"] == "BENCH_DRIVE_CONFLICT", r
+    assert b.factory_calls == 0 and b.s.engine is None and b.s.state == "new" and b.s.tick == 0
 
 
-def test_a_bench_on_a_world_is_refused(tmp_path):
-    b = Bench(tmp_path, "arm", ["xarm-1/J3"])
-    r = b.create(sceneRef="lab-world-scene.json", arms=[])
+@pytest.mark.parametrize("unsupported", ["world", "perturbation"])
+def test_an_unsupported_bench_is_refused_before_any_engine_is_built(tmp_path, unsupported):
+    b = Bench(tmp_path, "wheel", WHEELS)
+    if unsupported == "world":
+        r = b.create(sceneRef="lab-world-scene.json")
+    else:
+        b.s.payload_perturbation = "payload-cup-forward-impulse-v1"
+        r = b.create()
     assert not r["ok"] and r["error"]["code"] == "BENCH_SCENE_UNSUPPORTED", r
+    assert b.factory_calls == 0 and b.s.engine is None and b.s.state == "new" and b.s.tick == 0
 
 
 @pytest.mark.parametrize("load", ["cup-center.json", "cup-offset.json"])
@@ -351,15 +439,13 @@ def hinge_inertia(m, d, joint):
     return total
 
 
-def axis_joint(engine, axis_id):
-    g, binding = engine.drive.g, engine.drive
-    return int(engine.model.dof_jntid[binding.dof[g.index[axis_id]]])
-
-
 def test_the_effective_inertia_of_a_joint_and_the_gripper_is_the_mass_matrix_diagonal_at_the_current_pose(tmp_path):
     b = Bench(tmp_path, "arm", ["xarm-1/J3", "xarm-1/gripper"])
     b.start()
     _, validator = load_validators(SCHEMAS)
+    e = b.s.engine
+    grip_joint = json.loads((FX / "physics.json").read_text())["gripper"]["driveJoint"]
+    authored_joints = {"xarm-1/J3": "J3", "xarm-1/gripper": grip_joint}
     seen = []
     for ticks in (0, 60):
         for k in range(ticks):                                         # J5 moves 0.5 rad (a 0.5 rad/s ramp): the arm distal to J3 changes, so must J3's inertia
@@ -367,10 +453,10 @@ def test_the_effective_inertia_of_a_joint_and_the_gripper_is_the_mass_matrix_dia
         r = b.readback()
         validator.validate(r)
         got = r["result"]["model"]["effectiveInertiaKgM2"]
-        e = b.s.engine
         assert [(x["axisId"], x["basis"], x["provenance"]) for x in got] == [("xarm-1/J3", "mass_matrix_diagonal", "assumed"), ("xarm-1/gripper", "mass_matrix_diagonal", "assumed")]
         for x in got:
-            assert x["valueKgM2"] == pytest.approx(hinge_inertia(e.model, e.data, axis_joint(e, x["axisId"])), rel=1e-9)
+            joint = e.model.joint(e.names["jointIds"][authored_joints[x["axisId"]]]).id
+            assert x["valueKgM2"] == pytest.approx(hinge_inertia(e.model, e.data, joint), rel=1e-9)
         seen.append(got[0]["valueKgM2"])
     assert abs(seen[1] - seen[0]) > 1e-3
     b.s.end()
@@ -386,10 +472,13 @@ def test_the_effective_inertia_of_a_wheel_adds_half_the_mass_of_the_amr_at_the_w
     m = e.model
     root = m.body_rootid[e.base]
     mass = sum(float(m.body_mass[x]) for x in range(m.nbody) if m.body_rootid[x] == root)
-    radius = json.loads((SERVE / "physical-model-amr-1.json").read_text())["drive"]["wheelRadiusM"]["value"]
+    drive = json.loads((SERVE / "physical-model-amr-1.json").read_text())["drive"]
+    radius = drive["wheelRadiusM"]["value"]
+    authored_joints = {"amr-1/wheel-left": drive["leftJointId"], "amr-1/wheel-right": drive["rightJointId"]}
     assert [x["axisId"] for x in got] == WHEELS and {(x["basis"], x["provenance"]) for x in got} == {("wheel_straight_line", "assumed")}
     for x in got:
-        own = hinge_inertia(m, e.data, axis_joint(e, x["axisId"]))
+        joint = m.joint(e.names["joints"][authored_joints[x["axisId"]]]).id
+        own = hinge_inertia(m, e.data, joint)
         assert x["valueKgM2"] == pytest.approx(own + mass * radius ** 2 / 2, rel=1e-9)
         assert mass * radius ** 2 / 2 > 10 * own                       # the chassis, not the wheel, is what the wheel drive moves
     b.s.end()
@@ -397,19 +486,19 @@ def test_the_effective_inertia_of_a_wheel_adds_half_the_mass_of_the_amr_at_the_w
 
 # ---- instability (ruling 6) ---------------------------------------------------------------------------------------------------------------------------------
 def test_a_J3_gain_far_above_the_envelope_ceiling_trips_the_drive_and_the_plant_stays_finite(tmp_path):
-    """Ruling 6 asked for PLANT_UNSTABLE here. It is not reachable through the profile: the drive model's 92 N m effort limit bounds J3's torque, and the drive's OVERSPEED trip ends
-    the motion in the second tick of the step (kp from 10x to 1e15x the 10,000 N m/rad ceiling, kd up to 1e9, ki up to 1e9 all end the same way; see the V06b report). This pins what happens."""
+    """The 92 N m effort limit caps the commanded step before the drive's overspeed protection trips."""
+    axis = "xarm-1/J3"
     envelope = json.loads((DRIVE / "tuning-envelope-v1.json").read_text())
-    ceiling = next(a for a in envelope["axes"] if a["axisId"] == "xarm-1/J3")["kp"]["max"]
+    ceiling = next(a for a in envelope["axes"] if a["axisId"] == axis)["kp"]["max"]
     control = json.loads((DRIVE / "xarm6-control-v1.json").read_text())
-    next(a for a in control["axes"] if a["axisId"] == "xarm-1/J3")["loop"]["kp"] = 100 * ceiling   # written into the bundle: the worker does not check the envelope
-    b = Bench(tmp_path, "arm", ["xarm-1/J3"], control=seal(control))
+    next(a for a in control["axes"] if a["axisId"] == axis)["loop"]["kp"] = 100 * ceiling
+    b = Bench(tmp_path, "arm", [axis], control=seal(control))
     b.start()
     tripped = None
     for k in range(500):
-        r = b.step({"xarm-1/J3": 0.1} if k >= 20 else None)          # a 0.1 rad step commanded from tick 21 on
-        assert r["ok"], r                                                # never PLANT_UNSTABLE
-        j3 = r["result"]["drives"][2]
+        r = b.step({axis: 0.1} if k >= 20 else None)          # a 0.1 rad step commanded from tick 21 on
+        assert r["ok"], r
+        j3 = next(drive for drive in r["result"]["drives"] if drive["axisId"] == axis)
         if tripped is None and j3["fault"]:
             tripped = (r["result"]["tick"], j3["fault"], r["result"]["driveTrace"][0]["samples"])
     assert tripped[:2] == (22, "OVERSPEED")                              # 92 N m at 0.71 kg m^2 passes 1.2 x 3.14 rad/s in the second tick of the step
@@ -418,8 +507,8 @@ def test_a_J3_gain_far_above_the_envelope_ceiling_trips_the_drive_and_the_plant_
     b.s.end()
 
 
-def test_an_engine_warning_in_a_bench_ends_the_run_as_plant_unstable(tmp_path):
-    """The existing PLANT_UNSTABLE path holds on the arm drive path a bench opened: an engine reset warning is fatal, the engine is closed."""
+def test_a_simulated_engine_warning_in_a_bench_ends_the_run_as_plant_unstable(tmp_path):
+    """Inject a warning into the engine response to exercise the session's fatal error path."""
     b = Bench(tmp_path, "arm", ["xarm-1/J3"])
     b.start()
     engine = b.s.engine

@@ -1,5 +1,6 @@
 """Full NDJSON responses from the real worker, captured on Darwin arm64 with MuJoCo 3.17.0."""
 import json
+import os
 import platform
 import re
 import shutil
@@ -16,6 +17,7 @@ from scene_fixture import BLOBS, SCHEMAS
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(__file__).with_name("data") / "worker-protocol-darwin-arm64"
 CASES = ("mobile-no-drive", "mobile-cil", "arm-no-drive")
+RESPONSE_OVERRIDE = os.environ.get("MUJOCO_PROTOCOL_RESPONSE_DIR")
 
 
 def capture_responses(bundle_root, case):
@@ -53,8 +55,9 @@ def capture_responses(bundle_root, case):
                   rb'\g<1>00000000-0000-4000-8000-000000000000\g<2>', exchange.stdout)
 
 
-@pytest.mark.skipif((platform.system(), platform.machine()) != ("Darwin", "arm64"),
-                    reason="wire corpus records Darwin arm64 floating-point output")
+@pytest.mark.skipif(RESPONSE_OVERRIDE is None and (platform.system(), platform.machine()) != ("Darwin", "arm64"),
+                    reason="set MUJOCO_PROTOCOL_RESPONSE_DIR to a pre-fix corpus captured on this platform")
 @pytest.mark.parametrize("case", CASES)
 def test_worker_responses_match_the_pre_fix_wire_bytes(tmp_path, case):
-    assert capture_responses(tmp_path, case) == (DATA / f"{case}.ndjson").read_bytes()
+    response_dir = DATA if RESPONSE_OVERRIDE is None else Path(RESPONSE_OVERRIDE)
+    assert capture_responses(tmp_path, case) == (response_dir / f"{case}.ndjson").read_bytes()

@@ -29,6 +29,7 @@ class DriveBinding:
         self.qadr, self.dof = model.jnt_qposadr[jid].astype(int), model.jnt_dofadr[jid].astype(int)
         self.actadr = model.actuator_actadr[self.acts].astype(int)
         self.actnum = model.actuator_actnum[self.acts].astype(int)
+        self.has_slew = ["slewmax" in group.plan[axis_id]["spec"]["attrs"] for axis_id in group.ids]
         for k, a in enumerate(acts):
             model.actuator_group[a] = group.plan[group.ids[k]]["group"]
         self.base_disable = int(model.opt.disableactuator)
@@ -83,7 +84,7 @@ class DriveBinding:
                 m.dof_frictionloss[dof], m.dof_solimp[dof], m.dof_solref[dof] = self.base_loss[i], self.base_solimp[i], self.base_solref[i]
                 if self.actnum[i]:  # integral from zero, slew reference at the current position
                     d.act[self.actadr[i]:self.actadr[i] + self.actnum[i]] = 0.0
-                    if self.actnum[i] == 2:
+                    if self.has_slew[i]:
                         d.act[self.actadr[i]] = pos[i]
             else:
                 if self.brake_nm[i] is not None and g.axes[i]["onDisable"] == "brake":

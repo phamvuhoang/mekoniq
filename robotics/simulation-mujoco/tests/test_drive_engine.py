@@ -152,14 +152,16 @@ def test_actuator_gains_are_read_back_from_the_compiled_model_for_every_kind():
 def test_a_pid_axis_converges_on_a_step_with_the_integral_limit_honoured():
     am, ac = docs("xarm6")
     ac = copy.deepcopy(ac)
-    ac["axes"][1]["loop"].update(ki=3000.0, integralLimit=2.0)
+    next(axis for axis in ac["axes"] if axis["axisId"] == "xarm-1/J2")["loop"].update(ki=3000.0, integralLimit=2.0)
     e = arm_engine((am, ac))
     q0 = P.HOME
+    j2 = e.arm_joints.index(e.model.joint("J2").id)
     for k in range(200):  # a ramp of 0.5 rad/s, as a trajectory follower would send: a raw 0.2 rad step in one tick is 10 rad/s and an OVERSPEED trip
-        q = [h + (min(0.2, 0.01 * max(0, k - 50)) if i == 1 else 0.0) for i, h in enumerate(q0)]
+        q = list(q0)
+        q[j2] += min(0.2, 0.01 * max(0, k - 50))
         r = e.step(None, None, [], arm_commands("xarm-1", q, P.OPEN, e.grip_range, e.opening_max_m, k + 1))
         assert r["unstable"] is None
-    assert abs(e.data.qpos[e.arm_qpos[1]] - (q0[1] + 0.2)) < 1e-3
+    assert abs(e.data.qpos[e.arm_qpos[j2]] - (q0[j2] + 0.2)) < 1e-3
     e.close()
 
 
@@ -367,6 +369,12 @@ def test_a_command_stream_that_goes_quiet_trips_the_watchdog_by_ticks_through_th
     assert s.handle(request("start"))["ok"]
     for k in range(5):
         r = s.handle(step_request(k, wheels(k + 1, 0.5)))
+    before = (s.engine.data.time, s.engine.drive.g.tick, list(s.engine.drive.g.stale))
+    for k in range(10):
+        observed = s.handle(request("getState", tick=5, rid=f"watchdog-read-{k}"))
+        assert observed["ok"] and observed["tick"] == 5
+        assert {k: v for k, v in observed["result"].items() if k != "model"} == r["result"]
+        assert (s.engine.data.time, s.engine.drive.g.tick, list(s.engine.drive.g.stale)) == before
     for k in range(5, 10):
         r = s.handle(step_request(k, wheels(5, 0.5)))
         assert [d["fault"] for d in r["result"]["drives"]] == [None if k < 9 else "COMMAND_TIMEOUT"] * 2, k
@@ -451,7 +459,7 @@ def test_drive_documents_that_do_not_fit_the_scene_are_refused_at_create(tmp_pat
 
 
 # ---- review of V05 (2026-11-19) ------------------------------------------------------------------------------------------------------------------------------
-def world_bundle(tmp_path, plant=WORLD_PLANT):
+def world_bundle(tmp_path, plant=WORLD_PLANT, *, control_context=False):
     world = ROOT / "fixtures" / "coffee-delivery-world-v1"
     for p in world.iterdir():
         if p.is_file():
@@ -466,6 +474,8 @@ def world_bundle(tmp_path, plant=WORLD_PLANT):
         refs[key] = {"id": d["id"], "revision": 1, "path": name, "sha256": hashlib.sha256(raw).hexdigest()}
         scene["files"].append({"path": name, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
     scene["engine"] = refs
+    if control_context:
+        scene["controlContextVersion"] = 1
     scene["sceneDigest"] = scene_digest_of(scene)
     (tmp_path / "lab-world-scene.json").write_text(json.dumps(scene))
     return scene
@@ -483,8 +493,8 @@ def test_the_world_plant_digest_is_the_one_the_lab_computes_and_a_profile_for_an
     assert not r["ok"] and r["error"]["code"] == "DRIVE_DOCUMENT_INVALID" and s.engine is None, r
 
 
-def world_drive_session(tmp_path):
-    scene = world_bundle(tmp_path)
+def world_drive_session(tmp_path, *, control_context=False):
+    scene = world_bundle(tmp_path, control_context=control_context)
     s = WorkerSession(run_id="w", bundle_root=tmp_path, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"])
 
     def req(op, payload, tick=0, rid=None):
@@ -531,3 +541,41 @@ def test_wheel_commands_beyond_the_admitted_navigation_limits_are_refused_on_the
     again["requestId"] = "slower"
     assert s.handle(again)["ok"]
     s.end()
+
+
+def test_a_repeated_wheel_sequence_does_not_change_navigation_limit_admission(tmp_path):
+    s = mobile_session(tmp_path)
+    try:
+        assert s.handle(request("create", {"sceneRef": "navigation-scene.json", "seed": 7}))["ok"]
+        assert s.handle(request("start"))["ok"]
+        kin = s.scene["robots"][0]["model"]["kinematics"]
+        fast = 1.05 * kin["maxLinearMps"] / s.engine.radius
+        assert s.handle(step_request(0, wheels(1, 0.0)))["ok"]
+        malformed = step_request(1, wheels(1, 99.0))
+        malformed["requestId"] = "repeated-out-of-bounds"
+        refused = s.handle(malformed)
+        assert not refused["ok"] and refused["error"]["code"] == "DRIVE_TARGET_OUT_OF_RANGE" and refused["tick"] == 1, refused
+        repeated = s.handle(step_request(1, wheels(1, fast)))
+        assert repeated["ok"] and repeated["tick"] == 2, repeated
+        fresh = s.handle(step_request(2, wheels(2, fast)))
+        assert not fresh["ok"] and fresh["error"]["code"] == "VELOCITY_TARGET_OUT_OF_RANGE" and fresh["tick"] == 2, fresh
+    finally:
+        s.end()
+
+
+@pytest.mark.parametrize("accepted_target", [0.0, 0.5])
+def test_world_movement_interlock_uses_the_accepted_wheel_targets(tmp_path, accepted_target):
+    s, req, arm, ctl, _ = world_drive_session(tmp_path, control_context=True)
+    try:
+        first = {"targetTick": 1, "velocities": [], "actorUpdates": [], "driveCommands": arm + wheels(1, accepted_target), **ctl}
+        assert s.handle(req("step", first))["ok"]
+        stopped = {**ctl["worldControl"], "movementInterlocked": True, "stopLatched": True}
+        raw_target = 0.5 if accepted_target == 0.0 else 0.0
+        repeated = {**first, "targetTick": 2, "driveCommands": arm + wheels(1, raw_target), "worldControl": stopped}
+        r = s.handle(req("step", repeated, tick=1))
+        if accepted_target == 0.0:
+            assert r["ok"] and r["tick"] == 2, r
+        else:
+            assert not r["ok"] and r["error"]["code"] == "WORLD_CONTROL_INVALID" and r["tick"] == 1, r
+    finally:
+        s.end()
