@@ -32,12 +32,11 @@ import {spawnMujocoWorker} from './worker-client';
 import {readWorldFixture,validateWorldObservation,worldArmObstacles,type WorldInteractionIntent} from './world-scene';
 import {openWorldRecorder,prepareWorldAdmission} from './world-evidence';
 import {worldDriveBundle,worldPlantDigest} from '../control/drive-experiments';
-import {admitDriveDocuments,driveManifest,driveWireCommand,wheelVelocityResolutionRadS,BASE_CONTROLLER_DEFAULTS} from '../control/drive-run';
+import {admitDriveDocuments,driveManifest,driveWireCommand,mobileDrive,type MobileDrive,BASE_CONTROLLER_DEFAULTS} from '../control/drive-run';
 import {splitDriveSnapshot} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
 import type {DriveRecord} from '../control/drive-metrics';
 import type {ControllerEvent} from '../control/controller';
-import {diffDriveBaseV1,type DiffDriveBaseState} from '../control/diff-drive-base';
 import {jointTrajectoryFollowerV1,type JointFollowerState} from '../control/joint-follower';
 import type {WorldPortsFactory,WorldTickCommand} from './world-ports';
 
@@ -85,10 +84,9 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   // the controllers of the drive: pure state machines on the measured feedback of the last verified snapshot; their events that need a person halt the cell like any other halted reason
   const driveDocs=driveBundle?await admitDriveDocuments(scene,async p=>files.get(p)!,runtime.workerRoot,worldPlantDigest(scene)):undefined;
   const armComponent=doc<{joints:{id:string;limits:{lower:{value:number};upper:{value:number}}}[]}>(scene.models.armComponent.path),gripLimits=armComponent.joints.find(j=>j.id==='drive_joint')!.limits,armId=scene.armCell.arm.armId;
-  let baseState:DiffDriveBaseState|undefined,jointState:JointFollowerState|undefined;const driveRows:DriveRecord[]=[],driveEvents:ControllerEvent[]=[];if(driveDocs&&last.drives)driveRows.push({tick:last.tick,drives:last.drives});
+  let baseDrive:MobileDrive|undefined,jointState:JointFollowerState|undefined;const driveRows:DriveRecord[]=[],driveEvents:ControllerEvent[]=[];if(driveDocs&&last.drives)driveRows.push({tick:last.tick,drives:last.drives});
   if(driveDocs){
-   const kin=scene.navigation.robots[0]!.model.kinematics,accel=driveDocs.control.controllers.find(c=>c.controllerId==='diff-drive-base-v1')?.params.maxAccelerationMps2;
-   baseState=diffDriveBaseV1.init({axisLeft:`${rid}/wheel-left`,axisRight:`${rid}/wheel-right`,wheelRadiusM:kin.wheelRadiusM,wheelSeparationM:kin.wheelSeparationM,maxWheelAccelRadS2:typeof accel==='number'?accel/kin.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(driveDocs!.model,rid)});
+   baseDrive=mobileDrive(driveDocs,{robotId:rid,...scene.navigation.robots[0]!.model.kinematics});
    jointState=jointTrajectoryFollowerV1.init({axes:[1,2,3,4,5,6].map(i=>`${armId}/J${i}`),gripperAxis:`${armId}/gripper`,gripperMap:{loRad:gripLimits.lower.value,hiRad:gripLimits.upper.value,openingMaxM:physics.gripper.openingMaxM},enableTimeoutTicks:BASE_CONTROLLER_DEFAULTS.enableTimeoutTicks,followTolRad:0.3,followTicks:25});
   }
   const driveWire=(c:WorldTickCommand):WorldTickCommand=>driveDocs?driveWireCommand(c):c;
@@ -168,10 +166,10 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
      const transfer=active?[...transfers.values()].find(t=>t.pending.commandId===active.commandId):undefined;if(active&&!transfer)throw Error('WORLD_CONTROL_INVALID');
      const worldControl:NonNullable<WorldTickCommand['worldControl']>={version:1,program:active?{commandId:active.commandId,transferId:transfer!.pending.transferId,cupId:transfer!.pending.cupId,sourceEventId:transfer!.sourceEventId,payloadHash:active.payloadHash,controlEpoch:active.controlEpoch,programId:active.program as 'cup-pick'|'cup-place',stage:active.index,waypoint:programs.choreography[active.program]![active.index]!.waypoint}:null,attachmentProxyPropId:st.arm.holding===null?null:scene.propBindings.find(b=>b.cupId===st.arm.holding)!.propId,movementInterlocked:!!interlocked,stopLatched:!!st.arm.stop?.latched};validateWorldControl(worldControl,scene,files);
      let driveCommands:WorldTickCommand['driveCommands'];
-     if(driveDocs&&baseState&&jointState){
+     if(driveDocs&&baseDrive&&jointState){
       const {feedback}=splitDriveSnapshot(last.drives??[]);if(!feedback.length)throw Error('DRIVE_FEEDBACK_MISSING');
-      const v=nav.velocities[0]!,b=diffDriveBaseV1.step(baseState,{tick:last.tick,setpoint:{vMps:v.vMps,omegaRadps:v.omegaRadps,...interlocked?{stop:true}:{}},feedback}),a=jointTrajectoryFollowerV1.step(jointState,{tick:last.tick,setpoint:{positionsRad:prepared.commandedQ??prepared.q,openingM:prepared.gripperCommandM??programs.contact!.openM},feedback});
-      baseState=b.state;jointState=a.state;driveCommands=[...a.commands,...b.commands];
+      const v=nav.velocities[0]!,b=baseDrive.step(last.tick,{vMps:v.vMps,omegaRadps:v.omegaRadps,...interlocked?{stop:true}:{}},last),a=jointTrajectoryFollowerV1.step(jointState,{tick:last.tick,setpoint:{positionsRad:prepared.commandedQ??prepared.q,openingM:prepared.gripperCommandM??programs.contact!.openM},feedback});
+      jointState=a.state;driveCommands=[...a.commands,...b.commands];
       driveEvents.push(...b.events,...a.events);
       for(const e of [...b.events,...a.events])if((e.code==='DRIVE_FAULT'||e.code==='DRIVE_NOT_READY')&&!cellHalted){invalidate();cellHalted=e.code;arm.halt(e.code,undefined,last.tick);}
      }

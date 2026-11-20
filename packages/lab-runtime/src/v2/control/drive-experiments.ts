@@ -1,5 +1,5 @@
 // The registered drive experiments of R4-A §5.4. A closed registry: a request names an id, never a path, a gain or a delay. Every number behind an id is a file of
-// robotics/simulation-mujoco/fixtures/drive-v1 (all `assumed`, `not_calibrated`); the experiments vary the DEVICE under one tuning (one control profile per plant).
+// robotics/simulation-mujoco/fixtures/drive-v1 (all `assumed`, `not_calibrated`); four nonideal AMR experiments share a controller revision, while ideal uses the legacy-compatible controller.
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -8,12 +8,12 @@ import {sealDriveDocument,type ControlProfileV1,type DriveModelV1} from './drive
 
 export type DriveExperimentId='drive-ideal-v1'|'drive-nominal-v1'|'drive-torque-limited-v1'|'drive-latency-v1'|'drive-coarse-encoder-v1';
 export const DRIVE_EXPERIMENTS:Readonly<Record<DriveExperimentId,{mobileModel:string;armModel:string;mobileControl:string;armControl:string}>>=Object.freeze({
- 'drive-ideal-v1':{mobileModel:'serve-drive-ideal-v1.json',armModel:'xarm6-drive-ideal-v1.json',mobileControl:'serve-control-v1.json',armControl:'xarm6-control-v1.json'},
- 'drive-nominal-v1':{mobileModel:'serve-drive-nominal-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v1.json',armControl:'xarm6-control-v1.json'},
+ 'drive-ideal-v1':{mobileModel:'serve-drive-ideal-v1.json',armModel:'xarm6-drive-ideal-v1.json',mobileControl:'serve-control-legacy-ideal-v1.json',armControl:'xarm6-control-v1.json'},
+ 'drive-nominal-v1':{mobileModel:'serve-drive-nominal-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
  // the wheel torque curve x 0.4 concerns the AMR; the arm keeps its nominal drive
- 'drive-torque-limited-v1':{mobileModel:'serve-drive-torque-limited-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v1.json',armControl:'xarm6-control-v1.json'},
- 'drive-latency-v1':{mobileModel:'serve-drive-latency-v1.json',armModel:'xarm6-drive-latency-v1.json',mobileControl:'serve-control-v1.json',armControl:'xarm6-control-v1.json'},
- 'drive-coarse-encoder-v1':{mobileModel:'serve-drive-coarse-encoder-v1.json',armModel:'xarm6-drive-coarse-encoder-v1.json',mobileControl:'serve-control-v1.json',armControl:'xarm6-control-v1.json'},
+ 'drive-torque-limited-v1':{mobileModel:'serve-drive-torque-limited-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
+ 'drive-latency-v1':{mobileModel:'serve-drive-latency-v1.json',armModel:'xarm6-drive-latency-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
+ 'drive-coarse-encoder-v1':{mobileModel:'serve-drive-coarse-encoder-v1.json',armModel:'xarm6-drive-coarse-encoder-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
 });
 export const driveExperiment=(id:string)=>{
  if(!Object.hasOwn(DRIVE_EXPERIMENTS,id))throw new Error('DRIVE_EXPERIMENT_UNREGISTERED');

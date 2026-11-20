@@ -17,12 +17,22 @@
     },
     {
       "path": "README.md",
-      "sha256": "b789dd597913b0671bedce450518e9d88f59e9c51bf577b5e265e0d3a288b7c7",
-      "bytes": 1859
+      "sha256": "099fdf9e4bed274bd18ed51c483d7b5a8a2fc37ba418bdb33109e1dac113a080",
+      "bytes": 2000
+    },
+    {
+      "path": "serve-control-legacy-ideal-v1.json",
+      "sha256": "8ebe4d22d2e7d3c3a38fd17b21ecabc7bc520f470e7a6a2c1cd07c5895937cd6",
+      "bytes": 2132
     },
     {
       "path": "serve-control-v1.json",
       "sha256": "7f269710f275d0281afb87c1af34a8453dbc72945c631d98b906ef062b83fd35",
+      "bytes": 2146
+    },
+    {
+      "path": "serve-control-v2.json",
+      "sha256": "97a5e8c3b24ce4e016aafbc42b6c4293e62a9c3aa238ed2aa75751feefa91200",
       "bytes": 2146
     },
     {

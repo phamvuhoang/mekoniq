@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {splitDriveSnapshot,validateControlProfile,validateDriveModel,validateDriveRefs,type ControlProfileV1,type DriveAxisSnapshot,type DriveCommandV1,type DriveModelV1,type TuningEnvelopeV1} from './drive-io';
-import {diffDriveBaseV1,type DiffDriveBaseConfig,type DiffDriveBaseState} from './diff-drive-base';
+import {diffDriveBaseV1,initDiffDriveRevision2,type DiffDriveBaseConfig,type DiffDriveBaseState} from './diff-drive-base';
 import type {ControllerEvent} from './controller';
 
 export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
@@ -42,15 +42,16 @@ export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},expe
 
 export interface MobileDrive {readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
- step(tick:number,setpoint:{vMps:number;omegaRadps:number},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
+ step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
 export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number}):MobileDrive{
  const ctl=d.control.controllers.find(c=>c.controllerId===diffDriveBaseV1.id);
- if(!ctl||ctl.revision!==diffDriveBaseV1.revision)throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
+ if(!ctl||![1,2].includes(ctl.revision))throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
  const accelMps2=ctl.params.maxAccelerationMps2;
  const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
- let state:DiffDriveBaseState=diffDriveBaseV1.init(config);const events:ControllerEvent[]=[];
+ if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
+ let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM);const events:ControllerEvent[]=[];
  return {manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});

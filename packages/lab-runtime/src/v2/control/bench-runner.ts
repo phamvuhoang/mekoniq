@@ -106,10 +106,8 @@ export async function loadBenchCatalog(workerRoot:string,scenarios:readonly Benc
  for(const scenarioId of scenarios){
   const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId},engineVersion);
   const runs:[DriveExperimentId,BenchPlant][]=[];for(const id of experiments)runs.push([id,await at(names[0]!,id)]);
-  const p=runs[0]![1],files=new Set(experiments.map(id=>p.kind==='amr'?DRIVE_EXPERIMENTS[id].mobileControl:DRIVE_EXPERIMENTS[id].armControl));
-  // one tuning per plant: the experiments vary the device (drive-experiments.ts), so one starting draft per bench
-  if(files.size!==1)throw Error('BENCH_STARTING_PROFILE_AMBIGUOUS');
-  const startingProfile=JSON.parse(await readFile(join(workerRoot,DRIVE,[...files][0]!),'utf8')) as ControlProfileV1;
+  const p=runs.find(([id])=>id==='drive-nominal-v1')![1],nominal=DRIVE_EXPERIMENTS['drive-nominal-v1'];
+  const startingProfile=JSON.parse(await readFile(join(workerRoot,DRIVE,p.kind==='amr'?nominal.mobileControl:nominal.armControl),'utf8')) as ControlProfileV1;
   if(startingProfile.plantModelDigest!==p.plantModelDigest)throw Error('BENCH_STARTING_PROFILE_PLANT_MISMATCH');
   for(const [,plant] of runs){
    if(tuningEnvelope&&tuningEnvelope.digest!==plant.envelope.digest)throw Error('BENCH_ENVELOPE_INVALID');

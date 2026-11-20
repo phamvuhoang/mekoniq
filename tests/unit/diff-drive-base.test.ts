@@ -86,3 +86,43 @@ test('the controller is pure: the same feedback gives the same commands and even
 test('feedback that lacks a wheel is refused, not guessed',()=>{
  expect(()=>diffDriveBaseV1.step(diffDriveBaseV1.init(config),{tick:0,setpoint:{vMps:0,omegaRadps:0},feedback:fb('enabled').slice(1)})).toThrow('DRIVE_FEEDBACK_AXIS_MISSING');
 });
+
+import {mobileDrive} from '../../packages/lab-runtime/src/v2/control/drive-run';
+import {mobileDriveBundle} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
+import type {DriveAxisSnapshot} from '../../packages/lab-runtime/src/v2/control/drive-io';
+const workerRoot='robotics/simulation-mujoco';
+const wheels={robotId:'amr-1',wheelRadiusM:0.09,wheelSeparationM:0.36,maxLinearMps:.6,maxAngularRadps:1.2};
+test('nominal emitted wheel commands respect acceleration and jerk through arrival, small steps, reversal, slowdown and stop release',async()=>{
+ const docs=await mobileDriveBundle(workerRoot,'drive-nominal-v1'),drive=mobileDrive(docs,wheels);
+ let tick=0,vel=[0,0],acc=[0,0];
+ for(const [v,w,n,stop] of [[.5,0,70,0],[.503,0,20,0],[-.4,.2,80,0],[.6,0,18,0],[.01,0,50,0],[0,0,1,1],[.6,1.2,75,0]]){
+  for(let i=0;i<n!;i++){
+   const r=drive.step(tick++,{vMps:v!,omegaRadps:w!,stop:!!stop},{drives:fb('enabled') as DriveAxisSnapshot[]});
+   const speeds=r.commands.map(c=>c.target*wheels.wheelRadiusM);
+   expect(Math.abs((speeds[0]!+speeds[1]!)/2)).toBeLessThanOrEqual(.6+1e-12);
+   expect(Math.abs((speeds[1]!-speeds[0]!)/wheels.wheelSeparationM)).toBeLessThanOrEqual(1.2+1e-12);
+   const next=speeds.map((x,j)=>(x-vel[j]!)/.02);
+   if(stop){expect(speeds).toEqual([0,0]);acc=[0,0];}
+   else{for(const [j,a] of next.entries()){expect(Math.abs(a)).toBeLessThanOrEqual(1+1e-12);expect(Math.abs((a-acc[j]!)/.02)).toBeLessThanOrEqual(10+1e-10);}acc=next;}
+   vel=speeds;
+  }
+  if(n!>=20){expect(vel[0]).toBeCloseTo(v!-w!*.18,12);expect(vel[1]).toBeCloseTo(v!+w!*.18,12);}
+ }
+});
+test('the four device comparisons select revision two and ideal explicitly selects legacy compatibility',async()=>{
+ const nominal=await mobileDriveBundle(workerRoot,'drive-nominal-v1');
+ expect(nominal.control.controllers[0]?.revision).toBe(2);
+ for(const id of ['drive-latency-v1','drive-torque-limited-v1','drive-coarse-encoder-v1'])expect((await mobileDriveBundle(workerRoot,id)).control.digest).toBe(nominal.control.digest);
+ const ideal=await mobileDriveBundle(workerRoot,'drive-ideal-v1');
+ expect(ideal.control.id).toContain('legacy');expect(ideal.control.controllers[0]?.params).not.toHaveProperty('maxJerkMps3');
+});
+
+test('revision two refuses a zero-duration sample and resets the ramp on a drive fault',async()=>{
+ const {jerkFilterWindow}=await import('../../packages/lab-runtime/src/v2/control/diff-drive-base');
+ expect(()=>jerkFilterWindow(1,10,0)).toThrow('DRIVE_CONTROLLER_LIMIT_INVALID');
+ const drive=mobileDrive(await mobileDriveBundle(workerRoot,'drive-nominal-v1'),wheels);
+ const step=(tick:number,status:'fault'|'enabled')=>drive.step(tick,{vMps:.4,omegaRadps:0},{drives:fb(status) as DriveAxisSnapshot[]});
+ for(let i=0;i<50;i++)step(i,'enabled');
+ const fault=step(50,'fault');expect(fault.commands.map(c=>c.target)).toEqual([0,0]);expect(fault.events[0]?.code).toBe('DRIVE_FAULT');
+ expect(step(51,'enabled').commands.every(c=>c.target*wheels.wheelRadiusM<=10*.02**2+1e-12)).toBe(true);
+});
