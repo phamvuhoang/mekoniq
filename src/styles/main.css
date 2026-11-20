@@ -2655,16 +2655,22 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .twin-main.control-open{grid-template-columns:minmax(0,1fr)}
 .twin-main.control-open>.twin-viewport{display:none}
 .control-bench{display:grid;gap:12px;min-width:0}
-.control-head h2{margin:0 0 4px;font-size:15px}
-.control-plant{margin:0;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
-.control-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin:8px 0 0;padding:6px 10px;color:var(--amber);border:1px solid var(--amber);border-radius:8px}
+.twin-main.control-open #inspector-panel-control{scroll-padding-top:72px}
+/* the plant line and the banner stay in view while the panel scrolls (the banner is fixed: Mô phỏng · chưa hiệu chuẩn) */
+.control-head{position:sticky;top:-12px;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-12px -12px 0;padding:12px 12px 6px;background:var(--panel)}
+.control-plant{flex:1 1 360px;margin:0;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.control-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin:0;padding:4px 10px;color:var(--amber);border:1px solid var(--amber);border-radius:8px}
 .control-banner span{color:var(--muted)}
 .control-grid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:16px;align-items:start}
 .control-form{display:grid;gap:10px;min-width:0}
 .control-form fieldset{display:grid;gap:8px;margin:0;padding:8px 10px 10px;border:1px solid var(--line);border-radius:8px;min-width:0}
 .control-form legend{padding:0 4px;font-size:12px;font-weight:700;color:var(--muted)}
-.control-axes{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:0 8px}
-.control-axes label:has(#twin-ctl-axis-wheels){grid-column:span 2}
+.control-axes{grid-template-columns:repeat(5,minmax(0,1fr));gap:0 8px}
+.control-axes label:has(#twin-ctl-axis-wheels),.control-axes label:has(#twin-ctl-axis-gripper){grid-column:span 2}
+/* the signal and the gains take two fields per row; the drive model is one labelled row */
+.control-signal,.control-gains{grid-template-columns:repeat(2,minmax(0,1fr))}
+.control-signal>.field-help{grid-column:1/-1}
+.control-inline{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px}
 .control-axes label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
 .control-axes input[type="radio"]{width:auto;min-height:0;margin:0;padding:0;accent-color:var(--accent)}
 .control-field,.control-suggest,.control-io{display:grid;gap:4px;min-width:0}
@@ -2673,8 +2679,7 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .control-form [aria-invalid="true"]{border-color:var(--danger)}
 .control-form .field-error,.control-results .field-error{margin:0;color:var(--danger);font-size:12px}
 .control-form .field-help,.control-results .field-help{margin:0}
-/* Run stays in reach while the form scrolls in its panel */
-.control-actions{position:sticky;bottom:0;z-index:1;display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;background:var(--panel)}
+.control-actions{display:flex;flex-wrap:wrap;gap:8px}
 .control-actions .button,.control-suggest .button,.control-io .button{min-height:44px}
 .control-reasons{padding-left:18px}
 .control-results{display:grid;gap:10px;min-width:0;container-type:inline-size}
@@ -2684,6 +2689,9 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .control-status b{color:var(--amber)}
 .control-status[data-status="completed"] b{color:var(--accent)}
 .control-progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.control-summary{display:flex;flex-wrap:wrap;gap:2px 10px;margin:0;font:12px var(--mono)}
+.control-summary small{font-family:var(--font);color:var(--muted)}
+.control-orphans{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .control-plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .control-plots figure{margin:0;min-width:0}
 .control-plots .plot-wide{grid-column:1/-1}
@@ -2703,6 +2711,13 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 /* the error and torque plots sit side by side only when the results column has room for both; a plot drawn smaller gets larger text in viewBox units, so it stays legible */
 @container (max-width:760px){.control-plots{grid-template-columns:minmax(0,1fr)}.plot-wide .plot text{font-size:16px}}
 @container (max-width:480px){.plot text{font-size:15px}.plot-wide .plot text{font-size:18px}}
+/* a fine pointer on a wide screen: denser rows so the axis, signal and gains of §6.3 fit beside the plots at 1440×900; touch and narrow widths keep 44 px targets */
+@media (pointer:fine) and (min-width:768px){
+ .control-axes label{min-height:30px}
+ .control-form input:not([type="radio"]):not([type="file"]),.control-form select{min-height:34px;padding:5px 8px}
+ .control-form fieldset{padding:4px 10px 8px;gap:6px}
+ .control-form{gap:8px}
+}
 /* phones: form above results; the open Control tab is the page (no viewport row, no sheet height cap) */
 @media (max-width:767px){
  .control-grid{grid-template-columns:minmax(0,1fr)}

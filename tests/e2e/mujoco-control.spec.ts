@@ -57,6 +57,11 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  expect(a.tuning.status).toBe('completed');
  await expect(bench).toHaveAttribute('data-phase','idle');await expect(page.getByTestId('tuning-metrics')).toBeVisible();
  await checkMetrics(a.tuning);await checkPlots(a);
+ // §6.3 at 1440×900 (ruling 1): after a bench the three plots and the gains are in view side by side, and Kp is not under the sticky Run row
+ for(const id of ['control-plot-response','control-plot-error','control-plot-torque'])await expect(page.getByTestId(id),id).toBeInViewport({ratio:1});
+ await expect(page.getByTestId('tuning-summary')).toBeInViewport({ratio:1});
+ await expect(kp).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-ki')).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-run')).toBeInViewport({ratio:1});
+ const kpBox=(await kp.boundingBox())!,runRow=(await page.locator('.control-actions').boundingBox())!;expect(kpBox.y+kpBox.height).toBeLessThanOrEqual(runRow.y);
  // a gain suggestion now exists for the wheels (from this bench's effective inertia)
  await expect(page.locator('[data-action="twin-ctl-suggest-apply"]')).toBeEnabled();await expect(page.locator('#twin-ctl-suggest-note')).toContainText('model-based starting point, not calibrated');
  await shot(page,'1440-first-bench');
@@ -74,6 +79,9 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  const ab=page.getByTestId('ab-delta');await expect(ab).toBeVisible();await expect(ab).toContainText('Δ B − A');await expect(ab).toContainText(`A · ${a.id.slice(0,8)}`);await expect(ab).toContainText(`B · ${b.id.slice(0,8)}`);
  await expect(ab.locator('[data-metric="rmsError"] td').nth(2)).not.toHaveText('—');
  await checkPlots(b);await shot(page,'1440-ab');
+ // the banner stays in view when the panel is scrolled to its end
+ const panel=page.locator('#inspector-panel-control');await panel.evaluate(e=>{e.scrollTop=e.scrollHeight;});
+ await expect(page.getByTestId('control-banner')).toBeInViewport({ratio:1});await shot(page,'1440-scrolled');await panel.evaluate(e=>{e.scrollTop=0;});
 
  // 4. export: the profile of that bench, sourced to it; then another value, then the file: the draft is the file's
  const download=page.waitForEvent('download');await page.locator('[data-action="twin-ctl-export"]').click();const file=await (await download).path();
@@ -115,6 +123,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  const form=await page.locator('#twin-ctl-form').boundingBox(),results=await page.locator('#twin-ctl-results').boundingBox();expect(results!.y).toBeGreaterThan(form!.y+form!.height-1);
  await kp.fill('3');
  const d=await runBench(async()=>{await kp.press('Enter');});
+ await expect(bench).toHaveAttribute('data-phase','idle');expect(await page.evaluate(()=>document.activeElement?.id)).toBe('twin-ctl-kp');
  expect(d.request.bench.controlProfile.axes.map((x:{loop:{kp:number}})=>x.loop.kp)).toEqual([3,3]);
  await expect(page.getByTestId('ab-delta')).toBeVisible();await checkPlots(d);await checkMetrics(d.tuning);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
@@ -129,6 +138,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  const xarm=JSON.parse(readFileSync(join(process.cwd(),'../source/robotics/simulation-mujoco/fixtures/drive-v1/xarm6-control-v1.json'),'utf8')) as {axes:{axisId:string;loop:{kp:number;kd:number}}[]},j3=xarm.axes.find(x=>x.axisId==='xarm-1/J3')!;
  await page.locator('#twin-ctl-axis-J3').check();await expect(kp).toHaveValue(String(j3.loop.kp));await expect(page.locator('#twin-ctl-kd')).toHaveValue(String(j3.loop.kd));await expect(page.locator('#twin-ctl-accelerationLimit')).toHaveCount(0);
  await page.locator('#twin-ctl-size').selectOption('0.2');
+ await expect(page.locator('#twin-ctl-kd')).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-run')).toBeInViewport({ratio:1});
  const j=await runBench(runClick);
  expect(j.request.bench).toMatchObject({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.2,atTick:10}});
  const status=page.locator('[data-testid="tuning-result"] .control-status');
