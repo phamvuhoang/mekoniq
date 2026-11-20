@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ f4bd7734e4213d075a484075390efe125c400f21 (sha256 90948b0b50041223736bc9100b79cada8488ce2825d613cd176f0ca2bc60006c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 93d55160723e21788c8a17574f00d9164b00f9e4 (sha256 b8c03d9a73bc600e0268eb7bcab3e29751d9807d7f3645870635b7d7b4c358c2). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -3025,4 +3025,54 @@ export interface BenchRequestV1 {
   driveExperimentId:
     'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
   controlProfile: ControlProfileV1;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceIdentity".
+ */
+export interface BenchTraceIdentity {
+  runId: string;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: string[];
+  plantModelDigest: Digest;
+  driveModelDigest: Digest;
+  controlProfileDigest: Digest;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceManifest".
+ */
+export interface BenchTraceManifest {
+  schemaVersion: 1;
+  documentType: 'drive-trace';
+  identity: BenchTraceIdentity;
+  dtS: 0.002;
+  substeps: 10;
+  /**
+   * @maxItems 501
+   */
+  chunks: {
+    path: string;
+    sha256: Digest;
+    bytes: number;
+    firstTick: number;
+    lastTick: number;
+  }[];
+  coverage: {
+    firstTick: 0;
+    lastTick: number;
+    complete: boolean;
+  };
+  /**
+   * @maxItems 502
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
 }
