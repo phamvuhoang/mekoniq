@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 2ae03ecd6a82bdd496aee81432b00cffdd4c2602 (sha256 2a5b6c6f3ef702ad22652e3f06cc534b528a7199c166bbbe5341b603fd60e8b2). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 38c22332a66790e21cb76a74b614140cffba7f93 (sha256 666ed44e35cfbd33aabd13af630393b62de42052cdbc18e094155bbd96392d20). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -178,6 +178,11 @@ export type Scans = LidarScanV1[];
  */
 export type CollisionIds = string[];
 /**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisId".
+ */
+export type DriveAxisId = string;
+/**
  * @minItems 0
  * @maxItems 1
  */
@@ -200,11 +205,6 @@ export type Props = {
   quaternionXyzw: number[];
   restingOn: string | null;
 }[];
-/**
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "DriveAxisId".
- */
-export type DriveAxisId = string;
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "DriveState".
@@ -288,6 +288,18 @@ export type Sim3DRequestV1 =
           armId: EngineeringId;
           sceneRef: 'arm-scene.json' | 'arm-cell-scene.json';
         }[];
+        /**
+         * A bench run (V06, D1): its drive model and control profile (bundle files, the same refs a scene's engine names) and the 1-2 axes whose 500 Hz trace every snapshot carries. A bench scene names no drive refs of its own.
+         */
+        bench?: {
+          driveModelRef: DriveDocumentRef;
+          controlProfileRef: DriveDocumentRef;
+          /**
+           * @minItems 1
+           * @maxItems 2
+           */
+          axisIds: DriveAxisId[];
+        };
       };
     }
   | {
@@ -1433,6 +1445,18 @@ export interface Sim3DModelReadbackV1 {
       forceN?: number;
     }[];
   };
+  /**
+   * Bench only (V06, D4): the effective inertia of each traced axis at the pose of the readback. A joint or the gripper: the diagonal of the joint-space mass matrix at its dof. A wheel: that diagonal plus m*r^2/2 (m the mass of the AMR body tree, r the wheel radius: straight-line drive, each wheel carries half the mass).
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  effectiveInertiaKgM2?: {
+    axisId: DriveAxisId;
+    valueKgM2: number;
+    basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
+    provenance: 'assumed';
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
