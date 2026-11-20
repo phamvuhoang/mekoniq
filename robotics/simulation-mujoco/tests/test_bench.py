@@ -241,6 +241,23 @@ def test_a_bench_on_a_world_is_refused(tmp_path):
     assert not r["ok"] and r["error"]["code"] == "BENCH_SCENE_UNSUPPORTED", r
 
 
+@pytest.mark.parametrize("load", ["cup-center.json", "cup-offset.json"])
+def test_a_wheel_bench_runs_on_the_empty_load_only(tmp_path, load):
+    """V06c ruling 14: the wheel inertia (D4) counts the AMR's own tree; a free payload body is a tree of its own and would be missing from J. A wheel bench on any other load than an
+    empty one is refused before any engine is built, never run with a J that is silently low."""
+    b = Bench(tmp_path, "wheel", WHEELS)
+    scene = json.loads((tmp_path / "navigation-scene.json").read_text())
+    raw = (SERVE / load).read_bytes()
+    doc = json.loads(raw)
+    assert doc["props"]                                                    # the fixture's loads with a cup
+    scene["engine"]["loadProfileRef"] = {"id": doc["id"], "revision": doc["revision"], "path": load, "sha256": sha(raw)}
+    scene["sceneDigest"] = scene_digest_of(scene)
+    (tmp_path / "navigation-scene.json").write_text(json.dumps(scene))
+    b.s.expected_scene_digest = scene["sceneDigest"]
+    r = b.create()
+    assert not r["ok"] and r["error"]["code"] == "BENCH_SCENE_UNSUPPORTED" and b.factory_calls == 0 and b.s.engine is None, r
+
+
 def other_plant(name):
     return seal({**json.loads((DRIVE / name).read_text()), "plantModelDigest": "c" * 64})
 

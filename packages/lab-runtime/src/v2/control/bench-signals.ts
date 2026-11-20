@@ -3,6 +3,8 @@ import {validateBenchRequestShape,validateBenchSignalShape,type BenchRequestV1,t
 export type {BenchSignal};
 
 export const BENCH_MAX_TICKS=500;
+/** The closed signal catalog (R4-A §6.1). */
+export const BENCH_SIGNAL_KINDS=['step','trapezoid','hold'] as const;
 /** One logical tick, 20 ms (10 substeps of 2 ms). */
 export const BENCH_TICK_S=0.02;
 /** Registered sizes: a speed (csv) step or peak in rad/s, a position (csp) step or distance in rad; the sign is free. */
@@ -54,13 +56,15 @@ export function benchTarget(signal:BenchSignal,start:number,tick:number,mode:Mod
 
 /** The axes a bench request can name, and the drive mode of each: the two wheels (speed) or one arm axis (position). */
 export const benchAxisMode=(axis:BenchRequestV1['axis']):Mode=>axis==='wheels'?'csv':'csp';
-/** Shape plus the cross-field rules a schema cannot say: `wheels` only on MJ-BENCH-WHEEL, a joint or the gripper only on MJ-BENCH-ARM, and a signal the axis admits. `limits` are the joint limits and rest position the server knows (arm only). The
- *  control profile against its model and the envelope is the caller's check (validateControlProfile, which calls withinEnvelope). */
-export function validateBenchRequest(request:unknown,limits:{lower?:number;upper?:number;start?:number}={}):Check{
+/** Shape plus the cross-field rules a schema cannot say: `wheels` only on MJ-BENCH-WHEEL, a joint or the gripper only on MJ-BENCH-ARM, and a signal the axis admits. `limits` are the joint limits and rest position the server knows: required for a
+ *  joint or the gripper (without them: AXIS_LIMITS_REQUIRED, never a request admitted unchecked), ignored for the wheels. The control profile against its model and the envelope is the caller's check (validateControlProfile, which calls withinEnvelope). */
+export function validateBenchRequest(request:unknown,limits?:{lower:number;upper:number;start:number}):Check{
  const shape=validateBenchRequestShape(request);
  if(!shape.ok)return shape;
  const r=request as BenchRequestV1,codes=new Set<string>();
  if((r.axis==='wheels')!==(r.scenarioId==='MJ-BENCH-WHEEL'))codes.add('AXIS_SCENARIO_MISMATCH');
+ if(codes.size)return done(codes);
+ if(r.axis!=='wheels'&&!(limits&&[limits.lower,limits.upper,limits.start].every(Number.isFinite)))return done(codes.add('AXIS_LIMITS_REQUIRED'));
  for(const c of validateBenchSignal(r.signal,{mode:benchAxisMode(r.axis),...(r.axis==='wheels'?{}:limits)}).reasonCodes)codes.add(c);
  return done(codes);
 }

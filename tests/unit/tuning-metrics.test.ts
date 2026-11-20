@@ -30,7 +30,8 @@ test('settling away from the target: no settling time, but the final value and i
  const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy);
  expect(m.settlingTimeS).toMatchObject({available:false,reason:'NOT_SETTLED'});
  expect(value(m.steadyStateError)).toBeCloseTo(0.15,12);
- expect(m.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});expect(value(m.overshootPct)).toBe(0);
+ expect(m.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});
+ expect(m.overshootPct).toEqual({available:false,value:null,unit:'%',reason:'TARGET_NOT_REACHED'});   // contracts §5: overshoot is not defined when the target is never reached (not 0)
 });
 test('a final window that still moves (standard deviation above band * |A|) has no final value and no error; a gap or a small ripple does not decide it',()=>{
  const osc=Array.from({length:500},(_,k)=>({target:1,actual:1+0.1*Math.sin(k/5),feedback:null,torqueNm:0}));
@@ -88,11 +89,17 @@ test('invalid windows and policies are reported, not computed',()=>{
 test('the contract: a TuningResultV1 of a bench run is a valid shape, an accepted or malformed one is not',async()=>{
  const {validateControlEvidenceShape}=await import('../../packages/lab-runtime/src/v2/control/drive-io');
  const d='a'.repeat(64),metrics=stepResponseMetrics({axisId:'a/J3',dtS:0.002,samples:second(0.7,20,500)},unit,policy);
- const result={schemaVersion:1,documentType:'tuning-result',runId:'run-1',status:'completed',unstable:null,axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.1,atTick:5},seed:7,engine:{id:'mujoco',version:'3.17.0'},
+ const result={schemaVersion:1,documentType:'tuning-result',runId:'run-1',status:'completed',unstable:null,fault:null,axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.1,atTick:5},seed:7,engine:{id:'mujoco',version:'3.17.0'},
   plant:{plantModelDigest:d,driveModelDigest:d,controlProfileDigest:d,load:'empty'},effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'assumed'},policy,metrics,trace:{chunks:1,sha256:d,samples:500},accepted:false};
  const ok=(v:unknown)=>validateControlEvidenceShape(v);
  expect(ok(result),JSON.stringify(validateControlEvidenceShape.errors)).toBe(true);
  expect(ok({...result,status:'unstable',unstable:{tick:12,warning:'PLANT_UNSTABLE'},effectiveInertia:null})).toBe(true);
+ // a drive that protected itself (V06c ruling 8): a result with the tick, the axis and the drive's code; status and its object come together
+ expect(ok({...result,status:'drive_fault',fault:{tick:22,axisId:'xarm-1/J3',code:'OVERSPEED'}})).toBe(true);
+ expect(ok({...result,status:'drive_fault'})).toBe(false);
+ expect(ok({...result,fault:{tick:22,axisId:'xarm-1/J3',code:'OVERSPEED'}})).toBe(false);
+ expect(ok({...result,status:'unstable'})).toBe(false);
+ const {fault:_,...without}=result;void _;expect(ok(without)).toBe(false);
  expect(ok({...result,accepted:true})).toBe(false);
  expect(ok({...result,effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'measured'}})).toBe(false);
  expect(ok({...result,axisIds:['a/J1','a/J2','a/J3']})).toBe(false);

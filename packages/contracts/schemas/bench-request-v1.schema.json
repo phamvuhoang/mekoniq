@@ -17,6 +17,9 @@
   "definitions": {
     "BenchSignal": {
       "title": "BenchSignal",
+      "description": "Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.",
+      "type": "object",
+      "discriminator": { "propertyName": "kind" },
       "oneOf": [
         {
           "type": "object",
@@ -24,7 +27,7 @@
           "properties": {
             "kind": { "const": "step" },
             "amplitude": { "type": "number" },
-            "atTick": { "type": "integer", "minimum": 0, "maximum": 500 }
+            "atTick": { "type": "integer", "minimum": 0, "maximum": 499 }
           },
           "required": ["kind", "amplitude", "atTick"]
         },
@@ -36,7 +39,7 @@
             "distance": { "type": "number" },
             "peakVelocity": { "type": "number", "exclusiveMinimum": 0 },
             "acceleration": { "type": "number", "exclusiveMinimum": 0 },
-            "atTick": { "type": "integer", "minimum": 0, "maximum": 500 }
+            "atTick": { "type": "integer", "minimum": 0, "maximum": 499 }
           },
           "required": ["kind", "distance", "peakVelocity", "acceleration", "atTick"]
         },

@@ -13,7 +13,7 @@ export type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,
 export type {ControlMetric,DriveTrace,DriveMode,DriveState,DriveFault,DriveTickRecord,TuningResultV1,FaultReportV1,ControlOracleV1} from '../../../../contracts/generated/navigation2d';
 export type Check={ok:boolean;reasonCodes:string[]};
 
-const ajv=new Ajv({allErrors:true,strict:true});
+const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});
 for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema,'bench-request-v1.schema.json':benchRequestSchema}))ajv.addSchema(schema,key);
 const modelShape=ajv.getSchema('drive-model-v1.schema.json')!,profileShape=ajv.getSchema('control-profile-v1.schema.json')!,envelopeShape=ajv.getSchema('control-profile-v1.schema.json#/definitions/TuningEnvelopeV1')!,refShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveDocumentRef')!;
 const benchRequestShape=ajv.getSchema('bench-request-v1.schema.json')!,benchSignalShape=ajv.getSchema('bench-request-v1.schema.json#/definitions/BenchSignal')!;
@@ -26,9 +26,10 @@ export const driveDocumentDigest=(doc:object):string=>{const {digest:_,...rest}=
 export const sealDriveDocument=<T extends object>(doc:T):T&{digest:string}=>({...doc,digest:driveDocumentDigest(doc)});
 
 const nonFinite=(v:unknown):boolean=>typeof v==='number'?!Number.isFinite(v):Array.isArray(v)?v.some(nonFinite):v&&typeof v==='object'?Object.values(v).some(nonFinite):false;
-function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string}[]|null},v:unknown,codes:Set<string>){
+function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instancePath:string}[]|null},v:unknown,codes:Set<string>){
  if(validate(v))return;
- for(const e of validate.errors??[]){if(['if','oneOf','anyOf'].includes(e.keyword))continue;codes.add(e.keyword==='additionalProperties'?'UNKNOWN_FIELD':e.keyword==='required'?'FIELD_REQUIRED':'INVALID_FIELD');}
+ // a bench signal's tick past the bench (atTick, a hold's ticks) has one code of its own, the one validateBenchSignal gives
+ for(const e of validate.errors??[]){if(['if','oneOf','anyOf'].includes(e.keyword))continue;codes.add(e.keyword==='additionalProperties'?'UNKNOWN_FIELD':e.keyword==='required'?'FIELD_REQUIRED':e.keyword==='maximum'&&/\/(atTick|ticks)$/.test(e.instancePath)?'TICK_OUT_OF_RANGE':'INVALID_FIELD');}
  if(!codes.size)codes.add('INVALID_FIELD');
 }
 const done=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});

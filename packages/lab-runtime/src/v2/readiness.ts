@@ -63,7 +63,8 @@ export async function collectReadiness(context:ReadinessContext,o:ReadinessOptio
    if(!valid.ok)reasons.push(...valid.issues.map(i=>i.code));
    else try{resolveRoles(scenario,valid.value);if(!provider&&valid.value.armCollisionProfile)validateArmCollisionProfile(valid.value.armCollisionProfile);}catch(e){reasons.push(e instanceof Error?e.message:'PROJECT_INVALID');}
    checks.push({...check('world',reasons),evidenceRef:valid.ok?`world:${valid.value.world.id}:r${valid.value.world.revision}:${hashJson(valid.value.world)}`:null});
-  }else if(provider)checks.push(check('world',['WORLD_PROVIDER_UNAVAILABLE'],'unknown'));
+  }else if(scenario.bench)checks.push({...check('world',[]),evidenceRef:`bench:${scenario.id}:server-fixture`});   // a bench takes no project: the server builds its plant from a fixture
+  else if(provider)checks.push(check('world',['WORLD_PROVIDER_UNAVAILABLE'],'unknown'));
   if(set.mode==='hardware'||set.access!=='simulated')checks.push(check('mode',['MODE_UNSUPPORTED']));
   else{
    const resolution=resolveBackends(scenario,set.mode,context.backendSetId,catalog);

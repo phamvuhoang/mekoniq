@@ -27,7 +27,8 @@ test('a step that would carry the joint past a limit is refused',()=>{
 });
 test('ticks, shape and numbers: out-of-range tick, unknown kind, extra field, NaN',()=>{
  expect(codes({kind:'step',amplitude:2,atTick:BENCH_MAX_TICKS},csv)).toEqual(['TICK_OUT_OF_RANGE']);
- expect(codes({kind:'hold',ticks:BENCH_MAX_TICKS+1},csv).length).toBeGreaterThan(0);
+ expect(codes({kind:'hold',ticks:BENCH_MAX_TICKS+1},csv)).toEqual(['TICK_OUT_OF_RANGE']);   // one stable code, whatever the kind
+ expect(codes({kind:'trapezoid',distance:0.1,peakVelocity:0.5,acceleration:2,atTick:BENCH_MAX_TICKS+1},csp)).toEqual(['TICK_OUT_OF_RANGE']);
  expect(codes({kind:'hold',ticks:500},csv)).toEqual([]);
  expect(codes({kind:'hold',ticks:0},csv).length).toBeGreaterThan(0);
  expect(codes({kind:'sine'},csv).length).toBeGreaterThan(0);
@@ -69,7 +70,9 @@ test('a bench request: wheels only on the wheel scenario, a joint or the gripper
  expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM'})).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
  expect(validateBenchRequest(req({axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}})).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
  expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}}),{lower:-1,upper:1,start:0}).ok).toBe(true);
- expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}})).ok).toBe(true);
+ // a joint or the gripper is checked against the limits the server knows: without them the request is refused, never admitted unchecked
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}})).reasonCodes).toEqual(['AXIS_LIMITS_REQUIRED']);
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),{lower:0,upper:0.85,start:0}).ok).toBe(true);
 });
 test('a bench request: unknown fields, unregistered axis, experiment and signal are refused',()=>{
  expect(validateBenchRequest(req({extra:1})).reasonCodes).toContain('UNKNOWN_FIELD');
@@ -77,7 +80,14 @@ test('a bench request: unknown fields, unregistered axis, experiment and signal 
  expect(validateBenchRequest(req({driveExperimentId:'../drive-v1/x'})).reasonCodes.length).toBeGreaterThan(0);
  expect(validateBenchRequest(req({controlProfile:{...profile,extra:1}})).reasonCodes).toContain('UNKNOWN_FIELD');
  expect(validateBenchRequest(req({signal:{kind:'step',amplitude:3,atTick:5}})).reasonCodes).toEqual(['AMPLITUDE_NOT_REGISTERED']);
- expect(validateBenchRequest(req({signal:{kind:'step',amplitude:2,atTick:501}})).ok).toBe(false);
+ expect(validateBenchRequest(req({signal:{kind:'step',amplitude:2,atTick:501}})).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
+ expect(validateBenchRequest(req({signal:{kind:'hold',ticks:501}})).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
  expect(validateBenchRequest(null).ok).toBe(false);
  expect(validateBenchRequest({...req(),scenarioId:'MJ-DEMO'}).ok).toBe(false);
+});
+test('the schema bounds of the signal ticks are the validator\'s',()=>{
+ const schema=JSON.parse(readFileSync('packages/contracts/schemas/bench-request-v1.schema.json','utf8')) as {definitions:{BenchSignal:{oneOf:{properties:Record<string,{maximum?:number}>}[]}}};
+ const max=(kind:string,field:string)=>schema.definitions.BenchSignal.oneOf.find(b=>(b.properties.kind as {const?:string}).const===kind)!.properties[field]!.maximum;
+ expect([max('step','atTick'),max('trapezoid','atTick'),max('hold','ticks')]).toEqual([BENCH_MAX_TICKS-1,BENCH_MAX_TICKS-1,BENCH_MAX_TICKS]);
+ expect(codes({kind:'step',amplitude:2,atTick:BENCH_MAX_TICKS-1},csv)).toEqual([]);
 });

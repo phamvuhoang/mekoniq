@@ -206,7 +206,7 @@ describe('admission and the flag (no engine)', () => {
   });
   test('flag on: MJ-BV01 is offered; without a working environment it is still not admitted, and never on another set', async () => {
     const { health, create } = await gateway(true);
-    expect(health.scenarioIds).toEqual([...BEFORE, 'MJ-BV01']);
+    expect(health.scenarioIds).toEqual([...BEFORE, 'MJ-BV01', 'MJ-BENCH-ARM']);   // the arm bench (V06) is offered on the same flag; the wheel bench needs the mobile provider
     expect((await create('MJ-BV01', 'engineering-mujoco-arm-v1')).status).toBe(422);
     expect(await create('MJ-BV01', 'mock-default', 'mock')).toMatchObject({ status: 422, body: { error: 'BACKEND_UNAVAILABLE', reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] } });
     expect(await create('BV01', 'engineering-mujoco-arm-v1')).toMatchObject({ status: 422, body: { error: 'BACKEND_UNAVAILABLE', reasonCodes: ['SCENARIO_UNSUPPORTED_BY_SET'] } });

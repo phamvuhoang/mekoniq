@@ -436,6 +436,9 @@ class WorkerSession:
                 raise WorkerError("DIGEST_MISMATCH", ref["path"])
             return obj
         load = profile(scene["engine"]["loadProfileRef"], "load-profile-v1.schema.json")
+        if p.get("bench") is not None and load["props"]:
+            # the wheel inertia counts the AMR's own tree (mobile_engine.traced_inertia); a free payload is a tree of its own, so its J would be silently low
+            raise WorkerError("BENCH_SCENE_UNSUPPORTED", "a wheel bench runs on an empty load only")
         physics = profile(scene["engine"]["physicsProfileRef"])
         self._check_physics_profile(physics)
         if self.payload_perturbation:

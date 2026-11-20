@@ -1,0 +1,179 @@
+// V06c: single-axis bench runs on the real MuJoCo 3.17.0 engine (.venv-mujoco; these skip without it), and engine-free tests of the bench's durable trace (sample cap, read-back, gaps).
+// The plant is never a double: the only double here is labelled protocol_double, a wrapped worker client that answers one step with PLANT_UNSTABLE (the engine cannot be driven there by a gain, V06b).
+import {afterAll,beforeAll,describe,expect,test} from 'vitest';
+import {createHash} from 'node:crypto';
+import {readFile,writeFile} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
+import {mujocoFromOptions,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
+import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
+import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+import {benchMetrics,createBenchRun,openBenchTrace,readBenchTrace,BENCH_TRACE_LIMITS,type BenchProviders,type BenchTraceIdentity} from '../../packages/lab-runtime/src/v2/control/bench-runner';
+import {sealDriveDocument,validateControlEvidenceShape,type ControlProfileV1,type TuningResultV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
+import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
+import {startLabGateway,type LabGateway} from '../../packages/lab-runtime/src/gateway';
+import {mujocoProcessScope,mujocoPython,mujocoReady,mujocoRoot,mujocoTemp,removeMujocoDirs} from '../support/mujoco-arm';
+
+const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
+const doc=<T,>(name:string)=>JSON.parse(readFileSync(join(mujocoRoot,'fixtures/drive-v1',name),'utf8')) as T;
+const SET='engineering-mujoco-bench-v1',WHEELS=['amr-1/wheel-left','amr-1/wheel-right'];
+type Bench=NonNullable<RunManifestInput['bench']>;
+const wheel=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'wheels',signal:{kind:'step',amplitude:2,atTick:10},driveExperimentId:'drive-nominal-v1',controlProfile:doc<ControlProfileV1>('serve-control-v1.json'),...o} as Bench);
+const arm=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:10},driveExperimentId:'drive-nominal-v1',controlProfile:doc<ControlProfileV1>('xarm6-control-v1.json'),...o} as Bench);
+const input=(bench:Bench,seed=7):RunManifestInput=>({project:undefined,scenarioId:bench.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:'test-commit',bench});
+type Report=Awaited<ReturnType<ScenarioRun['report']>>&{tuning:TuningResultV1|null;bench:{anchorTick:number|null;traceIssues:string[]}};
+
+describe('the durable bench trace (no engine)',()=>{
+ const identity:BenchTraceIdentity={runId:'run-1',axisIds:['xarm-1/J3'],plantModelDigest:'a'.repeat(64),driveModelDigest:'b'.repeat(64),controlProfileDigest:'c'.repeat(64)};
+ const tick=(t:number,y=(k:number)=>k*1e-3)=>[{axisId:'xarm-1/J3',dtS:0.002,samples:Array.from({length:10},(_,k)=>({target:1,actual:y(t*10+k),feedback:null,torqueNm:0.5,saturated:false}))}];
+ afterAll(removeMujocoDirs);
+ test('tick 0 is the baseline and ticks 1-500 fill the 5,000-sample cap; a tick past it is refused and ends the recording (ruling 15)',async()=>{
+  const dir=join(await mujocoTemp('bench-trace-'),'trace'),rec=await openBenchTrace(dir,identity);
+  for(let t=0;t<=500;t++)await rec.append(t,tick(t));
+  await expect(rec.append(501,tick(501))).rejects.toThrow('TRACE_SAMPLE_CAP');
+  await expect(rec.append(502,tick(502))).rejects.toThrow('TRACE_RECORDER_TERMINAL');
+  await rec.finish(null);
+  const read=await readBenchTrace(dir,identity,500),samples=read.traces[0]!.samples;
+  expect(samples).toHaveLength(5010);expect(samples.every(s=>s!==null)).toBe(true);
+  expect(samples.slice(BENCH_TRACE_LIMITS.substeps).length).toBe(BENCH_TRACE_LIMITS.samplesPerAxis);
+  expect(read.manifest).toMatchObject({coverage:{lastTick:500,complete:false},terminalReason:'TRACE_SAMPLE_CAP',gaps:[{firstTick:501,lastTick:501,reason:'TRACE_SAMPLE_CAP'}]});
+  expect(read.issues).toContain('TRACE_TERMINAL:TRACE_SAMPLE_CAP');
+  expect(read.manifestSha256).toBe(sha(await readFile(join(dir,'manifest.json'))));
+ });
+ test('a bad chunk is a gap of null samples (its whole tick range), so the metrics whose window holds it are TRACE_GAP; a tail that never became durable is missing too',async()=>{
+  const dir=join(await mujocoTemp('bench-gap-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:50});
+  for(let t=0;t<=120;t++)await rec.append(t,tick(t,k=>k<300?0:0.1));   // a step of 0.1 at sample 300 (tick 30)
+  await rec.finish(null);
+  const clean=await readBenchTrace(dir,identity,120);
+  expect(clean.issues).toEqual([]);expect(clean.manifest!.chunks.map(c=>[c.firstTick,c.lastTick])).toEqual([[0,49],[50,99],[100,120]]);
+  const policy={finalWindowS:0.05,settleBand:0.02,holdWindowS:0.05};
+  expect(benchMetrics(clean.traces[0]!,{kind:'step',amplitude:0.1,atTick:26},4,'csp',policy,'completed').riseTimeS.available).toBe(true);
+  const second=clean.manifest!.chunks[1]!,bytes=await readFile(join(dir,second.path));bytes[bytes.length-1]^=0xff;await writeFile(join(dir,second.path),bytes);
+  const read=await readBenchTrace(dir,identity,130),s=read.traces[0]!.samples;
+  expect(read.issues).toEqual([`TRACE_CHUNK_INVALID:${second.path}:TRACE_HASH_MISMATCH`,'TRACE_TAIL_MISSING']);
+  expect(s.slice(500,1000).every(x=>x===null)).toBe(true);expect(s.slice(0,500).every(x=>x!==null)&&s.slice(1000,1210).every(x=>x!==null)).toBe(true);expect(s.slice(1210).every(x=>x===null)).toBe(true);
+  const m=benchMetrics(read.traces[0]!,{kind:'step',amplitude:0.1,atTick:26},4,'csp',policy,'completed');
+  for(const k of ['riseTimeS','overshootPct','settlingTimeS','rmsError','peakTorqueNm','saturationRatio'])expect(m[k],k).toMatchObject({available:false,reason:'TRACE_GAP'});
+  // a fault or an unstable plant: no metric at all, the part before included
+  for(const [o,why] of [['drive_fault','DRIVE_FAULT'],['unstable','PLANT_UNSTABLE']] as const)expect(Object.values(benchMetrics(clean.traces[0]!,{kind:'step',amplitude:0.1,atTick:26},4,'csp',policy,o)).every(x=>!x.available&&x.reason===why)).toBe(true);
+ });
+});
+
+describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
+ let runtime:MujocoRuntimeOptions;
+ const timings:{label:string;ms:number}[]=[];
+ beforeAll(async()=>{
+  const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:await mujocoTemp('mj-bench-probe-'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
+  if(!p.arm.runtime)throw Error(`MUJOCO_NOT_INSTALLED: ${p.arm.capability.reason}`);runtime=p.arm.runtime;
+ },60_000);
+ afterAll(async()=>{await removeMujocoDirs();console.log(JSON.stringify(timings));});
+ type Worker=Awaited<ReturnType<typeof spawnMujocoWorker>>;
+ /** One bench end to end: created, started, stepped once by 500 ticks (it stops itself), reported, closed. `wrap` sees every request (and the real worker and its bundle) and returns the response. */
+ async function bench(b:Bench,wrap?:(req:{op:string;payload:unknown},next:()=>Promise<unknown>,w:Worker,bundleRoot:string)=>Promise<unknown>,label:string=b.scenarioId){
+  const directory=join(await mujocoTemp('mj-bench-'),'run'),started=performance.now();
+  const spawn:BenchProviders['spawn']=async o=>{const w=await spawnMujocoWorker(o);return wrap?{get state(){return w.state;},get bootId(){return w.bootId;},get pid(){return w.pid;},get stderrTail(){return w.stderrTail;},request:req=>wrap(req,()=>w.request(req),w,o.bundleRoot) as never,close:r=>w.close(r)}:w;};
+  const run=mujocoProcessScope.observeRun(await createBenchRun(input(b),{directory,enabledBackends:['mujoco_3d','mujoco_arm'],runtime,spawn}));
+  try{
+   let v=await run.start();expect(v.run.status).toBe('running');
+   v=await run.action({actionId:'step-1',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});
+   const report=await run.report() as Report;timings.push({label,ms:Math.round(performance.now()-started)});
+   return {report,view:v,directory};
+  }finally{await run.close();}
+ }
+ test('a wheel step of 2 rad/s with the starting profile completes; the rise time exists; the draft reaches the worker byte for byte and every other axis holds where it rests',async()=>{
+  const b=wheel(),seen:{create?:{bench:{controlProfileRef:{sha256:string}}};tick0?:{drives:{axisId:string;targetApplied:number}[]}}={};
+  const {report,view,directory}=await bench(b,async(req,next)=>{const r=await next() as {ok:boolean;result:never};if(req.op==='create'){seen.create=req.payload as never;seen.tick0=r.result;}return r;});
+  expect(view.run.status).toBe('completed');
+  const t=report.tuning!;expect(validateControlEvidenceShape(t),JSON.stringify(validateControlEvidenceShape.errors)).toBe(true);
+  expect(t).toMatchObject({status:'completed',unstable:null,fault:null,axisIds:WHEELS,signal:b.signal,seed:7,engine:{id:'mujoco_3d',version:'3.17.0'},accepted:false,
+   plant:{plantModelDigest:b.controlProfile.plantModelDigest,driveModelDigest:doc<{digest:string}>('serve-drive-nominal-v1.json').digest,controlProfileDigest:b.controlProfile.digest,load:'empty'},
+   effectiveInertia:{basis:'wheel_straight_line',provenance:'assumed'},policy:doc<{metricPolicy:object}>('control-oracle-v1.json').metricPolicy,trace:{samples:5000}});
+  expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.0874395,6);
+  expect(t.metrics.riseTimeS).toMatchObject({available:true,unit:'s',basis:'actual'});
+  expect(report.manifest.backends.map(x=>x.id)).toEqual(['mujoco_3d']);expect(report.bench.traceIssues).toEqual([]);
+  // D2: the bytes the worker read are the bytes the request carried (JSON of the submitted object), and the create named exactly them
+  const bytes=await readFile(join(directory,'bundle/bench-control.json'));
+  expect(bytes.toString()).toBe(JSON.stringify(b.controlProfile));expect(seen.create!.bench.controlProfileRef.sha256).toBe(sha(bytes));
+  // the server's rest positions are where the drive itself starts (tick 0's applied target), so a holding axis never moves
+  expect(seen.tick0!.drives.map(d=>[d.axisId,d.targetApplied])).toEqual(WHEELS.map(a=>[a,0]));
+  console.log(JSON.stringify({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}}));
+ },120_000);
+ test('a J3 step of 0.1 rad completes, with the J3 inertia at home; the arm holds at home and the gripper open',async()=>{
+  const seen:{tick0?:{drives:{axisId:string;targetApplied:number}[]}}={},enabled:number[]=[],moved:number[]=[];
+  const {report,view}=await bench(arm(),async(req,next)=>{
+   const r=await next() as {result:{tick:number;drives:{state:string}[]}};if(req.op==='create')seen.tick0=r.result as never;
+   if(req.op==='step'||req.op==='create'){const p=req.payload as {targetTick?:number;driveCommands?:{axisId:string;target:number}[]};if(r.result.drives.every(d=>d.state==='enabled'))enabled.push(r.result.tick);
+    const j3=p.driveCommands?.find(c=>c.axisId==='xarm-1/J3');if(j3&&Math.abs(j3.target-seen.tick0!.drives[2]!.targetApplied)>1e-12)moved.push(p.targetTick!);}
+   return r;});
+  expect(view.run.status).toBe('completed');
+  const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
+  expect(t).toMatchObject({status:'completed',axisIds:['xarm-1/J3'],effectiveInertia:{basis:'mass_matrix_diagonal',provenance:'assumed'},plant:{plantModelDigest:'0e2f40ef5a4569ea3e76879ed078fffd55d514b42c25c60072ebd7d27af3445a',load:'empty'},trace:{samples:5000}});
+  expect(t.effectiveInertia!.valueKgM2).toBeCloseTo(0.7127244,6);
+  expect(t.metrics.riseTimeS.available).toBe(true);expect(t.metrics.settlingTimeS.available).toBe(true);
+  const home=(JSON.parse(readFileSync(join(mujocoRoot,'fixtures/xarm6-g2-v1/programs.json'),'utf8')) as {programs:{waypoints:{home:number[]}}}).programs.waypoints.home;
+  for(const [i,d] of seen.tick0!.drives.entries())expect(d.targetApplied,d.axisId).toBeCloseTo(i<6?home[i]!:0,9);
+  // the anchor (ruling 3): the first tick commanded after every axis reported enabled (the nominal drive's 25-substep enable sequence ends in tick 3); the step lands atTick ticks later
+  expect(report.bench.anchorTick).toBe(enabled[0]!+1);expect(enabled[0]).toBe(3);expect(moved[0]).toBe(report.bench.anchorTick!+10);
+  console.log(JSON.stringify({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}}));
+ },120_000);
+ test('kp far above the envelope ceiling, written straight into the profile file, ends the bench as drive_fault OVERSPEED; the slot is free and a second bench run starts right after',async()=>{
+  const envelope=doc<{axes:{axisId:string;kp:{max:number}}[]}>('tuning-envelope-v1.json'),ceiling=envelope.axes.find(a=>a.axisId==='xarm-1/J3')!.kp.max;
+  const hot=structuredClone(doc<ControlProfileV1>('xarm6-control-v1.json'));hot.axes.find(a=>a.axisId==='xarm-1/J3')!.loop.kp=100*ceiling;
+  const sealed=sealDriveDocument({...hot,digest:''}),text=JSON.stringify(sealed);
+  // deliberately past the runtime's admission (the worker does not check the envelope): the file and the create ref are swapped under a run admitted with the fixture profile
+  const {report,view}=await bench(arm(),async(req,next,_w,bundleRoot)=>{
+   if(req.op==='create'){const p=req.payload as {bench:{controlProfileRef:{path:string;sha256:string}}};await writeFile(join(bundleRoot,p.bench.controlProfileRef.path),text);p.bench.controlProfileRef.sha256=sha(text);}
+   return next();
+  },'J3 hot');
+  expect(view.run.status).toBe('completed');
+  const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
+  expect(t).toMatchObject({status:'drive_fault',unstable:null,fault:{axisId:'xarm-1/J3',code:'OVERSPEED'}});
+  expect(t.fault!.tick).toBe(report.bench.anchorTick!+10+1);   // the second tick of the step, as V06b measured
+  expect(Object.values(t.metrics).every(m=>!m.available&&m.reason==='DRIVE_FAULT')).toBe(true);
+  expect(t.trace.samples).toBe(t.fault!.tick*10);expect(report.bench.traceIssues).toEqual([]);   // the trace up to the fault is saved and reads back whole
+  expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
+  console.log(JSON.stringify({j3Hot:{status:t.status,fault:t.fault,anchorTick:report.bench.anchorTick,riseTimeS:t.metrics.riseTimeS,trace:t.trace}}));
+  const again=await bench(arm(),undefined,'J3 after fault');expect(again.report.tuning!.status).toBe('completed');
+ },180_000);
+ test('protocol_double: a step answered PLANT_UNSTABLE ends the bench as unstable with its tick and warning; the worker is closed, the slot free, the next bench starts at once',async()=>{
+  let worker:Worker|undefined;
+  const {report,view}=await bench(arm(),async(req,next,w)=>{
+   worker=w;const p=req.payload as {targetTick?:number};
+   if(req.op==='step'&&p.targetTick===30)return {protocol:'mekoniq-sim3d/1',requestId:'step-x',runId:'x',ok:false,error:{code:'PLANT_UNSTABLE',message:'the engine reported a bad state (BADQACC) and reset itself'}};
+   return next();
+  },'J3 unstable double');
+  expect(view.run.status).toBe('completed');
+  const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
+  expect(t).toMatchObject({status:'unstable',fault:null,unstable:{tick:30,warning:'the engine reported a bad state (BADQACC) and reset itself'}});
+  expect(Object.values(t.metrics).every(m=>!m.available&&m.reason==='PLANT_UNSTABLE')).toBe(true);
+  expect(t.trace.samples).toBe(29*10);
+  console.log(JSON.stringify({j3UnstableDouble:{status:t.status,unstable:t.unstable,riseTimeS:t.metrics.riseTimeS,trace:t.trace}}));
+  expect(activeRunCount(MUJOCO_SLOT)).toBe(0);expect(worker!.state).toBe('closed');
+  expect((await bench(arm({axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),undefined,'gripper after unstable')).report.tuning!.status).toBe('completed');
+ },180_000);
+ test('over HTTP: the bench set is in health with the envelope and the signal catalog, a session creates, starts, steps and reads the report of an arm bench',async()=>{
+  const directory=await mujocoTemp('mj-bench-gw-');
+  const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
+  const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory,mujoco:{arm:p.arm,mobile:p.mobile}});
+  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks}});
+  try{
+   const health=await (await fetch(g.url+'/lab/v2/health')).json() as {scenarioIds:string[];backendSets:{id:string}[];tuningEnvelope:{revision:number};benchSignals:object};
+   expect(health.scenarioIds).toEqual(expect.arrayContaining(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']));expect(health.backendSets.map(s=>s.id)).toContain(SET);
+   expect(health.tuningEnvelope).toEqual(doc('tuning-envelope-v1.json'));expect(health.tuningEnvelope.revision).toBe(2);
+   expect(health.benchSignals).toEqual({kinds:['step','trapezoid','hold'],maxTicks:500,amplitudes:{wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]},suggestOptions:{bandwidthRadS:[5,10,20,40],damping:[0.7,1]}});
+   const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});
+   const h={cookie:paired.headers.get('set-cookie')!.split(';')[0]!,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':String((await paired.json() as {csrfToken:string}).csrfToken)};
+   const call=async(path:string,body?:unknown)=>{const r=await fetch(g.url+'/lab/v2'+path,{method:body?'POST':'GET',headers:h,...body?{body:JSON.stringify(body)}:{}});return {status:r.status,body:await r.json() as Record<string,unknown>};};
+   const b=arm({axis:'J2',signal:{kind:'step',amplitude:-0.05,atTick:20}});
+   const created=await call('/runs',{scenarioId:'MJ-BENCH-ARM',scenarioRevision:1,seed:3,mode:'simulation',access:'simulated',backendSetId:SET,runtimeIdentity:{sourceCommit:'test-commit',schemaHash:'a'.repeat(64)},bench:b});
+   expect(created.status,JSON.stringify(created.body)).toBe(201);
+   const id=(created.body.run as {id:string}).id;
+   let r=await call(`/runs/${id}/actions`,{actionId:'start',expectedRevision:0,kind:'start',payload:{}});expect(r.status,JSON.stringify(r.body)).toBe(200);
+   r=await call(`/runs/${id}/actions`,{actionId:'step',expectedRevision:(r.body.run as {runRevision:number}).runRevision,kind:'step',payload:{ticks:500}});expect(r.status).toBe(200);expect((r.body.run as {status:string}).status).toBe('completed');
+   const report=await call(`/runs/${id}/report`);expect(report.status).toBe(200);
+   expect(report.body.tuning).toMatchObject({status:'completed',axisIds:['xarm-1/J2'],seed:3});
+   expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
+  }finally{await g.close();}
+ },180_000);
+});

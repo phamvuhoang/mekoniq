@@ -14,6 +14,9 @@ import observationSchema from '../../../contracts/schemas/cell-observation.schem
 import evidenceSchema from '../../../contracts/schemas/lab-evidence-v2.schema.json';
 import armCommandSchema from '../../../contracts/schemas/arm-command.schema.json';
 import armObservationSchema from '../../../contracts/schemas/arm-observation.schema.json';
+import {scenarioRegistry} from './scenario-registry';
+import {BENCH_SET_ID} from './capabilities';
+import {validateBenchRequestShape} from './control/drive-io';
 export type {LabProjectV2,LabActionV2,CreateRunRequest,LabRunSnapshotV2,TwinSampleV2,AssetRevision,CoffeeRecipe,CellCommand,CellObservation,LabEvidenceV2,ArmCommand,ArmObservation};
 export interface Issue {path:string;code:string;message:string;}
 export type Validated<T>={ok:true;value:T}|{ok:false;issues:Issue[]};
@@ -48,6 +51,16 @@ const checkRun=compile<CreateRunRequest>(runSchema,'mekoniq.lab-run.v2#/definiti
 export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  const shape=checkRun(value);
  if(!shape.ok)return shape;
+ const v=shape.value,bench=v.bench;
+ // a bench (R4.2) is a run of its own kind: only the two bench scenarios on the bench set, always with a bench request, and nothing of a mission run (its plant is built by the server, so no project or bundle)
+ if(bench!==undefined||scenarioRegistry.get(v.scenarioId)?.bench){
+  const scope=(message:string):Validated<CreateRunRequest>=>({ok:false,issues:[{path:'/bench',code:'BENCH_SCOPE_INVALID',message}]});
+  if(bench===undefined||!scenarioRegistry.get(v.scenarioId)?.bench||v.mode!=='simulation'||v.backendSetId!==BENCH_SET_ID)return scope('A bench request runs only a bench scenario on engineering-mujoco-bench-v1, and a bench scenario only with a bench request');
+  if(v.project!==undefined||v.engineeringRef!==undefined||v.worldExperimentId!==undefined||v.driveExperimentId!==undefined)return scope('A bench plant is built by the server: no project, engineering bundle or run experiment (the drive experiment is the bench request\'s own)');
+  const checked=validateBenchRequestShape(bench);
+  if(!checked.ok)return {ok:false,issues:checked.reasonCodes.map(code=>({path:'/bench',code,message:'Invalid bench request'}))};
+  return (bench as {scenarioId:string}).scenarioId===v.scenarioId?shape:scope('The bench request names another scenario than the run');
+ }
  if(shape.value.project===undefined&&shape.value.engineeringRef===undefined)return {ok:false,issues:[{path:'/project',code:'FIELD_REQUIRED',message:'Missing "project" (or "engineeringRef" for an engineering run)'}]};
  if(shape.value.worldExperimentId&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'Selection requires the registered shared-world cell'}]};
  if(shape.value.driveExperimentId&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/driveExperimentId',code:'DRIVE_EXPERIMENT_SCOPE_INVALID',message:'A virtual drive is selectable on the registered shared-world cell only'}]};

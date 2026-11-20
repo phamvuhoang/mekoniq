@@ -487,6 +487,15 @@ export type ControlMetric =
       reason: string;
     };
 /**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning). The object of the other two results is null.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export type TuningResultV1 = TuningResultV11;
+/**
+ * Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "BenchSignal".
  */
@@ -2826,20 +2835,19 @@ export interface DriveTickRecord {
    */
   drives: DriveAxisSnapshot[];
 }
-/**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here.
- *
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "TuningResultV1".
- */
-export interface TuningResultV1 {
+export interface TuningResultV11 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
-  status: 'completed' | 'unstable';
+  status: 'completed' | 'drive_fault' | 'unstable';
   unstable: {
     tick: number;
     warning: string;
+  } | null;
+  fault: {
+    tick: number;
+    axisId: DriveAxisId;
+    code: string;
   } | null;
   /**
    * @minItems 1
