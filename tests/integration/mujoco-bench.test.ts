@@ -1,16 +1,17 @@
 // V06c: single-axis bench runs on the real MuJoCo 3.17.0 engine (.venv-mujoco; these skip without it), and engine-free tests of the bench's durable trace (sample cap, read-back, gaps).
 // The plant is never a double: the only doubles here are labelled protocol_double, a wrapped worker client that answers one step with PLANT_UNSTABLE (the engine cannot be driven there by a gain, V06b),
 // or whose step answer names a collision (admission refuses the reverse wheel signal that drove the real AMR into boundary-west at tick 453, final-fix-report F1).
-import {afterAll,afterEach,beforeAll,describe,expect,test} from 'vitest';
+import {afterAll,afterEach,beforeAll,describe,expect,test,vi} from 'vitest';
 import {createHash} from 'node:crypto';
 import {gzipSync,gunzipSync} from 'node:zlib';
-import {cp,readFile,writeFile} from 'node:fs/promises';
+import {cp,readdir,readFile,writeFile} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {mujocoFromOptions,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../packages/lab-runtime/src/v2/simulation3d/mujoco';
 import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+import * as evidenceIO from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {benchAnchorTick,SUGGEST_OPTIONS} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import {suggestGains} from '../../packages/lab-runtime/src/v2/control/gain-suggest';
@@ -75,6 +76,34 @@ describe('the durable bench trace (no engine)',()=>{
   expect(read.manifest).toMatchObject({coverage:{lastTick:500,complete:false},terminalReason:'TRACE_SAMPLE_CAP',gaps:[{firstTick:501,lastTick:501,reason:'TRACE_SAMPLE_CAP'}]});
   expect(read.issues).toContain('TRACE_TERMINAL:TRACE_SAMPLE_CAP');
   expect(read.manifestSha256).toBe(sha(await readFile(join(dir,'manifest.json'))));
+ });
+ test.each(['quota','manifest write'] as const)('a failed %s while publishing buffered ticks retains the durable prefix at the confirmed tick',async failure=>{
+  const dir=join(await mujocoTemp('bench-publish-failure-'),'trace');
+  const rec=await openBenchTrace(dir,identity,{maxBytes:failure==='quota'?5200:BENCH_TRACE_LIMITS.maxBytes,chunkTicks:10});
+  const row=(t:number)=>[{axisId:identity.axisIds[0],dtS:0.002,samples:Array.from({length:10},(_,j)=>{
+   const i=t*10+j;return {target:Math.cos(i),actual:Math.sin(i),torqueNm:Math.sqrt(i),feedback:null,saturated:false};
+  })}];
+  await rec.append(0,row(0));await rec.flush();
+  for(let t=1;t<=9;t++)await rec.append(t,row(t));
+  const reason=failure==='quota'?'TRACE_QUOTA_EXCEEDED':'TEST_MANIFEST_WRITE_FAILED';
+  const write=evidenceIO.writeDurable;
+  let failManifest=failure==='manifest write';
+  const fault=failManifest?vi.spyOn(evidenceIO,'writeDurable').mockImplementation(async(d,name,b)=>{
+   if(failManifest&&name==='manifest.json'){failManifest=false;throw Error(reason);}
+   return write(d,name,b);
+  }):undefined;
+  try{await expect(rec.append(10,row(10))).rejects.toThrow(reason);}finally{fault?.mockRestore();}
+  await rec.gap(10,10,'STEP_ACK_LOST');await rec.finish(reason);
+  const m=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8'));
+  expect(m).toMatchObject({coverage:{lastTick:0,complete:false},terminalReason:reason,gaps:[{firstTick:1,lastTick:10,reason}]});
+  expect(m.chunks).toHaveLength(1);
+  expect((await readdir(dir)).filter(name=>name.endsWith('.ndjson.gz'))).toHaveLength(failure==='quota'?1:2);
+  for(const at of [9,10]){
+   const read=await readBenchTrace(dir,identity,at);
+   expect(read.issues).toEqual([`TRACE_TERMINAL:${reason}`,`TRACE_GAP:1-10:${reason}`,'TRACE_TAIL_MISSING']);
+   expect(read.traces[0]!.samples.slice(0,10)).toEqual(row(0)[0]!.samples);
+   expect(read.traces[0]!.samples.slice(10)).toEqual(Array(at*10).fill(null));
+  }
  });
  test('a chunk exceeding its declared byte length is refused by the bounded file reader before content verification',async()=>{
   const dir=join(await mujocoTemp('bench-chunk-bounds-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:1});

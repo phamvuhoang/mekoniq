@@ -170,40 +170,59 @@ export interface BenchTraceRecorder {directory:string;manifest():BenchTraceManif
 export async function openBenchTrace(directory:string,identity:BenchTraceIdentity,o:{maxBytes?:number;chunkTicks?:number}={}):Promise<BenchTraceRecorder>{
  const maxBytes=o.maxBytes??BENCH_TRACE_LIMITS.maxBytes,chunkTicks=o.chunkTicks??BENCH_TRACE_LIMITS.chunkTicks;
  await mkdir(directory,{recursive:true,mode:0o700});if((await readdir(directory)).length)throw Error('TRACE_DIRECTORY_NOT_EMPTY');
- const m:BenchTraceManifest={schemaVersion:1,documentType:'drive-trace',identity:structuredClone(identity),dtS:BENCH_TRACE_LIMITS.dtS,substeps:BENCH_TRACE_LIMITS.substeps,chunks:[],coverage:{firstTick:0,lastTick:-1,complete:false},gaps:[],terminalReason:null};
- let lines:string[]=[],first=0,last=-1,counted=0,queue:Promise<void>=Promise.resolve();
+ let m:BenchTraceManifest={schemaVersion:1,documentType:'drive-trace',identity:structuredClone(identity),dtS:BENCH_TRACE_LIMITS.dtS,substeps:BENCH_TRACE_LIMITS.substeps,chunks:[],coverage:{firstTick:0,lastTick:-1,complete:false},gaps:[],terminalReason:null};
+ let lines:string[]=[],last=-1,counted=0,queue:Promise<void>=Promise.resolve();
  const serial=(fn:()=>Promise<void>)=>{const p=queue.then(fn);queue=p.catch(()=>{});return p;};
- // every publication fits in the quota with the manifest it is listed in (and a worst-case terminal reason)
- const quota=async(extra:number)=>{if(await physicsDirectoryBytes(directory)+extra+1024>maxBytes)throw Error('TRACE_QUOTA_EXCEEDED');};
- const save=async()=>{const b=JSON.stringify(m);await quota(Buffer.byteLength(b));await writeDurable(directory,MANIFEST,b);};
- const end=async(reason:string)=>{m.terminalReason??=reason.slice(0,200);m.coverage.complete=false;await save().catch(()=>{});};
- const flush=async()=>{
+ // Ordinary publication reserves space for a terminal manifest with its reason and missing range.
+ const quota=async(extra:number,reserve=1024)=>{if(await physicsDirectoryBytes(directory)+extra+reserve>maxBytes)throw Error('TRACE_QUOTA_EXCEEDED');};
+ const save=async(doc:BenchTraceManifest)=>{const b=JSON.stringify(doc);await quota(Buffer.byteLength(b),doc.terminalReason?0:1024);await writeDurable(directory,MANIFEST,b);};
+ const publish=async()=>{
   if(!lines.length)return;
   const bytes=gzipSync(lines.join('')),path=`drive-trace-${String(m.chunks.length).padStart(6,'0')}-${randomBytes(4).toString('hex')}.ndjson.gz`;
   if(m.chunks.length>=READ_LIMITS.chunksPerStream||bytes.length>READ_LIMITS.chunkBytes)throw Error('TRACE_READ_LIMIT');
-  await quota(bytes.length+Buffer.byteLength(JSON.stringify(m))+256);await writeDurable(directory,path,bytes);
-  m.chunks.push({path,sha256:sha(bytes),bytes:bytes.length,firstTick:first,lastTick:last});m.coverage.lastTick=last;lines=[];first=last+1;await save();
+  const chunk={path,sha256:sha(bytes),bytes:bytes.length,firstTick:m.coverage.lastTick+1,lastTick:last};
+  const next={...m,chunks:[...m.chunks,chunk],coverage:{...m.coverage,lastTick:last}};
+  await quota(bytes.length+Buffer.byteLength(JSON.stringify(next)));await writeDurable(directory,path,bytes);
+  // A chunk becomes durable coverage only once its manifest is committed. Leave unlisted bytes intact on failure.
+  await save(next);m=next;lines=[];
  };
- const failed=async(e:unknown)=>{await end((e as Error).message);throw e;};
- await save();
+ const endGap=async(firstTick:number,lastTick:number,reason:string)=>{
+  // Nothing later, including finish(), may publish a rejected append from this buffer.
+  lines=[];reason=(reason||'TRACE_WRITE_FAILED').slice(0,200);
+  m={...m,terminalReason:reason,coverage:{...m.coverage,complete:false},gaps:[{firstTick:Math.min(firstTick,m.coverage.lastTick+1),lastTick,reason}]};
+  await save(m).catch(()=>{}); // finish can retry the terminal manifest; the previously published prefix remains on disk
+ };
+ const flush=async()=>{
+  try{await publish();}catch(e){await endGap(m.coverage.lastTick+1,last,(e as Error).message);throw e;}
+ };
+ // A bad incoming sample or lost ACK is independent of preceding valid buffered rows. Keep them if publication succeeds.
+ const interrupt=async(firstTick:number,lastTick:number,reason:string)=>{
+  await publish().catch(()=>{});await endGap(firstTick,lastTick,reason);
+ };
+ await save(m);
  return {directory,manifest:()=>structuredClone(m),
   append:(tick,trace,bodyForwardMps)=>serial(async()=>{
    if(m.terminalReason)throw Error('TRACE_RECORDER_TERMINAL');
+   let axes:BenchTraceTick['axes'];
    try{
     if(tick!==last+1)throw Error('TRACE_TICK_ORDER');
     if(bodyForwardMps!==undefined&&!finite(bodyForwardMps))throw Error('TRACE_RECORD_INVALID');
-    const axes=tickAxes(trace,identity.axisIds);
+    axes=tickAxes(trace,identity.axisIds);
     if(tick>0&&counted+BENCH_TRACE_LIMITS.substeps>BENCH_TRACE_LIMITS.samplesPerAxis)throw Error('TRACE_SAMPLE_CAP');
-    if(tick>0)counted+=BENCH_TRACE_LIMITS.substeps;
-    lines.push(JSON.stringify({tick,axes,...bodyForwardMps!==undefined?{bodyForwardMps}:{}} satisfies BenchTraceTick)+'\n');last=tick;if(lines.length>=chunkTicks)await flush();
-   }catch(e){m.gaps.push({firstTick:tick,lastTick:tick,reason:(e as Error).message.slice(0,200)});await failed(e);}
+   }catch(e){await interrupt(last+1,last+1,(e as Error).message);throw e;}
+   if(tick>0)counted+=BENCH_TRACE_LIMITS.substeps;
+   lines.push(JSON.stringify({tick,axes,...bodyForwardMps!==undefined?{bodyForwardMps}:{}} satisfies BenchTraceTick)+'\n');
+   last=tick;if(lines.length>=chunkTicks)await flush();
   }),
-  flush:()=>serial(()=>flush().catch(failed)),
-  finish:reason=>serial(async()=>{await flush().catch(failed);if(reason)m.terminalReason??=reason.slice(0,200);m.coverage.complete=!m.terminalReason&&!m.gaps.length&&last>=0;await save();}),
+  flush:()=>serial(flush),
+  finish:reason=>serial(async()=>{await flush();const terminalReason=m.terminalReason??(reason?reason.slice(0,200):null);
+   const next={...m,terminalReason,coverage:{...m.coverage,complete:!terminalReason&&!m.gaps.length&&m.coverage.lastTick>=0}};
+   await save(next);m=next;
+  }),
   gap:(firstTick,lastTick,reason)=>serial(async()=>{
-   // A failed append already ended its recording. The outer worker-loss handler must preserve that gap and its cause.
-   if(m.gaps.length)return;
-   m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);
+   if(m.terminalReason)return;
+   if(!Number.isSafeInteger(firstTick)||!Number.isSafeInteger(lastTick)||firstTick<0||lastTick<firstTick||lastTick>BENCH_MAX_TICKS+1||!reason)throw Error('TRACE_GAP_INVALID');
+   await interrupt(firstTick,lastTick,reason);
   })};
 }
 export interface BenchTraceRead {bodyForwardMps:number|null;manifest:BenchTraceManifest|null;manifestSha256:string|null;traces:DriveTrace[];issues:string[]}
