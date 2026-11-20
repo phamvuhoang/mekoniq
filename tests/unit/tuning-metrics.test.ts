@@ -1,0 +1,91 @@
+import {expect,test} from 'vitest';
+import {stepResponseMetrics} from '../../packages/lab-runtime/src/v2/control/tuning-metrics';
+import type {DriveTrace} from '../../packages/lab-runtime/src/v2/control/drive-io';
+
+type Sample=NonNullable<DriveTrace['samples'][number]>;
+const policy={finalWindowS:0.2,settleBand:0.02,holdWindowS:0.2},unit={t0S:0,y0:0,amplitude:1};
+const value=(x:unknown)=>(x as {available:true;value:number}).value;
+const second=(zeta:number,wn:number,n:number,dtS=0.002,extra:(k:number)=>Partial<Sample>=()=>({}))=>{
+ const wd=wn*Math.sqrt(1-zeta**2);
+ return Array.from({length:n},(_,k)=>{const t=k*dtS,y=1-Math.exp(-zeta*wn*t)*(Math.cos(wd*t)+zeta/Math.sqrt(1-zeta**2)*Math.sin(wd*t));return {target:1,actual:y,feedback:y,torqueNm:0,...extra(k)};});
+};
+
+test('step metrics match the closed-form second-order response',()=>{
+ const zeta=0.5,wn=10,wd=wn*Math.sqrt(1-zeta**2),dtS=0.002;
+ const samples=Array.from({length:1500},(_,k)=>{const t=k*dtS,y=1-Math.exp(-zeta*wn*t)*(Math.cos(wd*t)+zeta/Math.sqrt(1-zeta**2)*Math.sin(wd*t));return {target:1,actual:y,feedback:y,torqueNm:0};});
+ const m=stepResponseMetrics({axisId:'a',dtS,samples},{t0S:0,y0:0,amplitude:1},{finalWindowS:0.2,settleBand:0.02,holdWindowS:0.2});
+ expect(m.overshootPct.available).toBe(true);
+ expect(value(m.overshootPct)).toBeCloseTo(16.30,1);          // exp(-pi*zeta/sqrt(1-zeta^2))
+ expect(value(m.settlingTimeS)).toBeGreaterThan(0.72);         // after the second trough (-2.66 %) at 0.7255 s
+ expect(value(m.settlingTimeS)).toBeLessThanOrEqual(0.812);    // the 2 % envelope bound
+ expect(Math.abs(value(m.steadyStateError))).toBeLessThan(1e-3);
+});
+test('a response that never enters the 2 % band has no settling time',()=>{
+ const samples=Array.from({length:500},(_,k)=>({target:1,actual:1+0.1*Math.sin(k/5),feedback:null,torqueNm:0}));
+ const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},{t0S:0,y0:0,amplitude:1},{finalWindowS:0.2,settleBand:0.02,holdWindowS:0.2});
+ expect(m.settlingTimeS).toEqual({available:false,value:null,unit:'s',reason:'NOT_SETTLED'});
+});
+test('not settled means no settling time, no steady-state error; the other metrics stay available',()=>{
+ const samples=Array.from({length:500},(_,k)=>({target:1,actual:Math.min(1,k/100)*0.85,feedback:null,torqueNm:2}));   // ends at 0.85: outside the band, never at 90 %
+ const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy);
+ expect(m.settlingTimeS).toMatchObject({available:false,reason:'NOT_SETTLED'});expect(m.steadyStateError).toMatchObject({available:false,reason:'NOT_SETTLED'});
+ expect(m.riseTimeS).toMatchObject({available:false,reason:'NOT_REACHED'});
+});
+test('rise time is the 10 % to 90 % interval, overshoot is 0 for a response that stays below the target',()=>{
+ const dtS=0.002,samples=Array.from({length:1500},(_,k)=>({target:1,actual:1-Math.exp(-k*dtS/0.1),feedback:null,torqueNm:0}));   // first order, tau 0.1: rise = tau ln 9
+ const m=stepResponseMetrics({axisId:'a',dtS,samples},unit,policy);
+ expect(value(m.riseTimeS)).toBeCloseTo(0.1*Math.log(9),3);expect(value(m.overshootPct)).toBe(0);
+ expect(m.riseTimeS).toMatchObject({unit:'s',basis:'actual'});expect(value(m.steadyStateError)).toBeCloseTo(0,5);
+});
+test('a step that starts late, from an offset, with a negative amplitude, is measured from its own start',()=>{
+ const dtS=0.002,wd=10*Math.sqrt(0.75),n=1500,t0S=0.1,samples=Array.from({length:n},(_,k)=>{const t=Math.max(0,k*dtS-t0S),y=1-Math.exp(-5*t)*(Math.cos(wd*t)+0.5/Math.sqrt(0.75)*Math.sin(wd*t));return {target:0,actual:2-y*1.5,feedback:null,torqueNm:0};});
+ const m=stepResponseMetrics({axisId:'a',dtS,samples},{t0S,y0:2,amplitude:-1.5},policy);
+ expect(value(m.overshootPct)).toBeCloseTo(16.30,1);expect(value(m.settlingTimeS)).toBeLessThan(0.82);expect(value(m.settlingTimeS)).toBeGreaterThan(0.72);
+ expect(Math.abs(value(m.steadyStateError))).toBeLessThan(1e-3);
+});
+test('the error is target minus actual: rms over the window, signed steady-state error',()=>{
+ const samples=Array.from({length:500},(_,k)=>({target:1,actual:k<100?0:0.985,feedback:null,torqueNm:0}));   // inside the 2 % band, 0.015 short
+ const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy);
+ expect(value(m.steadyStateError)).toBeCloseTo(0.015,12);
+ expect(value(m.rmsError)).toBeCloseTo(Math.sqrt((100*1+400*0.015**2)/500),12);expect(m.rmsError).toMatchObject({unit:'rad',samples:500});
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy,'csv').rmsError).toMatchObject({unit:'rad/s'});
+});
+test('peak torque and saturation ratio over the window; a trace without the flag cannot say',()=>{
+ const samples=second(0.7,20,500,0.002,k=>({torqueNm:k===50?-3.5:1,saturated:k>=40&&k<60}));
+ const m=stepResponseMetrics({axisId:'a',dtS:0.002,samples},unit,policy);
+ expect(value(m.peakTorqueNm)).toBe(3.5);expect(m.peakTorqueNm).toMatchObject({unit:'N m'});
+ expect(value(m.saturationRatio)).toBeCloseTo(20/500,12);
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples:second(0.7,20,500)},unit,policy).saturationRatio).toMatchObject({available:false,reason:'SATURATION_NOT_TRACED'});
+});
+test('a missing substep is TRACE_GAP for every metric whose window contains it, and only for those',()=>{
+ const base=second(0.7,20,1000),with_=(i:number)=>{const s:(Sample|null)[]=[...base];s[i]=null;return s;};
+ const early=stepResponseMetrics({axisId:'a',dtS:0.002,samples:with_(100)},unit,policy);
+ for(const k of ['riseTimeS','overshootPct','settlingTimeS','rmsError','peakTorqueNm','saturationRatio'] as const)expect(early[k],k).toMatchObject({available:false,reason:'TRACE_GAP'});
+ expect(early.steadyStateError.available).toBe(true);   // the final window is complete
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples:with_(950)},unit,policy).steadyStateError).toMatchObject({available:false,reason:'TRACE_GAP'});
+ // a gap before the step does not matter
+ expect(stepResponseMetrics({axisId:'a',dtS:0.002,samples:with_(5)},{...unit,t0S:0.1},policy).rmsError.available).toBe(true);
+});
+test('invalid windows and policies are reported, not computed',()=>{
+ const trace={axisId:'a',dtS:0.002,samples:second(0.7,20,500)};
+ expect(stepResponseMetrics(trace,{t0S:5,y0:0,amplitude:1},policy).riseTimeS).toMatchObject({available:false,reason:'WINDOW_INVALID'});
+ expect(stepResponseMetrics(trace,{...unit,amplitude:0},policy).rmsError).toMatchObject({available:false,reason:'AMPLITUDE_ZERO'});
+ expect(stepResponseMetrics(trace,unit,{...policy,settleBand:0}).settlingTimeS).toMatchObject({available:false,reason:'POLICY_INVALID'});
+ expect(stepResponseMetrics({...trace,samples:[]},unit,policy).rmsError).toMatchObject({available:false,reason:'WINDOW_INVALID'});
+ expect(stepResponseMetrics({...trace,dtS:0},unit,policy).rmsError).toMatchObject({available:false,reason:'WINDOW_INVALID'});
+ expect(Object.keys(stepResponseMetrics(trace,unit,policy)).sort()).toEqual(['overshootPct','peakTorqueNm','riseTimeS','rmsError','saturationRatio','settlingTimeS','steadyStateError']);
+});
+
+test('the contract: a TuningResultV1 of a bench run is a valid shape, an accepted or malformed one is not',async()=>{
+ const {validateControlEvidenceShape}=await import('../../packages/lab-runtime/src/v2/control/drive-io');
+ const d='a'.repeat(64),metrics=stepResponseMetrics({axisId:'a/J3',dtS:0.002,samples:second(0.7,20,500)},unit,policy);
+ const result={schemaVersion:1,documentType:'tuning-result',runId:'run-1',status:'completed',unstable:null,axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.1,atTick:5},seed:7,engine:{id:'mujoco',version:'3.17.0'},
+  plant:{plantModelDigest:d,driveModelDigest:d,controlProfileDigest:d,load:'empty'},effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'assumed'},policy,metrics,trace:{chunks:1,sha256:d,samples:500},accepted:false};
+ const ok=(v:unknown)=>validateControlEvidenceShape(v);
+ expect(ok(result),JSON.stringify(validateControlEvidenceShape.errors)).toBe(true);
+ expect(ok({...result,status:'unstable',unstable:{tick:12,warning:'PLANT_UNSTABLE'},effectiveInertia:null})).toBe(true);
+ expect(ok({...result,accepted:true})).toBe(false);
+ expect(ok({...result,effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'measured'}})).toBe(false);
+ expect(ok({...result,axisIds:['a/J1','a/J2','a/J3']})).toBe(false);
+ expect(ok({...result,signal:{kind:'sine'}})).toBe(false);
+});

@@ -944,6 +944,12 @@ export interface CreateRunRequest {
    */
   driveExperimentId?:
     'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+  /**
+   * Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself.
+   */
+  bench?: {
+    [k: string]: any;
+  };
 }
 
 export interface RunVerification {

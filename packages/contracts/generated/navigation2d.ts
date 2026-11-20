@@ -475,6 +475,27 @@ export type ControlMetric =
       reason: string;
     };
 /**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchSignal".
+ */
+export type BenchSignal =
+  | {
+      kind: 'step';
+      amplitude: number;
+      atTick: number;
+    }
+  | {
+      kind: 'trapezoid';
+      distance: number;
+      peakVelocity: number;
+      acceleration: number;
+      atTick: number;
+    }
+  | {
+      kind: 'hold';
+      ticks: number;
+    };
+/**
  * Per-axis drive evidence, tuning results, fault reports and the control oracle policy (R4). Readers build TuningResultV1 and FaultReportV1 from verified streams.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1625,6 +1646,8 @@ export interface WorldStep {
   }[];
 }
 /**
+ * One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "DriveTrace".
  */
@@ -1635,12 +1658,13 @@ export interface DriveTrace {
    * @minItems 0
    * @maxItems 5000
    */
-  samples: {
+  samples: ({
     target: number;
     actual: number;
     feedback: number | null;
     torqueNm: number;
-  }[];
+    saturated?: boolean;
+  } | null)[];
 }
 /**
  * Sim3DRobotStateV1 as a worker ACK carries it: a MuJoCo worker sends `scans` only on the sensor's publish tick; the source client carries the last publication forward, so every Sim3DRobotStateV1 (and world evidence) still has it.
@@ -2779,6 +2803,8 @@ export interface DriveTickRecord {
   drives: DriveAxisSnapshot[];
 }
 /**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "TuningResultV1".
  */
@@ -2786,13 +2812,36 @@ export interface TuningResultV1 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
-  axisId: DriveAxisId;
-  controlProfileDigest: Digest;
-  signal: {
-    t0S: number;
-    y0: number;
-    amplitude: number;
+  status: 'completed' | 'unstable';
+  unstable: {
+    tick: number;
+    warning: string;
+  } | null;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  signal: BenchSignal;
+  seed: number;
+  engine: {
+    id: string;
+    version: string;
   };
+  /**
+   * load is the bench load id (for example empty): two runs under different loads are not comparable.
+   */
+  plant: {
+    plantModelDigest: Digest;
+    driveModelDigest: Digest;
+    controlProfileDigest: Digest;
+    load: string;
+  };
+  effectiveInertia: {
+    valueKgM2: number;
+    basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
+    provenance: 'assumed';
+  } | null;
   policy: {
     finalWindowS: number;
     settleBand: number;
@@ -2802,10 +2851,13 @@ export interface TuningResultV1 {
     [k: string]: ControlMetric;
   };
   /**
-   * @maxItems 8
+   * The durable trace the metrics were computed from: chunks is the number of immutable chunks, sha256 the digest of the recorded stream (the recorder's own hash chain), samples the sample count per axis.
    */
-  clamped: ('kp' | 'ki' | 'kd' | 'integralLimit' | 'slewLimit' | 'accelerationLimit')[];
-  trace: ControlArtifactRef;
+  trace: {
+    chunks: number;
+    sha256: Digest;
+    samples: number;
+  };
   accepted: false;
 }
 /**
@@ -2860,4 +2912,19 @@ export interface ControlOracleV1 {
   };
   minAmplitudeQuanta: number;
   source: SourceRef;
+}
+/**
+ * A single-axis control bench run (R4): one registered signal on the wheels or on one arm axis, against a user-drafted control profile. The server re-validates everything; cross-field rules (axis against scenario, signal against the axis' mode and limits) live in validateBenchRequest.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchRequestV1".
+ */
+export interface BenchRequestV1 {
+  schemaVersion: 1;
+  scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
+  axis: 'wheels' | 'J1' | 'J2' | 'J3' | 'J4' | 'J5' | 'J6' | 'gripper';
+  signal: BenchSignal;
+  driveExperimentId:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+  controlProfile: ControlProfileV1;
 }

@@ -326,34 +326,44 @@
           "minItems": 0,
           "maxItems": 5000,
           "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "target": {
-                "type": "number"
-              },
-              "actual": {
-                "type": "number"
-              },
-              "feedback": {
-                "anyOf": [
-                  {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "target": {
                     "type": "number"
                   },
-                  {
-                    "type": "null"
+                  "actual": {
+                    "type": "number"
+                  },
+                  "feedback": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "torqueNm": {
+                    "type": "number"
+                  },
+                  "saturated": {
+                    "type": "boolean"
                   }
+                },
+                "required": [
+                  "target",
+                  "actual",
+                  "feedback",
+                  "torqueNm"
                 ]
               },
-              "torqueNm": {
-                "type": "number"
+              {
+                "type": "null"
               }
-            },
-            "required": [
-              "target",
-              "actual",
-              "feedback",
-              "torqueNm"
             ]
           }
         }
@@ -363,7 +373,8 @@
         "dtS",
         "samples"
       ],
-      "title": "DriveTrace"
+      "title": "DriveTrace",
+      "description": "One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw."
     }
   }
 }

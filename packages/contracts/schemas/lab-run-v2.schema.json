@@ -244,6 +244,10 @@
             "drive-latency-v1",
             "drive-coarse-encoder-v1"
           ]
+        },
+        "bench": {
+          "type": "object",
+          "description": "Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself."
         }
       },
       "required": [

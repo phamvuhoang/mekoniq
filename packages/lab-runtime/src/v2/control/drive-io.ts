@@ -5,15 +5,18 @@ import driveIoSchema from '../../../../contracts/schemas/drive-io-v1.schema.json
 import driveModelSchema from '../../../../contracts/schemas/drive-model-v1.schema.json';
 import controlProfileSchema from '../../../../contracts/schemas/control-profile-v1.schema.json';
 import controlEvidenceSchema from '../../../../contracts/schemas/control-evidence-v1.schema.json';
-import type {AxisDriveModel,AxisEnvelope,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1} from '../../../../contracts/generated/navigation2d';
+import benchRequestSchema from '../../../../contracts/schemas/bench-request-v1.schema.json';
+import type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1} from '../../../../contracts/generated/navigation2d';
 import {hashJson} from '../hash';
-export type {AxisDriveModel,AxisEnvelope,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1};
+import {withinEnvelope} from './tuning-envelope';
+export type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1};
 export type {ControlMetric,DriveTrace,DriveMode,DriveState,DriveFault,DriveTickRecord,TuningResultV1,FaultReportV1,ControlOracleV1} from '../../../../contracts/generated/navigation2d';
 export type Check={ok:boolean;reasonCodes:string[]};
 
 const ajv=new Ajv({allErrors:true,strict:true});
-for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema}))ajv.addSchema(schema,key);
+for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema,'bench-request-v1.schema.json':benchRequestSchema}))ajv.addSchema(schema,key);
 const modelShape=ajv.getSchema('drive-model-v1.schema.json')!,profileShape=ajv.getSchema('control-profile-v1.schema.json')!,envelopeShape=ajv.getSchema('control-profile-v1.schema.json#/definitions/TuningEnvelopeV1')!,refShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveDocumentRef')!;
+const benchRequestShape=ajv.getSchema('bench-request-v1.schema.json')!,benchSignalShape=ajv.getSchema('bench-request-v1.schema.json#/definitions/BenchSignal')!;
 export const validateControlEvidenceShape=ajv.getSchema('control-evidence-v1.schema.json')!;
 export const validateDriveAxisSnapshotShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveAxisSnapshot')!;
 export const validateDriveCommandShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveCommandV1')!;
@@ -30,6 +33,11 @@ function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string}[]|nul
 }
 const done=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});
 const duplicates=(ids:string[])=>new Set(ids).size!==ids.length;
+
+/** The shape of a bench request or of one bench signal: closed fields, finite numbers, registered axis, scenario and experiment ids. Cross-field rules are in bench-signals.ts. */
+const shapeOnly=(validate:unknown,value:unknown):Check=>{const codes=new Set<string>();if(nonFinite(value))codes.add('NON_FINITE_NUMBER');shapeCodes(validate as never,value,codes);return done(codes);};
+export const validateBenchRequestShape=(value:unknown):Check=>shapeOnly(benchRequestShape,value);
+export const validateBenchSignalShape=(value:unknown):Check=>shapeOnly(benchSignalShape,value);
 
 /** A device model: shape, finite numbers, unique axis ids and a matching digest. */
 export function validateDriveModel(value:unknown):Check{
@@ -56,7 +64,6 @@ export function validateTuningEnvelope(value:unknown):Check{
  return done(codes);
 }
 
-const inside=(x:number,b:{min:number;max:number})=>x>=b.min&&x<=b.max;
 /** A control profile against the drive model it is declared for and the server's envelope. One rule table per drive mode, the same as the worker's `actuator_spec` (shared vectors in robotics/simulation-mujoco/tests/data):
  * csp takes any kd, a null or positive slew and no acceleration limit; csv takes kd = 0, no slew and a null or positive acceleration limit; an integral limit exists exactly when ki > 0 (and is then positive).
  * A field the axis' envelope does not list is not accepted (null, or 0 for kd). A non-finite or negative gain and a gain outside the envelope are refused as well. */
@@ -81,8 +88,7 @@ export function validateControlProfile(value:unknown,model:DriveModelV1,envelope
   if(l.ki>0&&!(typeof l.integralLimit==='number'&&l.integralLimit>0))codes.add('INTEGRAL_LIMIT_REQUIRED');
   if(l.ki===0&&l.integralLimit!==null)codes.add('INTEGRAL_LIMIT_WITHOUT_KI');
   if(!env){codes.add('ENVELOPE_AXIS_MISSING');continue;}
-  const checks:[number|null,keyof AxisEnvelope][]=[[l.kp,'kp'],[l.ki,'ki'],[l.kd,'kd'],[l.integralLimit,'integralLimit'],[l.slewLimit,'slewLimit'],[a.accelerationLimit,'accelerationLimit']];
-  for(const [x,k] of checks){const b=env[k] as {min:number;max:number}|undefined;if(typeof x==='number'&&Number.isFinite(x)&&(b?!inside(x,b):x!==0))codes.add('GAIN_OUT_OF_ENVELOPE');}
+  for(const c of withinEnvelope(a,env))codes.add(c);
  }
  return done(codes);
 }
