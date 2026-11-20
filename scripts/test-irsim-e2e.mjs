@@ -4,7 +4,7 @@
 // --provider webots / --provider mujoco: the same through lab:webots (real Webots R2025a) or lab:mujoco (real MuJoCo worker); leftovers of that provider fail the run.
 // UI/runtime ports are the launcher's 4175/4176 (the only origins the source runtime accepts browser traffic from; never 1880/1884), passed explicitly.
 // --ui-port N --runtime-port M: another pair (e.g. 4185/4186 beside a launcher that holds 4175/4176). The runtime then also accepts http://127.0.0.1:N
-// (--allow-origin), but only with a bearer session to http://127.0.0.1:M: the spec gets that address as LAB_TEST_RUNTIME_URL and the base URL as LAB_PW_BASE_URL.
+// (--allow-origin). Default alternate-port tests pair directly with a bearer; --same-origin uses the launcher's declared public host and the UI proxy for cookie + CSRF.
 // Failure attachments go to LAB_PW_OUTPUT_DIR, default a fresh <tmp>/mekoniq-e2e-output/<spec>-<time> per spec (outside test-results/, which the next run would wipe); the path is printed.
 // Screenshots (candidate evidence only, not backend evidence) go to LAB_IRSIM_SCREENSHOTS (default test-results/irsim-evidence, git-ignored).
 import {spawn,execFileSync} from 'node:child_process';
@@ -18,6 +18,7 @@ const root=fileURLToPath(new URL('../',import.meta.url));
 const args=process.argv.slice(2).filter(a=>a!=='--'),specs=args.filter(a=>a.endsWith('.spec.ts')),launcherArgs=args.filter(a=>!a.endsWith('.spec.ts'));
 /** A port flag taken out of the launcher's arguments (it is passed once, explicitly), or its default. */
 const port=(flag,fallback)=>{const i=launcherArgs.indexOf(flag);if(i<0)return fallback;const [,v]=launcherArgs.splice(i,2);if(!/^\d+$/.test(v??''))throw new Error(`INVALID_PORT:${flag} ${v}`);return Number(v);};
+const sameOrigin=launcherArgs.includes('--same-origin');if(sameOrigin)launcherArgs.splice(launcherArgs.indexOf('--same-origin'),1);
 const uiPort=port('--ui-port',4175),runtimePort=port('--runtime-port',4176),alternate=uiPort!==4175;
 const named=launcherArgs.includes('--provider')?launcherArgs[launcherArgs.indexOf('--provider')+1]:'irsim',provider=['webots','mujoco'].includes(named)?named:'irsim';
 const NAME={irsim:['IRSIM','lab:irsim (real IR-SIM worker)','irsim-journey.spec.ts'],webots:['WEBOTS','lab:webots (real Webots R2025a)','webots-journey.spec.ts'],mujoco:['MUJOCO','lab:mujoco (real MuJoCo worker)','mujoco-coffee.spec.ts']}[provider];
@@ -25,7 +26,7 @@ const NAME={irsim:['IRSIM','lab:irsim (real IR-SIM worker)','irsim-journey.spec.
 const LEFTOVER=provider==='webots'?'^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py|webots_worker':provider==='mujoco'?'mujoco_worker':'irsim_worker';
 const workers=()=>{try{return execFileSync('pgrep',['-f',LEFTOVER],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
 const {CI:_ci,...env}=process.env;// Playwright must reuse the launcher's UI, not start its own
-env.LAB_PW_BASE_URL=`http://127.0.0.1:${uiPort}`;if(alternate)env.LAB_TEST_RUNTIME_URL=`http://127.0.0.1:${runtimePort}`;
+env.LAB_PW_BASE_URL=`http://127.0.0.1:${uiPort}`;if(sameOrigin)delete env.LAB_TEST_RUNTIME_URL;else if(alternate)env.LAB_TEST_RUNTIME_URL=`http://127.0.0.1:${runtimePort}`;
 env.LAB_IRSIM_SCREENSHOTS=resolve(process.env.LAB_IRSIM_SCREENSHOTS??join(root,'test-results/irsim-evidence'));await mkdir(env.LAB_IRSIM_SCREENSHOTS,{recursive:true});
 if(specs.length>1){console.error(`ONE_SPEC_PER_LAUNCHER: the launcher's pairing code is one-use, so only the first of ${specs.join(', ')} could pair; run them one at a time.`);process.exit(2);}
 const work=await mkdtemp(join(tmpdir(),'mekoniq-irsim-e2e-')),before=new Set(workers());

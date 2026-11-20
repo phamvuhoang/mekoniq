@@ -1,5 +1,6 @@
 // lab:webots boundary: the same checks as lab:irsim (the pinned tool closure, each venv against its lock) plus the host Webots: missing or not R2025a, the launcher exits
 // with a code before it opens a port or starts a process, and `lab:mock` / `lab:irsim` are untouched. Webots itself is a host install the launcher never installs.
+import {freePort} from '../support/free-port';
 import { afterEach, expect, test } from 'vitest';
 import { spawn } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
@@ -16,12 +17,13 @@ afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive:
 const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'webots-launcher-')); dirs.push(d); return d; };
 const listening = (port: number) => new Promise<boolean>((ok) => { const s = createConnection({ port, host: '127.0.0.1' }); s.once('connect', () => { s.destroy(); ok(true); }); s.once('error', () => ok(false)); });
 async function run(args: string[]) {
-  const p = spawn(process.execPath, [launcher, '--ui-port', '4175', '--runtime-port', '4176', ...args], { cwd: lab, stdio: ['ignore', 'pipe', 'pipe'] });
+  const [ui,runtime]=await Promise.all([freePort(),freePort()]);
+  const p = spawn(process.execPath, [launcher, '--ui-port', String(ui), '--runtime-port', String(runtime), ...args], { cwd: lab, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '', err = ''; p.stdout.on('data', (c) => { out += c; }); p.stderr.on('data', (c) => { err += c; });
   const timer = setTimeout(() => p.kill('SIGKILL'), 90_000);
   const exit = await new Promise<number>((r) => p.once('exit', (c) => r(c ?? 1)));
   clearTimeout(timer);
-  return { exit, out, err };
+  return { exit, out, err, ui, runtime };
 }
 const b = (id: string, on: boolean) => ({ id, modes: ['simulation'], accesses: ['simulated'], installed: on, compatible: on, reachable: on, enabled: on, commissioned: true });
 const lock = { sourceCommit: 'c'.repeat(40), schemaHash: 'a'.repeat(64) };
@@ -49,7 +51,7 @@ test('without Webots at the configured home the launcher exits WEBOTS_NOT_INSTAL
   const d = await temp();
   const r = await run(['--provider', 'webots', '--webots-home', join(d, 'Webots.app'), '--data-dir', join(d, 'runs')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('WEBOTS_NOT_INSTALLED'); expect(r.out).not.toMatch(/Ready in/);
-  expect(await listening(4175)).toBe(false); expect(await listening(4176)).toBe(false);
+  expect(await listening(r.ui)).toBe(false); expect(await listening(r.runtime)).toBe(false);
 }, 120_000);
 
 test('a Webots that is not R2025a exits WEBOTS_VERSION_MISMATCH before any port is opened', async () => {
@@ -58,5 +60,5 @@ test('a Webots that is not R2025a exits WEBOTS_VERSION_MISMATCH before any port 
   await writeFile(exe, '#!/bin/sh\necho "Webots version: R2025b"\n'); await chmod(exe, 0o755);
   const r = await run(['--provider', 'webots', '--webots-home', join(d, 'Webots.app'), '--data-dir', join(d, 'runs')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('WEBOTS_VERSION_MISMATCH'); expect(r.out).not.toMatch(/Ready in/);
-  expect(await listening(4175)).toBe(false); expect(await listening(4176)).toBe(false);
+  expect(await listening(r.ui)).toBe(false); expect(await listening(r.runtime)).toBe(false);
 }, 120_000);

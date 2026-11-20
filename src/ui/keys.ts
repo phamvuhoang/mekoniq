@@ -23,7 +23,8 @@ const what=(action:string)=>({
  'twin-escape':tr('Thoát chế độ xem, rồi đóng hộp đang mở, rồi đóng bảng chi tiết','視聴モード終了→開いている枠を閉じる→詳細を閉じる','Leave watch mode, then close the open box, then close the details'),
 })[action]??action;
 /** Non-modal: the workspace owns Escape for it (twin-escape); its close button (twin-help-close) takes focus when it opens. */
-export function shortcutsDialog(open:boolean):string{
+export const TWIN_ONLY_KEYS:readonly string[]=['twin-toggle-play','twin-step','twin-camera-fit','twin-watch'];
+export function shortcutsDialog(open:boolean,control=false):string{
  return `<dialog class="twin-shortcuts" id="twin-shortcuts" data-testid="shortcuts" aria-labelledby="twin-shortcuts-title"${open?' open':''}><h2 id="twin-shortcuts-title">${tr('Phím tắt','キーボードショートカット','Keyboard shortcuts')}</h2>
-<dl>${Object.entries(KEYMAP).map(([k,a])=>`<dt><kbd>${LABELS[k]??k.toUpperCase()}</kbd></dt><dd>${what(a)}</dd>`).join('')}</dl><button class="button quiet" data-action="twin-help-close">${tr('Đóng','閉じる','Close')}</button></dialog>`;
+<dl>${Object.entries(KEYMAP).filter(([,a])=>!control||!TWIN_ONLY_KEYS.includes(a)).map(([k,a])=>`<dt><kbd>${LABELS[k]??k.toUpperCase()}</kbd></dt><dd>${what(a)}</dd>`).join('')}</dl><button class="button quiet" data-action="twin-help-close">${tr('Đóng','閉じる','Close')}</button></dialog>`;
 }

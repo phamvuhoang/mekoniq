@@ -1,0 +1,923 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.control-evidence.v1",
+  "title": "ControlEvidenceV1",
+  "description": "Per-axis drive evidence, tuning results, fault reports and the control oracle policy (R4). Readers build TuningResultV1 and FaultReportV1 from verified streams.",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/DriveTickRecord"
+    },
+    {
+      "$ref": "#/definitions/TuningResultV1"
+    },
+    {
+      "$ref": "#/definitions/FaultReportV1"
+    },
+    {
+      "$ref": "#/definitions/ControlOracleV1"
+    }
+  ],
+  "definitions": {
+    "ControlMetric": {
+      "title": "ControlMetric",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "available": {
+              "const": true
+            },
+            "value": {
+              "type": "number"
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "samples": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "basis": {
+              "enum": [
+                "actual",
+                "feedback"
+              ]
+            }
+          },
+          "required": [
+            "available",
+            "value",
+            "unit",
+            "samples",
+            "basis"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "available": {
+              "const": false
+            },
+            "value": {
+              "type": "null"
+            },
+            "unit": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "available",
+            "value",
+            "unit",
+            "reason"
+          ]
+        }
+      ]
+    },
+    "ControlArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "sha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "title": "ControlArtifactRef"
+    },
+    "DriveTickRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "simTimeNs": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "driveCommands": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveCommandV1"
+          }
+        },
+        "drives": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisSnapshot"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "tick",
+        "simTimeNs",
+        "drives"
+      ],
+      "title": "DriveTickRecord"
+    },
+    "TuningResultV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.",
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "tuning-result"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "drive_fault",
+            "unstable",
+            "collision"
+          ]
+        },
+        "unstable": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tick": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "warning": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "tick",
+                "warning"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fault": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tick": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "axisId": {
+                  "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+                },
+                "code": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "required": [
+                "tick",
+                "axisId",
+                "code"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "collision": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "tick": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "ids": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "required": [
+                "tick",
+                "ids"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "axisIds": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+          }
+        },
+        "signal": {
+          "$ref": "bench-request-v1.schema.json#/definitions/BenchSignal"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "engine": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "hostArch": {
+              "description": "The architecture the worker reported (contracts §1): bit identity of two results only means something within one.",
+              "enum": [
+                "arm64",
+                "x86_64"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "version"
+          ]
+        },
+        "plant": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "load is the bench load id (for example empty): two runs under different loads are not comparable.",
+          "properties": {
+            "plantModelDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "driveModelDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "controlProfileDigest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "load": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [
+            "plantModelDigest",
+            "driveModelDigest",
+            "controlProfileDigest",
+            "load"
+          ]
+        },
+        "effectiveInertia": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "valueKgM2": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "basis": {
+                  "enum": [
+                    "mass_matrix_diagonal",
+                    "wheel_straight_line"
+                  ]
+                },
+                "provenance": {
+                  "const": "assumed"
+                }
+              },
+              "required": [
+                "valueKgM2",
+                "basis",
+                "provenance"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suggestions": {
+          "description": "Starting gains from the effective inertia (V07pre, D4): one entry per registered (bandwidthRadS, damping) pair of the health signal catalog's suggestOptions, bandwidth first, computed by the server with the envelope of axisIds[0] (for a wheel bench, the left wheel's). null when the result has no effective inertia. A model-based starting point, not calibrated.",
+          "anyOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "items": {
+                "$ref": "#/definitions/GainSuggestion"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "finalWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "settleBand": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "holdWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "finalWindowS",
+            "settleBand",
+            "holdWindowS"
+          ]
+        },
+        "metrics": {
+          "type": "object",
+          "maxProperties": 16,
+          "additionalProperties": {
+            "$ref": "#/definitions/ControlMetric"
+          }
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The durable trace the metrics were computed from: chunks is the number of immutable chunks, sha256 the digest of the recorded stream (the recorder's own hash chain), samples the sample count per axis.",
+          "properties": {
+            "chunks": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4096
+            },
+            "sha256": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            "samples": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5000
+            }
+          },
+          "required": [
+            "chunks",
+            "sha256",
+            "samples"
+          ]
+        },
+        "accepted": {
+          "const": false
+        },
+        "wheelMeasurement": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "quantity": {
+              "const": "wheel_angular_speed"
+            },
+            "inertiaAssumption": {
+              "const": "straight_line_no_slip"
+            },
+            "comparison": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "tick": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 500
+                    },
+                    "bodyForwardMps": {
+                      "type": "number"
+                    },
+                    "wheelSurfaceMps": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "tick",
+                    "bodyForwardMps",
+                    "wheelSurfaceMps"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "quantity",
+            "inertiaAssumption",
+            "comparison"
+          ]
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "runId",
+        "status",
+        "unstable",
+        "fault",
+        "collision",
+        "axisIds",
+        "signal",
+        "seed",
+        "engine",
+        "plant",
+        "effectiveInertia",
+        "policy",
+        "metrics",
+        "trace",
+        "accepted"
+      ],
+      "title": "TuningResultV1",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "drive_fault"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "fault": {
+                "type": "object"
+              },
+              "unstable": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "fault": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "unstable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unstable": {
+                "type": "object"
+              },
+              "fault": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "unstable": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "collision"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "collision": {
+                "type": "object"
+              },
+              "fault": {
+                "type": "null"
+              },
+              "unstable": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "collision": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "trace": {
+                "properties": {
+                  "chunks": {
+                    "const": 0
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "unstable"
+              },
+              "unstable": {
+                "type": "object",
+                "properties": {
+                  "tick": {
+                    "const": 0
+                  }
+                }
+              },
+              "trace": {
+                "properties": {
+                  "samples": {
+                    "const": 0
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FaultReportV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "fault-report"
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "scheduleDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "entries": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entryId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "faultId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "targetId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "status": {
+                "enum": [
+                  "fired",
+                  "not_fired",
+                  "evidence_invalid"
+                ]
+              },
+              "appliedTick": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "detection": {
+                "enum": [
+                  "detected",
+                  "not_detected",
+                  "not_applicable"
+                ]
+              },
+              "detectedTick": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "entryId",
+              "faultId",
+              "targetId",
+              "status",
+              "appliedTick",
+              "detection",
+              "detectedTick"
+            ]
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/definitions/ControlArtifactRef"
+          }
+        },
+        "accepted": {
+          "const": false
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "runId",
+        "scheduleDigest",
+        "entries",
+        "evidence",
+        "accepted"
+      ],
+      "title": "FaultReportV1"
+    },
+    "ControlOracleV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "control-oracle"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "calibration": {
+          "const": "not_calibrated"
+        },
+        "metricPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "finalWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "settleBand": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "holdWindowS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "finalWindowS",
+            "settleBand",
+            "holdWindowS"
+          ]
+        },
+        "sustainedOscillation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "windowRatio": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "thresholdRad": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "thresholdRadS": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          },
+          "required": [
+            "windowRatio",
+            "thresholdRad",
+            "thresholdRadS"
+          ]
+        },
+        "minAmplitudeQuanta": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "source": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "id",
+        "revision",
+        "digest",
+        "calibration",
+        "metricPolicy",
+        "sustainedOscillation",
+        "minAmplitudeQuanta",
+        "source"
+      ],
+      "title": "ControlOracleV1"
+    },
+    "GainSuggestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "GainSuggestion",
+      "description": "suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).",
+      "properties": {
+        "bandwidthRadS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "damping": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kp": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ki": {
+              "type": "number",
+              "minimum": 0
+            },
+            "kd": {
+              "type": "number",
+              "minimum": 0
+            },
+            "integralLimit": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "slewLimit": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "kp",
+            "ki",
+            "kd",
+            "integralLimit",
+            "slewLimit"
+          ]
+        },
+        "accelerationLimit": {
+          "type": "null"
+        },
+        "clamped": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "kp",
+              "ki",
+              "kd"
+            ]
+          }
+        }
+      },
+      "required": [
+        "bandwidthRadS",
+        "damping",
+        "loop",
+        "accelerationLimit",
+        "clamped"
+      ]
+    }
+  }
+}

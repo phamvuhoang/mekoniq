@@ -2656,7 +2656,8 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .twin-main.control-open{grid-template-columns:minmax(0,1fr)}
 .twin-main.control-open>.twin-viewport{display:none}
 .control-bench{display:grid;gap:12px;min-width:0}
-.twin-main.control-open #inspector-panel-control{scroll-padding-top:72px}
+.twin-main.control-open #inspector-panel-control{scroll-padding:80px 0 12px}
+.control-field input,.control-field select{min-width:0;width:100%}
 /* the plant line and the banner stay in view while the panel scrolls (the banner is fixed: Mô phỏng · chưa hiệu chuẩn) */
 .control-head{position:sticky;top:-12px;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-12px -12px 0;padding:12px 12px 6px;background:var(--panel)}
 .control-plant{flex:1 1 360px;margin:0;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
@@ -2723,5 +2724,8 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 @media (max-width:767px){
  .control-grid{grid-template-columns:minmax(0,1fr)}
  .twin-main.control-open,.twin-main.control-open.inspector-open{grid-template-rows:auto}
- .twin-main.control-open .twin-inspector{max-height:none}
+ .twin-main.control-open .twin-inspector{height:78dvh;max-height:78dvh}
+ .twin-main.control-open #inspector-panel-control{scroll-padding-top:108px}
+ .control-head{gap:3px;padding-top:6px}
+ .control-banner{font-size:12px}
 }

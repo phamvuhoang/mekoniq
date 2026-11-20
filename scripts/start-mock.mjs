@@ -92,7 +92,7 @@ export async function launch({argv=process.argv.slice(2),prepare=async()=>({args
   await access(vite).catch(()=>{throw new Error('DEPENDENCIES_NOT_INSTALLED: run pnpm install --frozen-lockfile once (the launcher never downloads).');});
   const extra=await prepare(o,lock,track);go();
   await portFree(o.runtimePort);await portFree(o.uiPort);if(o.extraUiPort!==undefined)await portFree(o.extraUiPort);go();
-  const rt=spawn(process.execPath,[file,'--port',String(o.runtimePort),'--data-dir',o.dataDir,...o.allowOrigin?['--allow-origin',o.allowOrigin]:[],...extra.args],{cwd:o.root,stdio:['ignore','pipe','inherit'],env:{...runtimeEnv(),...extra.env},detached:true});rt.groupKill=true;track(rt);
+  const rt=spawn(process.execPath,[file,'--port',String(o.runtimePort),'--data-dir',o.dataDir,...o.uiPort!==4175?['--public-host',`127.0.0.1:${o.uiPort}`]:[],...o.allowOrigin?['--allow-origin',o.allowOrigin]:[],...extra.args],{cwd:o.root,stdio:['ignore','pipe','inherit'],env:{...runtimeEnv(),...extra.env},detached:true});rt.groupKill=true;track(rt);
   let out='';rt.stdout.on('data',c=>{out+=c;});
   const token=await waitFor(rt,'RUNTIME',()=>/Pairing token \(expires in 5 minutes; one use\): (\S+)/.exec(out)?.[1],extra.readyMs??15000);
   go();const health=await (await fetch(`http://127.0.0.1:${o.runtimePort}/lab/v2/health`)).json();

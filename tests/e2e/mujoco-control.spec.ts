@@ -1,6 +1,6 @@
 // V07a (R4.2 §6.3): the Control tab on the pinned runtime with the real MuJoCo worker. One spec per launcher (one-use pairing code); the wheel bench needs mujoco_3d:
 //   node scripts/test-irsim-e2e.mjs --provider mujoco --mujoco-mobile [--ui-port 4185 --runtime-port 4186] mujoco-control.spec.ts
-// With other ports than 4175/4176 the page pairs with the runtime's own address (LAB_TEST_RUNTIME_URL, a bearer session the runtime allows for that origin).
+// Add --same-origin on alternate ports for the cookie + CSRF path. Otherwise LAB_TEST_RUNTIME_URL selects a direct bearer session.
 import {test,expect,type Page,type Request,type Response} from '@playwright/test';
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -16,7 +16,7 @@ const shown=(m:Metric)=>m.available?m.unit==='ratio'?`${Number((m.value*100).toP
 test('Control tab: a wheel bench, A/B after a gain change, export and import, bounds, hidden while running, three languages, 390/1024/1440, a suggestion run, a trapezoid, a server refusal',async({page})=>{
  test.setTimeout(600000);page.setDefaultTimeout(30000);
  expect(token,'Run through scripts/test-irsim-e2e.mjs --provider mujoco --mujoco-mobile mujoco-control.spec.ts').toBeTruthy();
- const errors:string[]=[],creates:Request[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(isCreate(r))creates.push(r);});
+ const errors:string[]=[],creates:Request[]=[],mutations:Request[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(isCreate(r))creates.push(r);if(r.method()==='POST'&&r.url().includes('/lab/v2/runs'))mutations.push(r);});
  await page.setViewportSize({width:1440,height:900});await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/#twin');await page.getByRole('button',{name:'EN',exact:true}).click();
  if(runtime)await page.locator('#twin-runtime-url').fill(runtime);
@@ -28,6 +28,17 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  await expect(page.locator('#twin-ctl-axis-wheels')).toBeChecked();await expect(kp).toHaveValue('2');
  // the tab takes the main area; the twin's viewport waits behind it
  await expect(page.getByTestId('twin-scene')).toBeHidden();
+ for(const width of [390,1024,1440]){
+  await page.setViewportSize({width,height:width===390?844:900});
+  await page.locator('#twin-ctl-kind').selectOption('trapezoid');
+  const focused=page.locator('#twin-ctl-acceleration');await focused.focus();await focused.scrollIntoViewIfNeeded();
+  await expect(page.getByTestId('control-banner')).toBeInViewport({ratio:1});await expect(focused).toBeInViewport({ratio:1});
+  const hit=await focused.evaluate(el=>{const r=el.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===el;});expect(hit).toBe(true);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await shot(page,`${width}-trapezoid-focus`);
+ }
+ await page.locator('#twin-ctl-kind').selectOption('step');
+ await page.locator('#twin-ctl-axis-wheels').scrollIntoViewIfNeeded();
  await shot(page,'1440-ready');
 
  /** One bench through the UI: its create request, report and trace as the page received them; `during` runs while it steps. */
@@ -52,6 +63,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
 
  // 1. the wheels on a 2 rad/s step from the served starting profile: metrics (or their reasons) and the recorded trace as plots
  const a=await runBench(runClick);
+ await expect(page.getByTestId('wheel-measurement')).toContainText(`final verified tick ${a.tuning.wheelMeasurement.comparison.tick}`);
  expect(a.request.bench).toMatchObject({schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'wheels',signal:{kind:'step',amplitude:2,atTick:10},driveExperimentId:'drive-nominal-v1'});
  expect(a.request.bench.controlProfile.axes.map((x:{loop:{kp:number}})=>x.loop.kp)).toEqual([2,2]);
  expect(a.tuning.status).toBe('completed');
@@ -171,9 +183,14 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  if(j.tuning.status==='drive_fault'){await expect(status).toContainText(`${j.tuning.fault.code}`);if(j.tuning.fault.code==='OVERSPEED')await expect(status).toContainText('exceeded the drive’s speed limit');await expect(page.locator('[data-action="twin-ctl-export"]')).toBeDisabled();}
  else await expect(status).toContainText(j.tuning.status==='completed'?'Completed':j.tuning.status==='unstable'?'Unstable':'Collision');
  await checkMetrics(j.tuning);await expect(page.getByTestId('ab-changed')).toContainText('axis');await expect(page.getByTestId('ab-delta')).toHaveCount(0);
- if(dir)writeFileSync(`${dir}/V07a-results.json`,JSON.stringify({wheels:[a,b,c,d].map(r=>({runId:r.id,kp:r.request.bench.controlProfile.axes[0].loop.kp,status:r.tuning.status,metrics:r.tuning.metrics,trace:r.tuning.trace})),
+ if(dir)writeFileSync(`${dir}/V07a-results.json`,JSON.stringify({accepted:false,wheels:[a,b,c,d].map(r=>({runId:r.id,kp:r.request.bench.controlProfile.axes[0].loop.kp,status:r.tuning.status,metrics:r.tuning.metrics,trace:r.tuning.trace})),
   suggestion:{runId:g.id,loop:pick.loop,status:g.tuning.status,metrics:g.tuning.metrics,trace:g.tuning.trace},trapezoid:{runId:z.id,signal:z.request.bench.signal,status:z.tuning.status,metrics:z.tuning.metrics,trace:z.tuning.trace},
   serverRefusal:{status:refusal.status(),body:refusalBody},exported:{sources:exported.sources},j3:{runId:j.id,status:j.tuning.status,fault:j.tuning.fault,metrics:j.tuning.metrics}},null,1));
+ for(const mutation of mutations){
+  const h=await mutation.allHeaders();
+  if(runtime){expect(!!h.authorization?.startsWith('Bearer ')).toBe(true);expect(h.cookie).toBeUndefined();expect(h['x-csrf-token']).toBeUndefined();}
+  else {expect(new URL(mutation.url()).origin).toBe(new URL(page.url()).origin);expect(!!h.cookie).toBe(true);expect(h.authorization).toBeUndefined();expect(!!h['x-csrf-token']).toBe(true);}
+ }
  await shot(page,'1440-j3');
  expect(errors).toEqual([]);
 });

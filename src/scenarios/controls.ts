@@ -8,6 +8,7 @@ import type {TwinSample} from '../twin/store';
 import type {BundleReceipt,EngineeringAssessment,EngineeringProject,EngineeringRef} from '../shared/engineering';
 import type {ModelValidationReportV1} from '../shared/navigation2d';
 import {validModelValidationReport} from './model-validation';
+import {RunEntries} from '../runtime/run-entries';
 import {loadToken,requestInit,saveToken,type RuntimeTarget} from '../runtime/target';
 import {FetchEventSource} from '../runtime/fetch-event-source';
 import type {StreamDeps} from '../runtime/stream';
@@ -126,10 +127,11 @@ export interface TwinRuntime {
  health():Promise<TwinHealth>;pair(token:string):Promise<void>;readonly paired:boolean;
  /** Drop the in-memory CSRF token after the runtime lost the session (restart): the pair form shows again. */
  forget():void;
- create(request:CreateRun,identity:{sourceCommit:string;schemaHash:string}):Promise<RunView>;
+ readonly sessionGeneration?:number;
+ create(request:CreateRun,identity:{sourceCommit:string;schemaHash:string},signal?:AbortSignal):Promise<RunView>;
  /** `actionId`: resend a step whose response was lost with the same id; the runtime returns its stored receipt and does not act again. */
  action(view:RunView,kind:ActionKind,payload?:Record<string,unknown>,actionId?:string,signal?:AbortSignal):Promise<RunView>;
- readonly recoverableRunIds?:readonly string[];archive?(runId:string):Promise<void>;reclaim?(runId:string):Promise<RunView>;
+ readonly recoverableRunIds?:readonly string[];archive?(runId:string,signal?:AbortSignal):Promise<void>;reclaim?(runId:string,signal?:AbortSignal):Promise<RunView>;
  get(runId:string,signal?:AbortSignal):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
  /** A bench run's drive trace as read back from its chunks (GET /runs/:id/trace; null samples are gaps). Up to ~1 MB: read once per finished bench, never polled. */
  trace?(runId:string,signal?:AbortSignal):Promise<{traces:DriveTrace[];issues:string[]}>;
@@ -147,25 +149,27 @@ export class TwinRuntimeError extends Error {
 }
 /** The Lab's pin (config/source-runtime.lock.json, served beside the page): the commit a runtime on another origin must report. */
 let pin:Promise<string>|undefined;
-export const pinnedCommit=()=>pin??=fetch('/source-runtime.lock.json',{cache:'no-store'}).then(async r=>{const c=r.ok?(await r.json() as {sourceCommit?:unknown}).sourceCommit:undefined;if(typeof c!=='string'||!c)throw new TwinRuntimeError('RUNTIME_LOCK_MISSING',[],409);return c;}).catch(e=>{pin=undefined;throw e;});
+export const pinnedCommit=()=>pin??=fetch('/source-runtime.lock.json',{cache:'no-store',signal:AbortSignal.timeout(30000)}).then(async r=>{const c=r.ok?(await r.json() as {sourceCommit?:unknown}).sourceCommit:undefined;if(typeof c!=='string'||!c)throw new TwinRuntimeError('RUNTIME_LOCK_MISSING',[],409);return c;}).catch(e=>{pin=undefined;throw e;});
 /** Same origin: cookie session + CSRF header (unchanged). Other targets: the bearer from POST /sessions, no CSRF, no cookie; the bearer is dropped on 401. */
 export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_origin'}):TwinRuntime {
  let csrf='',token=target.kind==='same_origin'?'':loadToken(target);
  const remote=()=>target.kind!=='same_origin',auth=()=>requestInit(target,token);
  // reclaim proofs belong to the runtime that issued them: same origin keeps its original key, any other runtime has its own
  const proofKey=(t:RuntimeTarget)=>t.kind==='same_origin'?'mekoniq-lab-reclaim':`mekoniq-lab-reclaim:${t.base}`;
- const loadProofs=(t:RuntimeTarget):Record<string,string>=>{try{return JSON.parse(localStorage.getItem(proofKey(t))??'{}');}catch{return {};/* no local ownership proofs */}};
- let proofs=loadProofs(target);
- const forget=()=>{csrf='';if(token){token='';saveToken(target,'');}};
+ const proofs=new RunEntries<string>(raw=>Object.fromEntries(raw&&typeof raw==='object'?Object.entries(raw).filter(([,proof])=>typeof proof==='string'):[]));
+ let generation=0;
+ const forget=()=>{generation++;csrf='';if(token){token='';saveToken(target,'');}};
+ const assertSession=(g:number)=>{if(g!==generation)throw new TwinRuntimeError('SESSION_CHANGED',[],0);};
  /** Every request is judged by the target it was made for: a late 401 from a previous runtime never drops the current bearer.
   * A loopback fetch the browser refuses (local network access denied, nothing listening, Safari's HTTPS-to-http rule) rejects with a TypeError we cannot tell apart. */
- const send=async(url:string,init:RequestInit,t:RuntimeTarget)=>{
+ const send=async(url:string,init:RequestInit,t:RuntimeTarget,g=generation)=>{
   let response:Response;
   try{response=await fetch(url,init);}catch(e){if(t.kind==='loopback'&&e instanceof TypeError)throw new TwinRuntimeError('LOOPBACK_BLOCKED',[],0);throw e;}
-  if(response.status===401&&t.kind!=='same_origin'&&t===target)forget();
+  if(response.status===401&&t.kind!=='same_origin'&&t===target&&g===generation)forget();
   return response;
  };
  const request=async<T>(path:string,body?:unknown,signal?:AbortSignal):Promise<T>=>{
+  signal=signal?AbortSignal.any([signal,AbortSignal.timeout(30000)]):AbortSignal.timeout(30000);
   const t=target,post=body!==undefined,a=auth(),response=await send(t.base+path,{method:post?'POST':'GET',...a,cache:'no-store',headers:{...a.headers as Record<string,string>,...post?{'Content-Type':'application/json',...csrf&&!remote()?{'X-CSRF-Token':csrf}:{}}:{}},...post?{body:JSON.stringify(body)}:{},...signal?{signal}:{}},t);
   // a body that does not parse (not JSON, cut off, or aborted while read) is never data, whatever the status
   const data=await response.json().then(d=>d!==null&&typeof d==='object'?d as Record<string,unknown>:null,()=>null);
@@ -175,9 +179,9 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
  };
  const run=(id:string)=>`/runs/${encodeURIComponent(id)}`;
  return {
-  get paired(){return remote()?!!token:!!csrf;},forget,
+  get sessionGeneration(){return generation;},get paired(){return remote()?!!token:!!csrf;},forget,
   get target(){return target;},
-  retarget(t){forget();target=t;token=t.kind==='same_origin'?'':loadToken(t);proofs=loadProofs(t);},
+  retarget(t){forget();target=t;token=t.kind==='same_origin'?'':loadToken(t);},
   streamDeps(){
    if(!remote())return {base:target.base,EventSource:globalThis.EventSource};
    // the bearer is read when each stream opens (a re-pair is picked up by the next reconnect), and only while this client still points at that runtime
@@ -206,19 +210,23 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   },
   readiness:(scenarioId,backendSetId,project,engineeringRef)=>engineeringRef?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,engineeringRef,...project?{project}:{}}):project?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,project}):request<ReadinessSnapshot>(`/readiness?scenarioId=${encodeURIComponent(scenarioId)}&backendSetId=${encodeURIComponent(backendSetId)}`),
   async pair(code){
-   const r=await request<{csrfToken?:string;sessionToken?:string}>('/sessions',{token:code});
+   const g=++generation,r=await request<{csrfToken?:string;sessionToken?:string}>('/sessions',{token:code},AbortSignal.timeout(30000));assertSession(g);
    if(remote()){if(!r.sessionToken)throw new TwinRuntimeError('INVALID_PAIRING_RESPONSE',[],502);token=r.sessionToken;saveToken(target,token);return;}
    if(!r.csrfToken)throw new TwinRuntimeError('INVALID_PAIRING_RESPONSE',[],502);csrf=r.csrfToken;
   },
-  async create(r,identity){
+  async create(r,identity,signal){
+   const g=generation,t=target;
    // a runtime on another origin was not installed by the launcher: it must be the pinned one (same origin is checked by the launcher)
-   if(remote()){const [h,p]=await Promise.all([request<TwinHealth>('/health'),pinnedCommit()]);if(h.sourceCommit!==p)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',[String(h.sourceCommit).slice(0,7),p.slice(0,7)],409);}
-   const t=target,{reclaimToken,...view}=await request<RunView&{reclaimToken?:string}>('/runs',{...r,runtimeIdentity:identity});
-   if(reclaimToken){const own=t===target?proofs:loadProofs(t);own[view.run.id]=reclaimToken;try{localStorage.setItem(proofKey(t),JSON.stringify(own));}catch{/* current tab retains the proof if storage is unavailable */}}
+   if(remote()){const [h,p]=await Promise.all([request<TwinHealth>('/health',undefined,signal),pinnedCommit()]);assertSession(g);if(h.sourceCommit!==p)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',[String(h.sourceCommit).slice(0,7),p.slice(0,7)],409);}
+   const {reclaimToken,...view}=await request<RunView&{reclaimToken?:string}>('/runs',{...r,runtimeIdentity:identity},signal);
+   if(typeof reclaimToken==='string'&&typeof view.run?.id==='string')proofs.write(proofKey(t),view.run.id,reclaimToken);
    return view;},
-  get recoverableRunIds(){return Object.keys(proofs);},
-  async archive(id){await request(`${run(id)}/archive`,{});},
-  reclaim:id=>{const proof=proofs[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof});},
+  get recoverableRunIds(){return Object.keys(proofs.read(proofKey(target)));},
+  async archive(id,signal){
+   const ack=await request<{archived?:boolean;runId?:string}>(`${run(id)}/archive`,{},signal);
+   if(ack.archived!==true||ack.runId!==id)throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+  },
+  reclaim:(id,signal)=>{const proof=proofs.read(proofKey(target))[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof},signal);},
   // expectedRevision comes from the last snapshot the UI rendered: a stale view is refused (REVISION_CONFLICT), never applied
   action:(v,kind,payload={},actionId=crypto.randomUUID(),signal)=>request<RunView>(`${run(v.run.id)}/actions`,{actionId,expectedRevision:v.run.runRevision,kind,payload},signal),
   get:(id,signal)=>request<RunView>(run(id),undefined,signal),
@@ -240,10 +248,10 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
   async trace(id,signal){
    const r=await request<{traces?:unknown;issues?:unknown}>(`${run(id)}/trace`,undefined,signal);
-   if(!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
-   return {traces:r.traces as DriveTrace[],issues:r.issues.map(String)};
+   if(!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.issues.every(i=>typeof i==='string')||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+   return {traces:r.traces as DriveTrace[],issues:r.issues};
   },
-  dropProof(id){if(!Object.hasOwn(proofs,id))return;delete proofs[id];try{localStorage.setItem(proofKey(target),JSON.stringify(proofs));}catch{/* this tab forgets it anyway */}},
+  dropProof(id){proofs.write(proofKey(target),id,null);},
  };
 }
 /** What the run controls may offer, from the set's execution metadata in health. Mock: Lab step/auto-run. Simulation with a source fixed-step clock:

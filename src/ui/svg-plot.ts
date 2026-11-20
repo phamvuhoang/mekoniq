@@ -10,7 +10,7 @@ const noData=()=>tr('không có dữ liệu','データなし','no data');
 /** `title`: the plot's accessible name (default: the y label); the y label (its unit) stays in the description. */
 export function linePlot(series:PlotSeries[],options:{width:number;height:number;xLabel:string;yLabel:string;title?:string;bands?:{from:number;to:number;label:string}[]}):string{
  const {width:W,height:H,xLabel,yLabel,title=yLabel,bands=[]}=options,w=W-M.l-M.r,h=H-M.t-M.b;
- const head=`<svg xmlns="http://www.w3.org/2000/svg" class="plot" viewBox="0 0 ${W} ${H}" role="img"><title>${esc(title)}</title>`,frame=`<rect class="plot-frame" x="${M.l}" y="${M.t}" width="${w}" height="${h}"/>`;
+ const head=`<svg xmlns="http://www.w3.org/2000/svg" class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title>`,frame=`<rect class="plot-frame" x="${M.l}" y="${M.t}" width="${w}" height="${h}"/>`;
  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
  for(const s of series)for(const [x,y] of s.points)if(Number.isFinite(x)&&Number.isFinite(y)){x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);}
  if(x0>x1)return `${head}<desc>${esc(noData())}</desc>${frame}<text class="plot-empty" x="${W/2}" y="${H/2}" text-anchor="middle">${esc(noData())}</text></svg>`;

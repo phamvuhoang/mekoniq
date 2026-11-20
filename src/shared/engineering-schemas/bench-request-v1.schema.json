@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.bench-request.v1",
+  "title": "BenchRequestV1",
+  "description": "A single-axis control bench run (R4): one registered signal on the wheels or on one arm axis, against a user-drafted control profile. The server re-validates everything; cross-field rules (axis against scenario, signal against the axis' mode and limits) live in validateBenchRequest.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "scenarioId": { "enum": ["MJ-BENCH-WHEEL", "MJ-BENCH-ARM"] },
+    "axis": { "enum": ["wheels", "J1", "J2", "J3", "J4", "J5", "J6", "gripper"] },
+    "signal": { "$ref": "#/definitions/BenchSignal" },
+    "driveExperimentId": { "enum": ["drive-ideal-v1", "drive-nominal-v1", "drive-torque-limited-v1", "drive-latency-v1", "drive-coarse-encoder-v1"] },
+    "controlProfile": { "$ref": "control-profile-v1.schema.json" }
+  },
+  "required": ["schemaVersion", "scenarioId", "axis", "signal", "driveExperimentId", "controlProfile"],
+  "definitions": {
+    "BenchSignal": {
+      "title": "BenchSignal",
+      "description": "Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.",
+      "type": "object",
+      "discriminator": { "propertyName": "kind" },
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "step" },
+            "amplitude": { "type": "number" },
+            "atTick": { "type": "integer", "minimum": 0, "maximum": 499 }
+          },
+          "required": ["kind", "amplitude", "atTick"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "trapezoid" },
+            "distance": { "type": "number" },
+            "peakVelocity": { "type": "number", "exclusiveMinimum": 0 },
+            "acceleration": { "type": "number", "exclusiveMinimum": 0 },
+            "atTick": { "type": "integer", "minimum": 0, "maximum": 499 }
+          },
+          "required": ["kind", "distance", "peakVelocity", "acceleration", "atTick"]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "hold" },
+            "ticks": { "type": "integer", "minimum": 1, "maximum": 500 }
+          },
+          "required": ["kind", "ticks"]
+        }
+      ]
+    }
+  }
+}

@@ -39,7 +39,7 @@ async function gateway(){
  return {seen,state,base:`http://127.0.0.1:${port}/lab/v2`,close:()=>new Promise<void>(r=>{server.closeAllConnections();server.close(()=>r());})};
 }
 
-const memory=()=>{const m=new Map<string,string>();return {m,getItem:(k:string)=>m.get(k)??null,setItem:(k:string,v:string)=>void m.set(k,v),removeItem:(k:string)=>void m.delete(k)};};
+const memory=()=>{const m=new Map<string,string>();return {m,get length(){return m.size;},key:(i:number)=>[...m.keys()][i]??null,getItem:(k:string)=>m.get(k)??null,setItem:(k:string,v:string)=>void m.set(k,v),removeItem:(k:string)=>void m.delete(k)};};
 test('a loopback target pairs once, then sends the bearer (never a CSRF header or a cookie) and forgets it on 401',async()=>{
  const g=await gateway(),session=memory();vi.stubGlobal('sessionStorage',session);
  try{
@@ -472,4 +472,29 @@ test('an export completing after retarget keeps the original run/auth/version th
  const plain=Buffer.from(JSON.stringify({manifest:{runId:'run-one'},outcome:{tick:7}})),bytes=gzipSync(plain),sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex'),manifest={schemaVersion:1,documentType:'web-replay-package',runId:'run-one',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[{path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'}],streams:[],licensing:[]};
  let complete!:(r:Response)=>void;const calls:{url:string;init:RequestInit}[]=[];vi.stubGlobal('fetch',vi.fn(async(url:string,init:RequestInit)=>{calls.push({url,init});if(url.endsWith('/replay'))return new Promise<Response>(r=>{complete=r;});if(url.endsWith('/assets/0'))return new Response(bytes);return new Response(JSON.stringify(init.method==='DELETE'?{deleted:true}:{}),{status:200});}));
  const rt=httpTwinRuntime({base:oldBase,kind:'remote'}),pending=rt.exportReplay!('run-one',new AbortController().signal);rt.retarget!({base:newBase,kind:'remote'});complete(new Response(JSON.stringify({exportId:'owned-version',manifest}),{status:200}));const capture=await pending;expect(capture.reader.manifest.runId).toBe('run-one');expect(Buffer.from(await capture.reader.readStoredAsset('report.json.gz'))).toEqual(bytes);capture.reader.close();await capture.release();await capture.release();const originalCalls=[...calls];expect(originalCalls.length).toBe(4);for(const c of originalCalls){expect(c.url).toMatch(/^https:\/\/old.example\/lab\/v2\/runs\/run-one\/replay/);expect(new Headers(c.init.headers).get('Authorization')).toBe('Bearer original-owner');expect(c.init.credentials).toBe('omit');}expect(originalCalls.filter(c=>c.init.method==='DELETE').map(c=>c.url)).toEqual([oldBase+'/runs/run-one/replay/owned-version']);await rt.health();expect(calls.at(-1)!.url).toBe(newBase+'/health');expect(new Headers(calls.at(-1)!.init.headers).get('Authorization')).toBe('Bearer new-owner');
+});
+
+test('two tabs store independent proofs, observe revocation and read legacy proofs',async()=>{
+ const storage=memory();vi.stubGlobal('localStorage',{...storage,get length(){return storage.m.size;},key:(i:number)=>[...storage.m.keys()][i]??null});
+ storage.setItem('mekoniq-lab-reclaim',JSON.stringify({old:'legacy'}));let i=0;
+ vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify({run:{id:'r'+(++i)},reclaimToken:'token-'+i}))));
+ const a=httpTwinRuntime(),b=httpTwinRuntime();await Promise.all([a.create({} as never,{} as never),b.create({} as never,{} as never)]);
+ expect(a.recoverableRunIds?.slice().sort()).toEqual(['old','r1','r2']);expect(b.recoverableRunIds?.slice().sort()).toEqual(['old','r1','r2']);
+ a.dropProof!('old');b.dropProof!('r2');expect(a.recoverableRunIds).toEqual(['r1']);
+});
+
+test('retarget during the remote pin check never creates on the replacement target',async()=>{
+ let release!:(r:Response)=>void;const sent:string[]=[];vi.stubGlobal('fetch',vi.fn(async(u:string)=>{
+  sent.push(u);if(u.endsWith('/health'))return new Promise<Response>(res=>{release=res;});
+  return new Response(JSON.stringify({sourceCommit:'a'.repeat(40)}));
+ }));
+ const a=httpTwinRuntime({kind:'remote',base:'https://a.example/lab/v2'}),request=a.create({} as never,{} as never);
+ a.retarget!({kind:'remote',base:'https://b.example/lab/v2'});release(new Response(JSON.stringify({sourceCommit:'a'.repeat(40)})));
+ await expect(request).rejects.toMatchObject({code:'SESSION_CHANGED'});expect(sent.some(u=>u.endsWith('/runs'))).toBe(false);
+});
+test('an archive requires an acknowledgement for the original run',async()=>{
+ const rt=httpTwinRuntime();for(const ack of [{},{archived:true,runId:'other-run'}]){
+  vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify(ack))));
+  await expect(rt.archive!('expected-run')).rejects.toMatchObject({code:'INVALID_RUNTIME_RESPONSE'});
+ }
 });

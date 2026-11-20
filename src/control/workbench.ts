@@ -3,6 +3,8 @@
 // RFC 8785 JSON of the document without its `digest`, drive-io.ts driveDocumentDigest). Plant numbers, bounds and gain suggestions are the server's data
 // (health benchCatalog/tuningEnvelope, TuningResultV1.suggestions): nothing here re-types one.
 import Ajv from 'ajv';
+import benchSchema from '../shared/engineering-schemas/bench-request-v1.schema.json' with {type:'json'};
+import evidenceSchema from '../shared/engineering-schemas/control-evidence-v1.schema.json' with {type:'json'};
 import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
 import driveIoSchema from '../shared/engineering-schemas/drive-io-v1.schema.json' with {type:'json'};
 import profileSchema from '../shared/engineering-schemas/control-profile-v1.schema.json' with {type:'json'};
@@ -16,7 +18,7 @@ export type BenchScenarioId=BenchRequestV1['scenarioId'];
 export type BenchAxisName=BenchRequestV1['axis'];
 export type DriveExperimentId=BenchRequestV1['driveExperimentId'];
 // TODO(interim-copy): health's bench block as source bench-runner.ts/gateway.ts serve it (TS types there, no schema to generate from).
-export type BenchCatalogAxis={axis:'wheels';axisIds:string[];mode:'csv';unit:'rad/s';direction:'forward'}|{axis:Exclude<BenchAxisName,'wheels'>;axisIds:string[];mode:'csp';unit:'rad';lowerRad:number;upperRad:number;startRad:number};
+export type BenchCatalogAxis={axis:'wheels';axisIds:string[];mode:'csv';unit:'rad/s';direction:'forward';quantity?:'wheel_angular_speed';inertiaAssumption?:'straight_line_no_slip'}|{axis:Exclude<BenchAxisName,'wheels'>;axisIds:string[];mode:'csp';unit:'rad';lowerRad:number;upperRad:number;startRad:number};
 export interface BenchCatalogEntry {plant:{id:string;revision:number;load:string;plantModelDigest:string};axes:BenchCatalogAxis[];experiments:Partial<Record<DriveExperimentId,{anchorTick:number;driveModelDigest:string}>>;startingProfile:ControlProfileV1}
 export interface BenchSignals {kinds:BenchSignal['kind'][];maxTicks:number;amplitudes:{wheelRadS:number[];jointRad:number[]};suggestOptions:{bandwidthRadS:number[];damping:number[]};wheelDirection?:'forward'}
 export interface BenchHealth {tuningEnvelope?:TuningEnvelopeV1;benchSignals?:BenchSignals;benchCatalog?:Partial<Record<BenchScenarioId,BenchCatalogEntry>>}
@@ -81,23 +83,66 @@ export const profileDigest=(p:ControlProfileV1):string=>{const {digest:_,...rest
 const seal=(p:ControlProfileV1):ControlProfileV1=>({...p,digest:profileDigest(p)});
 /** The draft a bench runs: `base` as its next revision with `control` on every traced axis (both wheels take the one wheel control), sealed. */
 export function benchDraft(base:ControlProfileV1,control:AxisControl,axisIds:readonly string[]):ControlProfileV1{
- return seal({...structuredClone(base),revision:base.revision+1,axes:base.axes.map(a=>axisIds.includes(a.axisId)?{axisId:a.axisId,loop:{...control.loop},accelerationLimit:control.accelerationLimit}:structuredClone(a))});
+ const sources=structuredClone(base.sources);
+ for(const field of ['loop','limits'] as const){
+  const ref=sources[field],changed=base.axes.filter(a=>axisIds.includes(a.axisId)&&(field==='loop'?canonicalJson(a.loop)!==canonicalJson(control.loop):
+   a.accelerationLimit!==control.accelerationLimit||a.loop.integralLimit!==control.loop.integralLimit||a.loop.slewLimit!==control.loop.slewLimit)).map(a=>a.axisId);
+  if(!changed.length)continue;
+  if(ref.kind==='tuned_in_simulation'){
+   const retained=ref.axisIds.filter(id=>!changed.includes(id));
+   if(retained.length){ref.axisIds=retained;continue;}
+  }
+  sources[field]={kind:'assumed',documentId:base.id,revision:String(base.revision),locator:'edited bench draft',contentSha256:base.digest};
+ }
+ return seal({...structuredClone(base),sources,revision:base.revision+1,axes:base.axes.map(a=>axisIds.includes(a.axisId)?{axisId:a.axisId,loop:{...control.loop},accelerationLimit:control.accelerationLimit}:structuredClone(a))});
 }
 /** The profile of a bench that ran: exactly its draft (else EXPORT_RESULT_MISMATCH: it would not be the profile that bench measured), with the loop and limits
  *  sourced to that bench run, its recorded trace, the runtime commit, the axes it traced and the drive model it ran (TunedSourceRef), not calibrated, sealed.
- *  The sources are profile-wide: a later export from a bench of another axis replaces this attribution. */
+ *  Only one tuned source per field fits the wire schema. Keep references for unchanged axes by declining an unrepresentable export. */
+export const exportLosesAttribution=(base:ControlProfileV1,axes:readonly string[])=>[base.sources.loop,base.sources.limits].some(ref=>ref.kind==='tuned_in_simulation'&&ref.axisIds.some(id=>!axes.includes(id)));
 export function exportControlProfile(base:ControlProfileV1,control:AxisControl,result:TuningResultV1,source:{scenarioId:BenchScenarioId;sourceCommit:string}):string{
  const draft=benchDraft(base,control,result.axisIds);
  if(draft.digest!==result.plant.controlProfileDigest)throw new Error('EXPORT_RESULT_MISMATCH');
+ if(exportLosesAttribution(base,result.axisIds))throw new Error('EXPORT_AXIS_PROVENANCE');
  const tuned:TunedSourceRef={kind:'tuned_in_simulation',benchRunId:result.runId,scenarioId:source.scenarioId,traceSha256:result.trace.sha256,sourceCommit:source.sourceCommit,axisIds:[...result.axisIds],driveModelDigest:result.plant.driveModelDigest};
  const doc=seal({...draft,calibration:'not_calibrated',sources:{...draft.sources,loop:tuned,limits:{...tuned,axisIds:[...tuned.axisIds]}}});
  // M4: a file neither the Lab nor the server would take back (e.g. a runtime commit that is not 40 hex) is never downloaded
  if(!validProfile(doc))throw new Error('EXPORT_INVALID');
  return JSON.stringify(doc,null,2)+'\n';
 }
-const ajv=new Ajv({strict:false,allErrors:false,discriminator:true});
-for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'control-profile-v1.schema.json':profileSchema}))ajv.addSchema(schema,key);
+const ajv=new Ajv({strict:false,strictNumbers:true,allErrors:false,discriminator:true});
+for(const [key,schema] of Object.entries({'bench-request-v1.schema.json':benchSchema,'control-evidence-v1.schema.json':evidenceSchema,'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'control-profile-v1.schema.json':profileSchema}))ajv.addSchema(schema,key);
 const validProfile=ajv.getSchema('control-profile-v1.schema.json') as import('ajv').ValidateFunction<ControlProfileV1>;
+const validEnvelope=ajv.getSchema<TuningEnvelopeV1>('mekoniq.control-profile.v1#/definitions/TuningEnvelopeV1')!;
+export const validTuning=ajv.getSchema<TuningResultV1>('mekoniq.control-evidence.v1#/definitions/TuningResultV1')!;
+const validTrace=ajv.getSchema<DriveTrace>('mekoniq.drive-io.v1#/definitions/DriveTrace')!;
+const finite=(n:unknown):n is number=>typeof n==='number'&&Number.isFinite(n);
+const positiveList=(v:unknown)=>Array.isArray(v)&&v.length>0&&v.every(n=>finite(n)&&n>0);
+const unique=(items:readonly unknown[])=>new Set(items).size===items.length;
+const integer=(n:unknown):n is number=>Number.isSafeInteger(n);
+export function validBenchCatalog(signals:BenchSignals,envelope:TuningEnvelopeV1,entries:[string,BenchCatalogEntry][]){
+ if(!validEnvelope(envelope)||!unique(envelope.axes.map(a=>a.axisId))||!envelope.axes.every(a=>offeredFields(a).every(k=>a[k]!.min<=a[k]!.max)))return false;
+ if(!Array.isArray(signals.kinds)||!signals.kinds.includes('step')||!unique(signals.kinds)||!signals.kinds.every(k=>['step','hold','trapezoid'].includes(k))
+  ||!integer(signals.maxTicks)||signals.maxTicks<1||signals.maxTicks>500||!positiveList(signals.amplitudes?.wheelRadS)||!positiveList(signals.amplitudes?.jointRad)
+  ||!positiveList(signals.suggestOptions?.bandwidthRadS)||!positiveList(signals.suggestOptions?.damping))return false;
+ return entries.every(([id,e])=>{
+  if(!benchSchema.properties.scenarioId.enum.includes(id)||!e?.plant||typeof e.plant.id!=='string'||typeof e.plant.load!=='string'||!integer(e.plant.revision)||e.plant.revision<1
+   ||!validProfile(e.startingProfile)||profileDigest(e.startingProfile)!==e.startingProfile.digest||e.plant.plantModelDigest!==e.startingProfile.plantModelDigest
+   ||!Array.isArray(e.axes)||!e.axes.length||!e.experiments||!Object.keys(e.experiments).length)return false;
+  const profileIds=e.startingProfile.axes.map(a=>a.axisId);
+  return unique(profileIds)&&unique(e.axes.map(a=>a?.axis))&&Object.entries(e.experiments).every(([name,x])=>benchSchema.properties.driveExperimentId.enum.includes(name)&&x&&integer(x.anchorTick)&&x.anchorTick>=0&&x.anchorTick<=signals.maxTicks&&e.startingProfile.driveModelDigests.includes(x.driveModelDigest))
+   &&e.axes.every(a=>a&&Array.isArray(a.axisIds)&&unique(a.axisIds)&&a.axisIds.every(axis=>profileIds.includes(axis)&&envelope.axes.some(x=>x.axisId===axis))
+    &&(a.axis==='wheels'?id==='MJ-BENCH-WHEEL'&&a.axisIds.length===2&&a.mode==='csv'&&a.unit==='rad/s'&&a.direction==='forward'
+     &&(a.quantity===undefined&&a.inertiaAssumption===undefined||a.quantity==='wheel_angular_speed'&&a.inertiaAssumption==='straight_line_no_slip')
+    :id==='MJ-BENCH-ARM'&&benchSchema.properties.axis.enum.includes(a.axis)&&a.axisIds.length===1&&a.mode==='csp'&&a.unit==='rad'&&finite(a.lowerRad)&&finite(a.startRad)&&finite(a.upperRad)&&a.lowerRad<=a.startRad&&a.startRad<=a.upperRad));
+ });
+}
+// The endpoint includes ten initial substeps plus up to 5000 measured substeps.
+export function validBenchTraces(data:{traces:DriveTrace[];issues:string[]},result:TuningResultV1,tick:number){
+ if(!data||!Array.isArray(data.issues)||!data.issues.every(i=>typeof i==='string')||!Array.isArray(data.traces)||data.traces.length!==result.axisIds.length)return false;
+ return data.traces.every((t,i)=>t?.axisId===result.axisIds[i]&&t.dtS===0.002&&Array.isArray(t.samples)&&t.samples.length===(tick+1)*10
+  &&validTrace({...t,samples:t.samples.slice(0,10)})&&validTrace({...t,samples:t.samples.slice(10)})&&t.samples.slice(10).filter(Boolean).length===result.trace.samples);
+}
 export const MAX_PROFILE_BYTES=1024*1024;
 /** A profile file for this plant: JSON, the source schema, its own digest, this plant and a drive model it was declared for (and, given, this plant's axis set). */
 export function importControlProfile(text:string,plant:{plantModelDigest:string;driveModelDigest:string;axisIds?:readonly string[]}):{ok:true;profile:ControlProfileV1}|{ok:false;reasonCodes:string[]}{
