@@ -3,10 +3,13 @@ import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {expect,test} from 'vitest';
-import {DRIVE_EXPERIMENTS,driveExperiment,mobileDriveBundle,worldDriveBundle} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
+import {DRIVE_EXPERIMENTS,driveExperiment,mobileDriveBundle,worldDriveBundle,worldPlantDigest} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
+import {admitDriveDocuments} from '../../packages/lab-runtime/src/v2/control/drive-run';
 import {validateControlProfile,validateDriveModel,type TuningEnvelopeV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 
 const root=resolve('robotics/simulation-mujoco');
+// the same literal as WORLD_PLANT in tests/test_drive_engine.py, computed there with rfc8785
+const WORLD_PLANT='9da95c2a2a5cdc6d8761ca786917d740a85bc19091bdd9d254613549c514fa7b';
 test('the registry is closed: five ids, an unknown id is refused before anything is built',()=>{
  expect(Object.keys(DRIVE_EXPERIMENTS)).toEqual(['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1']);
  for(const bad of ['drive-nominal-v2','__proto__','constructor','','../drive-v1/serve-drive-nominal-v1','toString'])expect(()=>driveExperiment(bad),bad).toThrow('DRIVE_EXPERIMENT_UNREGISTERED');
@@ -26,17 +29,17 @@ test('the experiments differ from nominal only in the device: latency 100 ms, co
  expect((await m('drive-coarse-encoder-v1')).encoder.countsPerRev).toBe(256);
  expect((await m('drive-torque-limited-v1')).torque).toEqual({kind:'envelope_ref',scale:0.1});
  expect(await m('drive-ideal-v1')).toMatchObject({commandDelaySubsteps:0,watchdogTicks:null,encoder:{countsPerRev:null}});
- const arm=async(id:string)=>(await worldDriveBundle(root,id,'arm-1')).model.axes[1]!;
+ const arm=async(id:string)=>(await worldDriveBundle(root,id,'arm-1',WORLD_PLANT)).model.axes[1]!;
  expect((await arm('drive-latency-v1')).commandDelaySubsteps).toBe(50);expect((await arm('drive-coarse-encoder-v1')).encoder.countsPerRev).toBe(1024);
 });
 test('the world bundle is one sealed model and profile for nine axes, the arm renamed to the scene arm id',async()=>{
- const b=await worldDriveBundle(root,'drive-nominal-v1','arm-1'),env=JSON.parse(await readFile(join(root,'fixtures/drive-v1/tuning-envelope-v1.json'),'utf8')) as TuningEnvelopeV1;
+ const b=await worldDriveBundle(root,'drive-nominal-v1','arm-1',WORLD_PLANT),env=JSON.parse(await readFile(join(root,'fixtures/drive-v1/tuning-envelope-v1.json'),'utf8')) as TuningEnvelopeV1;
  expect(b.model.axes.map(a=>a.axisId)).toEqual(['arm-1/J1','arm-1/J2','arm-1/J3','arm-1/J4','arm-1/J5','arm-1/J6','arm-1/gripper','amr-1/wheel-left','amr-1/wheel-right']);
  expect(validateDriveModel(b.model)).toEqual({ok:true,reasonCodes:[]});
  // the envelope names the xarm-1 axes: the profile of a world is validated against the same bounds once they are renamed
  const renamed={...env,axes:env.axes.map(a=>({...a,axisId:a.axisId.replace('xarm-1/','arm-1/')}))};
  expect(validateControlProfile(b.control,b.model,renamed)).toEqual({ok:true,reasonCodes:[]});
- const again=await worldDriveBundle(root,'drive-nominal-v1','arm-1');
+ const again=await worldDriveBundle(root,'drive-nominal-v1','arm-1',WORLD_PLANT);
  expect(again.files.map(f=>Buffer.from(f.bytes).toString())).toEqual(b.files.map(f=>Buffer.from(f.bytes).toString()));  // byte deterministic
 });
 test('a scratch directory holds nothing of the experiments (they are read from the fixture, never written)',async()=>{
@@ -65,4 +68,11 @@ test('an engineering project names a drive experiment only with the mobile MuJoC
  expect(problems({...base,requestedProfile:'engineering-mujoco-3d-v1',driveExperimentId:'drive-nominal-v1'})).toEqual([]);
  expect(problems({...base,requestedProfile:'engineering-webots-3d-v1',driveExperimentId:'drive-nominal-v1'})).toContain('DRIVE_EXPERIMENT_PROFILE_REQUIRED');
  expect(problems({...base,requestedProfile:'engineering-mujoco-3d-v1',driveExperimentId:'drive-nominal-v9'}).length).toBeGreaterThan(0);
+});
+test('the world plant digest comes from the scene itself and equals the worker\'s; a bundle sealed for another plant is refused before the run starts',async()=>{
+ const scene=JSON.parse(await readFile(join(root,'fixtures/coffee-delivery-cell-v1/lab-world-scene.json'),'utf8'));
+ expect(worldPlantDigest(scene)).toBe(WORLD_PLANT);
+ const sealed=async(plant:string)=>{const b=await worldDriveBundle(root,'drive-nominal-v1','arm-1',plant),files=new Map(b.files.map(f=>[f.path,f.bytes]));return {b,admit:()=>admitDriveDocuments({engine:b.refs},async p=>files.get(p)!,root,worldPlantDigest(scene))};};
+ const good=await sealed(worldPlantDigest(scene));expect(good.b.control.plantModelDigest).toBe(WORLD_PLANT);await expect(good.admit()).resolves.toMatchObject({control:{plantModelDigest:WORLD_PLANT}});
+ await expect((await sealed('b'.repeat(64))).admit()).rejects.toThrow('DRIVE_PLANT_MISMATCH');
 });

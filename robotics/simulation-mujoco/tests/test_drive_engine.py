@@ -21,7 +21,7 @@ from mujoco_worker.drive import wheel_targets
 from mujoco_worker.engine import MujocoEngine
 from mujoco_worker.mobile_engine import MobileEngine
 from mujoco_worker.protocol import PROTOCOL, load_validators
-from mujoco_worker.session import WorkerSession, scene_digest_of
+from mujoco_worker.session import WorkerSession, scene_digest_of, world_plant_digest
 from mujoco_worker.world_engine import WorldEngine
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,14 +45,18 @@ def docs(kind, variant="ideal"):
     return doc(f"{kind}-drive-{variant}-v1.json"), doc(f"{'serve' if kind == 'serve' else 'xarm6'}-control-v1.json")
 
 
-def world_docs(arm_prefix="xarm-1", variant="ideal"):
-    """One combined drive model and profile for the nine axes of a world (the real combined fixtures are V05's)."""
+# hashJson({mobile: the AMR's physicalModelDigest, arm: the sha256 the scene records for the arm component}) of the coffee-delivery scenes: the TS test (drive-experiments.test.ts) asserts the same literal
+WORLD_PLANT = "9da95c2a2a5cdc6d8761ca786917d740a85bc19091bdd9d254613549c514fa7b"
+
+
+def world_docs(arm_prefix="xarm-1", variant="ideal", plant=WORLD_PLANT):
+    """One combined drive model and profile for the nine axes of a world (the real combined fixtures are V05's), bound to `plant`."""
     am, ac = docs("xarm6", variant)
     sm, sc = docs("serve", variant)
     def rename(axes):
         return [{**a, "axisId": a["axisId"].replace("xarm-1/", arm_prefix + "/")} for a in axes]
     model = seal({**am, "id": "world-drive-test-v1", "axes": rename(am["axes"]) + sm["axes"]})
-    control = seal({**ac, "id": "world-control-test-v1", "plantModelDigest": "a" * 64, "driveModelDigests": [model["digest"]], "axes": rename(ac["axes"]) + sc["axes"], "controllers": ac["controllers"] + sc["controllers"]})
+    control = seal({**ac, "id": "world-control-test-v1", "plantModelDigest": plant, "driveModelDigests": [model["digest"]], "axes": rename(ac["axes"]) + sc["axes"], "controllers": ac["controllers"] + sc["controllers"]})
     return model, control
 
 
@@ -447,14 +451,14 @@ def test_drive_documents_that_do_not_fit_the_scene_are_refused_at_create(tmp_pat
 
 
 # ---- review of V05 (2026-11-19) ------------------------------------------------------------------------------------------------------------------------------
-def world_drive_session(tmp_path):
+def world_bundle(tmp_path, plant=WORLD_PLANT):
     world = ROOT / "fixtures" / "coffee-delivery-world-v1"
     for p in world.iterdir():
         if p.is_file():
             shutil.copy(p, tmp_path / p.name)
     shutil.copytree(BLOBS, tmp_path / "blobs")
     scene = json.loads((tmp_path / "lab-world-scene.json").read_text())
-    model, control = world_docs("arm-1")
+    model, control = world_docs("arm-1", plant=plant)
     refs = {}
     for name, d, key in (("world-drive-test-v1.json", model, "driveModelRef"), ("world-control-test-v1.json", control, "controlProfileRef")):
         raw = (json.dumps(d, indent=2) + "\n").encode()
@@ -464,6 +468,23 @@ def world_drive_session(tmp_path):
     scene["engine"] = refs
     scene["sceneDigest"] = scene_digest_of(scene)
     (tmp_path / "lab-world-scene.json").write_text(json.dumps(scene))
+    return scene
+
+
+def test_the_world_plant_digest_is_the_one_the_lab_computes_and_a_profile_for_another_plant_is_refused_at_create(tmp_path):
+    ok, other = tmp_path / "ok", tmp_path / "other"
+    ok.mkdir(), other.mkdir()
+    scene = world_bundle(ok)
+    assert world_plant_digest(scene) == WORLD_PLANT
+    assert world_plant_digest(scene) == hashlib.sha256(rfc8785.dumps({"mobile": scene["navigation"]["robots"][0]["model"]["physicalModelDigest"], "arm": scene["models"]["armComponent"]["sha256"]})).hexdigest()
+    scene = world_bundle(other, plant="b" * 64)
+    s = WorkerSession(run_id="w", bundle_root=other, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"])
+    r = s.handle({"protocol": PROTOCOL, "requestId": "c", "runId": "w", "expectedTick": 0, "op": "create", "payload": {"sceneRef": "lab-world-scene.json", "seed": 7}})
+    assert not r["ok"] and r["error"]["code"] == "DRIVE_DOCUMENT_INVALID" and s.engine is None, r
+
+
+def world_drive_session(tmp_path):
+    scene = world_bundle(tmp_path)
     s = WorkerSession(run_id="w", bundle_root=tmp_path, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"])
 
     def req(op, payload, tick=0, rid=None):

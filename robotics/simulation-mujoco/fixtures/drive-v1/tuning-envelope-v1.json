@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "documentType": "tuning-envelope",
   "id": "tuning-envelope-v1",
-  "revision": 1,
-  "digest": "09043a2fa356c223deeba6c7356cd2a4a4575ed300cef7996b4b7afa3783d91f",
+  "revision": 2,
+  "digest": "296369f46110ac5d11385f14729f12fdd4a92beff4233032e56c559302d46046",
   "calibration": "not_calibrated",
   "axes": [
     {
@@ -16,17 +16,9 @@
         "min": 0,
         "max": 64
       },
-      "kd": {
-        "min": 0,
-        "max": 0
-      },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 6
-      },
-      "slewLimit": {
-        "min": 0,
-        "max": 0
       },
       "accelerationLimit": {
         "min": 0.5,
@@ -43,17 +35,9 @@
         "min": 0,
         "max": 64
       },
-      "kd": {
-        "min": 0,
-        "max": 0
-      },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 6
-      },
-      "slewLimit": {
-        "min": 0,
-        "max": 0
       },
       "accelerationLimit": {
         "min": 0.5,
@@ -75,16 +59,12 @@
         "max": 300
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 179.4445
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -102,16 +82,12 @@
         "max": 300
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 179.4445
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -129,16 +105,12 @@
         "max": 200
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 92
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -156,16 +128,12 @@
         "max": 80
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 81.558
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -183,16 +151,12 @@
         "max": 60
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 30.6
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -210,16 +174,12 @@
         "max": 28
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 30.6
       },
       "slewLimit": {
         "min": 0.1,
         "max": 3.14
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     },
     {
@@ -237,16 +197,12 @@
         "max": 1
       },
       "integralLimit": {
-        "min": 0,
+        "min": 0.01,
         "max": 1.2
       },
       "slewLimit": {
         "min": 0.1,
         "max": 10
-      },
-      "accelerationLimit": {
-        "min": 0.5,
-        "max": 50
       }
     }
   ],

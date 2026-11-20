@@ -57,6 +57,11 @@ def overlaps(p, a, q, b):
     return math.hypot(p[0] - q[0], p[1] - q[1]) < a[0] + b[0] and abs(p[2] - q[2]) < (a[1] + b[1]) / 2
 
 
+def world_plant_digest(scene):
+    """The plant a world's combined control profile belongs to, from the scene itself (the Lab computes the same: worldPlantDigest in drive-experiments.ts)."""
+    return hashlib.sha256(rfc8785.dumps({"mobile": scene["navigation"]["robots"][0]["model"]["physicalModelDigest"], "arm": scene["models"]["armComponent"]["sha256"]})).hexdigest()
+
+
 class WorkerSession:
     def __init__(self, *, run_id, bundle_root, lock_digest, expected_scene_digest=None, engine_factory=None, host_info=None, schema_dir=None, payload_perturbation=None):
         if payload_perturbation not in (None, "payload-cup-forward-impulse-v1"):
@@ -262,7 +267,7 @@ class WorkerSession:
             binding=next((b for b in bindings if b['cupId']==disturbance['cupId']),None)
             valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport'))
             if not valid:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','admitted target binding')
-        drive = self._drive_docs(scene.get("engine") or {}, document)   # one combined drive model and profile for all nine axes; the plant binding of a world is V05's
+        drive = self._drive_docs(scene.get("engine") or {}, document, plant_digest=world_plant_digest(scene))   # one combined drive model and profile for all nine axes, bound to this world's plant
         try:
             self.engine = WorldEngine(scene,docs["armComponent"],docs["armPhysics"],{rid:model},docs["emptyLoad"],docs["mobilePhysics"],str(confined(self.bundle_root,"blobs",directory=True)),**({"drive":drive} if drive else {}))
         except CompileError as e:

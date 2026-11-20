@@ -50,14 +50,16 @@ export function validateTuningEnvelope(value:unknown):Check{
  const e=value as TuningEnvelopeV1;
  if(Array.isArray(e?.axes)){
   if(duplicates(e.axes.map(a=>a?.axisId)))codes.add('DRIVE_AXIS_DUPLICATE');
-  for(const a of e.axes)for(const k of ['kp','ki','kd','integralLimit','slewLimit','accelerationLimit'] as const)if(a?.[k]&&a[k].min>a[k].max)codes.add('ENVELOPE_BOUND_INVALID');
+  for(const a of e.axes){for(const k of ['kp','ki','kd','integralLimit','slewLimit','accelerationLimit'] as const)if(a?.[k]&&a[k]!.min>a[k]!.max)codes.add('ENVELOPE_BOUND_INVALID');if(a?.integralLimit&&a.integralLimit.min<=0)codes.add('ENVELOPE_BOUND_INVALID');}
  }
  if(e&&typeof e==='object'&&typeof e.digest==='string'&&!nonFinite(value)&&driveDocumentDigest(e)!==e.digest)codes.add('DIGEST_MISMATCH');
  return done(codes);
 }
 
 const inside=(x:number,b:{min:number;max:number})=>x>=b.min&&x<=b.max;
-/** A control profile against the drive model it is declared for and the server's envelope. A non-finite or negative gain, a kd on a velocity axis, an unbounded integral and a gain outside the envelope are all refused. */
+/** A control profile against the drive model it is declared for and the server's envelope. One rule table per drive mode, the same as the worker's `actuator_spec` (shared vectors in robotics/simulation-mujoco/tests/data):
+ * csp takes any kd, a null or positive slew and no acceleration limit; csv takes kd = 0, no slew and a null or positive acceleration limit; an integral limit exists exactly when ki > 0 (and is then positive).
+ * A field the axis' envelope does not list is not accepted (null, or 0 for kd). A non-finite or negative gain and a gain outside the envelope are refused as well. */
 export function validateControlProfile(value:unknown,model:DriveModelV1,envelope:TuningEnvelopeV1):Check{
  const codes=new Set<string>();
  if(nonFinite(value))codes.add('NON_FINITE_NUMBER');
@@ -74,11 +76,13 @@ export function validateControlProfile(value:unknown,model:DriveModelV1,envelope
  for(const a of p.axes){
   const m=modelAxes.get(a?.axisId),env=bounds.get(a?.axisId),l=a?.loop;
   if(!l)continue;
-  if(m?.mode==='csv'&&l.kd!==0)codes.add('CSV_KD_NONZERO');
-  if(l.ki>0&&l.integralLimit===null)codes.add('INTEGRAL_LIMIT_REQUIRED');
+  if(m?.mode==='csv'){if(l.kd!==0)codes.add('CSV_KD_NONZERO');if(l.slewLimit!==null)codes.add('CSV_SLEW_LIMIT');}
+  if(m?.mode==='csp'&&a.accelerationLimit!==null)codes.add('CSP_ACCELERATION_LIMIT');
+  if(l.ki>0&&!(typeof l.integralLimit==='number'&&l.integralLimit>0))codes.add('INTEGRAL_LIMIT_REQUIRED');
+  if(l.ki===0&&l.integralLimit!==null)codes.add('INTEGRAL_LIMIT_WITHOUT_KI');
   if(!env){codes.add('ENVELOPE_AXIS_MISSING');continue;}
   const checks:[number|null,keyof AxisEnvelope][]=[[l.kp,'kp'],[l.ki,'ki'],[l.kd,'kd'],[l.integralLimit,'integralLimit'],[l.slewLimit,'slewLimit'],[a.accelerationLimit,'accelerationLimit']];
-  for(const [x,k] of checks)if(typeof x==='number'&&Number.isFinite(x)&&!inside(x,env[k] as {min:number;max:number}))codes.add('GAIN_OUT_OF_ENVELOPE');
+  for(const [x,k] of checks){const b=env[k] as {min:number;max:number}|undefined;if(typeof x==='number'&&Number.isFinite(x)&&(b?!inside(x,b):x!==0))codes.add('GAIN_OUT_OF_ENVELOPE');}
  }
  return done(codes);
 }

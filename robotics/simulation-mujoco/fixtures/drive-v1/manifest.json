@@ -17,8 +17,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "2755b10536de9a32492766b76f07ac647d0ebb2a960b31a935a0ed91a8889c7b",
-      "bytes": 1715
+      "sha256": "b789dd597913b0671bedce450518e9d88f59e9c51bf577b5e265e0d3a288b7c7",
+      "bytes": 1859
     },
     {
       "path": "serve-control-v1.json",
@@ -52,8 +52,8 @@
     },
     {
       "path": "tuning-envelope-v1.json",
-      "sha256": "aade34a3996c58d3068e9b52ee62761d21def8902ba8e19c0b8d57de1abd6d53",
-      "bytes": 4491
+      "sha256": "5261904db2499dd9697650089122f5cdcc09240ec4e4a2eff04d9c08b0f9d9c1",
+      "bytes": 3740
     },
     {
       "path": "xarm6-control-v1.json",

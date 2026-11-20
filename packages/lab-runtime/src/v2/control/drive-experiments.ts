@@ -37,12 +37,16 @@ export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDi
  return {files:[{path:e.mobileModel,bytes:m.bytes},{path:e.mobileControl,bytes:cb}],refs:{driveModelRef:ref(m.doc,e.mobileModel,m.bytes),controlProfileRef:ref(control,e.mobileControl,cb)},model:m.doc,control};
 }
 
-/** One combined drive model and control profile for the nine axes of the cell world: the arm's axes (renamed to the scene's arm id) and the AMR's. */
-export async function worldDriveBundle(workerRoot:string,id:string,armId:string):Promise<DriveBundle>{
+/** The plant a world's combined control profile belongs to, from the world scene itself: the AMR's physical model digest and the sha256 the scene records for the arm component. The worker computes the same (`world_plant_digest`). */
+export const worldPlantDigest=(scene:{navigation:{robots:{model:{physicalModelDigest:string}}[]};models:{armComponent:{sha256:string}}}):string=>hashJson({mobile:scene.navigation.robots[0]!.model.physicalModelDigest,arm:scene.models.armComponent.sha256});
+
+/** One combined drive model and control profile for the nine axes of the cell world: the arm's axes (renamed to the scene's arm id) and the AMR's. A registry fixture may be re-sealed for the plant it runs on (D2): the
+ * profile is sealed with `plantModelDigest`, the world's own. Only registry fixtures are ever re-sealed; a profile a person sends is admitted as it is or refused. */
+export async function worldDriveBundle(workerRoot:string,id:string,armId:string,plantModelDigest:string):Promise<DriveBundle>{
  const e=driveExperiment(id),sm=await read<DriveModelV1>(workerRoot,e.mobileModel),sc=await read<ControlProfileV1>(workerRoot,e.mobileControl),am=await read<DriveModelV1>(workerRoot,e.armModel),ac=await read<ControlProfileV1>(workerRoot,e.armControl);
  const rename=<T extends {axisId:string}>(axes:T[])=>axes.map(a=>({...a,axisId:a.axisId.replace(/^xarm-1\//,`${armId}/`)}));
  const model=sealDriveDocument({...am.doc,id:`world-${id}`,axes:[...rename(am.doc.axes),...sm.doc.axes]});
- const control=sealDriveDocument({...ac.doc,id:`world-${id}-control`,plantModelDigest:hashJson({mobile:sc.doc.plantModelDigest,arm:ac.doc.plantModelDigest}),driveModelDigests:[model.digest],axes:[...rename(ac.doc.axes),...sc.doc.axes],controllers:[...ac.doc.controllers,...sc.doc.controllers]});
+ const control=sealDriveDocument({...ac.doc,id:`world-${id}-control`,plantModelDigest,driveModelDigests:[model.digest],axes:[...rename(ac.doc.axes),...sc.doc.axes],controllers:[...ac.doc.controllers,...sc.doc.controllers]});
  const mp=`${model.id}.json`,cp=`${control.id}.json`,mb=json(model),cb=json(control);
  return {files:[{path:mp,bytes:mb},{path:cp,bytes:cb}],refs:{driveModelRef:ref(model,mp,mb),controlProfileRef:ref(control,cp,cb)},model,control};
 }

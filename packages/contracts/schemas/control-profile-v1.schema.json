@@ -264,11 +264,9 @@
         "axisId",
         "kp",
         "ki",
-        "kd",
-        "integralLimit",
-        "slewLimit",
-        "accelerationLimit"
+        "integralLimit"
       ],
+      "description": "A field the axis does not accept (kd and slewLimit on a velocity axis, accelerationLimit on a position axis) is absent.",
       "title": "AxisEnvelope"
     },
     "TuningEnvelopeV1": {

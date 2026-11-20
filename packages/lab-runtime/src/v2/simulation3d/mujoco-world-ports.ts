@@ -31,7 +31,7 @@ import {MUJOCO_SLOT,type MujocoRuntimeOptions} from './mujoco';
 import {spawnMujocoWorker} from './worker-client';
 import {readWorldFixture,validateWorldObservation,worldArmObstacles,type WorldInteractionIntent} from './world-scene';
 import {openWorldRecorder,prepareWorldAdmission} from './world-evidence';
-import {worldDriveBundle} from '../control/drive-experiments';
+import {worldDriveBundle,worldPlantDigest} from '../control/drive-experiments';
 import {admitDriveDocuments,driveManifest,driveWireCommand,wheelVelocityResolutionRadS,BASE_CONTROLLER_DEFAULTS} from '../control/drive-run';
 import {splitDriveSnapshot} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
@@ -58,7 +58,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   const selected=worldExperiment(input.manifest);if(selected&&runtime.cellDisturbance)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');
   if(selected??runtime.cellDisturbance){const o=(selected??runtime.cellDisturbance)!,b=scene.propBindings.find(b=>b.cupId===o.cupId);if(!b||!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,o.presetId))throw Error('WORLD_PERTURBATION_NOT_ADMITTED');const preset=WORLD_DISTURBANCE_PRESETS[o.presetId];scene.disturbance={presetId:o.presetId,revision:1,cupId:o.cupId,targetId:o.presetId==='world-dock-drift-v1'?scene.navigation.robots[0]!.robotId:b.propId,trigger:preset.trigger};}
   // a registered drive experiment adds one combined drive model and control profile (nine axes) to the scene; without the field nothing is added and the scene is the R2b scene, byte for byte
-  const driveBundle=input.manifest.driveExperimentId?await worldDriveBundle(runtime.workerRoot,input.manifest.driveExperimentId,scene.armCell.arm.armId):undefined;
+  const driveBundle=input.manifest.driveExperimentId?await worldDriveBundle(runtime.workerRoot,input.manifest.driveExperimentId,scene.armCell.arm.armId,worldPlantDigest(scene)):undefined;
   if(driveBundle){for(const f of driveBundle.files){files.set(f.path,f.bytes);scene.files.push({path:f.path,sha256:createHash('sha256').update(f.bytes).digest('hex'),bytes:f.bytes.length});}scene.files.sort((a,b)=>a.path<b.path?-1:1);scene.engine={...driveBundle.refs};}
   scene.armCell.engineSeed=input.manifest.seed;scene.armCell.sceneDigest=documentDigest(scene.armCell,'sceneDigest');scene.sceneDigest=documentDigest(scene,'sceneDigest');
   const admission=prepareWorldAdmission(scene,files),doc=<T>(p:string)=>JSON.parse(Buffer.from(files.get(p)!).toString()) as T;
@@ -83,7 +83,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   st.arm={...MockArmPlant.initial(st.armId,last.bootId,programs),plantId:'mujoco_arm',historyRetention:{...WORLD_HISTORY_POLICY,droppedTraceSamples:0,droppedPropsSamples:0,droppedDebugSamples:0}};
   const hp=doc<{robotId:string;armId:string;supportId:string;dock:{xyToleranceM:number;yawToleranceRad:number;maxLinearMps:number;maxAngularRadps:number;holdTicks:number};receiver:{maxRelativeMps:number;holdTicks:number;comMarginM:number};birth:{centerM:[number,number,number]}}>(scene.handoffPolicyRef.path);
   // the controllers of the drive: pure state machines on the measured feedback of the last verified snapshot; their events that need a person halt the cell like any other halted reason
-  const driveDocs=driveBundle?await admitDriveDocuments(scene,async p=>files.get(p)!,runtime.workerRoot,null):undefined;
+  const driveDocs=driveBundle?await admitDriveDocuments(scene,async p=>files.get(p)!,runtime.workerRoot,worldPlantDigest(scene)):undefined;
   const armComponent=doc<{joints:{id:string;limits:{lower:{value:number};upper:{value:number}}}[]}>(scene.models.armComponent.path),gripLimits=armComponent.joints.find(j=>j.id==='drive_joint')!.limits,armId=scene.armCell.arm.armId;
   let baseState:DiffDriveBaseState|undefined,jointState:JointFollowerState|undefined;const driveRows:DriveRecord[]=[],driveEvents:ControllerEvent[]=[];if(driveDocs&&last.drives)driveRows.push({tick:last.tick,drives:last.drives});
   if(driveDocs){

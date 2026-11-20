@@ -31,13 +31,17 @@ def actuator_spec(axis_model, axis_control):
     csv: `velocity` (kv = kp) while ki = 0. With ki > 0 a proportional-integral velocity loop is exactly a pid actuator with kv = kp, a position gain of ki on the integral of the
     velocity error (the integrated reference p_ref - q) and ki = 0: the drive integrates p_ref itself and clamps |p_ref - q| to integralLimit / ki. ctrl = (p_ref, v_cmd).
     `integralLimit` is a force limit in N m. Refuses what it cannot express instead of ignoring it."""
-    mode, loop = axis_model["mode"], axis_control["loop"]
+    mode, loop, accel = axis_model["mode"], axis_control["loop"], axis_control["accelerationLimit"]
     kp, ki, kd, limit, slew = loop["kp"], loop["ki"], loop["kd"], loop["integralLimit"], loop["slewLimit"]
-    if ki > 0 and not limit:
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{axis_model['axisId']}: ki > 0 needs an integralLimit")
+    name = axis_model["axisId"]
+    # one rule table per mode, the same as validateControlProfile (shared vectors: tests/data/control-profile-admission-v1.json)
+    if not all(isinstance(g, (int, float)) and math.isfinite(g) and g >= 0 for g in (kp, ki, kd)) or any(x is not None and not (isinstance(x, (int, float)) and math.isfinite(x) and x > 0) for x in (limit, slew, accel)):
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: a gain is negative or not finite, or a limit is not positive")
+    if (ki > 0) != (limit is not None):
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: an integralLimit exists exactly when ki > 0")
     if mode == "csp":
-        if axis_control["accelerationLimit"] is not None:
-            raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{axis_model['axisId']}: accelerationLimit is implemented for csv axes only")
+        if accel is not None:
+            raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: accelerationLimit is implemented for csv axes only")
         if ki == 0 and slew is None:
             return {"kind": "position", "attrs": {"kp": kp, "kv": kd}, "cells": 1, "integrated": False, "referenceLimitRad": None}
         attrs = {"kp": kp, "kv": kd, "ki": ki}
@@ -47,7 +51,7 @@ def actuator_spec(axis_model, axis_control):
             attrs["slewmax"] = slew
         return {"kind": "pid", "attrs": attrs, "cells": 2, "integrated": False, "referenceLimitRad": None}
     if kd != 0 or slew is not None:
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{axis_model['axisId']}: a velocity axis takes no kd and no slew")
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: a velocity axis takes no kd and no slew")
     if ki == 0:
         return {"kind": "velocity", "attrs": {"kv": kp}, "cells": 1, "integrated": False, "referenceLimitRad": None}
     return {"kind": "pid", "attrs": {"kp": ki, "kv": kp, "ki": 0.0}, "cells": 2, "integrated": True, "referenceLimitRad": limit / ki}

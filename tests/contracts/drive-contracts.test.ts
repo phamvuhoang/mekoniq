@@ -61,6 +61,19 @@ test('a control profile is refused for: a kd on a velocity axis, an unbounded in
  expect(controlCodes(withLoop(a=>{a.loop.slewLimit=0.5;}))).toContain('GAIN_OUT_OF_ENVELOPE'); // a velocity axis allows no slew
 });
 
+test('the rule table per mode has its own reason codes, and a field the envelope does not list is not accepted (revision 2)',()=>{
+ const arm=read<ControlProfileV1>('drive-v1/xarm6-control-v1.json'),armModel=read<DriveModelV1>('drive-v1/xarm6-drive-nominal-v1.json');
+ const armCodes=(f:(a:ControlProfileV1['axes'][number])=>void)=>{const c=clone(arm);f(c.axes[1]!);return validateControlProfile(reseal(c),armModel,envelope).reasonCodes;};
+ expect(armCodes(a=>{a.accelerationLimit=5;})).toEqual(expect.arrayContaining(['CSP_ACCELERATION_LIMIT','GAIN_OUT_OF_ENVELOPE']));
+ expect(armCodes(a=>{a.loop.integralLimit=2;})).toContain('INTEGRAL_LIMIT_WITHOUT_KI');
+ expect(armCodes(a=>{a.loop.ki=100;a.loop.integralLimit=0;})).toContain('INTEGRAL_LIMIT_REQUIRED');
+ expect(controlCodes(withLoop(a=>{a.loop.slewLimit=0.5;}))).toContain('CSV_SLEW_LIMIT');
+ expect(envelope.revision).toBe(2);
+ for(const a of envelope.axes){const csv=a.axisId.startsWith('amr-1/');expect('kd' in a,a.axisId).toBe(!csv);expect('slewLimit' in a,a.axisId).toBe(!csv);expect('accelerationLimit' in a,a.axisId).toBe(csv);expect(a.integralLimit.min,a.axisId).toBeGreaterThan(0);}
+ const bad=clone(envelope);bad.axes[0]!.integralLimit.min=0;
+ expect(validateTuningEnvelope(reseal(bad)).reasonCodes).toContain('ENVELOPE_BOUND_INVALID');
+});
+
 test('an integral with its limit, inside the envelope, is accepted on a position axis',()=>{
  const arm=read<ControlProfileV1>('drive-v1/xarm6-control-v1.json'),armModel=read<DriveModelV1>('drive-v1/xarm6-drive-nominal-v1.json');
  const c=clone(arm);c.axes[1]!.loop={...c.axes[1]!.loop,ki:100,integralLimit:2};

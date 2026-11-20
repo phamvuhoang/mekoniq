@@ -18,9 +18,10 @@ def doc(name):
 
 
 class Rig:
-    """A DriveGroup plus a trivial plant: a velocity axis moves at the speed the drive hands out while it is active."""
+    """A DriveGroup plus a trivial plant: a velocity axis moves at the speed the drive hands out while it is active. With `servo`, an active position axis sits at the target the drive hands out (an ideal servo)."""
 
-    def __init__(self, model="serve-drive-nominal-v1.json", control="serve-control-v1.json", edit=None):
+    def __init__(self, model="serve-drive-nominal-v1.json", control="serve-control-v1.json", edit=None, servo=False):
+        self.servo = servo
         m, c = doc(model), doc(control)
         if edit:
             edit(m)
@@ -45,6 +46,8 @@ class Rig:
             for i in range(self.n):
                 self.vel[i] = out["target"][i] if out["active"][i] and self.model["axes"][i]["mode"] == "csv" else 0.0
                 self.pos[i] += self.vel[i] * DT
+                if self.servo and out["active"][i] and self.model["axes"][i]["mode"] == "csp":
+                    self.pos[i] = out["target"][i]
             self.g.sample(self.pos, self.vel, [torque] * self.n, [False] * self.n)
         return self.g.end_tick()
 
@@ -374,18 +377,22 @@ def test_a_disabled_axis_that_is_enabled_again_starts_from_neutral_and_not_from_
 
 
 def test_a_position_axis_that_is_enabled_again_holds_where_it_is_not_where_it_was_commanded():
-    r = Rig()
+    r = Rig("xarm6-drive-nominal-v1.json", "xarm6-control-v1.json", servo=True)
     csp = [i for i, a in enumerate(r.model["axes"]) if a["mode"] == "csp"]
-    if not csp:
-        pytest.skip("this fixture has no csp axis")
+    assert len(csp) == 7                              # six joints and the gripper: this runs on the arm, never skips
     r.enable_all()
-    r.tick(target=1.0)
+    for _ in range(3):
+        r.tick(target=1.0)
+    assert all(r.pos[i] == pytest.approx(1.0) for i in csp)
     for _ in range(3):
         r.tick(target=1.0, enable=False)
-    pos = r.pos[csp[0]]
+    for i in csp:
+        r.pos[i] = 0.4                                # off, the axis sagged: it is where it is, not where it was commanded
     r.log.clear()
-    r.tick(target=pos)
-    assert all(abs(o["target"][csp[0]] - pos) < 1e-9 for o in r.log)
+    for _ in range(12):                               # the enable sequence and then accepted commands at the place it holds
+        r.tick(target=0.4)
+    assert set(r.states()) == {"enabled"}
+    assert all(abs(o["target"][i] - 0.4) < 1e-9 for o in r.log for i in csp)
 
 
 @pytest.mark.parametrize("delay", [0, 1, 50])
@@ -410,3 +417,19 @@ def test_the_acceleration_limit_is_the_documented_one_whatever_the_command_delay
         g.end_tick()
     first = next(i for i, x in enumerate(outs) if x >= 10.0 - 1e-9)
     assert first + 1 == 50 + delay, f"reached after {first + 1} substeps, the ramp alone takes 50 and the delay adds {delay}"
+
+
+ADMISSION = json.loads((Path(__file__).resolve().parent / "data" / "control-profile-admission-v1.json").read_text())["cases"]
+
+
+@pytest.mark.parametrize("case", ADMISSION, ids=[c["id"] for c in ADMISSION])
+def test_actuator_spec_admits_what_the_shared_vectors_admit(case):
+    """The same vectors drive tests/contracts/control-profile-admission.test.ts through validateControlProfile: one rule table per drive mode, two implementations."""
+    axis = next(a for a in doc("xarm6-drive-nominal-v1.json" if case["mode"] == "csp" else "serve-drive-nominal-v1.json")["axes"] if a["mode"] == case["mode"])
+    control = {"axisId": axis["axisId"], "loop": case["loop"], "accelerationLimit": case["accelerationLimit"]}
+    if case["admitted"]:
+        actuator_spec(axis, control)
+    else:
+        with pytest.raises(WorkerError) as e:
+            actuator_spec(axis, control)
+        assert e.value.code == "DRIVE_DOCUMENT_INVALID"

@@ -2683,6 +2683,8 @@ export interface TuningBound {
   max: number;
 }
 /**
+ * A field the axis does not accept (kd and slewLimit on a velocity axis, accelerationLimit on a position axis) is absent.
+ *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "AxisEnvelope".
  */
@@ -2690,10 +2692,10 @@ export interface AxisEnvelope {
   axisId: DriveAxisId;
   kp: TuningBound;
   ki: TuningBound;
-  kd: TuningBound;
+  kd?: TuningBound;
   integralLimit: TuningBound;
-  slewLimit: TuningBound;
-  accelerationLimit: TuningBound;
+  slewLimit?: TuningBound;
+  accelerationLimit?: TuningBound;
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
