@@ -498,3 +498,20 @@ test('an archive requires an acknowledgement for the original run',async()=>{
   await expect(rt.archive!('expected-run')).rejects.toMatchObject({code:'INVALID_RUNTIME_RESPONSE'});
  }
 });
+test('round1 corrupted aggregate and corrupt independently keyed proof do not hide other runs',()=>{
+ const storage=memory();vi.stubGlobal('localStorage',storage);
+ storage.setItem('mekoniq-lab-reclaim','<corrupt>');storage.setItem('mekoniq-lab-reclaim::run::bad','{');storage.setItem('mekoniq-lab-reclaim::run::wrong','17');storage.setItem('mekoniq-lab-reclaim::run::ok','"valid"');
+ expect(httpTwinRuntime().recoverableRunIds).toEqual(['ok']);
+});
+test.each([undefined,'','   '])('round1 201 known-ID bench without a usable proof is flagged by the HTTP client',async(reclaimToken)=>{
+ vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify({run:{id:'known'},reclaimToken}),{status:201})));
+ const rt=httpTwinRuntime();await expect(rt.create({bench:{}} as never,{} as never)).rejects.toMatchObject({code:'BENCH_CREATE_PROOF_MISSING',runId:'known'});expect(rt.recoverableRunIds).not.toContain('known');
+});
+test('round1 authenticated cookie 401 expires only its own session generation',async()=>{
+ let expire!:(r:Response)=>void;vi.stubGlobal('fetch',vi.fn(async(url:string)=>url.endsWith('/sessions')?new Response(JSON.stringify({csrfToken:'csrf'})):new Promise<Response>(resolve=>{expire=resolve;})));
+ const rt=httpTwinRuntime();await rt.pair('first');const g=rt.sessionGeneration,old=rt.get('old');
+ await rt.pair('second');expire(new Response('{"error":"SESSION_REQUIRED"}',{status:401}));
+ await expect(old).rejects.toMatchObject({code:'SESSION_REQUIRED'});expect(rt.paired).toBe(true);
+ const active=rt.get('new');expire(new Response('{"error":"SESSION_REQUIRED"}',{status:401}));await expect(active).rejects.toMatchObject({code:'SESSION_REQUIRED'});
+ expect(rt.paired).toBe(false);expect(rt.sessionGeneration).toBeGreaterThan(g!);
+});

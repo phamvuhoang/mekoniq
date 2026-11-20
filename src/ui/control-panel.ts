@@ -20,7 +20,7 @@ const STEP_TICKS=50,SEED=7,SCENARIO_REVISION=1;
 export interface ControlHost {rt():TwinRuntime;health():TwinHealth|null;pinBlock():string[]|null;render():void;engineHolder?():string|null;freeEngine?():Promise<void>}
 /** `unread`: its report could not be read; `open`: its archive failed (a bench that lost contact mid-run may still hold the engine). Either way it stays open on the runtime, its
  *  proof and mark kept, and is listed to read again or close until an archive succeeds (final-fix V07 I2). */
-interface Bench {terminalTick?:number;runId:string;request:BenchCreateRun;axisIds:string[];driveDigest:string;load:string;scenarioId:BenchScenarioId;axis:BenchAxisName;unit:string;base:ControlProfileV1;control:AxisControl;sourceCommit:string;status:string;tuning:TuningResultV1|null;trace:DriveTrace|null;issues:string[];unread?:boolean;open?:boolean}
+interface Bench {owner:BenchSession;confirmed:boolean;pendingAction?:BenchAction;lastTick:number;revision:number;reclaimTick?:number;terminalTick?:number;runId:string;request:BenchCreateRun;axisIds:string[];driveDigest:string;load:string;scenarioId:BenchScenarioId;axis:BenchAxisName;unit:string;base:ControlProfileV1;control:AxisControl;sourceCommit:string;status:string;tuning:TuningResultV1|null;trace:DriveTrace|null;issues:string[];unread?:boolean;open?:boolean}
 /** Bench runs this browser created and has not closed, per runtime like the reclaim proofs (per-viewer storage). The twin never offers one as a twin run to
  *  reopen. The page that owns a mark refreshes it while the run is open; a mark nobody refreshed for MARK_STALE_MS (its page was closed or reloaded) whose proof
  *  is still held is an orphan the Control tab offers to close. A live bench of another tab is therefore never one. Storage that fails only loses the memory. */
@@ -39,6 +39,24 @@ type Ctx={ok:false;reason:string}|(Pick&{ok:true;h:TwinHealth;signals:BenchSigna
 const FIELD_OF:Record<string,string>={INTEGRAL_LIMIT_REQUIRED:'integralLimit',INTEGRAL_LIMIT_WITHOUT_KI:'integralLimit',CSV_KD_NONZERO:'kd',CSV_SLEW_LIMIT:'slewLimit',CSP_ACCELERATION_LIMIT:'accelerationLimit',
  AMPLITUDE_NOT_REGISTERED:'size',JOINT_LIMIT_EXCEEDED:'size',WHEEL_REVERSE_UNSUPPORTED:'size',TICK_OUT_OF_RANGE:'atTick',SIGNAL_TOO_LONG:'atTick',DISTANCE_ZERO:'distance'};
 const SIGNAL_FIELDS=['size','atTick','distance','peakVelocity','acceleration','ticks'] as const;
+type BenchAction='start'|'step'|'cancel';
+function validView(next:RunView,b:Bench){
+ const r=next?.run,q=b.request;
+ return !!r&&r.id===b.runId&&r.schemaVersion===2&&r.sourceCommit===b.sourceCommit&&r.scenarioId===q.scenarioId&&r.scenarioRevision===q.scenarioRevision&&r.seed===q.seed
+  &&r.mode===q.mode&&r.access===q.access&&r.backendSetId===q.backendSetId&&Number.isSafeInteger(r.runRevision)&&r.runRevision>=0&&Number.isSafeInteger(next.tick)&&next.tick>=0&&next.tick<=500
+  &&Array.isArray(r.backends)&&r.backends.length===1&&r.backends[0]===(q.scenarioId==='MJ-BENCH-WHEEL'?'mujoco_3d':'mujoco_arm')&&next.simTimeNs===String(next.tick*20_000_000)
+  &&Array.isArray(next.attention)&&next.attention.every(a=>typeof a?.reason==='string');
+}
+function validActionReceipt(prior:RunView,kind:BenchAction,next:RunView,b:Bench){
+ if(!validView(next,b))return false;
+ const status=next.run.status,advance=next.tick-prior.tick,revision=next.run.runRevision-prior.run.runRevision;
+ const idleExpiry=kind==='step'&&status==='needs_attention'&&next.attention.some(a=>a.reason==='BENCH_IDLE_EXPIRED');
+ if(revision!==1&&!(idleExpiry&&revision===2))return false;
+ if(kind==='start')return prior.run.status==='ready'&&next.tick===0&&(status==='running'||status==='completed');
+ if(kind==='cancel')return ['running','paused'].includes(prior.run.status)&&advance===0&&status==='cancelled';
+ return prior.run.status==='running'&&(status==='running'?advance===STEP_TICKS:
+  (status==='completed'||status==='needs_attention')&&advance>=0&&advance<=STEP_TICKS);
+}
 const codeWords=(c:string)=>({TUNED_SOURCE_SCENARIO_MISMATCH:tr('nguồn tuned ghi một bench khác','チューニング出典が別のベンチを指す','the tuned source names another bench'),TUNED_SOURCE_AXIS_UNKNOWN:tr('nguồn tuned ghi trục không có trong profile','チューニング出典にプロファイルにない軸','the tuned source names an axis the profile lacks'),
  TUNED_SOURCE_DRIVE_MODEL_UNDECLARED:tr('nguồn tuned ghi model drive mà profile không khai báo','チューニング出典のドライブモデルがプロファイルで宣言されていない','the tuned source names a drive model the profile does not declare'),EXPORT_INVALID:tr('file xuất không đúng schema ControlProfileV1 (commit của runtime?): không tải xuống','書き出しがControlProfileV1スキーマに合わない(ランタイムのコミット?)。ダウンロードしません','the export does not match the ControlProfileV1 schema (the runtime’s commit?): not downloaded'),
  EXPORT_RESULT_MISMATCH:tr('bản nháp không phải bản lần chạy này đã chạy','下書きがこの実行のものではない','the draft is not the one this bench ran'),UNPAIRED:tr('ghép nối một runtime trước (hộp runtime trên thanh run)','先にランタイムをペアリングしてください(実行バーのランタイム枠)','pair a runtime first (the runtime box on the run bar)'),RUNTIME_UNREACHABLE:tr('không có trả lời từ runtime','ランタイムから応答がありません','no answer from the runtime'),
@@ -59,7 +77,7 @@ const GAIN_LABEL=():Record<DraftField,string>=>({kp:'Kp',ki:'Ki',kd:'Kd',integra
 export class ControlPanel {
  /** idle, or where the one bench in flight is: creating, running (stepping), reading (its report and trace). */
  phase:'idle'|'creating'|'running'|'reading'='idle';
- private histories=new Map<string,Bench[]>();
+ private histories=new Map<string,Bench[]>();private inFlight:string|null=null;
  private stopAsked=false;private progress=0;private axis:BenchAxisName|null=null;private experiment:DriveExperimentId='drive-nominal-v1';
  /** Per bench scenario the profile drafts start from: the last imported one, else the served startingProfile. Per axis the typed fields. */
  private bases:Partial<Record<BenchScenarioId,ControlProfileV1>>={};private drafts:Partial<Record<BenchAxisName,WorkbenchDraft>>={};private signals:Partial<Record<BenchAxisName,SignalDraft>>={};
@@ -71,14 +89,14 @@ export class ControlPanel {
  private page=pageId();private own=new Set<string>();private beat:ReturnType<typeof setInterval>|undefined;private freeing=false;private closing=false;
  constructor(private host:ControlHost){}
  private generation=0;
- private marks=new RunEntries<Mark>(raw=>Object.fromEntries(Array.isArray(raw)?raw.filter(m=>m&&typeof m.id==='string'&&typeof m.page==='string'&&Number.isFinite(m.at)).map(m=>[m.id,m]):[]));
+ private marks=new RunEntries<Mark>(raw=>Object.fromEntries(Array.isArray(raw)?raw.filter(m=>m&&typeof m.id==='string'&&typeof m.page==='string'&&Number.isFinite(m.at)).map(m=>[m.id,m]):[]),(v,id):v is Mark=>!!v&&typeof v==='object'&&'id' in v&&v.id===id&&'page' in v&&typeof v.page==='string'&&'at' in v&&Number.isFinite(v.at));
  private markKey(){return `${MARK_KEY}:${this.host.rt().target?.base??'/lab/v2'}`;}
  private session(){const rt=this.host.rt();return {epoch:this.generation,rt,serial:rt.sessionGeneration,key:this.markKey()};}
  private active(s:BenchSession){return s.epoch===this.generation&&s.rt===this.host.rt()&&s.serial===s.rt.sessionGeneration&&s.key===this.markKey()&&s.rt.paired;}
  invalidate(nextBase?:string){
   const oldKey=this.markKey();this.generation++;clearInterval(this.beat);this.beat=undefined;
   const marked=this.marks.read(oldKey);for(const id of this.own)if(marked[id]?.page===this.page)this.marks.write(oldKey,id,{id,page:this.page,at:0});
-  this.own.clear();this.phase='idle';this.closing=this.freeing=this.stopAsked=false;this.notice='';this.reasons=[];
+  this.own.clear();this.inFlight=null;this.phase='idle';this.closing=this.freeing=this.stopAsked=false;this.notice='';this.reasons=[];
   if(nextBase){this.histories.set(oldKey,this.history);this.history=this.histories.get(`${MARK_KEY}:${nextBase}`)??[];this.bases={};this.drafts={};this.signals={};this.errors={};this.plotCache.key='';}
  }
  private open(s:BenchSession,id:string){
@@ -93,7 +111,7 @@ export class ControlPanel {
   },MARK_REFRESH_MS);(this.beat as {unref?:()=>void}).unref?.();
  }
  private forget(s:BenchSession,id:string){s.rt.dropProof?.(id);this.marks.write(s.key,id,null);this.own.delete(id);if(!this.own.size){clearInterval(this.beat);this.beat=undefined;}}
- isBench(id:string){return this.own.has(id)||Object.hasOwn(this.marks.read(this.markKey()),id);}
+ isBench(id:string){return this.own.has(id)||this.history.some(b=>b.open&&b.runId===id)||Object.hasOwn(this.marks.read(this.markKey()),id);}
  private orphans(){
   const rt=this.host.rt();if(!rt.paired)return [];
   const key=this.markKey(),proofs=rt.recoverableRunIds??[],ids:string[]=[];
@@ -118,14 +136,25 @@ export class ControlPanel {
   }finally{clearTimeout(timer);if(s.epoch===this.generation&&s.serial!==s.rt.sessionGeneration)this.invalidate();}
  }
  private async reclaim(s:BenchSession,id:string){
+  const b=this.history.find(x=>x.runId===id);
   if(!s.rt.reclaim||!s.rt.recoverableRunIds?.includes(id))throw new Error('RUN_PROOF_MISSING');
-  try{const v=await this.op(s,signal=>s.rt.reclaim!(id,signal));if(v?.run?.id!==id)throw new Error('RECLAIM_ID_MISMATCH');}
+  try{const v=await this.op(s,signal=>s.rt.reclaim!(id,signal));if(v?.run?.id!==id||v.run.status!=='needs_attention'||v.controlAccess!=='view_reconcile')throw new Error('RECLAIM_ID_MISMATCH');
+   if(b){
+    if(!validView(v,b)||v.tick>b.lastTick+(b.pendingAction==='step'?STEP_TICKS:0)||v.tick<b.lastTick||b.terminalTick!==undefined&&v.tick!==b.terminalTick||v.run.runRevision<b.revision)throw Error('RECLAIM_ID_MISMATCH');
+    b.reclaimTick=v.tick;b.revision=v.run.runRevision;
+   }}
   catch(e){if(gone(e)&&this.active(s)){this.forget(s,id);return false;}throw e;}
   return true;
  }
  private async close(s:BenchSession,id:string,orphan=false){
   try{
    if(orphan&&!await this.reclaim(s,id))return true;
+   const known=this.history.find(b=>b.runId===id);
+   if(known&&!known.confirmed){
+    const report=await this.readOwned(s,known,true);if(!report)return true;
+    if(!this.reportIdentity(known,report))throw Error('REPORT_IDENTITY_INVALID');
+    known.confirmed=true;
+   }
    const archive=()=>this.op(s,signal=>s.rt.archive!(id,signal));
    try{await archive();}catch(e){
     if(orphan||!gone(e))throw e;
@@ -135,28 +164,40 @@ export class ControlPanel {
   }catch(e){if(this.active(s))this.say(`ARCHIVE_FAILED: ${codeOf(e)}`);return false;}
  }
  private keep(b:Bench){this.history=[...this.history.filter((x,i,a)=>x!==b&&(x.unread||x.open||i>=a.length-7)),b];}
+ private canRecover(b:Bench){return this.active(b.owner)||!!this.host.rt().recoverableRunIds?.includes(b.runId);}
+ private reportIdentity(b:Bench,r:Awaited<ReturnType<TwinRuntime['report']>>){
+  const m=r?.manifest,{controlProfile,...request}=b.request.bench;
+  const {id,revision,digest}=controlProfile;
+  return m?.runId===b.runId&&m.sourceCommit===b.sourceCommit&&m.seed===b.request.seed&&m.scenario?.id===b.scenarioId&&m.scenario.revision===b.request.scenarioRevision
+   &&m.mode===b.request.mode&&m.access===b.request.access&&m.backendSetId===BENCH_SET&&!!r.bench?.request&&canonicalJson(r.bench.request)===canonicalJson({...request,controlProfile:{id,revision,digest}});
+ }
+ private async readOwned(s:BenchSession,b:Bench,recover:boolean){
+  const report=()=>this.op(s,signal=>s.rt.report(b.runId,signal));
+  try{return await report();}catch(e){
+   if(!recover||!gone(e))throw e;
+   if(await this.reclaim(s,b.runId))return report();
+   b.open=b.unread=false;this.say('RUN_NOT_FOUND');return null;
+  }
+ }
  private async read(s:BenchSession,b:Bench,recover=false){
   const rt=s.rt;
   try{
-   const report=()=>this.op(s,signal=>rt.report(b.runId,signal));
-   let r;try{r=await report();}catch(e){
-    if(!recover||!gone(e))throw e;
-    if(!await this.reclaim(s,b.runId)){b.open=b.unread=false;this.say('RUN_NOT_FOUND');return;}
-    r=await report();
-   }
+   const r=await this.readOwned(s,b,recover);if(!r)return;
    const m=r?.manifest,t=r?.tuning,tick=r?.outcome?.tick,status=r?.outcome?.status;
-   if(m?.runId!==b.runId||m.sourceCommit!==b.sourceCommit||m.seed!==b.request.seed||m.scenario?.id!==b.scenarioId||m.scenario.revision!==b.request.scenarioRevision||m.backendSetId!==BENCH_SET
-    ||b.terminalTick!==undefined&&b.terminalTick!==tick||!Number.isSafeInteger(tick)||tick<0||tick>500||!['completed','needs_attention','cancelled','ready','running','paused'].includes(status))throw Error('REPORT_IDENTITY_INVALID');
-   if(t===null&&['needs_attention','cancelled'].includes(status)){
+   if(!this.reportIdentity(b,r)||!Number.isSafeInteger(tick)||tick<b.lastTick||tick>Math.min(500,b.lastTick+(b.pendingAction==='step'?STEP_TICKS:0))||b.terminalTick!==undefined&&b.terminalTick!==tick
+    ||b.reclaimTick!==undefined&&(tick!==b.reclaimTick||status!=='needs_attention')
+    ||b.terminalTick!==undefined&&b.reclaimTick===undefined&&status!==b.status)throw Error('REPORT_IDENTITY_INVALID');
+   if((b.status==='completed'||b.tuning)&&!t)throw Error('TUNING_RESULT_MISSING');
+   if(t===null&&b.terminalTick!==undefined&&['needs_attention','cancelled'].includes(b.status)){
     const closed=await this.close(s,b.runId);if(this.active(s)){b.unread=false;b.open=!closed;}return;
    }
-   if(!t||!validTuning(t)||!['completed','needs_attention'].includes(status)||t.runId!==b.runId||t.seed!==m.seed||canonicalJson(t.axisIds)!==canonicalJson(b.axisIds)||canonicalJson(t.signal)!==canonicalJson(b.request.bench.signal)
+   if(!t||!validTuning(t)||b.tuning&&canonicalJson(t)!==canonicalJson(b.tuning)||b.status==='cancelled'||!['completed','needs_attention'].includes(status)||t.runId!==b.runId||t.seed!==m.seed||canonicalJson(t.axisIds)!==canonicalJson(b.axisIds)||canonicalJson(t.signal)!==canonicalJson(b.request.bench.signal)
     ||t.plant.plantModelDigest!==b.base.plantModelDigest||t.plant.driveModelDigest!==b.driveDigest||t.plant.load!==b.load||t.plant.controlProfileDigest!==b.request.bench.controlProfile.digest
     ||t.fault&&(!b.base.axes.some(a=>a.axisId===t.fault!.axisId)||t.fault.tick!==tick)||t.unstable&&t.unstable.tick!==tick&&t.unstable.tick!==tick+1||t.collision&&t.collision.tick!==tick
     ||!m.backends?.some(x=>x.id===t.engine.id&&x.version===t.engine.version)||t.trace.samples>tick*10||t.wheelMeasurement&&(b.axis!=='wheels'||t.wheelMeasurement.comparison&&t.wheelMeasurement.comparison.tick!==tick)
     ||!['riseTimeS','overshootPct','settlingTimeS','steadyStateError','rmsError','peakTorqueNm','saturationRatio'].every(k=>t.metrics[k])
     ||[['drive_fault',t.fault],['collision',t.collision],['unstable',t.unstable]].some(([kind,detail])=>(kind===t.status)!==!!detail))throw Error('TUNING_RESULT_INVALID');
-   b.tuning=t;b.unread=false;b.open=true;b.issues=b.issues.filter(x=>!x.startsWith('REPORT_READ_FAILED')&&!x.startsWith('TRACE_READ_FAILED'));
+   b.confirmed=true;b.tuning=t;b.unread=false;b.open=true;b.issues=b.issues.filter(x=>!x.startsWith('REPORT_READ_FAILED')&&!x.startsWith('TRACE_READ_FAILED'));
    try{
     const trace=await this.op(s,signal=>rt.trace!(b.runId,signal));
     if(!validBenchTraces(trace,t,tick))throw Error('TRACE_INVALID');
@@ -216,54 +257,61 @@ export class ControlPanel {
    bench:{schemaVersion:1,scenarioId:c.scenarioId,axis:c.axis.axis,signal:s.signal,driveExperimentId:c.experiment,controlProfile:benchDraft(base,control,c.axis.axisIds)}};
   this.phase='creating';this.stopAsked=false;this.progress=0;this.paint();
   const session=this.session();let v:RunView|null=null,b:Bench|undefined,mutation='CREATE',uncertain=false;
-  const validView=(next:RunView,id?:string)=>{
-   if(!next?.run||typeof next.run.id!=='string'||!next.run.id||id&&next.run.id!==id||next.run.sourceCommit!==h.sourceCommit||next.run.scenarioId!==request.scenarioId
-    ||next.run.schemaVersion!==2||next.run.mode!=='simulation'||next.run.access!=='simulated'||next.run.scenarioRevision!==request.scenarioRevision||next.run.backendSetId!==BENCH_SET
-    ||!['ready','running','paused','cancelled','completed','needs_attention'].includes(next.run.status)||!id&&next.run.status!=='ready'||next.run.seed!==request.seed||!Number.isSafeInteger(next.run.runRevision)||!Number.isSafeInteger(next.tick)||next.tick<0||next.tick>c.signals.maxTicks||!Array.isArray(next.attention)||!next.attention.every(a=>typeof a?.reason==='string'))throw Error('BENCH_VIEW_INVALID');
-   return next;
+  const remember=(id:string)=>{
+   if(b)return b;
+   b={owner:session,confirmed:false,lastTick:0,revision:0,runId:id,request,axisIds:[...c.axis.axisIds],driveDigest:c.driveModelDigest,load:c.entry.plant.load,scenarioId:c.scenarioId,axis:c.axis.axis,unit:c.axis.unit,base,control,sourceCommit:h.sourceCommit,status:'ready',tuning:null,trace:null,issues:[],open:true,unread:true};
+   if(this.markKey()===session.key)this.keep(b);
+   else this.histories.set(session.key,[...(this.histories.get(session.key)??[]),b]);
+   this.marks.write(session.key,id,{id,page:this.page,at:0});
+   return b;
   };
-  const action=(view:RunView,kind:'start'|'step'|'cancel')=>{
-   mutation=kind.toUpperCase();
-   return this.op(session,signal=>rt.action(view,kind,kind==='step'?{ticks:STEP_TICKS}:{},undefined,signal)).then(next=>{
-    validView(next,view.run.id);
-    if(next.run.runRevision<=view.run.runRevision||next.tick<view.tick||kind==='step'&&next.run.status==='running'&&next.tick===view.tick)throw Error('BENCH_VIEW_INVALID');
-    return next;
-   });
+  const action=async(view:RunView,kind:BenchAction)=>{
+   mutation=kind.toUpperCase();b!.pendingAction=kind;
+   const next=await this.op(session,signal=>rt.action(view,kind,kind==='step'?{ticks:STEP_TICKS}:{},undefined,signal));
+   if(!validActionReceipt(view,kind,next,b!))throw Error('BENCH_VIEW_INVALID');
+   delete b!.pendingAction;b!.lastTick=next.tick;b!.revision=next.run.runRevision;b!.status=next.run.status;return next;
   };
   try{
-   v=validView(await this.op(session,async signal=>{
-    const result=await rt.create(request,{sourceCommit:h.sourceCommit,schemaHash:h.schemaHash},signal);
-    if(typeof result?.run?.id==='string')this.marks.write(session.key,result.run.id,{id:result.run.id,page:this.page,at:0});
-    return result;
-   }));
-   this.open(session,v.run.id);b={runId:v.run.id,request,axisIds:[...c.axis.axisIds],driveDigest:c.driveModelDigest,load:c.entry.plant.load,scenarioId:c.scenarioId,axis:c.axis.axis,unit:c.axis.unit,base,control,sourceCommit:h.sourceCommit,status:v.run.status,tuning:null,trace:null,issues:[],open:true};
+   const result=await this.op(session,async signal=>{
+    try{
+     const next=await rt.create(request,{sourceCommit:h.sourceCommit,schemaHash:h.schemaHash},signal);
+     if(typeof next?.run?.id==='string'&&next.run.id.trim())remember(next.run.id);
+     return next;
+    }catch(e){if(e instanceof TwinRuntimeError&&e.code==='BENCH_CREATE_PROOF_MISSING'&&e.runId)remember(e.runId);throw e;}
+   });
+   if(!b||!validView(result,b)||result.run.status!=='ready'||result.tick!==0||result.run.runRevision!==0)throw Error('BENCH_VIEW_INVALID');
+   if(!rt.recoverableRunIds?.includes(b.runId))throw Error('BENCH_CREATE_PROOF_MISSING');
+   v=result;b.confirmed=true;this.inFlight=b.runId;this.open(session,b.runId);
    if(!this.stopAsked){v=await action(v,'start');this.phase='running';this.paint();}
    while(v.run.status==='running'&&!this.stopAsked){v=await action(v,'step');this.progress=v.tick;this.paint();}
    if(this.stopAsked&&['running','paused'].includes(v.run.status))v=await action(v,'cancel');
    if(v.run.status!=='ready'){
-    this.phase='reading';this.paint();for(const older of this.history)older.trace=null;
-    b.terminalTick=v.tick;b.status=v.run.status;b.issues=v.attention.map(a=>a.reason);this.keep(b);await this.read(session,b);v=null;
+    this.phase='reading';this.inFlight=null;this.paint();for(const older of this.history)older.trace=null;
+    b.terminalTick=v.tick;b.status=v.run.status;b.issues=v.attention.map(a=>a.reason);await this.read(session,b);v=null;
    }
   }catch(e){
    if(!this.active(session))return;
    uncertain=!(e instanceof TwinRuntimeError)||e.status===0||e.code==='INVALID_RUNTIME_RESPONSE'||e.status>=500;
    if(uncertain){
-    this.say(`${mutation}_OUTCOME_UNKNOWN: ${codeOf(e)}. ${mutation==='CREATE'?tr('Chưa có mã run. Tạo run không giữ engine; mục run chịu giới hạn phiên và số run mở.','実行ID未確認。作成時はエンジンを取得せず、実行項目にはセッションと未終了件数の制限が適用されます。','No confirmed run ID. Create acquires no engine. Session and open-run limits apply.'):tr('Worker đã khởi động sẽ nhả engine sau 60 s không hoạt động.','起動済みワーカーは60秒のアイドル後にエンジンを解放します。','A successfully started worker releases the engine after 60 s idle.')}`);
+    this.say(`${mutation}_OUTCOME_UNKNOWN: ${codeOf(e)}. ${mutation==='CREATE'&&b?tr(`Đã nhận mã ${b.runId}. Chưa khởi động engine. Khôi phục qua phiên đã tạo hoặc bằng chứng nhận lại hợp lệ.`,`実行ID ${b.runId} を受信しました。エンジンは未起動です。作成時のセッションか有効な再取得証明で確認できます。`,`Received run ID ${b.runId}. The engine has not started. Recovery requires the issuing session or a valid reclaim proof.`):mutation==='CREATE'?tr('Chưa có mã run. Tạo run không giữ engine; mục run chịu giới hạn phiên và số run mở.','実行ID未確認。作成時はエンジンを取得せず、実行項目にはセッションと未終了件数の制限が適用されます。','No confirmed run ID. Create acquires no engine. Session and open-run limits apply.'):tr('Worker đã khởi động sẽ nhả engine sau 60 s không hoạt động.','起動済みワーカーは60秒のアイドル後にエンジンを解放します。','A successfully started worker releases the engine after 60 s idle.')}`);
    }else if(e instanceof TwinRuntimeError){
     this.reasons=e.reasonCodes.length?[...e.reasonCodes]:[e.code];this.say(`${tr('Runtime từ chối','ランタイムが拒否','Runtime refused')}: ${e.code}`);
     for(const r of e.reasonCodes){const f=r==='TICK_OUT_OF_RANGE'&&request.bench.signal.kind==='hold'?'ticks':FIELD_OF[r];if(f)this.errors[f]=`${r}: ${codeWords(r)}`;}
    }
   }finally{
    if(this.active(session)){
-    if(v&&b&&(uncertain||!await this.close(session,v.run.id))&&this.active(session)){b.unread=true;b.open=true;this.keep(b);}
-    if(this.active(session)){this.phase='idle';this.stopAsked=false;this.paint();}
+    if(v&&b&&!uncertain){
+     const closed=await this.close(session,v.run.id);
+     if(this.active(session)&&closed)this.history=this.history.filter(x=>x!==b);
+    }
+    if(this.active(session)){this.inFlight=null;this.phase='idle';this.stopAsked=false;this.paint();}
    }
   }
  }
  click(action:string,value?:string):void{
   const session=this.session();if(!this.active(session))return;
   if(action==='twin-ctl-cancel'){if(this.phase==='idle'||this.phase==='reading'||this.stopAsked)return;this.stopAsked=true;return this.paint();}
-  const unread=this.history.find(b=>(b.unread||b.open)&&b.runId===value),idle=this.phase==='idle'&&!this.closing;
+  const unread=this.history.find(b=>(b.unread||b.open)&&b.runId===value&&this.canRecover(b)),idle=this.phase==='idle'&&!this.closing;
   if(action==='twin-ctl-reread'&&unread&&idle){this.phase='reading';this.paint();void this.read(session,unread,true).finally(()=>{if(!this.active(session))return;if(unread.tuning)this.keep(unread);this.phase='idle';this.paint();});return;}
   // a run whose report cannot be read (for good, e.g. the runtime restarted) is closed without its result
   if(action==='twin-ctl-unread-close'&&unread&&idle)return this.closeWith(()=>this.close(session,unread.runId).then(closed=>{if(closed&&this.active(session)){if(unread.tuning){unread.unread=unread.open=false;}else this.history=this.history.filter(b=>b!==unread);}}));
@@ -310,8 +358,9 @@ export class ControlPanel {
   this.bases[c.scenarioId]=r.profile;for(const p of c.axes)if(p.scenarioId===c.scenarioId)delete this.drafts[p.axis.axis];this.errors={};this.reasons=[];
   this.notice=tr(`Đã nhập ${r.profile.id} r${r.profile.revision}: bản nháp lấy giá trị của file.`,`${r.profile.id} r${r.profile.revision} を読み込みました。下書きはファイルの値です。`,`Imported ${r.profile.id} r${r.profile.revision}: the draft holds the file’s values.`);this.noticeOk=true;this.paint();
  }
+ private get displayedHistory(){return this.history.filter(b=>b.runId!==this.inFlight);}
  private export(){
-  const b=this.history.at(-1);if(b?.tuning?.status!=='completed')return;
+  const b=this.displayedHistory.at(-1);if(b?.tuning?.status!=='completed')return;
   let text:string;try{text=exportControlProfile(b.base,b.control,b.tuning,{scenarioId:b.scenarioId,sourceCommit:b.sourceCommit});}catch(e){const code=codeOf(e);this.notice=`${code}: ${codeWords(code)}`;this.noticeOk=false;return this.paint();}
   const p=JSON.parse(text) as ControlProfileV1,url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');
   a.href=url;a.download=`${p.id}-r${p.revision}-${p.digest}.json`;a.rel='noopener';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -327,8 +376,8 @@ export class ControlPanel {
   this.plotCache={key,plots,table:plotTable([...s.response,...s.error,...s.torque],60)};return this.plotCache;
  }
  private recovery(){if(!this.host.rt().paired)return '';
-  const orphans=this.orphans(),waiting=this.phase!=='idle'||this.closing,unread=this.history.filter(b=>b.unread||b.open);
-  const unreadList=unread.length?`<div class="control-orphans" data-testid="control-open-runs"><p class="field-help">${tr('Lần chạy thử còn mở trên runtime (chưa đọc được báo cáo, hoặc đóng không thành; có thể còn giữ engine):','ランタイム上で開いたままのベンチ実行(レポートを読めなかった、または閉じられなかった。エンジンを保持している可能性あり):','Bench runs still open on the runtime (their report could not be read, or closing them failed; one may still hold the engine):')}</p>${unread.map(b=>`<span class="control-unread" data-testid="control-recovery-${esc(b.runId)}"><code>${esc(b.runId.slice(0,8))}</code> <button type="button" class="button secondary" data-action="twin-ctl-reread" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${icon('rotate',16)}${tr('Đọc lại','再読み込み','Read again')}</button> <button type="button" class="button secondary" data-action="twin-ctl-unread-close" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${tr('Đóng không đọc','読まずに閉じる','Close without reading')}</button></span>`).join('')}</div>`:'';
+  const orphans=this.orphans(),waiting=this.phase!=='idle'||this.closing,unread=this.history.filter(b=>b.runId!==this.inFlight&&(b.unread||b.open));
+  const unreadList=unread.length?`<div class="control-orphans" data-testid="control-open-runs"><p class="field-help">${tr('Lần chạy thử còn mở trên runtime (chưa đọc được báo cáo, hoặc đóng không thành; có thể còn giữ engine):','ランタイム上で開いたままのベンチ実行(レポートを読めなかった、または閉じられなかった。エンジンを保持している可能性あり):','Bench runs still open on the runtime (their report could not be read, or closing them failed; one may still hold the engine):')}</p>${unread.map(b=>`<span class="control-unread" data-testid="control-recovery-${esc(b.runId)}"><code>${esc(b.runId)}</code> ${!this.canRecover(b)?tr('Cần phiên đã tạo hoặc bằng chứng nhận lại hợp lệ.','作成時のセッションまたは有効な再取得証明が必要です。','Recovery requires the issuing session or a valid reclaim proof.'):`<button type="button" class="button secondary" data-action="twin-ctl-reread" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${icon('rotate',16)}${tr('Đọc lại','再読み込み','Read again')}</button> <button type="button" class="button secondary" data-action="twin-ctl-unread-close" data-value="${esc(b.runId)}"${waiting?' disabled':''}>${tr('Đóng không đọc','読まずに閉じる','Close without reading')}</button>`}</span>`).join('')}</div>`:'';
   const left=orphans.length?`<div class="control-orphans" data-testid="control-orphans"><p class="field-help">${tr('Lần chạy thử mà một trang trước để mở trên runtime này (không bao giờ mở lại như lần chạy của twin):','以前のページがこのランタイムに開いたままにしたベンチ実行(ツインの実行としては開きません):','Bench runs an earlier page left open on this runtime (never reopened as twin runs):')}</p>${orphans.map(id=>`<button type="button" class="button secondary" data-action="twin-ctl-orphan" data-value="${esc(id)}"${waiting?' disabled':''}>${tr('Đóng','閉じる','Close')} <code>${esc(id.slice(0,8))}</code></button>`).join('')}</div>`:'';
   return left+unreadList;
  }
@@ -366,12 +415,12 @@ ${pin?`<p class="field-error" role="status">${esc(codeWords('RUNTIME_PIN_MISMATC
   const list=this.suggestions(c),pickable=list.length>0,j=[...this.history].reverse().find(b=>b.axis===c.axis.axis&&b.tuning?.effectiveInertia)?.tuning?.effectiveInertia;
   const suggest=`<div class="control-suggest" id="twin-ctl-suggest-box"><label for="twin-ctl-suggest">${tr('Băng thông · hệ số cản','帯域 · 減衰比','Bandwidth · damping')}</label><select id="twin-ctl-suggest"${pickable?'':' disabled'}>${pickable?list.map((g,i)=>`<option value="${i}"${i===this.suggestion?' selected':''}>${esc(`ωc ${g.bandwidthRadS} rad/s · ζ ${g.damping}${g.clamped?.length?` · ${tr('kẹp','クランプ','clamped')} ${g.clamped.join(', ')}`:''}`)}</option>`).join(''):'<option>—</option>'}</select>
 <button type="button" class="button secondary" data-action="twin-ctl-suggest-apply"${pickable?'':' disabled'} aria-describedby="twin-ctl-suggest-note">${tr('Gợi ý từ quán tính','慣性から提案','Suggest from inertia')}</button><p class="field-help" id="twin-ctl-suggest-note">${tr('gợi ý khởi điểm từ model, chưa hiệu chuẩn','モデルからの初期値の提案、未校正','a model-based starting point, not calibrated')}${j?` · J = ${esc(sig(j.valueKgM2))} kg m²`:''}${pickable?'':` · ${tr('cần một lần chạy thử của trục này (quán tính hiệu dụng tại tư thế bench)','この軸のベンチ実行が必要(ベンチ姿勢での実効慣性)','needs a bench of this axis (its effective inertia at the bench pose)')}`}</p></div>`;
-  const last=this.history.at(-1),conflict=exportLosesAttribution(this.base(c),c.axis.axisIds),exportable=last?.tuning?.status==='completed'&&!exportLosesAttribution(last.base,last.tuning.axisIds);
+  const displayed=this.displayedHistory,last=displayed.at(-1),conflict=exportLosesAttribution(this.base(c),c.axis.axisIds),exportable=last?.tuning?.status==='completed'&&!exportLosesAttribution(last.base,last.tuning.axisIds);
   const io=`<div class="control-io" id="twin-ctl-io">${this.bases[c.scenarioId]?`<button type="button" class="button secondary" data-action="twin-ctl-base-reset">${tr('Dùng lại profile của server','サーバーの初期プロファイルに戻す','Reset draft to the server profile')}</button>`:''}<button type="button" class="button secondary" data-action="twin-ctl-export"${exportable?'':' disabled'} aria-describedby="twin-ctl-io-note">${icon('download',16)}${tr('Xuất profile','プロファイルを書き出す','Export profile')}</button><label for="twin-ctl-import">${tr('Nhập profile (JSON)','プロファイルを読み込む(JSON)','Import profile (JSON)')}</label><input id="twin-ctl-import" type="file" accept="application/json,.json">
 <p class="field-help" id="twin-ctl-io-note">${tr('Digest SHA-256 phân biệt các bản xuất có cùng ID và revision.','同じIDとリビジョンの書き出しはSHA-256ダイジェストで識別します。','The SHA-256 digest identifies each export, including exports with the same ID and revision.')} ${conflict?tr('Profile đã lưu nguồn của trục khác. Muốn xuất trục này, hãy bắt đầu lại từ profile của server.','別の軸の調整出典が含まれています。この軸を書き出すにはサーバーの初期プロファイルから開始してください。','This profile holds another axis’s tuning source. Start from the server profile to export this axis.'):''} ${exportable?tr(`Xuất: profile của lần chạy ${esc(last!.runId.slice(0,8))}, nguồn tuned_in_simulation cho trục đã chỉnh ${esc(last!.tuning!.axisIds.join(', '))} (chưa hiệu chuẩn).`,`書き出し:実行 ${esc(last!.runId.slice(0,8))} のプロファイル。調整した軸 ${esc(last!.tuning!.axisIds.join(', '))} の出典 tuned_in_simulation(未校正)。`,`Export: the profile of run ${esc(last!.runId.slice(0,8))}, sourced tuned_in_simulation for the tuned axes ${esc(last!.tuning!.axisIds.join(', '))} (not calibrated).`):tr('Xuất cần một lần chạy thử hoàn tất.','書き出しには完了したベンチが必要です。','Export needs a completed bench.')} ${tr('Nhập kiểm schema, digest và plant; profile của plant khác bị từ chối.','読み込み時にスキーマ・ダイジェスト・プラントを確認し、別プラントのものは拒否します。','Import checks the schema, the digest and the plant; a profile of another plant is refused.')}</p></div>`;
   const progress=busy?`<p class="control-progress" role="status" data-testid="control-progress">${this.stopAsked?tr('Đang dừng… chờ runtime xác nhận','停止中… ランタイムの確認待ち','Stopping… waiting for the runtime to confirm'):this.phase==='creating'?tr('Đang tạo lần chạy thử','ベンチ実行を作成中','Creating the bench run'):this.phase==='reading'?tr('Đang đọc báo cáo và trace đã ghi','レポートと記録済みトレースを読み込み中','Reading the report and the recorded trace'):`${tr('Đang chạy','実行中','Running')} · tick ${esc(this.progress)}/${esc(c.signals.maxTicks)}`}${this.phase==='running'?` <progress max="${esc(c.signals.maxTicks)}" value="${esc(this.progress)}"></progress>`:''}</p>`:'';
   // A/B: the most recent earlier result that is comparable with this one, else the one before it (M3)
-  const earlier=this.history.slice(0,-1).reverse().filter(b=>b.tuning),prev=(last?.tuning?earlier.find(b=>comparable(b.tuning!,last.tuning!).ok):undefined)??earlier[0];
+  const earlier=displayed.slice(0,-1).reverse().filter(b=>b.tuning),prev=(last?.tuning?earlier.find(b=>comparable(b.tuning!,last.tuning!).ok):undefined)??earlier[0];
   const results=`<div class="control-results" id="twin-ctl-results">${progress}${this.recovery()}${this.notice?`<p class="${this.noticeOk?'field-help':'field-error'}" role="status" data-testid="control-notice">${esc(this.notice)}</p>`:''}${last?this.benchHtml(last,prev):`<p class="empty-inline">${tr('Chưa có lần chạy thử. Chọn trục, chỉnh gain trong biên rồi bấm Chạy thử.','まだベンチ実行はありません。軸を選び、範囲内でゲインを調整して「試運転」を押してください。','No bench yet. Pick an axis, set the gains inside the bounds, then press Run bench.')}</p>`}</div>`;
   return `<section class="control-bench" data-testid="control-bench" data-phase="${this.phase}" aria-labelledby="control-title">${head}<div class="control-grid"><form class="control-form" id="twin-ctl-form" novalidate>${axes}<div class="control-field control-inline"><label for="twin-ctl-experiment">${tr('Model drive','ドライブモデル','Drive model')}</label><select id="twin-ctl-experiment">${c.experiments.map(x=>`<option value="${esc(x)}"${x===c.experiment?' selected':''}>${esc(x)}</option>`).join('')}</select></div>${signal}${gains}${actions}${suggest}${io}</form>${results}</div></section>`;
  }

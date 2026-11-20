@@ -146,23 +146,25 @@ beforeEach(()=>{for(const k of store.keys())if(k.startsWith('mekoniq-lab-bench-r
 afterEach(()=>{for(const w of workspaces.splice(0)){(w as unknown as H).control.invalidate();w.leave();}});
 function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeError;result?:(draftDigest:string,n:number)=>TuningResultV1;h?:TwinHealth;traceError?:Error;reportFailures?:number;proofs?:string[];startError?:Error;ownerOnly?:boolean;reclaimError?:Error;reportFailFor?:string;stepError?:Error;archiveFailures?:number;paired?:boolean}={}){
  const cancelled=new Map<string,number>(),proofs=new Set(o.proofs??[]),owned=new Set<string>();let reportFailures=o.reportFailures??0,archiveFailures=o.archiveFailures??0;
+ const receipts=new Map<string,RunView>();
  const calls:string[]=[],created:{bench:{controlProfile:ControlProfileV1;signal:unknown;axis:string}}[]=[],actions:{kind:string;revision:number}[]=[],pending:Record<string,{resolve:(v?:unknown)=>void}>={};
  let n=0;
- const view=(id:string,status:RunView['run']['status'],tick:number,revision:number):RunView=>({run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:BENCH_SET,backends:['mujoco_3d'],status,runRevision:revision,eventCursor:null,telemetryCursor:null,fidelity:'modeled',ageMs:0,sourceCommit:'5'.repeat(40),scenarioId:created[Number(id.split('-')[1])-1]?.bench.axis==='J3'?'MJ-BENCH-ARM':'MJ-BENCH-WHEEL',scenarioRevision:1,seed:7},tick,simTimeNs:String(tick*20_000_000),model:'mujoco_drive_bench',entities:[],workload:[],awaiting:[],attention:[],served:'0',coffee:null});
+ const view=(id:string,status:RunView['run']['status'],tick:number,revision:number):RunView=>({run:{schemaVersion:2,id,mode:'simulation',access:'simulated',backendSetId:BENCH_SET,backends:[created[Number(id.split('-')[1])-1]?.bench.axis==='J3'?'mujoco_arm':'mujoco_3d'],status,runRevision:revision,eventCursor:null,telemetryCursor:null,fidelity:'modeled',ageMs:0,sourceCommit:'5'.repeat(40),scenarioId:created[Number(id.split('-')[1])-1]?.bench.axis==='J3'?'MJ-BENCH-ARM':'MJ-BENCH-WHEEL',scenarioRevision:1,seed:7},tick,simTimeNs:String(tick*20_000_000),model:'mujoco_drive_bench',entities:[],workload:[],awaiting:[],attention:[],served:'0',coffee:null});
  const wait=async<T,>(key:string,v:T,defer?:boolean)=>{if(!defer)return v;const d=deferred<unknown>();pending[key]={resolve:()=>d.resolve(undefined)};await d.promise;delete pending[key];return v;};
- const rt={paired:o.paired??true,get recoverableRunIds(){return [...proofs];},target:{base:'/lab/v2',kind:'same_origin'},forget(){},pair:async()=>{},health:async()=>o.h??health(),get:async()=>{throw new Error('not used');},
+ const rt={sessionGeneration:0,paired:o.paired??true,get recoverableRunIds(){return [...proofs];},target:{base:'/lab/v2',kind:'same_origin'},forget(){this.paired=false;this.sessionGeneration++;},async pair(){this.paired=true;this.sessionGeneration++;},health:async()=>o.h??health(),get:async()=>{throw new Error('not used');},
   create:async(r:{bench:never})=>{calls.push('create');if(o.refuse)throw o.refuse;created.push(structuredClone(r));const id=`bench-${++n}`;proofs.add(id);owned.add(id);return wait('create',view(id,'ready',0,0),o.deferCreate);},
   action:async(v:RunView,kind:string)=>{calls.push(`${kind} ${v.run.id}`);actions.push({kind,revision:v.run.runRevision});const r=v.run.runRevision+1;
    if(kind==='start'){if(o.startError)throw o.startError;return view(v.run.id,'running',0,r);}
    if(kind==='cancel'){cancelled.set(v.run.id,v.tick);return view(v.run.id,'cancelled',v.tick,r);}
    if(o.stepError)throw o.stepError;const tick=v.tick+50;return wait('step',view(v.run.id,tick>=500?'completed':'running',Math.min(tick,500),r),o.deferStep);},
   report:async(id:string)=>{calls.push(`report ${id}`);if(reportFailures>0||id===o.reportFailFor){reportFailures--;throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);}const i=Number(id.split('-')[1])-1,digest=created[i]!.bench.controlProfile.digest;const scenarioId=created[i]!.bench.axis==='wheels'?'MJ-BENCH-WHEEL':'MJ-BENCH-ARM',engineId=scenarioId==='MJ-BENCH-WHEEL'?'mujoco_3d':'mujoco_arm';
-   return {manifest:{runId:id,sourceCommit:'5'.repeat(40),backendSetId:BENCH_SET,seed:7,scenario:{id:scenarioId,revision:1},backends:[{id:engineId,version:'3.17.0'}]},outcome:{status:cancelled.has(id)?'cancelled':'completed',tick:cancelled.get(id)??500},tuning:cancelled.has(id)?null:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
+   const {controlProfile:cp,...draft}=created[i]!.bench;return {bench:{request:{...draft,controlProfile:{id:cp.id,revision:cp.revision,digest:cp.digest}}},manifest:{mode:'simulation',access:'simulated',runId:id,sourceCommit:'5'.repeat(40),backendSetId:BENCH_SET,seed:7,scenario:{id:scenarioId,revision:1},backends:[{id:engineId,version:'3.17.0'}]},outcome:{status:cancelled.has(id)?'cancelled':'completed',tick:cancelled.get(id)??500},tuning:cancelled.has(id)?null:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
   trace:async(id:string)=>{calls.push(`trace ${id}`);if(o.traceError)throw o.traceError;return {traces:(created[Number(id.split('-')[1])-1]!.bench.axis==='wheels'?WHEELS:['xarm-1/J3']).map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:5010},(_,j)=>({target:j<140?0:2,actual:2*(1-Math.exp(-Math.max(0,j-140)/60)),feedback:2*(1-Math.exp(-Math.max(0,j-145)/60)),torqueNm:1,saturated:j===150}))})),issues:[]};},
   // the gateway answers a session that does not own the run 404 (readable() before the owner check); reclaim with the proof makes this session the owner
   archive:async(id:string)=>{calls.push(`archive ${id}`);if(o.ownerOnly&&!owned.has(id))throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);if(archiveFailures>0){archiveFailures--;throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);}},
-  reclaim:async(id:string)=>{calls.push(`reclaim ${id}`);if(o.reclaimError)throw o.reclaimError;owned.add(id);return view(id,'needs_attention',0,1);},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
+  reclaim:async(id:string)=>{calls.push(`reclaim ${id}`);if(o.reclaimError)throw o.reclaimError;owned.add(id);return {...view(id,'needs_attention',receipts.get(id)?.tick??0,(receipts.get(id)?.run.runRevision??0)+1),controlAccess:'view_reconcile' as const};},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
  };
+ const act=rt.action;rt.action=async(v,k)=>{const result=await act(v,k);receipts.set(result.run.id,result);return result;};
  const w=new TwinWorkspace(()=>{},rt as unknown as TwinRuntime),h=w as unknown as H;workspaces.push(w);
  Object.assign(h,{health:o.h??health(),healthChecked:true});
  w.click('twin-inspector-tab','control');
@@ -395,7 +397,8 @@ test('I2: Close without reading that fails again keeps the bench listed; only an
  w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(calls.filter(c=>c==='archive bench-1')).toHaveLength(2));await idle();
  expect(calls).not.toContain('drop bench-1');expect(marks().map(m=>m.id)).toEqual(['bench-1']);expect(w.html()).toMatch(/data-action="twin-ctl-unread-close" data-value="bench-1"/);
  await vi.waitFor(()=>expect(w.html()).toMatch(/data-action="twin-ctl-reread" data-value="bench-1">/));   // enabled again once the close attempt is over
- w.click('twin-ctl-reread','bench-1');await vi.waitFor(()=>expect(calls).toContain('drop bench-1'));await idle();
+ w.click('twin-ctl-reread','bench-1');await vi.waitFor(()=>expect(calls).toContain('report bench-1'));await idle();
+ expect(calls).not.toContain('drop bench-1');w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(calls).toContain('drop bench-1'));
  expect(marks()).toEqual([]);expect(w.html()).not.toMatch(/data-action="twin-ctl-unread-close"/);
 });
 test('M1: the Control panel is light while another tab is open (no plot is re-serialized on a twin repaint); its plots come back with the tab',async()=>{
@@ -551,12 +554,12 @@ test('stalled create with unknown ID never starts or resends and late receipt st
   const a=bench({deferCreate:true});a.run();await vi.advanceTimersByTimeAsync(31000);
   expect(a.calls).toEqual(['create']);expect(a.w.html()).toContain('Create acquires no engine');
   a.pending.create!.resolve();await vi.advanceTimersByTimeAsync(1);
-  expect(a.calls).toEqual(['create']);expect(a.w.html()).toContain('twin-ctl-orphan');
+  expect(a.calls).toEqual(['create']);expect(a.w.html()).toContain('twin-ctl-reread');
  }finally{vi.useRealTimers();}
 });
 test('a malformed create receipt with a saved proof is immediately recoverable',async()=>{
  const a=bench(),create=a.rt.create;a.rt.create=async req=>{const v=await create(req);v.run.scenarioId='unrelated';return v;};
- a.run();await a.idle();expect(a.calls).toEqual(['create']);expect(a.w.html()).toContain('twin-ctl-orphan');
+ a.run();await a.idle();expect(a.calls).toEqual(['create']);expect(a.w.html()).toContain('twin-ctl-reread');
 });
 test('pin mismatch blocks creation while the user can close a previously held proof',async()=>{
  const a=bench({archiveFailures:1});a.run();await a.idle();Object.assign(a.w,{pinExpected:'different'});a.run();await a.idle();
@@ -573,4 +576,108 @@ test('a successful action receipt with the wrong status cannot trigger a follow-
  const a=bench(),action=a.rt.action;
  a.rt.action=async(v,k)=>{const next=await action(v,k);next.run.status='other' as never;return next;};
  a.run();await a.idle();expect(a.calls).toEqual(['create','start bench-1']);expect(a.w.html()).toContain('START_OUTCOME_UNKNOWN');
+});
+
+type WireReport={manifest:{runId:string};outcome:{status:string;tick:number};tuning:TuningResultV1|null;bench:{request:{axis:string;signal:unknown;controlProfile:{id:string;revision:number;digest:string}}}};
+test.each(['cancelled-null','missing-echo','wrong-axis','wrong-signal','wrong-profile'])('round1 contradictory report %s retains recovery',async(cause)=>{
+ const a=bench(),report=a.rt.report;
+ a.rt.report=async id=>{const r=await report(id) as WireReport;
+  if(cause==='cancelled-null'){r.outcome.status='cancelled';r.tuning=null;}
+  else if(cause==='missing-echo')delete (r as Partial<WireReport>).bench;
+  else if(cause==='wrong-axis')r.bench.request.axis='J4';
+  else if(cause==='wrong-signal')r.bench.request.signal={kind:'hold',ticks:4};
+  else r.bench.request.controlProfile.revision++;
+  return r as never;};
+ a.run();await a.idle();expect(a.calls).not.toContain('archive bench-1');expect(a.rt.recoverableRunIds).toContain('bench-1');expect(a.w.html()).toContain('twin-ctl-reread');
+});
+test.each([['start','ready',0],['start','paused',0],['start','running',1],['step','ready',0],['step','cancelled',0],['step','running',1],['step','completed',51],['cancel','running',0],['cancel','cancelled',1]] as const)('round1 impossible %s → %s (+%d) stops with proof',async(kind,status,advance)=>{
+ const a=bench(),action=a.rt.action;let changed=false;
+ a.rt.action=async(v,k)=>{const next=await action(v,k);
+  if(kind==='cancel'&&k==='step')a.w.click('twin-ctl-cancel');
+  if(k===kind&&!changed){changed=true;next.run.status=status;next.tick=v.tick+advance;}
+  return next;};
+ a.run();await a.idle();expect(changed).toBe(true);expect(a.w.html()).toContain(kind.toUpperCase()+'_OUTCOME_UNKNOWN');expect(a.calls.at(-1)).toBe(kind+' bench-1');expect(a.rt.recoverableRunIds).toContain('bench-1');
+});
+test.each(['wheels-reversed','joint-mismatch','duplicate-drive'])('round1 health %s disables creation',cause=>{
+ const h=structuredClone(health()),arm=h.benchCatalog!['MJ-BENCH-ARM']!,j=arm.axes[0]!;
+ if(cause==='wheels-reversed')h.benchCatalog!['MJ-BENCH-WHEEL']!.axes[0]!.axisIds.reverse();
+ else if(cause==='joint-mismatch')j.axisIds=['xarm-1/J4'];
+ else arm.axes.push({...j,axis:'J4'} as typeof j);
+ const a=bench({h});a.run();expect(a.calls).toEqual([]);expect(a.w.html()).toContain('BENCH_CATALOG_INVALID');
+});
+test.each(['nonzero-tick','missing-proof'])('round1 CREATE with %s cannot start; known ID remains accountable',async(cause)=>{
+ const a=bench(),create=a.rt.create;
+ a.rt.create=async q=>{const v=await create(q);if(cause==='nonzero-tick')v.tick=1;else a.rt.dropProof(v.run.id);return v;};
+ a.run();await a.idle();expect(a.calls).not.toContain('start bench-1');expect(a.calls).not.toContain('archive bench-1');expect(a.w.html()).toContain('bench-1');expect(a.w.html()).not.toContain('No confirmed run ID.');
+ if(cause==='missing-proof'){
+  expect(a.w.html()).toContain('reclaim proof');a.w.click('twin-disconnect');await a.rt.pair();a.h.health=health();
+  expect(a.w.html()).not.toContain('data-action="twin-ctl-unread-close"');expect(a.w.html()).toContain('bench-1');
+ }
+});
+test.each(['start','final-step','retarget','expired'])('round1 retained CREATE context restores reread after %s',async(when)=>{
+ const a=bench(),action=a.rt.action,gate=deferred<void>();let parked=false;
+ a.rt.action=async(v,k)=>{const next=await action(v,k);if(when==='start'?k==='start':k==='step'&&next.tick===500){parked=true;await gate.promise;}return next;};
+ a.run();await vi.waitFor(()=>expect(parked).toBe(true));expect(a.w.html()).not.toContain('data-action="twin-ctl-reread"');
+ const original=a.rt.target.base;
+ if(when==='retarget'){
+  const proofs=a.rt.recoverableRunIds;Object.defineProperty(a.rt,'recoverableRunIds',{get:()=>a.rt.target.base===original?proofs:[]});
+  const panel=a.h.control as unknown as {invalidate(base?:string):void};panel.invalidate('https://other/lab/v2');a.rt.target.base='https://other/lab/v2';expect(a.w.html()).not.toContain('bench-1');gate.resolve();await Promise.resolve();
+  panel.invalidate(original);a.rt.target.base=original;
+ }else if(when==='expired'){a.rt.forget();gate.resolve();await vi.waitFor(()=>expect(a.h.control.phase).toBe('idle'));}
+ else{a.w.click('twin-disconnect');gate.resolve();}
+ await a.rt.pair();a.h.health=health();await a.idle();expect(a.w.html()).toContain('data-action="twin-ctl-reread" data-value="bench-1"');expect(a.calls).not.toContain('archive bench-1');
+});
+test.each(['absent-tuning','valid-tuning','malformed-reclaim'])('round1 report after reclaim %s preserves original completed outcome',async(cause)=>{
+ const a=bench({archiveFailures:1}),report=a.rt.report,reclaim=a.rt.reclaim;
+ a.run();await a.idle();a.rt.report=vi.fn().mockRejectedValueOnce(new TwinRuntimeError('RUN_NOT_FOUND',[],404)).mockImplementation(async id=>{
+  const r=await report(id) as WireReport;r.outcome.status='needs_attention';if(cause==='absent-tuning')r.tuning=null;return r as never;
+ });
+ if(cause==='malformed-reclaim')a.rt.reclaim=async id=>{const v=await reclaim(id);v.run.status='ready';return v;};
+ a.w.click('twin-ctl-reread','bench-1');await a.idle();
+ expect(a.w.html()).toContain('0.103 s');expect(a.calls.filter(c=>c==='archive bench-1')).toHaveLength(cause==='valid-tuning'?2:1);
+ expect(a.rt.recoverableRunIds.includes('bench-1')).toBe(cause!=='valid-tuning');
+});
+test('round1 a null report after an unknown STEP stays open for an explicit close',async()=>{
+ const a=bench({stepError:new TypeError('Failed to fetch')}),report=a.rt.report;
+ a.run();await a.idle();a.rt.report=async id=>{const r=await report(id) as WireReport;r.outcome={status:'needs_attention',tick:0};r.tuning=null;return r as never;};
+ a.w.click('twin-ctl-reread','bench-1');await a.idle();expect(a.calls).not.toContain('archive bench-1');expect(a.rt.recoverableRunIds).toContain('bench-1');
+});
+test('round1 a known ID from an unconfirmed create needs matching identity to close',async()=>{
+ const a=bench(),create=a.rt.create,report=a.rt.report;
+ a.rt.create=async q=>{const r=await create(q);r.tick=1;return r;};a.run();await a.idle();
+ a.rt.report=async id=>{const r=await report(id) as WireReport;r.bench.request.axis='J4';return r as never;};
+ a.w.click('twin-ctl-unread-close','bench-1');await vi.waitFor(()=>expect(a.calls).toContain('report bench-1'));await a.idle();
+ expect(a.calls).not.toContain('archive bench-1');expect(a.rt.recoverableRunIds).toContain('bench-1');
+});
+test.each(['terminal-start','zero-terminal-step','idle-expiry'])('round1 valid %s proceeds to its report',async(cause)=>{
+ const a=bench(),action=a.rt.action;
+ a.rt.action=async(v,k)=>{const r=await action(v,k);if(cause==='terminal-start'?k==='start':k==='step'){
+  r.tick=v.tick;r.simTimeNs=v.simTimeNs;r.run.status=cause==='idle-expiry'?'needs_attention':'completed';
+  if(cause==='idle-expiry'){r.run.runRevision++;r.attention=[{reason:'BENCH_IDLE_EXPIRED',tick:v.tick}];}
+ }return r;};
+ a.run();await a.idle();expect(a.calls).toContain('report bench-1');expect(a.w.html()).not.toContain('OUTCOME_UNKNOWN');
+});
+test('round1 rereads the result after the final step acknowledgement was lost during re-pair',async()=>{
+ const a=bench(),action=a.rt.action,report=a.rt.report,gate=deferred<void>();let parked=false;
+ a.rt.action=async(v,k)=>{const next=await action(v,k);if(next.tick===500){parked=true;await gate.promise;}return next;};
+ a.run();await vi.waitFor(()=>expect(parked).toBe(true));a.w.click('twin-disconnect');await a.rt.pair();a.h.health=health();gate.resolve();await a.idle();
+ a.rt.report=vi.fn().mockRejectedValueOnce(new TwinRuntimeError('RUN_NOT_FOUND',[],404)).mockImplementation(async id=>{
+  const r=await report(id) as WireReport;r.outcome.status='needs_attention';return r as never;
+ });
+ a.w.click('twin-ctl-reread','bench-1');await vi.waitFor(()=>expect(a.calls).toContain('drop bench-1'));
+ expect(a.calls.slice(-5)).toEqual(['reclaim bench-1','report bench-1','trace bench-1','archive bench-1','drop bench-1']);expect(a.w.html()).toContain('0.103 s');
+});
+test.each(['create-revision','start-revision','step-revision','cancel-revision'])('round1 invalid %s cannot authorize a mutation',async cause=>{
+ const a=bench(),create=a.rt.create,action=a.rt.action;
+ a.rt.create=async q=>{const r=await create(q);if(cause==='create-revision')r.run.runRevision=1;return r;};
+ a.rt.action=async(v,k)=>{const r=await action(v,k);if(cause==='cancel-revision'&&k==='step')a.w.click('twin-ctl-cancel');if(cause===k+'-revision')r.run.runRevision+=2;return r;};
+ a.run();await a.idle();expect(a.calls).not.toContain('archive bench-1');expect(a.w.html()).toContain('OUTCOME_UNKNOWN');
+});
+test('round1 an in-flight second run preserves the displayed result and earlier comparison',async()=>{
+ const a=bench(),gate=deferred<void>();a.run();await a.idle();
+ const action=a.rt.action;let parked=false;
+ a.rt.action=async(v,k)=>{if(k==='start'){parked=true;await gate.promise;}return action(v,k);};
+ a.run();await vi.waitFor(()=>expect(parked).toBe(true));
+ try{expect(a.w.html()).not.toContain('data-testid="ab-delta"');expect(a.w.html()).toMatch(/data-action="twin-ctl-export"(?! disabled)/);}
+ finally{gate.resolve();await a.idle();}
 });

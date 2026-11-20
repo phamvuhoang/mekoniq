@@ -65,7 +65,7 @@ export interface DriveEvidenceBlock {testLevel:'controller_in_the_loop';complete
  axes:{axisId:string;mode:'csp'|'csv';states:{state:string;fromTick:number}[];faults:{fault:string;firstTick:number}[];enabledAtTick:number|null;saturatedSubsteps:number;trackingRms:ControlMetric;speedDeficit?:ControlMetric}[];
  events:{tick:number;code:string;axisId?:string}[]}
 /** `tuning`: a bench run's result (R4.2); null until it has one, absent on every other run. */
-export interface RunReport {tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+export interface RunReport {bench?:{request:Omit<BenchRequestV1,'controlProfile'>&{controlProfile:Pick<BenchRequestV1['controlProfile'],'id'|'revision'|'digest'>}};tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[]};
  outcome:{status:string;served:string;tick:number;simTimeNs:string};
  metrics:{maxConcurrentMovers?:number;distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
@@ -145,7 +145,7 @@ export interface TwinRuntime {
  streamDeps?():Pick<StreamDeps,'base'|'EventSource'|'fetch'>;
 }
 export class TwinRuntimeError extends Error {
- constructor(readonly code:string,readonly reasonCodes:string[],readonly status:number){super(reasonCodes.length?`${code}: ${reasonCodes.join(', ')}`:code);this.name='TwinRuntimeError';}
+ constructor(readonly code:string,readonly reasonCodes:string[],readonly status:number,readonly runId?:string){super(reasonCodes.length?`${code}: ${reasonCodes.join(', ')}`:code);this.name='TwinRuntimeError';}
 }
 /** The Lab's pin (config/source-runtime.lock.json, served beside the page): the commit a runtime on another origin must report. */
 let pin:Promise<string>|undefined;
@@ -156,7 +156,8 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
  const remote=()=>target.kind!=='same_origin',auth=()=>requestInit(target,token);
  // reclaim proofs belong to the runtime that issued them: same origin keeps its original key, any other runtime has its own
  const proofKey=(t:RuntimeTarget)=>t.kind==='same_origin'?'mekoniq-lab-reclaim':`mekoniq-lab-reclaim:${t.base}`;
- const proofs=new RunEntries<string>(raw=>Object.fromEntries(raw&&typeof raw==='object'?Object.entries(raw).filter(([,proof])=>typeof proof==='string'):[]));
+ const usableProof=(proof:unknown):proof is string=>typeof proof==='string'&&proof.trim().length>0;
+ const proofs=new RunEntries<string>(raw=>Object.fromEntries(raw&&typeof raw==='object'?Object.entries(raw).filter(([,proof])=>usableProof(proof)):[]),usableProof);
  let generation=0;
  const forget=()=>{generation++;csrf='';if(token){token='';saveToken(target,'');}};
  const assertSession=(g:number)=>{if(g!==generation)throw new TwinRuntimeError('SESSION_CHANGED',[],0);};
@@ -165,7 +166,7 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
  const send=async(url:string,init:RequestInit,t:RuntimeTarget,g=generation)=>{
   let response:Response;
   try{response=await fetch(url,init);}catch(e){if(t.kind==='loopback'&&e instanceof TypeError)throw new TwinRuntimeError('LOOPBACK_BLOCKED',[],0);throw e;}
-  if(response.status===401&&t.kind!=='same_origin'&&t===target&&g===generation)forget();
+  if(response.status===401&&t===target&&g===generation&&(csrf||token))forget();
   return response;
  };
  const request=async<T>(path:string,body?:unknown,signal?:AbortSignal):Promise<T>=>{
@@ -219,7 +220,9 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
    // a runtime on another origin was not installed by the launcher: it must be the pinned one (same origin is checked by the launcher)
    if(remote()){const [h,p]=await Promise.all([request<TwinHealth>('/health',undefined,signal),pinnedCommit()]);assertSession(g);if(h.sourceCommit!==p)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',[String(h.sourceCommit).slice(0,7),p.slice(0,7)],409);}
    const {reclaimToken,...view}=await request<RunView&{reclaimToken?:string}>('/runs',{...r,runtimeIdentity:identity},signal);
-   if(typeof reclaimToken==='string'&&typeof view.run?.id==='string')proofs.write(proofKey(t),view.run.id,reclaimToken);
+   const id=typeof view.run?.id==='string'&&view.run.id.trim()?view.run.id:undefined;
+   if('bench' in r&&!usableProof(reclaimToken))throw new TwinRuntimeError('BENCH_CREATE_PROOF_MISSING',[],502,id);
+   if(id&&usableProof(reclaimToken))proofs.write(proofKey(t),id,reclaimToken);
    return view;},
   get recoverableRunIds(){return Object.keys(proofs.read(proofKey(target)));},
   async archive(id,signal){
