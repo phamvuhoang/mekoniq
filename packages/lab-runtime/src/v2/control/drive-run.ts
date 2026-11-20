@@ -44,14 +44,15 @@ export interface MobileDrive {readonly manifest:DriveManifest;readonly model:Dri
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
  step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
-export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number}):MobileDrive{
+export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number;maxLinearMps:number;maxAngularRadps:number}):MobileDrive{
  const ctl=d.control.controllers.find(c=>c.controllerId===diffDriveBaseV1.id);
  if(!ctl||![1,2].includes(ctl.revision))throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
  const accelMps2=ctl.params.maxAccelerationMps2;
  const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
  if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
- let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM);const events:ControllerEvent[]=[];
+ let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
+  wheel:[config.axisLeft,config.axisRight].map(id=>d.model.axes.find(a=>a.axisId===id)?.velocityLimitRadS??0) as [number,number],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});const events:ControllerEvent[]=[];
  return {manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});

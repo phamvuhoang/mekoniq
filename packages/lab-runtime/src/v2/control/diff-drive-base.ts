@@ -6,7 +6,7 @@ import type {ControllerEvent,MotionController} from './controller';
 export interface DiffDriveBaseConfig {axisLeft:string;axisRight:string;wheelRadiusM:number;wheelSeparationM:number;maxWheelAccelRadS2:number;enableTimeoutTicks:number;trackingDegradedRadS:number;trackingDegradedTicks:number;/** what one encoder count is worth as a speed estimate; a deviation below it is quantisation, not tracking (absent = an exact encoder) */velocityResolutionRadS?:number}
 export interface DiffDriveBaseState {
  config:DiffDriveBaseConfig;seq:number;waitingTicks:number;notReady:boolean;faulted:boolean;degraded:boolean;
- filter?:{window:number;history:[number,number][]};targets:[number,number];wheelAngles:[number,number]|null;odometry:[number,number,number];errors:[number[],number[]]}
+ ramp?:{maxChange:number;delta:WheelPair;bounds:DriveBounds};targets:[number,number];wheelAngles:[number,number]|null;odometry:[number,number,number];errors:[number[],number[]]}
 const TICK_S=0.02;
 const sinc=(x:number)=>x===0?1:Math.sin(Math.PI*x)/(Math.PI*x);  // numpy's normalised sinc, as the worker uses it
 
@@ -29,7 +29,7 @@ export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;om
    wheelAngles=now;
   }
   const faultedAxes=fb.filter(f=>f.state==='fault'),allEnabled=fb.every(f=>f.state==='enabled');
-  let filter=state.filter,targets:WheelPair=[0,0],{waitingTicks,notReady,faulted,degraded}=state,errors=state.errors;
+  let ramp=state.ramp,targets:WheelPair=[0,0],{waitingTicks,notReady,faulted,degraded}=state,errors=state.errors;
   if(faultedAxes.length){
    if(!faulted)events.push({tick:input.tick,code:'DRIVE_FAULT',axisId:faultedAxes[0]!.axisId,detail:faultedAxes.map(f=>`${f.axisId}:${f.fault}`).join(',')});
    faulted=true;errors=[[],[]];degraded=false;
@@ -41,15 +41,9 @@ export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;om
    const half=input.setpoint.omegaRadps*c.wheelSeparationM/2,desired:[number,number]=[(input.setpoint.vMps-half)/c.wheelRadiusM,(input.setpoint.vMps+half)/c.wheelRadiusM],step=c.maxWheelAccelRadS2*TICK_S;
    // `stop`: the caller (an interlocked cell) needs the wheels at zero NOW; the acceleration limit would stretch that into a ramp
    targets=input.setpoint.stop?[0,0]:[0,1].map(i=>Math.max(state.targets[i]!-step,Math.min(state.targets[i]!+step,desired[i]!))) as [number,number];
-   if(filter&&!input.setpoint.stop){
-    // Advance along the segment between admitted wheel pairs. Both wheel limits and the coupled
-    // linear/yaw bounds are convex, as is the moving average. No post-filter clamp is needed.
-    const previous=filter.history.at(-1)??[0,0],delta=desired.map((v,i)=>v-previous[i]!);
-    const fraction=Math.min(1,step/Math.max(...delta.map(Math.abs)));
-    const raw:WheelPair=fraction===1?desired:[previous[0]+fraction*delta[0]!,previous[1]+fraction*delta[1]!];
-    const history=[...filter.history,raw].slice(-filter.window);
-    targets=[0,1].map(i=>history.reduce((sum,pair)=>sum+pair[i]!,0)/filter!.window) as WheelPair;
-    filter={window:filter.window,history};
+   if(ramp&&!input.setpoint.stop){
+    const delta=nextWheelDelta(state.targets,desired,ramp.delta,step,ramp.maxChange,ramp.bounds);
+    targets=[state.targets[0]+delta[0],state.targets[1]+delta[1]];ramp={...ramp,delta};
    }
    // tracking: the mean error of the measured speed against the speed commanded last tick, over a window. A quantised encoder at rest flips a count now and then; the mean ignores that.
    errors=[0,1].map(i=>{const v=fb[i]!.velocityRadS;const e=v===null?state.errors[i]!:[...state.errors[i]!,v-state.targets[i]!];return e.slice(-c.trackingDegradedTicks);}) as [number[],number[]];
@@ -57,21 +51,43 @@ export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;om
    if(bad&&!degraded)events.push({tick:input.tick,code:'TRACKING_DEGRADED',detail:errors.map(e=>(e.reduce((a,b)=>a+b,0)/Math.max(1,e.length)).toFixed(3)).join(',')});
    degraded=bad;
   }
-  if(filter&&(input.setpoint.stop||!allEnabled))filter={window:filter.window,history:[]};
+  if(ramp&&(input.setpoint.stop||!allEnabled))ramp={...ramp,delta:[0,0]};
   const commands:DriveCommandV1[]=[c.axisLeft,c.axisRight].map((axisId,i)=>({axisId,seq,mode:'csv',target:targets[i]!,enable:true,quickStop:false,faultReset:false}));
-  return {state:{config:c,...filter?{filter}:{},seq,waitingTicks,notReady,faulted,degraded,targets,wheelAngles,odometry,errors},commands,events};
+  return {state:{config:c,...ramp?{ramp}:{},seq,waitingTicks,notReady,faulted,degraded,targets,wheelAngles,odometry,errors},commands,events};
  },
 };
 
-// Revision 2 averages a bounded-slope command over N ticks. The acceleration difference of
-// the first and last samples is at most 2A, hence the emitted jerk is at most 2A/(N dt).
-// A new request can cross the filtered target during that finite settling window.
-export function jerkFilterWindow(acceleration:number,jerk:number,dt:number){
- if(![acceleration,jerk,dt].every(x=>Number.isFinite(x)&&x>0))throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
- const window=Math.max(1,Math.ceil(2*acceleration/(jerk*dt)));
- if(!Number.isSafeInteger(window)||window>10000)throw Error('DRIVE_CONTROLLER_WINDOW_INVALID');
- return window;
+// A delta is the change in commanded wheel speed over one tick. Bringing a positive delta x
+// back to zero consumes x + (x-h) + ... over ceil(x/h) ticks, where h = jerk * dt².
+// Invert that distance to reach a steady request without a final velocity clamp.
+interface DriveBounds {wheel:WheelPair;mean:number;halfDifference:number}
+function brakingDelta(distance:number,h:number){
+ if(distance===0)return 0;
+ const n=Math.max(1,Math.ceil((Math.sqrt(1+8*Math.abs(distance)/h)-1)/2));
+ return Math.sign(distance)*(Math.abs(distance)/n+h*(n-1)/2);
 }
-export function initDiffDriveRevision2(config:DiffDriveBaseConfig,maxWheelJerkRadS3:number):DiffDriveBaseState{
- return {...diffDriveBaseV1.init(config),filter:{window:jerkFilterWindow(config.maxWheelAccelRadS2,maxWheelJerkRadS3,TICK_S),history:[]}};
+function nextWheelDelta(previous:WheelPair,desired:WheelPair,old:WheelPair,maxStep:number,h:number,bounds:DriveBounds):WheelPair{
+ const preferred=desired.map((v,i)=>Math.max(-maxStep,old[i]!-h,Math.min(maxStep,old[i]!+h,brakingDelta(v-previous[i]!,h)))) as WheelPair;
+ // A common deceleration preserves the direction of the wheel pair and thus the coupled body
+ // constraints. Reserve enough room to bring that delta to zero even if the request reverses.
+ const admissible=(delta:WheelPair)=>{
+  const peak=Math.max(...delta.map(Math.abs)),n=Math.ceil(peak/h),factor=peak?n-(h/peak)*n*(n-1)/2:0;
+  const left=previous[0]+factor*delta[0],right=previous[1]+factor*delta[1];
+  return Math.abs(left)<=bounds.wheel[0]&&Math.abs(right)<=bounds.wheel[1]&&Math.abs((left+right)/2)<=bounds.mean&&Math.abs((right-left)/2)<=bounds.halfDifference;
+ };
+ if(admissible(preferred))return preferred;
+ const peak=Math.max(...old.map(Math.abs)),brake=peak?Math.max(0,1-h/peak):0;
+ const safe:WheelPair=[old[0]*brake,old[1]*brake];
+ const between=(f:number):WheelPair=>[safe[0]+f*(preferred[0]-safe[0]),safe[1]+f*(preferred[1]-safe[1])];
+ let lo=0,hi=1;
+ for(let i=0;i<48;i++){const mid=(lo+hi)/2;if(admissible(between(mid)))lo=mid;else hi=mid;}
+ return between(lo);
+}
+export function jerkStep(jerk:number,dt:number){
+ if(![jerk,dt].every(x=>Number.isFinite(x)&&x>0))throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
+ return jerk*dt*dt;
+}
+export function initDiffDriveRevision2(config:DiffDriveBaseConfig,maxWheelJerkRadS3:number,bounds:DriveBounds):DiffDriveBaseState{
+ if(![config.maxWheelAccelRadS2,...bounds.wheel,bounds.mean,bounds.halfDifference].every(x=>Number.isFinite(x)&&x>0))throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
+ return {...diffDriveBaseV1.init(config),ramp:{maxChange:jerkStep(maxWheelJerkRadS3,TICK_S),delta:[0,0],bounds}};
 }

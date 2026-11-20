@@ -118,11 +118,19 @@ test('the four device comparisons select revision two and ideal explicitly selec
 });
 
 test('revision two refuses a zero-duration sample and resets the ramp on a drive fault',async()=>{
- const {jerkFilterWindow}=await import('../../packages/lab-runtime/src/v2/control/diff-drive-base');
- expect(()=>jerkFilterWindow(1,10,0)).toThrow('DRIVE_CONTROLLER_LIMIT_INVALID');
+ const {jerkStep}=await import('../../packages/lab-runtime/src/v2/control/diff-drive-base');
+ expect(()=>jerkStep(10,0)).toThrow('DRIVE_CONTROLLER_LIMIT_INVALID');
  const drive=mobileDrive(await mobileDriveBundle(workerRoot,'drive-nominal-v1'),wheels);
  const step=(tick:number,status:'fault'|'enabled')=>drive.step(tick,{vMps:.4,omegaRadps:0},{drives:fb(status) as DriveAxisSnapshot[]});
  for(let i=0;i<50;i++)step(i,'enabled');
  const fault=step(50,'fault');expect(fault.commands.map(c=>c.target)).toEqual([0,0]);expect(fault.events[0]?.code).toBe('DRIVE_FAULT');
  expect(step(51,'enabled').commands.every(c=>c.target*wheels.wheelRadiusM<=10*.02**2+1e-12)).toBe(true);
+});
+test('already feasible navigation commands reach the wire on the requested tick',async()=>{
+ const drive=mobileDrive(await mobileDriveBundle(workerRoot,'drive-nominal-v1'),wheels);
+ for(const [tick,wheelSpeed] of [0,.002,.006,.008,.008,.007].entries()){
+  const r=drive.step(tick,{vMps:wheelSpeed,omegaRadps:0},{drives:fb('enabled') as DriveAxisSnapshot[]});
+  // Every requested increment itself admits braking to a steady target within its last interval.
+  expect(r.commands[0]!.target*wheels.wheelRadiusM).toBeCloseTo(wheelSpeed,13);
+ }
 });

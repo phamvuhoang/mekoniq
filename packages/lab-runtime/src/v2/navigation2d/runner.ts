@@ -139,7 +139,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  const stopMonitor=await plant.prepareStopMonitor?.(scene,read);
  // a scene that names a drive model and a control profile runs its AMR through the diff-drive controller and the virtual drive; one that names neither is the R2b path, untouched
  const driveDocs=amr.id==='mujoco_3d'?await admitDriveDocuments(scene,read,providers.runtime.workerRoot,scene.robots[0]!.model.physicalModelDigest):undefined;
- const drive=driveDocs?mobileDrive(driveDocs,{robotId:scene.robots[0]!.robotId,wheelRadiusM:scene.robots[0]!.model.kinematics.wheelRadiusM,wheelSeparationM:scene.robots[0]!.model.kinematics.wheelSeparationM}):undefined;
+ const drive=driveDocs?mobileDrive(driveDocs,{robotId:scene.robots[0]!.robotId,...scene.robots[0]!.model.kinematics}):undefined;
  const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
  if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
