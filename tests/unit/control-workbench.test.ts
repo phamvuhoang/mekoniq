@@ -159,7 +159,7 @@ function bench(o:{deferCreate?:boolean;deferStep?:boolean;refuse?:TwinRuntimeErr
    if(o.stepError)throw o.stepError;const tick=v.tick+50;return wait('step',view(v.run.id,tick>=500?'completed':'running',Math.min(tick,500),r),o.deferStep);},
   report:async(id:string)=>{calls.push(`report ${id}`);if(reportFailures>0||id===o.reportFailFor){reportFailures--;throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);}const i=Number(id.split('-')[1])-1,digest=created[i]!.bench.controlProfile.digest;const scenarioId=created[i]!.bench.axis==='wheels'?'MJ-BENCH-WHEEL':'MJ-BENCH-ARM',engineId=scenarioId==='MJ-BENCH-WHEEL'?'mujoco_3d':'mujoco_arm';
    const {controlProfile:cp,...draft}=created[i]!.bench;return {bench:{request:{...draft,controlProfile:{id:cp.id,revision:cp.revision,digest:cp.digest}}},manifest:{mode:'simulation',access:'simulated',runId:id,sourceCommit:'5'.repeat(40),backendSetId:BENCH_SET,seed:7,scenario:{id:scenarioId,revision:1},backends:[{id:engineId,version:'3.17.0'}]},outcome:{status:cancelled.has(id)?'cancelled':'completed',tick:cancelled.get(id)??500},tuning:cancelled.has(id)?null:o.result?o.result(digest,i):tuning({runId:id,plant:{...tuning().plant,controlProfileDigest:digest}})} as never;},
-  trace:async(id:string)=>{calls.push(`trace ${id}`);if(o.traceError)throw o.traceError;return {traces:(created[Number(id.split('-')[1])-1]!.bench.axis==='wheels'?WHEELS:['xarm-1/J3']).map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:5010},(_,j)=>({target:j<140?0:2,actual:2*(1-Math.exp(-Math.max(0,j-140)/60)),feedback:2*(1-Math.exp(-Math.max(0,j-145)/60)),torqueNm:1,saturated:j===150}))})),issues:[]};},
+  trace:async(id:string)=>{calls.push(`trace ${id}`);if(o.traceError)throw o.traceError;return {runId:id,manifestSha256:tuning().trace.sha256,traces:(created[Number(id.split('-')[1])-1]!.bench.axis==='wheels'?WHEELS:['xarm-1/J3']).map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:5010},(_,j)=>({target:j<140?0:2,actual:2*(1-Math.exp(-Math.max(0,j-140)/60)),feedback:2*(1-Math.exp(-Math.max(0,j-145)/60)),torqueNm:1,saturated:j===150}))})),issues:[]};},
   // the gateway answers a session that does not own the run 404 (readable() before the owner check); reclaim with the proof makes this session the owner
   archive:async(id:string)=>{calls.push(`archive ${id}`);if(o.ownerOnly&&!owned.has(id))throw new TwinRuntimeError('RUN_NOT_FOUND',[],404);if(archiveFailures>0){archiveFailures--;throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);}},
   reclaim:async(id:string)=>{calls.push(`reclaim ${id}`);if(o.reclaimError)throw o.reclaimError;owned.add(id);return {...view(id,'needs_attention',receipts.get(id)?.tick??0,(receipts.get(id)?.run.runRevision??0)+1),controlAccess:'view_reconcile' as const};},dropProof:(id:string)=>{calls.push(`drop ${id}`);proofs.delete(id);},
@@ -281,6 +281,26 @@ test('Fix 3: a trace that cannot be read keeps the result and the bench for rere
  expect(html).not.toContain('data-testid="control-server-reasons"');expect(html).not.toContain('data-testid="control-notice"');
  expect(calls.at(-1)).toBe('trace bench-1');expect(html).toContain('twin-ctl-reread');
  expect(html).not.toMatch(/<button[^>]*data-action="twin-ctl-export"[^>]*disabled/);
+});
+test.each(['run','manifest','both'])('an equally long trace from another wheel trial is refused until reread (%s)',async mismatch=>{
+ const digest=(n:number)=>n===0?'e'.repeat(64):'f'.repeat(64);
+ const a=bench({result:(profile,i)=>tuning({runId:'bench-'+(i+1),plant:{...tuning().plant,controlProfileDigest:profile},trace:{...tuning().trace,sha256:digest(i)}})});
+ const read=a.rt.trace;
+ const correct=async(id:string)=>{
+  const receipt=await read(id);receipt.manifestSha256=digest(Number(id.split('-')[1])-1);
+  receipt.traces[0]!.samples[5009]!.actual=id==='bench-1'?1.8:1.9;
+  return receipt;
+ };
+ a.rt.trace=correct;a.run();await a.idle();expect(a.calls).toContain('archive bench-1');
+ const stale=await correct('bench-1');
+ a.rt.trace=async id=>({...stale,runId:mismatch==='manifest'?id:stale.runId,manifestSha256:mismatch==='run'?digest(1):stale.manifestSha256});
+ a.run();await a.idle();
+ expect(a.calls).not.toContain('archive bench-2');expect(a.rt.recoverableRunIds).toContain('bench-2');
+ expect(a.w.html()).toContain('TRACE_READ_FAILED');expect(a.w.html()).not.toContain('data-testid="control-plot-response"');
+ a.rt.trace=correct;a.w.click('twin-ctl-reread','bench-2');
+ await vi.waitFor(()=>expect(a.calls).toContain('drop bench-2'));await a.idle();
+ expect(a.w.html()).toContain('data-testid="control-plot-response"');expect(a.w.html()).not.toContain('TRACE_READ_FAILED');
+ expect(a.calls.slice(-4)).toEqual(['report bench-2','trace bench-2','archive bench-2','drop bench-2']);
 });
 test('Fix 3: a report that cannot be read leaves the finished bench open with "read again"; reading it again shows the result, then archives it',async()=>{
  const {w,calls,run,idle}=bench({reportFailures:1});

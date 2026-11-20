@@ -144,8 +144,9 @@ export function validBenchCatalog(signals:BenchSignals,envelope:TuningEnvelopeV1
  });
 }
 // The endpoint includes ten initial substeps plus up to 5000 measured substeps.
-export function validBenchTraces(data:{traces:DriveTrace[];issues:string[]},result:TuningResultV1,tick:number){
- if(!data||!Array.isArray(data.issues)||!data.issues.every(i=>typeof i==='string')||!Array.isArray(data.traces)||data.traces.length!==result.axisIds.length)return false;
+export interface BenchTraceReceipt {runId:string;manifestSha256:string|null;traces:DriveTrace[];issues:string[]}
+export function validBenchTraces(data:BenchTraceReceipt,result:TuningResultV1,tick:number){
+ if(!data||data.runId!==result.runId||data.manifestSha256!==result.trace.sha256||!Array.isArray(data.issues)||!data.issues.every(i=>typeof i==='string')||!Array.isArray(data.traces)||data.traces.length!==result.axisIds.length)return false;
  return data.traces.every((t,i)=>t?.axisId===result.axisIds[i]&&t.dtS===0.002&&Array.isArray(t.samples)&&t.samples.length===(tick+1)*10
   &&validTrace({...t,samples:t.samples.slice(0,10)})&&validTrace({...t,samples:t.samples.slice(10)})&&t.samples.slice(10).filter(Boolean).length===result.trace.samples);
 }

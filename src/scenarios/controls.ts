@@ -12,7 +12,7 @@ import {RunEntries} from '../runtime/run-entries';
 import {loadToken,requestInit,saveToken,type RuntimeTarget} from '../runtime/target';
 import {FetchEventSource} from '../runtime/fetch-event-source';
 import type {StreamDeps} from '../runtime/stream';
-import type {BenchHealth} from '../control/workbench';
+import type {BenchHealth,BenchTraceReceipt} from '../control/workbench';
 import type {BenchRequestV1,DriveTrace,TuningResultV1} from '../shared/navigation2d';
 /** `tuningEnvelope`, `benchSignals` and `benchCatalog` (BenchHealth) are present only where a bench scenario is offered (R4.2, V06/V07pre). */
 export interface TwinHealth extends BenchHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
@@ -134,7 +134,7 @@ export interface TwinRuntime {
  readonly recoverableRunIds?:readonly string[];archive?(runId:string,signal?:AbortSignal):Promise<void>;reclaim?(runId:string,signal?:AbortSignal):Promise<RunView>;
  get(runId:string,signal?:AbortSignal):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
  /** A bench run's drive trace as read back from its chunks (GET /runs/:id/trace; null samples are gaps). Up to ~1 MB: read once per finished bench, never polled. */
- trace?(runId:string,signal?:AbortSignal):Promise<{traces:DriveTrace[];issues:string[]}>;
+ trace?(runId:string,signal?:AbortSignal):Promise<BenchTraceReceipt>;
  /** Drop this client's reclaim proof of a run: an archived bench keeps no checkpoint to reclaim, so it is never offered for reopening. */
  dropProof?(runId:string):void;
  /** Where requests go (target.ts). Optional only so test doubles may omit it; httpTwinRuntime always has it. */
@@ -250,9 +250,9 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   worldDisplayScene:(id,signal)=>request(`${run(id)}/world-display/scene`,undefined,signal),
   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
   async trace(id,signal){
-   const r=await request<{traces?:unknown;issues?:unknown}>(`${run(id)}/trace`,undefined,signal);
-   if(!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.issues.every(i=>typeof i==='string')||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
-   return {traces:r.traces as DriveTrace[],issues:r.issues};
+   const r=await request<{runId?:unknown;manifestSha256?:unknown;traces?:unknown;issues?:unknown}>(`${run(id)}/trace`,undefined,signal);
+   if(!r||r.runId!==id||!(r.manifestSha256===null||typeof r.manifestSha256==='string'&&/^[a-f0-9]{64}$/.test(r.manifestSha256))||!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.issues.every(i=>typeof i==='string')||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+   return {runId:id,manifestSha256:r.manifestSha256,traces:r.traces as DriveTrace[],issues:r.issues};
   },
   dropProof(id){proofs.write(proofKey(target),id,null);},
  };

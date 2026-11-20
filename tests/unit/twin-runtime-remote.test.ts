@@ -515,3 +515,9 @@ test('round1 authenticated cookie 401 expires only its own session generation',a
  const active=rt.get('new');expire(new Response('{"error":"SESSION_REQUIRED"}',{status:401}));await expect(active).rejects.toMatchObject({code:'SESSION_REQUIRED'});
  expect(rt.paired).toBe(false);expect(rt.sessionGeneration).toBeGreaterThan(g!);
 });
+
+test('the HTTP client returns the verified manifest digest and run ID with the trace',async()=>{
+ const receipt={runId:'r1',manifestSha256:'a'.repeat(64),traces:[],issues:[]};
+ vi.stubGlobal('fetch',vi.fn(async()=>new Response(JSON.stringify(receipt))));
+ expect(await httpTwinRuntime().trace!('r1')).toEqual(receipt);
+});
