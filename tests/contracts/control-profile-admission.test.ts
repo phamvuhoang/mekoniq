@@ -6,7 +6,7 @@ import type {ControlProfileV1,DriveModelV1,TuningEnvelopeV1} from '../../package
 
 const FX='robotics/simulation-mujoco/';
 const read=<T,>(path:string):T=>JSON.parse(readFileSync(FX+path,'utf8')) as T;
-const cases=read<{cases:{id:string;mode:'csp'|'csv';loop:ControlProfileV1['axes'][number]['loop'];accelerationLimit:number|null;admitted:boolean}[]}>('tests/data/control-profile-admission-v1.json').cases;
+const cases=read<{cases:{id:string;mode:'csp'|'csv';loop:ControlProfileV1['axes'][number]['loop'];accelerationLimit:number|null;reason?:string;admitted:boolean}[]}>('tests/data/control-profile-admission-v1.json').cases;
 const arm=read<DriveModelV1>('fixtures/drive-v1/xarm6-drive-nominal-v1.json'),serve=read<DriveModelV1>('fixtures/drive-v1/serve-drive-nominal-v1.json'),armControl=read<ControlProfileV1>('fixtures/drive-v1/xarm6-control-v1.json');
 const bound={min:0.001,max:1000};
 
@@ -18,5 +18,6 @@ test('the admission vectors reach the same verdict here as in actuator_spec',()=
   const envelope={axes:[{axisId:axis.axisId,kp:{min:0,max:1000},ki:{min:0,max:1000},kd:{min:0,max:1000},integralLimit:bound,slewLimit:bound,accelerationLimit:bound}]} as unknown as TuningEnvelopeV1;
   const r=validateControlProfile(control,model,envelope);
   expect(r.ok,`${c.id}: ${r.reasonCodes.join(',')}`).toBe(c.admitted);
+  if(!c.admitted)expect(r.reasonCodes,c.id).toContain(c.reason);
  }
 });

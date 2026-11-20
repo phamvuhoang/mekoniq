@@ -10,6 +10,7 @@ const FX='robotics/simulation-mujoco/fixtures/';
 const read=<T,>(path:string):T=>JSON.parse(readFileSync(FX+path,'utf8')) as T;
 const clone=<T,>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
 const model=read<DriveModelV1>('drive-v1/serve-drive-nominal-v1.json'),control=read<ControlProfileV1>('drive-v1/serve-control-v1.json'),envelope=read<TuningEnvelopeV1>('drive-v1/tuning-envelope-v1.json');
+const allAxes=[...model.axes,...read<DriveModelV1>('drive-v1/xarm6-drive-nominal-v1.json').axes];
 const reseal=<T extends object>(doc:T)=>sealDriveDocument(doc);
 const withAxes=(f:(axes:DriveModelV1['axes'])=>void)=>{const m=clone(model);f(m.axes);return reseal(m);};
 const withLoop=(f:(a:ControlProfileV1['axes'][number])=>void,i=0)=>{const c=clone(control);f(c.axes[i]!);return reseal(c);};
@@ -19,7 +20,7 @@ const ref=(path='serve-drive-nominal-v1.json')=>({id:'serve-drive-nominal-v1',re
 
 test('the generated fixtures validate: models, profiles, envelope, oracle',()=>{
  for(const f of ['serve-drive-ideal-v1','serve-drive-nominal-v1','serve-drive-torque-limited-v1','serve-drive-latency-v1','serve-drive-coarse-encoder-v1','xarm6-drive-ideal-v1','xarm6-drive-nominal-v1','xarm6-drive-latency-v1','xarm6-drive-coarse-encoder-v1'])expect(validateDriveModel(read(`drive-v1/${f}.json`)),f).toEqual({ok:true,reasonCodes:[]});
- expect(validateTuningEnvelope(envelope)).toEqual({ok:true,reasonCodes:[]});
+ expect(validateTuningEnvelope(envelope,allAxes)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlProfile(control,model,envelope)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlProfile(read('drive-v1/xarm6-control-v1.json'),read('drive-v1/xarm6-drive-nominal-v1.json'),envelope)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlEvidenceShape(read('drive-v1/control-oracle-v1.json'))).toBe(true);
@@ -71,7 +72,7 @@ test('the rule table per mode has its own reason codes, and a field the envelope
  expect(envelope.revision).toBe(2);
  for(const a of envelope.axes){const csv=a.axisId.startsWith('amr-1/');expect('kd' in a,a.axisId).toBe(!csv);expect('slewLimit' in a,a.axisId).toBe(!csv);expect('accelerationLimit' in a,a.axisId).toBe(csv);expect(a.integralLimit.min,a.axisId).toBeGreaterThan(0);}
  const bad=clone(envelope);bad.axes[0]!.integralLimit.min=0;
- expect(validateTuningEnvelope(reseal(bad)).reasonCodes).toContain('ENVELOPE_BOUND_INVALID');
+ expect(validateTuningEnvelope(reseal(bad),allAxes).reasonCodes).toContain('ENVELOPE_BOUND_INVALID');
 });
 
 test('an integral with its limit, inside the envelope, is accepted on a position axis',()=>{
@@ -84,7 +85,7 @@ test('an integral with its limit, inside the envelope, is accepted on a position
 
 test('a tuning envelope with an inverted bound is refused',()=>{
  const e=clone(envelope);e.axes[0]!.kp={min:5,max:1};
- expect(validateTuningEnvelope(reseal(e)).reasonCodes).toContain('ENVELOPE_BOUND_INVALID');
+ expect(validateTuningEnvelope(reseal(e),allAxes).reasonCodes).toContain('ENVELOPE_BOUND_INVALID');
 });
 
 test('drive refs come as a pair; a path that escapes the bundle, a URL and a bad digest are refused',()=>{
@@ -179,4 +180,12 @@ test('V07pre: loop and limits may come from a bench run (tuned_in_simulation: ru
   {...tuned,locator:'x'},noRun,{...tuned,kind:'assumed'},{...control.sources.loop,kind:'tuned_in_simulation'}])
   for(const member of ['loop','limits'])expect(validateControlProfile(withSources({[member]:bad}),model,envelope).ok,`${member} ${JSON.stringify(bad)}`).toBe(false);
  expect(validateControlProfile(withSources({controller:tuned}),model,envelope).ok).toBe(false);
+});
+
+test('envelope bounds must be usable in the mode of their axis',()=>{
+ for(const [index,field,bounds] of [[0,'kd',{min:0,max:1}],[1,'slewLimit',{min:1,max:2}],[2,'accelerationLimit',{min:1,max:2}],[2,'slewLimit',{min:0,max:2}]] as const){
+  const e=clone(envelope);e.axes[index]![field]=bounds;
+  expect(validateTuningEnvelope(reseal(e),allAxes).reasonCodes).toEqual(['ENVELOPE_BOUND_INVALID']);
+ }
+ const valid=clone(envelope);valid.axes[0]!.kd={min:0,max:0};expect(validateTuningEnvelope(reseal(valid),allAxes).ok).toBe(true);
 });

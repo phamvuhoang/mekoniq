@@ -53,7 +53,8 @@
     "slewLimit": 0.0
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csp-acceleration-limit",
@@ -66,7 +67,8 @@
     "slewLimit": null
    },
    "accelerationLimit": 5.0,
-   "admitted": false
+   "admitted": false,
+   "reason": "CSP_ACCELERATION_LIMIT"
   },
   {
    "id": "csp-integral",
@@ -92,7 +94,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_REQUIRED"
   },
   {
    "id": "csp-integral-zero-limit",
@@ -105,7 +108,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csp-limit-without-ki",
@@ -118,7 +122,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_WITHOUT_KI"
   },
   {
    "id": "csp-negative-kp",
@@ -131,7 +136,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csv-plain",
@@ -170,7 +176,8 @@
     "slewLimit": null
    },
    "accelerationLimit": 0.0,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csv-kd",
@@ -183,7 +190,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "CSV_KD_NONZERO"
   },
   {
    "id": "csv-slew",
@@ -196,7 +204,8 @@
     "slewLimit": 1.0
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "CSV_SLEW_LIMIT"
   },
   {
    "id": "csv-slew-zero",
@@ -209,7 +218,8 @@
     "slewLimit": 0.0
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csv-integral",
@@ -235,7 +245,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_REQUIRED"
   },
   {
    "id": "csv-integral-zero-limit",
@@ -248,7 +259,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INVALID_FIELD"
   },
   {
    "id": "csv-limit-without-ki",
@@ -261,7 +273,8 @@
     "slewLimit": null
    },
    "accelerationLimit": null,
-   "admitted": false
+   "admitted": false,
+   "reason": "INTEGRAL_LIMIT_WITHOUT_KI"
   }
  ]
 }

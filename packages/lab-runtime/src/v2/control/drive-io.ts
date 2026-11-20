@@ -28,10 +28,15 @@ export const driveDocumentDigest=(doc:object):string=>{const {digest:_,...rest}=
 export const sealDriveDocument=<T extends object>(doc:T):T&{digest:string}=>({...doc,digest:driveDocumentDigest(doc)});
 
 const nonFinite=(v:unknown):boolean=>typeof v==='number'?!Number.isFinite(v):Array.isArray(v)?v.some(nonFinite):v&&typeof v==='object'?Object.values(v).some(nonFinite):false;
-function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instancePath:string}[]|null},v:unknown,codes:Set<string>){
+function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instancePath:string;params?:{error?:string;tag?:string}}[]|null},v:unknown,codes:Set<string>){
  if(validate(v))return;
  // a bench signal's tick past the bench (atTick, a hold's ticks) has one code of its own, the one validateBenchSignal gives
- for(const e of validate.errors??[]){if(['if','oneOf','anyOf'].includes(e.keyword))continue;codes.add(e.keyword==='additionalProperties'?'UNKNOWN_FIELD':e.keyword==='required'?'FIELD_REQUIRED':e.keyword==='maximum'&&/\/(atTick|ticks)$/.test(e.instancePath)?'TICK_OUT_OF_RANGE':'INVALID_FIELD');}
+ for(const e of validate.errors??[]){
+  if(['if','oneOf','anyOf'].includes(e.keyword))continue;
+  const tagged=e.instancePath==='/signal'?(v as {signal?:object})?.signal:v;
+  const missingKind=e.keyword==='discriminator'&&e.params?.tag==='kind'&&tagged&&typeof tagged==='object'&&!Object.hasOwn(tagged,'kind');
+  codes.add(e.keyword==='additionalProperties'?'UNKNOWN_FIELD':e.keyword==='required'||missingKind?'FIELD_REQUIRED':e.keyword==='maximum'&&/\/(atTick|ticks)$/.test(e.instancePath)?'TICK_OUT_OF_RANGE':'INVALID_FIELD');
+ }
  if(!codes.size)codes.add('INVALID_FIELD');
 }
 export const checkReasons=(codes:Set<string>):Check=>({ok:codes.size===0,reasonCodes:[...codes].sort()});
@@ -56,14 +61,22 @@ export function validateDriveModel(value:unknown):Check{
 }
 
 /** A tuning envelope document: shape, finite bounds with min <= max, unique axes, digest. */
-export function validateTuningEnvelope(value:unknown):Check{
+export function validateTuningEnvelope(value:unknown,axes:readonly Pick<AxisDriveModel,'axisId'|'mode'>[]):Check{
  const codes=new Set<string>();
  if(nonFinite(value))codes.add('NON_FINITE_NUMBER');
  shapeCodes(envelopeShape as never,value,codes);
  const e=value as TuningEnvelopeV1;
  if(Array.isArray(e?.axes)){
   if(duplicates(e.axes.map(a=>a?.axisId)))codes.add('DRIVE_AXIS_DUPLICATE');
-  for(const a of e.axes){for(const k of ['kp','ki','kd','integralLimit','slewLimit','accelerationLimit'] as const)if(a?.[k]&&a[k]!.min>a[k]!.max)codes.add('ENVELOPE_BOUND_INVALID');if(a?.integralLimit&&a.integralLimit.min<=0)codes.add('ENVELOPE_BOUND_INVALID');}
+  const modes=new Map(axes.map(a=>[a.axisId,a.mode]));
+  for(const a of e.axes){
+   if(!a)continue;
+   for(const k of ['kp','ki','kd','integralLimit','slewLimit','accelerationLimit'] as const){
+    const b=a[k];if(b&&(b.min<0||b.min>b.max||(['integralLimit','slewLimit','accelerationLimit'].includes(k)&&b.min<=0)))codes.add('ENVELOPE_BOUND_INVALID');
+   }
+   const mode=modes.get(a.axisId);
+   if((mode==='csv'&&(a.slewLimit||a.kd&&(a.kd.min!==0||a.kd.max!==0)))||(mode==='csp'&&a.accelerationLimit))codes.add('ENVELOPE_BOUND_INVALID');
+  }
  }
  if(e&&typeof e==='object'&&typeof e.digest==='string'&&!nonFinite(value)&&driveDocumentDigest(e)!==e.digest)codes.add('DIGEST_MISMATCH');
  return checkReasons(codes);

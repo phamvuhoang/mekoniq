@@ -524,3 +524,4 @@ def test_actuator_spec_admits_what_the_shared_vectors_admit(case):
         with pytest.raises(WorkerError) as e:
             actuator_spec(axis, control)
         assert e.value.code == "DRIVE_DOCUMENT_INVALID"
+        assert e.value.detail == case["reason"]

@@ -37,15 +37,14 @@ def actuator_spec(axis_model, axis_control):
     `integralLimit` is a force limit in N m. Refuses what it cannot express instead of ignoring it."""
     mode, loop, accel = axis_model["mode"], axis_control["loop"], axis_control["accelerationLimit"]
     kp, ki, kd, limit, slew = loop["kp"], loop["ki"], loop["kd"], loop["integralLimit"], loop["slewLimit"]
-    name = axis_model["axisId"]
     # one rule table per mode, the same as validateControlProfile (shared vectors: tests/data/control-profile-admission-v1.json)
     if not all(_finite_number(g) and g >= 0 for g in (kp, ki, kd)) or any(x is not None and not (_finite_number(x) and x > 0) for x in (limit, slew, accel)):
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: gains need finite non-negative numbers and limits need finite positive numbers")
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", "INVALID_FIELD")
     if (ki > 0) != (limit is not None):
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: an integralLimit exists exactly when ki > 0")
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", "INTEGRAL_LIMIT_REQUIRED" if ki > 0 else "INTEGRAL_LIMIT_WITHOUT_KI")
     if mode == "csp":
         if accel is not None:
-            raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: accelerationLimit is implemented for csv axes only")
+            raise WorkerError("DRIVE_DOCUMENT_INVALID", "CSP_ACCELERATION_LIMIT")
         if ki == 0 and slew is None:
             return {"kind": "position", "attrs": {"kp": kp, "kv": kd}, "cells": 1, "integrated": False, "referenceLimitRad": None}
         attrs = {"kp": kp, "kv": kd, "ki": ki}
@@ -55,7 +54,7 @@ def actuator_spec(axis_model, axis_control):
             attrs["slewmax"] = slew
         return {"kind": "pid", "attrs": attrs, "cells": 2, "integrated": False, "referenceLimitRad": None}
     if kd != 0 or slew is not None:
-        raise WorkerError("DRIVE_DOCUMENT_INVALID", f"{name}: a velocity axis takes no kd and no slew")
+        raise WorkerError("DRIVE_DOCUMENT_INVALID", "CSV_KD_NONZERO" if kd != 0 else "CSV_SLEW_LIMIT")
     if ki == 0:
         return {"kind": "velocity", "attrs": {"kv": kp}, "cells": 1, "integrated": False, "referenceLimitRad": None}
     return {"kind": "pid", "attrs": {"kp": ki, "kv": kp, "ki": 0.0}, "cells": 2, "integrated": True, "referenceLimitRad": limit / ki}

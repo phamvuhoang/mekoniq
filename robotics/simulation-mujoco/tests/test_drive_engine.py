@@ -459,7 +459,7 @@ def test_drive_documents_that_do_not_fit_the_scene_are_refused_at_create(tmp_pat
 
 
 # ---- review of V05 (2026-11-19) ------------------------------------------------------------------------------------------------------------------------------
-def world_bundle(tmp_path, plant=WORLD_PLANT, *, control_context=False):
+def world_bundle(tmp_path, plant=WORLD_PLANT, *, control_context=False, dock_drift=False):
     world = ROOT / "fixtures" / "coffee-delivery-world-v1"
     for p in world.iterdir():
         if p.is_file():
@@ -474,6 +474,8 @@ def world_bundle(tmp_path, plant=WORLD_PLANT, *, control_context=False):
         refs[key] = {"id": d["id"], "revision": 1, "path": name, "sha256": hashlib.sha256(raw).hexdigest()}
         scene["files"].append({"path": name, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
     scene["engine"] = refs
+    if dock_drift:
+        scene["disturbance"] = {"presetId": "world-dock-drift-v1", "revision": 1, "targetId": "amr-1", "cupId": scene["propBindings"][0]["cupId"], "trigger": "before_release"}
     if control_context:
         scene["controlContextVersion"] = 1
     scene["sceneDigest"] = scene_digest_of(scene)
@@ -493,8 +495,8 @@ def test_the_world_plant_digest_is_the_one_the_lab_computes_and_a_profile_for_an
     assert not r["ok"] and r["error"]["code"] == "DRIVE_DOCUMENT_INVALID" and s.engine is None, r
 
 
-def world_drive_session(tmp_path, *, control_context=False):
-    scene = world_bundle(tmp_path, control_context=control_context)
+def world_drive_session(tmp_path, *, control_context=False, dock_drift=False):
+    scene = world_bundle(tmp_path, control_context=control_context, dock_drift=dock_drift)
     s = WorkerSession(run_id="w", bundle_root=tmp_path, lock_digest="b" * 64, expected_scene_digest=scene["sceneDigest"])
 
     def req(op, payload, tick=0, rid=None):

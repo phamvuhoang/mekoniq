@@ -30,7 +30,7 @@ import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
 import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
 import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
-import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateTraceManifestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateTuningEnvelope,validateTraceManifestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {gainSuggestions} from './gain-suggest';
 import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
@@ -49,6 +49,7 @@ export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'sc
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
  const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
  const envelope=JSON.parse((await file(join(DRIVE,'tuning-envelope-v1.json'))).toString()) as TuningEnvelopeV1;
+ if(!validateTuningEnvelope(envelope,model.axes).ok)throw Error('BENCH_ENVELOPE_INVALID');
  const policy=(JSON.parse((await file(join(DRIVE,'control-oracle-v1.json'))).toString()) as {metricPolicy:Policy}).metricPolicy;
  if(kind==='amr'){
   // D2: the AMR's plant is its physical model, whatever the load

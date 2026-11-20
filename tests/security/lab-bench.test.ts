@@ -61,6 +61,7 @@ test('an unknown field in bench, in its signal or in the draft profile is 422',a
 });
 test('a signal past 500 ticks is refused with one code: TICK_OUT_OF_RANGE',async()=>{
  const {call}=await session();
+ expect(await call('/runs',runRequest(arm({signal:{atTick:5,amplitude:0.1}})))).toEqual({status:422,body:{error:'INVALID_RUN_REQUEST',reasonCodes:['FIELD_REQUIRED'],issues:[{path:'/bench',code:'FIELD_REQUIRED',message:'Invalid bench request'}]}});
  for(const signal of [{kind:'hold',ticks:501},{kind:'step',amplitude:0.1,atTick:501},{kind:'step',amplitude:0.1,atTick:500},{kind:'trapezoid',distance:0.1,peakVelocity:0.5,acceleration:2,atTick:501}])
   expect(await call('/runs',runRequest(arm({signal})))).toEqual({status:422,body:{error:'INVALID_RUN_REQUEST',reasonCodes:['TICK_OUT_OF_RANGE'],issues:[{path:'/bench',code:'TICK_OUT_OF_RANGE',message:'Invalid bench request'}]}});
  expect(factoryCalls).toBe(0);

@@ -327,3 +327,28 @@ def test_arm_rejects_world_interactions_before_mutation(run):
     assert len(e.calls)==1 and s.tick==0
     r=s.handle(step(0,request_id='empty-extension',payload={'worldInteractions':[]}))
     assert r['ok'] and s.tick==1
+
+
+@pytest.mark.parametrize("closed", [True, False])
+def test_dock_drift_checks_the_accepted_gripper_target_on_a_repeated_sequence(tmp_path, closed):
+    from test_drive_engine import wheels, world_drive_session
+
+    s, request, arm, ctl, scene = world_drive_session(tmp_path, dock_drift=True)
+    try:
+        lo, hi = s.engine.arm.grip_range
+        gripper = next(c for c in arm if c["axisId"].endswith("/gripper"))
+        gripper["target"] = hi if closed else lo
+        first = {"targetTick": 1, "velocities": [], "actorUpdates": [], "driveCommands": arm + wheels(1, 0), **ctl}
+        assert s.handle(request("step", first))["ok"]
+        # Supply the held-cup observation to isolate the commanded-opening condition.
+        s.snapshot["arms"][0]["gripper"]["heldPropIds"] = [scene["propBindings"][0]["propId"]]
+        repeated = [dict(c) for c in first["driveCommands"]]
+        next(c for c in repeated if c["axisId"].endswith("/gripper"))["target"] = lo if closed else hi
+        event = {"presetId": "world-dock-drift-v1", "revision": 1, "targetId": "amr-1", "eventId": "dock", "targetTick": 2}
+        r = s.handle(request("step", {**first, "targetTick": 2, "driveCommands": repeated, "worldPerturbations": [event]}, tick=1))
+        if closed:
+            assert r["ok"] and r["result"]["worldStep"]["disturbances"][0]["eventId"] == "dock", r
+        else:
+            assert not r["ok"] and r["error"]["code"] == "WORLD_PERTURBATION_PHASE_INVALID" and s.tick == 1, r
+    finally:
+        s.end()
