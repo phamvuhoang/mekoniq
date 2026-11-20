@@ -72,6 +72,12 @@ export async function admitBench(bench:unknown,workerRoot:string):Promise<BenchP
  for(const c of [validateBenchRequest(b,{anchorTick:plant.anchorTick,...plant.limits?{limits:plant.limits}:{}}),validateControlProfile(b.controlProfile,plant.model,plant.envelope)])for(const x of c.reasonCodes)codes.add(x);
  // D2: a draft is never re-sealed for the plant; one sealed for another plant is refused
  if(b.controlProfile.plantModelDigest!==plant.plantModelDigest)codes.add('DRIVE_PLANT_MISMATCH');
+ // final-fix V07 I1: a tuned source names this bench, axes of this profile and a drive model it declares (the shape check already holds the fields)
+ for(const s of [b.controlProfile.sources.loop,b.controlProfile.sources.limits])if(s.kind==='tuned_in_simulation'){
+  if(s.scenarioId!==b.scenarioId)codes.add('TUNED_SOURCE_SCENARIO_MISMATCH');
+  if(!s.axisIds.every(id=>b.controlProfile.axes.some(a=>a.axisId===id)))codes.add('TUNED_SOURCE_AXIS_UNKNOWN');
+  if(!b.controlProfile.driveModelDigests.includes(s.driveModelDigest))codes.add('TUNED_SOURCE_DRIVE_MODEL_UNDECLARED');
+ }
  if(codes.size)throw Error(`INVALID_BENCH_REQUEST:${[...codes].sort().join(',')}`);
  return plant;
 }

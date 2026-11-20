@@ -276,7 +276,8 @@ def test_bench_documents_are_bound_to_the_bench_plant(tmp_path, kind, control):
 def tuned(name, **edit):
     """A registry profile whose loop and limits come from a bench run (V07pre: kind tuned_in_simulation), resealed; `edit` changes the tuned source."""
     d = json.loads((DRIVE / name).read_text())
-    ref = {"kind": "tuned_in_simulation", "benchRunId": "3f2b1c4d-0000-4000-8000-000000000001", "scenarioId": "MJ-BENCH-WHEEL", "traceSha256": "d" * 64, "sourceCommit": "e" * 40, **edit}
+    ref = {"kind": "tuned_in_simulation", "benchRunId": "3f2b1c4d-0000-4000-8000-000000000001", "scenarioId": "MJ-BENCH-WHEEL", "traceSha256": "d" * 64, "sourceCommit": "e" * 40,
+           "axisIds": [d["axes"][0]["axisId"]], "driveModelDigest": d["driveModelDigests"][0], **edit}
     return seal({**d, "sources": {**d["sources"], "loop": ref, "limits": ref}})
 
 
@@ -289,7 +290,7 @@ def test_a_profile_tuned_in_simulation_passes_the_worker_schema_check_and_a_malf
     ok = Bench(fresh("ok"), kind, axes, control=tuned(name))
     r = ok.create()
     assert r["ok"], r
-    for i, edit in enumerate(({"traceSha256": "D" * 64}, {"sourceCommit": "e" * 39}, {"scenarioId": "MJ-BV01"}, {"locator": "x"})):
+    for i, edit in enumerate(({"traceSha256": "D" * 64}, {"sourceCommit": "e" * 39}, {"scenarioId": "MJ-BV01"}, {"locator": "x"}, {"axisIds": []}, {"driveModelDigest": "F" * 64})):
         b = Bench(fresh(str(i)), kind, axes, control=tuned(name, **edit))
         r = b.create()
         assert not r["ok"] and r["error"]["code"] == "SCENE_SCHEMA_INVALID" and b.factory_calls == 0, (edit, r)

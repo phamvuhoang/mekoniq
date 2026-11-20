@@ -346,7 +346,7 @@
     "TunedSourceRef": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.",
+      "description": "Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256), the source commit of the runtime that ran it, the axes it traced and the drive model it ran (final-fix V07 I1: sources are profile-wide, so the attribution names exactly what was tuned). Simulated and not calibrated, like everything on the bench.",
       "properties": {
         "kind": {
           "const": "tuned_in_simulation"
@@ -368,6 +368,20 @@
         "sourceCommit": {
           "type": "string",
           "pattern": "^[0-9a-f]{40}$"
+        },
+        "axisIds": {
+          "type": "array",
+          "description": "The axes that bench traced (TuningResultV1.axisIds): the values of these axes were tuned on it; the other axes of the profile keep values that bench did not measure.",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+          }
+        },
+        "driveModelDigest": {
+          "description": "The drive model that bench ran (TuningResultV1.plant.driveModelDigest); one of the profile's driveModelDigests.",
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
         }
       },
       "required": [
@@ -375,7 +389,9 @@
         "benchRunId",
         "scenarioId",
         "traceSha256",
-        "sourceCommit"
+        "sourceCommit",
+        "axisIds",
+        "driveModelDigest"
       ],
       "title": "TunedSourceRef"
     }

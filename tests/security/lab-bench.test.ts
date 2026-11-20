@@ -137,7 +137,8 @@ const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 let v:LabGateway,vdir:string;
 beforeAll(async()=>{vdir=await mujocoTemp('lab-bench-v07pre-');v=await startLabGateway({port:0,directory:vdir,...identity,v2:{catalog,enabledBackends:['mujoco_arm','mujoco_3d'],portableChecks:benchReadiness(runtime),benchCatalog:served,simulationFactory:(input,providers)=>createBenchRun(input,{...providers,runtime})}});});
 afterAll(async()=>{await v.close();});
-const tunedSource={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-ARM',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40)};
+const ARM_NOMINAL=doc<{digest:string}>('xarm6-drive-nominal-v1.json').digest;
+const tunedSource={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-ARM',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40),axisIds:['xarm-1/J3'],driveModelDigest:ARM_NOMINAL};
 test('a draft whose loop and limits are tuned_in_simulation is admitted as a bench draft and its bytes are the ones the worker will read; a malformed tuned source is 422 before any run exists',async()=>{
  const {call}=await session(v),base=doc<ControlProfileV1>('xarm6-control-v1.json');
  const tuned=sealDriveDocument({...base,revision:2,sources:{...base.sources,loop:tunedSource,limits:tunedSource}} as ControlProfileV1);
@@ -145,11 +146,29 @@ test('a draft whose loop and limits are tuned_in_simulation is admitted as a ben
  const [dir]=(await runDirs(vdir)).filter(d=>!before.includes(d));
  expect((await readFile(join(vdir,dir!,'bundle/bench-control.json'))).toString()).toBe(JSON.stringify(tuned));   // D2: never re-sealed, byte for byte
  const after=await runDirs(vdir);
- for(const bad of [{...tunedSource,traceSha256:'x'},{...tunedSource,sourceCommit:'e'.repeat(39)},{...tunedSource,scenarioId:'MJ-BV01'},{...tunedSource,extra:1}]){
+ const {axisIds:_a,...noAxes}=tunedSource,{driveModelDigest:_d,...noDrive}=tunedSource;void _a;void _d;
+ for(const bad of [{...tunedSource,traceSha256:'x'},{...tunedSource,sourceCommit:'e'.repeat(39)},{...tunedSource,scenarioId:'MJ-BV01'},{...tunedSource,extra:1},noAxes,noDrive,{...tunedSource,axisIds:[]}]){
   const r=await call('/runs',runRequest(arm({controlProfile:sealDriveDocument({...base,sources:{...base.sources,loop:bad}} as never)})));
   expect(r,JSON.stringify(bad)).toMatchObject({status:422,body:{error:'INVALID_RUN_REQUEST'}});
  }
  expect(await runDirs(vdir)).toEqual(after);   // refused by the shape check, before the factory
+});
+test('final-fix V07 I1: a tuned source must name this bench, axes of the profile and a drive model the profile declares; otherwise 422 with its code, before any run exists',async()=>{
+ const {call}=await session(v),base=doc<ControlProfileV1>('xarm6-control-v1.json'),before=await runDirs(vdir);
+ const draft=(...sources:object[])=>arm({controlProfile:sealDriveDocument({...base,revision:2,sources:{...base.sources,loop:sources[0],limits:sources[1]??sources[0]}} as ControlProfileV1)});
+ const cases:[unknown,string[]][]=[
+  [draft({...tunedSource,scenarioId:'MJ-BENCH-WHEEL'}),['TUNED_SOURCE_SCENARIO_MISMATCH']],
+  [draft({...tunedSource,axisIds:['amr-1/wheel-left']}),['TUNED_SOURCE_AXIS_UNKNOWN']],
+  [draft({...tunedSource,axisIds:['xarm-1/J3','xarm-1/J7']}),['TUNED_SOURCE_AXIS_UNKNOWN']],
+  [draft({...tunedSource,driveModelDigest:'0'.repeat(64)}),['TUNED_SOURCE_DRIVE_MODEL_UNDECLARED']],
+  [draft(tunedSource,{...tunedSource,scenarioId:'MJ-BENCH-WHEEL',driveModelDigest:'0'.repeat(64)}),['TUNED_SOURCE_DRIVE_MODEL_UNDECLARED','TUNED_SOURCE_SCENARIO_MISMATCH']],   // limits checked like loop
+ ];
+ for(const [bench,codes] of cases)expect(await call('/runs',runRequest(bench)),JSON.stringify(codes)).toEqual({status:422,body:refusal(codes)});
+ expect(await runDirs(vdir)).toEqual(before);
+ // the same rule on the wheel bench: its two traced axes and a serve drive digest the profile declares
+ const serve=doc<ControlProfileV1>('serve-control-v1.json'),wheels={...tunedSource,scenarioId:'MJ-BENCH-WHEEL',axisIds:['amr-1/wheel-left','amr-1/wheel-right'],driveModelDigest:serve.driveModelDigests[0]!};
+ await expect(admitBench(wheel({controlProfile:sealDriveDocument({...serve,revision:2,sources:{...serve.sources,loop:wheels,limits:wheels}} as ControlProfileV1)}),mujocoRoot)).resolves.toMatchObject({kind:'amr'});
+ await expect(admitBench(wheel({controlProfile:sealDriveDocument({...serve,revision:2,sources:{...serve.sources,loop:{...wheels,axisIds:['xarm-1/J3']}}} as ControlProfileV1)}),mujocoRoot)).rejects.toThrow('INVALID_BENCH_REQUEST:TUNED_SOURCE_AXIS_UNKNOWN');
 });
 test('health carries the bench catalog admission uses: the plant and its digest, every selectable axis (mode, unit, a joint\'s limits and rest; the wheels forward only), every experiment\'s anchor and drive model digest, and the starting draft',async()=>{
  const health=await (await fetch(v.url+'/lab/v2/health')).json() as {benchCatalog:BenchCatalog;benchSignals:{wheelDirection:string}};

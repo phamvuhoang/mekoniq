@@ -165,12 +165,16 @@ test('evidence records: a mobile tick may carry drives, a cell record driveComma
  expect(validateWorldEvidenceRecordShape({...record,drives:[{...axis,tick:-1}]})).toBe(false);
 });
 
-test('V07pre: loop and limits may come from a bench run (tuned_in_simulation: run, scenario, trace sha256, source commit); a malformed tuned source, a tuned controller source or an engineering kind with bench fields is refused',()=>{
- const tuned={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40)};
+test('V07pre: loop and limits may come from a bench run (tuned_in_simulation: run, scenario, trace sha256, source commit, the traced axes and the drive model it ran); a malformed tuned source, a tuned controller source or an engineering kind with bench fields is refused',()=>{
+ const tuned={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40),axisIds:['amr-1/wheel-left','amr-1/wheel-right'],driveModelDigest:'f'.repeat(64)};
  const withSources=(s:object)=>reseal({...clone(control),sources:{...control.sources,...s}});
  expect(validateControlProfile(withSources({loop:tuned,limits:{...tuned,scenarioId:'MJ-BENCH-ARM'}}),model,envelope)).toEqual({ok:true,reasonCodes:[]});
  expect(validateControlProfile(withSources({loop:tuned}),model,envelope)).toEqual({ok:true,reasonCodes:[]});   // one member tuned, the others as they were
  const {benchRunId:_,...noRun}=tuned;void _;
+ // final-fix V07 I1: the attribution names what was tuned (1–2 traced axes, unique) and the drive model it ran on, both required
+ const {axisIds:_a,...noAxes}=tuned,{driveModelDigest:_d,...noDrive}=tuned;void _a;void _d;
+ for(const bad of [noAxes,noDrive,{...tuned,axisIds:[]},{...tuned,axisIds:['a/1','a/2','a/3']},{...tuned,axisIds:['amr-1/wheel-left','amr-1/wheel-left']},{...tuned,axisIds:['wheel']},{...tuned,driveModelDigest:'F'.repeat(64)},{...tuned,driveModelDigest:'f'.repeat(63)}])
+  expect(validateControlProfile(withSources({loop:bad}),model,envelope).ok,JSON.stringify(bad)).toBe(false);
  for(const bad of [{...tuned,traceSha256:'D'.repeat(64)},{...tuned,traceSha256:'d'.repeat(63)},{...tuned,sourceCommit:'e'.repeat(39)},{...tuned,sourceCommit:'E'.repeat(40)},{...tuned,scenarioId:'MJ-BV01'},{...tuned,benchRunId:''},
   {...tuned,locator:'x'},noRun,{...tuned,kind:'assumed'},{...control.sources.loop,kind:'tuned_in_simulation'}])
   for(const member of ['loop','limits'])expect(validateControlProfile(withSources({[member]:bad}),model,envelope).ok,`${member} ${JSON.stringify(bad)}`).toBe(false);

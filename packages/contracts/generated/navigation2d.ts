@@ -2773,7 +2773,7 @@ export interface TuningEnvelopeV1 {
   source: SourceRef;
 }
 /**
- * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256) and the source commit of the runtime that ran it. Simulated and not calibrated, like everything on the bench.
+ * Values tuned in simulation on a registered bench run (R4-A §6.3 export): the run, its bench scenario, the sha256 of its recorded trace (TuningResultV1.trace.sha256), the source commit of the runtime that ran it, the axes it traced and the drive model it ran (final-fix V07 I1: sources are profile-wide, so the attribution names exactly what was tuned). Simulated and not calibrated, like everything on the bench.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "TunedSourceRef".
@@ -2784,6 +2784,14 @@ export interface TunedSourceRef {
   scenarioId: 'MJ-BENCH-WHEEL' | 'MJ-BENCH-ARM';
   traceSha256: Digest;
   sourceCommit: string;
+  /**
+   * The axes that bench traced (TuningResultV1.axisIds): the values of these axes were tuned on it; the other axes of the profile keep values that bench did not measure.
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: DriveAxisId[];
+  driveModelDigest: Digest;
 }
 /**
  * A tuning choice: loop gains and limits per axis, bound to the plant and to the drive models it was declared against.

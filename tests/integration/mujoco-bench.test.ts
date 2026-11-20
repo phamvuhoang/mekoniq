@@ -136,7 +136,7 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   show({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia,suggestions:t.suggestions}});
  },120_000);
  test('V07pre: a draft whose loop and limits are tuned_in_simulation passes the worker\'s own schema check, runs to completion and reached the worker byte for byte',async()=>{
-  const base=doc<ControlProfileV1>('serve-control-v1.json'),source={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40)};
+  const base=doc<ControlProfileV1>('serve-control-v1.json'),source={kind:'tuned_in_simulation',benchRunId:'3f2b1c4d-0000-4000-8000-000000000001',scenarioId:'MJ-BENCH-WHEEL',traceSha256:'d'.repeat(64),sourceCommit:'e'.repeat(40),axisIds:WHEELS,driveModelDigest:base.driveModelDigests[0]!};
   const tuned=sealDriveDocument({...base,revision:2,sources:{...base.sources,loop:source,limits:source}} as ControlProfileV1);
   const {report,directory}=await bench(wheel({controlProfile:tuned}),undefined,'wheel tuned draft');
   expect(report.tuning).toMatchObject({status:'completed',plant:{controlProfileDigest:tuned.digest}});
