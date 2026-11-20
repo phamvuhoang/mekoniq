@@ -278,6 +278,7 @@ def test_bench_documents_are_bound_to_the_bench_plant(tmp_path, kind, control):
     ("driveModelRef", lambda r: {**r, "path": "../bench-drive.json"}, "SCENE_PATH_REJECTED"),
     ("driveModelRef", lambda r: {**r, "path": "missing.json"}, "SCENE_PATH_REJECTED"),
     ("driveModelRef", lambda r: {**r, "revision": 2}, "PROFILE_ID_MISMATCH"),
+    ("controlProfileRef", lambda r: {**r, "id": "another-profile"}, "PROFILE_ID_MISMATCH"),   # (id, revision) of both refs, as a scene ref's (session._drive_docs)
 ])
 def test_bench_refs_are_admitted_like_scene_refs(tmp_path, ref, edit, code):
     b = Bench(tmp_path, "arm", ["xarm-1/J3"])

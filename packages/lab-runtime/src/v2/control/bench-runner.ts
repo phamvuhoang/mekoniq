@@ -1,8 +1,9 @@
 // Single-axis bench runs (R4-A §6, plan V06, V06c rulings). One run, one MuJoCo worker on a scene the server builds from its fixtures (the wheels of serve-payload-v1 on the empty load, or the
 // xArm 6 of xarm6-g2-v1 at home), the experiment's drive model and the user's draft control profile byte for byte (D2). Every tick commands every axis: the bench target on the traced axes, a hold on the
 // others. The 500 Hz trace goes to a recorder of its own (immutable gzip chunks with sha256 and a quota, the helpers of physics-evidence.ts) and the result is built from the trace as READ BACK.
-// A bench ends in one of three results (ruling 8): completed, drive_fault (an axis latched a fault) or unstable (the engine reported instability). Both non-completed ones are results:
-// the worker is closed, the engine slot released, and nothing lowers a gain or runs again by itself. A lost or refused step is not a result: the run needs attention and has no tuning.
+// A bench ends in one of four results (ruling 8, final-fix F1): completed, drive_fault (an axis latched a fault), unstable (the engine reported instability) or collision (a snapshot named a contact the plant
+// does not allow). The non-completed ones are results: the worker is closed, the engine slot released, and nothing lowers a gain or runs again by itself. A lost or refused step is not a result: the run needs
+// attention and has no tuning. GET /lab/v2/runs/:id/trace serves the trace as read back (trace()), never from memory.
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -177,15 +178,16 @@ export async function readBenchTrace(directory:string,identity:BenchTraceIdentit
 }
 
 // ---- metrics and the result ----------------------------------------------------------------------------------------------------------------------------------
-type Outcome={status:'completed'}|{status:'drive_fault';fault:{tick:number;axisId:string;code:string}}|{status:'unstable';unstable:{tick:number;warning:string}};
+type Outcome={status:'completed'}|{status:'drive_fault';fault:{tick:number;axisId:string;code:string}}|{status:'unstable';unstable:{tick:number;warning:string}}|{status:'collision';collision:{tick:number;ids:string[]}};
 const METRIC_UNITS=(mode:'csp'|'csv'):Record<string,string>=>({riseTimeS:'s',overshootPct:'%',settlingTimeS:'s',steadyStateError:mode==='csp'?'rad':'rad/s',rmsError:mode==='csp'?'rad':'rad/s',peakTorqueNm:'N m',saturationRatio:'ratio'});
 const allUnavailable=(mode:'csp'|'csv',reason:string)=>Object.fromEntries(Object.entries(METRIC_UNITS(mode)).map(([k,unit])=>[k,{available:false,value:null,unit,reason} as ControlMetric]));
 /** The signal starts at the start of tick `anchor + atTick` (a hold: `anchor`), the anchor being the first tick commanded after every axis reported enabled. Its time origin t0S is the end of the tick before it:
  * sample 10·start − 1 of the trace (tick 0's first substep is sample 0), and y0 is the true state there. A step gets the step metrics of contracts §5; a trapezoid and a hold the tracking error, the peak torque and the
- * saturation ratio over the window from their start (what §6.1 lists for them), the step metrics are SIGNAL_NOT_STEP. A drive fault or an unstable plant: every metric unavailable with that reason (no metric of the part before).
+ * saturation ratio from their start (what §6.1 lists for them): the tracking error and the saturation ratio up to the end of the motion (a trapezoid's motion end, a hold's last tick: §6.1 "sai số bám khi chạy",
+ * not the stationary tail), the peak torque to the end of the bench; the step metrics are SIGNAL_NOT_STEP. A drive fault, an unstable plant or a collision: every metric unavailable with that reason (no metric of the part before).
  * A signal that did not run to its end inside the trace (a step that never landed, a motion or a hold cut by the end of the bench) has no metric either: SIGNAL_TRUNCATED. */
 export function benchMetrics(trace:DriveTrace,signal:BenchRequestV1['signal'],anchor:number|null,mode:'csp'|'csv',policy:Policy,outcome:Outcome['status']):Record<string,ControlMetric>{
- if(outcome!=='completed')return allUnavailable(mode,outcome==='drive_fault'?'DRIVE_FAULT':'PLANT_UNSTABLE');
+ if(outcome!=='completed')return allUnavailable(mode,{drive_fault:'DRIVE_FAULT',unstable:'PLANT_UNSTABLE',collision:'COLLISION'}[outcome]);
  if(anchor===null)return allUnavailable(mode,'SIGNAL_NOT_STARTED');
  // a signal whose landing (a step), motion end (a trapezoid) or last tick (a hold) is past the last recorded tick did not run as asked: no metric of it (admission refuses one that cannot fit)
  const lastTick=trace.samples.length/BENCH_TRACE_LIMITS.substeps-1;
@@ -195,8 +197,9 @@ export function benchMetrics(trace:DriveTrace,signal:BenchRequestV1['signal'],an
  const at={t0S:i0*trace.dtS,y0:origin.actual};
  if(signal.kind==='step')return stepResponseMetrics(trace,{...at,amplitude:signal.amplitude},policy,mode);
  // the tracking error, the peak torque and the saturation ratio do not depend on the amplitude (any non-zero one gives the same); the rest is a step's
- const m=stepResponseMetrics(trace,{...at,amplitude:1},policy,mode),units=METRIC_UNITS(mode);
- return {...Object.fromEntries(['riseTimeS','overshootPct','settlingTimeS','steadyStateError'].map(k=>[k,{available:false,value:null,unit:units[k]!,reason:'SIGNAL_NOT_STEP'}])),rmsError:m.rmsError,peakTorqueNm:m.peakTorqueNm,saturationRatio:m.saturationRatio};
+ const motion=stepResponseMetrics({...trace,samples:trace.samples.slice(0,BENCH_TRACE_LIMITS.substeps*(anchor+benchSignalLastTick(signal)+1))},{...at,amplitude:1},policy,mode),units=METRIC_UNITS(mode);
+ return {...Object.fromEntries(['riseTimeS','overshootPct','settlingTimeS','steadyStateError'].map(k=>[k,{available:false,value:null,unit:units[k]!,reason:'SIGNAL_NOT_STEP'}])),rmsError:motion.rmsError,
+  peakTorqueNm:stepResponseMetrics(trace,{...at,amplitude:1},policy,mode).peakTorqueNm,saturationRatio:motion.saturationRatio};
 }
 
 // ---- readiness -------------------------------------------------------------------------------------------------------------------------------------------
@@ -234,7 +237,7 @@ class BenchRun implements ScenarioRun {
  private queue:Promise<unknown>=Promise.resolve();
  private worker?:IRSimWorkerClient;
  private st={tick:0,started:false,paused:false,cancelled:false,reclaimed:false,closed:false,revision:0,requests:0,anchor:null as number|null,outcome:null as Outcome|null,attention:[] as Attention[],
-  receipts:{} as Record<string,{hash:string;view:RunView}>,engine:null as {version:string;hostArch?:string}|null,inertia:null as TuningResultV1['effectiveInertia']};
+  receipts:{} as Record<string,{hash:string;view:RunView}>,engine:null as TuningResultV1['engine']|null,inertia:null as TuningResultV1['effectiveInertia']};
  private pace:PaceAnchor|null=null;
  /** the trace is ended once, by the first stop: a later close never rewrites how it ended */
  private traceEnded=false;
@@ -256,6 +259,8 @@ class BenchRun implements ScenarioRun {
   return this.view();
  });}
  report(){return this.serial(()=>this.buildReport());}
+ /** The trace of ticks 0..tick as read back from its chunks now (readBenchTrace: null samples for what it could not confirm), at most 2 axes × 5,010 samples; behind actions, so a step's flushed ticks are in it. */
+ trace(){return this.serial(async()=>{if(this.st.closed)throw Error('RUN_CLOSED');const {traces,issues}=await readBenchTrace(this.rec.directory,this.identity,this.st.tick);return {traces,issues};});}
  async close(){await this.queue.catch(()=>{});if(this.st.closed)return;this.st.closed=true;await this.stopWorker('RUN_CLOSED');}
 
  private view():RunView{
@@ -303,10 +308,10 @@ class BenchRun implements ScenarioRun {
   const refused=(op:string,r:{ok:boolean;error?:{code:string}})=>Error(`PLANT_START_FAILED:${op}:${r.error?.code??'INVALID_RESPONSE'}`);
   try{
    const d=await this.ask('describe',{});if(!d.ok)throw refused('describe',d);
-   const info=d.result as {lockDigest:string;engineVersion?:string;hostArch?:string};if(info.lockDigest!==o.lockDigest||info.engineVersion!==undefined&&info.engineVersion!==o.engineVersion)throw Error('PLANT_START_FAILED:MUJOCO_PROVIDER_MISMATCH');
-   this.st.engine={version:o.engineVersion,...info.hostArch?{hostArch:info.hostArch}:{}};
+   const info=d.result as {lockDigest:string;engineVersion?:string;hostArch?:'arm64'|'x86_64'};if(info.lockDigest!==o.lockDigest||info.engineVersion!==undefined&&info.engineVersion!==o.engineVersion)throw Error('PLANT_START_FAILED:MUJOCO_PROVIDER_MISMATCH');
+   this.st.engine={id:this.backends()[0]!,version:o.engineVersion,...info.hostArch?{hostArch:info.hostArch}:{}};
    const c=await this.ask('create',this.create);if(!c.ok)throw refused('create',c);
-   if(!await this.observe(c.result as never,0))return;   // the priming tick already ended the bench (a latched fault)
+   if(!await this.observe(c.result as never,0))return;   // the priming tick already ended the bench (a collision or a latched fault)
    const st=await this.ask('start',{});if(!st.ok)throw refused('start',st);
    // the readback of the bench pose (D4): the first traced axis' effective inertia
    const g=await this.ask('getState',{});if(!g.ok)throw refused('getState',g);
@@ -314,12 +319,16 @@ class BenchRun implements ScenarioRun {
    this.st.inertia=j?{valueKgM2:j.valueKgM2,basis:j.basis,provenance:j.provenance}:null;
   }catch(e){throw e instanceof WorkerLostError?Error(`PLANT_START_FAILED:${e.code}`):e;}
  }
- /** A verified snapshot of `tick`: its trace into the recorder (before anything is derived from it), the anchor, a latched fault. False when the bench ended with it. */
- private async observe(snap:{tick:number;drives?:DriveAxisSnapshot[];driveTrace?:unknown},tick:number):Promise<boolean>{
+ /** A verified snapshot of `tick`: its trace into the recorder (before anything is derived from it), the anchor, a collision, a latched fault. False when the bench ended with it. */
+ private async observe(snap:{tick:number;drives?:DriveAxisSnapshot[];driveTrace?:unknown;robots?:{collisionIds:string[]}[];arms?:{collisionIds:string[]}[]},tick:number):Promise<boolean>{
   const drives=snap.drives;
   if(snap.tick!==tick||!Array.isArray(drives)||drives.length!==this.plant.model.axes.length||drives.some((d,i)=>d.axisId!==this.plant.model.axes[i]!.axisId))throw Error('SNAPSHOT_INVALID');
   await this.rec.append(tick,snap.driveTrace);
   this.st.tick=tick;
+  // F1: a contact the plant does not allow ends the bench as that result (collisionIds, schema-checked by the worker client, already leave out what the plant allows); a response measured
+  // against a wall is no response. Before a fault of the same tick: the contact explains the fault, not the other way round
+  const hit=[...new Set([...snap.robots??[],...snap.arms??[]].flatMap(x=>x.collisionIds))].sort();
+  if(hit.length){await this.finish({status:'collision',collision:{tick,ids:hit}});return false;}
   const fault=drives.find(d=>d.fault!==null);
   // ruling 8: a drive that latched a fault ends the bench as that result. Any axis: a holding axis that trips moves the plant under the test, so the measurement is no longer the traced axis' alone
   if(fault){await this.finish({status:'drive_fault',fault:{tick,axisId:fault.axisId,code:fault.fault!}});return false;}
@@ -362,7 +371,8 @@ class BenchRun implements ScenarioRun {
   if(!read.manifest||!read.manifestSha256||!read.manifest.chunks.length)return {tuning:null,issues:read.issues};
   const o=s.outcome,first=read.traces[0]!,mode=this.mode[this.plant.axisIds[0]!]!;
   const tuning:TuningResultV1={schemaVersion:1,documentType:'tuning-result',runId:this.id,status:o.status,unstable:o.status==='unstable'?o.unstable:null,fault:o.status==='drive_fault'?o.fault:null,
-   axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,engine:{id:this.backends()[0]!,version:s.engine?.version??this.providers.runtime.engineVersion},
+   collision:o.status==='collision'?o.collision:null,axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,
+   engine:s.engine??{id:this.backends()[0]!,version:this.providers.runtime.engineVersion},
    plant:{plantModelDigest:this.plant.plantModelDigest,driveModelDigest:this.plant.model.digest,controlProfileDigest:this.bench.controlProfile.digest,load:'empty'},effectiveInertia:s.inertia,policy:{...this.plant.policy},
    metrics:benchMetrics(first,this.bench.signal,s.anchor,mode,this.plant.policy,o.status),
    trace:{chunks:read.manifest.chunks.length,sha256:read.manifestSha256,samples:first.samples.slice(BENCH_TRACE_LIMITS.substeps).filter(x=>x!==null).length},accepted:false};
@@ -385,7 +395,7 @@ class BenchRun implements ScenarioRun {
    metrics:{maxConcurrentMovers:0,distanceM:{},collision:{available:false,reason:'BENCH_RUN',contacts:null,minSeparationM:null}},rejectedObservations:[],reconciliations:[],recoveredOps:[],confirmations:[],faults:[],
    coverage:{businessSimulation:false,kinematicModel:true,dynamics:true,nativeExecution:false,physicalStop:false,sensorEvidence:false,eventStream:true},
    limitations:['Bench run (R4.2): no mission, journal or custody; the response is computed on the TRUE state of the 500 Hz trace as read back from its immutable chunks (basis actual).',
-    'MuJoCo 3.17.0 with a virtual drive: every drive, gain and plant value is assumed, not_calibrated.','A drive fault or engine instability ends the bench as that result: no gain is lowered and nothing is run again by itself.'],
+    'MuJoCo 3.17.0 with a virtual drive: every drive, gain and plant value is assumed, not_calibrated.','A drive fault, engine instability or a contact the plant does not allow ends the bench as that result: no gain is lowered and nothing is run again by itself.'],
    telemetry:this.telemetry.report(),tuning,bench:{request:{...request,controlProfile:{id:cp.id,revision:cp.revision,digest:cp.digest}},anchorTick:s.anchor,sceneDigest:this.sceneDigest,traceIssues:issues}};
  }
 }

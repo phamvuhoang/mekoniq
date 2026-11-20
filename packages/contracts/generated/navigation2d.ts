@@ -487,7 +487,7 @@ export type ControlMetric =
       reason: string;
     };
 /**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning). The object of the other two results is null.
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "TuningResultV1".
@@ -2839,7 +2839,7 @@ export interface TuningResultV11 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
-  status: 'completed' | 'drive_fault' | 'unstable';
+  status: 'completed' | 'drive_fault' | 'unstable' | 'collision';
   unstable: {
     tick: number;
     warning: string;
@@ -2848,6 +2848,14 @@ export interface TuningResultV11 {
     tick: number;
     axisId: DriveAxisId;
     code: string;
+  } | null;
+  collision: {
+    tick: number;
+    /**
+     * @minItems 1
+     * @maxItems 64
+     */
+    ids: string[];
   } | null;
   /**
    * @minItems 1
@@ -2859,6 +2867,10 @@ export interface TuningResultV11 {
   engine: {
     id: string;
     version: string;
+    /**
+     * The architecture the worker reported (contracts §1): bit identity of two results only means something within one.
+     */
+    hostArch?: 'arm64' | 'x86_64';
   };
   /**
    * load is the bench load id (for example empty): two runs under different loads are not comparable.

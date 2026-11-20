@@ -97,7 +97,9 @@ export function createV2Gateway(deps:V2Deps){
  const streams=new Set<ServerResponse>(),streamOptions={...STREAM_DEFAULTS,...deps.stream};
  const token=()=>randomBytes(32).toString('base64url');
  const deny=(response:ServerResponse,status:number,error:string,reasonCodes:string[],issues?:Issue[])=>deps.send(response,status,{error,reasonCodes,...issues?{issues}:{}});
- const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!);return deny(response,status,status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[]);};
+ // a bench refused at admission carries the issues INVALID_RUN_REQUEST carries, element for element (one refusal shape for a client)
+ const failed=(response:ServerResponse,e:unknown)=>{const m=e instanceof Error?e.message:'RUNTIME_FAILURE',status=statusOf(m.split(':')[0]!),error=status===500&&m!=='SIMULATED_CRASH'?'RUNTIME_FAILURE':m.split(':')[0]!,codes=m.includes(':')?m.split(':')[1]!.split(',').map(c=>c.trim()):[];
+  return deny(response,status,error,codes,error==='INVALID_BENCH_REQUEST'?codes.map(code=>({path:'/bench',code,message:'Invalid bench request'})):undefined);};
 const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof EngineeringError?deny(response,e.status,e.code,e.reasonCodes):failed(response,e);
  const bundleFile=deps.engineering?(digest:string,path:string)=>deps.engineering!.bundleFile(digest,path):undefined;
  const readinessOptions=()=>({catalog,enabledBackends:[...enabled],now:deps.now,probes:deps.readinessProbes,nativeChecks:deps.nativeChecks,portableChecks:deps.portableChecks});
@@ -241,7 +243,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
 
   }
   const route=sub==='/projects/validate'?{allow:'POST',name:'validate'}:sub==='/runs'?{allow:'POST',name:'create'}:undefined;
-  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|events|telemetry|reclaim|archive|writer))?$`).exec(sub);
+  // GET /runs/:id/trace: a bench run's drive trace as read back from its chunks ({traces, issues}, 2 axes x 5,010 samples at most), owner and readers only; 409 TRACE_UNSUPPORTED for any other run
+  const runRoute=new RegExp(`^/runs/(${UUID})(?:/(actions|report|trace|events|telemetry|reclaim|archive|writer))?$`).exec(sub);
   const runAllow=runRoute?({writer:'POST',actions:'POST',reclaim:'POST',archive:'POST'}as Record<string,string>)[runRoute[2]??'']??'GET':undefined;
   if(!route&&!runRoute)return deny(response,404,'NOT_FOUND',[]);
   if(method!==(route?.allow??runAllow))return deny(response,405,'METHOD_NOT_ALLOWED',[]);
@@ -404,7 +407,8 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }catch(e){entry.archiving=false;return failed(response,e);}});
   }
   if(kind==='events'||kind==='telemetry'){streams.add(response);return serveRunStream(kind,entry.run,request,response,streamOptions,new URL(request.url??'/','http://127.0.0.1'),()=>streams.delete(response),()=>sessions.get(sessionId)===session&&deps.now()<session.expiresAt&&runs.get(entry.run.id)===entry&&readable(entry,sessionId)&&!entry.archiving);}
-  try{const snap=kind==='report'?null:await entry.run.snapshot(),value=snap?{...snap,writer:writerView(entry),...entry.readOnly?{controlAccess:snap.controlAccess??'view_reconcile'}:{}}:{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
+  if(kind==='trace'&&!entry.run.trace)return deny(response,409,'TRACE_UNSUPPORTED',[]);
+  try{const snap=kind?null:await entry.run.snapshot(),value=snap?{...snap,writer:writerView(entry),...entry.readOnly?{controlAccess:snap.controlAccess??'view_reconcile'}:{}}:kind==='trace'?await entry.run.trace!():{...await entry.run.report(),schemaHash:deps.schemaHash,protocolMajor:2};if(runs.get(entry.run.id)!==entry||!readable(entry,sessionId)||sessions.get(sessionId)!==session||deps.now()>=session.expiresAt)return deny(response,404,'RUN_NOT_FOUND',[]);return send(response,200,value);}catch(e){return failed(response,e);}
  };
  return Object.assign(handle,{
   /** Ends open SSE connections so the HTTP server can close. */

@@ -7,7 +7,7 @@ export const BENCH_MAX_TICKS=500;
 export const BENCH_SIGNAL_KINDS=['step','trapezoid','hold'] as const;
 /** One logical tick, 20 ms (10 substeps of 2 ms). */
 export const BENCH_TICK_S=0.02,BENCH_SUBSTEPS=10;
-/** Registered sizes: a speed (csv) step or peak in rad/s, a position (csp) step or distance in rad; the sign is free. */
+/** Registered sizes: a speed (csv) step or peak in rad/s, a position (csp) step or distance in rad; the sign is free for a joint, a wheel bench runs forward only (validateBenchRequest: WHEEL_REVERSE_UNSUPPORTED). */
 export const BENCH_AMPLITUDES={wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]} as const;
 export const SUGGEST_OPTIONS={bandwidthRadS:[5,10,20,40],damping:[0.7,1]} as const;
 
@@ -63,7 +63,8 @@ export function benchTarget(signal:BenchSignal,start:number,tick:number,mode:Mod
 
 /** The axes a bench request can name, and the drive mode of each: the two wheels (speed) or one arm axis (position). */
 export const benchAxisMode=(axis:BenchRequestV1['axis']):Mode=>axis==='wheels'?'csv':'csp';
-/** Shape plus the cross-field rules a schema cannot say: `wheels` only on MJ-BENCH-WHEEL, a joint or the gripper only on MJ-BENCH-ARM, and a signal the axis admits. `plant.anchorTick` is the engine tick of signal tick 0 for the experiment's drive (benchAnchorTick);
+/** Shape plus the cross-field rules a schema cannot say: `wheels` only on MJ-BENCH-WHEEL, a joint or the gripper only on MJ-BENCH-ARM, a wheel signal forward only (the AMR has 1.5 m of floor behind it: a reverse
+ *  step drove it into boundary-west, final-fix-report F1; a negative peak is the schema's refusal), and a signal the axis admits. `plant.anchorTick` is the engine tick of signal tick 0 for the experiment's drive (benchAnchorTick);
  *  `plant.limits` are the joint limits and rest position the server knows: required for a joint or the gripper (without them: AXIS_LIMITS_REQUIRED, never a request admitted unchecked), ignored for the wheels. The control profile against its model and the envelope is the caller's check (validateControlProfile, which calls withinEnvelope). */
 export function validateBenchRequest(request:unknown,plant:{anchorTick:number;limits?:{lower:number;upper:number;start:number}}):Check{
  const shape=validateBenchRequestShape(request);
@@ -73,6 +74,7 @@ export function validateBenchRequest(request:unknown,plant:{anchorTick:number;li
  if(codes.size)return done(codes);
  const limits=plant.limits;
  if(r.axis!=='wheels'&&!(limits&&[limits.lower,limits.upper,limits.start].every(Number.isFinite)))return done(codes.add('AXIS_LIMITS_REQUIRED'));
+ if(r.axis==='wheels'&&(r.signal.kind==='step'&&r.signal.amplitude<0||r.signal.kind==='trapezoid'&&r.signal.distance<0))codes.add('WHEEL_REVERSE_UNSUPPORTED');
  for(const c of validateBenchSignal(r.signal,{mode:benchAxisMode(r.axis),anchorTick:plant.anchorTick,...(r.axis==='wheels'?{}:limits)}).reasonCodes)codes.add(c);
  return done(codes);
 }

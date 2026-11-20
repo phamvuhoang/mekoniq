@@ -1,4 +1,7 @@
+import {spawnSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {expect,test} from 'vitest';
 import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_TICK_S,SUGGEST_OPTIONS,benchAnchorTick,benchMotionEndTick,benchTarget,validateBenchRequest,validateBenchSignal,type BenchSignal} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import type {ControlProfileV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
@@ -104,4 +107,16 @@ test('a signal must fit in the bench after the drive\'s enable sequence: the las
  expect(at(trap(500-4-135),4)).toEqual([]);expect(at(trap(500-4-135+1),4)).toEqual(['TICK_OUT_OF_RANGE']);
  expect(at({kind:'step',amplitude:2,atTick:499},1)).toEqual([]);expect(at({kind:'hold',ticks:500},1)).toEqual([]);
  expect(at(trap(500-1-135+1),1)).toEqual(['TICK_OUT_OF_RANGE']);
+});
+test('a wheel bench runs forward only: a reverse step or trapezoid distance is WHEEL_REVERSE_UNSUPPORTED (1.5 m of floor behind the AMR); a joint keeps both signs',()=>{
+ const wheels=(signal:BenchSignal)=>validateBenchRequest(req({signal}),{anchorTick:4}).reasonCodes,joint=(signal:BenchSignal)=>validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal}),{anchorTick:4,limits:{lower:-1,upper:1,start:0}}).reasonCodes;
+ expect(wheels({kind:'step',amplitude:-2,atTick:5})).toEqual(['WHEEL_REVERSE_UNSUPPORTED']);expect(wheels({kind:'step',amplitude:-5,atTick:5})).toEqual(['WHEEL_REVERSE_UNSUPPORTED']);
+ expect(wheels({kind:'trapezoid',distance:-5,peakVelocity:2,acceleration:10,atTick:5})).toEqual(['WHEEL_REVERSE_UNSUPPORTED']);
+ expect(wheels({kind:'trapezoid',distance:5,peakVelocity:-2,acceleration:10,atTick:5}).length).toBeGreaterThan(0);   // a negative peak is the schema's own refusal (exclusiveMinimum 0)
+ expect(wheels({kind:'step',amplitude:2,atTick:5})).toEqual([]);
+ expect(joint({kind:'step',amplitude:-0.1,atTick:5})).toEqual([]);expect(joint({kind:'trapezoid',distance:-0.1,peakVelocity:0.5,acceleration:2,atTick:5})).toEqual([]);
+});
+test('lab-mujoco bench: a seed above 2^32-1 is a usage error (exit 2) before anything runs',()=>{
+ const r=spawnSync(process.execPath,['scripts/lab-mujoco.mjs','bench','--axis','wheels','--signal','{"kind":"step","amplitude":2,"atTick":10}','--profile','robotics/simulation-mujoco/fixtures/drive-v1/serve-control-v1.json','--out',join(tmpdir(),'lab-mujoco-seed-never-written'),'--seed','4294967296'],{encoding:'utf8',timeout:120000});
+ expect(r.status,r.stderr).toBe(2);expect(r.stderr).toMatch(/^usage:/);
 });

@@ -89,7 +89,7 @@ test('invalid windows and policies are reported, not computed',()=>{
 test('the contract: a TuningResultV1 of a bench run is a valid shape, an accepted or malformed one is not',async()=>{
  const {validateControlEvidenceShape}=await import('../../packages/lab-runtime/src/v2/control/drive-io');
  const d='a'.repeat(64),metrics=stepResponseMetrics({axisId:'a/J3',dtS:0.002,samples:second(0.7,20,500)},unit,policy);
- const result={schemaVersion:1,documentType:'tuning-result',runId:'run-1',status:'completed',unstable:null,fault:null,axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.1,atTick:5},seed:7,engine:{id:'mujoco',version:'3.17.0'},
+ const result={schemaVersion:1,documentType:'tuning-result',runId:'run-1',status:'completed',unstable:null,fault:null,collision:null,axisIds:['xarm-1/J3'],signal:{kind:'step',amplitude:0.1,atTick:5},seed:7,engine:{id:'mujoco',version:'3.17.0'},
   plant:{plantModelDigest:d,driveModelDigest:d,controlProfileDigest:d,load:'empty'},effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'assumed'},policy,metrics,trace:{chunks:1,sha256:d,samples:500},accepted:false};
  const ok=(v:unknown)=>validateControlEvidenceShape(v);
  expect(ok(result),JSON.stringify(validateControlEvidenceShape.errors)).toBe(true);
@@ -99,7 +99,17 @@ test('the contract: a TuningResultV1 of a bench run is a valid shape, an accepte
  expect(ok({...result,status:'drive_fault'})).toBe(false);
  expect(ok({...result,fault:{tick:22,axisId:'xarm-1/J3',code:'OVERSPEED'}})).toBe(false);
  expect(ok({...result,status:'unstable'})).toBe(false);
+ // a collision the plant does not allow (F1): a result with its tick and the ids the snapshot named; status and its object come together, and it is required (null otherwise)
+ expect(ok({...result,status:'collision',collision:{tick:40,ids:['boundary-west']}})).toBe(true);
+ expect(ok({...result,status:'collision'})).toBe(false);
+ expect(ok({...result,collision:{tick:40,ids:['boundary-west']}})).toBe(false);
+ expect(ok({...result,status:'collision',collision:{tick:40,ids:[]}})).toBe(false);
+ expect(ok({...result,status:'collision',collision:{tick:40,ids:['boundary-west']},fault:{tick:40,axisId:'xarm-1/J3',code:'OVERSPEED'}})).toBe(false);
+ // the architecture the worker reported (bit identity only holds within one): optional, one of two
+ expect(ok({...result,engine:{...result.engine,hostArch:'arm64'}})).toBe(true);expect(ok({...result,engine:{...result.engine,hostArch:'x86_64'}})).toBe(true);
+ expect(ok({...result,engine:{...result.engine,hostArch:'aarch64'}})).toBe(false);
  const {fault:_,...without}=result;void _;expect(ok(without)).toBe(false);
+ const {collision:__,...noCollision}=result;void __;expect(ok(noCollision)).toBe(false);
  expect(ok({...result,accepted:true})).toBe(false);
  expect(ok({...result,effectiveInertia:{valueKgM2:0.5,basis:'mass_matrix_diagonal',provenance:'measured'}})).toBe(false);
  expect(ok({...result,axisIds:['a/J1','a/J2','a/J3']})).toBe(false);
@@ -118,4 +128,16 @@ test('a bench signal that does not end inside the recorded trace has no metric a
  const trap=(atTick:number)=>({kind:'trapezoid' as const,distance:5,peakVelocity:2,acceleration:10,atTick});
  expect(truncated(benchMetrics(trace,trap(362),4,'csv',p,'completed'))).toBe(true);expect(benchMetrics(trace,trap(361),4,'csv',p,'completed').rmsError.available).toBe(true);
  expect(truncated(benchMetrics(flat(300),{kind:'hold',ticks:400},4,'csp',p,'completed'))).toBe(true);expect(benchMetrics(flat(300),{kind:'hold',ticks:297},4,'csp',p,'completed').rmsError.available).toBe(true);
+});
+test('a trapezoid\'s tracking error and saturation ratio are measured over its motion, [signal start, motion end], not the stationary tail after it (spec §6.1, contracts §5)',async()=>{
+ const {benchMetrics}=await import('../../packages/lab-runtime/src/v2/control/bench-runner');
+ const p={finalWindowS:0.5,settleBand:0.02,holdWindowS:0.25},trap={kind:'trapezoid' as const,distance:5,peakVelocity:2,acceleration:10,atTick:10};   // 135 ticks of motion: signal ticks 10..145
+ // anchor 4: the origin is sample 10*(4+10)-1 = 139, the motion's last sample the end of engine tick 4+145 = 149 (sample 1499): 1,361 samples. Every sample of the motion after the origin is 1 off
+ // and saturated, the tail is exact; the tail holds the largest torque
+ const samples=Array.from({length:5010},(_,i)=>({target:i>=140&&i<1500?1:0,actual:0,feedback:0,torqueNm:i===3000?9:i>=140&&i<1500?1:0,saturated:i>=140&&i<1500}));
+ const m=benchMetrics({axisId:'amr-1/wheel-left',dtS:0.002,samples},trap,4,'csv',p,'completed');
+ expect(m.rmsError).toMatchObject({available:true,samples:1361,unit:'rad/s'});expect(value(m.rmsError)).toBeCloseTo(Math.sqrt(1360/1361),12);
+ expect(m.saturationRatio).toMatchObject({available:true,samples:1361});expect(value(m.saturationRatio)).toBeCloseTo(1360/1361,12);
+ expect(value(m.peakTorqueNm)).toBe(9);   // the ruling moves the two above only: the peak torque keeps the window from the start to the end of the bench
+ expect(m.riseTimeS).toMatchObject({available:false,reason:'SIGNAL_NOT_STEP'});
 });
