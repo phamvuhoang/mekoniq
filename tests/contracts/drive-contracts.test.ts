@@ -182,6 +182,10 @@ test('V07pre: loop and limits may come from a bench run (tuned_in_simulation: ru
  expect(validateControlProfile(withSources({controller:tuned}),model,envelope).ok).toBe(false);
 });
 
+test('every published envelope entry must have a registered drive mode',()=>{
+ const e=clone(envelope);e.axes[0]!.axisId='unregistered/J1';
+ expect(validateTuningEnvelope(reseal(e),allAxes).reasonCodes).toEqual(['ENVELOPE_AXIS_UNKNOWN']);
+});
 test('envelope bounds must be usable in the mode of their axis',()=>{
  for(const [index,field,bounds] of [[0,'kd',{min:0,max:1}],[1,'slewLimit',{min:1,max:2}],[2,'accelerationLimit',{min:1,max:2}],[2,'slewLimit',{min:0,max:2}]] as const){
   const e=clone(envelope);e.axes[index]![field]=bounds;

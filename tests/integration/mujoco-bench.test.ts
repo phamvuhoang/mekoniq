@@ -76,6 +76,17 @@ describe('the durable bench trace (no engine)',()=>{
   expect(read.issues).toContain('TRACE_TERMINAL:TRACE_SAMPLE_CAP');
   expect(read.manifestSha256).toBe(sha(await readFile(join(dir,'manifest.json'))));
  });
+ test('a chunk exceeding its declared byte length is refused by the bounded file reader before content verification',async()=>{
+  const dir=join(await mujocoTemp('bench-chunk-bounds-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:1});
+  for(let t=0;t<2;t++)await rec.append(t,tick(t));
+  await rec.finish(null);
+  const m=rec.manifest(),c=m.chunks[1]!;c.bytes-=1;
+  await writeFile(join(dir,'manifest.json'),JSON.stringify(m));
+  const read=await readBenchTrace(dir,identity,1);
+  expect(read.issues).toEqual([`TRACE_CHUNK_INVALID:${c.path}:TRACE_CHUNK_UNREADABLE`]);
+  expect(read.traces[0]!.samples.slice(0,10).every(s=>s!==null)).toBe(true);
+  expect(read.traces[0]!.samples.slice(10)).toEqual(Array(10).fill(null));
+ });
  test('a shortened chunk with a matching hash and size supplies no samples from its claimed range',async()=>{
   const dir=join(await mujocoTemp('bench-truncated-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:2});
   for(let t=0;t<3;t++)await rec.append(t,tick(t));await rec.finish(null);
@@ -134,6 +145,24 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(activeRunCount(MUJOCO_SLOT),'the result freed the engine slot before close').toBe(0);expect(worker().state,'the result closed the worker before close').toBe('closed');
   return {report,view,directory,run};
  }
+ test('a failed recorder append preserves the confirmed prefix and its original terminal cause',async()=>{
+  const {run,view,directory,worker}=await begin(arm(),async(req,next)=>{
+   const response=await next() as {result:{driveTrace:unknown}};
+   if(req.op==='step'&&(req.payload as {targetTick:number}).targetTick===5)response.result.driveTrace=[];
+   return response;
+  });
+  const confirmed=await run.action({actionId:'four',expectedRevision:view.run.runRevision,kind:'step',payload:{ticks:4}});
+  const prefix=await run.trace!();
+  const ended=await run.action({actionId:'five',expectedRevision:confirmed.run.runRevision,kind:'step',payload:{ticks:1}});
+  expect(ended).toMatchObject({tick:4,run:{status:'needs_attention'},attention:[{reason:'WORKER_LOST',subjectId:'TRACE_RECORD_INVALID',tick:5}]});
+  expect(worker().state).toBe('closed');
+  const m=JSON.parse(await readFile(join(directory,'trace/manifest.json'),'utf8'));
+  expect(m.gaps).toEqual([{firstTick:5,lastTick:5,reason:'TRACE_RECORD_INVALID'}]);
+  const read=await readBenchTrace(join(directory,'trace'),m.identity,5);
+  expect(read.issues).toEqual(['TRACE_TERMINAL:TRACE_RECORD_INVALID','TRACE_GAP:5-5:TRACE_RECORD_INVALID','TRACE_TAIL_MISSING']);
+  expect(read.traces[0]!.samples.slice(0,50)).toEqual(prefix.traces[0]!.samples);
+  expect(read.traces[0]!.samples.slice(50)).toEqual(Array(10).fill(null));
+ },120000);
  test('the host idle lease renews on confirmed progress, expires without another command and preserves the last confirmed tick',async()=>{
   let now=0,callback:(()=>void)|undefined;
   const leaseClock={now:()=>now,schedule:(fn:()=>void,_ms:number)=>{callback=fn;return ()=>{callback=undefined;};}};
@@ -307,6 +336,26 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   await expect(run.action({actionId:'step-2',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('INVALID_STATE:RUN_FINISHED');
   expect((await bench(arm(),undefined,'J3 after cancel')).report.tuning!.status).toBe('completed');
  },180_000);
+ test('a single installed provider validates every axis before publishing the shared envelope',async()=>{
+  const root=await mujocoTemp('bench-one-provider-');await cp(mujocoRoot,root,{recursive:true});
+  const options={enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory:root};
+  const copied={...runtime,workerRoot:root},path=join(root,'fixtures/drive-v1/tuning-envelope-v1.json');
+  const original=doc<TuningEnvelopeV1>('tuning-envelope-v1.json'),armOnly={arm:{...probed.arm,runtime:copied}};
+  const mobileOnly={arm:{capability:{...probed.arm.capability,installed:false}},mobile:{...probed.mobile,plant:{...probed.mobile.plant!,runtime:copied}}};
+  for(const [provider,scenario,foreignAxis] of [[armOnly,'MJ-BENCH-ARM','wheel'],[mobileOnly,'MJ-BENCH-WHEEL','joint']] as const){
+   await writeFile(path,JSON.stringify(original));
+   const valid=await portableSimulationFromOptions({...options,mujoco:provider});
+   expect(Object.keys(valid.benchCatalog!)).toEqual([scenario]);expect(valid.benchInfo?.tuningEnvelope).toEqual(original);
+   const invalid=structuredClone(original);
+   if(foreignAxis==='wheel')invalid.axes.find(a=>a.axisId==='amr-1/wheel-left')!.kd={min:0,max:0.1};
+   else invalid.axes.find(a=>a.axisId==='xarm-1/J3')!.accelerationLimit={min:1,max:2};
+   await writeFile(path,JSON.stringify(sealDriveDocument(invalid)));
+   const blocked=await portableSimulationFromOptions({...options,mujoco:provider});
+   expect(blocked.benchInfo?.reasonCodes).toEqual(['BENCH_ENVELOPE_INVALID']);
+   expect(blocked.benchInfo?.tuningEnvelope).toBeUndefined();expect(blocked.benchCatalog).toBeUndefined();
+   expect((await blocked.readinessChecks!({scenarioId:scenario,backendSetId:SET},new AbortController().signal)).flatMap(x=>x.reasonCodes)).toEqual(['BENCH_ENVELOPE_INVALID']);
+  }
+ },120000);
  test('bench readiness and health use the admitted provider identity and fixtures',async()=>{
   const root=await mujocoTemp('bench-provider-');await cp(mujocoRoot,root,{recursive:true});
   const options={enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory:root};

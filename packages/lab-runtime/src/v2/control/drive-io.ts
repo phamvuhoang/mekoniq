@@ -77,6 +77,7 @@ export function validateTuningEnvelope(value:unknown,axes:readonly Pick<AxisDriv
     const b=a[k];if(b&&(b.min<0||b.min>b.max||(['integralLimit','slewLimit','accelerationLimit'].includes(k)&&b.min<=0)))codes.add('ENVELOPE_BOUND_INVALID');
    }
    const mode=modes.get(a.axisId);
+   if(!mode)codes.add('ENVELOPE_AXIS_UNKNOWN');
    if((mode==='csv'&&(a.slewLimit||a.kd&&(a.kd.min!==0||a.kd.max!==0)))||(mode==='csp'&&a.accelerationLimit))codes.add('ENVELOPE_BOUND_INVALID');
   }
  }

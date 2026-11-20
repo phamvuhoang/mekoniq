@@ -37,6 +37,8 @@ import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const DRIVE='fixtures/drive-v1',SERVE='fixtures/serve-payload-v1',ARM_ID='xarm-1',WHEELS=['amr-1/wheel-left','amr-1/wheel-right'];
+// The envelope is one sealed document for both plants, even on a host with only one provider.
+const benchDriveAxes=BENCH_AXES.flatMap(axis=>(axis==='wheels'?WHEELS:[`${ARM_ID}/${axis}`]).map(axisId=>({axisId,mode:benchAxisMode(axis)})));
 /** Spec §6.1 and contracts §7: 5,000 samples per axis (ticks 1–500; tick 0, the priming tick, is the pre-signal baseline: ruling 15), 16 MiB compressed. */
 export const BENCH_TRACE_LIMITS={samplesPerAxis:5000,maxBytes:16*1024*1024,chunkTicks:50,substeps:10,dtS:0.002} as const;
 type Sample=BenchTraceTick['axes'][number]['samples'][number];
@@ -49,9 +51,9 @@ export interface BenchPlant {wheelRadiusM?:number;kind:'amr'|'arm';id:string;rev
 export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>,engineVersion?:string):Promise<BenchPlant>{
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
  const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
- if(!validateDriveModel(model).ok)throw Error('BENCH_DRIVE_MODEL_INVALID');
+ if(!validateDriveModel(model).ok||model.axes.some(a=>!benchDriveAxes.some(b=>a.axisId===b.axisId&&a.mode===b.mode)))throw Error('BENCH_DRIVE_MODEL_INVALID');
  const envelope=JSON.parse((await file(join(DRIVE,'tuning-envelope-v1.json'))).toString()) as TuningEnvelopeV1;
- if(!validateTuningEnvelope(envelope,model.axes).ok)throw Error('BENCH_ENVELOPE_INVALID');
+ if(!validateTuningEnvelope(envelope,benchDriveAxes).ok)throw Error('BENCH_ENVELOPE_INVALID');
  const policy=(JSON.parse((await file(join(DRIVE,'control-oracle-v1.json'))).toString()) as {metricPolicy:Policy}).metricPolicy;
  if(kind==='amr'){
   // D2: the AMR's plant is its physical model, whatever the load
@@ -198,7 +200,11 @@ export async function openBenchTrace(directory:string,identity:BenchTraceIdentit
   }),
   flush:()=>serial(()=>flush().catch(failed)),
   finish:reason=>serial(async()=>{await flush().catch(failed);if(reason)m.terminalReason??=reason.slice(0,200);m.coverage.complete=!m.terminalReason&&!m.gaps.length&&last>=0;await save();}),
-  gap:(firstTick,lastTick,reason)=>serial(async()=>{m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);})};
+  gap:(firstTick,lastTick,reason)=>serial(async()=>{
+   // A failed append already ended its recording. The outer worker-loss handler must preserve that gap and its cause.
+   if(m.gaps.length)return;
+   m.gaps.push({firstTick,lastTick,reason:reason.slice(0,200)});await end(reason);
+  })};
 }
 export interface BenchTraceRead {bodyForwardMps:number|null;manifest:BenchTraceManifest|null;manifestSha256:string|null;traces:DriveTrace[];issues:string[]}
 /** The trace of ticks 0..runTick as read back now: bounded reads, every chunk checked against its listed size and sha256 and its ticks against its place. A tick no valid chunk holds (a gap, a bad chunk, a tail
@@ -230,7 +236,7 @@ export async function readBenchTrace(directory:string,identity:BenchTraceIdentit
  let inflated=0,bodyForwardMps:number|null=null;
  for(const c of m.chunks){
   try{
-   const b=await readBoundedPhysicsFile(directory,c.path,READ_LIMITS.chunkBytes).catch(()=>{throw Error('TRACE_CHUNK_UNREADABLE');});if(b.length!==c.bytes||sha(b)!==c.sha256)throw Error('TRACE_HASH_MISMATCH');
+   const b=await readBoundedPhysicsFile(directory,c.path,c.bytes).catch(()=>{throw Error('TRACE_CHUNK_UNREADABLE');});if(b.length!==c.bytes||sha(b)!==c.sha256)throw Error('TRACE_HASH_MISMATCH');
    let body:Buffer;try{body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated,(c.lastTick-c.firstTick+1)*(READ_LIMITS.lineBytes+1))});}catch{throw Error('TRACE_COMPRESSION_INVALID');}
    inflated+=body.length;
    const rows=body.toString('utf8').split('\n');if(rows.pop()!==''||rows.length!==c.lastTick-c.firstTick+1)throw Error('TRACE_TRUNCATED');
