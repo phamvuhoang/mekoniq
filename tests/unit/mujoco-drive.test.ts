@@ -49,3 +49,16 @@ test('mobile sent-command ramp overcomes stiction while legacy measured ramp and
  let arrived=false;for(let t=12;t<12+s.policy.parameters.arrivalHoldTicks;t++){const out=mobile.advance(observation(t),{});if(out.decisions.some(d=>d.status==='arrived')){arrived=true;expect(out.velocities[0]!.omegaRadps).toBe(0);}}
  expect(arrived).toBe(true);mobile.setGoal({robotId:'amr-1',commandId:'after-arrival',target:[2,1.5,1]});expect(mobile.advance(observation(30),{}).velocities[0]!.omegaRadps).toBe(0.03);
 });
+
+test('an exhausted route corrects a stopped out-of-window pose without extending the physical no-progress deadline',()=>{
+ const s=structuredClone(scene);s.robots[0].model.sensors=[];s.policy.parameters.noProgressTicks=8;
+ const observation=(tick:number,x:number,v=0)=>({tick,robots:[{robotId:'amr-1',poseDriveMap:[x,1.5,0],bodyVelocity:[v,0],scans:[],collisionIds:[]}]}) as never;
+ const init=()=>{const c=createNavigationController(s,{exhaustedRouteRevision:1});c.setGoal({robotId:'amr-1',commandId:'park',target:[2,1.5,0]});c.advance(observation(0,2),{});return c;};
+ const c=init();
+ expect(c.advance(observation(1,1.8),{}).velocities[0]?.vMps).toBeGreaterThan(0);
+ let stopped;for(let t=2;t<=8;t++){const d=c.advance(observation(t,1.8),{}).decisions[0];if(d?.status==='blocked')stopped={...d,t};}
+ expect(stopped).toMatchObject({t:8,status:'blocked',reason:'NO_PROGRESS'});
+ expect(init().advance(observation(1,1.99),{}).velocities[0]?.vMps).toBe(0);
+ expect(init().advance(observation(1,1.8,.01),{},false).velocities[0]?.vMps).toBe(0);
+ const cancelled=init();cancelled.cancel('amr-1','park');expect(cancelled.advance(observation(1,1.8),{}).decisions[0]?.status).toBe('cancelled');
+});

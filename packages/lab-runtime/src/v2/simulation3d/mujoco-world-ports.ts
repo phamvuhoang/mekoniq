@@ -32,7 +32,7 @@ import {spawnMujocoWorker} from './worker-client';
 import {readWorldFixture,validateWorldObservation,worldArmObstacles,type WorldInteractionIntent} from './world-scene';
 import {openWorldRecorder,prepareWorldAdmission} from './world-evidence';
 import {worldDriveBundle,worldPlantDigest} from '../control/drive-experiments';
-import {admitDriveDocuments,driveManifest,driveWireCommand,mobileDrive,type MobileDrive,BASE_CONTROLLER_DEFAULTS} from '../control/drive-run';
+import {admitDriveDocuments,driveManifest,driveWireCommand,routeCorrectionOptions,mobileDrive,type MobileDrive,BASE_CONTROLLER_DEFAULTS} from '../control/drive-run';
 import {splitDriveSnapshot} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
 import type {DriveRecord} from '../control/drive-metrics';
@@ -77,7 +77,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   last=await ask('create',{sceneRef:'lab-world-scene.json',seed:input.manifest.seed});validateWorldObservation(last,scene,[]);await ask('start',{});
   const recorder=await openWorldRecorder({directory:join(input.directory,'world-evidence'),admission,runId:input.runId,bootId:last.bootId});
   if(!scene.controllerPolicy)throw Error('WORLD_CONTROLLER_POLICY_REQUIRED');
-  const controller=createNavigationController(scene.navigation,{ramp:'previous-sent-command-v1',composition:'single_world',worldBounds:scene.controllerPolicy.bounds as {minM:[number,number];maxM:[number,number]},worldTolerances:scene.controllerPolicy.tolerances,...scene.controllerPolicy.braking?{worldBraking:scene.controllerPolicy.braking}: {},...scene.controllerPolicy.terminalApproachDistanceM!==undefined?{worldTerminalApproachM:scene.controllerPolicy.terminalApproachDistanceM,...scene.controllerPolicy.terminalApproachDirection?{worldTerminalApproachDirection:scene.controllerPolicy.terminalApproachDirection}:{}}: {}}),rid=scene.navigation.robots[0]!.robotId;
+  const controller=createNavigationController(scene.navigation,{...routeCorrectionOptions(driveBundle?.control),ramp:'previous-sent-command-v1',composition:'single_world',worldBounds:scene.controllerPolicy.bounds as {minM:[number,number];maxM:[number,number]},worldTolerances:scene.controllerPolicy.tolerances,...scene.controllerPolicy.braking?{worldBraking:scene.controllerPolicy.braking}: {},...scene.controllerPolicy.terminalApproachDistanceM!==undefined?{worldTerminalApproachM:scene.controllerPolicy.terminalApproachDistanceM,...scene.controllerPolicy.terminalApproachDirection?{worldTerminalApproachDirection:scene.controllerPolicy.terminalApproachDirection}:{}}: {}}),rid=scene.navigation.robots[0]!.robotId;
   const adapter=createIRSimNavigationAdapter({robotId:rid,scene:scene.navigation,controller,now:ctx.nowMs,mapId:'lab-world',mapRevision:String((input.manifest.project as LabProjectV2).world.revision),identity:{id:'mujoco_3d',version:runtime.engineVersion,model:'mujoco_shared_world'}});
   st.arm={...MockArmPlant.initial(st.armId,last.bootId,programs),plantId:'mujoco_arm',historyRetention:{...WORLD_HISTORY_POLICY,droppedTraceSamples:0,droppedPropsSamples:0,droppedDebugSamples:0}};
   const hp=doc<{robotId:string;armId:string;supportId:string;dock:{xyToleranceM:number;yawToleranceRad:number;maxLinearMps:number;maxAngularRadps:number;holdTicks:number};receiver:{maxRelativeMps:number;holdTicks:number;comMarginM:number};birth:{centerM:[number,number,number]}}>(scene.handoffPolicyRef.path);
@@ -151,7 +151,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
    world:{prepareTick(targetTick){if(failed||pending)throw Error('WORLD_TERMINAL');if(targetTick!==last.tick+1||targetTick>30000)throw Error('WORLD_TARGET_TICK_INVALID');
      const active=st.arm.programs.find(p=>p.state==='running');programs.collision!.allowedPairs=worldAllowedPairs(scene,files,active?.program??null);
      const prepared=structuredClone(st.arm),preview=new MockArmPlant(prepared,ctx.nowMs,input.newBootId,{take:()=>null,put:()=>{}},()=>null,XARM6_SI,oracle,programs);preview.advance();
-     const interlocked=!!cellHalted||st.arm.holding!==null||st.arm.programs.some(p=>p.state==='running')||st.arm.stop?.latched,nav=interlocked?{velocities:[{robotId:rid,vMps:0,omegaRadps:0}],decisions:[]}:controller.advance(last,{});decisions=nav.decisions;
+     const interlocked=!!cellHalted||st.arm.holding!==null||st.arm.programs.some(p=>p.state==='running')||st.arm.stop?.latched,nav=interlocked?{velocities:[{robotId:rid,vMps:0,omegaRadps:0}],decisions:[]}:controller.advance(last,{},!last.drives?.some(d=>d.state!=='enabled'));decisions=nav.decisions;
      const propPlacements:WorldTickCommand['propPlacements']=[],worldInteractions:NonNullable<WorldTickCommand['worldInteractions']>=[];
      for(const binding of scene.propBindings){const born=history.some(i=>i.propId===binding.propId&&i.kind==='birth'),gone=history.some(i=>i.propId===binding.propId&&i.kind==='remove');
       const kind=!born&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;

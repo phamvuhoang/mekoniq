@@ -227,7 +227,7 @@ class FixedStepRun implements ScenarioRun {
   this.clock=createClock(EPOCH,cp.tick,cp.paused);
   this.telemetry=new TelemetryRecorder(20000,plant.identity.telemetryLabel);
   // the controller sees the fixture's zones (the scene stays the bundle's: its digest is the run's identity); a zone it does not hold is an obstacle
-  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,plant.identity.controller?.options);
+  this.controller=createNavigationController(fixture.zones.length?{...scene,zones:structuredClone(fixture.zones) as NavigationSceneV1['zones']}:scene,{...plant.identity.controller?.options,...drive?.navigation});
   const derived=engineSeedOf(cp.manifest.seed,scene).engineSeed;this.engineSeed=plant.identity.evidence?.engineSeed?plant.identity.evidence.engineSeed(derived):derived;
   for(const r of cp.roles.robots){
    const a=createIRSimNavigationAdapter({robotId:r.id,scene,controller:this.controller,now:()=>this.clock.nowMs(),state:cp.adapters[r.id]!,...map,trays:cp.trays[r.id]!,...plant.identity.adapterIdentity?{identity:plant.identity.adapterIdentity}:{}});
@@ -449,7 +449,8 @@ class FixedStepRun implements ScenarioRun {
    return {robotId:r.robotId,footprint:r.model.footprint.verticesM as P[],pose,live:!!g&&g.state==='executing'||c.rig?.[r.robotId]?.state==='executing',route:this.controller.route(r.robotId,pose)};})):{};
   // traffic does not decide what it cannot: a grant contradicting the owner it holds, or an owner stopped inside its zone, is attention (the run needs a person)
   for(const n of this.traffic?.notices()??[]){c.attention.push({reason:n.kind==='conflict'?'ZONE_OWNERSHIP_CONFLICT':'ZONE_HELD_BY_STOPPED_ROBOT',robotId:n.robotId,subjectId:n.zoneId,tick:c.tick});this.suspend();}
-  const out=this.controller.advance(snapT,reservations);
+  const canCorrect=!c.cancelled&&!c.suspended&&!(snapT as import('./contracts').Sim3DSnapshotV1).drives?.some(d=>d.state!=='enabled');
+  const out=this.controller.advance(snapT,reservations,canCorrect);
   for(const d of out.decisions){
    this.adapters.get(d.robotId)?.sink.decide(d);this.holds[d.robotId]=d.status==='executing'?d.reason:null;
    const rg=c.rig?.[d.robotId];

@@ -17,8 +17,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "099fdf9e4bed274bd18ed51c483d7b5a8a2fc37ba418bdb33109e1dac113a080",
-      "bytes": 2000
+      "sha256": "15c929ef67807039980414a76c8bd1f127dd03df099342b2555d6ab9ecccf00e",
+      "bytes": 2191
     },
     {
       "path": "serve-control-legacy-ideal-v1.json",
@@ -32,8 +32,8 @@
     },
     {
       "path": "serve-control-v2.json",
-      "sha256": "97a5e8c3b24ce4e016aafbc42b6c4293e62a9c3aa238ed2aa75751feefa91200",
-      "bytes": 2146
+      "sha256": "e9e45233581bf80913a0f3f1273d1a4d33490c11618b8c51be7bed713e468fb5",
+      "bytes": 2251
     },
     {
       "path": "serve-drive-coarse-encoder-v1.json",

@@ -37,10 +37,12 @@ export async function admitDriveDocuments(scene:{engine?:object},read:(path:stri
  return {model,control};
 }
 
+export const routeCorrectionOptions=(profile?:{controllers:{controllerId:string;revision:number}[]})=>
+ profile?.controllers.some(c=>c.controllerId==='exhausted-route-correction'&&c.revision===1)?{exhaustedRouteRevision:1 as const}:{};
 export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},experimentId?:string,hostArch?:HostArch):DriveManifest=>({driveModelDigest:d.model.digest,controlProfileDigest:d.control.digest,
  controllers:d.control.controllers.map(c=>({id:c.controllerId,revision:c.revision})),testLevel:CONTROLLER_IN_THE_LOOP,...experimentId?{experimentId}:{},...hostArch?{hostArch}:{}});
 
-export interface MobileDrive {readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
+export interface MobileDrive {readonly navigation:ReturnType<typeof routeCorrectionOptions>;readonly manifest:DriveManifest;readonly model:DriveModelV1;readonly events:ControllerEvent[];
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
  step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
@@ -53,7 +55,7 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
  if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
  let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
   wheel:[config.axisLeft,config.axisRight].map(id=>d.model.axes.find(a=>a.axisId===id)?.velocityLimitRadS??0) as [number,number],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});const events:ControllerEvent[]=[];
- return {manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
+ return {navigation:routeCorrectionOptions(d.control),manifest:driveManifest(d),model:d.model,events,step(tick,setpoint,snapshot){
   if(!snapshot.drives)throw new Error('DRIVE_FEEDBACK_MISSING');
   const {feedback}=splitDriveSnapshot(snapshot.drives),r=diffDriveBaseV1.step(state,{tick,setpoint,feedback});
   state=r.state;events.push(...r.events);

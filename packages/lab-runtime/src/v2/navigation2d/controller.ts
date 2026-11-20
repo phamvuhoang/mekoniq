@@ -11,7 +11,7 @@ export interface NavigationController{
  setGoal(input:{robotId:string;commandId:string;target:[number,number,number]}):void;
  cancel(robotId:string,commandId:string):void;
  /** One tick: observations of tick t in, bounded body velocities for every robot out (idle is explicit zero). */
- advance(snapshot:IRSimSnapshotV1,reservations:Readonly<Record<string,string|null>>):{velocities:Velocity[];decisions:Decision[]};
+ advance(snapshot:IRSimSnapshotV1,reservations:Readonly<Record<string,string|null>>,allowRouteCorrection?:boolean):{velocities:Velocity[];decisions:Decision[]};
  /** The way still to drive for robotId's live goal, as map points from `pose`: the planned steps once a plan exists, else the route on the static map alone
   * (planned once per goal and kept: the plan the goal will use whatever zones are granted). null without a goal or without a static route. Zone traffic asks it before entry. */
  route(robotId:string,pose:Pose2):P[]|null;
@@ -36,7 +36,7 @@ class Heap{
  * grid-diff-v1: a known-map SE2 lattice planner (8 headings, forward and rotate edges, swept footprint plus margin) with a rotate-translate-rotate follower. The map is known; LiDAR
  * only adds dynamic obstacles. It sends bounded body velocities and never uses an engine goal behavior. Limits are the fixture policy, not a hardware braking certificate.
  */
-export interface NavigationControllerOptions {ramp?:'previous-sent-command-v1';composition?:'single_world';worldBounds?:{minM:[number,number];maxM:[number,number]};worldTolerances?:{legM:number;positionM:number;yawRad:number};worldBraking?:{designBrakingDecelerationMps2:number;settleBeforeTranslationAdvance:true};worldTerminalApproachM?:number;worldTerminalApproachDirection?:'forward'|'reverse'}
+export interface NavigationControllerOptions {exhaustedRouteRevision?:1;ramp?:'previous-sent-command-v1';composition?:'single_world';worldBounds?:{minM:[number,number];maxM:[number,number]};worldTolerances?:{legM:number;positionM:number;yawRad:number};worldBraking?:{designBrakingDecelerationMps2:number;settleBeforeTranslationAdvance:true};worldTerminalApproachM?:number;worldTerminalApproachDirection?:'forward'|'reverse'}
 export function createNavigationController(scene:NavigationSceneV1,options:NavigationControllerOptions={}):NavigationController{
  const bounds=options.worldBounds;
  if(bounds&&(!Array.isArray(bounds.minM)||!Array.isArray(bounds.maxM)||bounds.minM.length!==2||bounds.maxM.length!==2||options.composition!=='single_world'||scene.engine.id!=='mujoco_3d'||![...bounds.minM,...bounds.maxM].every(Number.isFinite)||bounds.minM.some((v,i)=>v>0||v< -10||bounds.maxM[i]!<=v)||bounds.maxM[0]!==scene.world.widthM||bounds.maxM[1]!==scene.world.heightM))throw Error('WORLD_NAVIGATION_BOUNDS_INVALID');
@@ -237,7 +237,7 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
    const g=goals.get(robotId);
    if(g&&g.commandId===commandId){goals.delete(robotId);pending.push({robotId,commandId,status:'cancelled',reason:null});}
   },
-  advance(snapshot,reservations){
+  advance(snapshot,reservations,allowRouteCorrection=true){
    const velocities:Velocity[]=[],decisions:Decision[]=pending.splice(0),tick=snapshot.tick;
    const fleet=new Map(snapshot.robots.map(r=>[r.robotId,r]));
    for(const robotId of [...robots.keys()].sort()){
@@ -258,7 +258,10 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
     // a change in the granted zones forces a replan only when it can matter: the robot is waiting (a grant may open its way) or a zone now denied lies on the way
     // still to drive. A zone given back that the remaining route stays clear of keeps the plan (no detour back and forth at the boundary).
     if(zonesKey!==goal.zonesKey&&goal.steps&&!goal.waiting&&!zoneObstacles.some(z=>routeNear(robotId,goal,pose,z)))goal.zonesKey=zonesKey;
-    const needsPlan=(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
+    const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
+    const stopped=Math.abs(vel[0])<=pol.stoppedLinearMps&&Math.abs(vel[1])<=pol.stoppedAngularRadps;
+    const correct=options.exhaustedRouteRevision===1&&allowRouteCorrection&&stopped&&!goal.waiting&&goal.steps!==null&&goal.stepIndex>=goal.steps.length&&(dist>pol.goalPositionToleranceM||yawErr>pol.goalYawToleranceRad);
+    const needsPlan=correct||(!goal.steps&&!goal.waiting)||zonesKey!==goal.zonesKey||(goal.waiting&&tick-goal.lastPlanTick>=pol.replanEveryTicks);
     if(needsPlan){
      const global=!goal.steps;
      const fixed=[...statics,...zoneObstacles];
@@ -267,7 +270,7 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
      if(global&&!goal.staticOk){const base=staticPlan(robotId,goal,pose);if(base.ok)goal.staticOk=true;if(!base.ok||!zoneObstacles.length)result=base;}
      result??=plan(robotId,pose,goal.target,global?fixed:[...fixed,...others,...dyn.map(p=>[[p[0]-0.1,p[1]-0.1],[p[0]+0.1,p[1]-0.1],[p[0]+0.1,p[1]+0.1],[p[0]-0.1,p[1]+0.1]] as P[])]);
      goal.lastPlanTick=tick;goal.zonesKey=zonesKey;
-     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=Infinity;}
+     if(result.ok){goal.steps=result.steps;goal.stepIndex=0;goal.waiting=false;goal.zoneWait=false;goal.best=correct?remaining(goal,pose,dist):Infinity;}
      else if(!goal.staticOk||result.reason==='PLANNER_BUDGET_EXCEEDED'){
       goals.delete(robotId);stop();
       decisions.push({robotId,commandId:goal.commandId,status:result.reason==='no_path'?'no_path':'blocked',reason:result.reason==='no_path'?'NO_PATH':result.reason});continue;
@@ -278,7 +281,6 @@ export function createNavigationController(scene:NavigationSceneV1,options:Navig
      }
     }
     // goal reached? pose and velocity within tolerance for arrivalHoldTicks consecutive ticks
-    const dist=Math.hypot(goal.target[0]-pose[0],goal.target[1]-pose[1]),yawErr=Math.abs(wrapPi(goal.target[2]-pose[2]));
     const settled=dist<=pol.goalPositionToleranceM&&yawErr<=pol.goalYawToleranceRad&&Math.abs(vel[0])<=pol.stoppedLinearMps&&Math.abs(vel[1])<=pol.stoppedAngularRadps;
     goal.hold=settled?goal.hold+1:0;
     if(approachDirection!=='reverse'&&goal.hold>=pol.arrivalHoldTicks){goals.delete(robotId);stop();decisions.push({robotId,commandId:goal.commandId,status:'arrived',reason:null});continue;}
