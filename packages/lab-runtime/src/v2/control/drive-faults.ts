@@ -1,5 +1,6 @@
 // The drive-level fault catalog of R4-A §7.1 and its admission (plan V08). Pure: the server validates a schedule against these bounds before a run exists, the worker checks them again before it applies one.
 import type {FaultScheduleEntry} from '../fault-schedule';
+import type {DriveCommandV1} from './drive-io';
 
 export type DriveFaultId='encoder-dropout'|'motor-weak'|'drive-trip'|'command-delay'|'command-loss'|'grip-weak'|'lidar-noise'|'drive-reset';
 export type FaultParamBound={min:number;max:number;multipleOf?:number;required:boolean};
@@ -48,4 +49,27 @@ export function validateDriveFaultSchedule(entries:readonly FaultScheduleEntry[]
   if(known&&ok&&e.trigger.kind==='elapsed_sim_ms'){const [from,to]=faultWindow(e);if(windows.some(w=>w.faultId===e.faultId&&w.targetId===e.targetId&&from<w.to&&w.from<to))codes.add('FAULT_OVERLAP');windows.push({faultId:e.faultId,targetId:e.targetId,from,to});}
  }
  return {ok:codes.size===0,reasonCodes:[...codes]};
+}
+
+// ---- the timeline: a pure function of the schedule and the tick, so a resumed or replayed run needs no fired-set ------------------------------------------------------
+const TICK_MS=20;
+/** A trigger fires on the first tick whose step starts at or after it; the window closes duration/20 ticks later (the end tick is outside it). */
+export const faultStartTick=(triggerMs:number):number=>Math.ceil(triggerMs/TICK_MS)+1;
+export const faultEndTick=(startTick:number,durationMs:number):number=>startTick+Math.ceil(durationMs/TICK_MS);
+const startOf=(e:FaultScheduleEntry)=>faultStartTick((e.trigger as {value:number}).value);
+/** The injections of the step that produces `targetTick`, ends before starts so one window may open on the tick another of its kind closes. */
+export function faultEventsAt(schedule:readonly FaultScheduleEntry[],targetTick:number):FaultInjection[]{
+ const ev=(e:FaultScheduleEntry,phase:'start'|'end'):FaultInjection=>({entryId:e.id,faultId:e.faultId,targetId:e.targetId,params:{...e.params},phase});
+ const ends=schedule.filter(e=>e.trigger.kind==='elapsed_sim_ms'&&faultEndTick(startOf(e),e.durationMs)===targetTick).map(e=>ev(e,'end'));
+ const starts=schedule.filter(e=>e.trigger.kind==='elapsed_sim_ms'&&startOf(e)===targetTick).map(e=>ev(e,'start'));
+ return [...ends,...starts];
+}
+/** What the runtime itself applies at `targetTick`: the runtime faults whose window holds the tick, and their start/end events. */
+export function runtimeFaultsAt(schedule:readonly FaultScheduleEntry[],targetTick:number):{active:FaultScheduleEntry[];events:FaultInjection[]}{
+ const mine=schedule.filter(e=>isDriveFaultId(e.faultId)&&DRIVE_FAULTS[e.faultId].appliedBy==='runtime');
+ return {active:mine.filter(e=>e.trigger.kind==='elapsed_sim_ms'&&startOf(e)<=targetTick&&targetTick<faultEndTick(startOf(e),e.durationMs)),events:faultEventsAt(mine,targetTick)};
+}
+/** command-loss: the axes in `lost` get the last command that was sent, seq included, instead of the new one. With nothing sent yet there is nothing to repeat. */
+export function applyCommandLoss(commands:readonly DriveCommandV1[],last:readonly DriveCommandV1[]|undefined,lost:ReadonlySet<string>):DriveCommandV1[]{
+ return commands.map(c=>lost.has(c.axisId)&&last?.find(l=>l.axisId===c.axisId)||c);
 }

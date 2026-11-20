@@ -22,6 +22,7 @@ import {spawnMujocoWorker} from './worker-client';
 /** One MuJoCo world across arm/mobile/future cell: the run's world is one engine in one worker. */
 export const MUJOCO_MAX_ACTIVE_RUNS=1,MUJOCO_SLOT='mujoco_engine';
 export interface MujocoRuntimeOptions extends IRSimRuntimeOptions {onRequestTiming?:import('../navigation2d/worker-client').SpawnOptions['onRequestTiming'];engineVersion:string;maxActiveRuns?:number;
+ /** Campaign harness only (never from a request): lets campaign-only faults (drive-reset) through admission. */faultCampaign?:true;
  /** Source-only registered shared-world campaign disturbance; never a browser force request. */cellDisturbance?:import('./world-disturbance').CellDisturbanceOption;
  /** Test/fault option: obstacles (arm base frame) that exist in the MuJoCo cell only; the TS capsule check never sees them. Never exposed through a request. */armExtraStatics?:readonly ArmObstacle[];
  /** Test/fault option: physics.json fields replaced for the worker (e.g. weaker gains). Never exposed through a request. */physicsOverride?:Partial<XArmPhysics>;

@@ -15,7 +15,7 @@
     },
     "targetId": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+      "pattern": "^[A-Za-z0-9_./:-]{1,200}$"
     },
     "trigger": {
       "oneOf": [

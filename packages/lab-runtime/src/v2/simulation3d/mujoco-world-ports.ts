@@ -1,4 +1,6 @@
-import {worldDriveControllers,readRetainedWorldDriveReport} from './world-drive-report';
+import {worldDriveControllers,readRetainedWorldDriveReport,readRetainedWorldFaultReport} from './world-drive-report';
+import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,runtimeFaultsAt,validateDriveFaultSchedule,type FaultReceipt} from '../control/drive-faults';
+import {driveDocumentDigest,type DriveCommandV1,type FaultOracleV1} from '../control/drive-io';
 /** Source-owned continuous world factory: one engine, journal-correlated custody,
  * bounded durable observations and no browser transport or hardware route. */
 import {worldArmGeometry,worldAllowedPairs,validateWorldControl} from './world-control';
@@ -10,7 +12,7 @@ import type {JsonObject,DomainEvent} from '../../../../contracts/src/index';
 import type {CellAdapter,CellReport,CellCommand} from '../../../../cell-adapters/src/contract';
 import type {CupLedger,PendingTransferIdentity,TransferObservation} from '../beverage/cup-ledger';
 import {evaluateDockWindow,evaluateTrayReceipt,type DockSample,type ReceiptSample} from './handoff-policy';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {dirname,join} from 'node:path';
 import {MOCK_COFFEE_PARAMS} from '../../../../cell-adapters/src/mock-coffee';
@@ -55,6 +57,14 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   // a registered drive experiment adds one combined drive model and control profile (nine axes) to the scene; without the field nothing is added and the scene is the R2b scene, byte for byte
   const driveBundle=input.manifest.driveExperimentId?await worldDriveBundle(runtime.workerRoot,input.manifest.driveExperimentId,scene.armCell.arm.armId,worldPlantDigest(scene)):undefined;
   if(driveBundle){for(const f of driveBundle.files){files.set(f.path,f.bytes);scene.files.push({path:f.path,sha256:createHash('sha256').update(f.bytes).digest('hex'),bytes:f.bytes.length});}scene.files.sort((a,b)=>a.path<b.path?-1:1);scene.engine={...driveBundle.refs};}
+  // R4 drive faults (V08): run-scoped, admitted against the catalog with this world's nine axes (no LiDAR transform in the cell), before a worker exists; the sealed oracle is read once
+  const faults=structuredClone(input.manifest.driveFaultSchedule??[]);let faultOracle:FaultOracleV1|undefined;
+  if(faults.length){
+   if(!driveBundle)throw Error('FAULT_BACKEND_UNSUPPORTED');
+   const checked=validateDriveFaultSchedule(faults,{axes:driveBundle.model.axes.map(a=>a.axisId),lidars:[],campaign:runtime.faultCampaign===true});if(!checked.ok)throw Error(checked.reasonCodes[0]!);
+   faultOracle=JSON.parse(await readFile(join(runtime.workerRoot,'fixtures/fault-v1/fault-oracle-v1.json'),'utf8')) as FaultOracleV1;if(driveDocumentDigest(faultOracle)!==faultOracle.digest)throw Error('FAULT_ORACLE_DIGEST');
+  }
+  let lastWire:DriveCommandV1[]|undefined;
   scene.armCell.engineSeed=input.manifest.seed;scene.armCell.sceneDigest=documentDigest(scene.armCell,'sceneDigest');scene.sceneDigest=documentDigest(scene,'sceneDigest');
   const admission=prepareWorldAdmission(scene,files),doc=<T>(p:string)=>JSON.parse(Buffer.from(files.get(p)!).toString()) as T;
   const physical=doc<RobotPhysicalModelV1>(scene.models.mobilePhysical.path),load=doc<LoadProfileV1>(scene.models.emptyLoad.path),programDoc=doc<{programs:ArmProgramSet;digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]}>(scene.programsRef.path);
@@ -92,7 +102,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
    const inside=!!xy&&poly.every((a,i)=>{const b=poly[(i+1)%poly.length]!;return (b[0]!-a[0]!)*(xy[1]!-a[1]!)-(b[1]!-a[1]!)*(xy[0]!-a[0]!)>=margin*Math.hypot(b[0]!-a[0]!,b[1]!-a[1]!);});
    return {propId:id,valid:!!p&&p.restingOn===support.supportId&&inside&&!s.arms![0]!.gripper!.heldPropIds.includes(id)};
   };
-  const coffee={...base,...workflow?{custodyEvidence:'correlated' as const}: {},...driveDocs?{driveReport:()=>readRetainedWorldDriveReport(input.directory,{sceneDigest:scene.sceneDigest,runId:input.runId,bootId:last.bootId,publicCommittedTick:ctx.tick()})}:{},report:()=>({...base.report(),cupLedger:(ledger?.snapshot()??[]).map(c=>failed&&c.status==='known'?{...c,parent:null,status:'unknown' as const}:c),armPlant:{engine:'mujoco_3d' as const,engineVersion:runtime.engineVersion,control:'position_actuator' as const,grip:'contact' as const,dynamics:'manufacturer_nominal+assumed' as const,calibration:'not_calibrated' as const,tracking:trackingStats(st.arm.tracking!)},armCell:{waypoints:{digest:programDoc.digest,table:programDoc.table},inputs:{componentDigest:scene.models.armComponent.sha256,physicsDigest:scene.models.armPhysics.sha256,sceneDigest:scene.sceneDigest},allowedContactPolicy:'phase_region_v1' as const,allowedContacts:scene.allowedContactRules.map(r=>({a:r.a,b:r.b,phase:r.phase,regionId:r.regionId,sweepPair:[r.a==='held_prop'?'held-cup':r.a,r.regionId==='nozzle-stand'?'support/nozzle-stand':`${rid}/${support.parentBodyId}/c0`] as [string,string]})),releaseTimeoutTicks:programs.contact!.releaseTimeoutTicks,notes:['One shared MuJoCo world; raw birth/removal/grip/support observations are not Source custody receipts.','New world numerical/contact profile; modeled Source-correlated observations, not_calibrated. Logical arm/tray observers share one engine; no hardware sensor independence.']}}),setArmScene:()=>setScene(observing??last),custodyResolved:async(cupId:string,parent:string)=>{
+  const coffee={...base,...workflow?{custodyEvidence:'correlated' as const}: {},...driveDocs?{driveReport:()=>readRetainedWorldDriveReport(input.directory,{sceneDigest:scene.sceneDigest,runId:input.runId,bootId:last.bootId,publicCommittedTick:ctx.tick()},faults),...faults.length?{faultReport:(facts:{serveTicks:number[];custodyChanged:boolean;attention:{tick:number;reason:string}[]})=>readRetainedWorldFaultReport(input.directory,{sceneDigest:scene.sceneDigest,runId:input.runId,bootId:last.bootId,publicCommittedTick:ctx.tick()},{faults,oracle:faultOracle!,facts})}:{}}:{},report:()=>({...base.report(),cupLedger:(ledger?.snapshot()??[]).map(c=>failed&&c.status==='known'?{...c,parent:null,status:'unknown' as const}:c),armPlant:{engine:'mujoco_3d' as const,engineVersion:runtime.engineVersion,control:'position_actuator' as const,grip:'contact' as const,dynamics:'manufacturer_nominal+assumed' as const,calibration:'not_calibrated' as const,tracking:trackingStats(st.arm.tracking!)},armCell:{waypoints:{digest:programDoc.digest,table:programDoc.table},inputs:{componentDigest:scene.models.armComponent.sha256,physicsDigest:scene.models.armPhysics.sha256,sceneDigest:scene.sceneDigest},allowedContactPolicy:'phase_region_v1' as const,allowedContacts:scene.allowedContactRules.map(r=>({a:r.a,b:r.b,phase:r.phase,regionId:r.regionId,sweepPair:[r.a==='held_prop'?'held-cup':r.a,r.regionId==='nozzle-stand'?'support/nozzle-stand':`${rid}/${support.parentBodyId}/c0`] as [string,string]})),releaseTimeoutTicks:programs.contact!.releaseTimeoutTicks,notes:['One shared MuJoCo world; raw birth/removal/grip/support observations are not Source custody receipts.','New world numerical/contact profile; modeled Source-correlated observations, not_calibrated. Logical arm/tray observers share one engine; no hardware sensor independence.']}}),setArmScene:()=>setScene(observing??last),custodyResolved:async(cupId:string,parent:string)=>{
    await base.custodyResolved?.(cupId,parent);
    if(parent.startsWith('table:')){
     if(workflow){if(!ledger)throw Error('WORLD_CUP_LEDGER_REQUIRED');if(last.arms![0]!.gripper!.heldPropIds.includes(scene.propBindings.find(b=>b.cupId===cupId)?.propId??''))throw Error('WORLD_MOVE_HELD_PROP');const cup=(await ctx.source.read('cup',cupId)).state;if(cup.ownerKind!=='customer'||parent!==`table:${String(cup.ownerId)}`||cup.pendingTransfer)throw Error('WORLD_RECIPIENT_NOT_CONFIRMED');const event=await sourceEvent('CupHandedOff',cupId);if(!event)throw Error('WORLD_RECIPIENT_EVENT_MISSING');removeEvents.set(cupId,event);await ledger.handoff(cupId,parent);}
@@ -160,9 +170,26 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
      if(drive){
       const result=drive.step(last,pending);pending.driveCommands=result.commands;
       for(const e of result.events)if((e.code==='DRIVE_FAULT'||e.code==='DRIVE_NOT_READY')&&!cellHalted){invalidate();cellHalted=e.code;arm.halt(e.code,undefined,last.tick);}
+      if(faults.length){
+       // command-loss repeats the last command sent, seq included; every injection due on this tick is the intent this command carries
+       const lost=new Set(runtimeFaultsAt(faults,targetTick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
+       if(lost.size)pending.driveCommands=applyCommandLoss(pending.driveCommands!,lastWire,lost);
+       lastWire=pending.driveCommands;
+       const events=faultEventsAt(faults,targetTick);if(events.length)pending.faultInjections=events;
+      }
      }
      return structuredClone(pending);
-    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{const s=await ask('step',driveWire(command));engineTick=s.tick;validateWorldObservation(s,scene,[...history,...(command.worldInteractions??[]).map(i=>({...i,tick:i.targetTick}))]);return s;}catch(e){failed=true;invalidate();throw e;}},
+    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{const wire=driveWire(command) as WorldTickCommand,worker=(command.faultInjections??[]).filter(e=>DRIVE_FAULTS[e.faultId as keyof typeof DRIVE_FAULTS].appliedBy==='worker');
+      // the worker is sent only the injections it applies; the runtime's own (command-loss) are in the command as intent and get their receipts below
+      if(worker.length)wire.faultInjections=worker;else delete wire.faultInjections;
+      const s=await ask('step',wire);engineTick=s.tick;
+      if(command.faultInjections?.length){
+       const got=(s as {faultReceipts?:FaultReceipt[]}).faultReceipts??[],digest=hashJson(wire);
+       const ok=got.length===worker.length&&worker.every((w,i)=>{const x=got[i];return !!x&&x.entryId===w.entryId&&x.phase===w.phase&&x.faultId===w.faultId&&x.targetId===w.targetId&&x.appliedTick===command.targetTick&&x.runId===input.runId&&x.requestDigest===digest&&hashJson(x.params)===hashJson(w.params);});
+       if(!ok)throw Error('FAULT_RECEIPT_MISMATCH');
+       const own=command.faultInjections.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:command.targetTick,runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest}));
+       if(own.length)pending!.faultReceipts=own;
+      }validateWorldObservation(s,scene,[...history,...(command.worldInteractions??[]).map(i=>({...i,tick:i.targetTick}))]);return s;}catch(e){failed=true;invalidate();throw e;}},
     async commit(s){if(failed||!pending||s.tick!==pending.targetTick||durableTick!==s.tick)throw Error('WORLD_COMMIT_INVALID');observing=s;try{
       setScene(s);if(st.arm.holding&&!docked(s)&&st.arm.programs.some(p=>p.state==='running'&&p.program==='cup-place')&&st.arm.gripperCommandM===programs.contact!.closedM){invalidate();cellHalted='DOCK_OUT_OF_TOLERANCE';arm.halt(cellHalted,undefined,s.tick);}
       dockTicks=docked(s)?dockTicks+1:0;arm.advance();const a=s.arms![0]!,extras:PlantExtras={gripper:a.gripper,releaseObservation:release(s),props:(s.props??[]).map(p=>{const q=composePose(inverse,{position:p.position,quaternionXyzw:p.quaternionXyzw});return {propId:p.propId,position:q.position,restingOn:p.restingOn,inMap:{positionM:p.position as [number,number,number],quaternionXyzw:p.quaternionXyzw as [number,number,number,number]}};})};arm.observe(a.positionsRad,a.collisionIds,extras);const t=st.arm.tracking!;(t.props??=[]).push({tick:s.tick,props:(extras.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:a.gripper!.heldPropIds.includes(p.propId)}))});

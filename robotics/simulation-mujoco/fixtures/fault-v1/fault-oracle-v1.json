@@ -3,7 +3,7 @@
   "documentType": "fault-oracle",
   "id": "fault-oracle-v1",
   "revision": 1,
-  "digest": "86c2574b49c0a6cb795032e1e00b703e790a431201694041b7c7037eae6ec092",
+  "digest": "f7a79e163d2c20a998d4c2e9d46792c2f67fdd551f7f109fb366b91ab099018f",
   "calibration": "not_calibrated",
   "faults": [
     {
@@ -51,10 +51,11 @@
     },
     {
       "faultId": "grip-weak",
-      "required": true,
+      "required": false,
       "detector": "arm_program",
       "codes": [
-        "ARM_GRIP_NOT_ESTABLISHED"
+        "CUP_DROPPED",
+        "CUP_CUSTODY_MISMATCH"
       ],
       "deadlineTicks": null
     },

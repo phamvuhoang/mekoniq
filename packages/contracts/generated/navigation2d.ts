@@ -1563,6 +1563,25 @@ export interface PhysicsTickRecord {
    * @maxItems 32
    */
   faultReceipts?: FaultReceiptV1[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  sensorTransforms?: {
+    entryId: string;
+    sensorId: string;
+    scanTick: number;
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    rangesM: (number | null)[];
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    states: ('hit' | 'no_return' | 'below_min' | 'invalid')[];
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2372,6 +2391,16 @@ export interface WorldEvidenceRecord {
      * @maxItems 16
      */
     driveCommands?: DriveCommandV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultInjections?: FaultInjectionV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultReceipts?: FaultReceiptV1[];
   } | null;
   /**
    * @maxItems 16
@@ -2392,16 +2421,6 @@ export interface WorldEvidenceRecord {
    * @maxItems 16
    */
   drives?: DriveAxisSnapshot[];
-  /**
-   * @minItems 0
-   * @maxItems 32
-   */
-  faultIntents?: FaultInjectionV1[];
-  /**
-   * @minItems 0
-   * @maxItems 32
-   */
-  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

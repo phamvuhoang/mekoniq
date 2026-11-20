@@ -16,6 +16,9 @@ export interface WorldTickCommand {
  propPlacements:{propId:string;pose:{position:[number,number,number];quaternionXyzw:[number,number,number,number]}|null}[];
  /** Only with a virtual drive: the nine axis commands of the tick. The velocities and joint targets above are then the setpoints the controllers were given (kept as evidence, not sent). */
  driveCommands?:import('../control/drive-io').DriveCommandV1[];
+ /** V08: every fault injection due on this tick (the intent; the worker is sent only those it applies) and, after the ACK, the receipts of the ones the runtime applied itself. */
+ faultInjections?:import('../control/drive-faults').FaultInjection[];
+ faultReceipts?:import('../control/drive-faults').FaultReceipt[];
 }
 /** Preparation cannot publish observations. The shared engine advances only in step; commit consumes a validated, durably recorded ACK. */
 export interface WorldPlantPorts {

@@ -7,6 +7,8 @@ import {splitDriveSnapshot,validateControlProfile,validateDriveModel,validateDri
 import {diffDriveBaseV1,initDiffDriveRevision2,type DiffDriveBaseConfig,type DiffDriveBaseState} from './diff-drive-base';
 import {hashJson} from '../hash';
 import type {ControllerEvent} from './controller';
+import {applyCommandLoss,runtimeFaultsAt} from './drive-faults';
+import type {FaultScheduleEntry} from '../fault-schedule';
 
 export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
 /** Starting values of the controller's own timers (`assumed`): ticks of 20 ms. */
@@ -67,14 +69,18 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
 
 /** Replay the profile against acknowledged feedback and the setpoint recorded for each tick.
  * A wire trace, when supplied, must match every field of both commands. */
-export function replayMobileCommands(controller:MobileDrive,robotId:string,records:readonly {tick:number;drives?:readonly DriveAxisSnapshot[]}[],controls:readonly {tick:number;targetTick:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]}[],wire?:readonly {tick:number;velocities:number;driveCommands:DriveCommandV1[]}[]){
- const events:ControllerEvent[]=[];
+export function replayMobileCommands(controller:MobileDrive,robotId:string,records:readonly {tick:number;drives?:readonly DriveAxisSnapshot[]}[],controls:readonly {tick:number;targetTick:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]}[],wire?:readonly {tick:number;velocities:number;driveCommands:DriveCommandV1[]}[],faults:readonly FaultScheduleEntry[]=[]){
+ const events:ControllerEvent[]=[];let lastSent:DriveCommandV1[]|undefined;
  if(controls.length!==records.length-1||(wire&&wire.length!==controls.length))throw Error('CIL_COMMAND_TRACE');
  for(const [i,c] of controls.entries()){
   const v=c.velocities[0],s=wire?.[i],next=records[i+1]!;
-  if(c.tick!==i||c.targetTick!==i+1||c.velocities.length!==1||v?.robotId!==robotId||records[i]!.tick!==i||next.tick!==i+1||!next.drives||next.drives.some(d=>d.commandSeq!==next.tick))throw Error('CIL_COMMAND_TRACE');
+  if(c.tick!==i||c.targetTick!==i+1||c.velocities.length!==1||v?.robotId!==robotId||records[i]!.tick!==i||next.tick!==i+1||!next.drives||(!faults.length&&next.drives.some(d=>d.commandSeq!==next.tick)))throw Error('CIL_COMMAND_TRACE');
   const out=controller.step(i,v,records[i]!);
-  if(wire&&(!s||s.tick!==i+1||s.velocities!==0||hashJson(s.driveCommands)!==hashJson(out.commands)))throw Error('CIL_COMMAND_TRACE');
+  // what was sent is what the controller asked for, but for the axes a command-loss window silenced on that tick: those repeat the last command that was sent (the schedule's own timeline, not a tolerance)
+  const lost=new Set(runtimeFaultsAt(faults,i+1).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(out.commands,lastSent,lost):out.commands;lastSent=sent;
+  // with a schedule the acknowledged seq of an axis is the seq of what was sent to it: a silenced axis keeps its old one
+  if(faults.length&&next.drives!.some(d=>d.commandSeq!==sent.find(c=>c.axisId===d.axisId)?.seq))throw Error('CIL_COMMAND_TRACE');
+  if(wire&&(!s||s.tick!==i+1||s.velocities!==0||hashJson(s.driveCommands)!==hashJson(sent)))throw Error('CIL_COMMAND_TRACE');
   events.push(...out.events);
  }
  return events;

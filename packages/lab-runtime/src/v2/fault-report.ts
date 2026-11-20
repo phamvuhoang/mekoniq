@@ -3,13 +3,11 @@
 import {hashJson} from './hash';
 import type {ControllerEvent} from './control/controller';
 import type {DriveAxisSnapshot,FaultOracleV1,FaultReportV1} from './control/drive-io';
-import type {FaultReceipt} from './control/drive-faults';
+import {faultEndTick,faultEventsAt,faultStartTick,type FaultInjection,type FaultReceipt} from './control/drive-faults';
+export {faultEndTick,faultStartTick};
 import type {FaultScheduleEntry} from './fault-schedule';
 
-const TICK_MS=20;
 const REST_RADS=0.01;   // an axis counts as at rest below this true speed: a report policy, not a safety value
-export const faultStartTick=(triggerMs:number):number=>Math.ceil(triggerMs/TICK_MS)+1;
-export const faultEndTick=(startTick:number,durationMs:number):number=>startTick+Math.ceil(durationMs/TICK_MS);
 const invalid=(why:string):never=>{throw new Error(`FAULT_EVIDENCE_INVALID:${why}`);};
 const same=(a:Record<string,number>,b:Record<string,number>)=>hashJson(Object.fromEntries(Object.entries(a).sort(([x],[y])=>x<y?-1:1)))===hashJson(Object.fromEntries(Object.entries(b).sort(([x],[y])=>x<y?-1:1)));
 
@@ -19,6 +17,8 @@ export interface FaultReportInput {
  physics:readonly {tick:number;base?:readonly {poseMap:{positionM:readonly number[]}}[]}[];oracle:FaultOracleV1;
  /** what the Source's own journal says about the run, independent of the drive records: served counts, mutation resends after an unknown ACK, whether any custody changed (null: no custody in this run) */
  facts:{reportedServed:number;confirmedServed:number;resendsAfterUnknown:number;custodyChanged:boolean|null};
+ /** What the records say the runner sent, tick by tick. When given, the report reconciles it with the schedule and the receipts: nothing the schedule demands may be missing, nothing it does not may be there. */
+ intents?:readonly {tick:number;injections:readonly FaultInjection[]}[];
  evidence?:FaultReportV1['evidence'];
 }
 type Entry=FaultReportV1['entries'][number];
@@ -37,6 +37,7 @@ export function buildFaultReport(input:FaultReportInput):FaultReportV1{
   if(r.phase==='start'){if(slot.start||r.appliedTick!==start)invalid(`START_TICK:${r.entryId}`);slot.start=r;}
   else{if(!slot.start||slot.end||r.appliedTick!==faultEndTick(start,e!.durationMs))invalid(`END_TICK:${r.entryId}`);slot.end=r;}
  }
+ if(input.intents)reconcile(input,drives.map(d=>d.tick));
  const entries=schedule.map((e):Entry=>{
   const rec=byEntry.get(e.id),spec=oracle.faults.find(f=>f.faultId===e.faultId),applied=rec?.start?.appliedTick??null;
   const axisRecs=drives.map(r=>({tick:r.tick,s:r.drives.find(d=>d.axisId===e.targetId)})).filter((x):x is {tick:number;s:DriveAxisSnapshot}=>!!x.s);
@@ -100,4 +101,42 @@ function invariants(input:FaultReportInput):Invariant[]{
   latch,
   timeouts?torque:done('TORQUE_ZERO_AFTER_TIMEOUT','not_applicable',null,'no axis latched COMMAND_TIMEOUT'),
  ];
+}
+
+/** The recorded intents against the schedule's own timeline and the receipts. Intents of a tick past the last verified one cannot be reconciled and are left out. */
+function reconcile(input:FaultReportInput,ticks:readonly number[]){
+ const seen=new Set(ticks),byTick=new Map<number,readonly FaultInjection[]>();
+ for(const i of input.intents!){if(byTick.has(i.tick))invalid(`INTENT_DUPLICATE:${i.tick}`);byTick.set(i.tick,i.injections);}
+ for(const t of ticks)if(hashJson(faultEventsAt(input.schedule,t))!==hashJson(byTick.get(t)??[]))invalid(`INTENT_MISMATCH:${t}`);
+ for(const t of byTick.keys())if(!seen.has(t)&&t<=(ticks.at(-1)??-1))invalid(`INTENT_TICK:${t}`);
+ const key=(x:{entryId:string;phase:string;appliedTick:number})=>`${x.appliedTick}/${x.entryId}/${x.phase}`;
+ const got=new Set(input.receipts.map(key)),want=new Set(ticks.flatMap(t=>(byTick.get(t)??[]).map(i=>key({...i,appliedTick:t}))));
+ for(const k of want)if(!got.has(k))invalid(`RECEIPT_MISSING:${k}`);
+ for(const k of got)if(!want.has(k))invalid(`RECEIPT_UNINTENDED:${k}`);
+ const perTick=new Map<number,FaultReceipt>();
+ for(const r of input.receipts){const first=perTick.get(r.appliedTick);if(first&&(first.bootId!==r.bootId||first.requestDigest!==r.requestDigest||first.sceneDigest!==r.sceneDigest))invalid(`RECEIPT_TICK_IDENTITY:${r.appliedTick}`);perTick.set(r.appliedTick,first??r);}
+}
+
+/** The served count the run reports against the one its own drive records can support: a serve confirmed while some axis is latched in a fault that stays latched to the end of the run is not a serve a plant
+ * that could not move delivered. `serveTicks` are the ticks of the journal's served increments. */
+export function servedFacts(drives:FaultReportInput['drives'],serveTicks:readonly number[]):{reportedServed:number;confirmedServed:number}{
+ let latchedFrom=Number.POSITIVE_INFINITY;
+ const axes=[...new Set(drives.flatMap(r=>r.drives.map(d=>d.axisId)))];
+ for(const a of axes){
+  const s=drives.map(r=>({tick:r.tick,f:r.drives.find(d=>d.axisId===a)?.fault??null}));
+  let from:number|null=null;for(const x of s){if(x.f!==null){from??=x.tick;}else from=null;}
+  if(from!==null)latchedFrom=Math.min(latchedFrom,from);
+ }
+ return {reportedServed:serveTicks.length,confirmedServed:serveTicks.filter(t=>t<latchedFrom).length};
+}
+
+/** The ticks at which the journal's fulfillment lines gained a served unit; the journal's clock is the run's (tick = (at - epoch) / 20 ms). */
+export function serveTicksOf(events:readonly {kind:string;id:string;at:string;state:unknown}[],epochMs:number):number[]{
+ const last=new Map<string,bigint>(),ticks:number[]=[];
+ for(const e of events){
+  if(e.kind!=='fulfillment')continue;
+  const n=BigInt(String((e.state as {served?:unknown}|null)?.served??'0')),before=last.get(e.id)??0n;last.set(e.id,n);
+  for(let i=before;i<n;i++)ticks.push(Math.round((Date.parse(e.at)-epochMs)/20));
+ }
+ return ticks;
 }

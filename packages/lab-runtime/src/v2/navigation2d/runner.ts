@@ -1,5 +1,9 @@
 import {buildDriveEvidence} from '../control/drive-report';
 import {experimentOfMobileModel} from '../control/drive-experiments';
+import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,runtimeFaultsAt,validateDriveFaultSchedule,type FaultInjection,type FaultReceipt} from '../control/drive-faults';
+import {lidarNoise} from '../control/sensor-transforms';
+import {buildFaultReport,serveTicksOf,servedFacts,type FaultReportInput} from '../fault-report';
+import {driveDocumentDigest,type FaultOracleV1} from '../control/drive-io';
 import {admitDriveDocuments,mobileDrive,driveManifest,replayMobileCommands,type MobileDrive} from '../control/drive-run';
 import {openPhysicsRecorder,readPhysicsEvidence,readPhysicsManifest,preparePhysicsAdmission,validatePhysicsRecord,type PhysicsRecorder} from '../simulation3d/physics-evidence';
 import {physicsMetrics} from '../simulation3d/physics-metrics';
@@ -60,8 +64,11 @@ export interface IRSimRunProviders extends RunProviders {irsim:IRSimRuntimeOptio
 const TILT_LIMIT_RAD=0.35,EVIDENCE_FLUSH_TICKS=100,EPOCH=Date.parse('2026-11-01T00:00:00Z'),ROBOT_TYPES=['robot.execute','robot.cancel','robot.requestStop'],FINAL=['completed','cancelled','failed'],SCENE='navigation-scene.json',FIXTURE='scenario-fixture.json';
 const sha256=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 interface Confirmation {due:number|null;type:string;robotId:string}
+type SensorTransforms=NonNullable<import('./contracts').PhysicsTickRecord['sensorTransforms']>;
 interface PlantCheckpoint {status:'none'|'live'|'lost'|'stopped';reason:string|null;bootId:string|null;requests:number;snapshot:IRSimSnapshotV1|null;/** Mobile-only durable latch: create may have mutated the world, including tick-0 priming. */startupAttempt?:true}
 interface Checkpoint {
+ /** V08: the fault injections persisted before they were sent, tick by tick (the report reconciles them with the receipts). */
+ driveFaultIntents?:{tick:number;injections:FaultInjection[]}[];
  schemaVersion:1;provider:string;runId:string;manifestHash:string;manifest:RunReport['manifest'];roles:Roles;trays:Record<string,number>;
  tick:number;started:boolean;paused:boolean;cancelled:boolean;suspended:boolean;revision:number;ordinal:number;dispatchDue:boolean;telemetrySeq?:number;reclaimed?:boolean;
  workload:WorkloadItem[];confirmations:Record<string,Confirmation>;parking:Record<string,string>;attention:Attention[];
@@ -140,6 +147,12 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // a scene that names a drive model and a control profile runs its AMR through the diff-drive controller and the virtual drive; one that names neither is the R2b path, untouched
  const driveDocs=amr.id==='mujoco_3d'?await admitDriveDocuments(scene,read,providers.runtime.workerRoot,scene.robots[0]!.model.physicalModelDigest):undefined;
  const drive=driveDocs?mobileDrive(driveDocs,{robotId:scene.robots[0]!.robotId,...scene.robots[0]!.model.kinematics}):undefined;
+ // R4 drive faults (V08): run-scoped, never in the project; admitted against the server's catalog with this scene's axes and sensors, or the run is refused before it exists
+ const driveFaults=structuredClone(input.driveFaultSchedule??[]);
+ if(driveFaults.length){
+  const robot=scene.robots[0]!,checked=validateDriveFaultSchedule(driveFaults,{axes:driveDocs?.model.axes.map(a=>a.axisId)??[],lidars:robot.model.sensors.map(x=>`${robot.robotId}/${x.id}`),campaign:providers.faultCampaign===true});
+  if(!checked.ok)throw new Error(checked.reasonCodes[0]!);
+ }
  const physics=plant.identity.amr.id==='mujoco_3d'?await preparePhysicsAdmission(scene,read):undefined;
  if(physics&&(providers.runtime.evidence?.maxBytes??EVIDENCE_LIMITS.maxBytes)>EVIDENCE_LIMITS.maxBytes)throw new Error('PHYSICS_COMBINED_QUOTA_INVALID');
  // the scenario's server-owned actors (immutable seeded schedules) and reservation zones on this scene; refused whole, never partly applied
@@ -148,7 +161,7 @@ export async function createFixedStepScenarioRun(input:RunManifestInput,provider
  // an IR-FD01 run without actors or zones keeps its configuration identity exactly as before (no fixture key)
  const configuration={revision:1,hash:hashJson({...plant.identity.completionObservation?{completionObservation:plant.identity.completionObservation}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:plant.identity.simulationPerturbation}:{},roles,trays,sceneDigest:scene.sceneDigest,policy:scene.policy.hash,controller:scene.policy.parameters.controller,...plant.identity.controller?{controllerImplementation:plant.identity.controller.identity}:{},entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??null})),fleet:scenario.fleet??{},...fixture.actors.length||fixture.zones.length?{scenarioFixture:fixture.hash}:{}})};
  const backends=[{...amr}];
- const manifest:Omit<RunReport['manifest'],'runId'>={...driveDocs?{drive:driveManifest(driveDocs,experimentOfMobileModel((scene.engine as {driveModelRef:{path:string}}).driveModelRef.path))}:{},...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...driveFaults.length?{driveFaultSchedule:{entries:driveFaults,hash:hashJson(driveFaults)}}:{},...driveDocs?{drive:driveManifest(driveDocs,experimentOfMobileModel((scene.engine as {driveModelRef:{path:string}}).driveModelRef.path))}:{},...plant.identity.completionObservation?{completionObservation:structuredClone(plant.identity.completionObservation)}:{},...plant.identity.simulationPerturbation?{simulationPerturbation:structuredClone(plant.identity.simulationPerturbation)}:{},engineering:input.engineering.ref,sourceCommit:input.sourceCommit,mode:'simulation',access:'simulated',backendSetId:input.backendSetId,backends,prng:{...PRNG},clock:{tickMs:TICK_MS,businessEpochMs:EPOCH},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario),...scenario.basedOn?{basedOn:{...scenario.basedOn}}:{}},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends,workerLockDigest:lock,files:files.map(([p,b])=>[p,sha256(b)])}),configuration,recipes:[],
   models:[{id:amr.id,revision:amr.version,hash:scene.sceneDigest,provenance:'simulated_plant'},...scene.robots.map(r=>({id:`navigation-model:${r.robotId}`,revision:String(r.model.schemaVersion),hash:r.model.modelDigest,provenance:'projected'}))],
@@ -450,13 +463,14 @@ class FixedStepRun implements ScenarioRun {
   // traffic does not decide what it cannot: a grant contradicting the owner it holds, or an owner stopped inside its zone, is attention (the run needs a person)
   for(const n of this.traffic?.notices()??[]){c.attention.push({reason:n.kind==='conflict'?'ZONE_OWNERSHIP_CONFLICT':'ZONE_HELD_BY_STOPPED_ROBOT',robotId:n.robotId,subjectId:n.zoneId,tick:c.tick});this.suspend();}
   const canCorrect=!c.cancelled&&!c.suspended&&!(snapT as import('./contracts').Sim3DSnapshotV1).drives?.some(d=>d.state!=='enabled');
-  const out=this.controller.advance(snapT,reservations,canCorrect);
+  const target=c.tick+1,rt=this.faults.length?runtimeFaultsAt(this.faults,target):undefined,transforms:SensorTransforms=[];
+  const out=this.controller.advance(rt?this.observe(snapT,rt.active,transforms):snapT,reservations,canCorrect);
   for(const d of out.decisions){
    this.adapters.get(d.robotId)?.sink.decide(d);this.holds[d.robotId]=d.status==='executing'?d.reason:null;
    const rg=c.rig?.[d.robotId];
    if(rg&&rg.commandId===d.commandId&&rg.state==='executing'&&d.status!=='executing'){rg.state=d.status;rg.tick=c.tick;if(d.status!=='arrived'){c.attention.push({reason:d.reason??d.status.toUpperCase(),robotId:d.robotId,subjectId:d.commandId,tick:c.tick});this.suspend();}}
   }
-  let next:IRSimSnapshotV1,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>;driveCommands?:import('../control/drive-io').DriveCommandV1[]};
+  let next:IRSimSnapshotV1,faultRec:{intents:FaultInjection[];receipts:FaultReceipt[];transforms:typeof transforms}|undefined,payload:{targetTick:number;velocities:typeof out.velocities;actorUpdates:ReturnType<typeof actorUpdatesAt>;driveCommands?:import('../control/drive-io').DriveCommandV1[]};
   try{
    // every actor at its scheduled pose for tick t+1 (the schedule is a pure function of the tick: nothing a batch or a pause did changes it)
    payload={targetTick:c.tick+1,velocities:out.velocities,actorUpdates:actorUpdatesAt(this.fixture,c.tick+1)};
@@ -464,19 +478,33 @@ class FixedStepRun implements ScenarioRun {
    let wire:typeof payload=payload;
    if(this.drive){
     const rid=this.scene.robots[0]!.robotId,sp=out.velocities.find(v=>v.robotId===rid)??{vMps:0,omegaRadps:0},d=this.drive.step(c.tick,{vMps:sp.vMps,omegaRadps:sp.omegaRadps},snapT as {drives?:never});
-    payload.driveCommands=d.commands;wire={...payload,velocities:[]};
+    const lost=new Set((rt?.active??[]).filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
+    payload.driveCommands=lost.size?applyCommandLoss(d.commands,this.lastWire,lost):d.commands;this.lastWire=payload.driveCommands;   // command-loss repeats the last command sent, seq included
+    wire={...payload,velocities:[]};
     // a drive that is not ready or has faulted is a finding that needs a person: the run is not reset or retried, and the controller holds
     for(const ev of d.events)if(ev.code==='DRIVE_FAULT'||ev.code==='DRIVE_NOT_READY'){c.attention.push({reason:ev.code,robotId:rid,tick:c.tick});this.suspend();}
    }
+   // the intent is durable before the command leaves; the receipts are checked against it after the ACK
+   const events=this.faults.length?faultEventsAt(this.faults,target):[],worker=events.filter(e=>DRIVE_FAULTS[e.faultId as keyof typeof DRIVE_FAULTS].appliedBy==='worker');
+   if(worker.length)(wire as {faultInjections?:FaultInjection[]}).faultInjections=worker;
+   if(events.length){(c.driveFaultIntents??=[]).push({tick:target,injections:events});await this.persist();}
    const r=await this.worker.request({protocol:this.plant.protocol,requestId:`step-${c.tick+1}`,runId:c.runId,expectedTick:c.tick,op:'step',payload:wire});
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
+   if(events.length){
+    // a receipt that is not the intent (entry, phase, tick, run, request) is as unverifiable as a lost step: nothing is resent
+    const got=((next as {faultReceipts?:FaultReceipt[]}).faultReceipts??[]),digest=hashJson(wire);
+    const ok=got.length===worker.length&&worker.every((w,i)=>{const x=got[i];return !!x&&x.entryId===w.entryId&&x.phase===w.phase&&x.faultId===w.faultId&&x.targetId===w.targetId&&x.appliedTick===target&&x.runId===c.runId&&x.requestDigest===digest&&hashJson(x.params)===hashJson(w.params);});
+    if(!ok){await this.stepLost('FAULT_RECEIPT_MISMATCH');return false;}
+    const own=events.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:target,runId:c.runId,bootId:next.bootId,sceneDigest:this.scene.sceneDigest,requestDigest:digest}));
+    faultRec={intents:events,receipts:[...got,...own],transforms};
+   }else if(transforms.length)faultRec={intents:[],receipts:[],transforms};
    if(hashJson(next.robots.map(x=>x.robotId).sort())!==hashJson(this.scene.robots.map(x=>x.robotId).sort())||next.robots.some(x=>![...x.poseDriveMap,...x.bodyVelocity].every(Number.isFinite))){await this.stepLost('SNAPSHOT_INVALID');return false;}
   }catch(e){await this.stepLost(e instanceof WorkerLostError?e.code:'WORKER_FAILED');return false;}
   const prev=c.plant.snapshot!;
   if(this.physics){
-   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append(this.physicsRecord(next));await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
+   try{this.validatePhysics(next,c.tick+1);await this.physicsRec!.append(this.physicsRecord(next,faultRec));await this.rec.append(next,payload);if(this.rec.terminal)throw new Error('EVIDENCE_INCOMPLETE');}
    catch(e){const why=(e as Error).message==='PHYSICS_OBSERVATION_INVALID'?'PHYSICS_OBSERVATION_INVALID':'PHYSICS_EVIDENCE_FAILED';await this.recordGap({fromTick:c.tick+1,toTick:c.tick+1,reason:why});await this.plantLost(why,why);return false;}
   }
   this.clock.advance(1);c.tick=this.clock.tick;c.plant.snapshot=next;
@@ -686,10 +714,10 @@ class FixedStepRun implements ScenarioRun {
   const c=this.cp,v=await this.view();
   // every plant metric comes from the evidence as read back from disk now: what is not durable yet is not measured
   const listed=this.rec.committed(),read=await readNavigationEvidence(this.rec.directory,listed,{scene:this.scene,runTick:c.started?c.tick:null}),m=navigationMetrics(this.scene,read,this.fixture.actors);
-  const physicsEvidence=await this.physicsReport(read);
   const navigation2d=buildNavigationEvidence(this.scene,{...this.identity,engine:{version:c.engine?.packageVersion??this.plant.identity.amr.version,pythonVersion:c.engine?.pythonVersion??'not_started',...c.engine?.hostArch?{hostArch:c.engine.hostArch}:{}}},listed,read,m,c.started?c.tick:null,undefined,this.plant.identity.evidence);
   const available=m.coverage==='complete',why=m.coverageReasons.join(', ').slice(0,500)||'EVIDENCE_INCOMPLETE';
   const businessEvents:BusinessEvent[]=(await this.source.journal()).flatMap(entry=>(entry.payload.events as unknown as DomainEvent[]).map(e=>({sequence:entry.sequence,at:entry.recordedAt,type:e.type,kind:String(e.data.kind),id:String(e.data.id),state:(e.data.state??{}) as JsonObject})));
+  const physicsEvidence=await this.physicsReport(read,serveTicksOf(businessEvents,EPOCH));
   const manifestOut=structuredClone(c.manifest);if(manifestOut.drive&&c.engine?.hostArch)manifestOut.drive.hostArch=c.engine.hostArch;   // known once the worker has described itself
   return {schemaVersion:2,manifest:manifestOut,outcome:{status:v.run.status,served:v.served,tick:c.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:v.workload,entities:v.entities,businessEvents,
    effects:(await this.source.effects()).filter(e=>ROBOT_TYPES.includes(String(e.type))).map(e=>({id:String(e.id),type:String(e.type),status:String(e.status),attempts:Number(e.attempts),payload:e.payload as JsonObject})),
@@ -702,16 +730,44 @@ class FixedStepRun implements ScenarioRun {
     'Distance, collision and clearance metrics are computed from the durable per-tick evidence (navigation2d) by the independent oracle; they are unavailable whenever that evidence is incomplete.',
     'A lost or refused worker step leaves its legs unknown; it is never resent and the run is never continued by a new worker process.',
     'Stop requests are model stops only (physicalStopConfirmed false).',...this.scene.limitations],
-   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{}};
+   telemetry:this.telemetry.report(),navigation2d,...physicsEvidence?{physicsEvidence}:{},...this.driveEvidence?{driveEvidence:this.driveEvidence}:{},...this.faultReport?{faultReport:this.faultReport}:{}};
  }
  private async flushPhysics(){
   if(!this.physicsRec)return;
   try{await this.physicsRec.flush();}catch{const first=this.physicsRec.manifest().coverage.lastTick+1;await this.recordGap({fromTick:Math.min(first,this.cp.tick),toTick:this.cp.tick,reason:'PHYSICS_EVIDENCE_FAILED'});await this.plantLost('PHYSICS_EVIDENCE_FAILED','PHYSICS_EVIDENCE_FAILED');await this.persist();}
  }
  /** The physics tick as recorded: the worker's PhysicsTickRecord, with the axis snapshots of the same tick when the run has a drive. */
- private physicsRecord(snap:IRSimSnapshotV1){const s=snap as import('./contracts').Sim3DSnapshotV1;return {...s.physics!,...s.drives?{drives:s.drives}:{}};}
+ private physicsRecord(snap:IRSimSnapshotV1,f?:{intents:FaultInjection[];receipts:FaultReceipt[];transforms:SensorTransforms}){
+  const s=snap as import('./contracts').Sim3DSnapshotV1;
+  // a tick without a fault keeps its bytes: the fault fields exist only when something was injected
+  return {...s.physics!,...s.drives?{drives:s.drives}:{},...f?.intents.length?{faultIntents:f.intents,faultReceipts:f.receipts}:{},...f?.transforms.length?{sensorTransforms:f.transforms}:{}};
+ }
  private driveEvidence?:import('../control/drive-report').DriveEvidenceReport;
- private async physicsReport(navigation:import('./evidence').EvidenceRead):Promise<RunReport['physicsEvidence']>{
+ private faultReport?:import('../control/drive-io').FaultReportV1;
+ /** The schedule is read from the checkpoint's manifest: the injections of a tick are a pure function of it and the tick. */
+ private get faults(){return this.cp.manifest.driveFaultSchedule?.entries??[];}
+ private lastWire?:import('../control/drive-io').DriveCommandV1[];
+ private lidarStreams=new Map<string,ReturnType<typeof actorStream>>();
+ private noised=new Map<string,{scanTick:number;scan:{rangesM:(number|null)[];states:string[]}}>();
+ /** What the controller sees of the LiDAR while lidar-noise holds: each fresh publication is perturbed once (three uniforms per beam) and kept until the next one; the evidence keeps the true scan. */
+ private observe(snap:IRSimSnapshotV1,active:readonly import('../fault-schedule').FaultScheduleEntry[],out:SensorTransforms):IRSimSnapshotV1{
+  const noise=active.filter(e=>e.faultId==='lidar-noise');
+  if(!noise.length){this.noised.clear();return snap;}
+  for(const k of this.noised.keys())if(!noise.some(e=>e.targetId===k))this.noised.delete(k);
+  const rid=this.scene.robots[0]!.robotId;
+  return {...snap,robots:snap.robots.map(r=>{
+   if(r.robotId!==rid||!r.scans)return r;
+   return {...r,scans:r.scans.map(sc=>{
+    const e=noise.find(x=>x.targetId===`${rid}/${sc.sensorId}`);if(!e)return sc;
+    const held=this.noised.get(e.targetId);if(held?.scanTick===sc.tick)return {...sc,...held.scan};
+    const stream=this.lidarStreams.get(e.targetId)??actorStream(this.cp.manifest.seed,`lidar-noise:${e.targetId}`);this.lidarStreams.set(e.targetId,stream);
+    const noisy=lidarNoise(sc,{sigmaM:e.params!.sigmaM!,dropoutFraction:e.params!.dropoutFraction!},stream);
+    this.noised.set(e.targetId,{scanTick:sc.tick,scan:{rangesM:noisy.rangesM,states:noisy.states}});
+    out.push({entryId:e.id,sensorId:sc.sensorId,scanTick:sc.tick,rangesM:noisy.rangesM,states:noisy.states});return noisy;
+   })};
+  })} as IRSimSnapshotV1;
+ }
+ private async physicsReport(navigation:import('./evidence').EvidenceRead,serveTicks:readonly number[]):Promise<RunReport['physicsEvidence']>{
   if(!this.physics)return undefined;
   const manifest=this.physicsRec?.manifest()??await readPhysicsManifest(join(this.dir,'physics')).catch(()=>this.cp.started||this.cp.plant.startupAttempt?{schemaVersion:1 as const,documentType:'physics-evidence' as const,identity:{runId:this.cp.runId,bootId:this.cp.plant.snapshot?.bootId??'unobserved',sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics!.loadProfileDigest,physicsProfileDigest:this.physics!.physicsProfileDigest},streams:[],coverage:{firstTick:0,lastTick:this.cp.tick,complete:false},gaps:[{firstTick:0,lastTick:this.cp.tick,reason:'PHYSICS_MANIFEST_INVALID'}],terminalReason:'PHYSICS_MANIFEST_INVALID',metricsPolicyDigest:this.physics!.metricsPolicyDigest,assumptions:this.physics!.assumptions}:null);
   if(!manifest)return undefined;
@@ -724,7 +780,17 @@ class FixedStepRun implements ScenarioRun {
    const rows=read.records.map(r=>({tick:r.tick,drives:(r as {drives?:import('../control/drive-io').DriveAxisSnapshot[]}).drives??[]}));
    const issues=[...read.issues];let events:import('../control/controller').ControllerEvent[]=[];
    if(!navigation.complete)issues.push('CIL_CONTROL_EVIDENCE');
-   else try{events=replayMobileCommands(this.drive.fresh(),this.scene.robots[0]!.robotId,rows,navigation.control);}catch(e){issues.push((e as Error).message);}
+   else try{events=replayMobileCommands(this.drive.fresh(),this.scene.robots[0]!.robotId,rows,navigation.control,undefined,this.faults);}catch(e){issues.push((e as Error).message);}
+   this.faultReport=undefined;
+   if(this.faults.length&&read.complete&&!issues.length){
+    try{
+     const oracle=JSON.parse(await readFile(join(this.irsim.workerRoot,'fixtures/fault-v1/fault-oracle-v1.json'),'utf8')) as FaultOracleV1;if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');
+     const recs=read.records as unknown as {tick:number;faultIntents?:FaultInjection[];faultReceipts?:FaultReceipt[];base?:FaultReportInput['physics'][number]['base']}[];
+     const serves=servedFacts(rows,serveTicks),gaps=[...this.cp.evidenceGaps??[]].filter(g=>g.reason==='STEP_ACK_LOST');
+     this.faultReport=buildFaultReport({runId:this.cp.runId,schedule:this.faults,receipts:recs.flatMap(r=>r.faultReceipts??[]),intents:recs.map(r=>({tick:r.tick,injections:r.faultIntents??[]})),drives:rows,controllerEvents:events,
+      attention:this.cp.attention.map(a=>({tick:a.tick,reason:a.reason})),physics:recs,oracle,facts:{...serves,resendsAfterUnknown:gaps.reduce((n,g)=>n+recs.filter(r=>r.tick>g.fromTick).length,0),custodyChanged:null}});
+    }catch(e){issues.push((e as Error).message);}
+   }
    this.driveEvidence=buildDriveEvidence(this.drive.model,rows,{complete:read.complete&&!issues.length,issues,events});
   }
   return {manifest,manifestSha256:sha256(Buffer.from(JSON.stringify(manifest))),complete:read.complete,issues:read.issues,metrics:physicsMetrics(read,this.physics.admission,{...navigation,policy:this.scene.policy.parameters})};

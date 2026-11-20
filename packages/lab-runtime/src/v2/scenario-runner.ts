@@ -8,7 +8,8 @@ import {retainedWorldArmReports} from './simulation3d/world-arm-report';
 import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
 import type {ArmReportBlock} from './beverage/arm-plant-report';
 import {stepWorldOnce} from './simulation3d/world-step';
-import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase} from './fault-schedule';
+import {serveTicksOf} from './fault-report';
+import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase,type FaultScheduleEntry} from './fault-schedule';
 // Mock scenario runner. Per tick: scripted inputs -> source decisions/outbox dispatch -> model advance -> observations -> journal.
 // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
 import {mkdir,chmod,readdir} from 'node:fs/promises';
@@ -44,8 +45,8 @@ import type {JournalEvents} from './event-stream';
 import {awaitTick,realWall,type PaceAnchor,type WallClock} from './pace';
 /** Locked engineering extension: the bundle ref plus the exact project and projection it was compiled from (absent for every legacy run). */
 export interface EngineeringInputLock {ref:{bundleDigest:string;projectDigest:string};project:unknown;runtimeProjection:{project:unknown;assets:unknown[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
-export interface RunManifestInput {/** R4.2 bench runs only (control/bench-runner.ts): the request, admitted by the gateway's shape check and again by the runner against its plant. */bench?:import('./control/drive-io').BenchRequestV1;driveExperimentId?:import('./control/drive-experiments').DriveExperimentId;worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
-export interface RunProviders {directory:string;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
+export interface RunManifestInput {/** R4 drive faults (V08): run-scoped schedule, admitted against the server's catalog; absent: no injection, byte for byte. */driveFaultSchedule?:FaultScheduleEntry[];/** R4.2 bench runs only (control/bench-runner.ts): the request, admitted by the gateway's shape check and again by the runner against its plant. */bench?:import('./control/drive-io').BenchRequestV1;driveExperimentId?:import('./control/drive-experiments').DriveExperimentId;worldExperimentId?:WorldExperimentId;project:unknown;scenarioId:string;scenarioRevision:number;seed:number;mode:Mode;access:Access;backendSetId:string;sourceCommit:string;engineering?:EngineeringInputLock}
+export interface RunProviders {directory:string;/** Campaign harness only (never from a request): lets campaign-only faults (drive-reset) through admission. */faultCampaign?:true;/** Gateway-only recovery: existing checkpoint, no new plant or physical observations. */reclaimOnly?:boolean;worldPorts?:import('./simulation3d/world-ports').WorldPortsFactory;/** Server-side read of a file of the run's admitted engineering bundle (portable runs copy their locked scene from it). */bundleFile?:(bundleDigest:string,path:string)=>Promise<Uint8Array>;assets?:readonly AssetRevision[];catalog?:CapabilityCatalog;enabledBackends?:readonly string[];scenarios?:ReadonlyMap<string,ScenarioDefinition>;coffeePorts?:(state:CoffeeState,context:CoffeeContext,newBootId:()=>string,directory:string)=>CoffeePlantPorts|Promise<CoffeePlantPorts>;
  /** A plant arm whose program comes from its fixture (MuJoCo): what its ports run, for the manifest. Ignored unless the set's arm is a plant. */armProgram?:ArmProgramRecord;
  /** Wall clock of paced steps (tests inject a fake); consulted only by a step that carries `pace`. */wall?:WallClock}
 export interface RunView {run:LabRunSnapshotV2;tick:number;simTimeNs:string;model:string;entities:EntityView[];workload:WorkloadItem[];awaiting:{subjectId:string;confirmationType:string;missionId:string;robotId:string}[];attention:Attention[];served:string;coffee:CoffeeView|null;controlAccess?:'view_reconcile'|'view'}
@@ -128,6 +129,8 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw new Error('INVALID_SEED');
  const roles=resolveRoles(scenario,project),catalog=[...(providers.assets??[]),...serverAssets],radius:Record<string,number|null>={},trays:Record<string,number>={};
  const faultSchedule=validateFaultSchedule(project.faultSchedule??[],activeFaultEntities(project,roles),'mock',runSet?.providers?.arm);
+ // drive faults need a drive model: only the shared-world cell run with a drive experiment has one here (its ports check the schedule against the nine axes)
+ if(input.driveFaultSchedule?.length&&!(singleWorld&&input.driveExperimentId))throw new Error('FAULT_BACKEND_UNSUPPORTED');
  const assets=project.entities.map(e=>{
   const supplied=catalog.find(a=>a.contentHash===e.assetRef.contentHash);
   if(supplied&&(!verifyAssetHash(supplied)||supplied.id!==e.assetRef.id||supplied.revision!==e.assetRef.revision))throw new Error('ASSET_HASH_MISMATCH');
@@ -141,7 +144,7 @@ export async function createScenarioRun(input:RunManifestInput,providers:RunProv
  const program=plantSet?providers.armProgram:undefined;
  const armProfile=program?{kinematics:armModel,program:{fixture:program.fixture,physicsDigest:program.physicsDigest,programsDigest:program.programsDigest,waypointsDigest:program.waypointsDigest,programs:program.programs},collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}}
   :{kinematics:armModel,motion:MOCK_ARM_PARAMS,choreography:ARM_CHOREOGRAPHY,geometry:DEFAULT_ARM_GEOMETRY,collision:{engine:'capsule-sweep-v1',toleranceM:0.0005},...armCollisionScene?{scene:armCollisionScene}:{}},modelParameters={amr:singleWorld?{composition:'single_world',admission:'source_factory'}:MOCK_AMR_PARAMS,...scenario.coffee?{coffee:MOCK_COFFEE_PARAMS,arm:armProfile,coffeePolicy:COFFEE_POLICY}:{}},configuration={revision:1,hash:hashJson({roles,trays,modelParameters,entitySpeedLimits:project.entities.map(e=>({id:e.id,speedLimitMps:e.speedLimitMps??MOCK_AMR_PARAMS.speedMps})),fleet:scenario.fleet??{}})};
- const manifest:Omit<RunReport['manifest'],'runId'>={...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
+ const manifest:Omit<RunReport['manifest'],'runId'>={...input.driveFaultSchedule?.length?{driveFaultSchedule:{entries:structuredClone(input.driveFaultSchedule),hash:hashJson(input.driveFaultSchedule)}}:{},...input.worldExperimentId?{worldExperimentId:input.worldExperimentId}:{},...input.engineering?{engineering:input.engineering.ref}:{},...faultSchedule.length?{faultSchedule:{entries:faultSchedule,hash:hashJson(faultSchedule)}}:{},sourceCommit:input.sourceCommit,mode:backends.mode,access:'simulated',backendSetId:backends.setId,backends:backends.descriptors.map(d=>({...d})),prng:{...PRNG},clock:{tickMs:TICK_MS},seed:input.seed,
   scenario:{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)},project:{id:project.id,revision:project.revision,hash:hashJson(project)},world:{id:project.world.id,revision:project.world.revision,hash:worldHash(project.world)},assets,
   hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(project.entities),adapterHash:hashJson({sourceCommit:input.sourceCommit,backends:backends.descriptors}),configuration,
   recipes:COFFEE_RECIPES.filter(r=>scenario.coffee?.orders.some(o=>o.recipe===r.id)).map(r=>({id:r.id,revision:r.revision,hash:r.hash})),
@@ -236,7 +239,7 @@ class Run implements ScenarioRun {
      if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){
       const identity={runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!};
       const retained=await retainedWorldArmReports({directory:this.dir,...identity,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});
-      if(c.manifest.drive)ports.driveReport=()=>readRetainedWorldDriveReport(this.dir,{...identity,publicCommittedTick:c.tick});
+      if(c.manifest.drive)ports.driveReport=()=>readRetainedWorldDriveReport(this.dir,{...identity,publicCommittedTick:c.tick},c.manifest.driveFaultSchedule?.entries??[]);
       ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
      }
     }else{
@@ -628,6 +631,10 @@ class Run implements ScenarioRun {
      :arm?['webots_arm: the arm is a Webots R2025a rigid-body plant under position servo. not_calibrated: link masses, inertia, joint torque limits and floor friction are assumed fixture values. Gripping is an event of the program state machine, never physics; the AMR and the coffee machine are mocks. ARM03 is the swept capsule check on the actual joints every tick, not a physical safety proof.']:[]],
    ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
   const hoisted=(report.coffee as {driveEvidence?:import('./control/drive-report').DriveEvidenceReport}|undefined)?.driveEvidence;if(hoisted){report.driveEvidence=hoisted;delete (report.coffee as {driveEvidence?:unknown}).driveEvidence;}
+  if(this.coffee&&c.manifest.driveFaultSchedule){
+   const fr=await this.coffee.faultReport({serveTicks:serveTicksOf(businessEvents,EPOCH),attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),custodyChanged:((report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[]).some(x=>x.status==='unknown')});
+   if(fr)report.faultReport=fr;
+  }
   if(this.worldConfig){report.worldSweep=unavailableWorldSweep(c.tick,['WORLD_HISTORY_UNAVAILABLE']);report.worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:c.tick,prefixCovered:false,streamFinalized:false,identity:{runId:c.runId,bootId:c.world?.snapshot?.bootId??'unavailable',sceneDigest:c.world?.snapshot?.sceneDigest??'unavailable',admissionDigest:null}};}
   return {report,materializeArm};
  }

@@ -1,9 +1,12 @@
 import {join} from 'node:path';
 import {hashJson} from '../hash';
 import {BASE_CONTROLLER_DEFAULTS,mobileDrive} from '../control/drive-run';
-import {driveDocumentDigest,splitDriveSnapshot,type ControlProfileV1,type DriveModelV1} from '../control/drive-io';
+import {driveDocumentDigest,splitDriveSnapshot,type ControlProfileV1,type DriveCommandV1,type DriveModelV1,type FaultOracleV1} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
 import type {ControllerEvent} from '../control/controller';
+import {applyCommandLoss,runtimeFaultsAt,type FaultReceipt} from '../control/drive-faults';
+import {buildFaultReport,servedFacts} from '../fault-report';
+import type {FaultScheduleEntry} from '../fault-schedule';
 import {jointTrajectoryFollowerV1} from '../control/joint-follower';
 import type {WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import type {Sim3DSnapshotV1} from '../navigation2d/contracts';
@@ -30,8 +33,10 @@ export function worldDriveControllers(admission:WorldAdmission){
   joint=a.state;return {commands:[...a.commands,...b.commands],events:[...b.events,...a.events]};
  }};
 }
-export function buildWorldDriveReport(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[]){
- const drive=worldDriveControllers(admission),events:ControllerEvent[]=[],rows=[];
+/** The cell's recorded drive rows and the controller events replayed from them. With a fault schedule the replay applies the schedule's own command-loss timeline to what the controllers ask for before it
+ * compares with what was sent, and an axis' acknowledged seq is the seq of what was sent to it. */
+export function replayWorldDrive(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[],faults:readonly FaultScheduleEntry[]=[]){
+ const drive=worldDriveControllers(admission),events:ControllerEvent[]=[],rows:{tick:number;drives:NonNullable<WorldEvidenceRecord['snapshot']['drives']>}[]=[];let lastSent:DriveCommandV1[]|undefined;
  for(const [i,row] of records.entries()){
   const {snapshot,command}=row;
   if(!snapshot.drives){issues=[...issues,'WORLD_DRIVE_FEEDBACK_MISSING'];break;}
@@ -39,26 +44,55 @@ export function buildWorldDriveReport(admission:WorldAdmission,records:WorldEvid
    if(!command){issues=[...issues,'WORLD_DRIVE_COMMAND_MISSING'];break;}
    try{
     const replay=drive.step(records[i-1]!.snapshot,command);
-    if(!command.driveCommands||hashJson(replay.commands)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==snapshot.tick))throw Error('WORLD_DRIVE_COMMAND_REPLAY');
+    const lost=new Set(runtimeFaultsAt(faults,snapshot.tick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(replay.commands,lastSent,lost):replay.commands;lastSent=sent;
+    const seqOf=(axisId:string)=>faults.length?sent.find(c=>c.axisId===axisId)?.seq:snapshot.tick;
+    if(!command.driveCommands||hashJson(sent)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==seqOf(d.axisId)))throw Error('WORLD_DRIVE_COMMAND_REPLAY');
     events.push(...replay.events);
    }catch(e){issues=[...issues,(e as Error).message];break;}
   }
   rows.push({tick:snapshot.tick,drives:snapshot.drives});
  }
- return buildDriveEvidence(drive.model,rows,{complete:issues.length===0,issues,events});
+ return {drive,rows,events,issues};
 }
-export async function readWorldDriveReport(directory:string,admission:WorldAdmission,identity:{runId:string;bootId:string;publicCommittedTick:number}){
+export function buildWorldDriveReport(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[],faults:readonly FaultScheduleEntry[]=[]){
+ const r=replayWorldDrive(admission,records,issues,faults);
+ return buildDriveEvidence(r.drive.model,r.rows,{complete:r.issues.length===0,issues:r.issues,events:r.events});
+}
+/** The fault report of a cell run, from the verified prefix of its own stream: recorded intents (the commands), the worker's receipts (the snapshots) and the runtime's (the commands, after the ACK). */
+export function buildWorldFaultReport(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[],o:{runId:string;faults:readonly FaultScheduleEntry[];oracle:FaultOracleV1;facts:{serveTicks:readonly number[];custodyChanged:boolean;attention:readonly {tick:number;reason:string}[]}}){
+ const r=replayWorldDrive(admission,records,issues,o.faults);
+ if(r.issues.length)throw Error(`FAULT_EVIDENCE_INVALID:${r.issues[0]}`);
+ const gaps=issues.length;void gaps;
+ return buildFaultReport({runId:o.runId,schedule:o.faults,oracle:o.oracle,drives:r.rows,controllerEvents:r.events,attention:o.facts.attention,
+  receipts:records.flatMap(x=>[...(x.snapshot as {faultReceipts?:FaultReceipt[]}).faultReceipts??[],...x.command?.faultReceipts??[]]),
+  intents:records.map(x=>({tick:x.snapshot.tick,injections:x.command?.faultInjections??[]})),
+  physics:records.map(x=>({tick:x.snapshot.tick,base:x.snapshot.physics?.base})),
+  facts:{...servedFacts(r.rows,o.facts.serveTicks),resendsAfterUnknown:0,custodyChanged:o.facts.custodyChanged}});
+}
+export async function readWorldDriveReport(directory:string,admission:WorldAdmission,identity:{runId:string;bootId:string;publicCommittedTick:number},faults:readonly FaultScheduleEntry[]=[]){
  const capture=await captureWorldPrefixDisk(join(directory,'world-evidence'),admission,{...identity,sceneDigest:admission.scene.sceneDigest,admissionDigest:admission.digest});
  const prefix=await materializeWorldPrefix(capture,admission),issues=[...prefix.issues];
  if(prefix.publication.terminal||prefix.publication.gaps.length)issues.push('WORLD_FAILED');
- return buildWorldDriveReport(admission,prefix.records,issues);
+ return buildWorldDriveReport(admission,prefix.records,issues,faults);
+}
+/** The same read, to a fault report; undefined when the prefix is not whole (a fault report is only made from complete evidence). */
+export async function readWorldFaultReport(directory:string,admission:WorldAdmission,identity:{runId:string;bootId:string;publicCommittedTick:number},o:Omit<Parameters<typeof buildWorldFaultReport>[3],'runId'>){
+ const capture=await captureWorldPrefixDisk(join(directory,'world-evidence'),admission,{...identity,sceneDigest:admission.scene.sceneDigest,admissionDigest:admission.digest});
+ const prefix=await materializeWorldPrefix(capture,admission);
+ if(prefix.issues.length||prefix.publication.terminal||prefix.publication.gaps.length)return undefined;
+ return buildWorldFaultReport(admission,prefix.records,[],{...o,runId:identity.runId});
 }
 
 /** No installed replacement document may supply measurements for an unavailable cold bundle. */
-export async function readRetainedWorldDriveReport(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number}){
- try{return await readWorldDriveReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity);}
+export async function readRetainedWorldDriveReport(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number},faults:readonly FaultScheduleEntry[]=[]){
+ try{return await readWorldDriveReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity,faults);}
  catch(e){
   const reason=(e as NodeJS.ErrnoException).code==='ENOENT'?'WORLD_RETAINED_BUNDLE_UNAVAILABLE':(e as Error).message;
   return buildDriveEvidence({axes:[]},[],{complete:false,issues:[reason],events:[]});
  }
+}
+
+export async function readRetainedWorldFaultReport(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number},o:Omit<Parameters<typeof buildWorldFaultReport>[3],'runId'>){
+ try{return await readWorldFaultReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity,o);}
+ catch{return undefined;}
 }

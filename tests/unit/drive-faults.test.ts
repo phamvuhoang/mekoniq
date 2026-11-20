@@ -57,3 +57,33 @@ test('the catalog states layer, target, executor and bounds of every fault in th
  expect(DRIVE_FAULTS['encoder-dropout']).toMatchObject({layer:'feedback',appliedBy:'worker',params:{durationMs:{min:20,max:5000,required:true}}});
  expect(DRIVE_FAULTS['drive-reset'].campaignOnly).toBe(true);
 });
+
+import {applyCommandLoss,faultEventsAt,runtimeFaultsAt} from '../../packages/lab-runtime/src/v2/control/drive-faults';
+import {faultEndTick,faultStartTick} from '../../packages/lab-runtime/src/v2/fault-report';
+test('the timeline is a pure function of the target tick: ends first, then starts, in schedule order',()=>{
+ const a=entry('motor-weak','amr-1/wheel-left',100,200,{torqueScale:0.5}),b=entry('encoder-dropout','amr-1/wheel-right',100,100),c=entry('motor-weak','amr-1/wheel-left',300,100,{torqueScale:0.4});
+ const s=faultStartTick(100),e=faultEndTick(s,200);
+ expect(faultEventsAt([a,b,c],s-1)).toEqual([]);
+ expect(faultEventsAt([a,b,c],s).map(x=>[x.entryId,x.phase])).toEqual([[a.id,'start'],[b.id,'start']]);
+ expect(faultEventsAt([a,b,c],faultEndTick(s,100)).map(x=>[x.entryId,x.phase])).toEqual([[b.id,'end']]);
+ // a window that ends on the tick another one of the same kind begins: the end comes first so the worker never sees an overlap
+ const tick=faultStartTick(300);expect(e).toBe(tick);
+ expect(faultEventsAt([a,b,c],tick).map(x=>[x.entryId,x.phase])).toEqual([[a.id,'end'],[c.id,'start']]);
+ expect(faultEventsAt([a],s)[0]).toEqual({entryId:a.id,faultId:'motor-weak',targetId:'amr-1/wheel-left',params:{torqueScale:0.5},phase:'start'});
+});
+test('runtime faults are the ones the worker does not apply',()=>{
+ const loss=entry('command-loss','amr-1/wheel-left',100,200),weak=entry('motor-weak','amr-1/wheel-left',100,200,{torqueScale:0.5});
+ const s=faultStartTick(100);
+ expect(runtimeFaultsAt([loss,weak],s-1)).toEqual({active:[],events:[]});
+ expect(runtimeFaultsAt([loss,weak],s).active.map(x=>x.id)).toEqual([loss.id]);
+ expect(runtimeFaultsAt([loss,weak],s).events.map(x=>x.phase)).toEqual(['start']);
+ expect(runtimeFaultsAt([loss,weak],faultEndTick(s,200)-1).active.map(x=>x.id)).toEqual([loss.id]);          // still inside
+ expect(runtimeFaultsAt([loss,weak],faultEndTick(s,200))).toMatchObject({active:[],events:[{phase:'end'}]});  // the end tick is outside the window
+});
+test('command-loss repeats the last command sent on that axis, seq included, and touches no other',()=>{
+ const cmd=(axisId:string,seq:number,target:number)=>({axisId,seq,mode:'csv' as const,target,enable:true,quickStop:false,faultReset:false});
+ const last=[cmd('l',4,1),cmd('r',4,1)],next=[cmd('l',5,2),cmd('r',5,2)];
+ expect(applyCommandLoss(next,last,new Set(['r']))).toEqual([cmd('l',5,2),cmd('r',4,1)]);
+ expect(applyCommandLoss(next,last,new Set())).toEqual(next);
+ expect(applyCommandLoss(next,undefined,new Set(['r']))).toEqual(next);   // nothing was ever sent: there is nothing to repeat
+});

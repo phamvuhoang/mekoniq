@@ -953,6 +953,30 @@ export interface CreateRunRequest {
   bench?: {
     [k: string]: any;
   };
+  /**
+   * Drive, feedback, command-channel and sensor faults of this run (R4, V08). Admitted against the server's fault catalog; run-scoped, never part of the project. Absent: no injection, byte for byte.
+   *
+   * @maxItems 16
+   */
+  driveFaultSchedule?: FaultScheduleEntry[];
+}
+export interface FaultScheduleEntry {
+  id: string;
+  faultId: string;
+  targetId: string;
+  trigger:
+    | {
+        kind: 'elapsed_sim_ms';
+        value: number;
+      }
+    | {
+        kind: 'phase';
+        value: 'brew' | 'grasp' | 'handoff' | 'delivery';
+      };
+  durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
 }
 
 export interface RunVerification {

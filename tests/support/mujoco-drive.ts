@@ -18,7 +18,7 @@ export const temp=async()=>{const d=await mkdtemp(join(tmpdir(),'mj-drive-mobile
 afterEach(async()=>{for(const r of runs.splice(0))await r.close();for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
 export interface Step {request:Record<string,unknown>;result:Record<string,unknown>|null}
 /** One run of MJ-FD01 on a freshly compiled bundle; `driveExperimentId` and `compilerRoot` choose the drive, every step the worker answers is kept. */
-export async function setup(o:{driveExperimentId?:string;compilerRoot?:string}={}){
+export async function setup(o:{driveExperimentId?:string;compilerRoot?:string;driveFaultSchedule?:import('../../packages/lab-runtime/src/v2/fault-schedule').FaultScheduleEntry[];faultCampaign?:true}={}){
  const f=navigationFixture('serve-3d').fixture;f.project={...f.project,requestedProfile:'engineering-mujoco-3d-v1',...o.driveExperimentId?{driveExperimentId:o.driveExperimentId}:{}} as typeof f.project;
  const catalogRoot=await temp();await writeFixtureCatalog(catalogRoot,f);
  const service=createEngineeringService({directory:await temp(),catalogRoot,compiler:testCompiler,compilers:{'engineering-mujoco-3d-v1':createMujocoCompiler({workerRoot:o.compilerRoot??root})}});
@@ -29,8 +29,8 @@ export async function setup(o:{driveExperimentId?:string;compilerRoot?:string}={
  plant.spawn=async s=>{const w=await spawn(s);return {...w,async request(req){const r=await w.request(req);if(req.op==='step')steps.push({request:structuredClone(req.payload) as never,result:r.ok?structuredClone(r.result) as never:null});return r;}};};
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>b.id==='mujoco_3d'?{...b,installed:true,compatible:true,reachable:true}:b)};
  const runDirectory=await temp();
- const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'drive-mobile-test',engineering:locked},
-  {directory:runDirectory,catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(run);
+ const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:'MJ-FD01',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',sourceCommit:'drive-mobile-test',engineering:locked,...o.driveFaultSchedule?{driveFaultSchedule:o.driveFaultSchedule}:{}},
+  {directory:runDirectory,...o.faultCampaign?{faultCampaign:true as const}:{},catalog,enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>service.bundleFile(d,p),plant,runtime});runs.push(run);
  return {run,steps,service,receipt,locked,runDirectory:runDirectory};
 }
 let ordinal=0;

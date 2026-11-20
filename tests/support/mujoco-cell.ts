@@ -13,7 +13,7 @@ import {act,amrAsset} from './lab-v2';
 import {OwnedProcesses} from './owned-processes';
 export const cellRoot=resolve('robotics/simulation-mujoco');
 export const cellCampaign=JSON.parse(readFileSync(join(cellRoot,'campaigns/mj-cell-bv01-v1.json'),'utf8')) as {nominalSeeds:number[];maxTicks:number;nativeDeadlineSecondsPerCase:number};
-export async function openCell(seed:number,kind:string,options:Partial<MujocoRuntimeOptions>={},manifestExtra:{driveExperimentId?:import('../../packages/lab-runtime/src/v2/control/drive-experiments').DriveExperimentId}={},spawn?:Parameters<typeof mujocoWorldPorts>[1]){
+export async function openCell(seed:number,kind:string,options:Partial<MujocoRuntimeOptions>={},manifestExtra:{driveExperimentId?:import('../../packages/lab-runtime/src/v2/control/drive-experiments').DriveExperimentId;driveFaultSchedule?:import('../../packages/lab-runtime/src/v2/fault-schedule').FaultScheduleEntry[]}={},spawn?:Parameters<typeof mujocoWorldPorts>[1]){
  const directory=await mkdtemp(`/tmp/mekoniq-b06-${kind}-${seed}-`),processes=new OwnedProcesses();processes.addDirectory(directory);
  const project=JSON.parse(await readFile(join(cellRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
  const catalog:CapabilityCatalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};

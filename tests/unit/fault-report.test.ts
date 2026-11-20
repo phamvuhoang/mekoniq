@@ -96,3 +96,37 @@ test('the first tick the applied drive target changes after the fault is reporte
  const r=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(30,(a,t)=>a===AX&&t>=start+3?{targetApplied:1}:{})});
  expect(r.entries[0]!.firstCommandChangeTick).toBe(start+3);
 });
+
+import {faultEventsAt} from '../../packages/lab-runtime/src/v2/control/drive-faults';
+test('with the recorded intents the report reconciles them against the schedule and the receipts, tick by tick',()=>{
+ const e=entry('motor-weak',100,100,{torqueScale:0.5}),start=faultStartTick(100),end=faultEndTick(start,100);
+ const intents=(extra:{tick:number;injections:ReturnType<typeof faultEventsAt>}[]=[])=>[...[start,end].map(t=>({tick:t,injections:faultEventsAt([e],t)})),...extra].sort((a,b)=>a.tick-b.tick);
+ const good=[receipt(e,'start',start),receipt(e,'end',end)];
+ const build=(i:ReturnType<typeof intents>,r=good,n=40)=>()=>buildFaultReport({...base,schedule:[e],receipts:r,intents:i,drives:drives(n)});
+ expect(build(intents())).not.toThrow();
+ expect(build(intents().slice(1))).toThrow('FAULT_EVIDENCE_INVALID');                                              // an intent the schedule demands was never recorded
+ expect(build([...intents(),{tick:start+1,injections:faultEventsAt([e],start)}])).toThrow('FAULT_EVIDENCE_INVALID');  // an intent the schedule does not have
+ expect(build(intents(),[good[0]!])).toThrow('FAULT_EVIDENCE_INVALID');                                             // an intent with no receipt, inside the run
+ expect(build(intents(),[good[0]!],start+2)).not.toThrow();                                                          // the run ended inside the window: the end is simply not due yet
+ expect(build(intents(),[receipt(e,'start',start),receipt(e,'end',end,{requestDigest:'other'})])).not.toThrow();      // digests are per tick, not across ticks
+ expect(()=>buildFaultReport({...base,schedule:[e],receipts:[good[0]!,{...good[0]!,entryId:'x'}],intents:intents(),drives:drives(40)})).toThrow('FAULT_EVIDENCE_INVALID');
+});
+test('receipts of one tick must agree on the run boot and the request digest',()=>{
+ const a=entry('motor-weak',100,100,{torqueScale:0.5}),b=entry('encoder-dropout',100,100,{},OTHER),start=faultStartTick(100);
+ const intents=[{tick:start,injections:faultEventsAt([a,b],start)}];
+ const ok=[receipt(a,'start',start),receipt(b,'start',start)];
+ expect(()=>buildFaultReport({...base,schedule:[a,b],receipts:ok,intents,drives:drives(start+1)})).not.toThrow();
+ for(const bad of [{requestDigest:'x'},{bootId:'boot-2'}])
+  expect(()=>buildFaultReport({...base,schedule:[a,b],receipts:[ok[0]!,{...ok[1]!,...bad}],intents,drives:drives(start+1)}),JSON.stringify(bad)).toThrow('FAULT_EVIDENCE_INVALID');
+});
+
+import {servedFacts} from '../../packages/lab-runtime/src/v2/fault-report';
+test('a serve confirmed after a fault latched on an axis that never recovered does not count as confirmed',()=>{
+ const faulted=drives(30,(a,t)=>a===AX&&t>=10?{fault:'EXTERNAL_TRIP',state:'fault'}:{});
+ expect(servedFacts(faulted,[5])).toEqual({reportedServed:1,confirmedServed:1});
+ expect(servedFacts(faulted,[5,12])).toEqual({reportedServed:2,confirmedServed:1});
+ expect(servedFacts(drives(30),[5,29])).toEqual({reportedServed:2,confirmedServed:2});
+ // a fault that was cleared later does not poison the serves after it
+ const healed=drives(30,(a,t)=>a===AX&&t>=10&&t<15?{fault:'EXTERNAL_TRIP',state:'fault'}:{});
+ expect(servedFacts(healed,[20])).toEqual({reportedServed:1,confirmedServed:1});
+});
