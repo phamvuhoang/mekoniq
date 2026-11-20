@@ -23,3 +23,5 @@ Backup replacement:102simulation signing keys were present in three newly upload
 Final record archive authenticated-restored694files43,435,920bytes; see [backup receipt](receipts/final-record-backup-receipt.json), [exact-byte screening receipt](receipts/final-record-exact-transfer-scan.json) and [restore guide](RESTORE.md). Source package SHA b49b332d141a132d301e6dd9682f3d92ecc33a522b6bd4779b6439e82876497f.
 
 Final independent review: **ready to begin V08; no open findings**. [Full scoped review and closure note](reviews/final-review-round-1.md) preserves the sequence and exact evidence examined. The final Source document push and publication of active inventory/ref metadata are recorded by the separate closure receipt to avoid embedding a commit's own hash inside itself.
+
+Historical probe retention: `spec/probes/review-v05/view-cost.mjs` is stored as `.mjs.txt` with identical bytes, so repository lint does not treat an archived observation script as current executable code. [Filename/hash mapping](spec/probes/RETENTION.md); the workspace and archive originals are unchanged.
