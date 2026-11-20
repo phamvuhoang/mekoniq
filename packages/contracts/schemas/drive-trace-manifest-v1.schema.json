@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.drive-trace-manifest.v1",
+  "title": "BenchTraceManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "drive-trace"
+    },
+    "identity": {
+      "$ref": "#/definitions/BenchTraceIdentity"
+    },
+    "dtS": {
+      "const": 0.002
+    },
+    "substeps": {
+      "const": 10
+    },
+    "chunks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^drive-trace-[0-9]{6}-[a-f0-9]{8}\\.ndjson\\.gz$"
+          },
+          "sha256": {
+            "$ref": "engineering-component.schema.json#/definitions/Digest"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16777216
+          },
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "firstTick",
+          "lastTick"
+        ]
+      },
+      "maxItems": 501
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "firstTick": {
+          "const": 0
+        },
+        "lastTick": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 500
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "firstTick",
+        "lastTick",
+        "complete"
+      ]
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "firstTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 501
+          },
+          "lastTick": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 501
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "firstTick",
+          "lastTick",
+          "reason"
+        ]
+      },
+      "maxItems": 502
+    },
+    "terminalReason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "identity",
+    "dtS",
+    "substeps",
+    "chunks",
+    "coverage",
+    "gaps",
+    "terminalReason"
+  ],
+  "definitions": {
+    "BenchTraceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "axisIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "plantModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "driveModelDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "controlProfileDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "runId",
+        "axisIds",
+        "plantModelDigest",
+        "driveModelDigest",
+        "controlProfileDigest"
+      ]
+    }
+  }
+}

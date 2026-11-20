@@ -5,6 +5,7 @@ import driveIoSchema from '../../../../contracts/schemas/drive-io-v1.schema.json
 import driveModelSchema from '../../../../contracts/schemas/drive-model-v1.schema.json';
 import controlProfileSchema from '../../../../contracts/schemas/control-profile-v1.schema.json';
 import controlEvidenceSchema from '../../../../contracts/schemas/control-evidence-v1.schema.json';
+import traceManifestSchema from '../../../../contracts/schemas/drive-trace-manifest-v1.schema.json';
 import benchRequestSchema from '../../../../contracts/schemas/bench-request-v1.schema.json';
 import type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1} from '../../../../contracts/generated/navigation2d';
 import {hashJson} from '../hash';
@@ -14,9 +15,10 @@ export type {ControlMetric,DriveTrace,DriveMode,DriveState,DriveFault,DriveTickR
 export type Check={ok:boolean;reasonCodes:string[]};
 
 const ajv=new Ajv({allErrors:true,strict:true,discriminator:true});
-for(const [key,schema] of Object.entries({'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema,'bench-request-v1.schema.json':benchRequestSchema}))ajv.addSchema(schema,key);
+for(const [key,schema] of Object.entries({'drive-trace-manifest-v1.schema.json':traceManifestSchema,'engineering-component.schema.json':componentSchema,'drive-io-v1.schema.json':driveIoSchema,'drive-model-v1.schema.json':driveModelSchema,'control-profile-v1.schema.json':controlProfileSchema,'control-evidence-v1.schema.json':controlEvidenceSchema,'bench-request-v1.schema.json':benchRequestSchema}))ajv.addSchema(schema,key);
 const modelShape=ajv.getSchema('drive-model-v1.schema.json')!,profileShape=ajv.getSchema('control-profile-v1.schema.json')!,envelopeShape=ajv.getSchema('control-profile-v1.schema.json#/definitions/TuningEnvelopeV1')!,refShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveDocumentRef')!;
 const benchRequestShape=ajv.getSchema('bench-request-v1.schema.json')!,benchSignalShape=ajv.getSchema('bench-request-v1.schema.json#/definitions/BenchSignal')!;
+export const validateTraceManifestShape=ajv.getSchema('drive-trace-manifest-v1.schema.json')!;
 export const validateControlEvidenceShape=ajv.getSchema('control-evidence-v1.schema.json')!;
 export const validateDriveAxisSnapshotShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveAxisSnapshot')!;
 export const validateDriveCommandShape=ajv.getSchema('drive-io-v1.schema.json#/definitions/DriveCommandV1')!;

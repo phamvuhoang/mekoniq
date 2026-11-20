@@ -3025,3 +3025,53 @@ export interface BenchRequestV1 {
     'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
   controlProfile: ControlProfileV1;
 }
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceIdentity".
+ */
+export interface BenchTraceIdentity {
+  runId: string;
+  /**
+   * @minItems 1
+   * @maxItems 2
+   */
+  axisIds: string[];
+  plantModelDigest: Digest;
+  driveModelDigest: Digest;
+  controlProfileDigest: Digest;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BenchTraceManifest".
+ */
+export interface BenchTraceManifest {
+  schemaVersion: 1;
+  documentType: 'drive-trace';
+  identity: BenchTraceIdentity;
+  dtS: 0.002;
+  substeps: 10;
+  /**
+   * @maxItems 501
+   */
+  chunks: {
+    path: string;
+    sha256: Digest;
+    bytes: number;
+    firstTick: number;
+    lastTick: number;
+  }[];
+  coverage: {
+    firstTick: 0;
+    lastTick: number;
+    complete: boolean;
+  };
+  /**
+   * @maxItems 502
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
+}

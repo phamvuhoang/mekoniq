@@ -36,6 +36,31 @@ describe('the durable bench trace (no engine)',()=>{
  const identity:BenchTraceIdentity={runId:'run-1',axisIds:['xarm-1/J3'],plantModelDigest:'a'.repeat(64),driveModelDigest:'b'.repeat(64),controlProfileDigest:'c'.repeat(64)};
  const tick=(t:number,y=(k:number)=>k*1e-3)=>[{axisId:'xarm-1/J3',dtS:0.002,samples:Array.from({length:10},(_,k)=>({target:1,actual:y(t*10+k),feedback:null,torqueNm:0.5,saturated:false}))}];
  afterAll(removeMujocoDirs);
+ test('the reader rejects invalid engine ticks before allocating traces',async()=>{
+  for(const tick of [501,-1,1.5,NaN,Infinity]){
+   expect(await readBenchTrace('unused',identity,tick)).toMatchObject({traces:[],issues:['TRACE_RUN_TICK_INVALID']});
+  }
+ });
+ test('declared gaps override verified chunks and semantic or malformed manifests fail closed',async()=>{
+  const dir=join(await mujocoTemp('bench-manifest-'),'trace'),rec=await openBenchTrace(dir,identity,{chunkTicks:100});
+  for(let t=0;t<=210;t++)await rec.append(t,tick(t));
+  await rec.finish(null);
+  const m=rec.manifest(),path=join(dir,'manifest.json');
+  const gap={firstTick:200,lastTick:200,reason:'OBSERVATION_LOST'};
+  await writeFile(path,JSON.stringify({...m,coverage:{...m.coverage,complete:false},gaps:[gap]}));
+  const read=await readBenchTrace(dir,identity,210),samples=read.traces[0]!.samples;
+  expect(read.issues).toEqual(['TRACE_GAP:200-200:OBSERVATION_LOST']);
+  expect(samples.slice(2000,2010)).toEqual(Array(10).fill(null));expect(samples[1999]).toBeTruthy();expect(samples[2010]).toBeTruthy();
+  for(const invalid of [
+   {...m,gaps:[null]}, {...m,gaps:[gap]}, {...m,coverage:{firstTick:1,lastTick:210,complete:true}},
+   {...m,coverage:{...m.coverage,lastTick:199}}, {...m,chunks:[m.chunks[0],{...m.chunks[1],firstTick:99},m.chunks[2]]},
+   {...m,chunks:[m.chunks[0],m.chunks[2]]}, {...m,chunks:[{...m.chunks[0],lastTick:-1}]}, {...m,gaps:[{...gap,lastTick:199}]},
+  ]){
+   await writeFile(path,JSON.stringify(invalid));const bad=await readBenchTrace(dir,identity,210);
+   expect(bad.issues).toEqual(['TRACE_MANIFEST_INVALID']);expect(bad.traces[0]!.samples.every(x=>x===null)).toBe(true);
+  }
+  await writeFile(path,JSON.stringify(m));expect((await readBenchTrace(dir,{...identity,runId:'other'},210)).issues).toEqual(['TRACE_IDENTITY_MISMATCH']);
+ });
  test('tick 0 is the baseline and ticks 1-500 fill the 5,000-sample cap; a tick past it is refused and ends the recording (ruling 15)',async()=>{
   const dir=join(await mujocoTemp('bench-trace-'),'trace'),rec=await openBenchTrace(dir,identity);
   for(let t=0;t<=500;t++)await rec.append(t,tick(t));
@@ -98,7 +123,7 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
  }
  test('a wheel step of 2 rad/s with the starting profile completes; the rise time exists; the draft reaches the worker byte for byte and every other axis holds where it rests',async()=>{
   const b=wheel(),seen:{create?:{bench:{controlProfileRef:{sha256:string}}};tick0?:{drives:{axisId:string;targetApplied:number}[]}}={};
-  const {report,view,directory}=await bench(b,async(req,next)=>{const r=await next() as {ok:boolean;result:never};if(req.op==='create'){seen.create=req.payload as never;seen.tick0=r.result;}return r;});
+  const {report,view,directory,run:resultRun}=await bench(b,async(req,next)=>{const r=await next() as {ok:boolean;result:never};if(req.op==='create'){seen.create=req.payload as never;seen.tick0=r.result;}return r;});
   expect(view.run.status).toBe('completed');
   const t=report.tuning!;expect(validateControlEvidenceShape(t),JSON.stringify(validateControlEvidenceShape.errors)).toBe(true);
   expect(t).toMatchObject({status:'completed',unstable:null,fault:null,axisIds:WHEELS,signal:b.signal,seed:7,engine:{id:'mujoco_3d',version:'3.17.0',hostArch:HOST},collision:null,accepted:false,
@@ -114,6 +139,11 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(bytes.toString()).toBe(JSON.stringify(b.controlProfile));expect(seen.create!.bench.controlProfileRef.sha256).toBe(sha(bytes));
   // the server's rest positions are where the drive itself starts (tick 0's applied target), so a holding axis never moves
   expect(seen.tick0!.drives.map(d=>[d.axisId,d.targetApplied])).toEqual(WHEELS.map(a=>[a,0]));
+  const path=join(directory,'trace/manifest.json'),manifest=JSON.parse(await readFile(path,'utf8'));
+  manifest.gaps=[{firstTick:200,lastTick:200,reason:'OBSERVATION_LOST'}];manifest.coverage.complete=false;await writeFile(path,JSON.stringify(manifest));
+  const reread=await resultRun.report() as Report;
+  expect(reread.tuning!.metrics.rmsError).toMatchObject({available:false,reason:'TRACE_GAP'});
+  expect(reread.tuning!.trace.samples).toBe(4990);expect(reread.bench.traceIssues).toEqual(['TRACE_GAP:200-200:OBSERVATION_LOST']);
   show({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia,suggestions:t.suggestions}});
  },120_000);
  test('a J3 step of 0.1 rad completes, with the J3 inertia at home; the arm holds at home and the gripper open',async()=>{

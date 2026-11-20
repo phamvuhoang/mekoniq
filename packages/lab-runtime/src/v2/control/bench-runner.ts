@@ -30,7 +30,7 @@ import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
 import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
 import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
-import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateTraceManifestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {gainSuggestions} from './gain-suggest';
 import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
@@ -132,11 +132,9 @@ async function writeBenchBundle(dir:string,workerRoot:string,bench:BenchRequestV
 }
 
 // ---- the durable trace -------------------------------------------------------------------------------------------------------------------------------------
-export interface BenchTraceIdentity {runId:string;axisIds:string[];plantModelDigest:string;driveModelDigest:string;controlProfileDigest:string}
-/** The layout of the physics stream (physics-evidence.ts): a manifest listing immutable gzip ndjson chunks by path, sha256 and bytes, coverage, gaps and a terminal reason. One line per tick: {tick, axes}. */
-export interface BenchTraceManifest {schemaVersion:1;documentType:'drive-trace';identity:BenchTraceIdentity;dtS:number;substeps:number;chunks:{path:string;sha256:string;bytes:number;firstTick:number;lastTick:number}[];
- coverage:{firstTick:0;lastTick:number;complete:boolean};gaps:{firstTick:number;lastTick:number;reason:string}[];terminalReason:string|null}
-const MANIFEST='manifest.json',CHUNK=/^drive-trace-\d{6}-[a-f0-9]{8}\.ndjson\.gz$/,SAMPLE_KEYS=['actual','feedback','saturated','target','torqueNm'];
+import type {BenchTraceIdentity,BenchTraceManifest} from '../../../../contracts/generated/navigation2d';
+export type {BenchTraceIdentity,BenchTraceManifest};
+const MANIFEST='manifest.json',SAMPLE_KEYS=['actual','feedback','saturated','target','torqueNm'];
 const finite=(x:unknown)=>typeof x==='number'&&Number.isFinite(x);
 /** One tick of the trace as the worker sends it (or a chunk line holds it): every traced axis in order, 10 samples each, finite numbers, a feedback that is a number or null (dropout). */
 function tickAxes(value:unknown,axisIds:readonly string[]):{axisId:string;samples:Sample[]}[]{
@@ -188,26 +186,39 @@ export interface BenchTraceRead {manifest:BenchTraceManifest|null;manifestSha256
 /** The trace of ticks 0..runTick as read back now: bounded reads, every chunk checked against its listed size and sha256 and its ticks against its place. A tick no valid chunk holds (a gap, a bad chunk, a tail
  * that never became durable) is 10 null samples per axis, so a metric whose window contains it is TRACE_GAP (tuning-metrics.ts); nothing is skipped over. */
 export async function readBenchTrace(directory:string,identity:BenchTraceIdentity,runTick:number):Promise<BenchTraceRead>{
+ if(!Number.isSafeInteger(runTick)||runTick<0||runTick>BENCH_MAX_TICKS)return {manifest:null,manifestSha256:null,traces:[],issues:['TRACE_RUN_TICK_INVALID']};
  const n=(runTick+1)*BENCH_TRACE_LIMITS.substeps,traces:DriveTrace[]=identity.axisIds.map(axisId=>({axisId,dtS:BENCH_TRACE_LIMITS.dtS,samples:Array<Sample|null>(Math.max(0,n)).fill(null)}));
  const none=(issue:string):BenchTraceRead=>({manifest:null,manifestSha256:null,traces,issues:[issue]});
  let bytes:Buffer,m:BenchTraceManifest;
  try{bytes=await readBoundedPhysicsFile(directory,MANIFEST,READ_LIMITS.manifestBytes);m=JSON.parse(bytes.toString()) as BenchTraceManifest;}catch{return none('TRACE_MANIFEST_UNREADABLE');}
- if(m?.schemaVersion!==1||m.documentType!=='drive-trace'||!Array.isArray(m.chunks)||m.chunks.length>READ_LIMITS.chunksPerStream||!Array.isArray(m.gaps)||!m.coverage)return none('TRACE_MANIFEST_INVALID');
- if(hashJson(m.identity)!==hashJson(identity)||m.dtS!==BENCH_TRACE_LIMITS.dtS||m.substeps!==BENCH_TRACE_LIMITS.substeps)return none('TRACE_IDENTITY_MISMATCH');
+ if(!validateTraceManifestShape(m))return none('TRACE_MANIFEST_INVALID');
+ if(hashJson(m.identity)!==hashJson(identity))return none('TRACE_IDENTITY_MISMATCH');
+ // Chunk ranges partition the durable prefix. A gap may invalidate a retained chunk's samples or describe the next unconfirmed tick.
+ let next=0;
+ const paths=new Set<string>();
+ for(const c of m.chunks){
+  if(c.firstTick!==next||c.lastTick<c.firstTick||paths.has(c.path))return none('TRACE_MANIFEST_INVALID');
+  next=c.lastTick+1;paths.add(c.path);
+ }
+ if(m.coverage.lastTick!==next-1||m.coverage.lastTick>runTick||m.coverage.complete&&(next===0||m.gaps.length>0||m.terminalReason!==null))return none('TRACE_MANIFEST_INVALID');
+ let previousGapEnd=-1;
+ for(const g of m.gaps){
+  if(g.firstTick<=previousGapEnd||g.firstTick>next||g.lastTick<g.firstTick)return none('TRACE_MANIFEST_INVALID');
+  previousGapEnd=g.lastTick;
+ }
  const issues=[...m.terminalReason?[`TRACE_TERMINAL:${String(m.terminalReason).slice(0,200)}`]:[],...m.gaps.map(g=>`TRACE_GAP:${g.firstTick}-${g.lastTick}:${String(g.reason).slice(0,100)}`)];
- let inflated=0,next=0;
+ let inflated=0;
  for(const c of m.chunks){
   try{
-   if(typeof c.path!=='string'||!CHUNK.test(c.path))throw Error('TRACE_PATH_REJECTED');
-   if(c.firstTick!==next||!(c.lastTick>=c.firstTick))throw Error('TRACE_CHUNK_ORDER');
    const b=await readBoundedPhysicsFile(directory,c.path,READ_LIMITS.chunkBytes);if(b.length!==c.bytes||sha(b)!==c.sha256)throw Error('TRACE_HASH_MISMATCH');
    const body=gunzipSync(b,{maxOutputLength:Math.min(READ_LIMITS.chunkInflated,READ_LIMITS.totalInflated-inflated)});inflated+=body.length;
    const rows=body.toString('utf8').split('\n');if(rows.pop()!==''||rows.length!==c.lastTick-c.firstTick+1)throw Error('TRACE_TRUNCATED');
    const ticks=rows.map((row,i)=>{if(Buffer.byteLength(row)>READ_LIMITS.lineBytes)throw Error('TRACE_READ_LIMIT');const x=JSON.parse(row) as {tick:unknown;axes:unknown};if(x.tick!==c.firstTick+i||Object.keys(x).length!==2)throw Error('TRACE_TICK_ORDER');return tickAxes(x.axes,identity.axisIds);});
    ticks.forEach((axes,i)=>{const tick=c.firstTick+i;if(tick<=runTick)axes.forEach((a,k)=>a.samples.forEach((s,j)=>{traces[k]!.samples[tick*BENCH_TRACE_LIMITS.substeps+j]=s;}));});
   }catch(e){issues.push(`TRACE_CHUNK_INVALID:${String(c?.path).slice(0,80)}:${(e as Error).message.slice(0,80)}`);}
-  next=typeof c?.lastTick==='number'?c.lastTick+1:next;
+
  }
+ for(const g of m.gaps)for(const trace of traces)trace.samples.fill(null,g.firstTick*BENCH_TRACE_LIMITS.substeps,(g.lastTick+1)*BENCH_TRACE_LIMITS.substeps);
  if(m.coverage.lastTick<runTick)issues.push('TRACE_TAIL_MISSING');
  return {manifest:m,manifestSha256:sha(bytes),traces,issues};
 }
