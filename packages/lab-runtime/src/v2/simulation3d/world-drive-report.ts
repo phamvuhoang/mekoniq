@@ -8,6 +8,7 @@ import {jointTrajectoryFollowerV1} from '../control/joint-follower';
 import type {WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import type {Sim3DSnapshotV1} from '../navigation2d/contracts';
 import type {XArmPhysics} from './arm-cell-scene';
+import {readRetainedWorldAdmission} from './world-arm-report';
 import {worldDocument} from './world-control';
 import {captureWorldPrefixDisk,materializeWorldPrefix,type WorldAdmission} from './world-evidence';
 
@@ -23,7 +24,7 @@ export function worldDriveControllers(admission:WorldAdmission){
  let joint=jointTrajectoryFollowerV1.init({axes:[1,2,3,4,5,6].map(i=>armId+'/J'+i),gripperAxis:armId+'/gripper',gripperMap:{loRad:grip.lower.value,hiRad:grip.upper.value,openingMaxM:physics.gripper.openingMaxM},enableTimeoutTicks:BASE_CONTROLLER_DEFAULTS.enableTimeoutTicks,followTolRad:0.3,followTicks:25});
  return {model,control,step(last:Sim3DSnapshotV1,command:NonNullable<WorldEvidenceRecord['command']>){
   const v=command.velocities[0],q=command.jointTargets?.[0],g=command.gripperTargets?.[0];
-  if(v?.robotId!==robot.robotId||q?.armId!==armId||g?.armId!==armId||!last.drives)throw Error('WORLD_DRIVE_SETPOINT_INVALID');
+  if(command.velocities.length!==1||command.jointTargets?.length!==1||command.gripperTargets?.length!==1||v?.robotId!==robot.robotId||q?.armId!==armId||g?.armId!==armId||!last.drives)throw Error('WORLD_DRIVE_SETPOINT_INVALID');
   const b=base.step(last.tick,{vMps:v.vMps,omegaRadps:v.omegaRadps,stop:command.worldControl?.movementInterlocked},last);
   const a=jointTrajectoryFollowerV1.step(joint,{tick:last.tick,setpoint:{positionsRad:q.positionsRad,openingM:g.openingM},feedback:splitDriveSnapshot(last.drives).feedback});
   joint=a.state;return {commands:[...a.commands,...b.commands],events:[...b.events,...a.events]};
@@ -36,11 +37,11 @@ export function buildWorldDriveReport(admission:WorldAdmission,records:WorldEvid
   if(!snapshot.drives){issues=[...issues,'WORLD_DRIVE_FEEDBACK_MISSING'];break;}
   if(i){
    if(!command){issues=[...issues,'WORLD_DRIVE_COMMAND_MISSING'];break;}
-   const replay=drive.step(records[i-1]!.snapshot,command);
-   if(hashJson(replay.commands)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==snapshot.tick)){
-    issues=[...issues,'WORLD_DRIVE_COMMAND_REPLAY'];break;
-   }
-   events.push(...replay.events);
+   try{
+    const replay=drive.step(records[i-1]!.snapshot,command);
+    if(!command.driveCommands||hashJson(replay.commands)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==snapshot.tick))throw Error('WORLD_DRIVE_COMMAND_REPLAY');
+    events.push(...replay.events);
+   }catch(e){issues=[...issues,(e as Error).message];break;}
   }
   rows.push({tick:snapshot.tick,drives:snapshot.drives});
  }
@@ -51,4 +52,13 @@ export async function readWorldDriveReport(directory:string,admission:WorldAdmis
  const prefix=await materializeWorldPrefix(capture,admission),issues=[...prefix.issues];
  if(prefix.publication.terminal||prefix.publication.gaps.length)issues.push('WORLD_FAILED');
  return buildWorldDriveReport(admission,prefix.records,issues);
+}
+
+/** No installed replacement document may supply measurements for an unavailable cold bundle. */
+export async function readRetainedWorldDriveReport(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number}){
+ try{return await readWorldDriveReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity);}
+ catch(e){
+  const reason=(e as NodeJS.ErrnoException).code==='ENOENT'?'WORLD_RETAINED_BUNDLE_UNAVAILABLE':(e as Error).message;
+  return buildDriveEvidence({axes:[]},[],{complete:false,issues:[reason],events:[]});
+ }
 }

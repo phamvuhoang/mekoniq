@@ -3,8 +3,8 @@ import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
-import {readWorldDriveReport} from './simulation3d/world-drive-report';
-import {readRetainedWorldAdmission,retainedWorldArmReports} from './simulation3d/world-arm-report';
+import {readRetainedWorldDriveReport} from './simulation3d/world-drive-report';
+import {retainedWorldArmReports} from './simulation3d/world-arm-report';
 import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
 import type {ArmReportBlock} from './beverage/arm-plant-report';
 import {stepWorldOnce} from './simulation3d/world-step';
@@ -236,7 +236,7 @@ class Run implements ScenarioRun {
      if(c.coffee.arm.historyRetention?.mode==='world_durable_v1'&&c.world.snapshot&&c.manifest.armProgram){
       const identity={runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!};
       const retained=await retainedWorldArmReports({directory:this.dir,...identity,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});
-      if(c.manifest.drive)ports.driveReport=async()=>readWorldDriveReport(this.dir,await readRetainedWorldAdmission(this.dir,identity.sceneDigest),{...identity,publicCommittedTick:c.tick});
+      if(c.manifest.drive)ports.driveReport=()=>readRetainedWorldDriveReport(this.dir,{...identity,publicCommittedTick:c.tick});
       ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
      }
     }else{

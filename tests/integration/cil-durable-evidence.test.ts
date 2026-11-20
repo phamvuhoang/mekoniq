@@ -50,14 +50,24 @@ test('a selected torque repeat records and independently verifies its same-profi
 });
 test('a fresh disk reader recovers the recorded cell report and exposes a damaged chunk after restart',async()=>{
  const {readRetainedWorldAdmission}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-arm-report');
- const {readWorldDriveReport}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-drive-report');
+ const {readWorldDriveReport,readRetainedWorldDriveReport,buildWorldDriveReport}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-drive-report');
  const copy=await mkdtemp(join(dir,'restart-')),caseDir=join(dir,cell,'cell/lost-ack');
  await cp(join(caseDir,'run'),copy,{recursive:true});
  const checkpoint=await read(join(copy,'run.json')),a=await readRetainedWorldAdmission(copy,checkpoint.world.snapshot.sceneDigest),identity={runId:checkpoint.runId,bootId:checkpoint.world.snapshot.bootId,publicCommittedTick:checkpoint.tick};
  const expected=(await read(join(caseDir,'report.json'))).driveEvidence;
  expect(await readWorldDriveReport(copy,a,identity)).toEqual(expected);
+ const {readWorldEvidence}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
+ const {records}=await readWorldEvidence(join(copy,'world-evidence'),a),rows=structuredClone(records.slice(0,2));
+ for(const field of ['jointTargets','gripperTargets','velocities'] as const){
+  const command=structuredClone(records[1]!.command!);command[field]=[];rows[1]!.command=command;
+  const incomplete=buildWorldDriveReport(a,rows,[]);
+  expect(incomplete).toMatchObject({complete:false,ticks:1,events:[],issues:['WORLD_DRIVE_SETPOINT_INVALID']});
+  expect(incomplete.axes).toHaveLength(9);expect(incomplete.axes.every(x=>!x.trackingRms.available)).toBe(true);
+ }
  const manifest=await read(join(copy,'world-evidence/manifest.json'));
  await writeFile(join(copy,'world-evidence',manifest.chunks[0].path),'damaged');
  const damaged=await readWorldDriveReport(copy,a,identity);
  expect(damaged).toMatchObject({complete:false,ticks:0,events:[]});expect(damaged.issues).toContain('WORLD_EVIDENCE_HASH_MISMATCH');
+ await rm(join(copy,'mujoco-world/bundle/lab-world-scene.json'));
+ expect(await readRetainedWorldDriveReport(copy,{...identity,sceneDigest:checkpoint.world.snapshot.sceneDigest})).toMatchObject({complete:false,axes:[],ticks:0,issues:['WORLD_RETAINED_BUNDLE_UNAVAILABLE']});
 });
