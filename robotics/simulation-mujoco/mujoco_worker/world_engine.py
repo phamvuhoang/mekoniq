@@ -68,6 +68,7 @@ class WorldEngine:
         dr=v.physical['drive']['driveFrameInBase'];v.drive_in_base=pose(dr['xyzM'],dr['quaternionXyzw'])
         v.odom=np.array(v.entry['initialPoseMap'],dtype=float);v.tick=-1;v.targets=np.zeros(2)
         v.contacts=[];v.saturated=0;v.unstable=None;v.scans=[]
+        a.drive=v.drive=None   # the views never own the drive: WorldEngine.drive does (their readback reports no bench inertia)
         # Every colliding geom has both an arm-classification tag and an exact
         # canonical contact identity. No arm x mobile blanket exemption.
         tags={m.geom(an['floor']).id:('floor',),m.geom(an['palm']).id:('palm',)}

@@ -140,6 +140,19 @@ test('the wire: a step may carry driveCommands and a snapshot drives and driveTr
  expect(validateDriveAxisSnapshotShape({...axis,fault:'JAMMED'})).toBe(false);
 });
 
+test('the wire, bench (V06b): create may carry payload.bench with two refs and 1-2 axes, a readback the effective inertia of the traced axes',()=>{
+ const create=(over:Record<string,unknown>={})=>request('create',{sceneRef:'navigation-scene.json',seed:7,...over});
+ const bench={driveModelRef:ref(),controlProfileRef:{...ref('serve-control-v1.json'),id:'serve-control-v1'},axisIds:['amr-1/wheel-left','amr-1/wheel-right']};
+ expect(validateSim3DRequest(create()).ok).toBe(true);
+ expect(validateSim3DRequest(create({bench})).ok).toBe(true);
+ for(const bad of [{...bench,axisIds:['amr-1/a','amr-1/b','amr-1/c']},{...bench,axisIds:[]},{...bench,axisIds:['amr-1/a','amr-1/a']},{...bench,extra:1},{axisIds:bench.axisIds,driveModelRef:bench.driveModelRef},true])expect(validateSim3DRequest(create({bench:bad})).ok).toBe(false);
+ const model=(over:Record<string,unknown>={})=>snapshot({model:{robots:[],...over}});
+ const inertia={axisId:'xarm-1/J3',valueKgM2:0.71,basis:'mass_matrix_diagonal',provenance:'assumed'};
+ expect(validateSim3DResponse(model()).ok).toBe(true);
+ expect(validateSim3DResponse(model({effectiveInertiaKgM2:[inertia,{...inertia,axisId:'xarm-1/gripper'}]})).ok).toBe(true);
+ for(const bad of [[{...inertia,basis:'guess'}],[{...inertia,provenance:'measured'}],[{...inertia,valueKgM2:0}],[inertia,inertia,inertia],[]])expect(validateSim3DResponse(model({effectiveInertiaKgM2:bad})).ok).toBe(false);
+});
+
 test('evidence records: a mobile tick may carry drives, a cell record driveCommands and drives; the R2b shapes still reject nothing they accepted',()=>{
  const tick={schemaVersion:1,tick:1,simTimeNs:'20000000',contacts:[],loads:[],wheels:[],odometry:[],base:[]};
  expect(validatePhysicsTickShape(tick)).toBe(true);

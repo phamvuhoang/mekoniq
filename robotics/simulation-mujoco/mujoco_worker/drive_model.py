@@ -95,7 +95,7 @@ class DriveGroup:
         self.loss_count = [0] * self.n
         self.tick = 0
         self.ready = False
-        self.trace_on = False
+        self.traced, self.samples = [], []   # bench only: the traced axes (indices) and this tick's samples of each
 
     # ---- initial conditions --------------------------------------------------------------------------------------------------------------------------
     def reset(self, true_pos):
@@ -179,6 +179,7 @@ class DriveGroup:
             else:
                 self._neutral(i)
         self.sub = 0
+        self.samples = [[] for _ in self.traced]
 
     def _neutral(self, i):
         n = self.pos[i] if self.axes[i]["mode"] == "csp" else 0.0
@@ -298,21 +299,36 @@ class DriveGroup:
                     self._trip(i, "FEEDBACK_LOSS")
             else:
                 self.loss_count[i] = 0
+        for k, i in enumerate(self.traced):
+            csp, (position, velocity) = self.axes[i]["mode"] == "csp", self._measured(i)
+            self.samples[k].append({"target": float(self.applied[i]), "actual": self.pos[i] if csp else self.vel[i], "feedback": position if csp else velocity,
+                                    "torqueNm": self.torque[i], "saturated": bool(saturated[i])})
+
+    def _measured(self, i):
+        """(position, velocity) as the feedback channel reports them now; (None, None) while the encoder delivers nothing."""
+        if self.dropout[i]:
+            return None, None
+        hist = self.fb_hist[i]
+        return hist[-1], (hist[-1] - hist[0]) / (self.axes[i]["encoder"]["velocityWindowSubsteps"] * self.dt)
 
     def end_tick(self):
         """One DriveAxisSnapshot per axis, in model order. The measured fields come from the feedback channel; actual* are the engine's own state (evidence only)."""
         out = []
         for i, a in enumerate(self.axes):
-            valid = not self.dropout[i]
-            hist = self.fb_hist[i]
-            window = a["encoder"]["velocityWindowSubsteps"]
-            velocity = (hist[-1] - hist[0]) / (window * self.dt)
-            out.append({"axisId": a["axisId"], "state": self.state[i], "fault": self.fault[i], "commandSeq": self.seq[i], "positionRad": hist[-1] if valid else None, "velocityRadS": velocity if valid else None,
+            position, velocity = self._measured(i)
+            out.append({"axisId": a["axisId"], "state": self.state[i], "fault": self.fault[i], "commandSeq": self.seq[i], "positionRad": position, "velocityRadS": velocity,
                         "torqueNm": self.torque[i], "tick": self.tick, "targetApplied": float(self.applied[i]), "actualPositionRad": self.pos[i], "actualVelocityRadS": self.vel[i],
                         "saturatedSubsteps": min(self.saturated[i], 100), "followingErrorRad": self.following[i]})
         self.tick += 1
         return out
 
+    # ---- the bench trace (V06) -----------------------------------------------------------------------------------------------------------------------------
+    def start_trace(self, axis_ids):
+        """Trace these axes (ids of this group, checked by the caller) from the next begin_tick on: one sample per substep, taken in step 5 of the substep (contracts §3)."""
+        self.traced = [self.index[a] for a in axis_ids]
+
     def trace(self):
-        """Empty except in a bench run (V06)."""
-        return []
+        """This tick's DriveTrace of every traced axis, in the order they were asked for: `target` is the target the drive applied (after the command channel), `actual` the true
+        position (csp) or velocity (csv), `feedback` the measured one (None while invalid), `torqueNm` and `saturated` the actuator's. The last sample is the end_tick state. Empty
+        outside a bench."""
+        return [{"axisId": self.ids[i], "dtS": float(self.dt), "samples": s} for i, s in zip(self.traced, self.samples)]

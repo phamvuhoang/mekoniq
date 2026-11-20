@@ -177,6 +177,11 @@ export type Scans = LidarScanV1[];
  */
 export type CollisionIds = string[];
 /**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveAxisId".
+ */
+export type DriveAxisId = string;
+/**
  * @minItems 0
  * @maxItems 1
  */
@@ -199,11 +204,6 @@ export type Props = {
   quaternionXyzw: number[];
   restingOn: string | null;
 }[];
-/**
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "DriveAxisId".
- */
-export type DriveAxisId = string;
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "DriveState".
@@ -287,6 +287,18 @@ export type Sim3DRequestV1 =
           armId: EngineeringId;
           sceneRef: 'arm-scene.json' | 'arm-cell-scene.json';
         }[];
+        /**
+         * A bench run (V06, D1): its drive model and control profile (bundle files, the same refs a scene's engine names) and the 1-2 axes whose 500 Hz trace every snapshot carries. A bench scene names no drive refs of its own.
+         */
+        bench?: {
+          driveModelRef: DriveDocumentRef;
+          controlProfileRef: DriveDocumentRef;
+          /**
+           * @minItems 1
+           * @maxItems 2
+           */
+          axisIds: DriveAxisId[];
+        };
       };
     }
   | {
@@ -1432,6 +1444,18 @@ export interface Sim3DModelReadbackV1 {
       forceN?: number;
     }[];
   };
+  /**
+   * Bench only (V06, D4): the effective inertia of each traced axis at the pose of the readback. A joint or the gripper: the diagonal of the joint-space mass matrix at its dof. A wheel: that diagonal plus m*r^2/2 (m the mass of the AMR body tree, r the wheel radius: straight-line drive, each wheel carries half the mass).
+   *
+   * @minItems 1
+   * @maxItems 2
+   */
+  effectiveInertiaKgM2?: {
+    axisId: DriveAxisId;
+    valueKgM2: number;
+    basis: 'mass_matrix_diagonal' | 'wheel_straight_line';
+    provenance: 'assumed';
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

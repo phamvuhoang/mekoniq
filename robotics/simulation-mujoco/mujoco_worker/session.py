@@ -18,7 +18,7 @@ from pathlib import Path
 import rfc8785
 
 from . import snapshot
-from .protocol import OPS, PROTOCOL, Receipts, WorkerError, schema_validator, reject_non_finite
+from .protocol import BENCH_MAX_AXES, BENCH_MAX_TICKS, OPS, PROTOCOL, Receipts, WorkerError, schema_validator, reject_non_finite
 
 SCENE_FILE, COMPONENT_FILE, PHYSICS_FILE, BLOB_DIR = "arm-cell-scene.json", "component.json", "physics.json", "blobs"
 # The clock check compares the engine's time with the substeps the worker has asked for x the timestep (the same double MuJoCo adds). MuJoCo adds the timestep once
@@ -77,6 +77,7 @@ class WorkerSession:
         self.mobile = False
         self.world = False
         self.drive_on = False
+        self.bench = None   # payload.bench of a bench run (V06): its drive refs and traced axes
         self.world_events, self.world_born = set(), set()
         self.world_disturbance_consumed=False
         self.schema_dir = Path(schema_dir) if schema_dir else Path(__file__).resolve().parents[3] / "packages" / "contracts" / "schemas"
@@ -143,6 +144,13 @@ class WorkerSession:
     def _op_create(self, p):
         if self.state != "new":
             raise WorkerError("INVALID_STATE", f"create on a {self.state} run")
+        bench = p.get("bench")
+        if bench is not None:
+            if p.get("sceneRef") == "lab-world-scene.json" or self.payload_perturbation:
+                raise WorkerError("BENCH_SCENE_UNSUPPORTED", "a bench runs one arm or one AMR alone, unperturbed")
+            ids = bench.get("axisIds") or []
+            if not 1 <= len(ids) <= BENCH_MAX_AXES or len(set(ids)) != len(ids):
+                raise WorkerError("BENCH_AXIS_COUNT", f"a bench traces 1 to {BENCH_MAX_AXES} distinct axes, not {ids}")
         if p.get("sceneRef") == "lab-world-scene.json":
             return self._create_world(p)
         if p.get("sceneRef") == "navigation-scene.json":
@@ -162,9 +170,11 @@ class WorkerSession:
             raise WorkerError("INVALID_REQUEST", f"arms[0] names {arms[0]['armId']!r} but the scene's arm is {scene['arm']['armId']!r}")
         if engine_seed(p["seed"]) != scene["engineSeed"]:
             raise WorkerError("SEED_MISMATCH", f"seed {p['seed']} reduces to {engine_seed(p['seed'])}, the scene was built for {scene['engineSeed']}")
-        component = json.loads(confined(self.bundle_root, COMPONENT_FILE).read_text())
+        raw = confined(self.bundle_root, COMPONENT_FILE).read_bytes()
+        component = json.loads(raw)
         physics = json.loads(confined(self.bundle_root, PHYSICS_FILE).read_text())
         blobs = confined(self.bundle_root, BLOB_DIR, directory=True)
+        drive = self._bench_drive(bench, scene["engine"], hashlib.sha256(raw).hexdigest()) if bench else None   # an arm's plant is its component's sha256 (as xarm6-control-v1 is bound)
         if self._factory is None:
             from .engine import MujocoEngine
 
@@ -172,17 +182,20 @@ class WorkerSession:
         from .compile import CompileError
 
         try:
-            self.engine = self._factory(scene, component, physics, str(blobs))
+            self.engine = self._factory(scene, component, physics, str(blobs), **({"drive": drive} if drive else {}))
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
         self.scene = scene
         self.cups = {c["propId"]: (c["radiusM"], c["heightM"]) for c in scene["props"]}
-        self.state = "created"
+        self.state, self.drive_on, self.bench = "created", drive is not None, bench
+        if drive:
+            self.engine.drive.g.start_trace(bench["axisIds"])
+            return self._advance(None, None, [], tick=0, commands=self.engine.drive.g.prime_commands())  # the priming step: every axis holds where the home keyframe put it
         return self._advance(list(scene["arm"]["homeRad"]), self.engine.opening_max_m, [], tick=0)  # the priming step: home, gripper open
 
-    def _advance(self, targets, opening, placements, tick):
+    def _advance(self, targets, opening, placements, tick, commands=None):
         engine = self.scene["engine"]
-        reading = self.engine.step(targets, opening, placements)
+        reading = self.engine.step(targets, opening, placements) if commands is None else self.engine.step(targets, opening, placements, commands)
         self.substeps += engine["substeps"]
         snapshot.check_stable(reading, self.engine.arm_limits)  # first: MuJoCo resets its clock when it finds a bad state
         expected = self.substeps * (engine["timestepMs"] / 1000)
@@ -194,7 +207,7 @@ class WorkerSession:
         return self.snapshot
 
     def _drive_docs(self, refs, read, plant_digest=None):
-        """The (drive model, control profile) of a scene whose engine names both refs; None when it names neither. `read(ref)` returns the bundle document of a ref (it has already checked
+        """The (drive model, control profile) of a scene whose engine (or a bench payload) names both refs; None when it names neither. `read(ref)` returns the bundle document of a ref (it has already checked
         confinement, the file list and the file hash). Schema, own digest and the binding between the two documents (and to the plant when it is a single robot) are checked here."""
         m_ref, c_ref = refs.get("driveModelRef"), refs.get("controlProfileRef")
         if m_ref is None and c_ref is None:
@@ -216,6 +229,23 @@ class WorkerSession:
         if plant_digest is not None and control["plantModelDigest"] != plant_digest:
             raise WorkerError("DRIVE_DOCUMENT_INVALID", "the control profile is not bound to this plant")
         return model, control
+
+    def _bench_drive(self, bench, engine, plant_digest):
+        """The (drive model, control profile) of a bench (D1): both refs travel in payload.bench, never also in the scene, and are admitted as a scene's are (bundle-confined, file sha256,
+        schema, own digest, driveModelDigests, the bench plant). Every traced axis is an axis of the drive model."""
+        if "driveModelRef" in engine or "controlProfileRef" in engine:
+            raise WorkerError("BENCH_DRIVE_CONFLICT", "a bench takes its drive documents from payload.bench; this scene names its own")
+
+        def read(ref):
+            raw = confined(self.bundle_root, ref["path"]).read_bytes()
+            if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
+                raise WorkerError("SCENE_FILE_MISMATCH", ref["path"])
+            return json.loads(raw)
+        drive = self._drive_docs(bench, read, plant_digest)   # the wire schema requires both refs
+        unknown = set(bench["axisIds"]) - {a["axisId"] for a in drive[0]["axes"]}
+        if unknown:
+            raise WorkerError("BENCH_AXIS_UNKNOWN", f"{sorted(unknown)} are not axes of {drive[0]['id']}")
+        return drive
 
     def _validate_document(self, value, filename):
         reject_non_finite(value)
@@ -426,7 +456,8 @@ class WorkerSession:
             resolve_lidar(scene["robots"][0]["model"], model)
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
-        drive = self._drive_docs(scene["engine"], lambda ref: profile(ref), plant_digest=model["modelDigest"])
+        bench = p.get("bench")
+        drive = self._bench_drive(bench, scene["engine"], model["modelDigest"]) if bench else self._drive_docs(scene["engine"], lambda ref: profile(ref), plant_digest=model["modelDigest"])
         factory = self._factory
         if factory is None:
             from .mobile_engine import MobileEngine
@@ -436,7 +467,9 @@ class WorkerSession:
         except CompileError as e:
             raise WorkerError(e.code, e.detail or e.code)
         self.engine, self.scene, self.mobile, self.drive_on = engine, scene, True, drive is not None
-        self.state = "created"
+        self.state, self.bench = "created", bench
+        if bench:
+            engine.drive.g.start_trace(bench["axisIds"])
         return self._advance_mobile(0, 0, tick=0, commands=engine.drive.g.prime_commands() if drive else None)
 
     def _check_physics_profile(self, p):
@@ -524,6 +557,15 @@ class WorkerSession:
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "target exceeds admitted navigation limits")
         return v,w,None
 
+    def _check_arm_drive_step(self, p):
+        """The commands of an arm tick on a drive (a bench): every axis, nothing else, no cup placed."""
+        if p["velocities"] or p["actorUpdates"] or p.get("jointTargets") or p.get("gripperTargets") or p.get("propPlacements"):
+            raise WorkerError("INVALID_REQUEST", "an arm on a drive takes driveCommands only: no velocities, actors, joint or gripper targets or placements")
+        if p.get("driveCommands") is None:
+            raise WorkerError("DRIVE_COMMAND_REQUIRED", "every tick needs one command per drive axis")
+        self.engine.drive.g.check(p["driveCommands"])
+        return p["driveCommands"]
+
     def _check_step(self, p):
         if self.payload_perturbation:
             raise WorkerError("PERTURBATION_SCOPE_INVALID", "mobile free payload only")
@@ -576,11 +618,20 @@ class WorkerSession:
             raise WorkerError("INVALID_STATE", f"step{' (singleStep)' if single else ''} on a {self.state} run")
         if p["targetTick"] != self.tick + 1:
             raise WorkerError("TICK_MISMATCH", f"targetTick {p['targetTick']} must be {self.tick + 1}")
+        if self.bench and p["targetTick"] > BENCH_MAX_TICKS:
+            raise WorkerError("BENCH_TICK_LIMIT", f"a bench ends at tick {BENCH_MAX_TICKS}")
         if p.get("driveCommands") is not None and not self.drive_on:
             raise WorkerError("INVALID_REQUEST", "driveCommands need a scene with a drive model and a control profile")
         if not self.world and (p.get("worldInteractions") or p.get("worldPerturbations") or p.get("worldControl")):
             raise WorkerError("INVALID_REQUEST", "world interactions require a shared world")
-        snap = self._step_world(p) if self.world else (self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1) if self.mobile else self._advance(*self._check_step(p), tick=self.tick + 1))
+        if self.world:
+            snap = self._step_world(p)
+        elif self.mobile:
+            snap = self._advance_mobile(*self._check_mobile_step(p), tick=self.tick + 1)
+        elif self.drive_on:
+            snap = self._advance(None, None, [], tick=self.tick + 1, commands=self._check_arm_drive_step(p))
+        else:
+            snap = self._advance(*self._check_step(p), tick=self.tick + 1)
         self.tick += 1
         return snap
 

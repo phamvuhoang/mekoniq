@@ -14,7 +14,7 @@ from .compile_mobile import compile_mobile, matrix_pose, pose, resolve_lidar
 from .drive import wheel_targets, torque_limits
 from .drive_binding import build_drive
 from .drive_model import plan_actuators
-from .engine import BAD_STATE
+from .engine import BAD_STATE, traced_inertia
 from .protocol import WorkerError
 
 
@@ -204,6 +204,8 @@ class MobileEngine:
         reading = self.read()
         if drv is not None:
             reading["drives"] = drv.g.end_tick()
+            if drv.g.traced:
+                reading["driveTrace"] = drv.g.trace()
         return reading
 
     def scan(self, tick):
@@ -287,8 +289,14 @@ class MobileEngine:
         links = [{"name": lid, "massKg": float(m.body_mass[m.body(name).id]), "positionMap": d.xpos[m.body(name).id].tolist()} for lid, name in self.names["links"].items()]
         rims = [m.jnt_bodyid[j] for j in self.wj]
         radii = [float(m.geom_size[m.body_geomadr[b]][0]) for b in rims]
-        return {"robots": [{"robotId": self.rid, "links": links, "wheelRadiusM": radii[0], "wheelSeparationM": float(np.linalg.norm(d.xpos[rims[0]] - d.xpos[rims[1]])),
-                            "wheelAxes": [(d.xmat[m.jnt_bodyid[j]].reshape(3, 3) @ m.jnt_axis[j]).tolist() for j in self.wj]}]}
+        out = {"robots": [{"robotId": self.rid, "links": links, "wheelRadiusM": radii[0], "wheelSeparationM": float(np.linalg.norm(d.xpos[rims[0]] - d.xpos[rims[1]])),
+                           "wheelAxes": [(d.xmat[m.jnt_bodyid[j]].reshape(3, 3) @ m.jnt_axis[j]).tolist() for j in self.wj]}]}
+        if self.drive is not None and self.drive.g.traced:
+            # D4: the diagonal holds the wheel's own inertia only, the chassis is coupled through the contact. Straight-line drive, each wheel carries half the mass of the AMR body
+            # tree (a free payload is a tree of its own and is not in it; the wheel bench runs `empty`)
+            chassis = float(m.body_subtreemass[m.body_rootid[self.base]]) * self.radius ** 2 / 2
+            out["effectiveInertiaKgM2"] = [{"axisId": a, "valueKgM2": j + chassis, "basis": "wheel_straight_line", "provenance": "assumed"} for a, j in traced_inertia(self.drive)]
+        return out
 
     def close(self):
         self.model = self.data = None

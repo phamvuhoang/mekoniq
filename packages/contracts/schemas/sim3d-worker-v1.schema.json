@@ -106,6 +106,33 @@
                   "sceneRef"
                 ]
               }
+            },
+            "bench": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "A bench run (V06, D1): its drive model and control profile (bundle files, the same refs a scene's engine names) and the 1-2 axes whose 500 Hz trace every snapshot carries. A bench scene names no drive refs of its own.",
+              "properties": {
+                "driveModelRef": {
+                  "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
+                },
+                "controlProfileRef": {
+                  "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
+                },
+                "axisIds": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 2,
+                  "uniqueItems": true,
+                  "items": {
+                    "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+                  }
+                }
+              },
+              "required": [
+                "driveModelRef",
+                "controlProfileRef",
+                "axisIds"
+              ]
             }
           },
           "required": [
@@ -1507,6 +1534,40 @@
             "links",
             "joints"
           ]
+        },
+        "effectiveInertiaKgM2": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "description": "Bench only (V06, D4): the effective inertia of each traced axis at the pose of the readback. A joint or the gripper: the diagonal of the joint-space mass matrix at its dof. A wheel: that diagonal plus m*r^2/2 (m the mass of the AMR body tree, r the wheel radius: straight-line drive, each wheel carries half the mass).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "axisId": {
+                "$ref": "drive-io-v1.schema.json#/definitions/DriveAxisId"
+              },
+              "valueKgM2": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "basis": {
+                "enum": [
+                  "mass_matrix_diagonal",
+                  "wheel_straight_line"
+                ]
+              },
+              "provenance": {
+                "const": "assumed"
+              }
+            },
+            "required": [
+              "axisId",
+              "valueKgM2",
+              "basis",
+              "provenance"
+            ]
+          }
         }
       },
       "required": [

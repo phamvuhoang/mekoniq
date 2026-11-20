@@ -23,6 +23,18 @@ def engine_version():
     return mujoco.__version__
 
 
+def traced_inertia(binding):
+    """[(axisId, diag M)] of the axes a bench traces: the diagonal of the joint-space mass matrix at each axis' dof, at the current pose. Computed on a scratch MjData, so a readback
+    never changes the run's own data."""
+    m, g = binding.m, binding.g
+    s = mujoco.MjData(m)
+    s.qpos[:] = binding.d.qpos
+    mujoco.mj_fwdPosition(m, s)
+    full = np.zeros((m.nv, m.nv))
+    mujoco.mj_fullM(m, s, full)
+    return [(g.ids[i], float(full[binding.dof[i], binding.dof[i]])) for i in g.traced]
+
+
 class MujocoEngine:
     def __init__(self, scene, component, physics, blob_dir, drive=None):
         plan = plan_actuators(*drive) if drive else None
@@ -121,6 +133,8 @@ class MujocoEngine:
         reading = {**self.read(), "tickContacts": sorted(seen), "unstable": ",".join(sorted(unstable)) or None}
         if drv is not None:
             reading["drives"] = drv.g.end_tick()
+            if drv.g.traced:
+                reading["driveTrace"] = drv.g.trace()
         return reading
 
     # ---- readings ----
@@ -162,7 +176,10 @@ class MujocoEngine:
             links.append({"name": link_of[m.body(b).name], "massKg": float(m.body_mass[b])})
             joints.append({"name": joint_of[m.joint(j).name], "axis": axis.tolist(), "lower": float(m.jnt_range[j][0]), "upper": float(m.jnt_range[j][1]),
                            "forceN": float(m.actuator_forcerange[act][1])})
-        return {"robots": [], "arm": {"links": links, "joints": joints}}
+        out = {"robots": [], "arm": {"links": links, "joints": joints}}
+        if self.drive is not None and self.drive.g.traced:
+            out["effectiveInertiaKgM2"] = [{"axisId": a, "valueKgM2": j, "basis": "mass_matrix_diagonal", "provenance": "assumed"} for a, j in traced_inertia(self.drive)]
+        return out
 
     def close(self):
         self.model = self.data = None
