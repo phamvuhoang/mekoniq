@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import {expect,test} from 'vitest';
-import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_TICK_S,SUGGEST_OPTIONS,benchTarget,validateBenchRequest,validateBenchSignal,type BenchSignal} from '../../packages/lab-runtime/src/v2/control/bench-signals';
+import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_TICK_S,SUGGEST_OPTIONS,benchAnchorTick,benchMotionEndTick,benchTarget,validateBenchRequest,validateBenchSignal,type BenchSignal} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import type {ControlProfileV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 
 const csv={mode:'csv' as const},csp={mode:'csp' as const,lower:-1,upper:1,start:0.5};
@@ -66,28 +66,42 @@ test('benchTarget of a speed axis: the commanded velocity profile has the area o
 });
 
 test('a bench request: wheels only on the wheel scenario, a joint or the gripper only on the arm scenario',()=>{
- expect(validateBenchRequest(req())).toEqual({ok:true,reasonCodes:[]});
- expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM'})).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
- expect(validateBenchRequest(req({axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}})).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
- expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}}),{lower:-1,upper:1,start:0}).ok).toBe(true);
+ expect(validateBenchRequest(req(),{anchorTick:4})).toEqual({ok:true,reasonCodes:[]});
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM'}),{anchorTick:4}).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
+ expect(validateBenchRequest(req({axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}}),{anchorTick:4}).reasonCodes).toEqual(['AXIS_SCENARIO_MISMATCH']);
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:5}}),{anchorTick:4,limits:{lower:-1,upper:1,start:0}}).ok).toBe(true);
  // a joint or the gripper is checked against the limits the server knows: without them the request is refused, never admitted unchecked
- expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}})).reasonCodes).toEqual(['AXIS_LIMITS_REQUIRED']);
- expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),{lower:0,upper:0.85,start:0}).ok).toBe(true);
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),{anchorTick:4}).reasonCodes).toEqual(['AXIS_LIMITS_REQUIRED']);
+ expect(validateBenchRequest(req({scenarioId:'MJ-BENCH-ARM',axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),{anchorTick:4,limits:{lower:0,upper:0.85,start:0}}).ok).toBe(true);
 });
 test('a bench request: unknown fields, unregistered axis, experiment and signal are refused',()=>{
- expect(validateBenchRequest(req({extra:1})).reasonCodes).toContain('UNKNOWN_FIELD');
- expect(validateBenchRequest(req({axis:'J7'})).reasonCodes.length).toBeGreaterThan(0);
- expect(validateBenchRequest(req({driveExperimentId:'../drive-v1/x'})).reasonCodes.length).toBeGreaterThan(0);
- expect(validateBenchRequest(req({controlProfile:{...profile,extra:1}})).reasonCodes).toContain('UNKNOWN_FIELD');
- expect(validateBenchRequest(req({signal:{kind:'step',amplitude:3,atTick:5}})).reasonCodes).toEqual(['AMPLITUDE_NOT_REGISTERED']);
- expect(validateBenchRequest(req({signal:{kind:'step',amplitude:2,atTick:501}})).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
- expect(validateBenchRequest(req({signal:{kind:'hold',ticks:501}})).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
- expect(validateBenchRequest(null).ok).toBe(false);
- expect(validateBenchRequest({...req(),scenarioId:'MJ-DEMO'}).ok).toBe(false);
+ expect(validateBenchRequest(req({extra:1}),{anchorTick:4}).reasonCodes).toContain('UNKNOWN_FIELD');
+ expect(validateBenchRequest(req({axis:'J7'}),{anchorTick:4}).reasonCodes.length).toBeGreaterThan(0);
+ expect(validateBenchRequest(req({driveExperimentId:'../drive-v1/x'}),{anchorTick:4}).reasonCodes.length).toBeGreaterThan(0);
+ expect(validateBenchRequest(req({controlProfile:{...profile,extra:1}}),{anchorTick:4}).reasonCodes).toContain('UNKNOWN_FIELD');
+ expect(validateBenchRequest(req({signal:{kind:'step',amplitude:3,atTick:5}}),{anchorTick:4}).reasonCodes).toEqual(['AMPLITUDE_NOT_REGISTERED']);
+ expect(validateBenchRequest(req({signal:{kind:'step',amplitude:2,atTick:501}}),{anchorTick:4}).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
+ expect(validateBenchRequest(req({signal:{kind:'hold',ticks:501}}),{anchorTick:4}).reasonCodes).toEqual(['TICK_OUT_OF_RANGE']);
+ expect(validateBenchRequest(null,{anchorTick:4}).ok).toBe(false);
+ expect(validateBenchRequest({...req(),scenarioId:'MJ-DEMO'},{anchorTick:4}).ok).toBe(false);
 });
 test('the schema bounds of the signal ticks are the validator\'s',()=>{
  const schema=JSON.parse(readFileSync('packages/contracts/schemas/bench-request-v1.schema.json','utf8')) as {definitions:{BenchSignal:{oneOf:{properties:Record<string,{maximum?:number}>}[]}}};
  const max=(kind:string,field:string)=>schema.definitions.BenchSignal.oneOf.find(b=>(b.properties.kind as {const?:string}).const===kind)!.properties[field]!.maximum;
  expect([max('step','atTick'),max('trapezoid','atTick'),max('hold','ticks')]).toEqual([BENCH_MAX_TICKS-1,BENCH_MAX_TICKS-1,BENCH_MAX_TICKS]);
  expect(codes({kind:'step',amplitude:2,atTick:BENCH_MAX_TICKS-1},csv)).toEqual([]);
+});
+test('a signal must fit in the bench after the drive\'s enable sequence: the last fitting tick is admitted, one more is TICK_OUT_OF_RANGE',()=>{
+ const model=(name:string)=>JSON.parse(readFileSync(`robotics/simulation-mujoco/fixtures/drive-v1/${name}`,'utf8')) as {axes:{enableDelaySubsteps:number}[]};
+ // the anchor: the first tick commanded after every axis is enabled (25 substeps from tick 1 end in tick 3; an ideal drive boots enabled at the priming tick 0)
+ expect(benchAnchorTick(model('xarm6-drive-nominal-v1.json'))).toBe(4);expect(benchAnchorTick(model('serve-drive-nominal-v1.json'))).toBe(4);expect(benchAnchorTick(model('xarm6-drive-ideal-v1.json'))).toBe(1);
+ const at=(signal:BenchSignal,anchorTick:number)=>validateBenchRequest(req({signal}),{anchorTick}).reasonCodes;
+ // signal tick k runs on engine tick anchor + k; the bench's last engine tick is 500
+ expect(at({kind:'step',amplitude:2,atTick:496},4)).toEqual([]);expect(at({kind:'step',amplitude:2,atTick:497},4)).toEqual(['TICK_OUT_OF_RANGE']);
+ expect(at({kind:'hold',ticks:497},4)).toEqual([]);expect(at({kind:'hold',ticks:498},4)).toEqual(['TICK_OUT_OF_RANGE']);
+ const trap=(atTick:number):BenchSignal=>({kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick});   // 0.2 s ramps + 2.3 s cruise = 135 ticks of motion
+ expect(benchMotionEndTick(trap(0))).toBe(135);
+ expect(at(trap(500-4-135),4)).toEqual([]);expect(at(trap(500-4-135+1),4)).toEqual(['TICK_OUT_OF_RANGE']);
+ expect(at({kind:'step',amplitude:2,atTick:499},1)).toEqual([]);expect(at({kind:'hold',ticks:500},1)).toEqual([]);
+ expect(at(trap(500-1-135+1),1)).toEqual(['TICK_OUT_OF_RANGE']);
 });

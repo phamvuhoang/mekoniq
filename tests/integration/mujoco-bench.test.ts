@@ -1,6 +1,6 @@
 // V06c: single-axis bench runs on the real MuJoCo 3.17.0 engine (.venv-mujoco; these skip without it), and engine-free tests of the bench's durable trace (sample cap, read-back, gaps).
 // The plant is never a double: the only double here is labelled protocol_double, a wrapped worker client that answers one step with PLANT_UNSTABLE (the engine cannot be driven there by a gain, V06b).
-import {afterAll,beforeAll,describe,expect,test} from 'vitest';
+import {afterAll,afterEach,beforeAll,describe,expect,test} from 'vitest';
 import {createHash} from 'node:crypto';
 import {readFile,writeFile} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
@@ -9,6 +9,7 @@ import {mujocoFromOptions,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../../pac
 import {portableSimulationFromOptions} from '../../packages/lab-runtime/src/v2/navigation2d/readiness';
 import {activeRunCount} from '../../packages/lab-runtime/src/v2/navigation2d/runner';
 import {spawnMujocoWorker} from '../../packages/lab-runtime/src/v2/simulation3d/worker-client';
+import {benchAnchorTick} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import {benchMetrics,createBenchRun,openBenchTrace,readBenchTrace,BENCH_TRACE_LIMITS,type BenchProviders,type BenchTraceIdentity} from '../../packages/lab-runtime/src/v2/control/bench-runner';
 import {sealDriveDocument,validateControlEvidenceShape,type ControlProfileV1,type TuningResultV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import type {RunManifestInput,ScenarioRun} from '../../packages/lab-runtime/src/v2/scenario-runner';
@@ -23,6 +24,8 @@ const wheel=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-
 const arm=(o:Partial<Bench>={}):Bench=>({schemaVersion:1,scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.1,atTick:10},driveExperimentId:'drive-nominal-v1',controlProfile:doc<ControlProfileV1>('xarm6-control-v1.json'),...o} as Bench);
 const input=(bench:Bench,seed=7):RunManifestInput=>({project:undefined,scenarioId:bench.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:'test-commit',bench});
 type Report=Awaited<ReturnType<ScenarioRun['report']>>&{tuning:TuningResultV1|null;bench:{anchorTick:number|null;traceIssues:string[]}};
+/** MEKONIQ_BENCH_LOG=1 prints the results the V06c report quotes; quiet otherwise. */
+const show=(x:unknown)=>{if(process.env.MEKONIQ_BENCH_LOG==='1')console.log(JSON.stringify(x));};
 
 describe('the durable bench trace (no engine)',()=>{
  const identity:BenchTraceIdentity={runId:'run-1',axisIds:['xarm-1/J3'],plantModelDigest:'a'.repeat(64),driveModelDigest:'b'.repeat(64),controlProfileDigest:'c'.repeat(64)};
@@ -67,19 +70,26 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:await mujocoTemp('mj-bench-probe-'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
   if(!p.arm.runtime)throw Error(`MUJOCO_NOT_INSTALLED: ${p.arm.capability.reason}`);runtime=p.arm.runtime;
  },60_000);
- afterAll(async()=>{await removeMujocoDirs();console.log(JSON.stringify(timings));});
+ const open:ScenarioRun[]=[];
+ afterEach(async()=>{for(const r of open.splice(0))await r.close();});
+ afterAll(async()=>{await removeMujocoDirs();show(timings);});
  type Worker=Awaited<ReturnType<typeof spawnMujocoWorker>>;
- /** One bench end to end: created, started, stepped once by 500 ticks (it stops itself), reported, closed. `wrap` sees every request (and the real worker and its bundle) and returns the response. */
- async function bench(b:Bench,wrap?:(req:{op:string;payload:unknown},next:()=>Promise<unknown>,w:Worker,bundleRoot:string)=>Promise<unknown>,label:string=b.scenarioId){
-  const directory=join(await mujocoTemp('mj-bench-'),'run'),started=performance.now();
-  const spawn:BenchProviders['spawn']=async o=>{const w=await spawnMujocoWorker(o);return wrap?{get state(){return w.state;},get bootId(){return w.bootId;},get pid(){return w.pid;},get stderrTail(){return w.stderrTail;},request:req=>wrap(req,()=>w.request(req),w,o.bundleRoot) as never,close:r=>w.close(r)}:w;};
-  const run=mujocoProcessScope.observeRun(await createBenchRun(input(b),{directory,enabledBackends:['mujoco_3d','mujoco_arm'],runtime,spawn}));
-  try{
-   let v=await run.start();expect(v.run.status).toBe('running');
-   v=await run.action({actionId:'step-1',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});
-   const report=await run.report() as Report;timings.push({label,ms:Math.round(performance.now()-started)});
-   return {report,view:v,directory};
-  }finally{await run.close();}
+ type Wrap=(req:{op:string;payload:unknown},next:()=>Promise<unknown>,w:Worker,bundleRoot:string)=>Promise<unknown>;
+ /** A started bench, left OPEN (as the gateway keeps a run until its session ends; afterEach closes it). `wrap` sees every request (and the real worker and its bundle) and returns the response. */
+ async function begin(b:Bench,wrap?:Wrap){
+  const directory=join(await mujocoTemp('mj-bench-'),'run'),seen:{worker?:Worker}={};
+  const spawn:BenchProviders['spawn']=async o=>{const w=await spawnMujocoWorker(o);seen.worker=w;return wrap?{get state(){return w.state;},get bootId(){return w.bootId;},get pid(){return w.pid;},get stderrTail(){return w.stderrTail;},request:req=>wrap(req,()=>w.request(req),w,o.bundleRoot) as never,close:r=>w.close(r)}:w;};
+  const run=mujocoProcessScope.observeRun(await createBenchRun(input(b),{directory,enabledBackends:['mujoco_3d','mujoco_arm'],runtime,spawn}));open.push(run);
+  const view=await run.start();expect(view.run.status).toBe('running');expect(activeRunCount(MUJOCO_SLOT)).toBe(1);
+  return {run,view,directory,worker:()=>seen.worker!};
+ }
+ /** One bench to its result: stepped by 500 ticks (it stops itself) and reported. Whatever the result, the run itself has closed its worker and given the slot back by then: checked BEFORE close. */
+ async function bench(b:Bench,wrap?:Wrap,label:string=b.scenarioId){
+  const started=performance.now(),{run,view:v0,directory,worker}=await begin(b,wrap);
+  const view=await run.action({actionId:'step-1',expectedRevision:v0.run.runRevision,kind:'step',payload:{ticks:500}});
+  const report=await run.report() as Report;timings.push({label,ms:Math.round(performance.now()-started)});
+  expect(activeRunCount(MUJOCO_SLOT),'the result freed the engine slot before close').toBe(0);expect(worker().state,'the result closed the worker before close').toBe('closed');
+  return {report,view,directory,run};
  }
  test('a wheel step of 2 rad/s with the starting profile completes; the rise time exists; the draft reaches the worker byte for byte and every other axis holds where it rests',async()=>{
   const b=wheel(),seen:{create?:{bench:{controlProfileRef:{sha256:string}}};tick0?:{drives:{axisId:string;targetApplied:number}[]}}={};
@@ -97,7 +107,7 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(bytes.toString()).toBe(JSON.stringify(b.controlProfile));expect(seen.create!.bench.controlProfileRef.sha256).toBe(sha(bytes));
   // the server's rest positions are where the drive itself starts (tick 0's applied target), so a holding axis never moves
   expect(seen.tick0!.drives.map(d=>[d.axisId,d.targetApplied])).toEqual(WHEELS.map(a=>[a,0]));
-  console.log(JSON.stringify({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}}));
+  show({wheel:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}});
  },120_000);
  test('a J3 step of 0.1 rad completes, with the J3 inertia at home; the arm holds at home and the gripper open',async()=>{
   const seen:{tick0?:{drives:{axisId:string;targetApplied:number}[]}}={},enabled:number[]=[],moved:number[]=[];
@@ -115,31 +125,31 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   for(const [i,d] of seen.tick0!.drives.entries())expect(d.targetApplied,d.axisId).toBeCloseTo(i<6?home[i]!:0,9);
   // the anchor (ruling 3): the first tick commanded after every axis reported enabled (the nominal drive's 25-substep enable sequence ends in tick 3); the step lands atTick ticks later
   expect(report.bench.anchorTick).toBe(enabled[0]!+1);expect(enabled[0]).toBe(3);expect(moved[0]).toBe(report.bench.anchorTick!+10);
-  console.log(JSON.stringify({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}}));
+  expect(report.bench.anchorTick).toBe(benchAnchorTick(doc('xarm6-drive-nominal-v1.json')));expect(t.engine).toEqual({id:'mujoco_arm',version:'3.17.0'});
+  show({j3:{anchorTick:report.bench.anchorTick,metrics:t.metrics,trace:t.trace,effectiveInertia:t.effectiveInertia}});
  },120_000);
  test('kp far above the envelope ceiling, written straight into the profile file, ends the bench as drive_fault OVERSPEED; the slot is free and a second bench run starts right after',async()=>{
   const envelope=doc<{axes:{axisId:string;kp:{max:number}}[]}>('tuning-envelope-v1.json'),ceiling=envelope.axes.find(a=>a.axisId==='xarm-1/J3')!.kp.max;
   const hot=structuredClone(doc<ControlProfileV1>('xarm6-control-v1.json'));hot.axes.find(a=>a.axisId==='xarm-1/J3')!.loop.kp=100*ceiling;
   const sealed=sealDriveDocument({...hot,digest:''}),text=JSON.stringify(sealed);
   // deliberately past the runtime's admission (the worker does not check the envelope): the file and the create ref are swapped under a run admitted with the fixture profile
-  const {report,view}=await bench(arm(),async(req,next,_w,bundleRoot)=>{
+  const first=await bench(arm(),async(req,next,_w,bundleRoot)=>{
    if(req.op==='create'){const p=req.payload as {bench:{controlProfileRef:{path:string;sha256:string}}};await writeFile(join(bundleRoot,p.bench.controlProfileRef.path),text);p.bench.controlProfileRef.sha256=sha(text);}
    return next();
-  },'J3 hot');
+  },'J3 hot'),{report,view}=first;
   expect(view.run.status).toBe('completed');
   const t=report.tuning!;expect(validateControlEvidenceShape(t)).toBe(true);
   expect(t).toMatchObject({status:'drive_fault',unstable:null,fault:{axisId:'xarm-1/J3',code:'OVERSPEED'}});
   expect(t.fault!.tick).toBe(report.bench.anchorTick!+10+1);   // the second tick of the step, as V06b measured
   expect(Object.values(t.metrics).every(m=>!m.available&&m.reason==='DRIVE_FAULT')).toBe(true);
   expect(t.trace.samples).toBe(t.fault!.tick*10);expect(report.bench.traceIssues).toEqual([]);   // the trace up to the fault is saved and reads back whole
-  expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
-  console.log(JSON.stringify({j3Hot:{status:t.status,fault:t.fault,anchorTick:report.bench.anchorTick,riseTimeS:t.metrics.riseTimeS,trace:t.trace}}));
-  const again=await bench(arm(),undefined,'J3 after fault');expect(again.report.tuning!.status).toBe('completed');
+  expect((await first.run.snapshot()).run.status).toBe('completed');   // the first run is still open
+  show({j3Hot:{status:t.status,fault:t.fault,anchorTick:report.bench.anchorTick,riseTimeS:t.metrics.riseTimeS,trace:t.trace}});
+  const again=await bench(arm(),undefined,'J3 after fault');expect(again.report.tuning!.status).toBe('completed');   // started and run while the faulted one is open
  },180_000);
  test('protocol_double: a step answered PLANT_UNSTABLE ends the bench as unstable with its tick and warning; the worker is closed, the slot free, the next bench starts at once',async()=>{
-  let worker:Worker|undefined;
-  const {report,view}=await bench(arm(),async(req,next,w)=>{
-   worker=w;const p=req.payload as {targetTick?:number};
+  const {report,view,run}=await bench(arm(),async(req,next)=>{
+   const p=req.payload as {targetTick?:number};
    if(req.op==='step'&&p.targetTick===30)return {protocol:'mekoniq-sim3d/1',requestId:'step-x',runId:'x',ok:false,error:{code:'PLANT_UNSTABLE',message:'the engine reported a bad state (BADQACC) and reset itself'}};
    return next();
   },'J3 unstable double');
@@ -148,9 +158,21 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(t).toMatchObject({status:'unstable',fault:null,unstable:{tick:30,warning:'the engine reported a bad state (BADQACC) and reset itself'}});
   expect(Object.values(t.metrics).every(m=>!m.available&&m.reason==='PLANT_UNSTABLE')).toBe(true);
   expect(t.trace.samples).toBe(29*10);
-  console.log(JSON.stringify({j3UnstableDouble:{status:t.status,unstable:t.unstable,riseTimeS:t.metrics.riseTimeS,trace:t.trace}}));
-  expect(activeRunCount(MUJOCO_SLOT)).toBe(0);expect(worker!.state).toBe('closed');
-  expect((await bench(arm({axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5}}),undefined,'gripper after unstable')).report.tuning!.status).toBe('completed');
+  show({j3UnstableDouble:{status:t.status,unstable:t.unstable,riseTimeS:t.metrics.riseTimeS,trace:t.trace}});
+  expect((await run.snapshot()).run.status).toBe('completed');   // still open
+  // the next bench, while the unstable one is open: the gripper on the ideal drive, whose axes boot enabled (anchor 1, as admission computes it)
+  const next=await bench(arm({axis:'gripper',signal:{kind:'step',amplitude:0.1,atTick:5},driveExperimentId:'drive-ideal-v1'}),undefined,'gripper after unstable');
+  expect(next.report.tuning!.status).toBe('completed');expect(next.report.bench.anchorTick).toBe(1);expect(benchAnchorTick(doc('xarm6-drive-ideal-v1.json'))).toBe(1);
+ },180_000);
+ test('a cancelled bench closes its worker and frees the slot itself, records why its trace ended, and has no result; the next bench starts while it is open',async()=>{
+  const {run,view,directory,worker}=await begin(arm({signal:{kind:'step',amplitude:0.1,atTick:30}}));
+  let v=await run.action({actionId:'step-1',expectedRevision:view.run.runRevision,kind:'step',payload:{ticks:20}});expect(v.tick).toBe(20);
+  v=await run.action({actionId:'cancel',expectedRevision:v.run.runRevision,kind:'cancel',payload:{}});
+  expect(v.run.status).toBe('cancelled');expect(activeRunCount(MUJOCO_SLOT)).toBe(0);expect(worker().state).toBe('closed');
+  expect((await run.report() as Report).tuning).toBeNull();
+  expect(JSON.parse(await readFile(join(directory,'trace/manifest.json'),'utf8'))).toMatchObject({terminalReason:'CANCELLED',coverage:{lastTick:20,complete:false}});
+  await expect(run.action({actionId:'step-2',expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:1}})).rejects.toThrow('INVALID_STATE:RUN_FINISHED');
+  expect((await bench(arm(),undefined,'J3 after cancel')).report.tuning!.status).toBe('completed');
  },180_000);
  test('over HTTP: the bench set is in health with the envelope and the signal catalog, a session creates, starts, steps and reads the report of an arm bench',async()=>{
   const directory=await mujocoTemp('mj-bench-gw-');

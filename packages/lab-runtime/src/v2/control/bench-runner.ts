@@ -27,7 +27,7 @@ import {physicsDirectoryBytes,readBoundedPhysicsFile} from '../simulation3d/phys
 import {buildArmCellScene,readXArmFixture,writeArmCellBundle} from '../simulation3d/arm-cell-scene';
 import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
-import {BENCH_MAX_TICKS,benchTarget,validateBenchRequest} from './bench-signals';
+import {BENCH_MAX_TICKS,benchAnchorTick,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
 import {driveExperiment} from './drive-experiments';
 import {validateBenchRequestShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {stepResponseMetrics} from './tuning-metrics';
@@ -42,7 +42,7 @@ type Policy={finalWindowS:number;settleBand:number;holdWindowS:number};
 // ---- the plant ---------------------------------------------------------------------------------------------------------------------------------------------
 /** What the server knows of a bench plant before any engine: the experiment's drive model (its bytes as committed), the envelope, the plant the profile must be sealed for, the traced axes, where every
  * axis rests (the arm's home, the gripper open, a wheel at rest) and, for an arm axis, its limits. */
-export interface BenchPlant {kind:'amr'|'arm';axisIds:string[];model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
+export interface BenchPlant {kind:'amr'|'arm';axisIds:string[];/** the engine tick of signal tick 0 the drive model's enable sequence gives (benchAnchorTick) */anchorTick:number;model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
 export async function benchPlant(workerRoot:string,bench:BenchRequestV1):Promise<BenchPlant>{
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
  const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
@@ -51,22 +51,23 @@ export async function benchPlant(workerRoot:string,bench:BenchRequestV1):Promise
  if(kind==='amr'){
   // D2: the AMR's plant is its physical model, whatever the load
   const scene=JSON.parse((await file(join(SERVE,'navigation-scene.json'))).toString()) as NavigationSceneV1;
-  return {kind,axisIds:[...WHEELS],model,modelBytes,envelope,policy,plantModelDigest:scene.robots[0]!.model.physicalModelDigest,start:Object.fromEntries(model.axes.map(a=>[a.axisId,0]))};
+  return {kind,axisIds:[...WHEELS],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:scene.robots[0]!.model.physicalModelDigest,start:Object.fromEntries(model.axes.map(a=>[a.axisId,0]))};
  }
  const f=readXArmFixture(workerRoot),component=JSON.parse(f.componentText) as {joints:{id:string;limits?:{lower?:{value:number};upper?:{value:number}}}[]};
  // the home keyframe (compile.py): the joints at the fixture's home, every gripper joint at 0 (open). The gripper axis is its drive joint, in rad (0 open .. 0.85 closed), so it shares the joint amplitudes
  const start:Record<string,number>={...Object.fromEntries(f.programs.waypoints.home!.map((q,k)=>[`${ARM_ID}/J${k+1}`,q])),[`${ARM_ID}/gripper`]:0};
  const axisId=`${ARM_ID}/${bench.axis}`,lim=component.joints.find(j=>j.id===(bench.axis==='gripper'?f.physics.gripper.driveJoint:bench.axis))?.limits;
- return {kind,axisIds:[axisId],model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
+ return {kind,axisIds:[axisId],anchorTick:benchAnchorTick(model),model,modelBytes,envelope,policy,plantModelDigest:sha(Buffer.from(f.componentText)),start,
   ...lim?.lower&&lim.upper&&start[axisId]!==undefined?{limits:{lower:lim.lower.value,upper:lim.upper.value,start:start[axisId]!}}:{}};
 }
 
-/** Admission of a bench request against its plant, before any directory, slot or engine (ruling 2): shape and signal (registered amplitude, ticks, the joint limits), the draft profile against the experiment's
+/** Admission of a bench request against its plant, before any directory, slot or engine (ruling 2): shape and signal (registered amplitude, the joint limits, and ticks: the signal must end
+ * by engine tick 500 counted from the anchor the drive model's enable sequence gives, else TICK_OUT_OF_RANGE), the draft profile against the experiment's
  * drive model and the envelope (validateControlProfile calls withinEnvelope), and the plant it is sealed for. Refusals are INVALID_BENCH_REQUEST with their codes (a 422). */
 export async function admitBench(bench:unknown,workerRoot:string):Promise<BenchPlant>{
  const shape=validateBenchRequestShape(bench);if(!shape.ok)throw Error(`INVALID_BENCH_REQUEST:${shape.reasonCodes.join(',')}`);
  const b=bench as BenchRequestV1,plant=await benchPlant(workerRoot,b),codes=new Set<string>();
- for(const c of [validateBenchRequest(b,plant.limits),validateControlProfile(b.controlProfile,plant.model,plant.envelope)])for(const x of c.reasonCodes)codes.add(x);
+ for(const c of [validateBenchRequest(b,{anchorTick:plant.anchorTick,...plant.limits?{limits:plant.limits}:{}}),validateControlProfile(b.controlProfile,plant.model,plant.envelope)])for(const x of c.reasonCodes)codes.add(x);
  // D2: a draft is never re-sealed for the plant; one sealed for another plant is refused
  if(b.controlProfile.plantModelDigest!==plant.plantModelDigest)codes.add('DRIVE_PLANT_MISMATCH');
  if(codes.size)throw Error(`INVALID_BENCH_REQUEST:${[...codes].sort().join(',')}`);
@@ -181,12 +182,15 @@ const METRIC_UNITS=(mode:'csp'|'csv'):Record<string,string>=>({riseTimeS:'s',ove
 const allUnavailable=(mode:'csp'|'csv',reason:string)=>Object.fromEntries(Object.entries(METRIC_UNITS(mode)).map(([k,unit])=>[k,{available:false,value:null,unit,reason} as ControlMetric]));
 /** The signal starts at the start of tick `anchor + atTick` (a hold: `anchor`), the anchor being the first tick commanded after every axis reported enabled. Its time origin t0S is the end of the tick before it:
  * sample 10·start − 1 of the trace (tick 0's first substep is sample 0), and y0 is the true state there. A step gets the step metrics of contracts §5; a trapezoid and a hold the tracking error, the peak torque and the
- * saturation ratio over the window from their start (what §6.1 lists for them), the step metrics are SIGNAL_NOT_STEP. A drive fault or an unstable plant: every metric unavailable with that reason (no metric of the part before). */
+ * saturation ratio over the window from their start (what §6.1 lists for them), the step metrics are SIGNAL_NOT_STEP. A drive fault or an unstable plant: every metric unavailable with that reason (no metric of the part before).
+ * A signal that did not run to its end inside the trace (a step that never landed, a motion or a hold cut by the end of the bench) has no metric either: SIGNAL_TRUNCATED. */
 export function benchMetrics(trace:DriveTrace,signal:BenchRequestV1['signal'],anchor:number|null,mode:'csp'|'csv',policy:Policy,outcome:Outcome['status']):Record<string,ControlMetric>{
  if(outcome!=='completed')return allUnavailable(mode,outcome==='drive_fault'?'DRIVE_FAULT':'PLANT_UNSTABLE');
  if(anchor===null)return allUnavailable(mode,'SIGNAL_NOT_STARTED');
+ // a signal whose landing (a step), motion end (a trapezoid) or last tick (a hold) is past the last recorded tick did not run as asked: no metric of it (admission refuses one that cannot fit)
+ const lastTick=trace.samples.length/BENCH_TRACE_LIMITS.substeps-1;
+ if(anchor+benchSignalLastTick(signal)>lastTick)return allUnavailable(mode,'SIGNAL_TRUNCATED');
  const i0=BENCH_TRACE_LIMITS.substeps*(anchor+(signal.kind==='hold'?0:signal.atTick))-1,origin=trace.samples[i0];
- if(i0>=trace.samples.length)return allUnavailable(mode,'WINDOW_INVALID');
  if(!origin)return allUnavailable(mode,'TRACE_GAP');
  const at={t0S:i0*trace.dtS,y0:origin.actual};
  if(signal.kind==='step')return stepResponseMetrics(trace,{...at,amplitude:signal.amplitude},policy,mode);
@@ -232,6 +236,8 @@ class BenchRun implements ScenarioRun {
  private st={tick:0,started:false,paused:false,cancelled:false,reclaimed:false,closed:false,revision:0,requests:0,anchor:null as number|null,outcome:null as Outcome|null,attention:[] as Attention[],
   receipts:{} as Record<string,{hash:string;view:RunView}>,engine:null as {version:string;hostArch?:string}|null,inertia:null as TuningResultV1['effectiveInertia']};
  private pace:PaceAnchor|null=null;
+ /** the trace is ended once, by the first stop: a later close never rewrites how it ended */
+ private traceEnded=false;
  private mode:Record<string,'csp'|'csv'>;
  constructor(readonly id:string,private dir:string,private input:RunManifestInput,private scenario:NonNullable<ReturnType<typeof scenarioRegistry.get>>,private bench:BenchRequestV1,private plant:BenchPlant,
   private sceneDigest:string,private create:Record<string,unknown>,private identity:BenchTraceIdentity,private rec:BenchTraceRecorder,private providers:BenchProviders){
@@ -318,7 +324,7 @@ class BenchRun implements ScenarioRun {
   // ruling 8: a drive that latched a fault ends the bench as that result. Any axis: a holding axis that trips moves the plant under the test, so the measurement is no longer the traced axis' alone
   if(fault){await this.finish({status:'drive_fault',fault:{tick,axisId:fault.axisId,code:fault.fault!}});return false;}
   if(this.st.anchor===null&&drives.every(d=>d.state==='enabled'))this.st.anchor=tick+1;
-  const s=this.bench.signal,done=tick>=BENCH_MAX_TICKS||s.kind==='hold'&&this.st.anchor!==null&&tick>=this.st.anchor+s.ticks-1;
+  const s=this.bench.signal,done=tick>=BENCH_MAX_TICKS||s.kind==='hold'&&this.st.anchor!==null&&tick>=this.st.anchor+benchSignalLastTick(s);
   if(done){await this.finish({status:'completed'});return false;}
   return true;
  }
@@ -347,7 +353,8 @@ class BenchRun implements ScenarioRun {
  private async stopWorker(reason:string|null){
   const w=this.worker;this.worker=undefined;
   try{await w?.close(reason??'BENCH_FINISHED').catch(()=>{});}finally{releaseSlot(MUJOCO_SLOT,this.id);}
-  await this.rec.finish(reason&&reason!=='CANCELLED'&&reason!=='RUN_CLOSED'?reason:null).catch(()=>{});
+  // a result (reason null) leaves the trace complete; anything else that stops a bench (cancel, close, reclaim, a failed start, a lost step) is its terminal reason
+  if(!this.traceEnded){this.traceEnded=true;await this.rec.finish(reason).catch(()=>{});}
  }
  private async tuning():Promise<{tuning:TuningResultV1|null;issues:string[]}>{
   const s=this.st;if(!s.outcome)return {tuning:null,issues:[]};
@@ -355,7 +362,7 @@ class BenchRun implements ScenarioRun {
   if(!read.manifest||!read.manifestSha256||!read.manifest.chunks.length)return {tuning:null,issues:read.issues};
   const o=s.outcome,first=read.traces[0]!,mode=this.mode[this.plant.axisIds[0]!]!;
   const tuning:TuningResultV1={schemaVersion:1,documentType:'tuning-result',runId:this.id,status:o.status,unstable:o.status==='unstable'?o.unstable:null,fault:o.status==='drive_fault'?o.fault:null,
-   axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,engine:{id:'mujoco_3d',version:s.engine?.version??this.providers.runtime.engineVersion},
+   axisIds:[...this.plant.axisIds] as TuningResultV1['axisIds'],signal:structuredClone(this.bench.signal),seed:this.input.seed,engine:{id:this.backends()[0]!,version:s.engine?.version??this.providers.runtime.engineVersion},
    plant:{plantModelDigest:this.plant.plantModelDigest,driveModelDigest:this.plant.model.digest,controlProfileDigest:this.bench.controlProfile.digest,load:'empty'},effectiveInertia:s.inertia,policy:{...this.plant.policy},
    metrics:benchMetrics(first,this.bench.signal,s.anchor,mode,this.plant.policy,o.status),
    trace:{chunks:read.manifest.chunks.length,sha256:read.manifestSha256,samples:first.samples.slice(BENCH_TRACE_LIMITS.substeps).filter(x=>x!==null).length},accepted:false};

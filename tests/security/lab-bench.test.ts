@@ -74,6 +74,17 @@ test('a draft sealed for another plant is 422 DRIVE_PLANT_MISMATCH, never re-sea
  for(const [bench,codes] of cases)expect(await call('/runs',runRequest(bench))).toEqual({status:422,body:{error:'INVALID_BENCH_REQUEST',reasonCodes:codes}});
  expect(factoryCalls-calls).toBe(cases.length);expect(await runDirs()).toEqual(before);expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
 });
+test('a signal must end inside the bench after the drive\'s enable sequence: the last tick that fits is admitted, one more is 422 TICK_OUT_OF_RANGE, before any run exists',async()=>{
+ const {call}=await session();
+ // the nominal drive's 25-substep enable sequence puts signal tick 0 on engine tick 4, so a step at 496 lands on tick 500; the ideal drive boots enabled (signal tick 0 on tick 1)
+ const refused=async(bench:unknown)=>{const before=await runDirs();expect(await call('/runs',runRequest(bench))).toEqual({status:422,body:{error:'INVALID_BENCH_REQUEST',reasonCodes:['TICK_OUT_OF_RANGE']}});expect(await runDirs()).toEqual(before);};
+ await refused(arm({signal:{kind:'step',amplitude:0.1,atTick:497}}));
+ await refused(wheel({signal:{kind:'hold',ticks:498}}));
+ await refused(wheel({driveExperimentId:'drive-ideal-v1',signal:{kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick:365}}));   // 135 ticks of motion: ends on tick 1+365+135 = 501
+ for(const bench of [arm({signal:{kind:'step',amplitude:0.1,atTick:496}}),wheel({signal:{kind:'hold',ticks:497}}),wheel({driveExperimentId:'drive-ideal-v1',signal:{kind:'trapezoid',distance:5,peakVelocity:2,acceleration:10,atTick:364}})])
+  expect((await call('/runs',runRequest(bench))).status).toBe(201);
+ expect(activeRunCount(MUJOCO_SLOT)).toBe(0);
+});
 test('another session cannot see or drive a bench run, a reader cannot drive it, and a write needs the CSRF token',async()=>{
  const a=await session(),b=await session();
  const created=await a.call('/runs',runRequest(arm()));expect(created.status,JSON.stringify(created.body)).toBe(201);

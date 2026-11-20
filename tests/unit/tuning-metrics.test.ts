@@ -105,3 +105,17 @@ test('the contract: a TuningResultV1 of a bench run is a valid shape, an accepte
  expect(ok({...result,axisIds:['a/J1','a/J2','a/J3']})).toBe(false);
  expect(ok({...result,signal:{kind:'sine'}})).toBe(false);
 });
+test('a bench signal that does not end inside the recorded trace has no metric at all: SIGNAL_TRUNCATED, never metrics of a step that did not run',async()=>{
+ const {benchMetrics}=await import('../../packages/lab-runtime/src/v2/control/bench-runner');
+ const p={finalWindowS:0.5,settleBand:0.02,holdWindowS:0.25},flat=(ticks:number)=>({axisId:'xarm-1/J3',dtS:0.002,samples:Array.from({length:(ticks+1)*10},()=>({target:0,actual:0,feedback:0,torqueNm:0,saturated:false}))});
+ const trace=flat(500),truncated=(m:Record<string,{available:boolean;reason?:string}>)=>Object.values(m).every(x=>!x.available&&x.reason==='SIGNAL_TRUNCATED');
+ // anchor 4: a step at signal tick 497 would land on engine tick 501, after the last recorded tick 500
+ expect(truncated(benchMetrics(trace,{kind:'step',amplitude:0.1,atTick:497},4,'csp',p,'completed'))).toBe(true);
+ // landing on the last tick is a step that ran (its window is that tick)
+ const last=benchMetrics(trace,{kind:'step',amplitude:0.1,atTick:496},4,'csp',p,'completed');
+ expect(last.rmsError).toMatchObject({available:true,samples:11});expect(last.riseTimeS).toMatchObject({available:false,reason:'TARGET_NOT_REACHED'});
+ // a trapezoid whose motion (135 ticks) ends after the last tick, against one that ends on it; a hold longer than what ran
+ const trap=(atTick:number)=>({kind:'trapezoid' as const,distance:5,peakVelocity:2,acceleration:10,atTick});
+ expect(truncated(benchMetrics(trace,trap(362),4,'csv',p,'completed'))).toBe(true);expect(benchMetrics(trace,trap(361),4,'csv',p,'completed').rmsError.available).toBe(true);
+ expect(truncated(benchMetrics(flat(300),{kind:'hold',ticks:400},4,'csp',p,'completed'))).toBe(true);expect(benchMetrics(flat(300),{kind:'hold',ticks:297},4,'csp',p,'completed').rmsError.available).toBe(true);
+});
