@@ -52,6 +52,8 @@ for (const [name, type] of Object.entries(navFiles)) {
   const root = JSON.parse(await readFile(new URL(`${name}.schema.json`, v2Dir), 'utf8'));
   const definitions = root.definitions ?? {};
   for (const k of ['$schema', '$id', 'definitions']) delete root[k];
+  // Conditional validation narrows wire values at runtime. json-schema-to-typescript would emit a second, identical tuning interface for this intersection.
+  if (name === 'control-evidence-v1' && definitions.TuningResultV1.allOf.every(branch => Object.keys(branch).every(k => ['if','then','else'].includes(k)))) delete definitions.TuningResultV1.allOf;
   Object.assign(navDefinitions, foldNav(definitions));
   navDefinitions[type] = foldNav(root);
 }

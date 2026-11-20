@@ -487,13 +487,6 @@ export type ControlMetric =
       reason: string;
     };
 /**
- * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
- *
- * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
- * via the `definition` "TuningResultV1".
- */
-export type TuningResultV1 = TuningResultV11;
-/**
  * Tagged by kind (one branch is checked, so a refusal names the field of that branch). atTick < 500 and ticks <= 500 are the bench's own tick bounds (bench-signals.ts BENCH_MAX_TICKS); a value past them is TICK_OUT_OF_RANGE.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2862,7 +2855,13 @@ export interface DriveTickRecord {
    */
   drives: DriveAxisSnapshot[];
 }
-export interface TuningResultV11 {
+/**
+ * The result of one bench run, built from the trace read back from the recorder. metrics are computed on the true state (basis actual) of axisIds[0]; both wheels of a wheel bench carry the same command. Everything needed to compare two runs is here. A bench ends in exactly one result: completed; drive_fault (an axis latched a drive fault during the run: fault holds its tick, axis and code); unstable (the engine reported instability: unstable holds its tick and warning); collision (a snapshot named a contact of the robot or the arm the plant does not allow: collision holds its tick and the ids the snapshot named). The objects of the other results are null.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "TuningResultV1".
+ */
+export interface TuningResultV1 {
   schemaVersion: 1;
   documentType: 'tuning-result';
   runId: string;
@@ -2934,6 +2933,15 @@ export interface TuningResultV11 {
     samples: number;
   };
   accepted: false;
+  wheelMeasurement?: {
+    quantity: 'wheel_angular_speed';
+    inertiaAssumption: 'straight_line_no_slip';
+    comparison: {
+      tick: number;
+      bodyForwardMps: number;
+      wheelSurfaceMps: number;
+    } | null;
+  };
 }
 /**
  * suggestGains for one (bandwidth, damping) pair: the loop clamped into the envelope, the clamped fields, and no acceleration limit (D4 does not size one).

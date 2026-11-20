@@ -422,7 +422,7 @@
           "properties": {
             "chunks": {
               "type": "integer",
-              "minimum": 1,
+              "minimum": 0,
               "maximum": 4096
             },
             "sha256": {
@@ -442,6 +442,52 @@
         },
         "accepted": {
           "const": false
+        },
+        "wheelMeasurement": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "quantity": {
+              "const": "wheel_angular_speed"
+            },
+            "inertiaAssumption": {
+              "const": "straight_line_no_slip"
+            },
+            "comparison": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "tick": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 500
+                    },
+                    "bodyForwardMps": {
+                      "type": "number"
+                    },
+                    "wheelSurfaceMps": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "tick",
+                    "bodyForwardMps",
+                    "wheelSurfaceMps"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "quantity",
+            "inertiaAssumption",
+            "comparison"
+          ]
         }
       },
       "required": [
@@ -542,6 +588,43 @@
             "properties": {
               "collision": {
                 "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "trace": {
+                "properties": {
+                  "chunks": {
+                    "const": 0
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "const": "unstable"
+              },
+              "unstable": {
+                "type": "object",
+                "properties": {
+                  "tick": {
+                    "const": 0
+                  }
+                }
+              },
+              "trace": {
+                "properties": {
+                  "samples": {
+                    "const": 0
+                  }
+                },
+                "type": "object"
               }
             }
           }
