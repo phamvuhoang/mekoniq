@@ -1,0 +1,43 @@
+name: R4 CLD02 native x86-64
+on:
+  push:
+    branches: [r4/virtual-commissioning]
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Record hosted run identity
+        run: |
+          mkdir "$RUNNER_TEMP/r4-cld02"
+          printf 'sha=%s\nrunner=%s\narch=%s\nurl=%s/%s/actions/runs/%s/attempts/%s\n' \
+            "$GITHUB_SHA" "$RUNNER_NAME" "$RUNNER_ARCH" "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > "$RUNNER_TEMP/r4-cld02/run.txt"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Build and test the production image
+        run: |
+          set -o pipefail
+          scripts/r4-cld02.sh 2>&1 | tee "$RUNNER_TEMP/r4-cld02/job.log"
+      - name: Checksum all available evidence
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/r4-cld02"
+          find . -type f ! -name SHA256SUMS -print0 | LC_ALL=C sort -z | xargs -0 sha256sum > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r4-cld02-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/r4-cld02/
+          if-no-files-found: error

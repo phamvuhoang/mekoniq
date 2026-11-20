@@ -40,3 +40,16 @@ PYTHONDONTWRITEBYTECODE=1 MUJOCO_PROTOCOL_RESPONSE_DIR="$response_dir" \
   perl -e 'alarm 90; exec @ARGV' .venv-mujoco/bin/python -B -m pytest -p no:cacheprovider \
   "$worker_dir/tests/test_worker_protocol_regression.py" -q -rs
 ```
+
+## Native Linux x86-64 qualification
+
+From a clean Source checkout on Linux x86-64 with a local amd64 Docker daemon, Node and pnpm at the repository versions, Git, Perl and jq, the hosted CLD02 job can be reproduced with:
+
+```sh
+RUNNER_TEMP=$(mktemp -d)
+export RUNNER_TEMP
+scripts/r4-cld02.sh
+(cd "$RUNNER_TEMP/r4-cld02" && sha256sum -c SHA256SUMS)
+```
+
+The job builds the production image and uses its locked Python for both the historical capture and the full current worker suite. The original worker/probe and fixture revisions are recorded in `host.txt` and `baseline-trees.txt`. The output includes the three normalized protocol streams, the three legacy position/velocity traces, their platform-scoped digests in `baseline/legacy-digests.json`, the runtime manifest, image identity, command logs, exit codes and pytest XML. The full suite reads the pre-fix files through `MUJOCO_PROTOCOL_RESPONSE_DIR` and `MUJOCO_LEGACY_DIGEST_FILE`. On Darwin arm64 the legacy test also checks the original three literal digests.

@@ -4,6 +4,7 @@ import ast
 import copy
 import hashlib
 import json
+import os
 import platform
 import shutil
 import sys
@@ -27,7 +28,7 @@ from mujoco_worker.world_engine import WorldEngine
 ROOT = Path(__file__).resolve().parents[1]
 DRIVE = ROOT / "fixtures" / "drive-v1"
 SCHEMAS = ROOT.parents[1] / "packages" / "contracts" / "schemas"
-ARM64_ONLY = pytest.mark.skipif(platform.machine() != "arm64", reason="digests are bit-exact on the architecture of the spike only")
+LEGACY_OVERRIDE = os.environ.get("MUJOCO_LEGACY_DIGEST_FILE")
 LEGACY_DIGESTS = {"mobile": "23ea8d07f95edf4265389a2bd3933737d788c429c849c685e003d4cf676cf2d9", "arm": "5927ce0f26c3d2af369e4edb9af45eddcba581b6d8fcfda835fb4bc793f3e76a",
                   "world": "3683bae2b968dfcac4c97c2cf10f04d6b4e0e957ef8a3f88d6ced442f04555d1"}
 
@@ -89,11 +90,20 @@ def arm_step(e, k, **over):
 
 
 # ---- the legacy path and the ideal drive -----------------------------------------------------------------------------------------------------------------
-@ARM64_ONLY
+@pytest.mark.skipif(platform.machine() != "arm64" and LEGACY_OVERRIDE is None,
+                    reason="set MUJOCO_LEGACY_DIGEST_FILE to pre-fix traces captured on this platform")
 def test_the_legacy_path_gives_the_three_recorded_digests():
+    expected = LEGACY_DIGESTS
+    if LEGACY_OVERRIDE is not None:
+        native = json.loads(Path(LEGACY_OVERRIDE).read_text())
+        assert isinstance(native, dict)
+        assert native["platform"] == [platform.system(), platform.machine(), platform.python_version(), mujoco.__version__, np.__version__]
+        expected = native["digests"]
+        if platform.machine() == "arm64":
+            assert expected == LEGACY_DIGESTS
     for name, n, run in (("mobile", 300, P.legacy_mobile), ("arm", 300, P.legacy_arm), ("world", 500, P.legacy_world)):
         qp, qv, _ = run(n)
-        assert P.digest(qp, qv) == LEGACY_DIGESTS[name], name
+        assert P.digest(qp, qv) == expected[name], name
 
 
 def test_an_ideal_drive_is_bit_identical_to_the_legacy_mobile_path():
