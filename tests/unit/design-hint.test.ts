@@ -99,3 +99,11 @@ test('the reason is in the language, and the code stays beside it',()=>{
  setLocale('vi');expect(trayHintHtml(slow(),report())).toContain('Không đủ dữ liệu để so sánh');
  setLocale('ja');expect(trayHintHtml(slow(),report())).toContain('比較');
 });
+
+test('a drive fault schedule is an input: a pair where only one run carried one (or different ones) is not accepted',()=>{
+ const faulted=(hash:string)=>({driveFaultSchedule:{entries:[],hash}});
+ const a=tray(evidence()),withFault=(r:ReturnType<typeof tray>,hash:string)=>({...r,manifest:{...r.manifest,...faulted(hash)}}) as never;
+ expect(trayHint(withFault(a,'f1'),fast())).toEqual({available:false,reason:'PAIR_NOT_ACCEPTED'});
+ expect(trayHint(withFault(a,'f1'),withFault(fast(),'f2'))).toEqual({available:false,reason:'PAIR_NOT_ACCEPTED'});
+ expect(trayHint(withFault(a,'f1'),withFault(fast(),'f1')).available).toBe(true);
+});

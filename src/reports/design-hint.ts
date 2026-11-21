@@ -48,11 +48,11 @@ export function trayEvidenceOf(r:RunReport):TrayEvidenceView|null{
 const KNOBS=['friction','acceleration','drive','actor'] as const;
 /**
  * The design hint of two tray reports. The runtime computed each report's evidence from its own durable records; the pair is taken as comparable only when it is the same scenario, seed, backend set,
- * source commit and thresholds, and the registered knobs differ in exactly one (the Lab cannot re-read the evidence, so this is the report-level reading of the comparison's acceptance).
+ * source commit, thresholds and drive fault schedule, and the registered knobs differ in exactly one (the Lab cannot re-read the evidence, so this is the report-level reading of the comparison's acceptance).
  */
 export function trayHint(a:RunReport,b:RunReport):{available:true;text:string}|{available:false;reason:string}{
  const x=trayEvidenceOf(a),y=trayEvidenceOf(b);if(!x||!y)return {available:false,reason:'NO_TRAY_EVIDENCE'};
- const ma=a.manifest,mb=b.manifest,same=ma.scenario.id===mb.scenario.id&&ma.seed===mb.seed&&ma.backendSetId===mb.backendSetId&&ma.sourceCommit===mb.sourceCommit&&x.policyDigest===y.policyDigest&&ma.mode===mb.mode&&ma.access===mb.access;
+ const ma=a.manifest,mb=b.manifest,same=ma.scenario.id===mb.scenario.id&&ma.seed===mb.seed&&ma.backendSetId===mb.backendSetId&&ma.sourceCommit===mb.sourceCommit&&x.policyDigest===y.policyDigest&&ma.mode===mb.mode&&ma.access===mb.access&&((ma as {driveFaultSchedule?:{hash:string}}).driveFaultSchedule?.hash??null)===((mb as {driveFaultSchedule?:{hash:string}}).driveFaultSchedule?.hash??null);
  const summary=(e:TrayEvidenceView):TraySummary=>({experimentId:e.experimentId,accelerationLimitMps2:e.accelerationLimitMps2,maxLoadSlipM:e.maxLoadSlipM,serviceTimeS:e.serviceTimeS});
  return designHint({accepted:same,changed:KNOBS.filter(k=>x.knobs[k]!==y.knobs[k]),a:summary(x),b:summary(y)});
 }
