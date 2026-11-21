@@ -22,6 +22,11 @@ export function rigReportFacts(report:{outcome:{status:string;served:string};cof
  const fixedOutcome:GraspAttempt['outcome']=report.outcome.served!=='0'?'lifted':stop==='CUP_DROPPED'?'cup_dropped':stop?'unknown':TERMINAL.includes(report.outcome.status)?'grip_not_established':'unknown';
  return {fixedOutcome,unexpectedContacts};
 }
+/** The result of a rig run, recomputed from what the run itself kept (its report and its belief stream): the runner writes it and the study verifier recomputes it, so a changed record does not pass. */
+export function rigDerived(mode:PickRigInput['mode'],evidence:{attempts:GraspAttempt[];recovery:unknown[]},report:Parameters<typeof rigReportFacts>[0]&{outcome:{tick:number}}){
+ const mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1),facts=rigReportFacts(report),fixed=mode==='fixed_program';
+ return {outcome:fixed?facts.fixedOutcome:last?.outcome??'none' as GraspAttempt['outcome']|'none',attempts:fixed?1:mine.length,recovered:evidence.recovery.length>0&&last?.outcome==='lifted',attention:report.outcome.status==='needs_attention',ticks:report.outcome.tick,unexpectedContacts:facts.unexpectedContacts,beliefErrorAtCommitM:mine[0]?.beliefErrorAtCommitM??null};
+}
 export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions):Promise<PickRigResult&{beliefErrorAtCommitM:number|null}>{
  const offsetM=rigOffsetM(input.seed,input.truthOffsetM),runDir=join(input.directory,'run');await mkdir(runDir,{recursive:true});
  const project=JSON.parse(await readFile(join(runtime.workerRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
@@ -44,10 +49,8 @@ export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions
   while(v.tick<(input.maxTicks??12000)&&!TERMINAL.includes(v.run.status)){v=await act('step',{ticks:25});if(v.tick>=1200&&v.tick%50===0&&await cupDone())break;}
   report=await run.report();
  }finally{await run?.close();}
- const evidence=await buildPerceptionReport(join(runDir,'belief-evidence'));
- const mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1),facts=rigReportFacts(report as never);
- const result:PickRigResult&{beliefErrorAtCommitM:number|null}={runId:report.manifest.runId,outcome:input.mode==='fixed_program'?facts.fixedOutcome:last?.outcome??'none',attempts:input.mode==='fixed_program'?1:mine.length,
-  recovered:evidence.recovery.length>0&&last?.outcome==='lifted',attention:v.run.status==='needs_attention',ticks:v.tick,unexpectedContacts:facts.unexpectedContacts,directory:input.directory,beliefErrorAtCommitM:mine[0]?.beliefErrorAtCommitM??null};
+ const evidence=await buildPerceptionReport(join(runDir,'belief-evidence'),undefined,{runId:report.manifest.runId});
+ const result:PickRigResult&{beliefErrorAtCommitM:number|null}={runId:report.manifest.runId,...rigDerived(input.mode,evidence,report as never),directory:input.directory};
  const rest:Omit<PickRigInput,'directory'>={...input};delete (rest as {directory?:string}).directory;
  await writeFile(join(input.directory,'rig-run.json'),JSON.stringify({schemaVersion:1,input:rest,offsetM,result} satisfies RigRunRecord,null,2)+'\n');
  await writeFile(join(input.directory,'report.json'),JSON.stringify(report));

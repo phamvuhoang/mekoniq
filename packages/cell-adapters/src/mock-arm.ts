@@ -334,6 +334,8 @@ export class MockArmPlant {
   if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;
   if(this.programs.contact&&this.watchContact(p,extras))return;
   if(!p)return;
+  // a belief pick that waits for a decision (the plan, the commit, the recovery) owns the program: the choreography, the grip and the take are not driven by an observation (the checks above still ran)
+  const g=s.grasp;if(g?.commandId===p.commandId&&(g.status==='pending'||g.status==='commit_pending'||g.status==='grip_failed'||g.status==='refused'))return;
   const steps=this.programs.choreography[p.program]!,stage=steps[p.index]!,goal=this.goalOf(p,stage.waypoint);
   if(t.gen.every((v,i)=>v===goal[i])&&s.q.every((q,i)=>Math.abs(q-goal[i]!)<=this.tracking!.reachTolRad))t.settled++;else t.settled=0;
   if(t.settled>=this.tracking.settleTicks){const index=p.index;this.complete(p,stage,steps,extras);if(p.index!==index)t.settled=0;}

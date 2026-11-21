@@ -50,3 +50,39 @@ test('a recorder reopened over a directory with another identity refuses',async(
  const dir=await tmp();await (await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20})).finish(null);
  await expect(openBeliefRecorder({directory:dir,identity:{...identity,seed:9},maxBytes:1<<20})).rejects.toThrow('BELIEF_IDENTITY_MISMATCH');
 });
+// R08: coverage is established from data, not from the manifest's word: record counts per stream, contiguous chunk indices, and every belief an attempt used is on the belief stream.
+import {writeFile as wf} from 'node:fs/promises';
+const used=(t:number)=>({...belief(t).belief,ageTicks:3});
+const {refusal:_ignored,...base}=attempt;void _ignored;
+const withBelief={...base,beliefUsed:used(60),gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},outcome:'unknown' as const};
+async function recorded(){const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});for(let t=10;t<=100;t+=10)await rec.appendBelief(belief(t));await rec.appendAttempt(withBelief as never);await rec.finish(null);return dir;}
+type Mf={streams:{stream:string;chunks:unknown[];records?:number}[]};
+const rewrite=async(dir:string,f:(m:Mf)=>void)=>{const m=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8')) as Mf;f(m);await wf(join(dir,'manifest.json'),JSON.stringify(m));return m;};
+test('R08: the manifest of a finished recording carries the record count of every stream, and a clean read agrees',async()=>{
+ const dir=await recorded(),m=await readBeliefManifest(dir);expect(m.streams.map(s=>[s.stream,s.records])).toEqual([['belief',10],['attempts',1],['recovery',0]]);
+ const r=await readBeliefEvidence(dir,m,{identity});expect(r.issues).toEqual([]);expect(r.complete).toBe(true);
+});
+test('R08: a manifest that drops every belief chunk is not complete, and neither is one that no longer says how many records there are',async()=>{
+ const dropped=await recorded(),m1=await rewrite(dropped,m=>{m.streams.find(s=>s.stream==='belief').chunks=[];});
+ const a=await readBeliefEvidence(dropped,m1,{identity});expect(a.complete).toBe(false);expect(a.issues).toContain('BELIEF_RECORD_COUNT_MISMATCH');expect(a.issues).toContain('BELIEF_ATTEMPT_REFERENCE_MISSING');
+ const stripped=await recorded(),m2=await rewrite(stripped,m=>{m.streams.find(s=>s.stream==='belief').chunks=[];for(const s of m.streams)delete s.records;});
+ const b=await readBeliefEvidence(stripped,m2,{identity});expect(b.complete).toBe(false);expect(b.issues).toContain('BELIEF_COVERAGE_UNVERIFIABLE');expect(b.issues).toContain('BELIEF_ATTEMPT_REFERENCE_MISSING');
+});
+test('R08: chunk indices must run 0..n-1 in the manifest',async()=>{
+ const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});for(let t=10;t<=1110;t++)await rec.appendBelief(belief(t));await rec.finish(null);
+ const m=await rewrite(dir,m=>{m.streams.find(s=>s.stream==='belief').chunks.shift();});const r=await readBeliefEvidence(dir,m,{identity});expect(r.complete).toBe(false);expect(r.issues).toContain('BELIEF_CHUNK_SEQUENCE');
+});
+test('R08: an attempt that used a belief nobody recorded is refused',async()=>{
+ const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});await rec.appendBelief(belief(10));await rec.appendAttempt(withBelief as never);await rec.finish(null);
+ const r=await readBeliefEvidence(dir,await readBeliefManifest(dir),{identity});expect(r.issues).toContain('BELIEF_ATTEMPT_REFERENCE_MISSING');
+});
+test('R09: a read that is told which run it belongs to refuses evidence of another one, field by field',async()=>{
+ const dir=await recorded(),m=await readBeliefManifest(dir);
+ for(const bad of [{runId:'other'},{bootId:'other'},{sceneDigest:'c'.repeat(64)},{perceptionProfileDigest:'c'.repeat(64)},{recoveryPolicyDigest:'c'.repeat(64)},{graspMode:'belief_ground_truth' as const},{seed:8}])
+  expect((await readBeliefEvidence(dir,m,{identity:bad})).issues,JSON.stringify(bad)).toContain('BELIEF_IDENTITY_MISMATCH');
+ expect((await readBeliefEvidence(dir,m,{identity:{runId:'run-1',bootId:'boot-1'}})).issues).toEqual([]);
+});
+test('R10: every attempt record says in which tick it was written and which step it is',async()=>{
+ const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});
+ await rec.appendAttempt({...attempt,recordedTick:30,stage:'plan'} as never);await expect(rec.appendAttempt({...attempt,stage:'later'} as never)).rejects.toThrow('BELIEF_RECORD_INVALID');
+});

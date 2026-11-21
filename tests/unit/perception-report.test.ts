@@ -21,3 +21,18 @@ test('a directory with no recording says so instead of an empty section',async()
  const dir=await mkdtemp(join(tmpdir(),'perc-rep-'));const r=await buildPerceptionReport(dir);
  expect(r.complete).toBe(false);expect(r.issues).toEqual(['BELIEF_EVIDENCE_MISSING']);expect(r.beliefs).toEqual([]);
 });
+// R09: the report of a run is built for THAT run; R10: the report keeps every record of an attempt with the tick it was written, the final one is still `attempts`.
+test('R09: evidence of another run is refused by the report when it is told which run it is for',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'perc-rep-')),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});
+ await rec.appendBelief(belief(10));await rec.appendAttempt(attempt('lifted'));await rec.finish(null);
+ const mine=await buildPerceptionReport(dir,undefined,{runId:'run-1',bootId:'boot-1',seed:7});expect(mine.issues).toEqual([]);expect(mine.complete).toBe(true);
+ const other=await buildPerceptionReport(dir,undefined,{runId:'different-run'});expect(other.complete).toBe(false);expect(other.issues).toContain('BELIEF_IDENTITY_MISMATCH');
+ const hot=await buildPerceptionReport(dir,{checkpoint:async()=>{},manifest:()=>JSON.parse(JSON.stringify({...JSON.parse(JSON.stringify(rec.manifest()))}))},{runId:'different-run'});expect(hot.issues).toContain('BELIEF_IDENTITY_MISMATCH');
+});
+test('R10: attemptRecords keeps the plan, the commit and the outcome of an attempt in the order and tick they were written',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'perc-rep-')),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});
+ await rec.appendBelief(belief(10));
+ for(const [stage,recordedTick,outcome] of [['plan',30,'unknown'],['commit',40,'unknown'],['outcome',90,'lifted']] as const)await rec.appendAttempt({...attempt(outcome),stage,recordedTick} as never);
+ await rec.finish(null);const r=await buildPerceptionReport(dir);
+ expect(r.attemptRecords.map(a=>[a.stage,a.recordedTick,a.outcome])).toEqual([['plan',30,'unknown'],['commit',40,'unknown'],['outcome',90,'lifted']]);expect(r.attempts.map(a=>a.outcome)).toEqual(['lifted']);
+});

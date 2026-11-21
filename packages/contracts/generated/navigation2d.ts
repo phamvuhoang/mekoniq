@@ -3455,6 +3455,14 @@ export interface GraspAttempt {
   };
   outcome: 'lifted' | 'grip_not_established' | 'cup_dropped' | 'refused' | 'unknown';
   refusal?: string;
+  /**
+   * The tick this record was written (plan, commit or outcome); decidedTick stays the tick of the decision.
+   */
+  recordedTick?: number;
+  /**
+   * Which step of the attempt this record is.
+   */
+  stage?: 'plan' | 'commit' | 'outcome';
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -3502,6 +3510,10 @@ export interface BeliefEvidenceManifestV1 {
       sha256: Digest;
       bytes: number;
     }[];
+    /**
+     * How many records the published chunks of this stream hold; a reader compares it with what it read.
+     */
+    records?: number;
   }[];
   coverage: {
     lastTick: number;

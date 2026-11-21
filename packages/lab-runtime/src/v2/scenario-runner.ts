@@ -249,7 +249,7 @@ class Run implements ScenarioRun {
        try{oracle=JSON.parse(await readFile(join(this.dir,FAULT_ORACLE_FILE),'utf8'));if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');}catch(e){return {issues:[(e as Error).message==='FAULT_ORACLE_DIGEST'?'FAULT_ORACLE_DIGEST':'FAULT_ORACLE_MISSING']};}
        return readRetainedWorldFaultReport(this.dir,{...identity,publicCommittedTick:c.tick},{faults:c.manifest.driveFaultSchedule!.entries,oracle,facts});
       };
-      if(c.manifest.perception)ports.perceptionReport=()=>buildPerceptionReport(join(this.dir,'belief-evidence'));
+      if(c.manifest.perception){const pm=c.manifest.perception as {graspMode:'belief_ground_truth'|'belief_estimated';profile:{digest:string};recoveryPolicy:{digest:string}|null};ports.perceptionReport=()=>buildPerceptionReport(join(this.dir,'belief-evidence'),undefined,{...identity,perceptionProfileDigest:pm.profile.digest,recoveryPolicyDigest:pm.recoveryPolicy?.digest??null,graspMode:pm.graspMode,seed:c.manifest.seed});}
       ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
      }
     }else{

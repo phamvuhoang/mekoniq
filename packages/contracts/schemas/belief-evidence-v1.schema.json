@@ -125,6 +125,12 @@
                 }
               }
             }
+          },
+          "records": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "How many records the published chunks of this stream hold; a reader compares it with what it read."
           }
         }
       }
@@ -494,6 +500,20 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 64
+        },
+        "recordedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "The tick this record was written (plan, commit or outcome); decidedTick stays the tick of the decision."
+        },
+        "stage": {
+          "enum": [
+            "plan",
+            "commit",
+            "outcome"
+          ],
+          "description": "Which step of the attempt this record is."
         }
       }
     },

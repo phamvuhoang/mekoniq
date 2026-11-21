@@ -6,8 +6,11 @@ import campaign from '../../../../../robotics/simulation-mujoco/campaigns/percep
 import {actorStream} from '../random';
 import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {lockDigestOf} from '../../engineering/linkforge';
-import {rigReportFacts,runPickRig,type RigRunRecord} from './pick-rig';
+import {rigDerived,runPickRig,type RigRunRecord} from './pick-rig';
 import {readBeliefEvidence,readBeliefManifest} from './belief-evidence';
+import type {GraspAttempt} from '../../../../contracts/generated/navigation2d';
+/** The registered nudge acts on the tick after the first commit; its window in the stream's own truth (ticks). The grip of the same descent touches the cup much later. */
+const NUDGE_WINDOW_TICKS=25;
 export interface StudyPoint {id:string;mode:'fixed_program'|'belief_ground_truth'|'belief_estimated';truthOffsetM:0|0.02;profileId:string|null;nudge:boolean;seeds:readonly number[]}
 /** Exactly the table of R4-B §8.2 (campaigns/perception-gap-v1.json): 1+10+1+10+4×10+4×5+10 = 92 runs. A point whose seeds change nothing (offset 0, no noise, no nudge) runs once. */
 export const PERCEPTION_STUDY_POINTS:readonly StudyPoint[]=campaign.points as StudyPoint[];
@@ -63,12 +66,14 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
     if(Math.abs(Math.hypot(...rec.offsetM)-p.truthOffsetM)>1e-9||JSON.stringify(rec.offsetM)!==JSON.stringify(rigOffsetM(seed,p.truthOffsetM)))throw new Error('RIG_OFFSET_MISMATCH');
     // what the run's own report says: identity of the run, the source commit, the contacts, and (fixed program) the outcome; an error recorded by the runner is a missing run
     if(await exists(join(dir,'error.txt')))throw new Error('RUN_ERROR_RECORDED');
-    const report=JSON.parse(await readFile(join(dir,'report.json'),'utf8')),facts=rigReportFacts(report);
+    const report=JSON.parse(await readFile(join(dir,'report.json'),'utf8'));
     if(report.manifest?.runId!==rec.result.runId)throw new Error('RUN_ID_MISMATCH');if(report.manifest?.sourceCommit!==doc.sourceCommit)throw new Error('REPORT_SOURCE_COMMIT_MISMATCH');
-    if(facts.unexpectedContacts!==rec.result.unexpectedContacts)throw new Error('CONTACTS_NOT_FROM_REPORT');
-    if(p.mode==='fixed_program'&&facts.fixedOutcome!==rec.result.outcome)throw new Error('RESULT_NOT_FROM_REPORT');
+    // the registered nudge is in the run's own report exactly when the point has one (the record's `nudge` is only what was asked)
+    const nudged=((report.manifest?.profiles??[]) as {id:string;provenance:string}[]).some(x=>x.id==='world-cup-nudge-v1'&&x.provenance==='registered_disturbance');
+    if(nudged!==p.nudge)throw new Error('NUDGE_NOT_REGISTERED');
+    let evidence:{attempts:GraspAttempt[];recovery:unknown[]}={attempts:[],recovery:[]};
     if(p.mode!=='fixed_program'){
-     const ev=join(dir,'run/belief-evidence'),m=await readBeliefManifest(ev),r=await readBeliefEvidence(ev,m);
+     const ev=join(dir,'run/belief-evidence'),m=await readBeliefManifest(ev),r=await readBeliefEvidence(ev,m,{identity:{runId:rec.result.runId,seed,graspMode:p.mode}});
      if(r.issues.length||!r.complete)throw new Error(`BELIEF_EVIDENCE:${r.issues.join(',')}`);
      // the stream is bound to the registered profile, the rig scene and this run, not only to the mode and seed
      const profileDoc=JSON.parse(await readFile(join(SRC,'robotics/simulation-mujoco/fixtures/perception-v1',`${p.profileId??'perception-ground-truth-v1'}.json`),'utf8')) as {digest:string};
@@ -76,11 +81,17 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
      const reportScene=(report.manifest?.models as {id:string;hash:string}[]|undefined)?.find(x=>x.id==='mujoco_shared_world')?.hash;
      const wrong=[m.identity.graspMode!==p.mode&&'mode',m.identity.seed!==seed&&'seed',m.identity.perceptionProfileDigest!==profileDoc.digest&&'profile',(!reportScene||m.identity.sceneDigest!==reportScene)&&'scene',m.identity.runId!==rec.result.runId&&'run'].filter(Boolean);
      if(wrong.length)throw new Error(`BELIEF_IDENTITY_MISMATCH:${wrong.join(',')}`);
-     // a nudge point must show the nudge in the stream's own truth: the cup moved at least 3 mm from where it was first seen
-     if(p.nudge){const t=r.beliefs.map(b=>b.truthAtObservedTick).filter(x=>Array.isArray(x)),first=t[0];if(!first||!t.some(x=>Math.hypot(x[0]-first[0],x[1]-first[1])>=0.003))throw new Error('NUDGE_NOT_OBSERVED');}
-     const mine=[...new Map(r.attempts.map(a=>[a.attemptId,a])).values()].filter(a=>a.cupId==='cup-1'),last=mine.at(-1);
-     if((last?.outcome??'none')!==rec.result.outcome||mine.length!==rec.result.attempts)throw new Error('RESULT_NOT_FROM_STREAM');
+     // a nudge point must show the nudge in the stream's own truth: the cup moves at least 3 mm within NUDGE_WINDOW_TICKS after the commit, before any grip can touch it
+     if(p.nudge){
+      const commit=r.attempts.find(a=>a.cupId==='cup-1'&&a.stage==='commit')?.recordedTick; // the first commit: the nudge fires after it
+      const samples=r.beliefs.flatMap(b=>b.truthAtObservedTick&&b.belief?[{t:b.belief.observedTick,x:b.truthAtObservedTick}]:[]).sort((a,b)=>a.t-b.t),before=samples.filter(x=>commit!==undefined&&x.t<=commit).at(-1),after=samples.filter(x=>commit!==undefined&&x.t>commit&&x.t<=commit+NUDGE_WINDOW_TICKS);
+      if(!before||!after.some(x=>Math.hypot(x.x[0]-before.x[0],x.x[1]-before.x[1])>=0.003))throw new Error('NUDGE_NOT_OBSERVED');
+     }
+     evidence={attempts:[...new Map(r.attempts.map(a=>[a.attemptId,a])).values()],recovery:r.recovery};
     }
+    // everything the run record reports is recomputed from the report and the stream
+    const d=rigDerived(p.mode,evidence,report),got=rec.result as unknown as Record<string,unknown>,differ=Object.entries(d).filter(([k,v])=>JSON.stringify(got[k]??null)!==JSON.stringify(v??null)).map(([k])=>k);
+    if(differ.length)throw new Error(`RESULT_NOT_FROM_EVIDENCE:${differ.join(',')}`);
     rows.push(rec.result);out.completedRuns++;
    }catch(e){bad((e as Error).message);}
   }

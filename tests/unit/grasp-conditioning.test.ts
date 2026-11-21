@@ -45,3 +45,10 @@ test('the boundary of the region is inside, a hair beyond is outside',()=>{
 test('the attempt index is carried into the attempt id',()=>{
  const r=planBeliefGrasp({...setup(belief(0.5,0)).input(),attemptIndex:2});expect(r.attempt).toMatchObject({index:2,attemptId:'cup-1#2'});
 });
+test('R03: a commit plan solves, sweeps and records only the path the arm will run (pick, lift) from where it holds, not an approach it does not execute',()=>{
+ const swept:number[][][]=[],{input}=setup(belief(0.502,0.004));
+ const r=planBeliefGrasp({...input({sweep:((w:number[][])=>{swept.push(w);return {ok:true as const};}) as never}),path:'commit'});
+ expect(r.ok).toBe(true);if(!r.ok)return;
+ expect(swept).toHaveLength(1);expect(swept[0]).toEqual([r.waypoints.pick,r.waypoints.lift]);
+ expect(Object.keys(r.attempt.waypointsRad!).sort()).toEqual(['lift','pick']);expect(r.attempt.ikResidual).toHaveLength(2);
+});

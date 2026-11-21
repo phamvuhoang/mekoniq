@@ -124,3 +124,19 @@ test('a recovery that cannot finish ends the command from any recovery status in
   expect(h.state.programs[0]!.state,stage).toBe('unknown');expect(h.state.stop).toMatchObject({latched:true,reason:'BELIEF_STALE'});
  }
 });
+// R02: an observation never advances the choreography of a pick that waits for a decision (the plan, the commit, the recovery), and never commands the gripper for it, also when the plan equals the fixture waypoints.
+const same=(set:ArmProgramSet)=>({pickApproach:[...set.waypoints.pickApproach!],pick:[...set.waypoints.pick!],lift:[...set.waypoints.lift!]});
+test('R02: waiting for the commit with a plan equal to the fixture waypoints, observations do not advance the program',()=>{
+ const h=make(true);h.plant.execute(cmd('c1'));h.plant.setGraspPlan('c1',{ok:true,waypoints:same(h.set)});
+ for(let i=0;i<2000&&!h.plant.commitPending();i++)h.tick();expect(h.plant.commitPending()).toEqual({commandId:'c1'});
+ for(let i=0;i<60;i++){h.tick();expect(h.state.programs[0]!.index).toBe(0);expect(h.plant.commitPending()).toEqual({commandId:'c1'});}
+});
+test('R02: after a missed grip the observation of the next tick does not close the gripper again, take a cup or advance, even when it reports one between the pads',()=>{
+ const h=make(true,true);h.plant.execute(cmd('c1'));h.plant.setGraspPlan('c1',{ok:true,waypoints:same(h.set)});
+ for(let i=0;i<2000&&!h.plant.commitPending();i++)h.tick();
+ h.plant.setCommitPlan('c1',{ok:true,waypoints:{pick:same(h.set).pick,lift:same(h.set).lift}});
+ for(let i=0;i<2000&&!h.plant.gripFailedPending();i++)h.tick();expect(h.plant.gripFailedPending()).toEqual({commandId:'c1'});
+ const index=h.state.programs[0]!.index;h.plant.recoverStep('c1','open_gripper');expect(h.state.gripperCommandM).toBe(CONTACT.openM);
+ for(const held of [[],['prop-1'],['prop-1']]){h.plant.advance();h.plant.observe(h.plant.state.commandedQ??h.plant.state.q,[],{gripper:{openingM:0.0889,heldPropIds:held},props:[]});
+  expect(h.state.programs[0]!.index).toBe(index);expect(h.state.grasp!.status).toBe('grip_failed');expect(h.state.gripperCommandM).toBe(CONTACT.openM);expect(h.state.holding).toBeNull();}
+});

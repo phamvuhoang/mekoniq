@@ -7,14 +7,14 @@ const profile={schemaVersion:1,id:'t',revision:1,digest:'0'.repeat(64),updateEve
 const id=[0,0,0,1] as [number,number,number,number],q=[0,0,0,0,0,0];
 const offsets={pickApproach:{positionM:[0,-0.1,0] as [number,number,number],quaternionXyzw:id},pick:{positionM:[0.022,0,-0.001] as [number,number,number],quaternionXyzw:id},lift:{positionM:[0,0,0.15] as [number,number,number],quaternionXyzw:id}};
 const view={centerM:[0.49,0] as [number,number],halfExtentM:[0.05,0.05] as [number,number],supportId:'nozzle-stand'},region={centerM:[0.49,0] as [number,number],halfExtentM:[0.02,0.02] as [number,number]};
-function make(o:{facts?:{armFresh:boolean;noUnknown:boolean};recoverTicks?:number}={}){
+function make(o:{facts?:{armFresh:boolean;noUnknown:boolean};recoverTicks?:number;wait?:number;maxAge?:number}={}){
  const log:string[]=[],attempts:GraspAttempt[]=[],steps:RecoveryStep[]=[];
  const recorder={appendBelief:async()=>{},appendAttempt:async(a:GraspAttempt)=>{log.push(`attempt:${a.attemptId}:${a.outcome}`);attempts.push(a);},appendRecovery:async(s:RecoveryStep)=>{log.push(`recovery:${s.action}:${s.result}`);steps.push(s);}};
  const prog={state:'running',evidence:{} as Record<string,unknown>};let pending:{commandId:string}|null=null,failed:{commandId:string}|null=null,commitP:{commandId:string}|null=null,doing=0;
  const arm:ArmFacade={graspPending:()=>pending,setGraspPlan:(c,p)=>{log.push(`plan:${c}:${p.ok?'ok':p.code}`);pending=null;},program:()=>prog,stopReason:()=>undefined,
   commitPending:()=>commitP,setCommitPlan:(c,p)=>{log.push(`commit:${c}:${p.ok?'ok':p.code}`);commitP=null;},gripFailedPending:()=>failed,failGrip:(c,r)=>{log.push(`fail:${c}:${r}`);failed=null;},facts:()=>o.facts??{armFresh:true,noUnknown:true},
   recoverStep:(c,a)=>{if(!doing)log.push(`do:${a}`);doing++;if(doing<(o.recoverTicks??2))return 'running';doing=0;if(a==='retreat_pick_approach'){failed=null;commitP={commandId:c};}return 'done';}};
- const wb=createWorldBelief({mode:'belief_estimated',profile,seed:42,cups:[{cupId:'cup-1',propId:'prop-1'}],recorder,view,region,beliefWaitTicks:250,graspOffsets:offsets,seeds:{pickApproach:q,pick:q,lift:q},
+ const wb=createWorldBelief({mode:'belief_estimated',profile:o.maxAge?{...profile,maxAgeTicks:o.maxAge}:profile,seed:42,cups:[{cupId:'cup-1',propId:'prop-1'}],recorder,view,region,beliefWaitTicks:o.wait??250,graspOffsets:offsets,seeds:{pickApproach:q,pick:q,lift:q},
   solve:((p:{positionM:number[]})=>({ok:true,q:[...p.positionM,0,0,0],residual:{positionM:1e-6,orientationRad:1e-6,condition:10}})) as never,sweep:(()=>({ok:true})) as never,cupOf:()=>'cup-1',
   recovery:{policy:policy as never,declaredSupportId:'nozzle-stand'}});
  const truth=[{propId:'prop-1',position:[0.49,0,0.151] as [number,number,number],restingOn:'nozzle-stand' as string|null}];
@@ -53,7 +53,7 @@ test('two failures are recovered, the third ends in RECOVERY_EXHAUSTED',async()=
 });
 test('an estimate that never comes after the retreat asks a person, not forever',async()=>{
  const h=make();await run(h,0,60);h.setPending('c1');await run(h,61,61);h.setFailed('c1');
- await run(h,62,62);for(let t=63;t<=700;t++){await h.wb.observe(t,[]);await h.wb.step(t,h.arm,{heldPropIds:[]});}
+ await run(h,62,62);for(let t=63;t<=700;t++){await h.wb.observe(t,h.truth.map(p=>({...p,position:[0.9,0,0.151] as [number,number,number]})));await h.wb.step(t,h.arm,{heldPropIds:[]});}
  expect(h.log.some(l=>l.startsWith('fail:c1:BELIEF_'))).toBe(true);
 });
 
@@ -68,7 +68,7 @@ test('the commit plan is decided when the arm reaches the approach, from the bel
  for(let t=62;t<=140;t++){await wb2.observe(t,at(0.499));await wb2.step(t,h.arm);} // the cup moves 9 mm while the arm approaches; the belief follows
  h.setCommit('c1');await wb2.observe(141,at(0.499));await wb2.step(141,h.arm);
  expect(h.log.filter(l=>l.startsWith('attempt:cup-1#0'))).toHaveLength(2); // the plan record and the commit record of the same attempt
- expect(planned[first]![0]).toBeCloseTo(0.499+0.0,2);expect(planned[0]![0]).toBeCloseTo(0.49,2);expect(h.log).toContain('commit:c1:ok');expect(wb2.committed('cup-1')).toBe(true);
+ expect(planned.length-first).toBe(2);expect(planned[first]![0]).toBeCloseTo(0.499+0.022,2);/* the commit solves pick and lift only (R03), from the belief of that moment */expect(planned[0]![0]).toBeCloseTo(0.49,2);expect(h.log).toContain('commit:c1:ok');expect(wb2.committed('cup-1')).toBe(true);
 });
 test('a commit whose belief went stale waits, then refuses BELIEF_STALE after beliefWaitTicks: never a descent on an old estimate',async()=>{
  const h=make();await run(h,0,60);h.setPending('c1');await run(h,61,61);
@@ -93,4 +93,41 @@ test('a fresh belief after a retreat is one OBSERVED after the retreat ended, no
  await run(h,63,63);const ticks:number[]=[];for(let t=64;t<=120;t++){await h.wb.observe(t,h.truth);await h.wb.step(t,h.arm,{heldPropIds:[]});if(h.log.includes('recovery:await_fresh_belief:done')&&!ticks.length)ticks.push(t);}
  const retreatDone=h.steps.find(s=>s.action==='retreat_pick_approach'&&s.result==='done')!.completedTick!,awaited=h.steps.find(s=>s.action==='await_fresh_belief'&&s.result==='done')!.completedTick!;
  expect(awaited-retreatDone).toBeGreaterThanOrEqual(profile.latencyTicks); // observed (= published - latency) after the retreat ended
+});
+
+test('R01: the facts are checked again at the step that acts, not only when the recovery was decided: a cup that became held (or left the support) in between is never released',async()=>{
+ for(const change of [{held:['prop-1']},{props:[{propId:'prop-1',position:[0.49,0,0.151] as [number,number,number],restingOn:null}]}]){
+  const h=make();await run(h,0,60);h.setPending('c1');await run(h,61,61);h.setCommit('c1');await run(h,62,62);h.setFailed('c1');
+  await run(h,63,63); // decided with every fact observed
+  await run(h,64,70,change);
+  expect(h.log.filter(l=>l.startsWith('do:')||l==='recovery:open_gripper:pending')).toEqual([]);expect(h.log).toContain('fail:c1:RECOVERY_FACTS_MISSING');
+ }
+});
+test('R04: every recovery step of every round has its own command id (the pending and done records of one step share it)',async()=>{
+ const h=make();await run(h,0,60);await failOnce(h,61);await failOnce(h,100);
+ const pend=h.steps.filter(s=>s.result==='pending'),ids=pend.map(s=>s.commandId);
+ expect(pend.length).toBe(8);expect(new Set(ids).size).toBe(8);expect(new Set(pend.map(s=>s.stepId)).size).toBe(8);
+ for(const p of pend)expect(h.steps.find(s=>s.result==='done'&&s.stepId===p.stepId)?.commandId).toBe(p.commandId);
+});
+test('R05: a wait that ran out is closed as failed at its own tick, the next window is its own record, and the retry that follows a usable belief is recorded',async()=>{
+   const h=make({wait:12,maxAge:5}),away=h.truth.map(p=>({...p,position:[0.9,0,0.151] as [number,number,number]}));await run(h,0,60);
+ await run(h,61,89,{props:away});h.setPending('c1'); // the last estimate is old: stale
+ await run(h,90,105,{props:away}); // no estimate: the first window runs out
+ await run(h,106,160); // the cup is seen again: an estimate comes within the second window
+ const w=h.steps.filter(s=>s.action==='await_fresh_belief');const closed=w.filter(s=>s.result!=='pending');
+ expect(closed.length).toBeGreaterThanOrEqual(2);
+ const byStep=new Map<string,RecoveryStep[]>();for(const s of w)byStep.set(s.stepId,[...byStep.get(s.stepId)??[],s]);
+ for(const [,recs] of byStep){expect(recs.map(r=>r.result)[0]).toBe('pending');expect(recs.filter(r=>r.result!=='pending')).toHaveLength(1);}
+ const expired=closed.filter(s=>s.result==='failed');expect(expired.length).toBeGreaterThanOrEqual(1);
+ for(const e of expired)expect(e.completedTick!-e.recordedTick).toBeGreaterThanOrEqual(12); // closed when it ran out, not when a belief came
+ expect(new Set(closed.map(s=>s.completedTick)).size).toBe(closed.length);
+ const retry=h.steps.filter(s=>s.action==='retry_pick');expect(retry.map(s=>s.result)).toEqual(['pending','done']);
+ expect(h.log.indexOf('recovery:retry_pick:done')).toBeLessThan(h.log.indexOf('plan:c1:ok'));
+});
+test('R10: the plan, the commit and the outcome of an attempt are three records with their own stage and the tick they were written; decidedTick stays the tick of the decision',async()=>{
+ const h=make();await run(h,0,60);await failOnce(h,61);
+ const mine=h.attempts.filter(a=>a.attemptId==='cup-1#0');
+ expect(mine.map(a=>[a.stage,a.outcome])).toEqual([['plan','unknown'],['commit','unknown'],['outcome','grip_not_established']]);
+ const ticks=mine.map(a=>a.recordedTick!);expect(ticks.every(Number.isInteger)).toBe(true);expect(ticks[0]).toBeLessThan(ticks[1]!);expect(ticks[1]).toBeLessThan(ticks[2]!);
+ expect(mine[1]!.decidedTick).toBe(ticks[1]);expect(mine[2]!.decidedTick).toBe(mine[1]!.decidedTick); // the outcome keeps the decision's tick
 });
