@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 5c28b38af5d2715e6559d42dba59ab65d5b7578d (sha256 e027ed6a23ded4c3f5922744cf2a83fa36f13b901532d80ed89dd8735ca04490). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ cedda186c70456a2ad8872158a9ac0d13cb1abb9 (sha256 ae022ccb3865a1ae41c02dbbef7e294948f5260da5103937eead771aa70e4040). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -383,7 +383,7 @@ export type Sim3DRequestV1 =
          */
         worldPerturbations?: {
           eventId: string;
-          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
           revision: 1;
           targetId: string;
           targetTick: number;
@@ -1715,7 +1715,7 @@ export interface WorldStep {
    */
   disturbances?: {
     eventId: string;
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
     revision: 1;
     targetId: string;
     targetTick: number;
@@ -2297,10 +2297,10 @@ export interface LabWorldSceneV1 {
     terminalApproachDirection?: 'reverse';
   };
   disturbance?: {
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
     revision: 1;
     targetId: string;
-    trigger: 'before_release' | 'transport';
+    trigger: 'before_release' | 'transport' | 'after_belief_commit';
     cupId: string;
   };
   controlContextVersion?: 1;
@@ -2382,7 +2382,7 @@ export interface WorldEvidenceRecord {
      */
     worldPerturbations?: {
       eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
       revision: 1;
       targetId: string;
       targetTick: number;
@@ -3328,6 +3328,44 @@ export interface PerceptionProfileV1 {
   dropoutProbability: number;
   visibleRegionId: string;
   maxAgeTicks: number;
+}
+/**
+ * A bounded recovery table for a failed pick (R4-D27): rules over a closed catalogue of triggers, facts and steps, each with a maximum number of attempts. Every value is assumed. Not a behaviour tree.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "RecoveryPolicyV1".
+ */
+export interface RecoveryPolicyV1 {
+  schemaVersion: 1;
+  documentType: 'recovery-policy';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  parameterSource: 'assumed';
+  beliefWaitTicks: number;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  rules: {
+    id: string;
+    /**
+     * @minItems 1
+     * @maxItems 3
+     */
+    on: ('GRIP_NOT_ESTABLISHED' | 'BELIEF_UNAVAILABLE' | 'BELIEF_STALE')[];
+    /**
+     * @maxItems 4
+     */
+    requires: ('arm_state_fresh' | 'no_unknown_command' | 'cup_on_declared_support' | 'cup_not_between_pads')[];
+    /**
+     * @minItems 1
+     * @maxItems 6
+     */
+    steps: ('open_gripper' | 'retreat_pick_approach' | 'await_fresh_belief' | 'retry_pick')[];
+    maxAttempts: number;
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
