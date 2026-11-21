@@ -66,3 +66,11 @@ test('the evidence records validate, and refuse a sigma beyond 0.03 m, an unknow
  expect(validateBeliefRecordShape({...record,extra:1})).toBe(false);
  expect(validateRecoveryStepShape({...step,completedTick:-1})).toBe(false);
 });
+
+test('over HTTP only the advertised perception profile and recovery policy are accepted: the study and test profiles stay campaign-only',()=>{
+ for(const bad of [{perceptionProfileId:'perception-lossy-v1'},{perceptionProfileId:'perception-bias-out-of-region-v1'},{perceptionProfileId:'perception-sigma-15mm-v1'}]){
+  const r=run({graspMode:'belief_estimated',...bad});expect(r.ok).toBe(false);if(!r.ok)expect(r.issues.map(i=>i.code)).toContain('PERCEPTION_PROFILE_NOT_REGISTERED');
+ }
+ const p=run({graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1',recoveryPolicyId:'pick-recovery-v2'});expect(p.ok).toBe(false);if(!p.ok)expect(p.issues.map(i=>i.code)).toContain('RECOVERY_POLICY_NOT_REGISTERED');
+ expect(run({graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1',recoveryPolicyId:'pick-recovery-v1'}).ok).toBe(true);
+});

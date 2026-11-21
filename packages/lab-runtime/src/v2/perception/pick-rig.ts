@@ -16,6 +16,12 @@ export interface PickRigInput {seed:number;mode:'fixed_program'|'belief_ground_t
 export interface PickRigResult {runId:string;outcome:GraspAttempt['outcome']|'none';attempts:number;recovered:boolean;attention:boolean;ticks:number;unexpectedContacts:number;directory:string}
 export interface RigRunRecord {schemaVersion:1;input:Omit<PickRigInput,'directory'>;offsetM:[number,number];result:PickRigResult&{beliefErrorAtCommitM:number|null}}
 const TERMINAL=['completed','needs_attention','cancelled'];
+/** What a run's report says about the pick, independent of any belief stream: the outcome of a fixed-program run (a served cup is lifted; an arm stop reason decides the rest: a dropped cup, any other stop is unknown; an ended run with no stop is a grip that did not form) and the unexpected native contacts the full-world sweep counted. The verifier uses the same function. */
+export function rigReportFacts(report:{outcome:{status:string;served:string};coffee?:{armTrace?:{stop?:{reason?:string}}};worldSweep?:{nativeContacts?:{unexpected?:number}}}):{fixedOutcome:GraspAttempt['outcome'];unexpectedContacts:number}{
+ const stop=report.coffee?.armTrace?.stop?.reason,unexpectedContacts=report.worldSweep?.nativeContacts?.unexpected??0;
+ const fixedOutcome:GraspAttempt['outcome']=report.outcome.served!=='0'?'lifted':stop==='CUP_DROPPED'?'cup_dropped':stop?'unknown':TERMINAL.includes(report.outcome.status)?'grip_not_established':'unknown';
+ return {fixedOutcome,unexpectedContacts};
+}
 export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions):Promise<PickRigResult&{beliefErrorAtCommitM:number|null}>{
  const offsetM=rigOffsetM(input.seed,input.truthOffsetM),runDir=join(input.directory,'run');await mkdir(runDir,{recursive:true});
  const project=JSON.parse(await readFile(join(runtime.workerRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
@@ -30,7 +36,7 @@ export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions
  let v:Awaited<ReturnType<ScenarioRun['snapshot']>>,report:Awaited<ReturnType<ScenarioRun['report']>>;
  try{
   run=await createScenarioRun(manifest as never,providers as never);await run.start();v=await run.snapshot();
-  // the first cup's grasp is decided once its last attempt has a final outcome. ponytail: fixed_program has no stream, so a served cup is `lifted` and a run that ended without one is `grip_not_established` (it cannot tell a refused cause apart); the study's fixed points compare this proportion only.
+  // the first cup's grasp is decided once its last attempt has a final outcome. ponytail: fixed_program has no stream, so its outcome is read from the report (rigReportFacts).
   const cupDone=async()=>{
    if(input.mode==='fixed_program')return v.served!=='0';
    const hot=await bindings.coffee.perceptionReport?.(),last=[...new Map((hot?.attempts??[]).map(a=>[a.attemptId,a])).values()].filter(a=>a.cupId==='cup-1').at(-1);return !!last&&last.outcome!=='unknown'&&!(input.recoveryPolicyId&&last.outcome==='grip_not_established'); // with a recovery policy a missed grip is not final: the run goes on until the retry has an outcome or the run ends
@@ -39,9 +45,9 @@ export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions
   report=await run.report();
  }finally{await run?.close();}
  const evidence=await buildPerceptionReport(join(runDir,'belief-evidence'));
- const mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1);
- const result:PickRigResult&{beliefErrorAtCommitM:number|null}={runId:report.manifest.runId,outcome:input.mode==='fixed_program'?(v.served!=='0'?'lifted':TERMINAL.includes(v.run.status)?'grip_not_established':'unknown'):last?.outcome??'none',attempts:input.mode==='fixed_program'?1:mine.length,
-  recovered:evidence.recovery.length>0&&last?.outcome==='lifted',attention:v.run.status==='needs_attention',ticks:v.tick,unexpectedContacts:0,directory:input.directory,beliefErrorAtCommitM:mine[0]?.beliefErrorAtCommitM??null};
+ const mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1),facts=rigReportFacts(report as never);
+ const result:PickRigResult&{beliefErrorAtCommitM:number|null}={runId:report.manifest.runId,outcome:input.mode==='fixed_program'?facts.fixedOutcome:last?.outcome??'none',attempts:input.mode==='fixed_program'?1:mine.length,
+  recovered:evidence.recovery.length>0&&last?.outcome==='lifted',attention:v.run.status==='needs_attention',ticks:v.tick,unexpectedContacts:facts.unexpectedContacts,directory:input.directory,beliefErrorAtCommitM:mine[0]?.beliefErrorAtCommitM??null};
  const rest:Omit<PickRigInput,'directory'>={...input};delete (rest as {directory?:string}).directory;
  await writeFile(join(input.directory,'rig-run.json'),JSON.stringify({schemaVersion:1,input:rest,offsetM,result} satisfies RigRunRecord,null,2)+'\n');
  await writeFile(join(input.directory,'report.json'),JSON.stringify(report));

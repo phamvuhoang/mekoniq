@@ -31,7 +31,7 @@ test('a belief cup-pick holds still until a plan is set: no motion command, the 
 test('once a plan is set the arm moves to the planned approach, not the nominal one',()=>{
  const h=make(),plan=planned(h.set);h.plant.execute(cmd('c1'));h.tick();
  h.plant.setGraspPlan('c1',{ok:true,waypoints:plan});expect(h.plant.graspPending()).toBeNull();
- let reached=-1;for(let i=0;i<600&&reached<0;i++){h.tick();if(h.state.programs[0]!.index>=1)reached=i;}
+ let reached=-1;for(let i=0;i<600&&reached<0;i++){h.tick();if(h.plant.commitPending())reached=i;}
  expect(reached).toBeGreaterThan(0);
  expect(h.state.q.every((v,i)=>Math.abs(v-plan.pickApproach[i]!)<=TRACKING.reachTolRad)).toBe(true);
  expect(Math.abs(h.state.q[0]!-h.set.waypoints.pickApproach![0]!)).toBeGreaterThan(0.04);
@@ -66,8 +66,31 @@ test('the next cup-pick waits for its own plan; a cup-place is not gated',()=>{
  const h2=make();h2.plant.execute(cmd('p1','cup-place'));expect(h2.plant.graspPending()).toBeNull();
 });
 
+// R4.4 commit gate: at the end of the approach the arm holds and waits for the commit plan, the moment the descent starts (spec §5.3); only then does it go down, to the committed pick and lift.
+const toApproach=(recovery=false)=>{const h=make(true,recovery);h.plant.execute(cmd('c1'));h.tick();h.plant.setGraspPlan('c1',{ok:true,waypoints:planned(h.set)});
+ for(let i=0;i<2000&&!h.plant.commitPending();i++)h.tick();return h;};
+const commit=(h:ReturnType<typeof make>,pickShift=0)=>{const p=planned(h.set);h.plant.setCommitPlan('c1',{ok:true,waypoints:{pick:p.pick.map(v=>v+pickShift),lift:p.lift}});return p;};
+test('the arm holds at the end of the approach until the commit plan: no motion, the program stays running, index 0',()=>{
+ const h=toApproach();expect(h.plant.commitPending()).toEqual({commandId:'c1'});const q=[...h.state.q];
+ for(let i=0;i<50;i++){h.tick();expect(h.state.programs[0]!.state).toBe('running');expect(h.state.programs[0]!.index).toBe(0);}expect(h.state.q).toEqual(q);expect(h.plant.commitPending()).toEqual({commandId:'c1'});
+});
+test('the commit plan sets the pick and lift the arm goes down to; the approach it came to is kept',()=>{
+ const h=toApproach(),before=[...h.state.q];commit(h,0.01);expect(h.plant.commitPending()).toBeNull();
+ for(let i=0;i<800&&h.state.programs[0]!.index<1;i++)h.tick();
+ expect(h.state.programs[0]!.index).toBe(1);expect(h.state.q.every((v,i)=>Math.abs(v-before[i]!)<=TRACKING.reachTolRad)).toBe(true); // still at the approach: no second visit to a new one
+ for(let i=0;i<800&&h.state.programs[0]!.index<2&&h.state.programs[0]!.state==='running'&&!h.plant.gripFailedPending();i++)h.tick();
+ expect(h.state.q.every((v,i)=>Math.abs(v-(planned(h.set).pick[i]!+(i===0?0.01:0)))<=TRACKING.reachTolRad+0.05)).toBe(true);
+});
+test('a refused commit fails the program with its code, the arm stays at the approach',()=>{
+ const h=toApproach(),q=[...h.state.q];h.plant.setCommitPlan('c1',{ok:false,code:'BELIEF_STALE'});h.tick();
+ expect(h.state.programs[0]!.state).toBe('failed');expect(h.state.q).toEqual(q);
+});
+test('a commit plan is refused when nothing waits for it or a waypoint is out of limits',()=>{
+ const h=make(true);h.plant.execute(cmd('c1'));h.tick();expect(()=>h.plant.setCommitPlan('c1',{ok:true,waypoints:{pick:[0,0,0,0,0,0],lift:[0,0,0,0,0,0]}})).toThrow('GRASP_PLAN_NOT_PENDING');
+ const g=toApproach();expect(()=>g.plant.setCommitPlan('c1',{ok:true,waypoints:{pick:g.state.q.map(()=>99),lift:g.state.q}})).toThrow('ARM_PROGRAM_INVALID');
+});
 // V13: the pick whose grip is known not to have formed waits for the decision of the plant's ports; the table's steps are executed by the plant.
-const toGripFailure=(recovery=true)=>{const h=make(true,recovery);h.plant.execute(cmd('c1'));h.tick();h.plant.setGraspPlan('c1',{ok:true,waypoints:planned(h.set)});
+const toGripFailure=(recovery=true)=>{const h=toApproach(recovery);commit(h);
  for(let i=0;i<2000&&!h.plant.gripFailedPending();i++){h.tick();if(h.state.programs[0]!.state!=='running')break;}return h;};
 test('without a recovery policy a grip that did not form still completes with objectPresent false (R2b behaviour)',()=>{
  const h=toGripFailure(false);expect(h.plant.gripFailedPending()).toBeNull();
@@ -82,14 +105,22 @@ test('giving up latches the arm like a lost cup: the program is unknown with the
  const h=toGripFailure();h.plant.failGrip('c1','RECOVERY_FACTS_MISSING');
  expect(h.state.programs[0]!.state).toBe('unknown');expect(h.state.stop).toMatchObject({latched:true,reason:'RECOVERY_FACTS_MISSING'});expect(h.plant.gripFailedPending()).toBeNull();
 });
-test('the recovery steps: open the gripper (settled after its ticks), retreat to the planned approach, wait for a plan, and the retry goes to the new plan',()=>{
+test('the recovery steps: open the gripper, retreat to the approach and wait there for a commit plan, and the retry commits a NEW pick without leaving the approach',()=>{
  const h=toGripFailure();
  let r=h.plant.recoverStep('c1','open_gripper');expect(r).toBe('running');expect(h.state.gripper).toBe('open');expect(h.state.gripperCommandM).toBe(CONTACT.openM);
  for(let i=0;i<CONTACT.gripSettleTicks+2&&r!=='done';i++){h.tick();r=h.plant.recoverStep('c1','open_gripper');}expect(r).toBe('done');
  r=h.plant.recoverStep('c1','retreat_pick_approach');for(let i=0;i<800&&r!=='done';i++){h.tick();r=h.plant.recoverStep('c1','retreat_pick_approach');}
- expect(r).toBe('done');expect(h.plant.graspPending()).toEqual({commandId:'c1',program:'cup-pick'});expect(h.state.programs[0]!.state).toBe('running');
- const first=planned(h.set),again={pickApproach:first.pickApproach,pick:first.pick.map(v=>v+0.01),lift:first.lift};
- h.plant.setGraspPlan('c1',{ok:true,waypoints:again});
- for(let i=0;i<800&&!h.plant.gripFailedPending();i++)h.tick();
- expect(h.state.programs[0]!.index).toBe(1);expect(h.state.q.every((v,i)=>Math.abs(v-again.pick[i]!)<=TRACKING.reachTolRad)).toBe(true); // the second grip was attempted at the NEW pick pose
+ expect(r).toBe('done');expect(h.plant.commitPending()).toEqual({commandId:'c1'});expect(h.state.programs[0]!.state).toBe('running');expect(h.state.programs[0]!.index).toBe(0);
+ const p=planned(h.set);h.plant.setCommitPlan('c1',{ok:true,waypoints:{pick:p.pick.map(v=>v+0.01),lift:p.lift}});
+ for(let i=0;i<1600&&!h.plant.gripFailedPending();i++)h.tick();
+ expect(h.state.programs[0]!.index).toBe(1);expect(h.state.q.every((v,i)=>Math.abs(v-(p.pick[i]!+0.01))<=TRACKING.reachTolRad)).toBe(true); // the second grip was attempted at the NEW pick pose
+});
+test('a recovery that cannot finish ends the command from any recovery status instead of throwing: retreating or waiting for the commit',()=>{
+ for(const stage of ['retreating','commit']){
+  const h=toGripFailure();h.plant.recoverStep('c1','open_gripper');for(let i=0;i<CONTACT.gripSettleTicks+2;i++){h.tick();if(h.plant.recoverStep('c1','open_gripper')==='done')break;}
+  h.plant.recoverStep('c1','retreat_pick_approach');
+  if(stage==='commit')for(let i=0;i<800&&!h.plant.commitPending();i++){h.tick();h.plant.recoverStep('c1','retreat_pick_approach');}
+  h.plant.failGrip('c1','BELIEF_STALE');
+  expect(h.state.programs[0]!.state,stage).toBe('unknown');expect(h.state.stop).toMatchObject({latched:true,reason:'BELIEF_STALE'});
+ }
 });

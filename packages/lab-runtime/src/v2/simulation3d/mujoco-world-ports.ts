@@ -116,7 +116,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   // R4.4 belief grasp: the simulated estimator, the belief world and their durable stream. Each pick is planned from the BeliefView alone (perception/world-belief.ts); truth only scores.
   let beliefFinished=false,beliefRecorder:Awaited<ReturnType<typeof openBeliefRecorder>>|undefined,belief:ReturnType<typeof createWorldBelief>|undefined;
   const armFacade:ArmFacade={graspPending:()=>arm.graspPending(),setGraspPlan:(c,p)=>arm.setGraspPlan(c,p),program:c=>st.arm.programs.find(x=>x.commandId===c),stopReason:()=>st.arm.stop?.reason,
-   gripFailedPending:()=>arm.gripFailedPending(),failGrip:(c,r)=>arm.failGrip(c,r),recoverStep:(c,a)=>arm.recoverStep(c,a),
+   commitPending:()=>arm.commitPending(),setCommitPlan:(c,p)=>arm.setCommitPlan(c,p),gripFailedPending:()=>arm.gripFailedPending(),failGrip:(c,r)=>arm.failGrip(c,r),recoverStep:(c,a)=>arm.recoverStep(c,a),
    // what only the plant can say; the cup and pad facts come from the observation of the same tick (world-belief.ts)
    facts:()=>({armFresh:st.arm.tracking!==undefined&&!st.arm.stop,noUnknown:!st.arm.programs.some(x=>x.state==='unknown')&&!st.arm.stop?.latched&&!st.arm.stop?.reconcileRequired})};
   if(grasp){

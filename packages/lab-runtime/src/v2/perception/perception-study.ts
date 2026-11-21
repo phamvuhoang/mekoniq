@@ -1,11 +1,12 @@
 // R4-B §8.2: the registered perception-gap study (92 rig runs), the Wilson interval of its proportions and the rig's offset rule. The runner and verifier are below the table.
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import campaign from '../../../../../robotics/simulation-mujoco/campaigns/perception-gap-v1.json';
 import {actorStream} from '../random';
 import {cellArtifacts} from '../simulation3d/cell-campaign';
 import {lockDigestOf} from '../../engineering/linkforge';
-import {runPickRig,type RigRunRecord} from './pick-rig';
+import {rigReportFacts,runPickRig,type RigRunRecord} from './pick-rig';
 import {readBeliefEvidence,readBeliefManifest} from './belief-evidence';
 export interface StudyPoint {id:string;mode:'fixed_program'|'belief_ground_truth'|'belief_estimated';truthOffsetM:0|0.02;profileId:string|null;nudge:boolean;seeds:readonly number[]}
 /** Exactly the table of R4-B §8.2 (campaigns/perception-gap-v1.json): 1+10+1+10+4×10+4×5+10 = 92 runs. A point whose seeds change nothing (offset 0, no noise, no nudge) runs once. */
@@ -26,6 +27,7 @@ export function rigOffsetM(seed:number,magnitudeM:number):[number,number]{
 export interface PointResult {id:string;mode:StudyPoint['mode'];runs:number;firstTry:number;afterRecovery:number;attention:number;firstTryInterval:{low:number;high:number};medianTicks:number;unexpectedContacts:number;medianBeliefErrorAtCommitM:number|null;outcomes:Record<string,number>}
 export interface PerceptionStudyV1 {schemaVersion:1;campaignId:string;calibration:'not_calibrated';points:PointResult[]}
 export interface PerceptionStudyVerdict {expectedRuns:number;completedRuns:number;missingArtifacts:string[];issues:string[];study:PerceptionStudyV1|null}
+const SRC=fileURLToPath(new URL('../../../../../',import.meta.url)),exists=(f:string)=>readFile(f).then(()=>true,()=>false);
 const json=(v:unknown)=>JSON.stringify(v,null,2)+'\n',runId=(p:StudyPoint,seed:number)=>`${p.id}/s${seed}`;
 const median=(xs:number[])=>{if(!xs.length)return null;const s=[...xs].sort((a,b)=>a-b),m=s.length>>1;return s.length%2?s[m]!:(s[m-1]!+s[m]!)/2;};
 /** Run the registered study (or one point) into a new directory. One artifact directory per run; a failing run is recorded in `error.txt` and the verifier counts it missing. */
@@ -59,10 +61,23 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
     const i=rec.input,want={seed,mode:p.mode,truthOffsetM:p.truthOffsetM,profileId:p.profileId,nudge:p.nudge};
     if(!(i.seed===want.seed&&i.mode===want.mode&&i.truthOffsetM===want.truthOffsetM&&i.profileId===want.profileId&&i.nudge===want.nudge))throw new Error('RUN_INPUT_NOT_REGISTERED');
     if(Math.abs(Math.hypot(...rec.offsetM)-p.truthOffsetM)>1e-9||JSON.stringify(rec.offsetM)!==JSON.stringify(rigOffsetM(seed,p.truthOffsetM)))throw new Error('RIG_OFFSET_MISMATCH');
+    // what the run's own report says: identity of the run, the source commit, the contacts, and (fixed program) the outcome; an error recorded by the runner is a missing run
+    if(await exists(join(dir,'error.txt')))throw new Error('RUN_ERROR_RECORDED');
+    const report=JSON.parse(await readFile(join(dir,'report.json'),'utf8')),facts=rigReportFacts(report);
+    if(report.manifest?.runId!==rec.result.runId)throw new Error('RUN_ID_MISMATCH');if(report.manifest?.sourceCommit!==doc.sourceCommit)throw new Error('REPORT_SOURCE_COMMIT_MISMATCH');
+    if(facts.unexpectedContacts!==rec.result.unexpectedContacts)throw new Error('CONTACTS_NOT_FROM_REPORT');
+    if(p.mode==='fixed_program'&&facts.fixedOutcome!==rec.result.outcome)throw new Error('RESULT_NOT_FROM_REPORT');
     if(p.mode!=='fixed_program'){
      const ev=join(dir,'run/belief-evidence'),m=await readBeliefManifest(ev),r=await readBeliefEvidence(ev,m);
      if(r.issues.length||!r.complete)throw new Error(`BELIEF_EVIDENCE:${r.issues.join(',')}`);
-     if(m.identity.graspMode!==p.mode||m.identity.seed!==seed)throw new Error('BELIEF_IDENTITY_MISMATCH');
+     // the stream is bound to the registered profile, the rig scene and this run, not only to the mode and seed
+     const profileDoc=JSON.parse(await readFile(join(SRC,'robotics/simulation-mujoco/fixtures/perception-v1',`${p.profileId??'perception-ground-truth-v1'}.json`),'utf8')) as {digest:string};
+     // the scene of the stream is the scene the report's own manifest names (the runtime seals the admitted scene, so it is not the fixture file's digest)
+     const reportScene=(report.manifest?.models as {id:string;hash:string}[]|undefined)?.find(x=>x.id==='mujoco_shared_world')?.hash;
+     const wrong=[m.identity.graspMode!==p.mode&&'mode',m.identity.seed!==seed&&'seed',m.identity.perceptionProfileDigest!==profileDoc.digest&&'profile',(!reportScene||m.identity.sceneDigest!==reportScene)&&'scene',m.identity.runId!==rec.result.runId&&'run'].filter(Boolean);
+     if(wrong.length)throw new Error(`BELIEF_IDENTITY_MISMATCH:${wrong.join(',')}`);
+     // a nudge point must show the nudge in the stream's own truth: the cup moved at least 3 mm from where it was first seen
+     if(p.nudge){const t=r.beliefs.map(b=>b.truthAtObservedTick).filter(x=>Array.isArray(x)),first=t[0];if(!first||!t.some(x=>Math.hypot(x[0]-first[0],x[1]-first[1])>=0.003))throw new Error('NUDGE_NOT_OBSERVED');}
      const mine=[...new Map(r.attempts.map(a=>[a.attemptId,a])).values()].filter(a=>a.cupId==='cup-1'),last=mine.at(-1);
      if((last?.outcome??'none')!==rec.result.outcome||mine.length!==rec.result.attempts)throw new Error('RESULT_NOT_FROM_STREAM');
     }

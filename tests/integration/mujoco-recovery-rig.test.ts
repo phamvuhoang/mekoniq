@@ -1,7 +1,7 @@
 // V13 / REC01, REC02, REC04 (stop on facts): the recovery table on the real engine. The failed grip is injected as a held-open gripper for the first N attempts of cup-1 (rig/test option, never a request field):
 // the cup is untouched on its stand, so the failure is known and recoverable. See the V13 ledger for why a pushed cup (R4-D33) cannot provide it in this cell.
 import {existsSync} from 'node:fs';
-import {mkdtemp,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {afterEach,describe,expect,test} from 'vitest';
@@ -38,5 +38,13 @@ describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('recovery on th
  test('without a recovery policy the same failed grip is the R2b behaviour: no recovery step, never recovered',async()=>{
   const {e,attempts}=await rig(1,null);
   expect(e.recovery).toEqual([]);expect(attempts).toHaveLength(1);expect(attempts[0]!.outcome).not.toBe('lifted'); // never a second attempt, never a recovery step
+ },900_000);
+ test('REC04 (cup pushed off its support): the registered nudge (14.4 N, +x) at the start of the descent knocks the cup off the stand; the table does NOT recover it: facts missing, no recovery step, the gripper is not opened, nothing is served',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'rec-rig-'));dirs.push(dir);
+  const r=await runPickRig({seed:1,mode:'belief_ground_truth',truthOffsetM:0,profileId:null,nudge:true,recoveryPolicyId:'pick-recovery-v1',directory:dir},await runtime() as never);
+  const ev=join(dir,'run/belief-evidence'),e=await readBeliefEvidence(ev,await readBeliefManifest(ev)),report=JSON.parse(await readFile(join(dir,'report.json'),'utf8'));
+  expect(e.recovery).toEqual([]);expect(r).toMatchObject({outcome:'grip_not_established',attention:true,recovered:false});
+  expect(report.coffee.armTrace.stop.reason).toBe('RECOVERY_FACTS_MISSING');expect(report.outcome.served).toBe('0');
+  expect(JSON.stringify(report).includes('world-cup-nudge-v1')).toBe(true);
  },900_000);
 });

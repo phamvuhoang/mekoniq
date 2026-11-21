@@ -4,6 +4,7 @@ import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {afterEach,describe,expect,test} from 'vitest';
+import {cellArtifacts} from '../../packages/lab-runtime/src/v2/simulation3d/cell-campaign';
 import {runPerceptionStudy,verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
 import {runPickRig} from '../../packages/lab-runtime/src/v2/perception/pick-rig';
 import {readBeliefEvidence,readBeliefManifest} from '../../packages/lab-runtime/src/v2/perception/belief-evidence';
@@ -34,11 +35,12 @@ describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('pick rig on th
   expect(verdict.study!.points[0]).toMatchObject({id:'truth-0',runs:1,firstTry:1,attention:0,outcomes:{lifted:1}});expect(verdict.study!.points[0]!.firstTryInterval.high).toBe(1);
   const file=join(out,'truth-0/s1/rig-run.json'),rec=JSON.parse(await readFile(file,'utf8'));rec.result.outcome='refused';await writeFile(file,JSON.stringify(rec));
   const edited=await verifyPerceptionStudy(out,'truth-0');expect(edited.completedRuns).toBe(0);expect(edited.issues.join()).toContain('ARTIFACT_HASH_MISMATCH');
- },900_000);
- test('REC06 measurement: the registered nudge (14.4 N, the largest force that keeps the cup on its stand) is applied after the belief grasp committed and the gripper still lifts the cup; 15 N knocks it off the stand instead (scan in the V13 ledger)',async()=>{
-  const dir=await mkdtemp(join(tmpdir(),'pick-rig-'));dirs.push(dir);
-  const r=await runPickRig({seed:1,mode:'belief_ground_truth',truthOffsetM:0,profileId:null,nudge:true,recoveryPolicyId:null,directory:dir},await runtime() as never);
-  expect((await readFile(join(dir,'report.json'),'utf8')).includes('world-cup-nudge-v1')).toBe(true); // intent and receipt are in the report
-  expect(r).toMatchObject({outcome:'lifted',attempts:1,attention:false}); // so there is nothing to recover: no force satisfies both conditions of R4-D33 in this cell
+  // the hashes are self-referential (case.json sits beside the artifacts): a forger who regenerates them must still fail the identity checks against the registered profile, scene and report
+  const regen=async()=>writeFile(join(out,'truth-0/s1/case.json'),JSON.stringify({...JSON.parse(await readFile(join(out,'truth-0/s1/case.json'),'utf8')),artifacts:await cellArtifacts(join(out,'truth-0/s1'))}));
+  rec.result.outcome='lifted';await writeFile(file,JSON.stringify(rec));await regen();expect((await verifyPerceptionStudy(out,'truth-0')).completedRuns).toBe(1);
+  const mfile=join(out,'truth-0/s1/run/belief-evidence/manifest.json'),mdoc=JSON.parse(await readFile(mfile,'utf8'));mdoc.identity.perceptionProfileDigest='e'.repeat(64);await writeFile(mfile,JSON.stringify(mdoc));await regen();
+  expect((await verifyPerceptionStudy(out,'truth-0')).issues.join()).toContain('BELIEF_IDENTITY_MISMATCH');
+  mdoc.identity.perceptionProfileDigest=JSON.parse(await readFile(join(resolve('robotics/simulation-mujoco/fixtures/perception-v1'),'perception-ground-truth-v1.json'),'utf8')).digest;await writeFile(mfile,JSON.stringify(mdoc));
+  await writeFile(join(out,'truth-0/s1/error.txt'),'boom');await regen();expect((await verifyPerceptionStudy(out,'truth-0')).issues.join()).toContain('RUN_ERROR_RECORDED');
  },900_000);
 });
