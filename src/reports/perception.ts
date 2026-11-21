@@ -13,18 +13,48 @@ export function perceptionSection(report:unknown):PerceptionSection{
  const r=report as {perceptionEvidence?:unknown}|null;
  return r&&ok(r.perceptionEvidence)?{available:true,evidence:r.perceptionEvidence}:{available:false,reason:'NO_PERCEPTION_DATA'};
 }
+/** A step is recorded before it is done (pending) and again when it ends: one row per step, as it stood at the cursor (the last record that had finished by then, else the pending one). */
+function stepsAt(all:RecoveryStep[],tick?:number):RecoveryStep[]{
+ const by=new Map<string,RecoveryStep[]>();for(const x of all)by.set(x.stepId,[...by.get(x.stepId)??[],x]);
+ return [...by.values()].flatMap(list=>{
+  if(tick===undefined)return [list.at(-1)!];
+  const seen=list.filter(x=>x.recordedTick<=tick);if(!seen.length)return [];
+  const finished=seen.filter(x=>(x.completedTick??x.recordedTick)<=tick&&x.result!=='pending');
+  return [finished.at(-1)??{...seen[0]!,completedTick:null,result:'pending'}];
+ }).sort((a,b)=>a.recordedTick-b.recordedTick);
+}
+const resultText=(r:string)=>({pending:tr('đang chờ','実行中','Pending'),done:tr('xong','完了','Done'),failed:tr('thất bại','失敗','Failed')} as Record<string,string>)[r]??r;
+const ENDED:Record<string,()=>string>={
+ RECOVERY_EXHAUSTED:()=>tr('Phục hồi đã dùng hết số lần cho phép; cần người xử lý.','回復は許可回数を使い切りました。人の対応が必要です。','Recovery used all the attempts it was allowed; a person is needed.'),
+ RECOVERY_FACTS_MISSING:()=>tr('Không phục hồi: trạng thái tay máy/cốc chưa đủ rõ (ví dụ cốc có thể vẫn nằm giữa hai má). Gripper không được mở.','回復せず:アーム/カップの状態が不明(例:カップがまだパッドの間にある可能性)。グリッパは開きません。','Not recovered: the arm or cup state was not known well enough (for example the cup may still be between the pads). The gripper was not opened.'),
+ RECOVERY_NOT_APPLICABLE:()=>tr('Thất bại này không nằm trong bảng phục hồi; cần người xử lý.','この失敗は回復表の対象外です。人の対応が必要です。','This failure is not in the recovery table; a person is needed.')};
+/** What stopped the run after a recovery decision, from the report's own attention and arm stop reason (up to the cursor): the code and a sentence. */
+function endedHtml(report:unknown,tick?:number):string{
+ const r=report as {attention?:{reason?:string;tick?:number}[];coffee?:{armTrace?:{stop?:{reason?:string;events?:{tick?:number}[]}}}}|null,found=new Map<string,number>();
+ for(const a of r?.attention??[])if(a.reason&&ENDED[a.reason]&&(tick===undefined||(a.tick??0)<=tick))found.set(a.reason,a.tick??0);
+ const stop=r?.coffee?.armTrace?.stop;if(stop?.reason&&ENDED[stop.reason]&&!found.has(stop.reason)){const t=stop.events?.at(-1)?.tick??0;if(tick===undefined||t<=tick)found.set(stop.reason,t);}
+ return found.size?`<ul data-testid="perception-ended">${[...found].map(([code,t])=>`<li><code>${esc(code)}</code> · tick ${t} · ${esc(ENDED[code]!())}</li>`).join('')}</ul>`:'';
+}
+/** The phase bar's suffix: which grasp attempt the cup is at, of the three the table allows (one try and two recoveries). Empty without attempts for that cup at the cursor. */
+export const ATTEMPT_BOUND=3;
+export function attemptCounter(report:unknown,tick:number,cupId:string|undefined):string{
+ const s=perceptionSection(report);if(!s.available||!cupId)return '';
+ const k=s.evidence.attempts.filter(a=>a.cupId===cupId&&a.decidedTick<=tick).length;
+ return k?` · ${tr('lượt','試行','attempt')} ${k}/${ATTEMPT_BOUND}`:'';
+}
 const mm=(m:number|null)=>m===null?'—':String(Number((m*1000).toFixed(1)));
 const outcomeText=(o:string)=>({lifted:tr('Nhấc được','持ち上げ成功','Lifted'),grip_not_established:tr('Kẹp không hình thành','把持不成立','Grip not established'),cup_dropped:tr('Rơi cốc','カップ落下','Cup dropped'),refused:tr('Bị từ chối trước khi chuyển động','動作前に拒否','Refused before motion'),unknown:tr('Chưa rõ','不明','Unknown')} as Record<string,string>)[o]??o;
 /** The block of a report or replay: the attempts decided up to `tick` (all of them without one), the four gates of each, and the recovery steps. */
 export function perceptionBlockHtml(report:unknown,tick?:number):string{
  const r=report as {manifest?:{perception?:unknown}}|null,s=perceptionSection(report),title=tr('Nhận thức và lượt gắp','認識と把持の試行','Perception and grasp attempts');
  if(!s.available)return r?.manifest?.perception?`<div data-testid="perception-evidence" data-available="false"><h3>${title}</h3><p class="field-help" data-testid="perception-reason">${tr('Không có dữ liệu nhận thức','認識データなし','No perception data')} (${esc(s.reason)})</p></div>`:'';
- const e=s.evidence,rows=e.attempts.filter(a=>tick===undefined||a.decidedTick<=tick),steps=e.recovery.filter(x=>tick===undefined||x.recordedTick<=tick);
+ const e=s.evidence,rows=e.attempts.filter(a=>tick===undefined||a.decidedTick<=tick),steps=stepsAt(e.recovery,tick);
  const head=[tr('Cốc','カップ','Cup'),tr('Lượt','試行','Attempt'),'Tick',tr('Lệch belief (mm)','belief誤差(mm)','Belief error (mm)'),tr('Belief','Belief','Belief'),tr('Vùng','領域','Region'),'IK',tr('Quét','スイープ','Sweep'),tr('Kết quả','結果','Outcome')];
  const table=rows.length?`<div class="eng-table-wrap" tabindex="0" role="region" aria-label="${title}"><table class="eng-table" data-testid="perception-attempts"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(a=>`<tr data-attempt="${esc(a.attemptId)}"><th scope="row">${esc(a.cupId)}</th><td>${a.index+1}</td><td>${a.decidedTick}</td><td>${mm(a.beliefErrorAtCommitM)}</td>${(['belief','region','ik','sweep'] as const).map(g=>`<td data-gate="${g}" data-pass="${a.gates[g]==='pass'}">${esc(a.gates[g])}</td>`).join('')}<td data-outcome="${esc(a.outcome)}">${esc(outcomeText(a.outcome))}${a.refusal?` · <code>${esc(a.refusal)}</code>`:''}</td></tr>`).join('')}</tbody></table></div>`
   :`<p class="field-help" data-empty="true">${tr('Chưa có lượt gắp tại thời điểm này','この時点では試行なし','No grasp attempt yet at this point')}</p>`;
- const rec=steps.length?`<ul data-testid="perception-recovery">${steps.map(x=>`<li>${esc(x.attemptId)} · ${esc(x.rule)} · <code>${esc(x.action)}</code> · tick ${x.recordedTick}${x.completedTick!==null?`–${x.completedTick}`:''} · ${esc(x.result)}</li>`).join('')}</ul>`:'';
- return `<div data-testid="perception-evidence" data-available="true" data-complete="${e.complete}"><h3>${title}</h3><p class="field-help">${esc(NOT_CAMERA())}</p>${table}${rec}${e.issues.length?`<p class="field-error" data-testid="perception-issues">${tr('Stream chưa đầy đủ','ストリーム不完全','Stream incomplete')}: ${e.issues.map(i=>`<code>${esc(i)}</code>`).join(', ')}</p>`:''}</div>`;
+ const rec=steps.length?`<h4>${tr('Bước phục hồi','回復ステップ','Recovery steps')}</h4><ul data-testid="perception-recovery">${steps.map(x=>`<li data-step="${esc(x.stepId)}" data-result="${esc(x.result)}">${esc(x.attemptId)} · ${esc(x.rule)} · <code>${esc(x.action)}</code> · tick ${x.recordedTick}${x.completedTick!==null?`–${x.completedTick}`:''} · <b>${esc(resultText(x.result))}</b></li>`).join('')}</ul>`:'';
+ const ended=endedHtml(report,tick);
+ return `<div data-testid="perception-evidence" data-available="true" data-complete="${e.complete}"><h3>${title}</h3><p class="field-help">${esc(NOT_CAMERA())}</p>${table}${rec}${ended}${e.issues.length?`<p class="field-error" data-testid="perception-issues">${tr('Stream chưa đầy đủ','ストリーム不完全','Stream incomplete')}: ${e.issues.map(i=>`<code>${esc(i)}</code>`).join(', ')}</p>`:''}</div>`;
 }
 export interface PointResult {id:string;mode:string;runs:number;firstTry:number;afterRecovery:number;attention:number;firstTryInterval:{low:number;high:number};medianTicks:number;unexpectedContacts:number;medianBeliefErrorAtCommitM:number|null;outcomes:Record<string,number>}
 export interface PerceptionStudyV1 {schemaVersion:1;campaignId:string;calibration:string;points:PointResult[]}

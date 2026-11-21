@@ -10,3 +10,9 @@ test('ground truth names the mode only; the estimate also names the registered n
  expect(body('belief_ground_truth')).toMatchObject({graspMode:'belief_ground_truth'});expect('perceptionProfileId' in body('belief_ground_truth')).toBe(false);
  expect(body('belief_estimated')).toMatchObject({graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'});
 });
+test('a belief mode also names the registered recovery policy (an id); the fixed program names none',()=>{
+ expect(body('belief_ground_truth')).toMatchObject({graspMode:'belief_ground_truth',recoveryPolicyId:'pick-recovery-v1'});
+ expect(body('belief_estimated')).toMatchObject({graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1',recoveryPolicyId:'pick-recovery-v1'});
+ for(const r of [body(),body('fixed_program')])expect('recoveryPolicyId' in r).toBe(false);
+ expect(JSON.stringify(body('belief_estimated'))).not.toMatch(/maxAttempts|steps|rules/);
+});
