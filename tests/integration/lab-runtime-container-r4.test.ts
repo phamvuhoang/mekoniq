@@ -22,7 +22,7 @@ const runId=randomUUID(),names:string[]=[];
 afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
 
 describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
- test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
+ test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, a scheduled drive fault reports its receipts, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
   const inspected=docker(['image','inspect',image]);
   if(!inspected.ok)throw new Error(`IMAGE_MISSING: ${image} does not exist locally; build it with deploy/lab-runtime/build.sh ${image}`);
   const [info]=JSON.parse(inspected.out);
@@ -78,6 +78,25 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
    expect(report.driveEvidence.axes.every((a:{faults:unknown[]})=>a.faults.length===0)).toBe(true);
    // a finished cell run keeps the host's one MuJoCo slot until it is closed (a world run holds it to close): archive it, as the Lab does, before the bench
    const archived=await api(`${url}/archive`,{method:'POST',token,body:{}});expect(archived.status,JSON.stringify(archived.body)).toBe(200);
+   // R4 V09 (plan V08/V09): the image advertises the drive fault catalog, refuses what the catalog refuses, and a scheduled drive fault runs to a report that carries the injection's receipts
+   expect(health.faultCatalog.map((f:{id:string}) => f.id).sort()).toEqual(['command-delay','command-loss','drive-trip','encoder-dropout','grip-weak','lidar-noise','motor-weak']);   // drive-reset is campaign-only: never offered
+   const schedule=(entries:unknown[])=>({driveFaultSchedule:entries,backendSetId:'engineering-mujoco-cell-v1',scenarioId:'MJ-CELL-BV01',driveExperimentId:'drive-nominal-v1'});
+   const dropout={id:'drop-1',faultId:'encoder-dropout',targetId:'amr-1/wheel-left',trigger:{kind:'elapsed_sim_ms',value:1000},durationMs:300,params:{}};
+   const overlap=await api('/projects/validate',{method:'POST',token,body:schedule([dropout,{...dropout,id:'drop-2',trigger:{kind:'elapsed_sim_ms',value:1100}}])});
+   expect(overlap.status).toBe(422);expect(overlap.body).toMatchObject({error:'INVALID_FAULT_SCHEDULE',reasonCodes:['FAULT_OVERLAP']});
+   expect((await api('/projects/validate',{method:'POST',token,body:schedule([{...dropout,faultId:'drive-reset',durationMs:20}])})).body.reasonCodes).toEqual(['FAULT_CAMPAIGN_ONLY']);
+   expect((await api('/projects/validate',{method:'POST',token,body:schedule([dropout])})).status).toBe(200);
+   const faulted=await api('/runs',{method:'POST',token,body:{project,scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[dropout],runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}}});
+   expect(faulted.status,JSON.stringify(faulted.body).slice(0,400)).toBe(201);
+   const fUrl=`/runs/${faulted.body.run.id}`;let fRev=faulted.body.run.runRevision as number,fn=0;
+   const fAct=async(kind:string,payload:Record<string,unknown>)=>{const r=await api(`${fUrl}/actions`,{method:'POST',token,body:{actionId:`f-${++fn}`,expectedRevision:fRev,kind,payload}});expect(r.status,JSON.stringify(r.body).slice(0,300)).toBe(200);fRev=r.body.run.runRevision;return r.body;};
+   let fv=await fAct('start',{});while(fv.tick<150)fv=await fAct('step',{ticks:50});
+   const faultReport=(await api(`${fUrl}/report`,{token})).body;
+   expect(faultReport.manifest.driveFaultSchedule.entries).toHaveLength(1);
+   expect(faultReport.faultReport,JSON.stringify(faultReport.driveEvidence?.issues)).toBeDefined();
+   expect(faultReport.faultReport).toMatchObject({documentType:'fault-report',accepted:false,entries:[{faultId:'encoder-dropout',targetId:'amr-1/wheel-left',verdict:'detected_in_time',injection:{appliedTick:51,endedTick:66},detection:{by:'drive',code:'FEEDBACK_LOSS'}}]});
+   expect(faultReport.faultReport.invariants.filter((i:{result:string})=>i.result==='violated')).toEqual([]);
+   const faultArchived=await api(`${fUrl}/archive`,{method:'POST',token,body:{}});expect(faultArchived.status,JSON.stringify(faultArchived.body)).toBe(200);
    // R4.2: a wheel bench step from the starting profile health serves; the run ends itself at tick 500, the engine slot is free for a second bench right after, and the trace reads back
    expect(Object.keys(health.benchCatalog)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);
    const benchBody=(signal:unknown)=>({scenarioId:'MJ-BENCH-WHEEL',scenarioRevision:1,seed:3,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-bench-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash},
