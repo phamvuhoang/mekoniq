@@ -3298,3 +3298,184 @@ export interface BenchTraceManifest {
   }[];
   terminalReason: string | null;
 }
+/**
+ * A modelled perception error (R4-D22): bias, noise, latency, dropout, view region and maximum age of the estimate a grasp may use. Every value is assumed; this is not camera data.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "PerceptionProfileV1".
+ */
+export interface PerceptionProfileV1 {
+  schemaVersion: 1;
+  documentType: 'perception-profile';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  parameterSource: 'assumed';
+  updateEveryTicks: number;
+  latencyTicks: number;
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  biasM: number[];
+  /**
+   * @minItems 2
+   * @maxItems 2
+   */
+  sigmaM: number[];
+  dropoutProbability: number;
+  visibleRegionId: string;
+  maxAgeTicks: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefObject".
+ */
+export interface BeliefObject {
+  objectId: string;
+  kind: 'cup';
+  frameId: string;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  positionM: number[];
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  sigmaM: number[];
+  observedTick: number;
+  publishedTick: number;
+  ageTicks: number;
+  source: 'ground_truth' | 'pose_estimator_sim';
+  valid: boolean;
+  reason?: string;
+}
+/**
+ * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefRecord".
+ */
+export interface BeliefRecord {
+  tick: number;
+  objectId: string;
+  belief: BeliefObject | null;
+  dropped: boolean;
+  reason?: 'OUT_OF_VIEW' | 'DROPOUT';
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  truthAtObservedTick: number[];
+  errorM: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "GraspAttempt".
+ */
+export interface GraspAttempt {
+  attemptId: string;
+  cupId: string;
+  index: number;
+  decidedTick: number;
+  mode: 'fixed_program' | 'belief_ground_truth' | 'belief_estimated';
+  beliefUsed: BeliefObject | null;
+  beliefErrorAtCommitM: number | null;
+  gates: {
+    belief: string;
+    region: string;
+    ik: string;
+    sweep: string;
+  };
+  /**
+   * @maxItems 3
+   */
+  ikResidual: {
+    positionM: number;
+    orientationRad: number;
+    condition: number;
+  }[];
+  waypointsRad?: {
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    pickApproach?: number[];
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    pick?: number[];
+    /**
+     * @minItems 1
+     * @maxItems 16
+     */
+    lift?: number[];
+  };
+  outcome: 'lifted' | 'grip_not_established' | 'cup_dropped' | 'refused' | 'unknown';
+  refusal?: string;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "RecoveryStep".
+ */
+export interface RecoveryStep {
+  stepId: string;
+  attemptId: string;
+  rule: string;
+  action: string;
+  commandId: string;
+  recordedTick: number;
+  completedTick: number | null;
+  result: string;
+}
+/**
+ * Manifest of the durable belief, attempts and recovery streams of one run: immutable hashed chunks, coverage and an explicit terminal reason.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "BeliefEvidenceManifestV1".
+ */
+export interface BeliefEvidenceManifestV1 {
+  schemaVersion: 1;
+  documentType: 'belief-evidence';
+  identity: {
+    runId: string;
+    bootId: string;
+    sceneDigest: Digest;
+    perceptionProfileDigest: Digest | null;
+    recoveryPolicyDigest: Digest | null;
+    graspMode: 'belief_ground_truth' | 'belief_estimated';
+    seed: number;
+  };
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  streams: {
+    stream: 'belief' | 'attempts' | 'recovery';
+    /**
+     * @maxItems 512
+     */
+    chunks: {
+      path: string;
+      sha256: Digest;
+      bytes: number;
+    }[];
+  }[];
+  coverage: {
+    lastTick: number;
+    complete: boolean;
+  };
+  /**
+   * @maxItems 64
+   */
+  gaps: {
+    firstTick: number;
+    lastTick: number;
+    reason: string;
+  }[];
+  terminalReason: string | null;
+}

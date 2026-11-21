@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-sigma-15mm-v1",
+  "revision": 1,
+  "digest": "a4fb1cfaa62b7415131fa2017867d30340f363d6558a9dacbc19c8eb993f895b",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 10,
+  "latencyTicks": 5,
+  "biasM": [
+    0,
+    0
+  ],
+  "sigmaM": [
+    0.015,
+    0.015
+  ],
+  "dropoutProbability": 0,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

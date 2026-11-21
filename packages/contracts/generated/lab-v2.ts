@@ -945,6 +945,18 @@ export interface CreateRunRequest {
   driveExperimentId?:
     'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
   /**
+   * R4.4: how the arm of the shared-world cell chooses its grasp point. Absent or fixed_program: the R2b program, byte for byte.
+   */
+  graspMode?: 'fixed_program' | 'belief_ground_truth' | 'belief_estimated';
+  /**
+   * Registered server-owned perception error model (R4.4); only with belief_estimated. The server resolves and digests the document.
+   */
+  perceptionProfileId?: string;
+  /**
+   * Registered server-owned bounded recovery policy (R4.4); only with a belief grasp mode.
+   */
+  recoveryPolicyId?: string;
+  /**
    * Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself.
    */
   bench?: {

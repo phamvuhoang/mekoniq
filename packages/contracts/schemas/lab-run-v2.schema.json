@@ -245,6 +245,24 @@
             "drive-coarse-encoder-v1"
           ]
         },
+        "graspMode": {
+          "enum": [
+            "fixed_program",
+            "belief_ground_truth",
+            "belief_estimated"
+          ],
+          "description": "R4.4: how the arm of the shared-world cell chooses its grasp point. Absent or fixed_program: the R2b program, byte for byte."
+        },
+        "perceptionProfileId": {
+          "type": "string",
+          "pattern": "^perception-[a-z0-9-]{1,64}-v[0-9]{1,3}$",
+          "description": "Registered server-owned perception error model (R4.4); only with belief_estimated. The server resolves and digests the document."
+        },
+        "recoveryPolicyId": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{1,64}-v[0-9]{1,3}$",
+          "description": "Registered server-owned bounded recovery policy (R4.4); only with a belief grasp mode."
+        },
         "bench": {
           "type": "object",
           "description": "Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself."

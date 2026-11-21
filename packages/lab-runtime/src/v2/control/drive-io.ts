@@ -30,8 +30,8 @@ export const validateDriveCommandShape=ajv.getSchema('drive-io-v1.schema.json#/d
 export const driveDocumentDigest=(doc:object):string=>{const {digest:_,...rest}=doc as Record<string,unknown>;void _;return hashJson(rest);};
 export const sealDriveDocument=<T extends object>(doc:T):T&{digest:string}=>({...doc,digest:driveDocumentDigest(doc)});
 
-const nonFinite=(v:unknown):boolean=>typeof v==='number'?!Number.isFinite(v):Array.isArray(v)?v.some(nonFinite):v&&typeof v==='object'?Object.values(v).some(nonFinite):false;
-function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instancePath:string;params?:{error?:string;tag?:string}}[]|null},v:unknown,codes:Set<string>){
+export const nonFinite=(v:unknown):boolean=>typeof v==='number'?!Number.isFinite(v):Array.isArray(v)?v.some(nonFinite):v&&typeof v==='object'?Object.values(v).some(nonFinite):false;
+export function shapeCodes(validate:{(v:unknown):boolean;errors?:{keyword:string;instancePath:string;params?:{error?:string;tag?:string}}[]|null},v:unknown,codes:Set<string>){
  if(validate(v))return;
  // a bench signal's tick past the bench (atTick, a hold's ticks) has one code of its own, the one validateBenchSignal gives
  for(const e of validate.errors??[]){

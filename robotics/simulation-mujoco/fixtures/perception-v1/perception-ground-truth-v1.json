@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-profile",
+  "id": "perception-ground-truth-v1",
+  "revision": 1,
+  "digest": "445598319955a3d743774ac73f4bd49e8ffab942b8fe6000690ab70e93d77268",
+  "calibration": "not_calibrated",
+  "parameterSource": "assumed",
+  "updateEveryTicks": 1,
+  "latencyTicks": 0,
+  "biasM": [
+    0,
+    0
+  ],
+  "sigmaM": [
+    0,
+    0
+  ],
+  "dropoutProbability": 0,
+  "visibleRegionId": "nozzle-stand",
+  "maxAgeTicks": 50
+}

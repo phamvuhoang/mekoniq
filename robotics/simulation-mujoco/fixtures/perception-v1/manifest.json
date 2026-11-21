@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "documentType": "perception-fixture-manifest",
+  "id": "perception-v1",
+  "generator": "scripts/generate-perception-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "d2af09282f2d874b1cf94ffc0163827609a0da27ad0d862daa2fb752eaa3ae1e",
+      "bytes": 578
+    },
+    {
+      "path": "perception-bias-out-of-region-v1.json",
+      "sha256": "f19d5237a6989b9f68ec7db21d0cd6e37bd7b2e9aa4664c6b5a3e730c2eaaa42",
+      "bytes": 471
+    },
+    {
+      "path": "perception-bias-x-10mm-v1.json",
+      "sha256": "ebefcd808719bd75c0786f7b0bad5cd9e1c201238da903d24e12269879cca383",
+      "bytes": 472
+    },
+    {
+      "path": "perception-bias-x-5mm-v1.json",
+      "sha256": "5e9c9f7c6141153cf917e0936969f10db492079cf36e43f2bcd2b406af265a13",
+      "bytes": 472
+    },
+    {
+      "path": "perception-bias-y-10mm-v1.json",
+      "sha256": "d01380d9d6539e36cce1c836faf514bc2b127787a79c03ff88319ebd2cf7d7e4",
+      "bytes": 472
+    },
+    {
+      "path": "perception-bias-y-5mm-v1.json",
+      "sha256": "db05b1d5ba79e4c62855f29c9796e7d539afdf4e718a870c7265a2a2638f7582",
+      "bytes": 472
+    },
+    {
+      "path": "perception-ground-truth-v1.json",
+      "sha256": "5e0a60bdc552ea274e0218baa93ab21f6fb18e5b4036f3f5d91d2d423a199662",
+      "bytes": 461
+    },
+    {
+      "path": "perception-lossy-v1.json",
+      "sha256": "d7ea534e0bf1916ea88db5c40b20f3b1c09cbcfb1a850b38f8dfccbac533c81e",
+      "bytes": 465
+    },
+    {
+      "path": "perception-nominal-v1.json",
+      "sha256": "d29f2369a1aa842f763501db96e858e5fa64878600a8f720731d728a7a194fbf",
+      "bytes": 468
+    },
+    {
+      "path": "perception-regions-v1.json",
+      "sha256": "e6427a607f407c15594ce263279536d43759a69227e3dfd3bba8ec4081bb8344",
+      "bytes": 439
+    },
+    {
+      "path": "perception-short-age-v1.json",
+      "sha256": "d6e2c8f98abe5471fa9e1a871d0b9c5f6fbe78346e9d93ed6f9276eecddfda62",
+      "bytes": 467
+    },
+    {
+      "path": "perception-sigma-10mm-v1.json",
+      "sha256": "397e3f36d00b0dc32a84cbaafb81159f8faa3115d9c09ca8991ed09a8ddfecff",
+      "bytes": 466
+    },
+    {
+      "path": "perception-sigma-15mm-v1.json",
+      "sha256": "333b6b0dc8b0aaedda77909f5b6b521210f31b59328cf0b268678de68e699d96",
+      "bytes": 468
+    },
+    {
+      "path": "perception-sigma-2mm-v1.json",
+      "sha256": "c2078bd3d762ad9d34e9cc5c748d223f2a08864456dc4fd2af70b600d1767d65",
+      "bytes": 467
+    },
+    {
+      "path": "perception-sigma-5mm-v1.json",
+      "sha256": "3859e82fb667ef9d2fb1bee98659ccdc87154d7bc5143754f388100f76ea5199",
+      "bytes": 467
+    }
+  ]
+}

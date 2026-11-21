@@ -18,6 +18,7 @@ import armObservationSchema from '../../../contracts/schemas/arm-observation.sch
 import {scenarioRegistry} from './scenario-registry';
 import {BENCH_SET_ID} from './capabilities';
 import {validateBenchRequestShape} from './control/drive-io';
+import {validateGraspRequest} from './perception/perception-contracts';
 export type {LabProjectV2,LabActionV2,CreateRunRequest,LabRunSnapshotV2,TwinSampleV2,AssetRevision,CoffeeRecipe,CellCommand,CellObservation,LabEvidenceV2,ArmCommand,ArmObservation};
 export interface Issue {path:string;code:string;message:string;}
 export type Validated<T>={ok:true;value:T}|{ok:false;issues:Issue[]};
@@ -64,6 +65,10 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  }
  if(shape.value.project===undefined&&shape.value.engineeringRef===undefined)return {ok:false,issues:[{path:'/project',code:'FIELD_REQUIRED',message:'Missing "project" (or "engineeringRef" for an engineering run)'}]};
  if(shape.value.worldExperimentId&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'Selection requires the registered shared-world cell'}]};
+// R4.4 grasp modes: a belief grasp exists on the registered shared-world cell only; MJ-BV01 and every other scenario keep the fixed program
+ const wantsBelief=shape.value.graspMode!==undefined&&shape.value.graspMode!=='fixed_program';
+ if((wantsBelief||shape.value.recoveryPolicyId!==undefined)&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/graspMode',code:'GRASP_MODE_SCOPE_INVALID',message:'A belief grasp is selectable on the registered shared-world cell only'}]};
+ {const g=validateGraspRequest(shape.value);if(!g.ok)return {ok:false,issues:g.reasonCodes.map(code=>({path:'/graspMode',code,message:'Invalid grasp request'}))};}
  if(shape.value.driveExperimentId&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/driveExperimentId',code:'DRIVE_EXPERIMENT_SCOPE_INVALID',message:'A virtual drive is selectable on the registered shared-world cell only'}]};
  // drive faults (V08) exist only on a simulation run that has a drive model: the shared-world cell with a drive experiment, or an engineering run of the MuJoCo mobile set (whose own project names its experiment)
  if(shape.value.driveFaultSchedule?.length){
