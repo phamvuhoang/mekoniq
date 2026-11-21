@@ -24,6 +24,8 @@ describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('belief grasp o
   const attempts=finalAttempts(e.attempts);expect(attempts.map(a=>[a.cupId,a.index,a.outcome])).toEqual([['cup-1',0,'lifted'],['cup-2',0,'lifted']]);
   expect(attempts.every(a=>a.gates.belief==='pass'&&a.gates.region==='pass'&&a.gates.ik==='pass'&&a.gates.sweep==='pass'&&a.beliefErrorAtCommitM===0)).toBe(true);
   expect(e.beliefs.every(b=>b.errorM===null||b.errorM===0)).toBe(true);
+  // the report of the run carries the stream (R4.4 report section), the same records the reader found
+  expect(report.perceptionEvidence).toMatchObject({schemaVersion:1,issues:[]});expect(report.perceptionEvidence!.beliefs.length).toBe(e.beliefs.length);expect(report.perceptionEvidence!.attempts.map(a=>a.outcome)).toEqual(['lifted','lifted']);
  },deadline);
  test('a lossy estimator (seed 54: the one estimate it ever gave ages out and no fresh one comes) never gives a usable belief: after beliefWaitTicks the run asks for a person, no grasp is planned',async()=>{
   // seed 54 is a registered-profile seed whose dropout chain covers the wait of cup-1 (chosen with the pure estimator, not by looking at this test's result)

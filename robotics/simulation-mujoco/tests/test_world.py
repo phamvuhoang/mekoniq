@@ -184,3 +184,16 @@ def test_registered_force_clears_on_native_step_exception(monkeypatch):
 def test_world_control_context_is_opt_in_and_missing_or_changed_stage_refuses_before_mutation(session):
  start_world(session);req=world_step(session);req['payload']['worldControl']={'version':1,'program':None,'attachmentProxyPropId':None,'movementInterlocked':False,'stopLatched':False}
  r=session.handle(req);assert not r['ok'] and r['error']['code']=='WORLD_CONTROL_INVALID' and session.engine.total_substeps==10
+def test_cup_nudge_is_a_registered_push_that_moves_the_cup_but_keeps_it_on_its_support():
+ # R4.4 (R4-D33): the push must exceed the grasp tolerance observed in the study (a few mm each side of the open gripper) and must not tip or drop the cup; a no-op or a fall is not a nudge
+ e=WorldEngine(*inputs());home=load('programs.json')['programs']['waypoints']['home']
+ e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+ for _ in range(50):r=e.step(home,.0889,[],0,0)
+ before=r['world']['props'][0]['position']
+ r=e.step(home,.0889,[],0,0,{'presetId':'world-cup-nudge-v1','targetId':'cup-1'})
+ for _ in range(100):r=e.step(home,.0889,[],0,0)
+ p=r['world']['props'][0];moved=float(np.hypot(p['position'][0]-before[0],p['position'][1]-before[1]))
+ print('NUDGE_MM',round(moved*1000,2),p['restingOn'],p['position'][2]-before[2])
+ assert .006<moved<.03 and p['restingOn']=='nozzle-stand' and abs(p['position'][2]-before[2])<.001
+ assert np.count_nonzero(e.data.xfrc_applied)==0
+ e.close()

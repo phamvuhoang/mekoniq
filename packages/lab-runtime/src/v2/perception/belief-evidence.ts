@@ -27,7 +27,7 @@ async function readBounded(root:string,name:string,max:number){
 export async function readBeliefManifest(root:string):Promise<BeliefEvidenceManifestV1>{
  const m:unknown=JSON.parse((await readBounded(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validateBeliefManifestShape(m))throw new Error('BELIEF_MANIFEST_INVALID');return m as BeliefEvidenceManifestV1;
 }
-export interface BeliefRecorder {appendBelief(r:BeliefRecord):Promise<void>;appendAttempt(a:GraspAttempt):Promise<void>;appendRecovery(s:RecoveryStep):Promise<void>;finish(reason:string|null):Promise<void>;manifest():BeliefEvidenceManifestV1}
+export interface BeliefRecorder {appendBelief(r:BeliefRecord):Promise<void>;appendAttempt(a:GraspAttempt):Promise<void>;appendRecovery(s:RecoveryStep):Promise<void>;finish(reason:string|null):Promise<void>;/** Publish what is buffered as chunks now (a hot read of a running recording). */checkpoint():Promise<void>;manifest():BeliefEvidenceManifestV1}
 export async function openBeliefRecorder(o:{directory:string;identity:Identity;maxBytes?:number}):Promise<BeliefRecorder>{
  const maxBytes=o.maxBytes??BELIEF_EVIDENCE_MAX_BYTES;
  if(!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>BELIEF_EVIDENCE_MAX_BYTES)throw new Error('BELIEF_LIMIT_INVALID');
@@ -67,7 +67,7 @@ export async function openBeliefRecorder(o:{directory:string;identity:Identity;m
    if(buffers[stream].length>=CHUNK_LINES)await flush();
   }catch(e){await end((e as Error).message,{firstTick:tick,lastTick:tick});throw e;}
  });
- return {manifest:()=>structuredClone(m),appendBelief:r=>append('belief',r),appendAttempt:a=>append('attempts',a),appendRecovery:s=>append('recovery',s),
+ return {manifest:()=>structuredClone(m),checkpoint:()=>serial(async()=>{if(!closed&&!m.terminalReason)try{await flush();}catch(e){await end((e as Error).message);throw e;}}),appendBelief:r=>append('belief',r),appendAttempt:a=>append('attempts',a),appendRecovery:s=>append('recovery',s),
   finish:reason=>serial(async()=>{if(reason)await end(reason);try{await flush();if(!reason&&!m.terminalReason&&!m.gaps.length){m.coverage.complete=true;closed=true;}}catch(e){await end((e as Error).message);throw e;}await save();await unlink(join(o.directory,WAL)).catch(()=>{});})};
 }
 export interface BeliefRead {complete:boolean;beliefs:BeliefRecord[];attempts:GraspAttempt[];recovery:RecoveryStep[];issues:string[]}

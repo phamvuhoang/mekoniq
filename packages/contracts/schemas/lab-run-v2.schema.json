@@ -232,7 +232,8 @@
           "enum": [
             "world-nominal-v1",
             "world-dock-drift-v1",
-            "world-cup-fall-v1"
+            "world-cup-fall-v1",
+            "world-cup-nudge-v1"
           ]
         },
         "driveExperimentId": {

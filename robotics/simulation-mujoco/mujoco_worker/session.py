@@ -296,7 +296,7 @@ class WorkerSession:
         disturbance=scene.get('disturbance')
         if disturbance:
             binding=next((b for b in bindings if b['cupId']==disturbance['cupId']),None)
-            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport'))
+            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport') or (disturbance['presetId']=='world-cup-nudge-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='after_belief_commit'))
             if not valid:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','admitted target binding')
         drive = self._drive_docs(scene.get("engine") or {}, document, plant_digest=world_plant_digest(scene))   # one combined drive model and profile for all nine axes, bound to this world's plant
         try:
@@ -391,6 +391,9 @@ class WorkerSession:
             target=disturbance['targetId'];arm=self.snapshot['arms'][0]
             if admitted['presetId']=='world-dock-drift-v1':
                 valid=target==nav['robots'][0]['robotId'] and admitted['trigger']=='before_release' and any(b['cupId']==admitted['cupId'] and b['propId'] in arm['gripper']['heldPropIds'] for b in self.scene['propBindings']) and opening is not None and opening<=.001
+            elif admitted['presetId']=='world-cup-nudge-v1':
+                prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
+                valid=bool(prop) and prop['restingOn']=='nozzle-stand' and target not in arm['gripper']['heldPropIds']
             else:
                 prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
                 valid=admitted['trigger']=='transport' and prop and prop['restingOn']==self.scene['supportMap']['mobileSupportId'] and target not in arm['gripper']['heldPropIds'] and abs(self.snapshot['robots'][0]['bodyVelocity'][0])>.01

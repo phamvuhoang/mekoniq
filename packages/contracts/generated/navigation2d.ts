@@ -382,7 +382,7 @@ export type Sim3DRequestV1 =
          */
         worldPerturbations?: {
           eventId: string;
-          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
           revision: 1;
           targetId: string;
           targetTick: number;
@@ -1714,7 +1714,7 @@ export interface WorldStep {
    */
   disturbances?: {
     eventId: string;
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
     revision: 1;
     targetId: string;
     targetTick: number;
@@ -2296,10 +2296,10 @@ export interface LabWorldSceneV1 {
     terminalApproachDirection?: 'reverse';
   };
   disturbance?: {
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
     revision: 1;
     targetId: string;
-    trigger: 'before_release' | 'transport';
+    trigger: 'before_release' | 'transport' | 'after_belief_commit';
     cupId: string;
   };
   controlContextVersion?: 1;
@@ -2381,7 +2381,7 @@ export interface WorldEvidenceRecord {
      */
     worldPerturbations?: {
       eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1';
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
       revision: 1;
       targetId: string;
       targetTick: number;
@@ -3327,6 +3327,44 @@ export interface PerceptionProfileV1 {
   dropoutProbability: number;
   visibleRegionId: string;
   maxAgeTicks: number;
+}
+/**
+ * A bounded recovery table for a failed pick (R4-D27): rules over a closed catalogue of triggers, facts and steps, each with a maximum number of attempts. Every value is assumed. Not a behaviour tree.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "RecoveryPolicyV1".
+ */
+export interface RecoveryPolicyV1 {
+  schemaVersion: 1;
+  documentType: 'recovery-policy';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  parameterSource: 'assumed';
+  beliefWaitTicks: number;
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  rules: {
+    id: string;
+    /**
+     * @minItems 1
+     * @maxItems 3
+     */
+    on: ('GRIP_NOT_ESTABLISHED' | 'BELIEF_UNAVAILABLE' | 'BELIEF_STALE')[];
+    /**
+     * @maxItems 4
+     */
+    requires: ('arm_state_fresh' | 'no_unknown_command' | 'cup_on_declared_support' | 'cup_not_between_pads')[];
+    /**
+     * @minItems 1
+     * @maxItems 6
+     */
+    steps: ('open_gripper' | 'retreat_pick_approach' | 'await_fresh_belief' | 'retry_pick')[];
+    maxAttempts: number;
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema

@@ -303,6 +303,7 @@ export class CoffeeDriver {
  }
  /** V08: the fault report of a drive world, built by its ports from the recorded stream; the caller supplies what only the Source can say (the journal's serves, attention, whether custody became unknown). */
  faultReport(facts:Parameters<NonNullable<CoffeePlantPorts['faultReport']>>[0]){return this.ports.faultReport?.(facts);}
+ perceptionReport(){return this.ports.perceptionReport?.();}
  async close(){try{await this.ports.close();}finally{this.ledger?.close();this.ledger=undefined;}}
  async report():Promise<CoffeeReport>{
   const jobs:JsonObject[]=[],cups:CoffeeReport['cups']=[];

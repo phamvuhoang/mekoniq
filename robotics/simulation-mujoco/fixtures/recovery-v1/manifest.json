@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "documentType": "recovery-fixture-manifest",
+  "id": "recovery-v1",
+  "generator": "scripts/generate-recovery-fixture.mjs",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "e8451038cd789a9697ccda78f5fa89fa5022e2f6a06e6565e38d8aa329a6c720",
+      "bytes": 474
+    },
+    {
+      "path": "pick-recovery-v1.json",
+      "sha256": "21c47057b8fb5b455ca62423877866418f62e980ed094849c7b0e6b719b25078",
+      "bytes": 1016
+    }
+  ]
+}

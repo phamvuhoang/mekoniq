@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "pick-rig-policy-v1",
+  "revision": 1,
+  "provenance": "assumed",
+  "calibration": "not_calibrated",
+  "maxBirthOffsetXYM": 0.03,
+  "workHalfExtentM": [
+    0.045,
+    0.045
+  ],
+  "derivedFrom": "coffee-delivery-cell-v1"
+}

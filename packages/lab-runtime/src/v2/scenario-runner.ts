@@ -14,6 +14,7 @@ import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord
 // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
 import {mkdir,chmod,readdir,readFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import {buildPerceptionReport} from './perception/perception-report';
 import {driveDocumentDigest} from './control/drive-io';
 import {randomUUID} from 'node:crypto';
 import {hashPayload,type CommandResult,type DomainEvent,type JsonObject,type RobotCommand} from '../../../contracts/src/index';
@@ -248,6 +249,7 @@ class Run implements ScenarioRun {
        try{oracle=JSON.parse(await readFile(join(this.dir,FAULT_ORACLE_FILE),'utf8'));if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');}catch(e){return {issues:[(e as Error).message==='FAULT_ORACLE_DIGEST'?'FAULT_ORACLE_DIGEST':'FAULT_ORACLE_MISSING']};}
        return readRetainedWorldFaultReport(this.dir,{...identity,publicCommittedTick:c.tick},{faults:c.manifest.driveFaultSchedule!.entries,oracle,facts});
       };
+      if(c.manifest.perception)ports.perceptionReport=()=>buildPerceptionReport(join(this.dir,'belief-evidence'));
       ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
      }
     }else{
@@ -645,6 +647,7 @@ class Run implements ScenarioRun {
    if(fr?.report)report.faultReport=fr.report;
    else if(fr&&report.driveEvidence)report.driveEvidence={...report.driveEvidence,complete:false,issues:[...report.driveEvidence.issues,...fr.issues]};
   }
+  if(this.coffee&&c.manifest.perception){const pr=await this.coffee.perceptionReport();if(pr)report.perceptionEvidence=pr;}
   if(this.worldConfig){report.worldSweep=unavailableWorldSweep(c.tick,['WORLD_HISTORY_UNAVAILABLE']);report.worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:c.tick,prefixCovered:false,streamFinalized:false,identity:{runId:c.runId,bootId:c.world?.snapshot?.bootId??'unavailable',sceneDigest:c.world?.snapshot?.sceneDigest??'unavailable',admissionDigest:null}};}
   return {report,materializeArm};
  }

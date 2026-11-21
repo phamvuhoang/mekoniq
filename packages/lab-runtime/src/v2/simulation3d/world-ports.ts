@@ -12,7 +12,7 @@ export interface WorldTickCommand {
  jointTargets:{armId:string;positionsRad:number[]}[];
  gripperTargets:{armId:string;openingM:number}[];
  worldInteractions?:{eventId:string;cupId:string;propId:string;kind:'birth'|'remove';targetTick:number}[];
- worldPerturbations?:{eventId:string;presetId:'world-dock-drift-v1'|'world-cup-fall-v1';revision:1;targetId:string;targetTick:number}[];
+ worldPerturbations?:{eventId:string;presetId:'world-dock-drift-v1'|'world-cup-fall-v1'|'world-cup-nudge-v1';revision:1;targetId:string;targetTick:number}[];
  propPlacements:{propId:string;pose:{position:[number,number,number];quaternionXyzw:[number,number,number,number]}|null}[];
  /** Only with a virtual drive: the nine axis commands of the tick. The velocities and joint targets above are then the setpoints the controllers were given (kept as evidence, not sent). */
  driveCommands?:import('../control/drive-io').DriveCommandV1[];

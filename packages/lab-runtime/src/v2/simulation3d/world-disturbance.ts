@@ -2,6 +2,8 @@
 export const WORLD_DISTURBANCE_PRESETS={
  'world-dock-drift-v1':{revision:1,frame:'map',forceMapN:[2000,0,0],durationSubsteps:10,trigger:'before_release'},
  'world-cup-fall-v1':{revision:1,frame:'map',forceMapN:[30,0,30],durationSubsteps:10,trigger:'transport'},
+ // R4.4 (belief grasp only): one small push of cup-1 on the nozzle stand, once, after the first belief grasp of that cup has committed and before the gripper closes.
+ 'world-cup-nudge-v1':{revision:1,frame:'map',forceMapN:[14.4,0,0],durationSubsteps:10,trigger:'after_belief_commit'},
 } as const;
 export interface CellDisturbanceOption {presetId:keyof typeof WORLD_DISTURBANCE_PRESETS;cupId:string}
 import type {Sim3DSnapshotV1,LabWorldSceneV1} from '../navigation2d/contracts';
@@ -21,6 +23,6 @@ export function validateWorldDisturbance(snapshot:Sim3DSnapshotV1,command:WorldE
 
 export type WorldExperimentId='world-nominal-v1'|keyof typeof WORLD_DISTURBANCE_PRESETS;
 /** Fixed cup from the registered two-cup cell workload; no browser target, force, timing or same-run edit. */
-export function worldExperiment(input:{worldExperimentId?:string;backendSetId:string;scenarioId:string;mode:string}):CellDisturbanceOption|undefined{
- const id=input.worldExperimentId;if(id===undefined)return undefined;if(input.backendSetId!=='engineering-mujoco-cell-v1'||input.scenarioId!=='MJ-CELL-BV01'||input.mode!=='simulation'||id!=='world-nominal-v1'&&!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,id))throw Error('WORLD_EXPERIMENT_SCOPE_INVALID');return id==='world-nominal-v1'?undefined:{presetId:id as CellDisturbanceOption['presetId'],cupId:'cup-1'};
+export function worldExperiment(input:{worldExperimentId?:string;graspMode?:string;backendSetId:string;scenarioId:string;mode:string}):CellDisturbanceOption|undefined{
+ const id=input.worldExperimentId;if(id===undefined)return undefined;if(input.backendSetId!=='engineering-mujoco-cell-v1'||input.scenarioId!=='MJ-CELL-BV01'||input.mode!=='simulation'||id!=='world-nominal-v1'&&!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,id))throw Error('WORLD_EXPERIMENT_SCOPE_INVALID');if(id==='world-cup-nudge-v1'&&(input.graspMode===undefined||input.graspMode==='fixed_program'))throw Error('WORLD_EXPERIMENT_SCOPE_INVALID');return id==='world-nominal-v1'?undefined:{presetId:id as CellDisturbanceOption['presetId'],cupId:'cup-1'};
 }

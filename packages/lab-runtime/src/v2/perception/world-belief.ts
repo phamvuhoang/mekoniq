@@ -15,9 +15,11 @@ export interface WorldBeliefOptions {mode:'belief_ground_truth'|'belief_estimate
 type PropTruth={propId:string;position:readonly number[];restingOn:string|null};
 export function createWorldBelief(o:WorldBeliefOptions){
  const world=createBeliefWorld(o.profile.maxAgeTicks),estimators=new Map(o.cups.map(c=>[c.cupId,createPoseEstimator(o.profile,o.seed,c.cupId)])),truth=new Map<string,Map<number,TruthSample>>(o.cups.map(c=>[c.cupId,new Map()]));
- const keep=o.profile.latencyTicks+o.profile.updateEveryTicks+2,waitStart=new Map<string,number>(),index=new Map<string,number>(),open=new Map<string,GraspAttempt>();
+ const firstCommitted=new Set<string>(),keep=o.profile.latencyTicks+o.profile.updateEveryTicks+2,waitStart=new Map<string,number>(),index=new Map<string,number>(),open=new Map<string,GraspAttempt>();
  const inView=(p:PropTruth)=>p.restingOn===o.view.supportId&&Math.abs(p.position[0]!-o.view.centerM[0])<=o.view.halfExtentM[0]&&Math.abs(p.position[1]!-o.view.centerM[1])<=o.view.halfExtentM[1];
  return {
+  /** True once the first grasp plan of this cup was accepted (the attempt is on the stream, the arm goes down); the registered cup nudge of R4-D33 fires on it. */
+  committed:(cupId:string)=>firstCommitted.has(cupId),
   /** Every tick, after the engine step: record where each cup is (truth, for the estimator and for scoring) and publish the estimates that are due. */
   async observe(tick:number,props:readonly PropTruth[]){
    for(const {cupId,propId} of o.cups){
@@ -39,7 +41,7 @@ export function createWorldBelief(o:WorldBeliefOptions){
     a.beliefErrorAtCommitM=b&&t?Math.hypot(b.positionM[0]-t.positionM[0],b.positionM[1]-t.positionM[1]):null; // scoring: the plant holds the truth, the planner never saw it
     if(r.ok)a.outcome='unknown';
     await o.recorder.appendAttempt(a);  // on the stream before any command can follow from it
-    index.set(cupId,n+1);if(r.ok)open.set(pend.commandId,a);
+    index.set(cupId,n+1);if(r.ok){open.set(pend.commandId,a);if(n===0)firstCommitted.add(cupId);}
     arm.setGraspPlan(pend.commandId,r.ok?{ok:true,waypoints:r.waypoints}:{ok:false,code:r.code});
    }
    for(const [commandId,a] of [...open]){

@@ -24,6 +24,8 @@ from . import snapshot
 WORLD_DISTURBANCES={
  'world-dock-drift-v1':{'revision':1,'forceMapN':[2000.,0.,0.],'durationSubsteps':10},
  'world-cup-fall-v1':{'revision':1,'forceMapN':[30.,0.,30.],'durationSubsteps':10},
+ # R4.4: a small horizontal push on the cup at the nozzle stand, once, around the commit of a belief grasp (the cup must stay on its support).
+ 'world-cup-nudge-v1':{'revision':1,'forceMapN':[14.4,0.,0.],'durationSubsteps':10},
 }
 
 class WorldEngine:

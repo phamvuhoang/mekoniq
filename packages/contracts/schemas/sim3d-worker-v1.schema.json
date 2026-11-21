@@ -409,7 +409,8 @@
                   "presetId": {
                     "enum": [
                       "world-dock-drift-v1",
-                      "world-cup-fall-v1"
+                      "world-cup-fall-v1",
+                      "world-cup-nudge-v1"
                     ]
                   },
                   "revision": {
@@ -965,7 +966,8 @@
                   "presetId": {
                     "enum": [
                       "world-dock-drift-v1",
-                      "world-cup-fall-v1"
+                      "world-cup-fall-v1",
+                      "world-cup-nudge-v1"
                     ]
                   },
                   "revision": {
