@@ -30,7 +30,9 @@ describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('recovery on th
   expect(r).toMatchObject({outcome:'lifted',attempts:2,recovered:true,attention:false});
  },900_000);
  test('REC02: a grip that never forms is tried twice more, then RECOVERY_EXHAUSTED asks for a person; nothing is served',async()=>{
-  const {r,attempts,steps}=await rig(3);
+  const {r,e,attempts,steps}=await rig(3);
+  const pend=e.recovery.filter(x=>x.result==='pending');expect(pend.length).toBeGreaterThanOrEqual(8);expect(new Set(pend.map(x=>x.commandId)).size).toBe(pend.length); // R04: every step of every round has its own command id
+  expect(e.attempts.filter(a=>a.cupId==='cup-1').map(a=>a.stage)).toContain('outcome');
   expect(attempts.map(a=>a.outcome)).toEqual(['grip_not_established','grip_not_established','grip_not_established']);
   expect(steps.filter(s=>s.action==='open_gripper')).toHaveLength(2);
   expect(r).toMatchObject({attention:true,recovered:false});
