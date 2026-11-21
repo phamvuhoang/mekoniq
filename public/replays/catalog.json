@@ -36,6 +36,18 @@
       "recording": "69dd0480-e1d6-4707-8be6-6f77052eac8b",
       "horizon": 520,
       "provenance": "B07a genuine retained recording; display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "drive-fault",
+      "title": [
+        "Lỗi drive: bánh phải ngắt khi chở cốc",
+        "ドライブ障害:カップ搬送中に右車輪がトリップ",
+        "Drive fault: the right wheel trips while carrying a cup"
+      ],
+      "manifestSha256": "982d10074c2cf0e28a1147b626c5beb1b56756b0d4755fdf18bacbbcf30eff1c",
+      "recording": "b733d671-1ad6-4aec-b879-0c1fca662269",
+      "horizon": 2550,
+      "provenance": "R4 V09 recording of the real MuJoCo cell (drive-nominal-v1, drive-trip on amr-1/wheel-right at 48 s); display only; accepted:false; not_calibrated"
     }
   ]
 }

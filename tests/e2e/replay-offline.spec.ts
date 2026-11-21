@@ -18,3 +18,17 @@ test('rapid cursor work coalesces and object focus has a single-action Overview 
  await page.locator('#replay-cursor').evaluate((input:HTMLInputElement)=>{for(let i=0;i<200;i++){input.value=String(i);input.dispatchEvent(new Event('input',{bubbles:true}));}input.value='2375';input.dispatchEvent(new Event('input',{bubbles:true}));});await expect(page.locator('#replay-time')).toContainText('2375/2375');expect(reads).toBeLessThanOrEqual(3);
  await page.locator('.replay-files>summary').click();await page.selectOption('#replay-object','cup-1');await page.locator('.replay-files>summary').click();await expect(page.locator('#replay-camera')).toHaveValue('custom');await page.locator('[data-replay="camera-reset"]').click();await expect(page.locator('#replay-camera')).toHaveValue('overview');
 });
+
+test('drive-fault sample: opens with every runtime request denied, its manifest hash is the catalog\'s, the fault section reads and its row moves the recorded cursor to the applied tick',async({page})=>{
+ test.setTimeout(120000);const attempts:string[]=[];await page.route('**/lab/**',r=>{attempts.push(r.request().url());return r.abort();});
+ await page.goto('/#replay');
+ const checked=await page.evaluate(async()=>{const c=await(await fetch('/replays/catalog.json')).json(),e=c.replays.find((r:{id:string})=>r.id==='drive-fault'),bytes=await(await fetch('/replays/drive-fault/manifest.json')).arrayBuffer(),h=await crypto.subtle.digest('SHA-256',bytes);return {entry:e,sha:[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')};});
+ expect(checked.entry.manifestSha256).toBe(checked.sha);expect(checked.entry.provenance).toContain('accepted:false');expect(checked.entry.provenance).toContain('not_calibrated');expect(checked.entry.title).toHaveLength(3);
+ await page.goto('/#replay/drive-fault');await expect(page.locator('#replay-cursor')).toBeVisible({timeout:90000});
+ const section=page.locator('#replay-faults').getByTestId('fault-evidence');await expect(section).toHaveAttribute('data-available','true');
+ const row=section.locator('tr[data-verdict]').first();await expect(row).toHaveAttribute('data-verdict','detected_in_time');await expect(row).toContainText('drive-trip');await expect(row).toContainText('amr-1/wheel-right');await expect(row).toContainText('tick 2401');
+ await row.locator('[data-action="twin-fault-jump"]').click();await expect(page.locator('#replay-cursor')).toHaveValue('2401',{timeout:30000});await expect(page.locator('#replay-time')).toContainText('tick 2401');
+ expect(attempts).toEqual([]);
+ // an older sample says nothing about faults: no section, and no table of zeros
+ await page.goto('/#replay/external-impact');await expect(page.locator('#replay-cursor')).toBeVisible({timeout:90000});await expect(page.locator('#replay-faults [data-testid="fault-evidence"]')).toHaveCount(0);
+});

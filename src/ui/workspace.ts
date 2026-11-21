@@ -805,7 +805,9 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   if(this.busy||this.playing||this.replay||this.archived)return true;
   const catalog=faultCatalogOf(this.health),ctx=driveFaultContext(this.preset.id);if(!catalog.length||!ctx)return true;
   const draft=this.driveDraft??(this.driveDraft=defaultDraft(catalog,ctx));
-  if(id==='twin-drive-experiment'){try{this.preset=selectDriveExperiment(this.preset,value);}catch{return true;}this.readiness=null;this.driveCheck={state:'idle',codes:[]};void this.checkReadiness(this.preset).then(()=>this.rerender());this.rerender();return true;}
+  if(id==='twin-drive-experiment'){try{this.preset=selectDriveExperiment(this.preset,value);}catch{return true;}this.driveCheck={state:'idle',codes:[]};
+   // the cell's experiment is a request field and changes nothing the runtime was asked to ready; a mobile run's is in its engineering project, which is compiled again
+   if(this.preset.id!=='mujoco-cell'){this.readiness=null;void this.checkReadiness(this.preset).then(()=>this.rerender());}this.rerender();return true;}
   if(id==='twin-df-fault'){const item=catalog.find(f=>f.id===value);if(item)this.driveDraft={faultId:item.id,targetId:faultTargets(item,ctx)[0]??'',atMs:draft.atMs,params:defaultParams(item)};}
   else if(id==='twin-df-target')this.driveDraft={...draft,targetId:value};
   // a text field's change fires on blur, which is the mousedown of the next click: repainting there would swallow that click (the Add button), so the value is only kept

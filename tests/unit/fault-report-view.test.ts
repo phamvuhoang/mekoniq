@@ -47,3 +47,11 @@ test('every runtime string is escaped, and the section reads in Vietnamese, Japa
  setLocale('vi');expect(faultHtml(withFaults(fr([entry()])))).toContain('Phát hiện đúng hạn');expect(faultHtml(report())).toContain('Không có dữ liệu lỗi');
  setLocale('ja');expect(faultHtml(withFaults(fr([entry()])))).toContain('期限内に検出');expect(faultHtml(report())).toContain('障害データなし');
 });
+
+import {faultBlockHtml} from '../../src/reports/faults';
+test('only a run that had a drive fault schedule shows the section; a package that lost its report says why',()=>{
+ expect(faultBlockHtml(report())).toBe('');expect(faultBlockHtml(null)).toBe('');
+ const scheduled={...report(),manifest:{...report().manifest,driveFaultSchedule:{entries:[],hash:'x'}}};
+ expect(faultBlockHtml(scheduled)).toContain('NO_FAULT_DATA');
+ expect(faultBlockHtml(withFaults(fr([entry()])))).toContain('data-available="true"');
+});

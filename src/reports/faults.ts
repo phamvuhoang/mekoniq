@@ -40,3 +40,9 @@ export function faultHtml(report:unknown):string{
 <p class="field-help">${tr('Dựng lại từ stream đã ghi; lịch không phải bằng chứng đã áp dụng. Chưa hiệu chuẩn.','記録ストリームから再構築。予定は適用の証拠ではありません。未校正。','Rebuilt from the recorded streams; the schedule is not proof of application. Not calibrated.')}</p>
 <div class="eng-table-wrap" tabindex="0" role="region" aria-label="${title}"><table class="eng-table" data-testid="fault-rows"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${s.rows.map(r=>`<tr data-entry="${esc(r.entryId)}" data-verdict="${esc(r.verdictCode)}"><th scope="row">${r.tick!==null?`<button class="link-button" data-action="twin-fault-jump" data-value="${r.tick}" title="${esc(tr('Đặt con trỏ replay tại tick áp dụng','適用tickへ移動','Move the replay cursor to the applied tick'))}">${icon('arrow',12)}${esc(r.title)}</button>`:esc(r.title)}</th><td>${esc(r.injected)}</td><td>${esc(r.detection)}</td><td>${esc(r.controller)}</td><td>${esc(r.plant)}</td><td>${esc(r.invariants)}</td><td><span class="pill" data-verdict="${esc(r.verdictCode)}">${esc(r.verdict)}</span></td></tr>`).join('')}</tbody></table></div></div>`;
 }
+
+/** The block a report or a recorded package shows: only a run that had a drive fault schedule (or carries a fault report) has anything to say about faults; a package that names the schedule but lost the report says NO_FAULT_DATA. */
+export function faultBlockHtml(report:unknown):string{
+ const r=report&&typeof report==='object'?report as {faultReport?:unknown;manifest?:{driveFaultSchedule?:unknown}}:null;
+ return r&&(r.faultReport||r.manifest?.driveFaultSchedule)?faultHtml(report):'';
+}
