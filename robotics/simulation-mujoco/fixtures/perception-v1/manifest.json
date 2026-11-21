@@ -52,8 +52,8 @@
     },
     {
       "path": "perception-regions-v1.json",
-      "sha256": "e6427a607f407c15594ce263279536d43759a69227e3dfd3bba8ec4081bb8344",
-      "bytes": 439
+      "sha256": "2fc04c3fcdeced60ed31bf37b5fc99f58b3f25cb043411d04d810e43261857c5",
+      "bytes": 490
     },
     {
       "path": "perception-short-age-v1.json",

@@ -23,7 +23,9 @@ export interface ArmProgramSet {modelId:string;waypoints:Record<string,number[]>
  /** Present = grip by contact (tracking only): the plant's pads say what is held, the plant's supports say where a cup rests. Absent = grip is an event (mock, webots_arm). */
  contact?:{openM:number;closedM:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
  /** Present = checkArmSweep gets this geometry and these allowed pairs; absent = DEFAULT_ARM_GEOMETRY and no pair (as before). */
- collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]}}
+ collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]};
+ /** R4.4: a cup-pick waits for a grasp plan (setGraspPlan) before its first motion, and then goes to the planned pickApproach/pick/lift instead of the fixture's. Needs the tracking mode. */
+ beliefGrasp?:true}
 export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,choreography:ARM_CHOREOGRAPHY,motion:{profile:'linear-clamp'}};
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
 /** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
@@ -78,6 +80,7 @@ export interface ArmPlantState {
  deviceId:string;q:number[];gripper:'open'|'closed';holding:string|null;bootId:string;seq:number;tick:number;programs:Program[];modifiers:ArmFault[];
  trace:{tick:number;q:number[];tcp:[number,number,number]}[];limitsOk:boolean;commandedQ?:number[];stop?:ArmStopState;tracking?:ArmTrackingState;
  collision?:{/** Manually injected obstacles in arm-base coordinates; scene refresh does not replace these. */world:ArmObstacle[];checks:number;last:SweepResult|null;scene?:ArmSceneSnapshot;evidence?:ArmCollisionEvidence};
+ /** R4.4: the grasp plan of the running cup-pick (belief grasp): pending until the plant's ports decide, then ready with the waypoints or refused with the code. */grasp?:{commandId:string;status:'pending'|'ready'|'refused';code?:string;waypoints?:Record<'pickApproach'|'pick'|'lift',number[]>};
  plantId?:'webots_arm'|'mujoco_arm';/** Contact mode: the gripper opening commanded to the plant (m). Only a grip or a release step writes it; stop() and halt() never do. */gripperCommandM?:number;
  props?:PlantExtras['props'];/** The gripper opening the plant measured on the last observed tick (m), whatever the grip phase. */gripperOpeningM?:number;grip?:ArmGripState;/** quintic-sync-v1: the segment being commanded (k ticks done of from -> to). */segment?:{from:number[];to:number[];k:number}}
 export class MockArmPlant {
@@ -85,6 +88,7 @@ export class MockArmPlant {
  constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking,private programs:ArmProgramSet=PUMA_PROGRAMS){
   if(programs.modelId!==model.id)throw new Error(`ARM_PROGRAM_MODEL_MISMATCH: ${programs.modelId} on ${model.id}`);
   if(programs.contact&&!tracking)throw new Error('ARM_CONTACT_NEEDS_TRACKING');
+  if(programs.beliefGrasp&&!tracking)throw new Error('ARM_BELIEF_NEEDS_TRACKING');
   validatePrograms(programs,model);
   state.collision??={world:[],checks:0,last:null};state.collision.evidence??={intervals:[],worlds:{},droppedIntervals:state.collision.checks};
   if(tracking)state.tracking??={gen:[...state.q],settled:0,followCount:0,samples:0,peakRad:state.q.map(()=>0),sumSq:state.q.map(()=>0),trace:[]};}
@@ -106,9 +110,22 @@ export class MockArmPlant {
   if(command.capability!=='start_job'||!program||!this.programs.choreography[program])return {accepted:false,unknown:false,reason:'PROGRAM_NOT_APPROVED'};
   if(this.state.programs.some(p=>p.state==='running'))return {accepted:false,unknown:false,reason:'ARM_BUSY'};
   const p:Program={commandId:command.commandId,payloadHash:command.payloadHash,controlEpoch:command.controlEpoch,program,index:0,state:'running',waiting:0,evidence:{source:this.programs.contact&&this.state.plantId?this.state.plantId:MOCK_ARM.id,grip:this.programs.contact?'contact':'commanded_mock',forceModel:'none'},accepted:{accepted:true,unknown:false}};
-  this.state.programs.push(p);this.emit(p,'accepted');return p.accepted;
+  this.state.programs.push(p);if(this.programs.beliefGrasp&&program==='cup-pick')this.state.grasp={commandId:p.commandId,status:'pending'};this.emit(p,'accepted');return p.accepted;
  }
  reconcile(commandId:string):CellExecutionState {const p=this.state.programs.find(x=>x.commandId===commandId);return p?{status:p.state,evidence:{...p.evidence} as JsonObject}:{status:'not_found',evidence:{}};}
+ /** The belief grasp waiting for its plan (the running cup-pick before its first motion), or null. */
+ graspPending(){const g=this.state.grasp;if(g?.status!=='pending')return null;const p=this.state.programs.find(x=>x.commandId===g.commandId&&x.state==='running');return p?{commandId:p.commandId,program:p.program}:null;}
+ /** The ports' decision for the waiting cup-pick: the planned waypoints (joints, in limits) or the refusal code that fails the program before any motion. */
+ setGraspPlan(commandId:string,plan:{ok:true;waypoints:Record<'pickApproach'|'pick'|'lift',number[]>}|{ok:false;code:string}){
+  const g=this.state.grasp;if(g?.commandId!==commandId||g.status!=='pending'||!this.graspPending())throw new Error('GRASP_PLAN_NOT_PENDING');
+  if(!plan.ok){this.state.grasp={commandId,status:'refused',code:plan.code};return;}
+  for(const name of ['pickApproach','pick','lift'] as const){
+   const q=plan.waypoints?.[name];if(!Array.isArray(q)||q.length!==this.model.links.length||!q.every(Number.isFinite)||q.some((v,i)=>v<this.model.limits[i]!.min||v>this.model.limits[i]!.max))throw new Error(`ARM_PROGRAM_INVALID: planned waypoint ${name}`);
+  }
+  this.state.grasp={commandId,status:'ready',waypoints:structuredClone(plan.waypoints)};
+ }
+ /** The joints a stage goes to: the planned waypoint of a belief grasp that is ready, the fixture's otherwise. */
+ private goalOf(p:Program|undefined,name:string){const g=this.state.grasp;return (p&&g?.commandId===p.commandId&&g.status==='ready'?g.waypoints?.[name as 'pick']:undefined)??this.programs.waypoints[name]!;}
  setCollisionWorld(world:ArmObstacle[]){checkArmSweep(this.model,this.state.q,this.state.q,{world,...this.programs.collision});this.state.collision!.world=structuredClone(world);}
  setCollisionScene(scene:ArmSceneSnapshot){this.state.collision!.scene=scene;}
  private recordCollision(toQ:number[],world:ArmObstacle[],result:SweepResult){
@@ -157,10 +174,14 @@ export class MockArmPlant {
   }
   if(this.tracking)s.commandedQ??=[...s.tracking!.gen]; // an idle tracked arm is still told where to stay
   const p=s.programs.find(x=>x.state==='running');if(s.stop?.latched||s.stop?.reconcileRequired)return;
+  // belief grasp: no motion before the plan; a refused plan fails the program here, before any command to the plant
+  const g=p&&s.grasp?.commandId===p.commandId?s.grasp:undefined;
+  if(p&&g?.status==='refused'){p.state='failed';this.emit(p,'failed',[g.code!],{...p.evidence});return;}
+  if(g?.status==='pending')return;
   const scene=s.collision!.scene;
   if(scene?.scope==='self_scene_robot'&&!scene.available){if(p)this.stop('ARM_SCENE_GEOMETRY_UNAVAILABLE');return;}
   if(!p&&!scene?.available)return;
-  const t=this.tracking?s.tracking!:undefined,steps=p?this.programs.choreography[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?this.programs.waypoints[stage.waypoint]!:t?t.gen:s.q;
+  const t=this.tracking?s.tracking!:undefined,steps=p?this.programs.choreography[p.program]!:[],stage=p?steps[p.index]!:undefined,goal=stage?this.goalOf(p,stage.waypoint):t?t.gen:s.q;
   const maxStep=this.model.limits.map(l=>l.maxVelocity*MOCK_ARM_PARAMS.speedFraction*MOCK_ARM_PARAMS.dtS);
   const from=t?t.gen:s.q,next=this.programs.motion.profile==='quintic-sync-v1'?this.quintic(from,goal):from.map((q,i)=>{const d=goal[i]!-q;return Math.abs(d)<=maxStep[i]!?goal[i]!:q+Math.sign(d)*maxStep[i]!;});
   s.commandedQ=next;
@@ -282,7 +303,7 @@ export class MockArmPlant {
   if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;
   if(this.programs.contact&&this.watchContact(p,extras))return;
   if(!p)return;
-  const steps=this.programs.choreography[p.program]!,stage=steps[p.index]!,goal=this.programs.waypoints[stage.waypoint]!;
+  const steps=this.programs.choreography[p.program]!,stage=steps[p.index]!,goal=this.goalOf(p,stage.waypoint);
   if(t.gen.every((v,i)=>v===goal[i])&&s.q.every((q,i)=>Math.abs(q-goal[i]!)<=this.tracking!.reachTolRad))t.settled++;else t.settled=0;
   if(t.settled>=this.tracking.settleTicks){const index=p.index;this.complete(p,stage,steps,extras);if(p.index!==index)t.settled=0;}
  }

@@ -22,5 +22,8 @@
         0.02
       ]
     }
-  ]
+  ],
+  "graspPolicy": {
+    "beliefWaitTicks": 250
+  }
 }

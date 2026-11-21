@@ -32,7 +32,7 @@ export interface WorldEvidence {append(snapshot:Sim3DSnapshotV1):Promise<void>;f
 export interface WorldPlantBindings {
  displayScene?():import('../navigation2d/contracts').LabWorldSceneV1;
  navigation?:import('../session').SourceFixture['navigation'];
- metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'|'drive'>;
+ metadata?:Pick<import('../report').RunReport['manifest'],'models'|'profiles'|'armProgram'|'worldExtent'|'clock'|'drive'|'perception'>;
  evidence:WorldEvidence;
  world:WorldPlantPorts;
  robots:ReadonlyMap<string,RobotAdapter>;

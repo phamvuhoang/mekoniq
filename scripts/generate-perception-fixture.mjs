@@ -24,7 +24,9 @@ export async function generatePerceptionFixture(outDir){
  for(const b of [5,10]){profile(`perception-bias-x-${b}mm-v1`,{biasM:[mm(b),0],sigmaM:[mm(2),mm(2)]});profile(`perception-bias-y-${b}mm-v1`,{biasM:[0,mm(b)],sigmaM:[mm(2),mm(2)]});}
  // The regions a profile may name and the work region a believed position must lie in (R4-B §6 gate 2). Centres come from the cell layout at run time (the cup's birth centre); only extents are registered.
  json('perception-regions-v1.json',{schemaVersion:1,documentType:'perception-regions',id:'perception-regions-v1',provenance:'assumed',
-  viewRegions:[{id:'nozzle-stand',supportId:'nozzle-stand',halfExtentM:[0.05,0.05]}],workRegions:[{id:'cell-pick',viewRegionId:'nozzle-stand',halfExtentM:[0.02,0.02]}]});
+  viewRegions:[{id:'nozzle-stand',supportId:'nozzle-stand',halfExtentM:[0.05,0.05]}],workRegions:[{id:'cell-pick',viewRegionId:'nozzle-stand',halfExtentM:[0.02,0.02]}],
+  // how long a pick waits for a usable estimate before it asks for a person (R4-B §6 gate 1); a recovery policy may state its own
+  graspPolicy:{beliefWaitTicks:250}});
  files.set('README.md',`# Perception fixtures v1\n\nGenerate with \`node scripts/generate-perception-fixture.mjs [out-dir]\`. Each \`perception-*.json\` is a modelled perception error (bias, noise, latency, dropout, view region, maximum age) for the simulated pose estimator of R4-B: it is a parameter model, not camera data, and every value is \`assumed\`, \`not_calibrated\`. \`perception-ground-truth-v1\` has no error at all (the comparison point). \`perception-regions-v1.json\` registers the view region (the nozzle stand top) and the work region a believed cup position must lie in before a grasp is planned.\n`);
  json('manifest.json',{schemaVersion:1,documentType:'perception-fixture-manifest',id:'perception-v1',generator:'scripts/generate-perception-fixture.mjs',calibration:'not_calibrated',files:[...files].sort(([a],[b])=>a<b?-1:1).map(([path,bytes])=>({path,sha256:hash(bytes),bytes:Buffer.byteLength(bytes)}))});
  await mkdir(outDir,{recursive:true});for(const [name,bytes] of files)await writeFile(join(outDir,name),bytes);
