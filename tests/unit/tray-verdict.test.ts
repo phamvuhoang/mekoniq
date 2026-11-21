@@ -1,0 +1,106 @@
+import {expect,test} from 'vitest';
+import {buildTrayEvidence,summariseTrayRun,type TrayRunFacts} from '../../packages/lab-runtime/src/v2/simulation3d/tray-verdict';
+import type {PhysicsTickRecord} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
+
+const policy={slipWarnM:0.005,slipFailM:0.02,slipEpsilonM:0.005,slipWindowTicks:25,accelerationWindowTicks:3,accelerationToleranceBelowMps2:0.3,accelerationToleranceAboveMps2:0.3,onsetLeadTicks:5,onsetLagTicks:40};
+/** base moves along x by `speed(t)` m/s; the three cups sit still unless `slip` moves them; `contacts(t)` lists contact pairs */
+const records=(ticks:number,speed:(t:number)=>number,slip:(t:number)=>number=()=>0,contacts:(t:number)=>{a:string;b:string}[]=()=>[]):PhysicsTickRecord[]=>{
+ const out:PhysicsTickRecord[]=[];let x=2;
+ for(let t=0;t<ticks;t++){out.push({schemaVersion:1,tick:t,simTimeNs:String(t*20_000_000),contacts:contacts(t),
+  loads:['cup-1','cup-2','cup-3'].map((id,i)=>({propId:id,supportId:'amr-1/tray-1',poseInSupport:{positionM:[i*0.1+(i===0?slip(t):0),0,0.05],quaternionXyzw:[0,0,0,1]}})),
+  base:[{robotId:'amr-1',poseMap:{positionM:[x,8.1,0.075],quaternionXyzw:[0,0,0,1]},rollRad:0,pitchRad:0}]} as unknown as PhysicsTickRecord);x+=speed(t)*0.02;}
+ return out;
+};
+const events=(startS:number,endS:number)=>[{type:'RobotCommandIssued',at:new Date(Date.UTC(2026,10,1,0,0,startS)).toISOString()},{type:'MissionCompleted',at:new Date(Date.UTC(2026,10,1,0,0,endS)).toISOString()}];
+const facts=(over:Partial<TrayRunFacts>={}):TrayRunFacts=>({experimentId:'tray-nominal-v1',status:'completed',served:'3',tick:300,attention:[],records:records(300,()=>0.5),businessEvents:events(0,100),accelerationLimitMps2:0.5,cupSliding:0.6,traySliding:0.6,...over});
+const result=(s:ReturnType<typeof summariseTrayRun>,id:string)=>s.verdicts.find(v=>v.id===id)?.result;
+
+test('nominal: served all, no window slip, a cumulative drift that is reported and judged by nothing',()=>{
+ const s=summariseTrayRun(facts({records:records(300,()=>0.5,t=>t*0.00005)}),policy);
+ expect(result(s,'SERVED_ALL')).toBe('pass');expect(result(s,'SLIP_BELOW_WARN')).toBe('pass');expect(result(s,'NO_FALSE_SERVE')).toBe('pass');
+ expect(s.maxLoadSlipM.value).toBeLessThan(0.005);expect(s.cumulativeDriftM).toBeGreaterThan(0.01);
+ expect(s.serviceTimeS).toEqual({available:true,value:100});expect(s.accelerationLimitMps2).toBe(0.5);
+});
+
+test('nominal: a window slip above the warning threshold fails SLIP_BELOW_WARN',()=>{
+ const s=summariseTrayRun(facts({records:records(300,()=>0.5,t=>t<100?0:(t-99)*0.002)}),policy);
+ expect(result(s,'SLIP_BELOW_WARN')).toBe('fail');expect(s.slipLevel).toBe('fail');
+});
+
+test('a served unit without a completed mission is a false serve',()=>{
+ expect(result(summariseTrayRun(facts({status:'needs_attention',served:'1',attention:['NO_PROGRESS']}),policy),'NO_FALSE_SERVE')).toBe('fail');
+ expect(result(summariseTrayRun(facts({status:'needs_attention',served:'0',attention:['NO_PROGRESS']}),policy),'NO_FALSE_SERVE')).toBe('pass');
+});
+
+test('service time is unavailable, with a reason, when the mission did not finish',()=>{
+ const s=summariseTrayRun(facts({businessEvents:[events(0,1)[0]!]}),policy);
+ expect(s.serviceTimeS).toMatchObject({available:false,value:null,reason:'MISSION_NOT_COMPLETED'});
+});
+
+test('low friction: the effective pair friction is the larger of the two faces and the Coulomb verdict is recorded',()=>{
+ const s=summariseTrayRun(facts({experimentId:'tray-low-friction-v1',cupSliding:0.15,traySliding:0.15,records:records(400,t=>t<100?0.5:0.5)}),policy);
+ expect(s.coulomb).toMatchObject({muEffective:0.15,verdict:'no_slip_expected'});expect(s.coulomb!.boundMps2).toBeCloseTo(1.4715,4);
+ expect(result(s,'COULOMB')).toBe('pass');
+ const mixed=summariseTrayRun(facts({experimentId:'tray-low-friction-v1',cupSliding:0.15,traySliding:0.6}),policy);
+ expect(mixed.coulomb!.muEffective).toBe(0.6);
+});
+
+test('high acceleration: acceleration above the bound with no slip is a failed oracle; with a slip near the crossing it passes',()=>{
+ const speed=(t:number)=>Math.min(0.5+Math.max(0,t-100)*0.05,2.5);        // accelerates at 2.5 m/s2 after tick 100
+ const none=summariseTrayRun(facts({experimentId:'tray-accel-high-v1',cupSliding:0.15,traySliding:0.15,accelerationLimitMps2:2.5,records:records(300,speed)}),policy);
+ expect(none.coulomb!.verdict).toBe('slip_expected_absent');expect(result(none,'COULOMB')).toBe('fail');
+ const found=summariseTrayRun(facts({experimentId:'tray-accel-high-v1',cupSliding:0.15,traySliding:0.15,accelerationLimitMps2:2.5,records:records(300,speed,t=>t<105?0:(t-104)*0.002)}),policy);
+ expect(found.coulomb!.verdict).toBe('slip_expected_and_found');expect(result(found,'COULOMB')).toBe('pass');
+ expect(found.maxSupportAccelerationMps2).toBeGreaterThan(2.3);
+});
+
+test('an inconclusive Coulomb reading is recorded as inconclusive, never as a pass',()=>{
+ const s=summariseTrayRun(facts({experimentId:'tray-low-friction-v1',cupSliding:0.15,traySliding:0.15,records:records(300,t=>Math.min(1.5*t*0.02,1))}),policy);
+ expect(result(s,'COULOMB')).toBe('inconclusive');
+});
+
+const person=(x:number,y:number)=>({x,y});
+test('person crossing, physically: stop window near the person, then resume',()=>{
+ const speed=(t:number)=>t<80?0.5:t<100?0.5-(t-80)*0.025:t<200?0:t<220?(t-200)*0.025:0.5;
+ const recs=records(400,speed);
+ const stopX=recs[150]!.base![0]!.poseMap.positionM[0]!;
+ const at=(t:number)=>t<=200?person(stopX+1.0,8.1):person(stopX+1.0,11);
+ const s=summariseTrayRun(facts({experimentId:'tray-person-crossing-v1',records:recs,personAt:at,personRadiusM:0.25}),policy);
+ expect(result(s,'NO_PROXY_CONTACT')).toBe('pass');expect(result(s,'STOPPED_FOR_PERSON')).toBe('pass');expect(result(s,'RESUMED_AFTER_PASS')).toBe('pass');expect(result(s,'SERVED_ALL')).toBe('pass');
+ const never=summariseTrayRun(facts({experimentId:'tray-person-crossing-v1',records:records(400,()=>0.5),personAt:at,personRadiusM:0.25}),policy);
+ expect(result(never,'STOPPED_FOR_PERSON')).toBe('fail');
+ const touched=summariseTrayRun(facts({experimentId:'tray-person-crossing-v1',records:records(400,speed,()=>0,t=>t===120?[{a:'actor/person-1',b:'amr-1/chassis/base/c0'}]:[]),personAt:at,personRadiusM:0.25}),policy);
+ expect(result(touched,'NO_PROXY_CONTACT')).toBe('fail');
+ const stuck=summariseTrayRun(facts({experimentId:'tray-person-crossing-v1',status:'needs_attention',served:'0',attention:['NO_PROGRESS'],records:records(400,t=>t<100?0.5:0),personAt:()=>person(stopX+1.0,8.1),personRadiusM:0.25}),policy);
+ expect(result(stuck,'RESUMED_AFTER_PASS')).toBe('fail');expect(result(stuck,'SERVED_ALL')).toBe('fail');
+});
+
+test('tray evidence carries what the Lab needs to compare two runs: the variant, its knobs, the limit and the measured slip and service time',()=>{
+ const f=facts({experimentId:'tray-accel-high-v1',accelerationLimitMps2:2.5,records:records(300,()=>0.5,t=>t*0.00005)});
+ const e=buildTrayEvidence({experimentId:f.experimentId,records:f.records,businessEvents:f.businessEvents,status:f.status,accelerationLimitMps2:f.accelerationLimitMps2,policy,policyDigest:'a'.repeat(64)});
+ expect(e).toMatchObject({schemaVersion:1,documentType:'tray-evidence',accepted:false,calibration:'not_calibrated',experimentId:'tray-accel-high-v1',comparedWith:'tray-low-friction-v1',accelerationLimitMps2:2.5,windowTicks:25,
+  knobs:{friction:'cup-triple-low-friction',acceleration:'high',drive:'drive-nominal-v1',actor:false},serviceTimeS:{available:true,value:100},policyDigest:'a'.repeat(64)});
+ expect(e.maxLoadSlipM.value).toBeLessThan(0.005);expect(e.cumulativeDriftM).toBeGreaterThan(0.01);
+ // and it is the same numbers the verdicts use
+ const s=summariseTrayRun({...f,cupSliding:0.15,traySliding:0.15},policy);
+ expect(e.maxLoadSlipM).toEqual(s.maxLoadSlipM);expect(e.serviceTimeS).toEqual(s.serviceTimeS);expect(e.cumulativeDriftM).toBe(s.cumulativeDriftM);expect(e.maxSupportAccelerationMps2).toBe(s.maxSupportAccelerationMps2);
+});
+
+test('tray evidence of a run that did not finish has no service time and says why; a run without records has no slip',()=>{
+ const e=buildTrayEvidence({experimentId:'tray-nominal-v1',records:records(300,()=>0.5),businessEvents:[events(0,1)[0]!],status:'needs_attention',accelerationLimitMps2:0.5,policy,policyDigest:'b'.repeat(64)});
+ expect(e.serviceTimeS).toMatchObject({available:false,value:null,reason:'MISSION_NOT_COMPLETED'});
+ const none=buildTrayEvidence({experimentId:'tray-nominal-v1',records:[],businessEvents:[],status:'ready',accelerationLimitMps2:0.5,policy,policyDigest:'b'.repeat(64)});
+ expect(none.maxLoadSlipM).toEqual({available:false,value:null});expect(none.cumulativeDriftM).toBeNull();
+});
+
+test('a variant that stresses the plant (B, C) may end without the mission done: that is a recorded result with its reasons, not a failed oracle',()=>{
+ for(const id of ['tray-accel-high-v1','tray-torque-limited-v1'] as const){
+  const stuck=summariseTrayRun(facts({experimentId:id,status:'needs_attention',served:'0',attention:['NO_PROGRESS'],cupSliding:0.15,traySliding:0.15,accelerationLimitMps2:2.5}),policy);
+  expect(result(stuck,'SERVED_ALL'),id).toBeUndefined();expect(result(stuck,'NO_FALSE_SERVE'),id).toBe('pass');
+  const outcome=stuck.verdicts.find(v=>v.id==='MISSION_OUTCOME')!;expect(outcome.result).toBe('inconclusive');expect(outcome.detail).toContain('NO_PROGRESS');
+  const done=summariseTrayRun(facts({experimentId:id,cupSliding:0.15,traySliding:0.15,accelerationLimitMps2:2.5}),policy);
+  expect(result(done,'MISSION_OUTCOME'),id).toBe('pass');
+ }
+ // A, A-prime and D must finish
+ for(const id of ['tray-nominal-v1','tray-low-friction-v1'] as const)expect(result(summariseTrayRun(facts({experimentId:id,status:'needs_attention',served:'0',attention:['NO_PROGRESS'],cupSliding:0.15,traySliding:0.15}),policy),'SERVED_ALL'),id).toBe('fail');
+});

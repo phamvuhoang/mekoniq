@@ -64,6 +64,6 @@ test('feasibility records the geometry and the effective friction of the cup-tra
 test('the policy and the actor proxy are declared, assumed and not calibrated',async()=>{
  const p=await read('tray-policy-v1.json'),a=await read('actor-proxy-v1.json');
  expect(p).toMatchObject({id:'tray-policy-v1',calibration:'not_calibrated',slipWarnM:0.005,slipFailM:0.02});
- expect(p.accelerationToleranceMps2).toBeGreaterThan(0);
+ expect(p.accelerationToleranceAboveMps2).toBeGreaterThan(0);expect(p.accelerationToleranceBelowMps2).toBeGreaterThan(p.accelerationToleranceAboveMps2);expect(p.slipWindowTicks).toBe(25);expect(p.slipEpsilonM).toBeGreaterThanOrEqual(p.slipWarnM);
  expect(a).toMatchObject({id:'actor-proxy-v1',shape:'box',heightM:1.7,calibration:'not_calibrated'});
 });

@@ -50,7 +50,7 @@ export const defaultCatalog:CapabilityCatalog={
   'engineering-mujoco-cell-v1':{mode:'simulation',access:'simulated',backends:['mujoco_3d','mujoco_arm','mock_coffee'],providers:{amr:'mujoco_3d',arm:'mujoco_arm',coffee:'mock_coffee'},scenarioIds:['MJ-CELL-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64],composition:'single_world'}},
   /** R4.2 bench runs (V06): the AMR's wheels or one arm axis on a scene the server builds from its fixtures, so no bundle; each bench scenario needs only the backend of its role (scenario-registry `bench`). */
   [BENCH_SET_ID]:{mode:'simulation',access:'simulated',backends:['mujoco_3d','mujoco_arm'],providers:{amr:'mujoco_3d',arm:'mujoco_arm'},scenarioIds:['MJ-BENCH-WHEEL','MJ-BENCH-ARM'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
-  'engineering-mujoco-3d-v1':{mode:'simulation',access:'simulated',backends:['mujoco_3d'],providers:{amr:'mujoco_3d'},scenarioIds:['MJ-FD01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
+  'engineering-mujoco-3d-v1':{mode:'simulation',access:'simulated',backends:['mujoco_3d'],providers:{amr:'mujoco_3d'},scenarioIds:['MJ-FD01','MJ-TRAY01'],execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64]}},
   'hardware-shadow':{mode:'hardware',access:'shadow',backends:['valetudo_native']},
   'hardware-hil':{mode:'hardware',access:'hil',backends:['valetudo_native','cell_native']},
   'hardware-live':{mode:'hardware',access:'live',backends:['valetudo_native','cell_native']},

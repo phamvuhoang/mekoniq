@@ -31,9 +31,13 @@ const read=async<T,>(workerRoot:string,name:string)=>{const bytes=await readFile
 
 /** The AMR's drive documents of an experiment. The model is the fixture's, byte for byte. The control profile is the fixture's bound to the plant the bundle was compiled for (`plantModelDigest`);
  * without a plant it is byte for byte too. */
-export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDigest?:string,historical=false):Promise<DriveBundle>{
+export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDigest?:string,historical=false,baseLimitMps2?:number):Promise<DriveBundle>{
  const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},m=await read<DriveModelV1>(workerRoot,e.mobileModel),c=await read<ControlProfileV1>(workerRoot,e.mobileControl);
- const control=plantModelDigest&&plantModelDigest!==c.doc.plantModelDigest?sealDriveDocument({...c.doc,plantModelDigest}):c.doc,cb=control===c.doc?c.bytes:json(control);
+ let control=plantModelDigest&&plantModelDigest!==c.doc.plantModelDigest?sealDriveDocument({...c.doc,plantModelDigest}):c.doc;
+ // a registered acceleration knob (tray) sets the base controller's own limit; it is an upper bound and stays no lower than the navigation policy's
+ const base=control.controllers.find(k=>k.controllerId==='diff-drive-base-v1');
+ if(baseLimitMps2!==undefined&&base&&base.params.maxAccelerationMps2!==baseLimitMps2)control=sealDriveDocument({...control,controllers:control.controllers.map(k=>k===base?{...k,params:{...k.params,maxAccelerationMps2:baseLimitMps2}}:k)});
+ const cb=control===c.doc?c.bytes:json(control);
  return {files:[{path:e.mobileModel,bytes:m.bytes},{path:e.mobileControl,bytes:cb}],refs:{driveModelRef:ref(m.doc,e.mobileModel,m.bytes),controlProfileRef:ref(control,e.mobileControl,cb)},model:m.doc,control};
 }
 

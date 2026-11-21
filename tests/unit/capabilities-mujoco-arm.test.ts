@@ -57,9 +57,9 @@ test('the explicit cell set admits only MJ-CELL-BV01 with one shared simulation 
   expect(defaultCatalog.sets['engineering-mujoco-cell-v1']).toEqual({mode:'simulation',access:'simulated',backends:['mujoco_3d','mujoco_arm','mock_coffee'],providers:{amr:'mujoco_3d',arm:'mujoco_arm',coffee:'mock_coffee'},scenarioIds:['MJ-CELL-BV01'],bundle:false,execution:{host:'portable_python',clock:'source_fixed_step',manualStep:false,speedMultipliers:[1,4,16,64],composition:'single_world'}});
 });
 
-test('mobile catalog adds only an unconfigured simulation backend and the MJ-FD01 engineering set', () => {
+test('mobile catalog adds only an unconfigured simulation backend and the MJ-FD01 and MJ-TRAY01 engineering set', () => {
   expect(defaultCatalog.backends.find(b => b.id === 'mujoco_3d')).toMatchObject({ installed: false, modes: ['simulation'], accesses: ['simulated'] });
-  expect(defaultCatalog.sets['engineering-mujoco-3d-v1']).toMatchObject({ mode: 'simulation', access: 'simulated', backends: ['mujoco_3d'], providers: { amr: 'mujoco_3d' }, scenarioIds: ['MJ-FD01'] });
+  expect(defaultCatalog.sets['engineering-mujoco-3d-v1']).toMatchObject({ mode: 'simulation', access: 'simulated', backends: ['mujoco_3d'], providers: { amr: 'mujoco_3d' }, scenarioIds: ['MJ-FD01', 'MJ-TRAY01'] });
   expect(defaultCatalog.sets['engineering-mujoco-3d-v1']!.bundle).not.toBe(false);
   expect(resolveBackends(scenarioRegistry.get('MJ-FD01')!, 'mock', 'mock-default')).toMatchObject({ ok: false });
 });

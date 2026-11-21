@@ -1,6 +1,7 @@
 import {exportWebReplay,readReplayInput} from './replay/export';
 import type {ReplayManifest} from './replay/reader';
 import {PAYLOAD_EXPERIMENTS} from './simulation3d/payload-experiments';
+import {TRAY_EXPERIMENTS} from './simulation3d/tray-experiments';
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {lstat,mkdir,opendir,rm,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -122,7 +123,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    ...deps.engineering?{engineeringCompilerProfiles:deps.engineering.compilerProfiles}:{},protocolMajor:2,protocolMajors:[1,2],sourceCommit:deps.sourceCommit,schemaHash:deps.schemaHash,
    backends:catalog.backends.map(b=>({id:b.id,modes:b.modes,accesses:b.accesses,installed:b.installed,compatible:b.compatible,reachable:b.reachable,commissioned:b.commissioned,enabled:enabled.has(b.id)&&b.installed,...b.reason?{reason:b.reason}:{}})),
    backendSets:Object.entries(catalog.sets).map(([id,s])=>({id,mode:s.mode,access:s.access,backends:s.backends,...s.execution?{execution:structuredClone(s.execution)}:{}})),scenarioIds:offeredScenarios(catalog).map(([id])=>id),scenarioRequirements:Object.fromEntries(offeredScenarios(catalog).map(([id,def])=>[id,{mock:resolveBackends(def,'mock').required,simulation:resolveBackends(def,'simulation').required}])),scenarioRequirementsByBackendSet:requirementsByBackendSet(catalog,{engineering:!!deps.engineering}),features:{polling:true,sse:true,readiness:true,bearer:true,pacedStep:true,replayExport:{version:1,available:deps.worldExperiments===true,maxVersionsPerRun:2,maxRetainedVersions:8,maxConcurrentExports:2,maxConcurrentDownloads:4,maxDownloadBytes:16*1024*1024,maxPackageBytes:25*1024*1024,backendSetIds:['engineering-mujoco-cell-v1']}},deployment:{bind:deps.deployment?.bind??'loopback'},
-   ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true}))}:{},
+   ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?{mobilePayloadExperiments:Object.entries(PAYLOAD_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,maxLinearMps:e.maxLinearMps,maxAngularRadps:e.maxAngularRadps,calibration:'not_calibrated',requiresNewRun:true})),trayExperiments:Object.entries(TRAY_EXPERIMENTS).map(([id,e])=>({id,loadProfileId:e.load,driveExperimentId:e.driveExperimentId,accelerationPolicy:e.accelerationPolicy,actor:e.actor,comparedWith:e.comparedWith,calibration:'not_calibrated',requiresNewRun:true}))}:{},
    ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
    ...benchHealth(),
    ...deps.driveFaultContext?{faultCatalog:Object.entries(DRIVE_FAULTS).filter(([,f])=>!f.campaignOnly).map(([id,f])=>({id,layer:f.layer,target:f.target,appliedBy:f.appliedBy,params:structuredClone(f.params)}))}:{},

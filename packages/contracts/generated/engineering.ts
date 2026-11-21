@@ -695,7 +695,7 @@ export interface EngineeringProject {
   entityBindings: EntityBinding[];
   requestedProfile: EngineeringProfile;
   /**
-   * Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.
+   * Registered server-owned new-run payload or tray experiment; only engineering-mujoco-3d-v1.
    */
   mujocoExperimentId?:
     | 'payload-empty-v1'
@@ -704,7 +704,12 @@ export interface EngineeringProject {
     | 'payload-slow-v1'
     | 'payload-fast-v1'
     | 'payload-friction-low-v1'
-    | 'payload-friction-high-v1';
+    | 'payload-friction-high-v1'
+    | 'tray-nominal-v1'
+    | 'tray-low-friction-v1'
+    | 'tray-accel-high-v1'
+    | 'tray-torque-limited-v1'
+    | 'tray-person-crossing-v1';
   /**
    * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
    */

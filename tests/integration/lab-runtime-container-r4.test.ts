@@ -22,7 +22,7 @@ const runId=randomUUID(),names:string[]=[];
 afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
 
 describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
- test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, a scheduled drive fault reports its receipts, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
+ test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, a scheduled drive fault reports its receipts, the three-cup tray serves 3, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
   const inspected=docker(['image','inspect',image]);
   if(!inspected.ok)throw new Error(`IMAGE_MISSING: ${image} does not exist locally; build it with deploy/lab-runtime/build.sh ${image}`);
   const [info]=JSON.parse(inspected.out);
@@ -97,6 +97,27 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
    expect(faultReport.faultReport).toMatchObject({documentType:'fault-report',accepted:false,entries:[{faultId:'encoder-dropout',targetId:'amr-1/wheel-left',verdict:'detected_in_time',injection:{appliedTick:51,endedTick:66},detection:{by:'drive',code:'FEEDBACK_LOSS'}}]});
    expect(faultReport.faultReport.invariants.filter((i:{result:string})=>i.result==='violated')).toEqual([]);
    const faultArchived=await api(`${fUrl}/archive`,{method:'POST',token,body:{}});expect(faultArchived.status,JSON.stringify(faultArchived.body)).toBe(200);
+   // R4 V10: the three-cup tray (tray-nominal-v1, seed 42) compiles through the image's engineering API and runs on its real MuJoCo worker: it serves 3 after the confirmation, no cup slides past the warning threshold in any
+   // window, and the report carries the tray evidence the Lab compares. A tray project is the payload project with a registered experiment id: the catalog the image ships already holds its components.
+   expect(health.trayExperiments.map((e:{id:string})=>e.id).sort()).toEqual(['tray-accel-high-v1','tray-low-friction-v1','tray-nominal-v1','tray-person-crossing-v1','tray-torque-limited-v1']);
+   const trayProject={...JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-tray-v1/serve-3d-project.json','utf8')),requestedProfile:'engineering-mujoco-3d-v1',mujocoExperimentId:'tray-nominal-v1'};
+   const trayCompiled=await api('/engineering/compile',{method:'POST',token,body:{project:trayProject}});
+   expect(trayCompiled.status,JSON.stringify(trayCompiled.body).slice(0,400)).toBe(200);expect(trayCompiled.body.state,JSON.stringify(trayCompiled.body.problems)).toBe('compiled');
+   // a payload run of MJ-FD01 may not carry a tray variant, and MJ-TRAY01 may not run without one
+   const trayBody={engineeringRef:{bundleDigest:trayCompiled.body.bundleDigest,projectDigest:trayCompiled.body.projectDigest},scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-3d-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash}};
+   const trayCreated=await api('/runs',{method:'POST',token,body:{...trayBody,scenarioId:'MJ-TRAY01'}});
+   expect(trayCreated.status,JSON.stringify(trayCreated.body).slice(0,400)).toBe(201);
+   const tUrl=`/runs/${trayCreated.body.run.id}`;let tRev=trayCreated.body.run.runRevision as number,tn=0;
+   const tAct=async(kind:string,payload:Record<string,unknown>)=>{const r=await api(`${tUrl}/actions`,{method:'POST',token,body:{actionId:`t-${++tn}`,expectedRevision:tRev,kind,payload}});expect(r.status,JSON.stringify(r.body).slice(0,300)).toBe(200);tRev=r.body.run.runRevision;return r.body;};
+   let tv=await tAct('start',{});const tw0=Date.now();
+   while(['running','awaiting_confirmation','created','paused'].includes(tv.run.status)){if(tv.tick>30000)throw new Error(`TRAY_STEP_LIMIT at ${tv.tick}`);tv=await tAct('step',{ticks:250});}
+   const trayWallMs=Date.now()-tw0;
+   console.log('MJ-TRAY01 tray-nominal-v1 container',JSON.stringify({image,platform:info.Os+'/'+info.Architecture,finalTick:tv.tick,wallMs:trayWallMs,msPerTick:+(trayWallMs/tv.tick).toFixed(3),status:tv.run.status}));
+   const trayReport=(await api(`${tUrl}/report`,{token})).body;
+   expect(trayReport.outcome,JSON.stringify(trayReport.attention)).toMatchObject({status:'completed',served:'3'});
+   expect(trayReport.trayEvidence).toMatchObject({documentType:'tray-evidence',accepted:false,experimentId:'tray-nominal-v1',comparedWith:null,accelerationLimitMps2:0.5,serviceTimeS:{available:true}});
+   expect(trayReport.trayEvidence.maxLoadSlipM.value).toBeLessThan(0.005);
+   const trayArchived=await api(`${tUrl}/archive`,{method:'POST',token,body:{}});expect(trayArchived.status,JSON.stringify(trayArchived.body)).toBe(200);
    // R4.2: a wheel bench step from the starting profile health serves; the run ends itself at tick 500, the engine slot is free for a second bench right after, and the trace reads back
    expect(Object.keys(health.benchCatalog)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);
    const benchBody=(signal:unknown)=>({scenarioId:'MJ-BENCH-WHEEL',scenarioRevision:1,seed:3,mode:'simulation',access:'simulated',backendSetId:'engineering-mujoco-bench-v1',runtimeIdentity:{sourceCommit:health.sourceCommit,schemaHash:health.schemaHash},

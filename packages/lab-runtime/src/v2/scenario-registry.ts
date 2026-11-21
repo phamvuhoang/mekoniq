@@ -80,6 +80,9 @@ export const scenarioRegistry:ReadonlyMap<string,ScenarioDefinition>=new Map<str
  // and only a runtime given MEKONIQ_LAB_MUJOCO=1 offers it (scenario-matrix.ts scenarioOffered).
  ['MJ-CELL-BV01',{id:'MJ-CELL-BV01',revision:1,title:'Two coffees through one continuous MuJoCo world with Source custody',...bv01,basedOn:{id:'BV01',revision:1}}],
  ['MJ-BV01',{id:'MJ-BV01',revision:1,title:'Espresso and iced milk coffee on the MuJoCo arm: recipe -> verify -> arm (contact grip) -> robot -> table',...bv01,basedOn:{id:'BV01',revision:1}}],
+ // R4.3 (V10): one AMR carries a tray of three cups from the kitchen to the eighth table (table points in id order), stops, waits for the confirmation and parks. The five registered tray experiments run on it;
+ // only engineering-mujoco-3d-v1 offers it, and only with a tray experiment compiled into the project.
+ ['MJ-TRAY01',{id:'MJ-TRAY01',revision:1,title:'Three cups on one tray: kitchen -> eighth table -> parking',robots:1,orders:[{actor:'guest-1',table:7,quantity:3,atTick:[25,25]}],confirm:{mode:'scripted',delayTicks:50},park:true,maxTicks:30000}],
  // R4.2 bench runs (V06): the AMR's two wheels on the serve-payload-v1 plant (load empty, empty floor) and one axis of the xArm 6 at home with no cup in play; at most 500 ticks. Only engineering-mujoco-bench-v1 runs them.
  ['MJ-BENCH-WHEEL',{id:'MJ-BENCH-WHEEL',revision:1,title:'Bench: both wheels of the payload AMR on one test signal (straight line)',robots:1,orders:[],confirm:{mode:'scripted',delayTicks:0},park:false,maxTicks:500,bench:'amr'}],
  ['MJ-BENCH-ARM',{id:'MJ-BENCH-ARM',revision:1,title:'Bench: one xArm 6 axis (J1-J6 or the gripper) on one test signal, the others holding',robots:1,orders:[],confirm:{mode:'scripted',delayTicks:0},park:false,maxTicks:500,bench:'arm'}],

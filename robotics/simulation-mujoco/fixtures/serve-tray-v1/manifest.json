@@ -72,8 +72,8 @@
     },
     {
       "path": "tray-policy-v1.json",
-      "sha256": "a9842b74f1ca85c31632fa130d4b2586a411c7beaba87e946ecb22e4dd8302c1",
-      "bytes": 906
+      "sha256": "bbcfaec1e1dc7a1d7e6e492bc0602136d0961c6ada069116a1d288675eafb0d7",
+      "bytes": 1552
     },
     {
       "path": "world3d.json",
