@@ -6,6 +6,7 @@
   "issues": [],
   "summaries": [
     {
+      "wheelSpeedShortfallRadS": 0.845196218288556,
       "experimentId": "tray-nominal-v1",
       "status": "completed",
       "served": "3",
@@ -23,6 +24,11 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.7133279174304844,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 5635"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -48,6 +54,7 @@
       "seed": 7
     },
     {
+      "wheelSpeedShortfallRadS": 0.845196218288556,
       "experimentId": "tray-nominal-v1",
       "status": "completed",
       "served": "3",
@@ -65,6 +72,11 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.7133279174304844,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 5635"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -90,6 +102,7 @@
       "seed": 8
     },
     {
+      "wheelSpeedShortfallRadS": 0.845196218288556,
       "experimentId": "tray-nominal-v1",
       "status": "completed",
       "served": "3",
@@ -107,6 +120,11 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.7133279174304844,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 5635"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -132,6 +150,7 @@
       "seed": 42
     },
     {
+      "wheelSpeedShortfallRadS": 0.9959830904983065,
       "experimentId": "tray-low-friction-v1",
       "status": "completed",
       "served": "3",
@@ -150,6 +169,11 @@
       "maxSupportAccelerationMps2": 0.8663906378941131,
       "verdicts": [
         {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 5627"
+        },
+        {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
           "detail": "served 3, status completed"
@@ -167,13 +191,13 @@
         {
           "id": "COULOMB",
           "result": "pass",
-          "detail": "no_slip_expected: tray acceleration up to 0.87 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
+          "detail": "no_slip_expected: tray acceleration up to 0.93 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
         }
       ],
       "coulomb": {
         "muEffective": 0.15,
         "boundMps2": 1.4715,
-        "maxAccelerationMps2": 0.8663906378941131,
+        "maxAccelerationMps2": 0.9347912753834436,
         "verdict": "no_slip_expected",
         "onsetTick": null
       },
@@ -181,6 +205,7 @@
       "seed": 7
     },
     {
+      "wheelSpeedShortfallRadS": 0.9959830904983065,
       "experimentId": "tray-low-friction-v1",
       "status": "completed",
       "served": "3",
@@ -199,6 +224,11 @@
       "maxSupportAccelerationMps2": 0.8663906378941131,
       "verdicts": [
         {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 5627"
+        },
+        {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
           "detail": "served 3, status completed"
@@ -216,13 +246,13 @@
         {
           "id": "COULOMB",
           "result": "pass",
-          "detail": "no_slip_expected: tray acceleration up to 0.87 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
+          "detail": "no_slip_expected: tray acceleration up to 0.93 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
         }
       ],
       "coulomb": {
         "muEffective": 0.15,
         "boundMps2": 1.4715,
-        "maxAccelerationMps2": 0.8663906378941131,
+        "maxAccelerationMps2": 0.9347912753834436,
         "verdict": "no_slip_expected",
         "onsetTick": null
       },
@@ -230,6 +260,7 @@
       "seed": 42
     },
     {
+      "wheelSpeedShortfallRadS": 1.5274304739412337,
       "experimentId": "tray-accel-high-v1",
       "status": "needs_attention",
       "served": "0",
@@ -249,6 +280,11 @@
       "maxSupportAccelerationMps2": 1.8924329387136087,
       "verdicts": [
         {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status needs_attention at tick 1295"
+        },
+        {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
           "detail": "served 0, status needs_attention"
@@ -261,13 +297,13 @@
         {
           "id": "COULOMB",
           "result": "pass",
-          "detail": "slip_expected_and_found: tray acceleration up to 1.89 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
+          "detail": "slip_expected_and_found: tray acceleration up to 2.09 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
         }
       ],
       "coulomb": {
         "muEffective": 0.15,
         "boundMps2": 1.4715,
-        "maxAccelerationMps2": 1.8924329387136087,
+        "maxAccelerationMps2": 2.092066651253294,
         "verdict": "slip_expected_and_found",
         "onsetTick": 378
       },
@@ -275,6 +311,7 @@
       "seed": 7
     },
     {
+      "wheelSpeedShortfallRadS": 1.5274304739412337,
       "experimentId": "tray-accel-high-v1",
       "status": "needs_attention",
       "served": "0",
@@ -294,6 +331,11 @@
       "maxSupportAccelerationMps2": 1.8924329387136087,
       "verdicts": [
         {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status needs_attention at tick 1295"
+        },
+        {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
           "detail": "served 0, status needs_attention"
@@ -306,13 +348,13 @@
         {
           "id": "COULOMB",
           "result": "pass",
-          "detail": "slip_expected_and_found: tray acceleration up to 1.89 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
+          "detail": "slip_expected_and_found: tray acceleration up to 2.09 m/s2 against the Coulomb bound 1.472 m/s2 (mu 0.15)"
         }
       ],
       "coulomb": {
         "muEffective": 0.15,
         "boundMps2": 1.4715,
-        "maxAccelerationMps2": 1.8924329387136087,
+        "maxAccelerationMps2": 2.092066651253294,
         "verdict": "slip_expected_and_found",
         "onsetTick": 378
       },
@@ -320,6 +362,7 @@
       "seed": 42
     },
     {
+      "wheelSpeedShortfallRadS": 2.8382245779751534,
       "experimentId": "tray-torque-limited-v1",
       "status": "needs_attention",
       "served": "0",
@@ -338,6 +381,16 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.5620497019162268,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status needs_attention at tick 3977"
+        },
+        {
+          "id": "SPEED_SHORTFALL",
+          "result": "pass",
+          "detail": "3263 ticks with the wheels commanded above 1 rad/s; largest shortfall 2.838 rad/s"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -358,6 +411,7 @@
       "seed": 7
     },
     {
+      "wheelSpeedShortfallRadS": 2.8382245779751534,
       "experimentId": "tray-torque-limited-v1",
       "status": "needs_attention",
       "served": "0",
@@ -376,6 +430,16 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.5620497019162268,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status needs_attention at tick 3977"
+        },
+        {
+          "id": "SPEED_SHORTFALL",
+          "result": "pass",
+          "detail": "3263 ticks with the wheels commanded above 1 rad/s; largest shortfall 2.838 rad/s"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -396,6 +460,7 @@
       "seed": 42
     },
     {
+      "wheelSpeedShortfallRadS": 0.8351615240843886,
       "experimentId": "tray-person-crossing-v1",
       "status": "completed",
       "served": "3",
@@ -413,6 +478,11 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.7133279174304844,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 6134"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -436,25 +506,26 @@
         {
           "id": "STOPPED_FOR_PERSON",
           "result": "pass",
-          "detail": "63 ticks nearly still with the person within 2 m"
+          "detail": "107 ticks nearly still with the person within 2 m, a stop the run without a person does not make"
         },
         {
           "id": "RESUMED_AFTER_PASS",
           "result": "pass",
-          "detail": "moved again at tick 2424"
+          "detail": "moved again at tick 2424, the person more than 2 m away"
         }
       ],
       "person": {
         "contactTicks": [],
-        "stoppedTicks": 63,
-        "firstStopTick": 2068,
-        "lastStopTick": 2271,
+        "stoppedTicks": 107,
+        "firstStopTick": 2236,
+        "lastStopTick": 2342,
         "resumedTick": 2424
       },
       "caseId": "d-person-crossing-s7",
       "seed": 7
     },
     {
+      "wheelSpeedShortfallRadS": 0.8351615240843886,
       "experimentId": "tray-person-crossing-v1",
       "status": "completed",
       "served": "3",
@@ -472,6 +543,11 @@
       "accelerationLimitMps2": 0.5,
       "maxSupportAccelerationMps2": 0.7133279174304844,
       "verdicts": [
+        {
+          "id": "RUN_ENDED",
+          "result": "pass",
+          "detail": "status completed at tick 6134"
+        },
         {
           "id": "NO_FALSE_SERVE",
           "result": "pass",
@@ -495,19 +571,19 @@
         {
           "id": "STOPPED_FOR_PERSON",
           "result": "pass",
-          "detail": "63 ticks nearly still with the person within 2 m"
+          "detail": "107 ticks nearly still with the person within 2 m, a stop the run without a person does not make"
         },
         {
           "id": "RESUMED_AFTER_PASS",
           "result": "pass",
-          "detail": "moved again at tick 2424"
+          "detail": "moved again at tick 2424, the person more than 2 m away"
         }
       ],
       "person": {
         "contactTicks": [],
-        "stoppedTicks": 63,
-        "firstStopTick": 2068,
-        "lastStopTick": 2271,
+        "stoppedTicks": 107,
+        "firstStopTick": 2236,
+        "lastStopTick": 2342,
         "resumedTick": 2424
       },
       "caseId": "d-person-crossing-s42",

@@ -63,7 +63,7 @@
       }
     ]
   },
-  "sourceCommit": "b1983ca98995290cb3fb9f15725c41c2aaeb3272",
+  "sourceCommit": "1012ae3303696d4ec87103b8ea506e2143662769",
   "hostArch": "arm64",
   "accepted": false,
   "execution": "actual_mujoco",
