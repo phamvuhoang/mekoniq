@@ -301,7 +301,7 @@
               "maxLength": 200
             },
             "hostArch": {
-              "description": "The architecture the worker reported (contracts §1): bit identity of two results only means something within one.",
+              "description": "The architecture the worker reported (contracts \u00a71): bit identity of two results only means something within one.",
               "enum": [
                 "arm64",
                 "x86_64"
@@ -717,6 +717,11 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "overriddenBy": {
+                    "enum": [
+                      "WORLD_MOVEMENT_INTERLOCK"
+                    ]
                   }
                 },
                 "required": [
@@ -913,7 +918,8 @@
                 "enum": [
                   "pass",
                   "violated",
-                  "not_applicable"
+                  "not_applicable",
+                  "not_evidenced"
                 ]
               },
               "tick": {

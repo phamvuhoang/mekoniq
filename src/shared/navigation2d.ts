@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ b1983ca98995290cb3fb9f15725c41c2aaeb3272 (sha256 9ea99313109a006b4eb43a0316c6f0bf495e4be2042732f5d4036cffc1170962). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 1012ae3303696d4ec87103b8ea506e2143662769 (sha256 b08e0449ca20c80d65c3194d21a2353b5683571574a95c506665e260681dcc73). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -1699,6 +1699,7 @@ export interface FaultReceiptV1 {
   bootId: string;
   sceneDigest: string;
   requestDigest: string;
+  overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
 }
 export interface WorldStep {
   workerPid: number;
@@ -3100,6 +3101,7 @@ export interface FaultReportV1 {
     injection: {
       appliedTick: number | null;
       endedTick: number | null;
+      overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
     };
     detection: {
       by: ('drive' | 'controller' | 'arm_program' | 'source') | null;
@@ -3129,7 +3131,7 @@ export interface FaultReportV1 {
       | 'CUSTODY_UNCHANGED'
       | 'LATCH_HELD'
       | 'TORQUE_ZERO_AFTER_TIMEOUT';
-    result: 'pass' | 'violated' | 'not_applicable';
+    result: 'pass' | 'violated' | 'not_applicable' | 'not_evidenced';
     tick: number | null;
     evidence: string;
   }[];
