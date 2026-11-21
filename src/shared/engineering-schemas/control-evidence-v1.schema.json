@@ -15,6 +15,9 @@
     },
     {
       "$ref": "#/definitions/ControlOracleV1"
+    },
+    {
+      "$ref": "#/definitions/FaultOracleV1"
     }
   ],
   "definitions": {
@@ -649,6 +652,9 @@
         "scheduleDigest": {
           "$ref": "engineering-component.schema.json#/definitions/Digest"
         },
+        "oracleDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
         "entries": {
           "type": "array",
           "minItems": 0,
@@ -672,33 +678,116 @@
                 "minLength": 1,
                 "maxLength": 200
               },
-              "status": {
-                "enum": [
-                  "fired",
-                  "not_fired",
-                  "evidence_invalid"
-                ]
+              "params": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "maxProperties": 4
               },
-              "appliedTick": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": 0,
-                    "maximum": 9007199254740991
+              "durationMs": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 60000
+              },
+              "injection": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "appliedTick": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
-                  {
-                    "type": "null"
+                  "endedTick": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
+                },
+                "required": [
+                  "appliedTick",
+                  "endedTick"
                 ]
               },
               "detection": {
-                "enum": [
-                  "detected",
-                  "not_detected",
-                  "not_applicable"
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "by": {
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "drive",
+                          "controller",
+                          "arm_program",
+                          "source"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "code": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "tick": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "latencyTicks": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "by",
+                  "code",
+                  "tick",
+                  "latencyTicks"
                 ]
               },
-              "detectedTick": {
+              "firstCommandChangeTick": {
                 "anyOf": [
                   {
                     "type": "integer",
@@ -708,6 +797,83 @@
                   {
                     "type": "null"
                   }
+                ]
+              },
+              "plantResponse": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "axisState": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "axisFault": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "peakActualSpeedRadS": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "ticksToRest": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "baseTravelM": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "axisState",
+                  "axisFault",
+                  "peakActualSpeedRadS",
+                  "ticksToRest",
+                  "baseTravelM"
+                ]
+              },
+              "verdict": {
+                "enum": [
+                  "detected_in_time",
+                  "detected_late",
+                  "not_detected",
+                  "not_fired"
                 ]
               }
             },
@@ -715,10 +881,64 @@
               "entryId",
               "faultId",
               "targetId",
-              "status",
-              "appliedTick",
+              "params",
+              "durationMs",
+              "injection",
               "detection",
-              "detectedTick"
+              "firstCommandChangeTick",
+              "plantResponse",
+              "verdict"
+            ]
+          }
+        },
+        "invariants": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "enum": [
+                  "NO_FALSE_SERVE",
+                  "NO_RESEND_AFTER_UNKNOWN",
+                  "NO_MOTION_BEFORE_ENABLED",
+                  "CUSTODY_UNCHANGED",
+                  "LATCH_HELD",
+                  "TORQUE_ZERO_AFTER_TIMEOUT"
+                ]
+              },
+              "result": {
+                "enum": [
+                  "pass",
+                  "violated",
+                  "not_applicable"
+                ]
+              },
+              "tick": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "id",
+              "result",
+              "tick",
+              "evidence"
             ]
           }
         },
@@ -739,7 +959,9 @@
         "documentType",
         "runId",
         "scheduleDigest",
+        "oracleDigest",
         "entries",
+        "invariants",
         "evidence",
         "accepted"
       ],
@@ -918,6 +1140,142 @@
         "accelerationLimit",
         "clamped"
       ]
+    },
+    "FaultOracleV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "documentType": {
+          "const": "fault-oracle"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "digest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "calibration": {
+          "const": "not_calibrated"
+        },
+        "faults": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "faultId": {
+                "enum": [
+                  "encoder-dropout",
+                  "motor-weak",
+                  "drive-trip",
+                  "command-delay",
+                  "command-loss",
+                  "grip-weak",
+                  "lidar-noise",
+                  "drive-reset"
+                ]
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "detector": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "drive",
+                      "controller",
+                      "arm_program",
+                      "source"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "codes": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              },
+              "deadlineTicks": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "faultId",
+              "required",
+              "detector",
+              "codes",
+              "deadlineTicks"
+            ]
+          }
+        },
+        "invariantPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "holdToleranceRad": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "torqueEpsNm": {
+              "type": "number",
+              "minimum": 0
+            },
+            "timeoutSettleTicks": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "holdToleranceRad",
+            "torqueEpsNm",
+            "timeoutSettleTicks"
+          ]
+        },
+        "source": {
+          "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "documentType",
+        "id",
+        "revision",
+        "digest",
+        "calibration",
+        "faults",
+        "invariantPolicy",
+        "source"
+      ],
+      "title": "FaultOracleV1"
     }
   }
 }

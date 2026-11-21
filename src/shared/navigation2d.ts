@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 34cf316b822da231b869ff052527630d8450c3c2 (sha256 e641fef83e5d4378c9d64628b12c4786aedc7f1480e1117d15ffd2b642a27986). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 29510ae554171aea9f42d74efc1cb6c4bc1fa55b (sha256 9ea99313109a006b4eb43a0316c6f0bf495e4be2042732f5d4036cffc1170962). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -394,6 +394,11 @@ export type Sim3DRequestV1 =
          * @maxItems 16
          */
         driveCommands?: DriveCommandV1[];
+        /**
+         * @minItems 0
+         * @maxItems 32
+         */
+        faultInjections?: FaultInjectionV1[];
       };
     }
   | {
@@ -516,7 +521,7 @@ export type BenchSignal =
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "ControlEvidenceV1".
  */
-export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1;
+export type ControlEvidenceV1 = DriveTickRecord | TuningResultV1 | FaultReportV1 | ControlOracleV1 | FaultOracleV1;
 
 export interface Navigation2DContracts {}
 /**
@@ -1381,6 +1386,11 @@ export interface Sim3DSnapshotV1 {
    * @maxItems 2
    */
   driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1544,6 +1554,35 @@ export interface PhysicsTickRecord {
    * @maxItems 16
    */
   drives?: DriveAxisSnapshot[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultIntents?: FaultInjectionV1[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
+  /**
+   * @minItems 0
+   * @maxItems 2
+   */
+  sensorTransforms?: {
+    entryId: string;
+    sensorId: string;
+    scanTick: number;
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    rangesM: (number | null)[];
+    /**
+     * @minItems 0
+     * @maxItems 1080
+     */
+    states: ('hit' | 'no_return' | 'below_min' | 'invalid')[];
+  }[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1629,6 +1668,37 @@ export interface DriveAxisSnapshot {
   actualVelocityRadS: number;
   saturatedSubsteps: number;
   followingErrorRad: number | null;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultInjectionV1".
+ */
+export interface FaultInjectionV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultReceiptV1".
+ */
+export interface FaultReceiptV1 {
+  entryId: string;
+  faultId: string;
+  targetId: string;
+  params: {
+    [k: string]: number;
+  };
+  phase: 'start' | 'end';
+  appliedTick: number;
+  runId: string;
+  bootId: string;
+  sceneDigest: string;
+  requestDigest: string;
 }
 export interface WorldStep {
   workerPid: number;
@@ -1742,6 +1812,11 @@ export interface Sim3DWireSnapshotV1 {
    * @maxItems 2
    */
   driveTrace?: DriveTrace[];
+  /**
+   * @minItems 0
+   * @maxItems 32
+   */
+  faultReceipts?: FaultReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2317,6 +2392,16 @@ export interface WorldEvidenceRecord {
      * @maxItems 16
      */
     driveCommands?: DriveCommandV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultInjections?: FaultInjectionV1[];
+    /**
+     * @minItems 0
+     * @maxItems 32
+     */
+    faultReceipts?: FaultReceiptV1[];
   } | null;
   /**
    * @maxItems 16
@@ -2620,6 +2705,30 @@ export interface DriveFeedbackV1 {
   velocityRadS: number | null;
   torqueNm: number | null;
   tick: number;
+}
+/**
+ * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "DriveFaultEntryV1".
+ */
+export interface DriveFaultEntryV1 {
+  id: string;
+  faultId: string;
+  targetId: string;
+  trigger:
+    | {
+        kind: 'elapsed_sim_ms';
+        value: number;
+      }
+    | {
+        kind: 'phase';
+        value: 'brew' | 'grasp' | 'handoff' | 'delivery';
+      };
+  durationMs: number;
+  params?: {
+    [k: string]: number;
+  };
 }
 /**
  * Neutral drive command/feedback contract (R4-A). DriveFeedbackV1 carries measured values only; DriveAxisSnapshot adds the true state and is evidence-only.
@@ -2975,6 +3084,7 @@ export interface FaultReportV1 {
   documentType: 'fault-report';
   runId: string;
   scheduleDigest: Digest;
+  oracleDigest: Digest;
   /**
    * @minItems 0
    * @maxItems 16
@@ -2983,10 +3093,45 @@ export interface FaultReportV1 {
     entryId: string;
     faultId: string;
     targetId: string;
-    status: 'fired' | 'not_fired' | 'evidence_invalid';
-    appliedTick: number | null;
-    detection: 'detected' | 'not_detected' | 'not_applicable';
-    detectedTick: number | null;
+    params: {
+      [k: string]: number;
+    };
+    durationMs: number;
+    injection: {
+      appliedTick: number | null;
+      endedTick: number | null;
+    };
+    detection: {
+      by: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+      code: string | null;
+      tick: number | null;
+      latencyTicks: number | null;
+    };
+    firstCommandChangeTick: number | null;
+    plantResponse: {
+      axisState: string | null;
+      axisFault: string | null;
+      peakActualSpeedRadS: number | null;
+      ticksToRest: number | null;
+      baseTravelM: number | null;
+    };
+    verdict: 'detected_in_time' | 'detected_late' | 'not_detected' | 'not_fired';
+  }[];
+  /**
+   * @minItems 6
+   * @maxItems 6
+   */
+  invariants: {
+    id:
+      | 'NO_FALSE_SERVE'
+      | 'NO_RESEND_AFTER_UNKNOWN'
+      | 'NO_MOTION_BEFORE_ENABLED'
+      | 'CUSTODY_UNCHANGED'
+      | 'LATCH_HELD'
+      | 'TORQUE_ZERO_AFTER_TIMEOUT';
+    result: 'pass' | 'violated' | 'not_applicable';
+    tick: number | null;
+    evidence: string;
   }[];
   /**
    * @minItems 0
@@ -3017,6 +3162,46 @@ export interface ControlOracleV1 {
     thresholdRadS: number;
   };
   minAmplitudeQuanta: number;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "FaultOracleV1".
+ */
+export interface FaultOracleV1 {
+  schemaVersion: 1;
+  documentType: 'fault-oracle';
+  id: string;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  /**
+   * @minItems 8
+   * @maxItems 8
+   */
+  faults: {
+    faultId:
+      | 'encoder-dropout'
+      | 'motor-weak'
+      | 'drive-trip'
+      | 'command-delay'
+      | 'command-loss'
+      | 'grip-weak'
+      | 'lidar-noise'
+      | 'drive-reset';
+    required: boolean;
+    detector: ('drive' | 'controller' | 'arm_program' | 'source') | null;
+    /**
+     * @maxItems 4
+     */
+    codes: string[];
+    deadlineTicks: number | null;
+  }[];
+  invariantPolicy: {
+    holdToleranceRad: number;
+    torqueEpsNm: number;
+    timeoutSettleTicks: number;
+  };
   source: SourceRef;
 }
 /**
