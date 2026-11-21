@@ -26,7 +26,7 @@ export interface DriveFaultContext {axes:readonly string[];lidars:readonly strin
 export function driveFaultContext(presetId:string):DriveFaultContext|null{
  const wheels=['amr-1/wheel-left','amr-1/wheel-right'];
  if(presetId==='mujoco-cell')return {axes:[...[1,2,3,4,5,6].map(i=>`arm-1/J${i}`),'arm-1/gripper',...wheels],lidars:[]};
- if(presetId==='mujoco-payload')return {axes:wheels,lidars:['amr-1/lidar-2d']};
+ if(presetId==='mujoco-payload'||presetId==='mujoco-tray')return {axes:wheels,lidars:['amr-1/lidar-2d']};
  return null;
 }
 export function faultTargets(item:FaultCatalogItem,ctx:DriveFaultContext):string[]{

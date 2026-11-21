@@ -1,6 +1,6 @@
 import {tr} from '../i18n';
 import {mapExtent} from '../twin/world-view';
-import {payloadGeometry} from '../twin/payload';
+import {isMobilePreset,payloadGeometry} from '../twin/payload';
 // Optional WebGL view of the same TwinFrame/ViewState the 2D plan draws. Read-only. The scene is kept: update() rebuilds it only when the scene itself
 // (sceneKey: project, world, navigation scene, layers, selection) changes; an object whose own drawing changes (objectKeys: it appears or goes, its source,
 // a cup entering or leaving the plant's report, the arm's display source) is redrawn alone (dataset.redraws); otherwise it moves what is there; pose() only changes transforms. Renders on demand: the workspace drives pose() from an
@@ -254,7 +254,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    const l=a.wantMesh?meshLoad(mount,f):null;if(l?.set)dressMeshes(a,l);else dress(a,null);if(l&&!l.set&&!l.error)await_(l);
    return;
   }
-  if(e.kind==='amr'&&f.preset.id==='mujoco-payload'&&!f.payloadBundle)return;// no generic body presented as admitted mobile geometry
+  if(e.kind==='amr'&&isMobilePreset(f.preset.id)&&!f.payloadBundle)return;// no generic body presented as admitted mobile geometry
   if(e.kind==='amr'&&f.payloadBundle){
    // All link geometry is canonical base-frame SI; convert each local pose once, then place the group at the measured base.
    const group=new THREE.Group();group.userData.entityId=e.id;
@@ -326,7 +326,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  };
  let explicitCamera:'overview'|'cell'|'amr'|null=null;
  const home=()=>{if(!lf)return;const w=lf.preset.project.world,b=mapExtent(lf),cx=(b.minM[0]+b.maxM[0])/2,cy=(b.minM[1]+b.maxM[1])/2,m=Math.max(b.maxM[0]-b.minM[0],b.maxM[1]-b.minM[1]);camera.position.set(cx,m*0.9,-cy+m*0.8);controls.target.set(cx,0,-cy);
-  const r=(explicitCamera==='overview'?null:homeRegion(explicitCamera==='cell'?{...lf,preset:{...lf.preset,view:'arm_cell'}}:lf))??(lf.world||lf.preset.id==='mujoco-payload'?[{min:[b.minM[0],b.minM[1],0] as [number,number,number],max:[b.maxM[0],b.maxM[1],1.2] as [number,number,number]}]:null);
+  const r=(explicitCamera==='overview'?null:homeRegion(explicitCamera==='cell'?{...lf,preset:{...lf.preset,view:'arm_cell'}}:lf))??(lf.world||isMobilePreset(lf.preset.id)?[{min:[b.minM[0],b.minM[1],0] as [number,number,number],max:[b.maxM[0],b.maxM[1],1.2] as [number,number,number]}]:null);
   if(r){// the same viewing direction, moved in until every corner of the region's boxes just fits (98 % of the viewport)
    const corners=r.flatMap(q=>[0,1,2,3,4,5,6,7].map(i=>at(i&1?q.max[0]:q.min[0],i&2?q.max[1]:q.min[1],i&4?q.max[2]:q.min[2])));
    const box=new THREE.Box3().setFromPoints(corners),c=box.getCenter(new THREE.Vector3()),dir=camera.position.clone().sub(controls.target).normalize();
