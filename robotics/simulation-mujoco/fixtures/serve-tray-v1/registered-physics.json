@@ -1,0 +1,7 @@
+{
+  "drive-contact-tray-low-v1": {
+    "sha256": "fb6ab8e616f580c90211587f0cb2889ce1ff8dc93f637f3a8109e92ba1dd1597",
+    "digest": "c26b74debd70c4b83de0636dd7d2b4e1bb9574a446d651ef2cd146a7495c8e14",
+    "probeId": "v10-tray-low-friction"
+  }
+}

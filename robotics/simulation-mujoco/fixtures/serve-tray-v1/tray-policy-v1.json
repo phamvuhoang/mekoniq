@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "tray-policy-v1",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "slipWarnM": 0.005,
+  "slipFailM": 0.02,
+  "slipEpsilonM": 0.002,
+  "accelerationWindowTicks": 3,
+  "accelerationToleranceMps2": 0.3,
+  "onsetLeadTicks": 5,
+  "onsetLagTicks": 15,
+  "gravityMps2": 9.81,
+  "loadFell": "LOAD_FELL by serve-mobile-stop-v1",
+  "note": "Experiment thresholds, not safety limits: a slip above slipWarnM is reported, above slipFailM fails the variant; the oracle tolerances say how close to the Coulomb crossing an onset must be.",
+  "sources": {
+    "thresholds": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/assumptions.json",
+      "revision": "1",
+      "locator": "slip thresholds and oracle tolerances: explicit uncalibrated starting assumptions",
+      "contentSha256": "5e3017f78f5743beae617f7ecc7a50577fe11a42348e8372cbd3e5aa1d7bec9e"
+    }
+  }
+}

@@ -16,11 +16,12 @@ def main(argv=None):
     ap.add_argument("--schema-dir", required=True)
     ap.add_argument("--lock-digest", required=True)
     ap.add_argument("--scene-digest")
+    ap.add_argument("--fixture-sha256")  # the run's scenario-fixture.json (scripted actors), bound by the parent like the scene digest
     ap.add_argument("--payload-perturbation", choices=["payload-cup-forward-impulse-v1"])
     args = ap.parse_args(argv)
     out = sys.stdout
     validator, _ = load_validators(args.schema_dir)
-    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest, schema_dir=args.schema_dir, payload_perturbation=args.payload_perturbation)
+    session = WorkerSession(run_id=args.run_id, bundle_root=args.bundle_root, lock_digest=args.lock_digest, expected_scene_digest=args.scene_digest, schema_dir=args.schema_dir, payload_perturbation=args.payload_perturbation, expected_fixture_sha256=args.fixture_sha256)
 
     def send(response):
         out.write(json.dumps(response, separators=(",", ":"), allow_nan=False) + "\n")

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "accepted": false,
+  "calibration": "not_calibrated",
+  "supportId": "amr-1/tray-1",
+  "polygonM": [
+    [
+      -0.2,
+      -0.23
+    ],
+    [
+      0.2,
+      -0.23
+    ],
+    [
+      0.2,
+      0.23
+    ],
+    [
+      -0.2,
+      0.23
+    ]
+  ],
+  "layouts": [
+    {
+      "id": "cup-triple",
+      "cupsInTrayFrameM": [
+        [
+          -0.1,
+          -0.09
+        ],
+        [
+          0.1,
+          -0.09
+        ],
+        [
+          0,
+          0.1
+        ]
+      ],
+      "cupRadiusM": 0.04,
+      "cupCupMinCenterDistanceM": 0.2,
+      "cupEdgeMinClearanceM": 0.060000000000000005,
+      "cupSliding": 0.6,
+      "traySliding": 0.6,
+      "effectiveFriction": 0.6,
+      "rule": "engine takes the larger friction of the two faces"
+    },
+    {
+      "id": "cup-triple-low-friction",
+      "cupsInTrayFrameM": [
+        [
+          -0.1,
+          -0.09
+        ],
+        [
+          0.1,
+          -0.09
+        ],
+        [
+          0,
+          0.1
+        ]
+      ],
+      "cupRadiusM": 0.04,
+      "cupCupMinCenterDistanceM": 0.2,
+      "cupEdgeMinClearanceM": 0.060000000000000005,
+      "cupSliding": 0.15,
+      "traySliding": 0.15,
+      "effectiveFriction": 0.15,
+      "rule": "engine takes the larger friction of the two faces"
+    }
+  ]
+}

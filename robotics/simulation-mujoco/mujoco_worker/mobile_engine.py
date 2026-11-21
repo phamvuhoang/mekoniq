@@ -9,6 +9,7 @@ import math
 import mujoco
 import numpy as np
 
+from .actors import ACTOR_PROXY_V1
 from .compile import CompileError
 from .compile_mobile import compile_mobile, matrix_pose, pose, resolve_lidar
 from .drive import wheel_targets, torque_limits
@@ -56,11 +57,11 @@ class ContactAccumulator:
 
 
 class MobileEngine:
-    def __init__(self, scene, physical_models, load_profile, physics, drive=None):
+    def __init__(self, scene, physical_models, load_profile, physics, drive=None, actors=None):
         if mujoco.__version__ != "3.17.0":
             raise CompileError("ENGINE_VERSION_MISMATCH")
         plan = plan_actuators(*drive) if drive else None
-        xml, self.names = compile_mobile(scene, physical_models, load_profile, physics, plan)
+        xml, self.names = compile_mobile(scene, physical_models, load_profile, physics, plan, actors)
         self.scene, self.profile, self.physics = scene, load_profile, physics
         self.entry = scene["robots"][0]
         self.rid = self.entry["robotId"]
@@ -76,6 +77,7 @@ class MobileEngine:
         self.drive = None
         self.tags = {m.geom(n).id: tag for n, tag in self.names["tags"].items()}
         self.prop = {pid: m.body(n).id for pid, n in self.names["props"].items()}
+        self.actor_mocap = {aid: int(m.body_mocapid[m.body(n).id]) for aid, n in self.names["actors"].items()}
         self.dt, self.substeps = m.opt.timestep, scene["engine"]["substeps"]
         self.radius, self.separation = (self.physical["drive"][k]["value"] for k in ("wheelRadiusM", "wheelSeparationM"))
         frame = self.physical["drive"]["driveFrameInBase"]  # (`drive` is the virtual drive documents of the parameter)
@@ -131,6 +133,14 @@ class MobileEngine:
             if force[0] > sample[3]:
                 sample[2], sample[3] = c.pos.copy(), float(force[0])
         return out
+
+    def place_actors(self, updates):
+        """Scripted persons are placed (never integrated) before the tick, so its contacts and its scan see them where the schedule says."""
+        half = ACTOR_PROXY_V1["heightM"] / 2
+        for aid, x, y, yaw in updates:
+            mid = self.actor_mocap[aid]
+            self.data.mocap_pos[mid] = [x, y, half]
+            self.data.mocap_quat[mid] = [math.cos(yaw / 2), 0, 0, math.sin(yaw / 2)]
 
     def apply_payload_impulse(self, perturbation_id):
         """One registered support-frame force over one logical tick; never writes qpos/qvel."""
@@ -253,7 +263,7 @@ class MobileEngine:
             if not c["expected"]:
                 for a, b in ((c["a"], c["b"]), (c["b"], c["a"])):
                     if a.startswith(self.rid + "/"):
-                        collisions.add(b.removeprefix("static/").removeprefix("prop/"))
+                        collisions.add(b.removeprefix("static/").removeprefix("prop/").removeprefix("actor/"))
         loads, resting = [], {}
         for p in self.profile["props"]:
             pid = p["propId"]
