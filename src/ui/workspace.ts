@@ -359,7 +359,10 @@ export class TwinWorkspace {
   const delay=this.readiness?Date.parse(this.readiness.expiresAt)-Date.now():NaN;
   if(Number.isFinite(delay)&&delay>0)this.readinessExpiry=setTimeout(()=>this.paint(),Math.min(delay,30000));
  }
- private async checkReadiness(p=this.readinessPreset()){
+ /** One readiness check at a time: the runtime answers a second smoke probe while one is running with a busy code that nothing retries (a drive experiment chosen right after the preset left the page stuck on it). */
+ private readinessChain:Promise<unknown>=Promise.resolve();
+ private checkReadiness(p=this.readinessPreset()){const run=this.readinessChain.then(()=>this.checkReadinessNow(p),()=>this.checkReadinessNow(p));this.readinessChain=run.catch(()=>undefined);return run;}
+ private async checkReadinessNow(p:TwinPreset){
   const request=++this.readinessRequest;this.readiness=null;this.watchReadinessExpiry();
   if(!this.health?.features?.readiness||!this.rt.paired||!this.rt.readiness)return;
   if(p.id==='mujoco-payload'&&p.engineering&&!p.engineering.receipt&&this.health.capabilities?.includes('sim3d_payload_experiments_v1')&&this.rt.compileEngineering){
