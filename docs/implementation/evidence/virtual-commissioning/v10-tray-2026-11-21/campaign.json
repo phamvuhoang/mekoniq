@@ -1,0 +1,71 @@
+{
+  "campaign": {
+    "schemaVersion": 1,
+    "id": "tray-v1",
+    "scenarioId": "MJ-TRAY01",
+    "maxTicks": 30000,
+    "note": "MJ-TRAY01 under its five registered experiments, one run each seed; every number is assumed and not_calibrated. A: three seeds; A-prime, B, C, D: two seeds each.",
+    "cases": [
+      {
+        "id": "a-nominal-s7",
+        "experimentId": "tray-nominal-v1",
+        "seed": 7
+      },
+      {
+        "id": "a-nominal-s8",
+        "experimentId": "tray-nominal-v1",
+        "seed": 8
+      },
+      {
+        "id": "a-nominal-s42",
+        "experimentId": "tray-nominal-v1",
+        "seed": 42
+      },
+      {
+        "id": "a1-low-friction-s7",
+        "experimentId": "tray-low-friction-v1",
+        "seed": 7
+      },
+      {
+        "id": "a1-low-friction-s42",
+        "experimentId": "tray-low-friction-v1",
+        "seed": 42
+      },
+      {
+        "id": "b-accel-high-s7",
+        "experimentId": "tray-accel-high-v1",
+        "seed": 7
+      },
+      {
+        "id": "b-accel-high-s42",
+        "experimentId": "tray-accel-high-v1",
+        "seed": 42
+      },
+      {
+        "id": "c-torque-limited-s7",
+        "experimentId": "tray-torque-limited-v1",
+        "seed": 7
+      },
+      {
+        "id": "c-torque-limited-s42",
+        "experimentId": "tray-torque-limited-v1",
+        "seed": 42
+      },
+      {
+        "id": "d-person-crossing-s7",
+        "experimentId": "tray-person-crossing-v1",
+        "seed": 7
+      },
+      {
+        "id": "d-person-crossing-s42",
+        "experimentId": "tray-person-crossing-v1",
+        "seed": 42
+      }
+    ]
+  },
+  "sourceCommit": "b1983ca98995290cb3fb9f15725c41c2aaeb3272",
+  "hostArch": "arm64",
+  "accepted": false,
+  "execution": "actual_mujoco",
+  "calibration": "not_calibrated"
+}
