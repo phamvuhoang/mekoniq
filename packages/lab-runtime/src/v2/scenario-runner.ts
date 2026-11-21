@@ -3,7 +3,7 @@ import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
 import type {WorldTickCommand} from './simulation3d/world-ports';
-import {readRetainedWorldDriveReport} from './simulation3d/world-drive-report';
+import {FAULT_ORACLE_FILE,custodyFacts,readRetainedWorldDriveReport,readRetainedWorldFaultReport} from './simulation3d/world-drive-report';
 import {retainedWorldArmReports} from './simulation3d/world-arm-report';
 import {unavailableWorldSweep,type WorldSweepResult} from './simulation3d/world-sweep';
 import type {ArmReportBlock} from './beverage/arm-plant-report';
@@ -12,7 +12,9 @@ import {serveTicksOf} from './fault-report';
 import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord,type FaultPhase,type FaultScheduleEntry} from './fault-schedule';
 // Mock scenario runner. Per tick: scripted inputs -> source decisions/outbox dispatch -> model advance -> observations -> journal.
 // Business truth lives only in the run's source journal; the plant owns pose/path; the report reads events back from the journal.
-import {mkdir,chmod,readdir} from 'node:fs/promises';
+import {mkdir,chmod,readdir,readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {driveDocumentDigest} from './control/drive-io';
 import {randomUUID} from 'node:crypto';
 import {hashPayload,type CommandResult,type DomainEvent,type JsonObject,type RobotCommand} from '../../../contracts/src/index';
 import {dispatchRobotEffects,robotEventCommand} from '../../../robot-adapters/src/dispatch';
@@ -240,6 +242,12 @@ class Run implements ScenarioRun {
       const identity={runId:c.runId,bootId:c.world.snapshot.bootId,sceneDigest:c.world.snapshot.sceneDigest!};
       const retained=await retainedWorldArmReports({directory:this.dir,...identity,engineVersion:c.manifest.backends.find(b=>b.id==='mujoco_arm')?.version??'unavailable',program:c.manifest.armProgram,state:()=>c.coffee!.arm,publicTick:()=>c.tick});
       if(c.manifest.drive)ports.driveReport=()=>readRetainedWorldDriveReport(this.dir,{...identity,publicCommittedTick:c.tick},c.manifest.driveFaultSchedule?.entries??[]);
+      // the fault report is rebuilt from the retained stream, the schedule and the oracle kept with the run; what cannot be rebuilt says why, it never disappears
+      if(c.manifest.driveFaultSchedule)ports.faultReport=async facts=>{
+       let oracle:import('./control/drive-io').FaultOracleV1;
+       try{oracle=JSON.parse(await readFile(join(this.dir,FAULT_ORACLE_FILE),'utf8'));if(driveDocumentDigest(oracle)!==oracle.digest)throw new Error('FAULT_ORACLE_DIGEST');}catch(e){return {issues:[(e as Error).message==='FAULT_ORACLE_DIGEST'?'FAULT_ORACLE_DIGEST':'FAULT_ORACLE_MISSING']};}
+       return readRetainedWorldFaultReport(this.dir,{...identity,publicCommittedTick:c.tick},{faults:c.manifest.driveFaultSchedule!.entries,oracle,facts});
+      };
       ports.armReportState=retained.armReportState;ports.report=()=>({cupLedger:[],arm:null,...retained.report()});
      }
     }else{
@@ -632,7 +640,7 @@ class Run implements ScenarioRun {
    ...this.coffee?{coffee:await this.coffee.report()}:{},...arm?{arm}:{},telemetry};
   const hoisted=(report.coffee as {driveEvidence?:import('./control/drive-report').DriveEvidenceReport}|undefined)?.driveEvidence;if(hoisted){report.driveEvidence=hoisted;delete (report.coffee as {driveEvidence?:unknown}).driveEvidence;}
   if(this.coffee&&c.manifest.driveFaultSchedule){
-   const fr=await this.coffee.faultReport({serveTicks:serveTicksOf(businessEvents,EPOCH),attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),custodyChanged:((report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[]).some(x=>x.status==='unknown')});
+   const fr=await this.coffee.faultReport({serveTicks:serveTicksOf(businessEvents,EPOCH),attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),custodyChanged:custodyFacts((report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[],v.attention)});
    // a fault report that could not be made says why in the drive section; it never goes missing quietly
    if(fr?.report)report.faultReport=fr.report;
    else if(fr&&report.driveEvidence)report.driveEvidence={...report.driveEvidence,complete:false,issues:[...report.driveEvidence.issues,...fr.issues]};

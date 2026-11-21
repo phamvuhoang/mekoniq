@@ -136,3 +136,33 @@ test('a latched fault that clears on a tick with a fresh seq is still a violatio
  const r=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(40,(a,t)=>a===AX&&t>=start+4&&t<start+8?{fault:'COMMAND_TIMEOUT',state:'fault',torqueNm:0,commandSeq:t}:{commandSeq:t})});
  expect(r.invariants.find(i=>i.id==='LATCH_HELD')).toMatchObject({result:'violated',tick:start+8});
 });
+
+// ---- R03/R01: an invariant says "pass" only with the measurement it needs; the interlock's override is not an injection ----
+const inv=(r:ReturnType<typeof buildFaultReport>,id:string)=>r.invariants.find(i=>i.id===id)!;
+test('TORQUE_ZERO_AFTER_TIMEOUT is not evidenced when the run ends before the settle horizon, or the torque was never measured',()=>{
+ const e=entry('command-loss',100,200),start=faultStartTick(100),latch=start+5;
+ const ended=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(latch+1,(a,t)=>a===AX&&t>=latch?{fault:'COMMAND_TIMEOUT',state:'fault',torqueNm:0}:{})});   // settle is 2 ticks: the run stops 1 tick after the latch
+ expect(inv(ended,'TORQUE_ZERO_AFTER_TIMEOUT').result).toBe('not_evidenced');
+ const unmeasured=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(latch+10,(a,t)=>a===AX&&t>=latch?{fault:'COMMAND_TIMEOUT',state:'fault',torqueNm:null as never}:{})});
+ expect(inv(unmeasured,'TORQUE_ZERO_AFTER_TIMEOUT').result).toBe('not_evidenced');
+ const full=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(latch+10,(a,t)=>a===AX&&t>=latch?{fault:'COMMAND_TIMEOUT',state:'fault',torqueNm:0}:{})});
+ expect(inv(full,'TORQUE_ZERO_AFTER_TIMEOUT').result).toBe('pass');
+});
+test('custody that is unknown, and a resend count nobody measured, are not evidenced, never passes',()=>{
+ const r=(facts:object)=>buildFaultReport({...base,schedule:[],receipts:[],drives:drives(3),facts:{reportedServed:0,confirmedServed:0,resendsAfterUnknown:0,custodyChanged:false,...facts} as never});
+ expect(inv(r({custodyChanged:'unknown'}),'CUSTODY_UNCHANGED').result).toBe('not_evidenced');
+ expect(inv(r({resendsAfterUnknown:null}),'NO_RESEND_AFTER_UNKNOWN').result).toBe('not_evidenced');
+ expect(inv(r({}),'CUSTODY_UNCHANGED').result).toBe('pass');expect(inv(r({}),'NO_RESEND_AFTER_UNKNOWN').result).toBe('pass');
+});
+test('NO_MOTION_BEFORE_ENABLED reads the axis mode: a velocity axis idles at 0 rad/s, a position axis holds its position (no comparing a speed with an angle)',()=>{
+ const e=entry('drive-trip',100,20);
+ const csv=buildFaultReport({...base,schedule:[e],receipts:[],drives:drives(10,(a,t)=>a===AX&&t===5?{state:'disabled',targetApplied:3,actualPositionRad:3}:{}),axisModes:{[AX]:'csv'}});
+ expect(inv(csv,'NO_MOTION_BEFORE_ENABLED')).toMatchObject({result:'violated',tick:5});       // a 3 rad/s target on a disabled velocity axis, whatever the position says
+ const csp=buildFaultReport({...base,schedule:[e],receipts:[],drives:drives(10,(a,t)=>a===AX&&t===5?{state:'disabled',targetApplied:3,actualPositionRad:3}:{}),axisModes:{[AX]:'csp'}});
+ expect(inv(csp,'NO_MOTION_BEFORE_ENABLED').result).toBe('pass');                                // holding position 3 rad is fine for a position axis
+});
+test('a receipt flagged as overridden by the movement interlock is not an applied injection: the entry is not_fired and says why',()=>{
+ const e=entry('command-loss',100,200),start=faultStartTick(100);
+ const r=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start,{overriddenBy:'WORLD_MOVEMENT_INTERLOCK'}),receipt(e,'end',faultEndTick(start,200),{overriddenBy:'WORLD_MOVEMENT_INTERLOCK'})],drives:drives(40)});
+ expect(r.entries[0]).toMatchObject({verdict:'not_fired',injection:{appliedTick:null,endedTick:null,overriddenBy:'WORLD_MOVEMENT_INTERLOCK'}});
+});

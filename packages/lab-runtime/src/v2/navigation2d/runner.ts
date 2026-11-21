@@ -1,6 +1,6 @@
 import {buildDriveEvidence} from '../control/drive-report';
 import {experimentOfMobileModel} from '../control/drive-experiments';
-import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,runtimeFaultsAt,validateDriveFaultSchedule,type FaultInjection,type FaultReceipt} from '../control/drive-faults';
+import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,receiptsMatch,runtimeFaultsAt,validateDriveFaultSchedule,type FaultInjection,type FaultReceipt} from '../control/drive-faults';
 import {lidarNoise} from '../control/sensor-transforms';
 import {buildFaultReport,serveTicksOf,servedFacts,type FaultReportInput} from '../fault-report';
 import {driveDocumentDigest,type FaultOracleV1} from '../control/drive-io';
@@ -42,7 +42,7 @@ import {quaternionFromYaw} from '../frames';
 import {createIRSimNavigationAdapter,initialAdapterState,type IRSimAdapterState,type IRSimNavigationAdapter} from './adapter';
 import {SCENARIO_FIXTURES,TRAY_PERSON_FIXTURE,actorUpdatesAt,fixtureFile,resolveScenarioFixture,type ResolvedFixture} from './scenario-fixtures';
 import {TRAY_EXPERIMENTS,isTrayExperiment} from '../simulation3d/tray-experiments';
-import {buildTrayEvidence,type TrayPolicy} from '../simulation3d/tray-verdict';
+import {blockingReadIssues,buildTrayEvidence,type TrayPolicy} from '../simulation3d/tray-verdict';
 import {createZoneBridge,createZoneTraffic} from '../backends/zone-bridge';
 import type {P,Pose2} from './geometry';
 import {awaitTick,realWall,type PaceAnchor,type WallClock} from '../pace';
@@ -497,11 +497,11 @@ class FixedStepRun implements ScenarioRun {
    // a refused step is as unverifiable as a lost one: the legs become unknown, the step is not retried
    if(!r.ok){await this.stepLost(`STEP_REFUSED:${(r as {error:{code:string}}).error.code}`);return false;}
    next=r.result as IRSimSnapshotV1;
+   // a receipt that is not the intent (entry, phase, tick, run, boot, scene, request) is as unverifiable as a lost step, on a tick that owes none too: nothing is resent
+   {const got=(next as {faultReceipts?:FaultReceipt[]}).faultReceipts;
+    if(!receiptsMatch(got,worker,{runId:c.runId,bootId:next.bootId,sceneDigest:this.scene.sceneDigest,requestDigest:hashJson(wire),targetTick:target})){await this.stepLost('FAULT_RECEIPT_MISMATCH');return false;}}
    if(events.length){
-    // a receipt that is not the intent (entry, phase, tick, run, request) is as unverifiable as a lost step: nothing is resent
     const got=((next as {faultReceipts?:FaultReceipt[]}).faultReceipts??[]),digest=hashJson(wire);
-    const ok=got.length===worker.length&&worker.every((w,i)=>{const x=got[i];return !!x&&x.entryId===w.entryId&&x.phase===w.phase&&x.faultId===w.faultId&&x.targetId===w.targetId&&x.appliedTick===target&&x.runId===c.runId&&x.requestDigest===digest&&hashJson(x.params)===hashJson(w.params);});
-    if(!ok){await this.stepLost('FAULT_RECEIPT_MISMATCH');return false;}
     const own=events.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:target,runId:c.runId,bootId:next.bootId,sceneDigest:this.scene.sceneDigest,requestDigest:digest}));
     faultRec={intents:events,receipts:[...got,...own],transforms};
    }else if(transforms.length)faultRec={intents:[],receipts:[],transforms};
@@ -785,7 +785,7 @@ class FixedStepRun implements ScenarioRun {
   if(manifest.gaps.length||manifest.terminalReason)manifest.coverage.complete=false;
   const read=await readPhysicsEvidence(join(this.dir,'physics'),manifest,{admission:this.physics.admission,metricsPolicyDigest:this.physics.metricsPolicyDigest,identity:{...manifest.identity,runId:this.cp.runId,sceneDigest:this.scene.sceneDigest,loadProfileDigest:this.physics.loadProfileDigest,physicsProfileDigest:this.physics.physicsProfileDigest,...this.cp.plant.snapshot?{bootId:this.cp.plant.snapshot.bootId}:{}},runTick:this.cp.tick});
   // the records are the durable truth up to wherever the run ended; a stop by the plant's own monitor (a cup that fell, a tilt) marks coverage incomplete but loses nothing, a gap does lose something
-  this.trayRecords=this.tray&&!manifest.gaps.length&&read.records.length>0&&read.issues.every(i=>i==='PHYSICS_COVERAGE_INCOMPLETE')?read.records:undefined;
+  this.trayRecords=this.tray&&read.records.length>0&&!blockingReadIssues(read,manifest,read.records.length,this.cp.tick).length?read.records:undefined;
   if(this.drive){
    const rows=read.records.map(r=>({tick:r.tick,drives:(r as {drives?:import('../control/drive-io').DriveAxisSnapshot[]}).drives??[]}));
    const issues=[...read.issues];let events:import('../control/controller').ControllerEvent[]=[];
@@ -798,7 +798,7 @@ class FixedStepRun implements ScenarioRun {
      const recs=read.records as unknown as {tick:number;faultIntents?:FaultInjection[];faultReceipts?:FaultReceipt[];base?:FaultReportInput['physics'][number]['base']}[];
      const serves=servedFacts(rows,serveTicks),gaps=[...this.cp.evidenceGaps??[]].filter(g=>g.reason==='STEP_ACK_LOST');
      this.faultReport=buildFaultReport({runId:this.cp.runId,schedule:this.faults,receipts:recs.flatMap(r=>r.faultReceipts??[]),intents:recs.map(r=>({tick:r.tick,injections:r.faultIntents??[]})),drives:rows,controllerEvents:events,
-      attention:this.cp.attention.map(a=>({tick:a.tick,reason:a.reason})),physics:recs,oracle,facts:{...serves,resendsAfterUnknown:gaps.reduce((n,g)=>n+recs.filter(r=>r.tick>g.fromTick).length,0),custodyChanged:null}});
+      attention:this.cp.attention.map(a=>({tick:a.tick,reason:a.reason})),physics:recs,oracle,axisModes:Object.fromEntries(this.drive.model.axes.map(a=>[a.axisId,a.mode as 'csp'|'csv'])),facts:{...serves,resendsAfterUnknown:gaps.reduce((n,g)=>n+recs.filter(r=>r.tick>g.fromTick).length,0),custodyChanged:null}});
     }catch(e){issues.push((e as Error).message);}
    }
    this.driveEvidence=buildDriveEvidence(this.drive.model,rows,{complete:read.complete&&!issues.length,issues,events});

@@ -87,3 +87,18 @@ test('command-loss repeats the last command sent on that axis, seq included, and
  expect(applyCommandLoss(next,last,new Set())).toEqual(next);
  expect(applyCommandLoss(next,undefined,new Set(['r']))).toEqual(next);   // nothing was ever sent: there is nothing to repeat
 });
+
+// ---- R02: a receipt is the worker's answer to this very step: this run, this boot, this scene, this request, this tick ----
+import {receiptsMatch} from '../../packages/lab-runtime/src/v2/control/drive-faults';
+test('receipts are accepted only when every identity field is the step\'s own, and nothing extra arrives',()=>{
+ const w=[{entryId:'e1',faultId:'encoder-dropout',targetId:'amr-1/wheel-left',params:{},phase:'start' as const}];
+ const ctx={runId:'run-1',bootId:'boot-1',sceneDigest:'s'.repeat(64),requestDigest:'d'.repeat(64),targetTick:5};
+ const r=(over:object={})=>({...w[0]!,appliedTick:5,runId:'run-1',bootId:'boot-1',sceneDigest:'s'.repeat(64),requestDigest:'d'.repeat(64),...over});
+ expect(receiptsMatch([r()] as never,w as never,ctx)).toBe(true);
+ for(const bad of [{bootId:'boot-2'},{sceneDigest:'t'.repeat(64)},{runId:'run-2'},{requestDigest:'e'.repeat(64)},{appliedTick:6},{phase:'end'},{targetId:'amr-1/wheel-right'},{params:{x:1}}])expect(receiptsMatch([r(bad)] as never,w as never,ctx),JSON.stringify(bad)).toBe(false);
+ expect(receiptsMatch([r(),r()] as never,w as never,ctx)).toBe(false);          // an extra receipt
+ expect(receiptsMatch([] as never,w as never,ctx)).toBe(false);                 // a missing one
+ expect(receiptsMatch([r()] as never,[] as never,ctx)).toBe(false);             // a receipt on a tick that owes none
+ expect(receiptsMatch([] as never,[] as never,ctx)).toBe(true);
+ expect(receiptsMatch(undefined,[] as never,ctx)).toBe(true);
+});

@@ -16,7 +16,10 @@ export interface FaultReportInput {
  drives:readonly {tick:number;drives:readonly DriveAxisSnapshot[]}[];controllerEvents:readonly ControllerEvent[];attention:readonly {tick:number;reason:string}[];
  physics:readonly {tick:number;base?:readonly {poseMap:{positionM:readonly number[]}}[]}[];oracle:FaultOracleV1;
  /** what the Source's own journal says about the run, independent of the drive records: served counts, mutation resends after an unknown ACK, whether any custody changed (null: no custody in this run) */
- facts:{reportedServed:number;confirmedServed:number;resendsAfterUnknown:number;custodyChanged:boolean|null};
+ /** resendsAfterUnknown: null = nobody counted (not evidenced); custodyChanged: null = the run has no custody, 'unknown' = a transfer's outcome is unknown (not evidenced) */
+ facts:{reportedServed:number;confirmedServed:number;resendsAfterUnknown:number|null;custodyChanged:boolean|null|'unknown'};
+ /** the mode of each axis (csv holds a velocity, csp a position): the idle check compares like with like; without it the check keeps its old, mode-blind rule */
+ axisModes?:Readonly<Record<string,'csp'|'csv'>>;
  /** What the records say the runner sent, tick by tick. When given, the report reconciles it with the schedule and the receipts: nothing the schedule demands may be missing, nothing it does not may be there. */
  intents?:readonly {tick:number;injections:readonly FaultInjection[]}[];
  evidence?:FaultReportV1['evidence'];
@@ -39,7 +42,7 @@ export function buildFaultReport(input:FaultReportInput):FaultReportV1{
  }
  if(input.intents)reconcile(input,drives.map(d=>d.tick));
  const entries=schedule.map((e):Entry=>{
-  const rec=byEntry.get(e.id),spec=oracle.faults.find(f=>f.faultId===e.faultId),applied=rec?.start?.appliedTick??null;
+  const rec=byEntry.get(e.id),spec=oracle.faults.find(f=>f.faultId===e.faultId),overridden=rec?.start?.overriddenBy,applied=overridden?null:rec?.start?.appliedTick??null;
   const axisRecs=drives.map(r=>({tick:r.tick,s:r.drives.find(d=>d.axisId===e.targetId)})).filter((x):x is {tick:number;s:DriveAxisSnapshot}=>!!x.s);
   let found:{tick:number;code:string}|null=null;
   if(applied!==null&&spec?.detector){
@@ -59,7 +62,7 @@ export function buildFaultReport(input:FaultReportInput):FaultReportV1{
   const a=applied===null?undefined:pos(applied),b=restTick===null?undefined:pos(restTick);
   const last=axisRecs.at(-1)?.s;
   return {entryId:e.id,faultId:e.faultId,targetId:e.targetId,params:{...e.params},durationMs:e.durationMs,
-   injection:{appliedTick:applied,endedTick:rec?.end?.appliedTick??null},
+   injection:{appliedTick:applied,endedTick:overridden?null:rec?.end?.appliedTick??null,...overridden?{overriddenBy:overridden}:{}},
    detection:{by:found?spec!.detector:null,code:found?.code??null,tick:found?.tick??null,latencyTicks:latency},
    firstCommandChangeTick:firstChange,
    plantResponse:{axisState:last?.state??null,axisFault:last?.fault??null,peakActualSpeedRadS:peak,ticksToRest:applied!==null&&restTick!==null?restTick-applied:null,baseTravelM:a&&b?Math.hypot(...a.map((v,i)=>b[i]!-v)):null},
@@ -74,10 +77,14 @@ function invariants(input:FaultReportInput):Invariant[]{
  const done=(id:Invariant['id'],result:Invariant['result'],tick:number|null,evidence:string):Invariant=>({id,result,tick,evidence});
  const first=(find:()=>{tick:number;note:string}|null,id:Invariant['id'],pass:string):Invariant=>{const v=find();return v?done(id,'violated',v.tick,v.note):done(id,'pass',null,pass);};
  const flag=(ok:boolean,id:Invariant['id'],note:string):Invariant=>ok?done(id,'pass',null,note):done(id,'violated',null,note);
+ const unknown=(id:Invariant['id'],note:string):Invariant=>done(id,'not_evidenced',null,note);
  const motion=first(()=>{
   for(const r of drives)for(const d of r.drives){
    // a csv axis idles at 0, a csp axis holds where it is: any other applied target went to an axis that was not enabled
-   if(!['enabled','quick_stop'].includes(d.state)&&Math.abs(d.targetApplied)>1e-12&&Math.abs(d.targetApplied-d.actualPositionRad)>policy.holdToleranceRad)return {tick:r.tick,note:`${d.axisId} is ${d.state} at tick ${r.tick} with applied target ${d.targetApplied}`};
+   const mode=input.axisModes?.[d.axisId];
+   // a csv axis idles at 0 rad/s, a csp axis holds where it is (without the mode: either, the old rule)
+   const moved=mode==='csv'?Math.abs(d.targetApplied)>1e-12:mode==='csp'?Math.abs(d.targetApplied-d.actualPositionRad)>policy.holdToleranceRad:Math.abs(d.targetApplied)>1e-12&&Math.abs(d.targetApplied-d.actualPositionRad)>policy.holdToleranceRad;
+   if(!['enabled','quick_stop'].includes(d.state)&&moved)return {tick:r.tick,note:`${d.axisId} is ${d.state} at tick ${r.tick} with applied target ${d.targetApplied}`};
   }
   return null;
  },'NO_MOTION_BEFORE_ENABLED','every applied target of a not-enabled axis idles or holds (drives)');
@@ -87,19 +94,20 @@ function invariants(input:FaultReportInput):Invariant[]{
    if(p.fault!==null&&c.fault===null&&!resets.some(r=>r.targetId===a&&r.appliedTick===c.tick))return {tick:c.tick,note:`${a} cleared ${p.fault} at tick ${c.tick} without an injected reset (the controllers never send one)`};}}
   return null;
  },'LATCH_HELD','no latched fault cleared without an injected reset (drives)');
- let timeouts=false;
+ let timeouts=false,short=false,unmeasured=false;
  const torque=first(()=>{
   for(const a of axes){const s=series(a),f=s.find(x=>x.s.fault==='COMMAND_TIMEOUT');if(!f)continue;timeouts=true;
-   for(const x of s)if(x.tick>=f.tick+policy.timeoutSettleTicks&&x.s.fault!==null&&Math.abs(x.s.torqueNm??0)>policy.torqueEpsNm)return {tick:x.tick,note:`${a} still carries ${x.s.torqueNm} N m at tick ${x.tick}, ${x.tick-f.tick} ticks after COMMAND_TIMEOUT`};}
+   const horizon=f.tick+policy.timeoutSettleTicks;if(!s.some(x=>x.tick>=horizon)){short=true;continue;}   // the run ended before the settle horizon: nothing was measured
+   for(const x of s)if(x.tick>=horizon&&x.s.fault!==null){if(x.s.torqueNm===null||x.s.torqueNm===undefined){unmeasured=true;continue;}if(Math.abs(x.s.torqueNm)>policy.torqueEpsNm)return {tick:x.tick,note:`${a} still carries ${x.s.torqueNm} N m at tick ${x.tick}, ${x.tick-f.tick} ticks after COMMAND_TIMEOUT`};}}
   return null;
  },'TORQUE_ZERO_AFTER_TIMEOUT','torque is zero from timeoutSettleTicks after COMMAND_TIMEOUT (drives)');
  return [
   flag(facts.reportedServed===facts.confirmedServed,'NO_FALSE_SERVE',`reported ${facts.reportedServed} served, journal confirms ${facts.confirmedServed}`),
-  flag(facts.resendsAfterUnknown===0,'NO_RESEND_AFTER_UNKNOWN',`${facts.resendsAfterUnknown} mutations resent after an unknown ACK`),
+  facts.resendsAfterUnknown===null?unknown('NO_RESEND_AFTER_UNKNOWN','no count of the steps sent after an unknown ACK exists for this run'):flag(facts.resendsAfterUnknown===0,'NO_RESEND_AFTER_UNKNOWN',`${facts.resendsAfterUnknown} mutations resent after an unknown ACK`),
   motion,
-  facts.custodyChanged===null?done('CUSTODY_UNCHANGED','not_applicable',null,'the run has no custody'):flag(!facts.custodyChanged,'CUSTODY_UNCHANGED',facts.custodyChanged?'custody changed during a fault run':'custody unchanged'),
+  facts.custodyChanged===null?done('CUSTODY_UNCHANGED','not_applicable',null,'the run has no custody'):facts.custodyChanged==='unknown'?unknown('CUSTODY_UNCHANGED','a transfer ended with an unknown outcome: custody cannot be said unchanged'):flag(!facts.custodyChanged,'CUSTODY_UNCHANGED',facts.custodyChanged?'custody changed during a fault run':'custody unchanged'),
   latch,
-  timeouts?torque:done('TORQUE_ZERO_AFTER_TIMEOUT','not_applicable',null,'no axis latched COMMAND_TIMEOUT'),
+  timeouts?(torque.result==='pass'&&(short||unmeasured)?unknown('TORQUE_ZERO_AFTER_TIMEOUT',short?'the run ended before the settle horizon after COMMAND_TIMEOUT: torque was not measured':'torque was not measured after COMMAND_TIMEOUT'):torque):done('TORQUE_ZERO_AFTER_TIMEOUT','not_applicable',null,'no axis latched COMMAND_TIMEOUT'),
  ];
 }
 

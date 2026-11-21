@@ -57,7 +57,7 @@ test('firstExceedTick finds the first tick whose acceleration is above bound + t
  expect(firstExceedTick(run(200,()=>0.5),1.4715,0.1,3)).toBeNull();
 });
 
-const policy={accelerationWindowTicks:3,accelerationToleranceBelowMps2:0.3,accelerationToleranceAboveMps2:0.3,onsetLeadTicks:5,onsetLagTicks:15,slipEpsilonM:0.002,slipWindowTicks:0};
+const policy={accelerationWindowTicks:3,episodeGapTicks:25,accelerationToleranceBelowMps2:0.3,accelerationToleranceAboveMps2:0.3,onsetLeadTicks:5,onsetLagTicks:15,slipEpsilonM:0.002,slipWindowTicks:0};
 
 test('verdict: acceleration above the bound with a slip near the crossing is slip_expected_and_found',()=>{
  const r=run(200,t=>t<100?0.5:2.5,t=>t<105?0:(t-104)*0.0011);
@@ -77,7 +77,7 @@ test('verdict: a slip long before the support ever exceeded the bound is a failu
 });
 
 test('verdict: a slip far from the crossing tick is out of tolerance',()=>{
- const v=slipVerdict(run(300,t=>t<100?0.5:2.5,t=>t<200?0:(t-199)*0.001),['cup-1'],0.15,policy);
+ const v=slipVerdict(run(300,t=>t>=100&&t<130?2.5:0.5,t=>t<200?0:(t-199)*0.001),['cup-1'],0.15,policy);
  expect(v.verdict).toBe('slip_onset_out_of_tolerance');
 });
 
@@ -140,4 +140,36 @@ test('verdict: the tolerance above the bound is unchanged by the one below',()=>
  const wide={...policy,accelerationToleranceBelowMps2:0.5};
  expect(slipVerdict(run(200,t=>t<100?0.5:2.5),['cup-1'],0.15,wide).verdict).toBe('slip_expected_absent');
  expect(slipVerdict(run(200,()=>1.6),['cup-1'],0.15,wide).verdict).toBe('inconclusive');         // 1.6 is within 0.3 above the bound
+});
+
+// ---- R06: a slip belongs to the acceleration episode it falls in, of the same cup, at the point of the tray under it ----
+const twoEpisodes=(slip:(t:number)=>number)=>run(600,t=>t>=100&&t<120?1.3:t>=400&&t<430?2.5:0.3,slip);
+test('verdict: a slip that belongs to an earlier, gentler episode does not stand in for the later episode that crossed the bound',()=>{
+ // episode 1 (1.3 m/s2) is inside the band and the cup slips there; episode 2 (2.5) crosses the bound and the cup does not move
+ const wp={...policy,slipWindowTicks:25,slipEpsilonM:0.005,onsetLagTicks:30};
+ const v=slipVerdict(twoEpisodes(t=>t<110?0:Math.min((t-109)*0.002,0.03)),['cup-1'],0.15,wp);
+ expect(v.verdict).not.toBe('slip_expected_and_found');expect(['slip_expected_absent','slip_onset_out_of_tolerance']).toContain(v.verdict);
+ // the same with a slip in the second episode too: found
+ const both=slipVerdict(twoEpisodes(t=>t<110?0:t<400?Math.min((t-109)*0.002,0.03):Math.min(0.03+(t-399)*0.002,0.06)),['cup-1'],0.15,wp);
+ expect(both.verdict).toBe('slip_expected_and_found');
+});
+test('verdict: with several cups each cup is judged in its own episodes',()=>{
+ // cup-1 slips in the crossing episode, cup-2 never moves although the same tray accelerates: the bound was crossed for cup-2 and nothing happened
+ const wp={...policy,slipWindowTicks:25,slipEpsilonM:0.005,onsetLagTicks:30};
+ const base=run(300,t=>t>=100&&t<130?2.5:0.3,t=>t<105?0:Math.min((t-104)*0.002,0.03));
+ const rs=base.map(r=>({...r,loads:[...r.loads,{...r.loads[0]!,propId:'cup-2',poseInSupport:{positionM:[0.1,-0.09,0.05],quaternionXyzw:[0,0,0,1]}}]})) as never;
+ expect(slipVerdict(rs,['cup-1','cup-2'],0.15,wp).verdict).toBe('slip_expected_absent');
+ expect(slipVerdict(rs,['cup-1'],0.15,wp).verdict).toBe('slip_expected_and_found');
+});
+import {supportPointAccelerationMps2} from '../../packages/lab-runtime/src/v2/simulation3d/tray-oracle';
+test('the acceleration of the point of the tray under a cup comes from the cup pose and its pose in the support frame (the tray transform), not from the base alone',()=>{
+ // the tray yaws about its own centre while its base origin stays at the map origin: the point under a cup 0.4 m from the base origin accelerates, the base does not
+ const recs=Array.from({length:200},(_,t)=>{const a=t*t*0.0004,c=Math.cos(a),s=Math.sin(a),off=[0.4,0],cupMap=[off[0]!*c-off[1]!*s,off[0]!*s+off[1]!*c,0.05];
+  return {schemaVersion:1,tick:t,simTimeNs:String(t*20_000_000),contacts:[],base:[{robotId:'amr-1',poseMap:{positionM:[0,0,0.075],quaternionXyzw:[0,0,Math.sin(a/2),Math.cos(a/2)]},rollRad:0,pitchRad:0}],
+   loads:[{propId:'cup-1',supportId:'s',poseMap:{positionM:cupMap,quaternionXyzw:[0,0,Math.sin(a/2),Math.cos(a/2)]},poseInSupport:{positionM:[0.4,0,0.05],quaternionXyzw:[0,0,0,1]}}]} as never;});
+ const local=supportPointAccelerationMps2(recs as never,'cup-1',100,3),base=supportAccelerationMps2(recs as never,100,3);
+ expect(base).toBeCloseTo(0,9);expect(local!).toBeGreaterThan(0.05);
+ // yaw a = 0.0004 t^2: omega = 0.0008 t = 0.08 rad/tick-index; at t=100 alpha*r + omega^2 r (per s^2) ~ r*(2*0.0004/0.0004... checked against the analytic centripetal+tangential below
+ const dt=0.02,alpha=2*0.0004/(dt*dt),omega=0.0008*100/dt,expected=0.4*Math.hypot(alpha,omega*omega);
+ expect(local!).toBeGreaterThan(expected*0.9);expect(local!).toBeLessThan(expected*1.1);
 });

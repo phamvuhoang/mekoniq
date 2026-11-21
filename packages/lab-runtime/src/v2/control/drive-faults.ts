@@ -1,5 +1,6 @@
 // The drive-level fault catalog of R4-A §7.1 and its admission (plan V08). Pure: the server validates a schedule against these bounds before a run exists, the worker checks them again before it applies one.
 import type {FaultScheduleEntry} from '../fault-schedule';
+import {hashJson} from '../hash';
 import type {DriveCommandV1} from './drive-io';
 
 export type DriveFaultId='encoder-dropout'|'motor-weak'|'drive-trip'|'command-delay'|'command-loss'|'grip-weak'|'lidar-noise'|'drive-reset';
@@ -20,7 +21,7 @@ export const DRIVE_FAULTS:Readonly<Record<DriveFaultId,DriveFaultSpec>>={
 export const MAX_DRIVE_FAULTS=16;
 /** What a worker is told to do and what it answers (contracts §4; the receipt echoes the parameters it applied, so a reader can compare them with the intent). Lab never trusts the schedule as proof of application: only a matching receipt is. */
 export interface FaultInjection {entryId:string;faultId:string;targetId:string;params:Record<string,number>;phase:'start'|'end'}
-export interface FaultReceipt {entryId:string;faultId:string;targetId:string;params:Record<string,number>;phase:'start'|'end';appliedTick:number;runId:string;bootId:string;sceneDigest:string;requestDigest:string}
+export interface FaultReceipt {entryId:string;faultId:string;targetId:string;params:Record<string,number>;phase:'start'|'end';appliedTick:number;runId:string;bootId:string;sceneDigest:string;requestDigest:string;/** the world supervisor took the effect away on this tick (the base is held by the movement interlock): the injection was due, it did not happen */overriddenBy?:'WORLD_MOVEMENT_INTERLOCK'}
 export const isDriveFaultId=(id:string):id is DriveFaultId=>Object.hasOwn(DRIVE_FAULTS,id);
 export const isGripperAxis=(axisId:string)=>axisId.endsWith('/gripper');
 
@@ -69,7 +70,15 @@ export function runtimeFaultsAt(schedule:readonly FaultScheduleEntry[],targetTic
  const mine=schedule.filter(e=>isDriveFaultId(e.faultId)&&DRIVE_FAULTS[e.faultId].appliedBy==='runtime');
  return {active:mine.filter(e=>e.trigger.kind==='elapsed_sim_ms'&&startOf(e)<=targetTick&&targetTick<faultEndTick(startOf(e),e.durationMs)),events:faultEventsAt(mine,targetTick)};
 }
+/** The command-loss axes the world movement interlock takes away: only the base wheels (the supervisor commands a stop, a stale target would be refused); an arm joint's loss is not the supervisor's to override. */
+export const interlockOverridden=(active:readonly FaultScheduleEntry[],wheels:ReadonlySet<string>,interlocked:boolean)=>interlocked?active.filter(e=>e.faultId==='command-loss'&&wheels.has(e.targetId)):[];
 /** command-loss: the axes in `lost` get the last command that was sent, seq included, instead of the new one. With nothing sent yet there is nothing to repeat. */
 export function applyCommandLoss(commands:readonly DriveCommandV1[],last:readonly DriveCommandV1[]|undefined,lost:ReadonlySet<string>):DriveCommandV1[]{
  return commands.map(c=>lost.has(c.axisId)&&last?.find(l=>l.axisId===c.axisId)||c);
+}
+
+/** The receipts of a step against the injections the worker was sent: the same entries, phases, faults, targets and parameters in order, this tick, and the step's own run, boot, scene and request digest. Nothing missing, nothing extra, also on a tick that owes none. */
+export function receiptsMatch(got:readonly FaultReceipt[]|undefined,sent:readonly {entryId:string;phase:string;faultId:string;targetId:string;params:Record<string,number>}[],ctx:{runId:string;bootId:string;sceneDigest:string;requestDigest:string;targetTick:number}):boolean{
+ const rs=got??[];
+ return rs.length===sent.length&&sent.every((w,i)=>{const x=rs[i];return !!x&&x.entryId===w.entryId&&x.phase===w.phase&&x.faultId===w.faultId&&x.targetId===w.targetId&&x.appliedTick===ctx.targetTick&&x.runId===ctx.runId&&x.bootId===ctx.bootId&&x.sceneDigest===ctx.sceneDigest&&x.requestDigest===ctx.requestDigest&&hashJson(x.params)===hashJson(w.params);});
 }

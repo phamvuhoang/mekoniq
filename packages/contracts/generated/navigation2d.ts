@@ -1698,6 +1698,7 @@ export interface FaultReceiptV1 {
   bootId: string;
   sceneDigest: string;
   requestDigest: string;
+  overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
 }
 export interface WorldStep {
   workerPid: number;
@@ -3099,6 +3100,7 @@ export interface FaultReportV1 {
     injection: {
       appliedTick: number | null;
       endedTick: number | null;
+      overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
     };
     detection: {
       by: ('drive' | 'controller' | 'arm_program' | 'source') | null;
@@ -3128,7 +3130,7 @@ export interface FaultReportV1 {
       | 'CUSTODY_UNCHANGED'
       | 'LATCH_HELD'
       | 'TORQUE_ZERO_AFTER_TIMEOUT';
-    result: 'pass' | 'violated' | 'not_applicable';
+    result: 'pass' | 'violated' | 'not_applicable' | 'not_evidenced';
     tick: number | null;
     evidence: string;
   }[];

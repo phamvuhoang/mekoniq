@@ -58,7 +58,7 @@ export const recordingHostArch=():HostArch=>process.arch==='arm64'?'arm64':'x86_
 
 const json=(v:unknown)=>JSON.stringify(v,null,2)+'\n';
 
-export interface Trace {spawns:number;steps:{tick:number;velocities:number;driveCommands:DriveCommandV1[]}[];error:string|null}
+export interface Trace {spawns:number;steps:{tick:number;velocities:number;driveCommands:DriveCommandV1[];/** the fault injections the worker was sent on this step (as sent, not as scheduled) */faultInjections?:unknown[]}[];error:string|null}
 
 export async function readJson(root:string,path:string,max=64*1024*1024){
  if(!/^[\w.-]+(?:\/[\w.-]+)*$/.test(path)||path.split('/').some(p=>p==='..'||p==='.'))throw Error('CIL_ARTIFACT_PATH');
@@ -90,7 +90,7 @@ export async function runMobile(c:{service:Awaited<ReturnType<typeof setupMobile
  const {locked,scene}=c.compiled.get(experiment)!;await mkdir(dir,{recursive:true});
  const bundle=join(dir,'bundle');for(const path of ['navigation-scene.json',...scene.files.map(f=>f.path)]){await mkdir(join(bundle,path,'..'),{recursive:true});await writeFile(join(bundle,path),await c.service.bundleFile(locked.ref.bundleDigest,path));}
  const trace:Trace={spawns:0,steps:[],error:null},plant=mujocoMobilePlant(c.runtime),spawn=plant.spawn;
- plant.spawn=async o=>{trace.spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='step'){const p=req.payload as {targetTick:number;velocities:unknown[];driveCommands?:DriveCommandV1[]};trace.steps.push({tick:p.targetTick,velocities:p.velocities.length,driveCommands:structuredClone(p.driveCommands??[])});}return w.request(req);}};};
+ plant.spawn=async o=>{trace.spawns++;const w=await spawn(o);return {...w,async request(req){if(req.op==='step'){const p=req.payload as {targetTick:number;velocities:unknown[];driveCommands?:DriveCommandV1[];faultInjections?:unknown[]};trace.steps.push({tick:p.targetTick,velocities:p.velocities.length,driveCommands:structuredClone(p.driveCommands??[]),...p.faultInjections?{faultInjections:structuredClone(p.faultInjections)}:{}});}return w.request(req);}};};
  const run=await createFixedStepScenarioRun({project:locked.runtimeProjection.project,scenarioId:campaign.scenarioId,scenarioRevision:1,seed,mode:'simulation',access:'simulated',backendSetId:SET,sourceCommit:c.sourceCommit,engineering:locked,...faults?.length?{driveFaultSchedule:structuredClone([...faults])}:{}},
   {directory:join(dir,'run'),catalog:c.catalog,...faults?.length?{faultCampaign:true as const}:{},enabledBackends:['mujoco_3d'],bundleFile:(d,p)=>c.service.bundleFile(d,p),plant,runtime:c.runtime});
  let n=0,report:RunReport|undefined;

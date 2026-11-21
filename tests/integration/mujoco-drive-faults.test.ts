@@ -29,7 +29,8 @@ test('a command loss of 200 ms trips COMMAND_TIMEOUT within the oracle deadline,
  const seqOf=(s:typeof steps[number])=>(s.request.driveCommands as {axisId:string;seq:number}[]).find(c=>c.axisId===R)!.seq,other=(s:typeof steps[number])=>(s.request.driveCommands as {axisId:string;seq:number}[]).find(c=>c.axisId!==R)!.seq;
  expect(new Set(inside.map(seqOf)).size).toBe(1);expect(new Set(inside.map(other)).size).toBeGreaterThan(1);   // only the faulted axis went quiet
  const fr=report.faultReport!;expect(fr,JSON.stringify(report.driveEvidence?.issues)).toBeDefined();expect(fr.entries[0]).toMatchObject({verdict:'detected_in_time',detection:{by:'drive',code:'COMMAND_TIMEOUT'}});
- expect(fr.invariants.find(i=>i.id==='TORQUE_ZERO_AFTER_TIMEOUT')!.result).toBe('pass');
+ // the latch raises attention and the run ends at that tick, before the settle horizon: torque after the timeout was not measured, so the invariant says so (it used to pass on the missing samples)
+ expect(fr.invariants.find(i=>i.id==='TORQUE_ZERO_AFTER_TIMEOUT')!.result).toBe('not_evidenced');
  expect(fr.invariants.find(i=>i.id==='LATCH_HELD')!.result).toBe('pass');
 },300_000);
 
@@ -98,4 +99,18 @@ test('cell: an arm axis fault that halts an idle arm ends the run in attention, 
  const fr=report.faultReport!;expect(fr,JSON.stringify(report.driveEvidence?.issues)).toBeDefined();
  expect(fr.entries[0]).toMatchObject({faultId:'encoder-dropout',verdict:'detected_in_time'});
  expect(fr.invariants.filter(i=>i.result==='violated')).toEqual([]);
+},deadline);
+
+// R01: the world's movement interlock holds the base (a cup is being picked); it must not take a joint's command loss away
+test('cell: a command loss on an arm joint while the movement interlock holds the base repeats that joint\'s seq on the wire and is reported as applied',async()=>{
+ const e=entry('command-loss','arm-1/J2',30_000,200),h=await openCell(7,'fault-arm-loss',{},{driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[e]});open.push(h);
+ await h.run.start();await cellUntil(h.run,v=>v.tick>=1530,1600,50);
+ const {report}=await h.save('fault-arm-loss');await h.run.close();
+ const read=await h.readback();expect(read.issues).toEqual([]);
+ const rows=read.records.filter(r=>r.snapshot.tick>=1501&&r.snapshot.tick<1511),seq=(r:typeof rows[number],a:string)=>r.command!.driveCommands!.find(c=>c.axisId===a)!.seq;
+ expect(rows.length).toBe(10);
+ // the joint's own command did not advance for the whole window; the rest of the cell's commands did (the wire is what the worker received)
+ expect(new Set(rows.map(r=>seq(r,'arm-1/J2'))).size,JSON.stringify(rows.map(r=>seq(r,'arm-1/J2')))).toBe(1);
+ expect(new Set(rows.map(r=>seq(r,'arm-1/J1'))).size).toBeGreaterThan(1);
+ expect(report.faultReport!.entries[0]).toMatchObject({faultId:'command-loss',targetId:'arm-1/J2',injection:{appliedTick:1501}});
 },deadline);

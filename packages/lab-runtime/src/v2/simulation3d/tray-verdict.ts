@@ -6,13 +6,21 @@ import {DRIVE_EXPERIMENTS} from '../control/drive-experiments';
 export interface TrayPolicy extends TrayOraclePolicy{slipWarnM:number;slipFailM:number}
 export interface TrayRunFacts{experimentId:TrayExperimentId;status:string;served:string;tick:number;attention:readonly string[];records:readonly PhysicsTickRecord[];businessEvents:readonly {type:string;at:string}[];
  /** the navigation policy's limit of the run */accelerationLimitMps2:number;/** sliding friction of the cup face and of the tray face; the engine applies the larger */cupSliding:number;traySliding:number;
- /** the scripted person's position and radius, for the person variant */personAt?:(tick:number)=>{x:number;y:number}|null;personRadiusM?:number}
+ /** the scripted person's position and radius, for the person variant */personAt?:(tick:number)=>{x:number;y:number}|null;personRadiusM?:number;
+ /** the nominal run of the same seed, without a person: what the robot does on this route by itself (the negative control of the person oracle) */baselineRecords?:readonly PhysicsTickRecord[]}
 export interface Verdict{id:string;result:'pass'|'fail'|'inconclusive';detail:string}
 export interface TrayRunSummary{experimentId:TrayExperimentId;status:string;served:string;ticks:number;serviceTimeS:{available:boolean;value:number|null;reason?:string};
  /** the largest displacement of any cup in the tray frame within a trailing window, the reading a creep stays under; judged by the thresholds */maxLoadSlipM:{available:boolean;value:number|null};
  /** the largest displacement from where a cup started over the whole run: includes the soft-friction creep of the engine; reported, judged by nothing */cumulativeDriftM:number;
- slipLevel:'none'|'warn'|'fail';accelerationLimitMps2:number;maxSupportAccelerationMps2:number|null;coulomb?:{muEffective:number;boundMps2:number;maxAccelerationMps2:number|null;verdict:SlipVerdict;onsetTick:number|null};
+ /** the largest amount by which a wheel fell short of its commanded speed over the ticks the wheels were commanded (rad/s); null when they never were */wheelSpeedShortfallRadS:number|null;slipLevel:'none'|'warn'|'fail';accelerationLimitMps2:number;maxSupportAccelerationMps2:number|null;coulomb?:{muEffective:number;boundMps2:number;maxAccelerationMps2:number|null;verdict:SlipVerdict;onsetTick:number|null};
  person?:{contactTicks:number[];stoppedTicks:number;firstStopTick:number|null;lastStopTick:number|null;resumedTick:number|null};verdicts:Verdict[]}
+/** C is judged by its speed shortfall: the wheels must have been commanded above SHORTFALL_MIN_RADS for at least SHORTFALL_MIN_TICKS ticks */
+const SHORTFALL_MIN_RADS=1,SHORTFALL_MIN_TICKS=100;
+function wheelShortfall(rs:readonly PhysicsTickRecord[]){
+ let commandedTicks=0,value:number|null=null;
+ for(const r of rs){const w=r.wheels?.[0];if(!w)continue;const target=Math.max(Math.abs(w.targetRadS[0]!),Math.abs(w.targetRadS[1]!));if(target<SHORTFALL_MIN_RADS)continue;commandedTicks++;const miss=Math.max(Math.abs(w.targetRadS[0]!)-Math.abs(w.velocityRadS[0]!),Math.abs(w.targetRadS[1]!)-Math.abs(w.velocityRadS[1]!));value=Math.max(value??-Infinity,miss);}
+ return {commandedTicks,value};
+}
 const CUPS=['cup-1','cup-2','cup-3'],STOP_MPS=0.02,NEAR_M=2.0,MIN_STOP_TICKS=10;
 const ms=(iso:string)=>Date.parse(iso);
 const pos=(r:PhysicsTickRecord)=>r.base?.[0]?.poseMap.positionM;
@@ -40,11 +48,15 @@ export function summariseTrayRun(f:TrayRunFacts,policy:TrayPolicy):TrayRunSummar
  const verdicts:Verdict[]=[],say=(id:string,ok:boolean|null,detail:string)=>verdicts.push({id,result:ok===null?'inconclusive':ok?'pass':'fail',detail});
  const {done,serviceTimeS,windowSlip:ws,drift:dr,maxAccel}=measure(f,policy),windowSlip=ws??0,drift=dr??0;
  const slipLevel=windowSlip>policy.slipFailM?'fail':windowSlip>policy.slipWarnM?'warn':'none';
+ // the capture must be a whole run: one that is still running, paused or waiting was cut short and says nothing about the variant
+ say('RUN_ENDED',['completed','needs_attention','failed','cancelled'].includes(f.status),`status ${f.status} at tick ${f.tick}`);
+ const shortfall=wheelShortfall(f.records);
+ if(f.experimentId==='tray-torque-limited-v1')say('SPEED_SHORTFALL',shortfall.commandedTicks>=SHORTFALL_MIN_TICKS&&shortfall.value!==null,`${shortfall.commandedTicks} ticks with the wheels commanded above ${SHORTFALL_MIN_RADS} rad/s; largest shortfall ${shortfall.value===null?'not observed':shortfall.value.toFixed(3)+' rad/s'}`);
  say('NO_FALSE_SERVE',f.served==='0'||done,`served ${f.served}, status ${f.status}`);
  // A, A-prime and D must finish their mission; B and C stress the plant, and a mission that ends in attention there is the result (with its reasons), not a failure of the oracle
  if(['tray-nominal-v1','tray-low-friction-v1','tray-person-crossing-v1'].includes(f.experimentId))say('SERVED_ALL',done&&f.served==='3',`status ${f.status}, served ${f.served}`);
  else say('MISSION_OUTCOME',done?true:null,`status ${f.status}, served ${f.served}${f.attention.length?`, attention ${[...new Set(f.attention)].join(',')}`:''}`);
- const out:TrayRunSummary={experimentId:f.experimentId,status:f.status,served:f.served,ticks:f.tick,serviceTimeS,maxLoadSlipM:{available:true,value:windowSlip},cumulativeDriftM:drift,slipLevel,accelerationLimitMps2:f.accelerationLimitMps2,maxSupportAccelerationMps2:maxAccel,verdicts};
+ const out:TrayRunSummary={wheelSpeedShortfallRadS:shortfall.value,experimentId:f.experimentId,status:f.status,served:f.served,ticks:f.tick,serviceTimeS,maxLoadSlipM:{available:true,value:windowSlip},cumulativeDriftM:drift,slipLevel,accelerationLimitMps2:f.accelerationLimitMps2,maxSupportAccelerationMps2:maxAccel,verdicts};
  // a slide past the failure threshold fails every variant but B, where a slide above the Coulomb bound is the expected result and is only reported (slipLevel)
  if(f.experimentId!=='tray-accel-high-v1')say('SLIP_BELOW_FAIL',windowSlip<=policy.slipFailM,`largest window slip ${(windowSlip*1000).toFixed(2)} mm, failure above ${policy.slipFailM*1000} mm`);
  if(f.experimentId==='tray-nominal-v1')say('SLIP_BELOW_WARN',windowSlip<policy.slipWarnM,`largest window slip ${(windowSlip*1000).toFixed(2)} mm, warning at ${policy.slipWarnM*1000} mm`);
@@ -55,16 +67,20 @@ export function summariseTrayRun(f:TrayRunFacts,policy:TrayPolicy):TrayRunSummar
  }
  if(f.experimentId==='tray-person-crossing-v1'&&f.personAt){
   const contactTicks=f.records.filter(r=>r.contacts.some(c=>c.a.startsWith('actor/')||c.b.startsWith('actor/'))).map(r=>r.tick);
-  // a stop for the person: the base nearly still for a while with the person within NEAR_M of it
-  const still:number[]=[];
-  for(let t=1;t<f.records.length-1;t++){const p=pos(f.records[t]!),q=f.personAt(t),v=speedAt(f.records,t);if(p&&q&&v!==null&&v<STOP_MPS&&Math.hypot(p[0]!-q.x,p[1]!-q.y)<=NEAR_M)still.push(t);}
-  const stoppedTicks=still.length,firstStop=still[0]??null,lastStop=still.at(-1)??null;
+  // a stop for the person: a stretch of at least MIN_STOP_TICKS nearly still, with the person within NEAR_M, that the same route without a person (the negative control) does not have
+  const stopsOf=(rs:readonly PhysicsTickRecord[])=>{const out:{from:number;to:number}[]=[];let from=-1;for(let t=1;t<=rs.length-1;t++){const v=t<rs.length-1?speedAt(rs,t):null,still=v!==null&&v<STOP_MPS;if(still&&from<0)from=t;if(!still&&from>=0){if(t-from>=MIN_STOP_TICKS)out.push({from,to:t-1});from=-1;}}return out;};
+  const near=(t:number)=>{const p=pos(f.records[t]!),q=f.personAt!(t);return !!p&&!!q&&Math.hypot(p[0]!-q.x,p[1]!-q.y)<=NEAR_M;};
+  const base=f.baselineRecords?stopsOf(f.baselineRecords):null,mine=stopsOf(f.records);
+  const mate=(s:{from:number;to:number})=>base!.some(b=>s.from<=b.to+MIN_STOP_TICKS&&b.from<=s.to+MIN_STOP_TICKS);
+  const personStops=base?mine.filter(s=>near(s.from)&&!mate(s)):[];
+  const stoppedTicks=personStops.reduce((n,s)=>n+s.to-s.from+1,0),firstStop=personStops[0]?.from??null,lastStop=personStops.at(-1)?.to??null;
   let resumed:number|null=null;
   if(lastStop!==null)for(let t=lastStop+1;t<f.records.length-1;t++){const v=speedAt(f.records,t);if(v!==null&&v>0.1){resumed=t;break;}}
+  const clear=resumed!==null&&!near(resumed);
   out.person={contactTicks,stoppedTicks,firstStopTick:firstStop,lastStopTick:lastStop,resumedTick:resumed};
   say('NO_PROXY_CONTACT',!contactTicks.length,contactTicks.length?`contact with the person at ticks ${contactTicks.slice(0,5).join(',')}`:'no contact between the robot and the person');
-  say('STOPPED_FOR_PERSON',stoppedTicks>=MIN_STOP_TICKS,`${stoppedTicks} ticks nearly still with the person within ${NEAR_M} m`);
-  say('RESUMED_AFTER_PASS',resumed!==null&&done,resumed===null?'the robot did not move again after the stop':`moved again at tick ${resumed}`);
+  say('STOPPED_FOR_PERSON',!!base&&stoppedTicks>=MIN_STOP_TICKS,!base?'NO_NEGATIVE_CONTROL: the nominal run of this seed is needed':stoppedTicks>=MIN_STOP_TICKS?`${stoppedTicks} ticks nearly still with the person within ${NEAR_M} m, a stop the run without a person does not make`:mine.some(s=>near(s.from))?'the robot also stops there without a person (negative control): not a reaction to the person':'the robot did not stop with the person near');
+  say('RESUMED_AFTER_PASS',resumed!==null&&clear&&done,resumed===null?'the robot did not move again after the stop':!clear?`moved again at tick ${resumed} while the person was still within ${NEAR_M} m`:`moved again at tick ${resumed}, the person more than ${NEAR_M} m away`);
  }
  return out;
 }
@@ -78,3 +94,14 @@ export function registeredTrayInputs(id:TrayExperimentId,o:{policySha:string}):T
 }
 /** The names of the fields in which the run's inputs differ from the registered ones. */
 export const trayInputIssues=(id:TrayExperimentId,used:TrayInputsUsed,policySha:string)=>{const want=registeredTrayInputs(id,{policySha});return (Object.keys(want) as (keyof TrayInputsUsed)[]).filter(k=>want[k]!==used[k]);};
+
+/** Stops by the plant's own monitor: the run ends there on purpose and the records up to the stop are all there is. */
+export const MONITOR_STOPS=['LOAD_FELL','BASE_TIPPED','PLANT_UNSTABLE'] as const;
+/** What the physics evidence reader found that makes the records unusable. Any integrity, identity or gap finding blocks; the single excuse is incomplete coverage that a monitor stop explains (a terminal reason of the plant monitor, no gap). */
+export function blockingReadIssues(read:{issues:readonly string[]},manifest:{gaps:readonly unknown[];terminalReason?:string|null},recordCount:number,tick:number):string[]{
+ const stopped=!!manifest.terminalReason&&(MONITOR_STOPS as readonly string[]).includes(manifest.terminalReason)&&!manifest.gaps.length;
+ const out=read.issues.filter(i=>i!=='PHYSICS_COVERAGE_INCOMPLETE'||!stopped);
+ if(manifest.gaps.length)out.push('PHYSICS_GAPS');
+ if(recordCount!==tick+1)out.push('PHYSICS_RECORD_COUNT');
+ return out;
+}

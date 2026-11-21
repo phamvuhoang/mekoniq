@@ -4,7 +4,7 @@ import {BASE_CONTROLLER_DEFAULTS,mobileDrive} from '../control/drive-run';
 import {driveDocumentDigest,splitDriveSnapshot,type ControlProfileV1,type DriveCommandV1,type DriveModelV1,type FaultOracleV1,type FaultReportV1} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
 import type {ControllerEvent} from '../control/controller';
-import {applyCommandLoss,runtimeFaultsAt,type FaultReceipt} from '../control/drive-faults';
+import {applyCommandLoss,interlockOverridden,runtimeFaultsAt,type FaultReceipt} from '../control/drive-faults';
 import {buildFaultReport,servedFacts} from '../fault-report';
 import type {FaultScheduleEntry} from '../fault-schedule';
 import {jointTrajectoryFollowerV1} from '../control/joint-follower';
@@ -44,7 +44,7 @@ export function replayWorldDrive(admission:WorldAdmission,records:WorldEvidenceR
    if(!command){issues=[...issues,'WORLD_DRIVE_COMMAND_MISSING'];break;}
    try{
     const replay=drive.step(records[i-1]!.snapshot,command);
-    const lost=new Set(command.worldControl?.movementInterlocked?[]:runtimeFaultsAt(faults,snapshot.tick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(replay.commands,lastSent,lost):replay.commands;lastSent=sent;
+    const activeNow=runtimeFaultsAt(faults,snapshot.tick).active,over=interlockOverridden(activeNow,new Set([`${admission.scene.navigation.robots[0]!.robotId}/wheel-left`,`${admission.scene.navigation.robots[0]!.robotId}/wheel-right`]),!!command.worldControl?.movementInterlocked),lost=new Set(activeNow.filter(e=>e.faultId==='command-loss'&&!over.includes(e)).map(e=>e.targetId)),sent=lost.size?applyCommandLoss(replay.commands,lastSent,lost):replay.commands;lastSent=sent;
     const seqOf=(axisId:string)=>faults.length?sent.find(c=>c.axisId===axisId)?.seq:snapshot.tick;
     if(!command.driveCommands||hashJson(sent)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==seqOf(d.axisId)))throw Error('WORLD_DRIVE_COMMAND_REPLAY');
     events.push(...replay.events);
@@ -59,7 +59,7 @@ export function buildWorldDriveReport(admission:WorldAdmission,records:WorldEvid
  return buildDriveEvidence(r.drive.model,r.rows,{complete:r.issues.length===0,issues:r.issues,events:r.events});
 }
 /** The fault report of a cell run, from the verified prefix of its own stream: recorded intents (the commands), the worker's receipts (the snapshots) and the runtime's (the commands, after the ACK). */
-export function buildWorldFaultReport(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[],o:{runId:string;faults:readonly FaultScheduleEntry[];oracle:FaultOracleV1;facts:{serveTicks:readonly number[];custodyChanged:boolean;attention:readonly {tick:number;reason:string}[]}}){
+export function buildWorldFaultReport(admission:WorldAdmission,records:WorldEvidenceRecord[],issues:string[],o:{runId:string;faults:readonly FaultScheduleEntry[];oracle:FaultOracleV1;facts:{serveTicks:readonly number[];custodyChanged:boolean|'unknown';attention:readonly {tick:number;reason:string}[]}}){
  const r=replayWorldDrive(admission,records,issues,o.faults);
  if(r.issues.length)throw Error(`FAULT_EVIDENCE_INVALID:${r.issues[0]}`);
  const gaps=issues.length;void gaps;
@@ -67,8 +67,14 @@ export function buildWorldFaultReport(admission:WorldAdmission,records:WorldEvid
   receipts:records.flatMap(x=>[...(x.snapshot as {faultReceipts?:FaultReceipt[]}).faultReceipts??[],...x.command?.faultReceipts??[]]),
   intents:records.map(x=>({tick:x.snapshot.tick,injections:x.command?.faultInjections??[]})),
   physics:records.map(x=>({tick:x.snapshot.tick,base:x.snapshot.physics?.base})),
-  facts:{...servedFacts(r.rows,o.facts.serveTicks),resendsAfterUnknown:0,custodyChanged:o.facts.custodyChanged}});
+  axisModes:Object.fromEntries(worldDocument<DriveModelV1>(admission.files,admission.scene.engine!.driveModelRef!.path).axes.map(a=>[a.axisId,a.mode as 'csp'|'csv'])),
+  // no count of the steps sent after an unknown ACK exists for a cell run: that invariant is not evidenced here, never passed
+  facts:{...servedFacts(r.rows,o.facts.serveTicks),resendsAfterUnknown:null,custodyChanged:o.facts.custodyChanged}});
 }
+/** The sealed fault oracle a faulted cell run was judged by, kept in the run directory. */
+export const FAULT_ORACLE_FILE='fault-oracle-v1.json';
+/** What the cell's physical custody says for the fault report's invariant: a transfer that ended unknown (listed, or in the attention) means custody cannot be said unchanged. */
+export const custodyFacts=(physical:readonly {status:string}[],attention:readonly {reason:string}[]):false|'unknown'=>physical.some(x=>x.status==='unknown')||attention.some(a=>/(TRANSFER|EXECUTION|WORLD_RESTART)_UNKNOWN/.test(a.reason))?'unknown':false;
 export async function readWorldDriveReport(directory:string,admission:WorldAdmission,identity:{runId:string;bootId:string;publicCommittedTick:number},faults:readonly FaultScheduleEntry[]=[]){
  const capture=await captureWorldPrefixDisk(join(directory,'world-evidence'),admission,{...identity,sceneDigest:admission.scene.sceneDigest,admissionDigest:admission.digest});
  const prefix=await materializeWorldPrefix(capture,admission),issues=[...prefix.issues];

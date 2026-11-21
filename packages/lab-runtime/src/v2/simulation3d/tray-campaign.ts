@@ -8,7 +8,7 @@ import {createFixedStepScenarioRun} from '../navigation2d/runner';
 import {defaultCatalog} from '../capabilities';
 import {mujocoMobilePlant} from './mujoco-mobile';
 import {preparePhysicsAdmission,readPhysicsEvidence,readPhysicsManifest} from './physics-evidence';
-import {readJson} from '../control/cil-campaign';
+import {readJson,readMobileNavigation} from '../control/cil-campaign';
 import {validateNavigationDocument,type NavigationSceneV1,type PhysicsTickRecord} from '../navigation2d/contracts';
 import type {RunReport} from '../report';
 import {TRAY_EXPERIMENTS,type TrayExperimentId} from './tray-experiments';
@@ -62,7 +62,7 @@ export async function readTrayRun(dir:string){
  const fixture=await readFile(join(dir,'run/bundle/scenario-fixture.json'),'utf8').then(t=>JSON.parse(t) as {actors:{id:string;radiusM:number;initialPoseMap:number[]}[]},()=>({actors:[]}));
  const prepared=await preparePhysicsAdmission(scene,async p=>readFile(join(dir,'bundle',p)),fixture.actors.map(a=>a.id)),physicsDir=join(dir,'run/physics'),manifest=await readPhysicsManifest(physicsDir);
  const read=await readPhysicsEvidence(physicsDir,manifest,{admission:prepared.admission,metricsPolicyDigest:prepared.metricsPolicyDigest,identity:{runId:cp.runId,bootId:cp.plant.snapshot.bootId,sceneDigest:scene.sceneDigest,loadProfileDigest:prepared.loadProfileDigest,physicsProfileDigest:prepared.physicsProfileDigest},runTick:cp.tick});
- return {cp,scene,read,records:read.records as PhysicsTickRecord[],actors:fixture.actors,prepared};
+ return {cp,scene,read,manifest,records:read.records as PhysicsTickRecord[],actors:fixture.actors,prepared};
 }
 
 // ---- the campaign: run every case of campaigns/tray-v1.json, then verify it from the files alone ----
@@ -72,9 +72,10 @@ import {lockDigestOf} from '../../engineering/linkforge';
 import {hashJson} from '../hash';
 import {cellArtifacts} from './cell-campaign';
 import {readCampaignJournal,verifyCampaignOutcome} from '../control/campaign-source-evidence';
-import {SCENARIO_FIXTURES,TRAY_PERSON_FIXTURE,actorPoseAt,resolveScenarioFixture} from '../navigation2d/scenario-fixtures';
-import {buildTrayEvidence,summariseTrayRun,trayInputIssues,type TrayPolicy,type TrayRunSummary} from './tray-verdict';
+import {SCENARIO_FIXTURES,TRAY_PERSON_FIXTURE,actorPoseAt,fixtureFile,resolveScenarioFixture} from '../navigation2d/scenario-fixtures';
+import {blockingReadIssues,buildTrayEvidence,summariseTrayRun,trayInputIssues,type TrayPolicy,type TrayRunSummary} from './tray-verdict';
 import {TRAY_POLICY_SHA,isTrayExperiment} from './tray-experiments';
+import {actorEvidenceIssues,trayDocumentIssues} from './tray-inputs';
 import {DRIVE_DOC_PINS} from './physics-inputs';
 
 export const TRAY_CAMPAIGN=table;
@@ -87,9 +88,9 @@ const hostArch=()=>process.arch==='arm64'?'arm64':'x86_64';
 export async function runTrayCampaign(o:{root:string;out:string;sourceCommit:string;python?:string;caseId?:string;signal?:AbortSignal}):Promise<TrayCampaignVerdict>{
  o.signal?.throwIfAborted();
  if(!/^[a-f0-9]{40}$/.test(o.sourceCommit))throw Error('TRAY_SOURCE_COMMIT_REQUIRED');
- if(o.caseId&&!TRAY_CASES.some(c=>c.id===o.caseId))throw Error('CAMPAIGN_CASE_UNREGISTERED');
+ const only=(o.caseId??'').split(',').filter(Boolean);if(only.some(id=>!TRAY_CASES.some(c=>c.id===id)))throw Error('CAMPAIGN_CASE_UNREGISTERED');
  await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign:table,sourceCommit:o.sourceCommit,hostArch:hostArch(),accepted:false,execution:'actual_mujoco',calibration:'not_calibrated'}));
- const wanted=TRAY_CASES.filter(c=>!o.caseId||c.id===o.caseId),{service,compiled,workerRoot}=await setupTray(o,[...new Set(wanted.map(c=>c.experimentId))]);
+ const wanted=TRAY_CASES.filter(c=>!only.length||only.includes(c.id)),{service,compiled,workerRoot}=await setupTray(o,[...new Set(wanted.map(c=>c.experimentId))]);
  const ctx:TrayContext={service,compiled,runtime:trayRuntime(o.root,workerRoot,await lockDigestOf(join(workerRoot,'requirements.lock')),o.python),catalog:trayCatalog(),sourceCommit:o.sourceCommit,...o.signal?{signal:o.signal}:{}};
  for(const spec of wanted){
   const dir=join(o.out,spec.id);let error:string|null=null;
@@ -105,7 +106,7 @@ export async function verifyTrayCampaign(root:string,onlyCase?:string):Promise<T
  const v:TrayCampaignVerdict={expectedRuns:0,completedCases:0,missingArtifacts:[],issues:[],summaries:[]};let source:string;
  try{const c=await readJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(table)||!/^[a-f0-9]{40}$/.test(c.sourceCommit)||!['arm64','x86_64'].includes(c.hostArch))throw Error();source=c.sourceCommit;}
  catch{v.issues.push('TRAY_CAMPAIGN_IDENTITY');return v;}
- const selected=TRAY_CASES.filter(c=>!onlyCase||c.id===onlyCase);v.expectedRuns=selected.length;if(!selected.length){v.issues.push('TRAY_CASE_UNREGISTERED');return v;}
+ const only=(onlyCase??'').split(',').filter(Boolean),selected=TRAY_CASES.filter(c=>!only.length||only.includes(c.id));v.expectedRuns=selected.length;if(!selected.length){v.issues.push('TRAY_CASE_UNREGISTERED');return v;}
  const runs=new Set<string>();
  for(const spec of selected){
   const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};
@@ -113,7 +114,9 @@ export async function verifyTrayCampaign(root:string,onlyCase?:string):Promise<T
    const rec=await readJson(dir,'case.json');
    check(rec.schemaVersion===1&&rec.engineVersion==='3.17.0'&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec)&&rec.error===null,'TRAY_CASE_IDENTITY');
    check(hashJson(await cellArtifacts(dir))===hashJson(rec.artifacts),'TRAY_ARTIFACT_INVENTORY');
-   const report=await readJson(dir,'report.json') as RunReport,{cp,scene,records,actors}=await readTrayRun(dir);
+   const report=await readJson(dir,'report.json') as RunReport,{cp,scene,records,actors,read,manifest}=await readTrayRun(dir);
+   // nothing the reader found is ignored: a changed identity, policy or a gap makes the records unusable (a stop by the plant monitor is the one excuse for incomplete coverage)
+   const blocked=blockingReadIssues(read,manifest as never,records.length,cp.tick);check(!blocked.length,'TRAY_PHYSICS_EVIDENCE:'+blocked.join(','));
    check((cp as unknown as {manifest:{seed:number;sourceCommit:string;scenario:{id:string}}}).manifest.seed===spec.seed&&(cp as unknown as {manifest:{sourceCommit:string}}).manifest.sourceCommit===source&&(cp as unknown as {manifest:{scenario:{id:string}}}).manifest.scenario.id===TRAY_SCENARIO&&cp.tick===report.outcome.tick&&report.manifest.seed===spec.seed,'TRAY_RUN_IDENTITY');
    check(!runs.has(cp.runId),'TRAY_DUPLICATE_EXECUTION');runs.add(cp.runId);check(report.manifest.runId===cp.runId,'TRAY_RUN_IDENTITY');
    // the bundle names exactly the registered variant, and every document the verdicts read is byte-verified against the scene's file list
@@ -127,19 +130,26 @@ export async function verifyTrayCampaign(root:string,onlyCase?:string):Promise<T
    const issues=trayInputIssues(spec.experimentId,{policySha:scene.files.find(f=>f.path==='tray-policy-v1.json')!.sha256,loadId:load.id,cupSliding:Math.min(...load.props.map((p:{friction:{sliding:number}})=>p.friction.sliding)),physicsId:physics.id,traySliding:physics.contact.sliding,accelerationLimitMps2:scene.policy.parameters.maxAccelerationMps2,driveModelPath:drive.driveModelRef!.path,baseLimitMps2:base?.params.maxAccelerationMps2??null},TRAY_POLICY_SHA);
    check(!issues.length,'TRAY_INPUTS_NOT_REGISTERED:'+issues.join(','));
    check(driveModel.digest===DRIVE_DOC_PINS[TRAY_EXPERIMENTS[spec.experimentId].driveExperimentId]?.model,'TRAY_DRIVE_MODEL_NOT_REGISTERED');
+   // every document the verdicts rest on is the registered one: load shape, contact profile, control profile (shape, bound to this plant), controller and stop policies
+   const eng=scene.engine as unknown as {physicsProfileRef:{sha256:string};controllerPolicyRef:{path:string};stopPolicyRef:{path:string}};
+   const docIssues=trayDocumentIssues(spec.experimentId,{load,physicsSha:eng.physicsProfileRef.sha256,driveControl:driveControl as never,plant:scene.robots[0]!.model.physicalModelDigest,controllerPolicy:await doc(eng.controllerPolicyRef.path),stopPolicy:await doc(eng.stopPolicyRef.path)});
+   check(!docIssues.length,'TRAY_DOCUMENTS_NOT_REGISTERED:'+docIssues.join(','));
    const journal=await readCampaignJournal(join(dir,'run'),cp.runId),outcome=verifyCampaignOutcome(cp as never,journal,report,'TRAY');
    check(report.outcome&&hashJson(outcome)===hashJson(report.outcome),'TRAY_OUTCOME_NOT_FROM_JOURNAL');
-   check(records.length===cp.tick+1,'TRAY_PHYSICS_COVERAGE');
    // the report's own tray evidence is what the durable records say: the same numbers, recomputed here
    const policyDigest=scene.files.find(f=>f.path==='tray-policy-v1.json')!.sha256;
    check(report.trayEvidence&&hashJson(report.trayEvidence)===hashJson(buildTrayEvidence({experimentId:spec.experimentId,records,businessEvents:report.businessEvents,status:outcome.status,accelerationLimitMps2:scene.policy.parameters.maxAccelerationMps2,policy,policyDigest})),'TRAY_EVIDENCE_NOT_FROM_STREAM');
-   let personAt:undefined|((t:number)=>{x:number;y:number}|null),personRadiusM:number|undefined;
-   if(spec.experimentId==='tray-person-crossing-v1'){
-    const fixture=resolveScenarioFixture(TRAY_SCENARIO,scene,spec.seed,SCENARIO_FIXTURES.get(TRAY_PERSON_FIXTURE)),a=fixture.actors[0]!;
-    check(fixture.actors.length===1&&actors.length===1&&actors[0]!.id===a.id,'TRAY_ACTOR_MISMATCH');personRadiusM=a.radiusM;personAt=t=>{const p=actorPoseAt(a,t);return {x:p[0],y:p[1]};};
-   }
+   // the person (or no person) the run really moved: the file the worker was bound to and every step's actor poses are the registered schedule's, read from the recorded control stream
+   const person=spec.experimentId==='tray-person-crossing-v1',fixture=resolveScenarioFixture(TRAY_SCENARIO,scene,spec.seed,person?SCENARIO_FIXTURES.get(TRAY_PERSON_FIXTURE):undefined);
+   const nav=await readMobileNavigation(dir,cp as never,scene),recorded=await readFile(join(dir,'run/bundle/scenario-fixture.json'),'utf8').catch(()=>null);
+   const actorIssues=actorEvidenceIssues(nav.control as never,{actors:fixture.actors,fixtureBytes:fixture.actors.length?JSON.stringify(fixtureFile(fixture)):null,recordedFixtureBytes:recorded,expectedSteps:cp.tick});
+   check(!actorIssues.length,'TRAY_ACTOR_EVIDENCE:'+actorIssues.join(','));
+   check(person===(fixture.actors.length===1)&&actors.length===fixture.actors.length,'TRAY_ACTOR_MISMATCH');
+   const a=fixture.actors[0],personAt=a?(t:number)=>{const p=actorPoseAt(a,t);return {x:p[0],y:p[1]};}:undefined,personRadiusM=a?.radiusM;
+   // the negative control of the person oracle: the nominal run of the same seed, from its own files (the person oracle needs what the robot does on this route without a person)
+   const baselineRecords=person?await (async()=>{try{return (await readTrayRun(join(root,`a-nominal-s${spec.seed}`))).records;}catch{return undefined;}})():undefined;
    const summary=summariseTrayRun({experimentId:spec.experimentId,status:outcome.status,served:outcome.served,tick:cp.tick,attention:report.attention.map(a=>a.reason),records,businessEvents:report.businessEvents,
-    accelerationLimitMps2:scene.policy.parameters.maxAccelerationMps2,cupSliding:Math.min(...load.props.map((p:{friction:{sliding:number}})=>p.friction.sliding)),traySliding:physics.contact.sliding,...personAt?{personAt,personRadiusM}:{}},policy);
+    accelerationLimitMps2:scene.policy.parameters.maxAccelerationMps2,cupSliding:Math.min(...load.props.map((p:{friction:{sliding:number}})=>p.friction.sliding)),traySliding:physics.contact.sliding,...personAt?{personAt,personRadiusM,...baselineRecords?{baselineRecords}:{}}:{}},policy);
    v.summaries.push({...summary,caseId:spec.id,seed:spec.seed});
    for(const x of summary.verdicts)if(x.result==='fail')v.issues.push(`TRAY_ORACLE:${spec.id}:${x.id}`);
    v.completedCases++;

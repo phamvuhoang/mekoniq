@@ -11,7 +11,7 @@ import {serviceAmrAsset} from '../assets';
 import {defaultCatalog} from '../capabilities';
 import {mujocoWorldPorts} from '../simulation3d/mujoco-world-ports';
 import {spawnMujocoWorker} from '../simulation3d/worker-client';
-import {readRetainedWorldFaultReport} from '../simulation3d/world-drive-report';
+import {custodyFacts,readRetainedWorldFaultReport} from '../simulation3d/world-drive-report';
 import type {WorldFactoryInput,WorldPlantBindings} from '../simulation3d/world-ports';
 import {lockDigestOf} from '../../engineering/linkforge';
 import {hashJson} from '../hash';
@@ -19,7 +19,7 @@ import type {RunReport} from '../report';
 import type {FaultScheduleEntry} from '../fault-schedule';
 import {readCampaignJournal,verifyCampaignOutcome} from './campaign-source-evidence';
 import {buildDriveEvidence} from './drive-report';
-import {DRIVE_FAULTS,faultStartTick,validateDriveFaultSchedule} from './drive-faults';
+import {DRIVE_FAULTS,faultEventsAt,faultStartTick,validateDriveFaultSchedule} from './drive-faults';
 import {driveDocumentDigest,type ControlProfileV1,type DriveModelV1,type FaultOracleV1} from './drive-io';
 import {buildFaultReport,serveTicksOf,servedFacts} from '../fault-report';
 import {readJson,readMobileNavigation,readStream,replayMobile,runMobile,setupMobile,type Rec,type Trace} from './cil-campaign';
@@ -137,12 +137,17 @@ export async function verifyFaultCampaign(root:string,onlyCase?:string):Promise<
     }
     // the wire sent a fault injection exactly on the ticks the schedule's timeline names, and only the ones the worker applies
     const sentTicks=new Set((trace as unknown as {steps:{tick:number}[]}).steps.map(s=>s.tick));check(sentTicks.size===(trace as unknown as {steps:unknown[]}).steps.length,'FLT_RESEND');
-    if(spec.schedule.length)again=buildFaultReport({runId:cp.runId,schedule:spec.schedule,oracle,drives:rows,controllerEvents:events,attention,physics:records as never,
+    // what the worker was actually sent, step by step, is exactly the injections it applies on the schedule's own timeline (no more, none missing): the trace keeps the payload, not a search for a string
+    for(const st of (trace as unknown as {steps:{tick:number;faultInjections?:unknown[]}[]}).steps){
+     const want=faultEventsAt(spec.schedule,st.tick).filter(e=>DRIVE_FAULTS[e.faultId as keyof typeof DRIVE_FAULTS].appliedBy==='worker');
+     check(hashJson(st.faultInjections??[])===hashJson(want),'FLT_SENT_INJECTIONS:'+st.tick);
+    }
+    if(spec.schedule.length)again=buildFaultReport({runId:cp.runId,schedule:spec.schedule,oracle,drives:rows,controllerEvents:events,attention,physics:records as never,axisModes:Object.fromEntries(model.axes.map(a=>[a.axisId,a.mode as 'csp'|'csv'])),
      receipts:records.flatMap(r=>(r as {faultReceipts?:never[]}).faultReceipts??[]),intents:records.map(r=>({tick:r.tick,injections:(r as {faultIntents?:never[]}).faultIntents??[]})),
      facts:{reportedServed:serveTicks.length,confirmedServed:servedFacts(rows,serveTicks).confirmedServed,resendsAfterUnknown:0,custodyChanged:null}});
    }else if(spec.schedule.length){
     const physical=(report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[];
-    again=(await readRetainedWorldFaultReport(join(dir,'run'),{sceneDigest:cp.world.snapshot.sceneDigest,runId:cp.runId,bootId:cp.world.snapshot.bootId,publicCommittedTick:cp.tick},{faults:spec.schedule,oracle,facts:{serveTicks,custodyChanged:physical.some(x=>x.status==='unknown'),attention}})).report;
+    again=(await readRetainedWorldFaultReport(join(dir,'run'),{sceneDigest:cp.world.snapshot.sceneDigest,runId:cp.runId,bootId:cp.world.snapshot.bootId,publicCommittedTick:cp.tick},{faults:spec.schedule,oracle,facts:{serveTicks,custodyChanged:custodyFacts(physical,attention),attention}})).report;
    }
    if(spec.schedule.length){
     check(again,'FLT_REPORT_UNAVAILABLE');check(hashJson(again as never)===hashJson(report.faultReport as never),'FLT_REPORT_NOT_FROM_STREAM');

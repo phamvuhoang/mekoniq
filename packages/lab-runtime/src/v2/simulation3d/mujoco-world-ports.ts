@@ -1,5 +1,5 @@
 import {worldDriveControllers,readRetainedWorldDriveReport,readRetainedWorldFaultReport} from './world-drive-report';
-import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,runtimeFaultsAt,validateDriveFaultSchedule,type FaultReceipt} from '../control/drive-faults';
+import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,interlockOverridden,receiptsMatch,runtimeFaultsAt,validateDriveFaultSchedule,type FaultReceipt} from '../control/drive-faults';
 import {driveDocumentDigest,type DriveCommandV1,type FaultOracleV1} from '../control/drive-io';
 /** Source-owned continuous world factory: one engine, journal-correlated custody,
  * bounded durable observations and no browser transport or hardware route. */
@@ -13,6 +13,7 @@ import type {CellAdapter,CellReport,CellCommand} from '../../../../cell-adapters
 import type {CupLedger,PendingTransferIdentity,TransferObservation} from '../beverage/cup-ledger';
 import {evaluateDockWindow,evaluateTrayReceipt,type DockSample,type ReceiptSample} from './handoff-policy';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {FAULT_ORACLE_FILE} from './world-drive-report';
 import {createHash} from 'node:crypto';
 import {dirname,join} from 'node:path';
 import {MOCK_COFFEE_PARAMS} from '../../../../cell-adapters/src/mock-coffee';
@@ -63,8 +64,10 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
    if(!driveBundle)throw Error('FAULT_BACKEND_UNSUPPORTED');
    const checked=validateDriveFaultSchedule(faults,{axes:driveBundle.model.axes.map(a=>a.axisId),lidars:[],campaign:runtime.faultCampaign===true});if(!checked.ok)throw Error(checked.reasonCodes[0]!);
    faultOracle=JSON.parse(await readFile(join(runtime.workerRoot,'fixtures/fault-v1/fault-oracle-v1.json'),'utf8')) as FaultOracleV1;if(driveDocumentDigest(faultOracle)!==faultOracle.digest)throw Error('FAULT_ORACLE_DIGEST');
+   // the sealed oracle the run was judged by stays with the run: a cold read after a reclaim builds the same fault report without the runtime's fixture tree
+   await writeFile(join(input.directory,FAULT_ORACLE_FILE),JSON.stringify(faultOracle),{mode:0o600});
   }
-  let lastWire:DriveCommandV1[]|undefined;
+  let lastWire:DriveCommandV1[]|undefined,overriddenEntries=new Set<string>();
   scene.armCell.engineSeed=input.manifest.seed;scene.armCell.sceneDigest=documentDigest(scene.armCell,'sceneDigest');scene.sceneDigest=documentDigest(scene,'sceneDigest');
   const admission=prepareWorldAdmission(scene,files),doc=<T>(p:string)=>JSON.parse(Buffer.from(files.get(p)!).toString()) as T;
   const physical=doc<RobotPhysicalModelV1>(scene.models.mobilePhysical.path),load=doc<LoadProfileV1>(scene.models.emptyLoad.path),programDoc=doc<{programs:ArmProgramSet;digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]}>(scene.programsRef.path);
@@ -174,7 +177,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       if(faults.length){
        // command-loss repeats the last command sent, seq included; every injection due on this tick is the intent this command carries
        // command-loss yields to the world movement interlock: where the interlock holds (a stop latched after a drive fault, a program running) the supervisor commands a stop and a stale target would be refused
-       const lost=new Set(pending.worldControl?.movementInterlocked?[]:runtimeFaultsAt(faults,targetTick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
+       const activeNow=runtimeFaultsAt(faults,targetTick).active,over=interlockOverridden(activeNow,new Set([`${rid}/wheel-left`,`${rid}/wheel-right`]),!!pending.worldControl?.movementInterlocked);overriddenEntries=new Set(over.map(e=>e.id));
+       const lost=new Set(activeNow.filter(e=>e.faultId==='command-loss'&&!over.includes(e)).map(e=>e.targetId));
        if(lost.size)pending.driveCommands=applyCommandLoss(pending.driveCommands!,lastWire,lost);
        lastWire=pending.driveCommands;
        const events=faultEventsAt(faults,targetTick);if(events.length)pending.faultInjections=events;
@@ -185,11 +189,12 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       // the worker is sent only the injections it applies; the runtime's own (command-loss) are in the command as intent and get their receipts below
       if(worker.length)wire.faultInjections=worker;else delete wire.faultInjections;
       const s=await ask('step',wire);engineTick=s.tick;
+      // the worker's receipts are its answer to this very step (run, boot, scene, request, tick); a receipt on a tick that owes none is as wrong as a missing one
+      {const got=(s as {faultReceipts?:FaultReceipt[]}).faultReceipts,digest=hashJson(wire);
+       if(!receiptsMatch(got,worker,{runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,targetTick:command.targetTick}))throw Error('FAULT_RECEIPT_MISMATCH');}
       if(command.faultInjections?.length){
-       const got=(s as {faultReceipts?:FaultReceipt[]}).faultReceipts??[],digest=hashJson(wire);
-       const ok=got.length===worker.length&&worker.every((w,i)=>{const x=got[i];return !!x&&x.entryId===w.entryId&&x.phase===w.phase&&x.faultId===w.faultId&&x.targetId===w.targetId&&x.appliedTick===command.targetTick&&x.runId===input.runId&&x.requestDigest===digest&&hashJson(x.params)===hashJson(w.params);});
-       if(!ok)throw Error('FAULT_RECEIPT_MISMATCH');
-       const own=command.faultInjections.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:command.targetTick,runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest}));
+       const digest=hashJson(wire);
+       const own=command.faultInjections.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:command.targetTick,runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,...overriddenEntries.has(e.entryId)?{overriddenBy:'WORLD_MOVEMENT_INTERLOCK' as const}:{}}));
        if(own.length)pending!.faultReceipts=own;
       }validateWorldObservation(s,scene,[...history,...(command.worldInteractions??[]).map(i=>({...i,tick:i.targetTick}))]);return s;}catch(e){failed=true;invalidate();throw e;}},
     async commit(s){if(failed||!pending||s.tick!==pending.targetTick||durableTick!==s.tick)throw Error('WORLD_COMMIT_INVALID');observing=s;try{
