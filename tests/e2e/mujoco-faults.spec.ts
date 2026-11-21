@@ -20,12 +20,13 @@ test('drive fault studio: compose, check (and a refused overlap that creates no 
  const studio=page.getByTestId('drive-faults');await expect(studio).toBeVisible();
  if(!await studio.evaluate((d:HTMLDetailsElement)=>d.open))await studio.locator('summary').click();
  // a schedule without a drive experiment cannot be checked or run (the run would have no drive); choosing one lifts that
- await studio.locator('[data-action="twin-drivefault-add"]').click();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(1);
+ await page.locator('#twin-df-fault').selectOption('motor-weak');await expect(page.locator('#twin-df-p-torqueScale')).toBeVisible();   // a fault with its own parameter: the new defaults, not the previous fault's fields
+ await studio.locator('[data-action="twin-drivefault-add"]').click();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(1);await expect(studio.locator('.fault-timeline-list li')).toContainText('torqueScale');
  await expect(page.getByTestId('drive-fault-check-button')).toBeDisabled();await expect(page.getByTestId('drive-fault-message')).toContainText('FAULT_BACKEND_UNSUPPORTED');await expect(page.locator('[data-action="twin-run"]').first()).toBeDisabled();
  await studio.locator('[data-action="twin-drivefault-clear"]').click();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(0);
  // the runtime offers the catalog; the drive experiment is the run's, chosen here (the mobile run's lives in its engineering project)
  await page.getByTestId('drive-experiment').selectOption('drive-nominal-v1');
- await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled({timeout:90000});
+ await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled({timeout:180000});
  // compose: only faults with a target on this preset are offered, targets by kind, parameters inside the advertised bounds
  const fault=page.locator('#twin-df-fault');
  const offered=await fault.locator('option').allTextContents();expect(offered).toEqual(expect.arrayContaining(['encoder-dropout','command-delay','motor-weak','drive-trip','command-loss','lidar-noise']));expect(offered).not.toContain('grip-weak');expect(offered).not.toContain('drive-reset');

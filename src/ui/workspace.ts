@@ -811,6 +811,8 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const catalog=faultCatalogOf(this.health),ctx=driveFaultContext(this.preset.id),field=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value;
   if(!catalog.length||!ctx||field('twin-df-fault')===undefined)return;
   const base=this.driveDraft??defaultDraft(catalog,ctx),item=catalog.find(f=>f.id===field('twin-df-fault'));if(!item)return;
+  // the parameter inputs on the page belong to the fault the studio was last painted with: right after a fault is chosen they are still the previous fault's, and the new defaults stand
+  if((document.querySelector('.drive-fault-draft') as HTMLElement|null)?.dataset.fault!==item.id)return;
   this.driveDraft={faultId:item.id,targetId:field('twin-df-target')??base.targetId,atMs:field('twin-df-at')??base.atMs,params:Object.fromEntries(Object.keys(item.params).map(k=>[k,field(`twin-df-p-${k}`)??(item.id===base.faultId?base.params[k]:undefined)??'']))};
  }
  /** A refusal of the studio's own, shown under the schedule (the runtime's refusals come from Check). */

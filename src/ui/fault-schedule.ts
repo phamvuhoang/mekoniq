@@ -47,7 +47,7 @@ export function driveFaultStudio(s:DriveStudioState):string{
  return `<details id="twin-drive-faults" class="panel drive-faults" data-testid="drive-faults" ${s.open?'open':''}><summary>${tr('Lịch lỗi drive cho lần chạy mới','新しい実行のドライブ障害予定','Drive fault schedule for a new run')}</summary>
 <p class="field-help">${tr('Lịch này là đầu vào của lần chạy mới, không lưu trong project. “Kiểm tra” hỏi runtime mà không tạo run. Mỗi lần đổi là một lần chạy mới; tham số là giả định, chưa hiệu chuẩn.','この予定は新しい実行の入力で、プロジェクトには保存されません。「確認」は実行を作らずランタイムに問い合わせます。変更ごとに新しい実行になります。パラメータは仮定で未校正です。','This schedule is an input of the new run and is not saved in the project. “Check” asks the runtime without creating a run. Each change is a new run; parameters are assumed, not calibrated.')}</p>
 ${experiment}
-<fieldset class="drive-fault-draft"><legend>${tr('Thêm một lỗi','障害を追加','Add a fault')}</legend>
+<fieldset class="drive-fault-draft" data-fault="${esc(s.draft.faultId)}"><legend>${tr('Thêm một lỗi','障害を追加','Add a fault')}</legend>
 <label>${tr('Lỗi','障害','Fault')}<select id="twin-df-fault" ${off}>${DRIVE_FAULT_LAYERS.map(l=>{const g=offered.filter(f=>f.layer===l);return g.length?`<optgroup label="${esc(layerName(l))}">${g.map(f=>`<option value="${esc(f.id)}" ${f.id===s.draft.faultId?'selected':''}>${esc(f.id)}</option>`).join('')}</optgroup>`:'';}).join('')}</select></label>
 <label>${tr('Đối tượng','対象','Target')}<select id="twin-df-target" ${off}>${targets.map(t=>`<option value="${esc(t)}" ${t===s.draft.targetId?'selected':''}>${esc(t)}</option>`).join('')}</select></label>
 <label>${tr('Bắt đầu (ms mô phỏng)','開始(模擬ms)','Start (simulated ms)')}<input id="twin-df-at" type="number" min="0" max="3600000" step="20" value="${esc(s.draft.atMs)}" ${off}></label>${params}
