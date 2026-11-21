@@ -143,13 +143,13 @@
     {
       "id": "c01-command-loss-left",
       "entries": {
-        "command-loss-wheel-left-30000": "detected_in_time"
+        "command-loss-wheel-left-55000": "detected_in_time"
       }
     },
     {
       "id": "c02-command-loss-right",
       "entries": {
-        "command-loss-wheel-right-30000": "detected_in_time"
+        "command-loss-wheel-right-55000": "detected_in_time"
       }
     },
     {

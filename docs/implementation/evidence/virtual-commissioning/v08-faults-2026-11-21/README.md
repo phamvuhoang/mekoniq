@@ -4,13 +4,13 @@
 
 | Mục | Giá trị |
 |---|---|
-| Source (producer, runtime) | `29510ae554171aea9f42d74efc1cb6c4bc1fa55b` |
-| Lab pin | `4c2aaeb` (chore: pin source runtime 29510ae5) |
+| Source (producer, runtime) | `6d686125697e43c52ae620d2b9c81c0460f9fd2e` |
+| Lab pin | `1d66e08` (chore: pin source runtime 6d686125) |
 | Kết quả verify độc lập | `node scripts/lab-mujoco.mjs verify --input …` exit 0: **23/23**, 0 issue |
 | Host | Darwin arm64, MuJoCo 3.17.0, Python 3.11 |
-| Archive thô | `robot/evidence-archive/r4-fault-v1-29510ae5/` (1550 file, 301 MB, ngoài Git) |
-| SHA-256 của `SHA256SUMS.txt` | `2845704db069422632e5d7dfc4272268f167244311f50e3bb6478350b36322f7` |
-| Bản ghi đầu (bỏ) | `r4-fault-v1-f30e3bdb`: 18/23, tìm ra ba lỗi thật (xem RULINGS trong plan 02); giữ nguyên ngoài Git, không dùng làm bằng chứng |
+| Archive thô | `robot/evidence-archive/r4-fault-v1-6d686125/` (1612 file, 362 MB, ngoài Git) |
+| SHA-256 của `SHA256SUMS.txt` | `56884d3b9bba6f89fa840bc4ae224769e6359d68d5cc342430c3475d83bfebbf` |
+| Bản ghi trước (bỏ) | `r4-fault-v1-f30e3bdb` (18/23) và `r4-fault-v1-29510ae5` (23/23, nhưng chưa phủ lỗi mất lệnh khi AMR của cell đang chạy và trước đợt sửa review); giữ ngoài Git, không dùng làm bằng chứng |
 
 Đọc `campaign.json` (bảng khóa trước, oracle sha256) và `summary.json` (phán quyết từng mục). Oracle: `robotics/simulation-mujoco/fixtures/fault-v1/fault-oracle-v1.json` (niêm phong, hash trong `campaign.json`).
 
@@ -35,8 +35,8 @@
 | m13-trip-then-reset | drive-trip-wheel-right-12000 | detected_in_time |
 | m13-trip-then-reset | drive-reset-wheel-right-12020 | not_detected |
 | m14-not-fired | encoder-dropout-wheel-right-3000000 | not_fired |
-| c01-command-loss-left | command-loss-wheel-left-30000 | detected_in_time |
-| c02-command-loss-right | command-loss-wheel-right-30000 | detected_in_time |
+| c01-command-loss-left | command-loss-wheel-left-55000 | detected_in_time |
+| c02-command-loss-right | command-loss-wheel-right-55000 | detected_in_time |
 | c03-encoder-dropout-arm-j2 | encoder-dropout-J2-25000 | detected_in_time |
 | c04-drive-trip-arm-j1 | drive-trip-J1-25000 | detected_in_time |
 | c05-motor-weak-arm-j3 | motor-weak-J3-1000 | not_detected |
@@ -49,4 +49,4 @@
 - `lidar-noise` chỉ có một cảm biến và `grip-weak` một trục kẹp: hai run của chúng khác tham số, không khác đối tượng. Cell không có biến đổi LiDAR.
 - `CUSTODY_UNCHANGED` ở cell chỉ kiểm cốc không chuyển sang `unknown`; `NO_FALSE_SERVE` so journal với thời điểm trục chốt lỗi.
 - Ý định lỗi của cell chỉ bền sau ACK (không có checkpoint hook); mobile ghi trước lệnh.
-- Producer `29510ae5`; checker cùng commit. Chưa chạy lại trên Linux amd64 hay trong image cloud (CLD01/CLD02 cho V08 là bước riêng).
+- Producer `6d686125`; checker cùng commit. Chưa chạy lại trên Linux amd64 hay trong image cloud (CLD01/CLD02 cho V08 là bước riêng).

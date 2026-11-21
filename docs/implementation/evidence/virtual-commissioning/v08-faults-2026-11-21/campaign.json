@@ -12,7 +12,7 @@
     },
     "driveExperimentId": "drive-nominal-v1",
     "maxTicks": 12000,
-    "note": "Expectations are locked before the first run with the sealed fault-oracle-v1; a required fault must be detected in time (the oracle), the rest state only the outcome classes allowed. lidar-noise has one sensor and grip-weak one gripper axis, so their two runs differ in parameters, not in target.",
+    "note": "Expectations are locked before the first run with the sealed fault-oracle-v1; a required fault must be detected in time (the oracle), the rest state only the outcome classes allowed. lidar-noise has one sensor and grip-weak one gripper axis, so their two runs differ in parameters, not in target. The cell wheel faults fire at 55 s, inside the AMR's first long drive (the baseline cell moves from tick 2112).",
     "cases": [
       {
         "id": "m01-encoder-dropout-right",
@@ -487,12 +487,12 @@
         "seed": 7,
         "schedule": [
           {
-            "id": "command-loss-wheel-left-30000",
+            "id": "command-loss-wheel-left-55000",
             "faultId": "command-loss",
             "targetId": "amr-1/wheel-left",
             "trigger": {
               "kind": "elapsed_sim_ms",
-              "value": 30000
+              "value": 55000
             },
             "durationMs": 200,
             "params": {}
@@ -504,7 +504,7 @@
           ],
           "served": "0",
           "verdicts": {
-            "command-loss-wheel-left-30000": [
+            "command-loss-wheel-left-55000": [
               "detected_in_time"
             ]
           }
@@ -516,12 +516,12 @@
         "seed": 7,
         "schedule": [
           {
-            "id": "command-loss-wheel-right-30000",
+            "id": "command-loss-wheel-right-55000",
             "faultId": "command-loss",
             "targetId": "amr-1/wheel-right",
             "trigger": {
               "kind": "elapsed_sim_ms",
-              "value": 30000
+              "value": 55000
             },
             "durationMs": 200,
             "params": {}
@@ -533,7 +533,7 @@
           ],
           "served": "0",
           "verdicts": {
-            "command-loss-wheel-right-30000": [
+            "command-loss-wheel-right-55000": [
               "detected_in_time"
             ]
           }
@@ -735,7 +735,7 @@
       }
     ]
   },
-  "sourceCommit": "29510ae554171aea9f42d74efc1cb6c4bc1fa55b",
+  "sourceCommit": "6d686125697e43c52ae620d2b9c81c0460f9fd2e",
   "hostArch": "arm64",
   "oracleSha256": "89490577d88b39e78d8c8871e9d51938bf0216898ed21d3b283484e075dbd4dd",
   "accepted": false,
