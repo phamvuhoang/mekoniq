@@ -341,7 +341,7 @@ export class TwinWorkspace {
   ?`<p class="field-error" data-testid="report-missing" role="status">${tr('Trang chưa có báo cáo khớp với lần chạy này (tải báo cáo không thành công hoặc báo cáo cũ hơn): lưu, xuất và xem lại cần báo cáo đó.','この実行に一致するレポートがページにありません(取得に失敗したか、古いレポートです)。保存・書き出し・再生にはそのレポートが必要です。','The page has no report that matches this run (its fetch failed, or it is older): saving, export and replay need that report.')}</p><button class="button secondary" data-action="twin-report-reload"${this.busy?' disabled':''}>${icon('rotate',16)}${tr('Tải lại báo cáo','レポートを再読み込み','Reload report')}</button>`:'';}
  private payloadSettings(){if(this.preset.id==='mujoco-cell')return `<p><b>${tr('Dừng và tiếp tục xử lý','停止と対応の継続','Stop and continue handling')}</b> · ${tr('Tạm dừng / tiếp tục chỉ với trạng thái Source đã biết. Kết quả chưa rõ: đối soát hoặc lần chạy mới; không gửi lại lệnh.','一時停止・再開は既知のSource状態のみ。不明な結果は照合または新しい実行で対応し、再送しません。','Pause/resume requires a known Source state. Unknown outcomes require reconciliation or a new run; commands are not resent.')}</p><label for="twin-world-experiment">${tr('Thử một thay đổi · lần chạy mới','変更を試す · 新しい実行','Try one change · new run')}</label><select id="twin-world-experiment" ${this.busy||this.playing?'disabled':''}>${WORLD_EXPERIMENTS.map(id=>`<option value="${id}" ${id===this.preset.worldExperimentId?'selected':''} ${this.health?.capabilities?.includes('sim3d_world_experiments_v1')&&this.health.worldExperiments?.some(e=>e.id===id&&e.requiresNewRun)?'':'disabled'}>${esc(worldExperimentLabel(id))}</option>`).join('')}</select><p class="field-help">${tr('Tác động đã đăng ký: cốc [30,0,30] N trong 10 substep khi vận chuyển; dock 2000 N trục X trong 10 substep trước nhả. Đổi đầu vào tạo lần chạy mới.','登録外力:輸送中カップに[30,0,30]Nを10サブステップ、解放前ドックにX方向2000Nを10サブステップ。入力変更は新しい実行です。','Registered impact: cup [30,0,30] N for 10 substeps during transport; dock 2000 N map X for 10 substeps before release. Changed inputs create a new run.')}</p>`;if(this.preset.id==='mujoco-tray')return `<label for="twin-tray-experiment">${tr('Biến thể cho lần chạy mới','新しい実行のバリエーション','Variant for new run')}</label><select id="twin-tray-experiment" data-testid="tray-experiment" ${this.busy||this.playing||this.replay||this.archived?'disabled':''}>${TRAY_EXPERIMENT_IDS.map(id=>`<option value="${id}" ${id===this.preset.engineering?.project.mujocoExperimentId?'selected':''} ${this.health?.trayExperiments?.some(e=>e.id===id)?'':'disabled'}>${esc(trayExperimentLabel(id))}</option>`).join('')}</select><p class="field-help">${tr('Mỗi biến thể chỉ khác biến thể so sánh đúng một đầu vào. Chạy hai biến thể liền kề (A′ rồi B) để có câu gợi ý ở tab so sánh. Đổi lựa chọn tạo lần chạy mới.','各バリエーションは比較対象と入力が1つだけ異なります。A′ → B の順に実行すると比較タブにヒントが出ます。選択変更は新しい実行です。','Each variant differs from the one it is compared with in exactly one input. Run two neighbours (A′ then B) for the hint in the compare tab. A changed selection creates a new run.')}</p>`;if(this.preset.id!=='mujoco-payload')return '';return `<label for="twin-payload-experiment">${tr('Thí nghiệm cho lần chạy mới','新しい実行の実験','Experiment for new run')}</label><select id="twin-payload-experiment" ${this.busy||this.playing||this.replay||this.archived?'disabled':''}>${PAYLOAD_EXPERIMENT_IDS.map(id=>`<option value="${id}" ${id===this.preset.engineering?.project.mujocoExperimentId?'selected':''}>${esc(experimentLabel(id))}</option>`).join('')}</select><p class="field-help">${tr('Đổi lựa chọn tạo lần chạy mới. Tốc độ phát × chỉ đổi nhịp hiển thị, không đổi giới hạn vận tốc.','選択変更は新しい実行になります。再生速度×はペースのみで速度上限を変えません。','A changed selection creates a new run. Playback × changes pacing; it does not change velocity caps.')}</p>`;}
  /** What the runtime is asked, and what a verdict is bound to. */
- private driveBody(){return {driveFaultSchedule:structuredClone(this.driveFaults),backendSetId:this.preset.backendSetId,scenarioId:this.preset.scenarioId,...driveExperimentOf(this.preset)&&this.preset.id==='mujoco-cell'?{driveExperimentId:driveExperimentOf(this.preset)!}:{}};}
+ private driveBody(p=this.preset,entries:readonly DriveFaultEntry[]=this.driveFaults){return {driveFaultSchedule:structuredClone([...entries]),backendSetId:p.backendSetId,scenarioId:p.scenarioId,...driveExperimentOf(p)&&p.id==='mujoco-cell'?{driveExperimentId:driveExperimentOf(p)!}:{}};}
  /** Why a run with the studio's schedule cannot be made (no drive experiment chosen), or null. */
  private driveBlocked(){return (isMobilePreset(this.preset.id)||this.preset.id==='mujoco-cell')&&this.driveFor===this.preset.id?driveBlock(this.driveFaults.length,driveExperimentOf(this.preset)):null;}
  /** The studio of drive faults for the current preset: empty where the runtime does not run drive faults. */
@@ -359,17 +359,19 @@ export class TwinWorkspace {
   const delay=this.readiness?Date.parse(this.readiness.expiresAt)-Date.now():NaN;
   if(Number.isFinite(delay)&&delay>0)this.readinessExpiry=setTimeout(()=>this.paint(),Math.min(delay,30000));
  }
- /** The check in flight, if any: a drive experiment chosen right after the preset waits for it, because the runtime answers a second smoke probe while one runs with a busy code that nothing retries. Checks themselves are not queued. */
- private readinessFlight:Promise<unknown>|null=null;
- private checkReadiness(p=this.readinessPreset()){const run=this.checkReadinessNow(p);this.readinessFlight=run;void run.then(()=>undefined,()=>undefined).then(()=>{if(this.readinessFlight===run)this.readinessFlight=null;});return run;}
- private async checkReadinessNow(p:TwinPreset){
+ /** R12: every readiness probe of this page (a check after a preset, variant, experiment or backend change, and a create's own) goes after the one in flight: the runtime
+  * runs one exclusive smoke and answers a second one with a busy code that nothing retries. A check superseded before its turn is not sent; only the answer to the
+  * newest request is applied. A compile is not queued (it holds no engine slot). */
+ private probeFlight:Promise<unknown>|null=null;
+ private probe<T>(ask:()=>Promise<T>):Promise<T>{const run=this.probeFlight?this.probeFlight.then(ask):(async()=>ask())(),done=run.then(()=>undefined,()=>undefined);this.probeFlight=done;void done.then(()=>{if(this.probeFlight===done)this.probeFlight=null;});return run;}
+ private async checkReadiness(p=this.readinessPreset()){
   const request=++this.readinessRequest;this.readiness=null;this.watchReadinessExpiry();
   if(!this.health?.features?.readiness||!this.rt.paired||!this.rt.readiness)return;
   if(isMobilePreset(p.id)&&p.engineering&&!p.engineering.receipt&&this.health.capabilities?.includes('sim3d_payload_experiments_v1')&&this.rt.compileEngineering){
    try{const receipt=await this.current(this.rt.compileEngineering(p.engineering.project));if(request!==this.readinessRequest||p!==this.preset)return;p={...p,engineering:{project:p.engineering.project,receipt}};this.preset=p;}catch(e){this.notice=String(e);return;}
   }
   const ref=this.refOf(p);if(ref===null)return;// an engineering preset without a receipt for this exact draft: preflight already says why
-  try{const answer=await this.current(ref?this.rt.readiness(p.scenarioId,p.backendSetId,undefined,ref):this.rt.readiness(p.scenarioId,p.backendSetId,p.project));if(request===this.readinessRequest&&p.id===this.readinessPreset().id&&p.backendSetId===this.readinessPreset().backendSetId){this.readiness=answer;this.watchReadinessExpiry();}}catch{/* the unknown state keeps Start disabled */}
+  try{const answer=await this.current(this.probe(()=>request!==this.readinessRequest?Promise.resolve(null):ref?this.rt.readiness!(p.scenarioId,p.backendSetId,undefined,ref):this.rt.readiness!(p.scenarioId,p.backendSetId,p.project)));if(answer&&request===this.readinessRequest&&p.id===this.readinessPreset().id&&p.backendSetId===this.readinessPreset().backendSetId){this.readiness=answer;this.watchReadinessExpiry();}}catch{/* the unknown state keeps Start disabled */}
  }
  async checkHealth(){const g=this.gen;let h:TwinHealth|null=null;try{h=await this.rt.health();}catch{/* not there */}this.probing=false;if(g!==this.gen)return;this.health=h;await this.checkReadiness();this.healthChecked=true;this.settleRestoredTab();this.rerender();}
  private ops(f:TwinFrame,view=f.view):OpsState{const c=this.clock(),clock=c&&!this.health?.features?.pacedStep?{...c,play:false}:c;return {paired:this.rt.paired,ready:!this.pinBlock()&&ready(preflight(this.readinessPreset(),this.health,this.rt.paired,this.readiness)),busy:this.busy||!!this.replay,playing:this.playing,view,preset:f.preset,...clock&&!this.replay?{clock}:{}};}
@@ -602,23 +604,30 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
  private async create(p:TwinPreset,start=true,faults?:readonly DriveFaultEntry[]){
   if(!this.health)throw new TwinRuntimeError('RUNTIME_UNAVAILABLE',[],0);
   const mismatch=this.pinBlock();if(mismatch)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',mismatch,409);// never a run on a runtime the Lab is not pinned to
+  // R07: whatever needs no engine slot is settled before the previous run is retired, so a refusal here leaves the live run as it was: the schedule of this run
+  // (a rerun passes the one its run had; a new run takes the studio's), a schedule without a drive experiment, the runtime's check of that exact schedule
+  // (a refusal already shown for that body counts), and the request itself (engineeringRefFor throws its typed refusal)
+  const studio=(isMobilePreset(p.id)||p.id==='mujoco-cell')&&this.driveFor===p.id;
+  const block=faults===undefined&&studio?driveBlock(this.driveFaults.length,driveExperimentOf(p)):null;if(block)throw new TwinRuntimeError(block,[],0);
+  const drive=faults?structuredClone([...faults]):studio?structuredClone(this.driveFaults):undefined,request=requestForPreset(p,drive);
+  if(drive?.length){const body=this.driveBody(p,drive),known=visibleCheck(this.driveCheck,JSON.stringify(body)),r=known.state==='refused'?{ok:false as const,error:known.error??'INVALID_FAULT_SCHEDULE',codes:known.codes}:this.rt.checkDriveFaults?await this.rt.checkDriveFaults(body):{ok:true as const};if(!r.ok)throw new TwinRuntimeError(r.error,r.codes,422);}
   // a finished run still owns the host's one Webots slot until it is archived: retire it before readiness, or the new run is refused WEBOTS_CAPACITY
   if(this.view&&(p.id==='mujoco-cell'||['completed','failed','cancelled'].includes(this.view.run.status)))await this.settlePrevious();
   if(this.health.features?.readiness){
    if(!this.rt.readiness)throw new TwinRuntimeError('READINESS_NOT_CHECKED',[],0);
    const ref=this.refOf(p);if(ref===null)throw new TwinRuntimeError('ENGINEERING_NOT_COMPILED',[],0);
-   const snapshot=await (ref?this.rt.readiness(p.scenarioId,p.backendSetId,undefined,ref):this.rt.readiness(p.scenarioId,p.backendSetId,p.project));
+   const snapshot=await this.probe(()=>ref?this.rt.readiness!(p.scenarioId,p.backendSetId,undefined,ref):this.rt.readiness!(p.scenarioId,p.backendSetId,p.project));
    this.readiness=snapshot;this.watchReadinessExpiry();
    if(!ready(preflight(p,this.health,this.rt.paired,snapshot)))throw new TwinRuntimeError('RUNTIME_NOT_READY',snapshot.checks.flatMap(c=>c.reasonCodes),422);
   }
-  // the schedule of this run is fixed here (a rerun passes the one its run had; a new run takes the studio's) and a schedule without a drive experiment is refused before the previous run is closed
-  const studio=(isMobilePreset(p.id)||p.id==='mujoco-cell')&&this.driveFor===p.id;
-  const block=faults===undefined&&studio?driveBlock(this.driveFaults.length,driveExperimentOf(p)):null;if(block)throw new TwinRuntimeError(block,[],0);
-  this.runDrive=faults?structuredClone([...faults]):studio?structuredClone(this.driveFaults):undefined;
   await this.settlePrevious();
-  this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.exportAbort?.abort();this.clearWorld();this.gen++;this.payloadCancelPaused=false;this.archived=false;this.view=null;this.report=null;this.seen={};this.runPreset={...p,project:structuredClone(p.project)};this.stopReplay();this.replay=null;this.navigation=null;this.payloadBundle=null;const token=++this.sceneLoad;
-  const ref=this.refOf(p);if(ref){if(p.backendSetId===MUJOCO_MOBILE_SET)this.payloadBundle=await loadPayloadBundle(this.rt,ref.bundleDigest).catch(()=>null);const s=await loadNavigationScene(this.rt,ref.bundleDigest).catch(()=>null);if(token===this.sceneLoad)this.navigation=s;}
-  this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';const v=await this.current(this.rt.create(requestForPreset(p,this.runDrive),{sourceCommit:this.health.sourceCommit,schemaHash:this.health.schemaHash}));this.pinMismatch=null;
+  // Limit (R07): from here the previous run is archived (the runtime closed it to free the slot) and a create refused now cannot bring it back. Until a run is
+  // created, the page keeps that run's last view, its run inputs and its report (also saved as evidence when the browser can store it): readable, never live
+  // again (no stream reopens for a retired run; an action on it is answered RUN_NOT_FOUND). Its world, which the runtime no longer serves, is dropped.
+  this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.exportAbort?.abort();this.clearWorld();this.gen++;const token=++this.sceneLoad;
+  const ref=this.refOf(p);let bundle:PayloadBundle|null=null,scene:NavigationSceneV1|null=null;if(ref){if(p.backendSetId===MUJOCO_MOBILE_SET)bundle=await loadPayloadBundle(this.rt,ref.bundleDigest).catch(()=>null);scene=await loadNavigationScene(this.rt,ref.bundleDigest).catch(()=>null);}
+  const v=await this.current(this.rt.create(request,{sourceCommit:this.health.sourceCommit,schemaHash:this.health.schemaHash}));this.pinMismatch=null;
+  this.payloadCancelPaused=false;this.archived=false;this.view=null;this.report=null;this.seen={};this.runDrive=drive;this.runPreset={...p,project:structuredClone(p.project)};this.stopReplay();this.replay=null;this.payloadBundle=bundle;this.navigation=token===this.sceneLoad?scene:null;
   if(isMobilePreset(p.id)&&v.lockedInput?.engineering)this.runPreset={...this.runPreset!,project:structuredClone(v.lockedInput.engineering.runtimeProjection.project),assets:structuredClone(v.lockedInput.engineering.runtimeProjection.assets) as TwinPreset['assets']};
   await this.apply(v);this.rerender();this.openStreams(v);void this.refreshWorld();if(start){await this.act('start');if(this.clock()?.step&&!isMobilePreset(p.id)&&p.id!=='mujoco-cell')await this.act('step',{ticks:STEP_TICKS});}
  }
@@ -826,7 +835,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const draft=this.driveDraft??(this.driveDraft=defaultDraft(catalog,ctx));
   if(id==='twin-drive-experiment'){try{this.preset=selectDriveExperiment(this.preset,value);}catch{return true;}this.driveCheck={state:'idle',codes:[]};
    // the cell's experiment is a request field and changes nothing the runtime was asked to ready; a mobile run's is in its engineering project, which is compiled again
-   if(this.preset.id!=='mujoco-cell'){this.readiness=null;const chosen=this.preset;void (this.readinessFlight??Promise.resolve()).then(()=>undefined,()=>undefined).then(()=>chosen===this.preset?this.checkReadiness(chosen):undefined).then(()=>this.rerender());}this.rerender();return true;}
+   if(this.preset.id!=='mujoco-cell')void this.checkReadiness(this.preset).then(()=>this.rerender());this.rerender();return true;}
   if(id==='twin-df-fault'){const item=catalog.find(f=>f.id===value);if(item)this.driveDraft={faultId:item.id,targetId:faultTargets(item,ctx)[0]??'',atMs:draft.atMs,params:defaultParams(item)};}
   else if(id==='twin-df-target')this.driveDraft={...draft,targetId:value};
   // a text field's change fires on blur, which is the mousedown of the next click: repainting there would swallow that click (the Add button), so the value is only kept

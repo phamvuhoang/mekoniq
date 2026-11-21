@@ -4,7 +4,7 @@ import {setLocale} from '../../src/i18n';
 import {designHint,trayHint,trayHintHtml,type TraySummary} from '../../src/reports/design-hint';
 import {report} from '../support/navigation-report';
 
-const run=(id:string,a:number,slipM:number|null,timeS:number|null):TraySummary=>({experimentId:id,accelerationLimitMps2:a,maxLoadSlipM:{available:slipM!==null,value:slipM},serviceTimeS:{available:timeS!==null,value:timeS}});
+const run=(id:string,a:number,slipM:number|null,timeS:number|null):TraySummary=>({experimentId:id,accelerationLimitMps2:a,windowS:0.5,maxLoadSlipM:{available:slipM!==null,value:slipM},serviceTimeS:{available:timeS!==null,value:timeS}});
 const low=run('tray-low-friction-v1',0.5,0.0012,112.7),high=run('tray-accel-high-v1',2.5,0.0431,98.4);
 const pair=(over:Record<string,unknown>={})=>({accepted:true,changed:['acceleration'],a:low,b:high,...over}) as never;
 beforeEach(()=>setLocale('en'));
@@ -12,7 +12,8 @@ beforeEach(()=>setLocale('en'));
 test('an accepted pair that differs in the acceleration limit gets one sentence with every measured number',()=>{
  const h=designHint(pair());if(!h.available)throw new Error(h.reason);
  for(const n of ['2.5','0.5','43.1','1.2','98.4','112.7'])expect(h.text,n).toContain(n);
- expect(h.text).toMatch(/not calibrated|uncalibrated/i);expect(h.text).toMatch(/physical test/i);
+ expect(h.text).toMatch(/not calibrated|uncalibrated/i);expect(h.text).toMatch(/physical test/i);expect(h.text).toContain('from 2.5 to 0.5 m/s²');
+ expect(h.text).toContain('the largest cup slip within a 0.5 s window from 43.1 to 1.2 mm');   // the metric is the slip inside the window, not a whole-mission displacement
  expect(h.text).toMatch(/decreas/i);                     // reducing the limit decreases the largest slip ...
  expect(h.text).toMatch(/increas/i);                     // ... and increases the service time
 });
@@ -26,7 +27,7 @@ test('the direction words follow the numbers, never the expectation',()=>{
  const slower=designHint(pair({b:run('tray-accel-high-v1',2.5,0.0005,98.4)}));if(!slower.available)throw new Error('unreachable');
  expect(slower.text).toMatch(/increas/i);expect(slower.text).not.toMatch(/decreas.*slip/i);
  const same=designHint(pair({b:run('tray-accel-high-v1',2.5,0.0012,112.7)}));if(!same.available)throw new Error('unreachable');
- expect(same.text).toMatch(/unchanged/i);
+ expect(same.text).toMatch(/unchanged/i);expect(same.text).toContain('within a 0.5 s window');
 });
 
 test('not accepted, another input changed, no change in the limit or a missing metric gives no sentence and a reason',()=>{
@@ -37,6 +38,7 @@ test('not accepted, another input changed, no change in the limit or a missing m
  expect(designHint(pair({b:run('tray-accel-high-v1',2.5,null,98)}))).toEqual({available:false,reason:'METRIC_UNAVAILABLE'});
  expect(designHint(pair({a:run('tray-low-friction-v1',0.5,0.001,null)}))).toEqual({available:false,reason:'METRIC_UNAVAILABLE'});
  expect(designHint(pair({a:{...low,maxLoadSlipM:{available:true,value:Number.NaN}}}))).toEqual({available:false,reason:'METRIC_UNAVAILABLE'});
+ expect(designHint(pair({a:{...low,windowS:Number.NaN}}))).toEqual({available:false,reason:'METRIC_UNAVAILABLE'});
 });
 
 test('the sentence never says optimal and carries no percentile: it is one run on each side',()=>{
@@ -44,11 +46,11 @@ test('the sentence never says optimal and carries no percentile: it is one run o
  expect(h.text).not.toMatch(/optimal|best|p50|p95/i);
 });
 
-for(const [locale,limit,warning] of [['vi','giới hạn gia tốc','thử nghiệm vật lý'],['ja','加速度','物理試験'],['en','acceleration limit','physical test']] as const){
- test(`${locale}: the sentence and its closing warning are in the language`,()=>{
+for(const [locale,limit,warning,window] of [['vi','giới hạn gia tốc','thử nghiệm vật lý','trong cửa sổ 0.5 s'],['ja','加速度','物理試験','0.5 秒の区間内'],['en','acceleration limit','physical test','within a 0.5 s window']] as const){
+ test(`${locale}: the sentence and its closing warning are in the language, and the slip is named as the one within the window`,()=>{
   setLocale(locale);
   const h=designHint(pair());if(!h.available)throw new Error('unreachable');
-  expect(h.text).toContain(limit);expect(h.text).toContain(warning);
+  expect(h.text).toContain(limit);expect(h.text).toContain(warning);expect(h.text).toContain(window);
   for(const n of ['2.5','0.5','43.1','1.2','98.4','112.7'])expect(h.text,n).toContain(n);
  });
 }
@@ -98,6 +100,19 @@ test('the compare panel shows the sentence, or the reason there is none, only wh
 test('the reason is in the language, and the code stays beside it',()=>{
  setLocale('vi');expect(trayHintHtml(slow(),report())).toContain('Không đủ dữ liệu để so sánh');
  setLocale('ja');expect(trayHintHtml(slow(),report())).toContain('比較');
+});
+
+// R14: the pair acceptance is the whole identity both reports carry, not the scenario id alone
+test('a pair that differs in any identity field the two reports carry (scenario revision or hash, project, world, backends, engine or host, window) is not accepted',()=>{
+ const m=report().manifest as unknown as {project:Record<string,unknown>;world:Record<string,unknown>},b=(over:Record<string,unknown>)=>tray(fast().trayEvidence,over);
+ const engine=(over:Record<string,unknown>)=>{const r=fast(),n=r.navigation2d as unknown as {engine:Record<string,unknown>};return {...r,navigation2d:{...n,engine:{...n.engine,...over}}} as never;};
+ for(const [what,other] of [['scenario revision',b({scenario:{id:'MJ-TRAY01',revision:2,hash:'h'}})],['scenario hash',b({scenario:{id:'MJ-TRAY01',revision:1,hash:'h2'}})],
+  ['project',b({project:{...m.project,hash:'p2'}})],['world',b({world:{...m.world,hash:'w2'}})],['backend version',b({backends:[{id:'irsim_2d',version:'9.9.9',model:'irsim',dynamics:false}]})],
+  ['source commit',b({sourceCommit:'t'.repeat(40)})],['mode',b({mode:'mock'})],['access',b({access:'other'})],['tick',b({clock:{tickMs:10}})],
+  ['host arch',engine({hostArch:'x64'})],['platform',engine({platform:'linux-x64'})],['engine version',engine({version:'9.9.9'})],['python',engine({pythonVersion:'3.12.0'})],['lock',engine({lockDigest:'e'.repeat(64)})],
+  ['window',tray({...fast().trayEvidence as object,windowTicks:50})]] as const)
+  expect(trayHint(slow(),other),what).toEqual({available:false,reason:'PAIR_NOT_ACCEPTED'});
+ expect(trayHint(slow(),fast()).available).toBe(true);
 });
 
 test('a drive fault schedule is an input: a pair where only one run carried one (or different ones) is not accepted',()=>{

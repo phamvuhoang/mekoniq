@@ -2,9 +2,10 @@
 import type {FaultReportV1} from '../shared/navigation2d';
 import {tr} from '../i18n';
 import {esc,icon} from '../ui/icons';
+import {hashJson} from '../twin/hash';
 export interface FaultRow {entryId:string;title:string;injected:string;detection:string;controller:string;plant:string;invariants:string;verdict:string;verdictCode:string;tick:number|null}
 export type FaultSection={available:false;reason:string}|{available:true;rows:FaultRow[];violated:string[]};
-const VERDICTS=['detected_in_time','detected_late','not_detected','not_fired'],RESULTS=['pass','violated','not_applicable'];
+const VERDICTS=['detected_in_time','detected_late','not_detected','not_fired'],RESULTS=['pass','violated','not_applicable','not_evidenced'];
 const isTick=(x:unknown):x is number|null=>x===null||(typeof x==='number'&&Number.isInteger(x)&&x>=0);
 const isReport=(r:unknown):r is FaultReportV1=>{
  const x=r as FaultReportV1|null;
@@ -14,17 +15,28 @@ const isReport=(r:unknown):r is FaultReportV1=>{
 };
 const verdictText=(v:string)=>({detected_in_time:tr('Phát hiện đúng hạn','期限内に検出','Detected in time'),detected_late:tr('Phát hiện trễ','遅れて検出','Detected late'),not_detected:tr('Không phát hiện','未検出','Not detected'),not_fired:tr('Chưa chèn','未注入','Not fired')} as Record<string,string>)[v]??v;
 const m=(n:number)=>String(Number(n.toFixed(2)));
-/** The section of whatever was imported: anything without a well-formed fault report is NO_FAULT_DATA. */
+/** Why a well-formed fault report does not belong to the report that carries it (R13), or null: another run, a schedule other than the manifest's (hashed as the
+ * runtime hashes it), an entry that schedule does not have, or a tick past the report's outcome. */
+function unbound(b:FaultReportV1,r:{manifest?:{runId?:unknown;driveFaultSchedule?:{entries?:unknown;hash?:unknown}};outcome?:{tick?:unknown}}):string|null{
+ if(b.runId!==r.manifest?.runId)return 'FAULT_RUN_MISMATCH';
+ const s=r.manifest?.driveFaultSchedule,entries=Array.isArray(s?.entries)?s.entries as {id?:unknown;faultId?:unknown;targetId?:unknown}[]:null;
+ if(!entries||b.scheduleDigest!==s!.hash||(()=>{try{return hashJson(entries);}catch{return null;}})()!==s!.hash)return 'FAULT_SCHEDULE_MISMATCH';// an imported schedule hashJson cannot hash (a non-finite number) is a mismatch, never a crash
+ if(!b.entries.every(e=>entries.some(x=>x?.id===e.entryId&&x.faultId===e.faultId&&x.targetId===e.targetId)))return 'FAULT_ENTRY_UNSCHEDULED';
+ const end=r.outcome?.tick;
+ return typeof end==='number'&&b.entries.some(e=>[e.injection.appliedTick,e.injection.endedTick,e.detection.tick].some(t=>t!==null&&t>end))?'FAULT_BEYOND_HORIZON':null;
+}
+/** The section of whatever was imported: anything without a well-formed fault report is NO_FAULT_DATA; one that is not bound to the report carrying it says why (unbound). */
 export function faultSection(report:unknown):FaultSection{
  const b=report&&typeof report==='object'?(report as {faultReport?:unknown}).faultReport:undefined;
  if(!isReport(b))return {available:false,reason:'NO_FAULT_DATA'};
- const pass=b.invariants.filter(i=>i.result==='pass').length,viol=b.invariants.filter(i=>i.result==='violated'),na=b.invariants.filter(i=>i.result==='not_applicable').length;
- const inv=`${pass}/${b.invariants.length} ${tr('đạt','合格','pass')}${viol.length?` · ${viol.length} ${tr('vi phạm','違反','violated')} (${viol.map(i=>i.id).join(', ')})`:''}${na?` · ${na} ${tr('không áp dụng','対象外','n/a')}`:''}`;
+ const reason=unbound(b,report as Parameters<typeof unbound>[1]);if(reason)return {available:false,reason};
+ const pass=b.invariants.filter(i=>i.result==='pass').length,viol=b.invariants.filter(i=>i.result==='violated'),na=b.invariants.filter(i=>i.result==='not_applicable').length,ne=b.invariants.filter(i=>i.result==='not_evidenced').length;
+ const inv=`${pass}/${b.invariants.length} ${tr('đạt','合格','pass')}${viol.length?` · ${viol.length} ${tr('vi phạm','違反','violated')} (${viol.map(i=>i.id).join(', ')})`:''}${na?` · ${na} ${tr('không áp dụng','対象外','n/a')}`:''}${ne?` · ${ne} ${tr('chưa có bằng chứng','証拠なし','not evidenced')}`:''}`;
  const rows=b.entries.map((e):FaultRow=>{
   const fired=e.injection.appliedTick!==null,d=e.detection,p=e.plantResponse;
   const plant=[p.axisState?`${p.axisState}${p.axisFault?` ${p.axisFault}`:''}`:'',typeof p.ticksToRest==='number'?`${tr('dừng sau','停止まで','rests after')} ${p.ticksToRest} tick`:'',typeof p.baseTravelM==='number'?`${m(p.baseTravelM)} m`:''].filter(Boolean).join(' · ');
   return {entryId:e.entryId,title:`${e.faultId} · ${e.targetId}`,
-   injected:fired?`tick ${e.injection.appliedTick}${e.injection.endedTick!==null?`–${e.injection.endedTick}`:''}`:'—',
+   injected:fired?`tick ${e.injection.appliedTick}${e.injection.endedTick!==null?`–${e.injection.endedTick}`:''}`:(e.injection as {overriddenBy?:string}).overriddenBy?`${tr('bị ghi đè','上書き','overridden')}: ${(e.injection as {overriddenBy?:string}).overriddenBy}`:'—',
    detection:!fired?'—':d.by&&d.tick!==null?`${d.by} ${d.code??''} tick ${d.tick}${typeof d.latencyTicks==='number'?` (+${d.latencyTicks})`:''}`.replace('  ',' '):tr('Không phát hiện','未検出','Not detected'),
    controller:fired&&typeof e.firstCommandChangeTick==='number'?`${tr('lệnh đổi từ tick','指令変化 tick','command changes from tick')} ${e.firstCommandChangeTick}`:'—',
    plant:fired&&plant?plant:'—',invariants:inv,verdict:verdictText(e.verdict),verdictCode:e.verdict,tick:e.injection.appliedTick};

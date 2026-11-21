@@ -130,6 +130,25 @@ test('explicit new cell trial preserves and retires the previous paused run befo
  const {w,h}=setup(),internal=w as unknown as {rt:TwinRuntime;create(p:unknown):Promise<void>;settlePrevious():Promise<void>;pinBlock():null};h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.view!.run.status='paused';const calls:string[]=[];internal.pinBlock=()=>null;internal.settlePrevious=async()=>{calls.push('preserve+archive');};internal.rt.readiness=async()=>{calls.push('readiness');throw Error('ADMISSION_REACHED');};
  await expect(internal.create(presetById('mujoco-cell'))).rejects.toThrow('ADMISSION_REACHED');expect(calls).toEqual(['preserve+archive','readiness']);
 });
+// R07: what needs no engine slot (the drive schedule, the request itself) is checked before the live run is retired; a refusal leaves it as it was
+type Replace={rt:Record<string,unknown>;preset:unknown;driveFor:string;driveFaults:unknown[];driveCheck:unknown;driveBody():unknown;create(p:unknown):Promise<void>};
+const overlap=(n:number)=>({id:'entry'+n,faultId:'encoder-dropout',targetId:'amr-1/wheel-right',trigger:{kind:'elapsed_sim_ms',value:0},durationMs:300,params:{}});
+for(const via of ['the studio check','the runtime check'] as const)test(`a replacement cell run whose drive schedule is refused by ${via} archives nothing and keeps the live run`,async()=>{
+ const {h,calls}=setup(),internal=h as unknown as Replace,p={...presetById('mujoco-cell')!,driveExperimentId:'drive-nominal-v1'};h.view!.run.backendSetId='engineering-mujoco-cell-v1';
+ Object.assign(internal,{preset:p,driveFor:p.id,driveFaults:[overlap(1),overlap(2)]});internal.rt.archive=async(id:string)=>{calls.push(`archive ${id}`);};
+ if(via==='the studio check')internal.driveCheck={state:'refused',codes:['FAULT_OVERLAP'],error:'INVALID_FAULT_SCHEDULE',key:JSON.stringify(internal.driveBody())};
+ else internal.rt.checkDriveFaults=async()=>{calls.push('check');return {ok:false,error:'INVALID_FAULT_SCHEDULE',codes:['FAULT_OVERLAP']};};
+ const mark=calls.length,view=h.view,report=h.report;
+ await expect(internal.create(p)).rejects.toThrow('INVALID_FAULT_SCHEDULE: FAULT_OVERLAP');
+ expect(calls.slice(mark).filter(c=>/archive|readiness|create|report/.test(c))).toEqual([]);expect(h.view).toBe(view);expect(h.report).toBe(report);
+});
+test('a create refused after the previous run was archived keeps that run\'s last view and report on the page',async()=>{
+ const {h,calls}=setup(),internal=h as unknown as Replace;h.view!.run.backendSetId='engineering-mujoco-cell-v1';h.health={...health,features:{}};
+ internal.rt.archive=async(id:string)=>{calls.push(`archive ${id}`);};internal.rt.create=async()=>{calls.push('create');throw new TwinRuntimeError('MUJOCO_CAPACITY',[],409);};
+ const view=h.view,report=h.report;
+ await expect(internal.create(presetById('mujoco-cell'))).rejects.toThrow('MUJOCO_CAPACITY');
+ expect(calls).toContain('archive run');expect(calls).toContain('create');expect(h.view).toBe(view);expect(h.report).toBe(report);
+});
 
 test('registered world stress selection keeps base-composition readiness and never launches a competing smoke',()=>{
  const {w,h}=setup(),internal=w as unknown as {preset:unknown;rt:TwinRuntime};h.health={...health,capabilities:['sim3d_world_experiments_v1'],worldExperiments:[{id:'world-cup-fall-v1',requiresNewRun:true}]};internal.preset=presetById('mujoco-cell');const readiness={checkedAt:'x',expiresAt:'2099-01-01',scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',checks:[],canStart:true};h.readiness=readiness;const probe=vi.fn();internal.rt.readiness=probe;
