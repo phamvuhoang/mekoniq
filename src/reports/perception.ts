@@ -4,7 +4,7 @@ import type {BeliefRecord,GraspAttempt,RecoveryStep} from '../shared/navigation2
 import {tr} from '../i18n';
 import {esc} from '../ui/icons';
 import type {Ghosts} from '../twin/belief';
-export interface PerceptionEvidenceView {schemaVersion:1;beliefs:BeliefRecord[];attempts:GraspAttempt[];recovery:RecoveryStep[];complete:boolean;issues:string[]}
+export interface PerceptionEvidenceView {schemaVersion:1;beliefs:BeliefRecord[];attempts:GraspAttempt[];/** every record of every attempt as it was written (plan, commit, outcome); older reports have none */attemptRecords?:GraspAttempt[];recovery:RecoveryStep[];complete:boolean;issues:string[]}
 export type PerceptionSection={available:false;reason:string}|{available:true;evidence:PerceptionEvidenceView};
 const NOT_CAMERA=()=>tr('Sai số nhận thức được mô hình hóa, không phải dữ liệu camera. Vị trí thật chỉ có trong mô phỏng. Mọi tham số là giả định, chưa hiệu chuẩn.','モデル化した認識誤差でありカメラデータではありません。真の位置はシミュレーションにのみ存在します。全パラメータは仮定・未校正です。','Modelled perception error, not camera data. The true position exists only in simulation. Every parameter is assumed and not calibrated.');
 const ok=(e:unknown):e is PerceptionEvidenceView=>{const x=e as PerceptionEvidenceView|null;return !!x&&typeof x==='object'&&x.schemaVersion===1&&Array.isArray(x.attempts)&&Array.isArray(x.beliefs)&&Array.isArray(x.recovery)&&Array.isArray(x.issues);};
@@ -12,6 +12,12 @@ const ok=(e:unknown):e is PerceptionEvidenceView=>{const x=e as PerceptionEviden
 export function perceptionSection(report:unknown):PerceptionSection{
  const r=report as {perceptionEvidence?:unknown}|null;
  return r&&ok(r.perceptionEvidence)?{available:true,evidence:r.perceptionEvidence}:{available:false,reason:'NO_PERCEPTION_DATA'};
+}
+/** The attempts as they stood at the cursor: the last record of each attempt that had been written by then (so a replay never shows the outcome of the end of the run at the moment of the commit); the final ones without a cursor, or in a report that kept no records. */
+export function attemptsAt(e:PerceptionEvidenceView,tick?:number):GraspAttempt[]{
+ if(tick===undefined||!e.attemptRecords)return e.attempts.filter(a=>tick===undefined||a.decidedTick<=tick);
+ const by=new Map<string,GraspAttempt>();for(const a of e.attemptRecords)if((a.recordedTick??a.decidedTick)<=tick)by.set(a.attemptId,a);
+ return [...by.values()];
 }
 /** A step is recorded before it is done (pending) and again when it ends: one row per step, as it stood at the cursor (the last record that had finished by then, else the pending one). */
 function stepsAt(all:RecoveryStep[],tick?:number):RecoveryStep[]{
@@ -39,7 +45,7 @@ function endedHtml(report:unknown,tick?:number):string{
 export const ATTEMPT_BOUND=3;
 export function attemptCounter(report:unknown,tick:number,cupId:string|undefined):string{
  const s=perceptionSection(report);if(!s.available||!cupId)return '';
- const k=s.evidence.attempts.filter(a=>a.cupId===cupId&&a.decidedTick<=tick).length;
+ const k=attemptsAt(s.evidence,tick).filter(a=>a.cupId===cupId).length;
  return k?` · ${tr('lượt','試行','attempt')} ${k}/${ATTEMPT_BOUND}`:'';
 }
 const mm=(m:number|null)=>m===null?'—':String(Number((m*1000).toFixed(1)));
@@ -48,7 +54,7 @@ const outcomeText=(o:string)=>({lifted:tr('Nhấc được','持ち上げ成功'
 export function perceptionBlockHtml(report:unknown,tick?:number):string{
  const r=report as {manifest?:{perception?:unknown}}|null,s=perceptionSection(report),title=tr('Nhận thức và lượt gắp','認識と把持の試行','Perception and grasp attempts');
  if(!s.available)return r?.manifest?.perception?`<div data-testid="perception-evidence" data-available="false"><h3>${title}</h3><p class="field-help" data-testid="perception-reason">${tr('Không có dữ liệu nhận thức','認識データなし','No perception data')} (${esc(s.reason)})</p></div>`:'';
- const e=s.evidence,rows=e.attempts.filter(a=>tick===undefined||a.decidedTick<=tick),steps=stepsAt(e.recovery,tick);
+ const e=s.evidence,rows=attemptsAt(e,tick),steps=stepsAt(e.recovery,tick);
  const head=[tr('Cốc','カップ','Cup'),tr('Lượt','試行','Attempt'),'Tick',tr('Lệch belief (mm)','belief誤差(mm)','Belief error (mm)'),tr('Belief','Belief','Belief'),tr('Vùng','領域','Region'),'IK',tr('Quét','スイープ','Sweep'),tr('Kết quả','結果','Outcome')];
  const table=rows.length?`<div class="eng-table-wrap" tabindex="0" role="region" aria-label="${title}"><table class="eng-table" data-testid="perception-attempts"><thead><tr>${head.map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(a=>`<tr data-attempt="${esc(a.attemptId)}"><th scope="row">${esc(a.cupId)}</th><td>${a.index+1}</td><td>${a.decidedTick}</td><td>${mm(a.beliefErrorAtCommitM)}</td>${(['belief','region','ik','sweep'] as const).map(g=>`<td data-gate="${g}" data-pass="${a.gates[g]==='pass'}">${esc(a.gates[g])}</td>`).join('')}<td data-outcome="${esc(a.outcome)}">${esc(outcomeText(a.outcome))}${a.refusal?` · <code>${esc(a.refusal)}</code>`:''}</td></tr>`).join('')}</tbody></table></div>`
   :`<p class="field-help" data-empty="true">${tr('Chưa có lượt gắp tại thời điểm này','この時点では試行なし','No grasp attempt yet at this point')}</p>`;

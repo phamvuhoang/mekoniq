@@ -1,7 +1,7 @@
 import {beforeEach,expect,test,vi} from 'vitest';
 vi.hoisted(()=>{(globalThis as Record<string,unknown>).localStorage={getItem:()=>'en',setItem:()=>{}};(globalThis as Record<string,unknown>).document={documentElement:{lang:'en'}};});
 import {setLocale} from '../../src/i18n';
-import {ghostLegendHtml,perceptionBlockHtml,perceptionSection,parseStudy,studyHtml} from '../../src/reports/perception';
+import {attemptCounter,ghostLegendHtml,perceptionBlockHtml,perceptionSection,parseStudy,studyHtml} from '../../src/reports/perception';
 const attempt=(o:Record<string,unknown>={})=>({attemptId:'cup-1#0',cupId:'cup-1',index:0,decidedTick:1444,mode:'belief_estimated',beliefUsed:null,beliefErrorAtCommitM:0.0071,gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},ikResidual:[],outcome:'lifted',...o});
 const rep=(attempts:unknown[],extra:Record<string,unknown>={})=>({manifest:{perception:{graspMode:'belief_estimated'}},perceptionEvidence:{schemaVersion:1,beliefs:[],attempts,recovery:[],complete:true,issues:[],...extra}});
 beforeEach(()=>setLocale('en'));
@@ -44,4 +44,15 @@ test('the legend says what is drawn, or that nothing is (never silent), in three
  expect(data).toContain('data-state="data"');expect(data).toContain('cup-1 ↔ 7 mm');expect(data).toMatch(/simulation only/);
  expect(ghostLegendHtml({status:'none'})).toContain('No perception data');expect(ghostLegendHtml({status:'no_data_at_cursor'})).toContain('at this point');
  setLocale('ja');expect(ghostLegendHtml({status:'none'})).toContain('認識データなし');setLocale('vi');expect(ghostLegendHtml({status:'none'})).toContain('Không có dữ liệu nhận thức');
+});
+test('R10: at a replay cursor an attempt shows the record that existed then (plan, commit, outcome), never the final outcome of the run',()=>{
+ const rec=(stage:string,recordedTick:number,outcome:string)=>attempt({stage,recordedTick,outcome});
+ const r=rep([attempt({outcome:'lifted'})],{attemptRecords:[rec('plan',1444,'unknown'),rec('commit',1535,'unknown'),rec('outcome',1700,'lifted')]});
+ const at=(t:number)=>perceptionBlockHtml(r,t),outcome=(h:string)=>/<tr data-attempt="cup-1#0"[\s\S]*?data-outcome="([a-z_]+)"/.exec(h)?.[1];
+ expect(at(1000)).toContain('data-empty="true"');expect(outcome(at(1444))).toBe('unknown');expect(outcome(at(1535))).toBe('unknown');expect(outcome(at(1699))).toBe('unknown');expect(outcome(at(1700))).toBe('lifted');
+ expect(outcome(perceptionBlockHtml(r))).toBe('lifted');
+});
+test('R10: the attempt counter counts the attempts that exist at the cursor',()=>{
+ const r=rep([attempt()],{attemptRecords:[attempt({stage:'plan',recordedTick:1444}),attempt({stage:'outcome',recordedTick:1700})]});
+ expect(attemptCounter(r,1000,'cup-1')).toBe('');expect(attemptCounter(r,1444,'cup-1')).toContain('1/3');
 });

@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ def9c24061884bbd922fa1bc5cfa1a63dbf2e2db (sha256 ae022ccb3865a1ae41c02dbbef7e294948f5260da5103937eead771aa70e4040). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ c0dca439098f60b3c290e4ac1ebfa5b17881c96e (sha256 42763f8a10877f954bdf855e75d1f183082f04dbaa0e5558d2f3203875cb3f10). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -3456,6 +3456,14 @@ export interface GraspAttempt {
   };
   outcome: 'lifted' | 'grip_not_established' | 'cup_dropped' | 'refused' | 'unknown';
   refusal?: string;
+  /**
+   * The tick this record was written (plan, commit or outcome); decidedTick stays the tick of the decision.
+   */
+  recordedTick?: number;
+  /**
+   * Which step of the attempt this record is.
+   */
+  stage?: 'plan' | 'commit' | 'outcome';
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -3503,6 +3511,10 @@ export interface BeliefEvidenceManifestV1 {
       sha256: Digest;
       bytes: number;
     }[];
+    /**
+     * How many records the published chunks of this stream hold; a reader compares it with what it read.
+     */
+    records?: number;
   }[];
   coverage: {
     lastTick: number;
