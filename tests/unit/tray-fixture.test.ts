@@ -61,6 +61,9 @@ test('feasibility records the geometry and the effective friction of the cup-tra
  expect(f.layouts.map((l:{id:string;effectiveFriction:number})=>[l.id,l.effectiveFriction])).toEqual([['cup-triple',0.6],['cup-triple-low-friction',0.15]]);
 });
 
+import {TRAY_POLICY_SHA} from '../../packages/lab-runtime/src/v2/simulation3d/tray-experiments';
+test('the pinned policy hash is the file',async()=>{expect(sha(await readFile(join(dir,'tray-policy-v1.json')))).toBe(TRAY_POLICY_SHA);});
+
 test('the policy and the actor proxy are declared, assumed and not calibrated',async()=>{
  const p=await read('tray-policy-v1.json'),a=await read('actor-proxy-v1.json');
  expect(p).toMatchObject({id:'tray-policy-v1',calibration:'not_calibrated',slipWarnM:0.005,slipFailM:0.02});

@@ -1,7 +1,8 @@
 /** The verdicts of one MJ-TRAY01 run, from facts the verifier read back from durable evidence: pure, so every claim is tested without an engine. */
 import type {PhysicsTickRecord} from '../navigation2d/contracts';
 import {maxSlipM,slipVerdict,supportAccelerationMps2,type TrayOraclePolicy,type SlipVerdict} from './tray-oracle';
-import {TRAY_EXPERIMENTS,type TrayExperimentId} from './tray-experiments';
+import {TRAY_ACCELERATION,TRAY_EXPERIMENTS,type TrayExperimentId} from './tray-experiments';
+import {DRIVE_EXPERIMENTS} from '../control/drive-experiments';
 export interface TrayPolicy extends TrayOraclePolicy{slipWarnM:number;slipFailM:number}
 export interface TrayRunFacts{experimentId:TrayExperimentId;status:string;served:string;tick:number;attention:readonly string[];records:readonly PhysicsTickRecord[];businessEvents:readonly {type:string;at:string}[];
  /** the navigation policy's limit of the run */accelerationLimitMps2:number;/** sliding friction of the cup face and of the tray face; the engine applies the larger */cupSliding:number;traySliding:number;
@@ -44,6 +45,8 @@ export function summariseTrayRun(f:TrayRunFacts,policy:TrayPolicy):TrayRunSummar
  if(['tray-nominal-v1','tray-low-friction-v1','tray-person-crossing-v1'].includes(f.experimentId))say('SERVED_ALL',done&&f.served==='3',`status ${f.status}, served ${f.served}`);
  else say('MISSION_OUTCOME',done?true:null,`status ${f.status}, served ${f.served}${f.attention.length?`, attention ${[...new Set(f.attention)].join(',')}`:''}`);
  const out:TrayRunSummary={experimentId:f.experimentId,status:f.status,served:f.served,ticks:f.tick,serviceTimeS,maxLoadSlipM:{available:true,value:windowSlip},cumulativeDriftM:drift,slipLevel,accelerationLimitMps2:f.accelerationLimitMps2,maxSupportAccelerationMps2:maxAccel,verdicts};
+ // a slide past the failure threshold fails every variant but B, where a slide above the Coulomb bound is the expected result and is only reported (slipLevel)
+ if(f.experimentId!=='tray-accel-high-v1')say('SLIP_BELOW_FAIL',windowSlip<=policy.slipFailM,`largest window slip ${(windowSlip*1000).toFixed(2)} mm, failure above ${policy.slipFailM*1000} mm`);
  if(f.experimentId==='tray-nominal-v1')say('SLIP_BELOW_WARN',windowSlip<policy.slipWarnM,`largest window slip ${(windowSlip*1000).toFixed(2)} mm, warning at ${policy.slipWarnM*1000} mm`);
  if(f.experimentId==='tray-low-friction-v1'||f.experimentId==='tray-accel-high-v1'){
   const mu=Math.max(f.cupSliding,f.traySliding),v=slipVerdict(f.records,CUPS,mu,policy);
@@ -65,3 +68,13 @@ export function summariseTrayRun(f:TrayRunFacts,policy:TrayPolicy):TrayRunSummar
  }
  return out;
 }
+
+/** The inputs of a tray run as its own bundle holds them: what the verdicts and the campaign read. */
+export interface TrayInputsUsed{policySha:string;loadId:string;cupSliding:number;physicsId:string;traySliding:number;accelerationLimitMps2:number;driveModelPath:string;baseLimitMps2:number|null}
+/** What the registry says a variant runs on. A recording whose bundle names the variant but ran on other inputs (a dropped override, a wrong drive) is not that variant. */
+export function registeredTrayInputs(id:TrayExperimentId,o:{policySha:string}):TrayInputsUsed{
+ const e=TRAY_EXPERIMENTS[id],a=TRAY_ACCELERATION[e.accelerationPolicy],low=e.load==='cup-triple-low-friction';
+ return {policySha:o.policySha,loadId:e.load,cupSliding:low?0.15:0.6,physicsId:e.physics==='drive-contact-profile'?'serve-drive-contact-v1':e.physics,traySliding:e.physics==='drive-contact-profile'?0.6:0.15,accelerationLimitMps2:a.policyMps2,driveModelPath:DRIVE_EXPERIMENTS[e.driveExperimentId as keyof typeof DRIVE_EXPERIMENTS].mobileModel,baseLimitMps2:a.baseLimitMps2};
+}
+/** The names of the fields in which the run's inputs differ from the registered ones. */
+export const trayInputIssues=(id:TrayExperimentId,used:TrayInputsUsed,policySha:string)=>{const want=registeredTrayInputs(id,{policySha});return (Object.keys(want) as (keyof TrayInputsUsed)[]).filter(k=>want[k]!==used[k]);};

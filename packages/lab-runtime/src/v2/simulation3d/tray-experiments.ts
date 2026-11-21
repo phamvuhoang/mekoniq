@@ -21,3 +21,5 @@ export const trayExperiment=(id:string):TrayExperiment=>{if(!isTrayExperiment(id
 const knobs=(e:TrayExperiment)=>({friction:e.load,acceleration:e.accelerationPolicy,drive:e.driveExperimentId,actor:e.actor});
 /** The knobs (friction, acceleration, drive, actor) in which two registered variants differ. */
 export const trayKnobDifference=(a:string,b:string)=>{const x=knobs(trayExperiment(a)),y=knobs(trayExperiment(b));return (Object.keys(x) as (keyof typeof x)[]).filter(k=>x[k]!==y[k]);};
+/** sha256 of fixtures/serve-tray-v1/tray-policy-v1.json: the thresholds a tray run is judged by are the reviewed ones (tests/unit/tray-fixture.test.ts keeps it equal to the file). */
+export const TRAY_POLICY_SHA='bbcfaec1e1dc7a1d7e6e492bc0602136d0961c6ada069116a1d288675eafb0d7';

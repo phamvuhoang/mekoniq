@@ -73,8 +73,9 @@ import {hashJson} from '../hash';
 import {cellArtifacts} from './cell-campaign';
 import {readCampaignJournal,verifyCampaignOutcome} from '../control/campaign-source-evidence';
 import {SCENARIO_FIXTURES,TRAY_PERSON_FIXTURE,actorPoseAt,resolveScenarioFixture} from '../navigation2d/scenario-fixtures';
-import {buildTrayEvidence,summariseTrayRun,type TrayPolicy,type TrayRunSummary} from './tray-verdict';
-import {isTrayExperiment} from './tray-experiments';
+import {buildTrayEvidence,summariseTrayRun,trayInputIssues,type TrayPolicy,type TrayRunSummary} from './tray-verdict';
+import {TRAY_POLICY_SHA,isTrayExperiment} from './tray-experiments';
+import {DRIVE_DOC_PINS} from './physics-inputs';
 
 export const TRAY_CAMPAIGN=table;
 export interface TrayCase{id:string;experimentId:TrayExperimentId;seed:number}
@@ -120,6 +121,12 @@ export async function verifyTrayCampaign(root:string,onlyCase?:string):Promise<T
    const named=await doc('tray-experiment.json');check(isTrayExperiment(named.id)&&named.id===spec.experimentId,'TRAY_EXPERIMENT_MISMATCH');
    const engine=scene.engine as unknown as {loadProfileRef:{path:string};physicsProfileRef:{path:string}};
    const policy=await doc('tray-policy-v1.json') as TrayPolicy&Record<string,unknown>,load=await doc(engine.loadProfileRef.path),physics=await doc(engine.physicsProfileRef.path);
+   // the inputs the run really used are the registered ones of its variant (not only its name): thresholds, load and contact friction, acceleration limit, drive documents
+   const drive=scene.engine as unknown as {driveModelRef?:{path:string;sha256:string};controlProfileRef?:{path:string}};check(drive.driveModelRef&&drive.controlProfileRef,'TRAY_DRIVE_MISSING');
+   const driveModel=await doc(drive.driveModelRef!.path),driveControl=await doc(drive.controlProfileRef!.path),base=(driveControl.controllers as {controllerId:string;params:{maxAccelerationMps2?:number}}[]).find(c=>c.controllerId==='diff-drive-base-v1');
+   const issues=trayInputIssues(spec.experimentId,{policySha:scene.files.find(f=>f.path==='tray-policy-v1.json')!.sha256,loadId:load.id,cupSliding:Math.min(...load.props.map((p:{friction:{sliding:number}})=>p.friction.sliding)),physicsId:physics.id,traySliding:physics.contact.sliding,accelerationLimitMps2:scene.policy.parameters.maxAccelerationMps2,driveModelPath:drive.driveModelRef!.path,baseLimitMps2:base?.params.maxAccelerationMps2??null},TRAY_POLICY_SHA);
+   check(!issues.length,'TRAY_INPUTS_NOT_REGISTERED:'+issues.join(','));
+   check(driveModel.digest===DRIVE_DOC_PINS[TRAY_EXPERIMENTS[spec.experimentId].driveExperimentId]?.model,'TRAY_DRIVE_MODEL_NOT_REGISTERED');
    const journal=await readCampaignJournal(join(dir,'run'),cp.runId),outcome=verifyCampaignOutcome(cp as never,journal,report,'TRAY');
    check(report.outcome&&hashJson(outcome)===hashJson(report.outcome),'TRAY_OUTCOME_NOT_FROM_JOURNAL');
    check(records.length===cp.tick+1,'TRAY_PHYSICS_COVERAGE');

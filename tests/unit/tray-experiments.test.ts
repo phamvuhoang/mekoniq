@@ -49,3 +49,34 @@ test('the shared resolver gives both families the same shape and refuses unknown
  expect(mujocoExperiment('payload-center-v1').maxAccelerationMps2).toBeUndefined();
  expect(()=>mujocoExperiment('nope')).toThrow('MUJOCO_EXPERIMENT_UNREGISTERED');
 });
+
+import {readFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {DRIVE_DOC_PINS,controlShape} from '../../packages/lab-runtime/src/v2/simulation3d/physics-inputs';
+import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
+test('the pinned drive documents are the fixtures of drive-v1 (a drifted fixture fails here, not silently in a verifier)',async()=>{
+ const dir='robotics/simulation-mujoco/fixtures/drive-v1/';
+ for(const [id,e] of Object.entries(DRIVE_EXPERIMENTS)){
+  const model=JSON.parse(await readFile(dir+e.mobileModel,'utf8')),control=JSON.parse(await readFile(dir+e.mobileControl,'utf8'));
+  expect(DRIVE_DOC_PINS[id]).toEqual({model:model.digest,control:hashJson(controlShape(control))});
+ }
+ void createHash;
+});
+
+import {driveDocs} from '../../packages/lab-runtime/src/v2/simulation3d/physics-inputs';
+import {mobileDriveBundle} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
+import {sealDriveDocument} from '../../packages/lab-runtime/src/v2/control/drive-io';
+test('the verifier takes the registered drive documents only: self-sealed look-alikes are refused',async()=>{
+ const plant='e'.repeat(64),b=await mobileDriveBundle('robotics/simulation-mujoco','drive-nominal-v1',plant,false,1);
+ const docs=new Map<string,unknown>(b.files.map(f=>[f.path,JSON.parse(Buffer.from(f.bytes).toString())])),refs=new Map(b.files.map(f=>[f.path,{sha256:'a'.repeat(64),bytes:1}]));
+ const get=(p:string)=>docs.get(p) as never,exp=mujocoExperiment('tray-nominal-v1');
+ expect(()=>driveDocs('drive-nominal-v1',exp,plant,refs as never,get)).not.toThrow();
+ // a model with another torque curve, re-sealed: consistent with itself, not the registered one
+ const m=docs.get('serve-drive-nominal-v1.json') as {axes:Record<string,unknown>[]},tampered=sealDriveDocument({...(m as object),axes:m.axes.map((x,i)=>i===0?{...x,tamperedForTest:1}:x)} as never);
+ docs.set('serve-drive-nominal-v1.json',tampered);
+ expect(()=>driveDocs('drive-nominal-v1',exp,plant,refs as never,get)).toThrow('DRIVE_DOCUMENT_DIFFERS');
+ // a control profile with another gain, re-sealed, likewise
+ const b2=await mobileDriveBundle('robotics/simulation-mujoco','drive-nominal-v1',plant,false,1),docs2=new Map<string,unknown>(b2.files.map(f=>[f.path,JSON.parse(Buffer.from(f.bytes).toString())]));
+ const c=docs2.get('serve-control-v2.json') as {axes:{loop:{kp:number}}[]};docs2.set('serve-control-v2.json',sealDriveDocument({...(c as object),axes:c.axes.map(a=>({...a,loop:{...a.loop,kp:99}}))} as never));
+ expect(()=>driveDocs('drive-nominal-v1',exp,plant,refs as never,(p:string)=>docs2.get(p) as never)).toThrow('DRIVE_DOCUMENT_DIFFERS');
+});

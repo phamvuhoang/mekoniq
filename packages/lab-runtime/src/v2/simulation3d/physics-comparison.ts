@@ -4,6 +4,8 @@ import {hashJson} from '../hash';
 import {verifiedSimulationInput,type SimulationRunInput} from './simulation-input';
 import {verifiedPhysicsInputs,changedLeaves} from './physics-inputs';
 import {trayKnobDifference} from './tray-experiments';
+/** A drive fault schedule is an input of a run: two runs compare only with the same one (both none, or the same hash). */
+export const sameFaultSchedule=(a:{driveFaultSchedule?:{hash:string}},b:{driveFaultSchedule?:{hash:string}})=>(a.driveFaultSchedule?.hash??null)===(b.driveFaultSchedule?.hash??null);
 /** Descriptive deltas in the producer's verified report window; never an engine-accuracy or performance ranking. */
 export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
  const reasons:string[]=[],knobs:string[]=[],deltas:{id:string;unit:string;a:number|null;b:number|null;delta:number|null;reasons:string[];samplesA:number;samplesB:number}[]=[],inputs:string[]=[];
@@ -25,6 +27,7 @@ export function comparePhysicsRuns(a:SimulationRunInput,b:SimulationRunInput){
   const engine=(n:typeof na)=>{const e={...n.engine} as Record<string,unknown>;delete e.loadProfileRef;delete e.physicsProfileRef;return e;};
   same(engine(na),engine(nb),'ENGINE_DIFFERS');same(na.controller,nb.controller,'CONTROLLER_DIFFERS');same(na.identity,nb.identity,'PRODUCER_DIFFERS');
   for(const k of ['sourceCommit','clock','seed','scenario','simulationPerturbation','completionObservation','world','assets','prng'] as const)same(ma[k],mb[k],`${k.toUpperCase()}_DIFFERS`);
+  if(!sameFaultSchedule(ma as never,mb as never))reasons.push('FAULT_SCHEDULE_DIFFERS');
   same(va.report.outcome.status,vb.report.outcome.status,'WINDOW_DIFFERS');
   if(!['completed','cancelled'].includes(va.report.outcome.status))reasons.push('WINDOW_INCOMPLETE');
   if(va.report.outcome.status==='cancelled')same(va.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),vb.report.businessEvents.filter(e=>e.type==='MissionCancellationRequested').map(e=>e.at),'CANCEL_SCHEDULE_DIFFERS');

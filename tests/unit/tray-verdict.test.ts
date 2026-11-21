@@ -104,3 +104,28 @@ test('a variant that stresses the plant (B, C) may end without the mission done:
  // A, A-prime and D must finish
  for(const id of ['tray-nominal-v1','tray-low-friction-v1'] as const)expect(result(summariseTrayRun(facts({experimentId:id,status:'needs_attention',served:'0',attention:['NO_PROGRESS'],cupSliding:0.15,traySliding:0.15}),policy),'SERVED_ALL'),id).toBe('fail');
 });
+
+// ---- review fixes ----
+import {trayInputIssues,registeredTrayInputs} from '../../packages/lab-runtime/src/v2/simulation3d/tray-verdict';
+test('a window slip above the failure threshold fails SLIP_BELOW_FAIL for every variant but B, where a slip is the expected result and is only reported',()=>{
+ const slide=records(300,()=>0.5,t=>t<100?0:(t-99)*0.002);          // 50 mm per window
+ for(const id of ['tray-nominal-v1','tray-low-friction-v1','tray-torque-limited-v1','tray-person-crossing-v1'] as const){
+  const s=summariseTrayRun(facts({experimentId:id,cupSliding:0.15,traySliding:0.15,records:slide,personAt:()=>({x:0,y:0}),personRadiusM:0.25}),policy);
+  expect(result(s,'SLIP_BELOW_FAIL'),id).toBe('fail');expect(s.slipLevel).toBe('fail');
+  expect(result(summariseTrayRun(facts({experimentId:id,cupSliding:0.15,traySliding:0.15,records:records(300,()=>0.5),personAt:()=>({x:0,y:0}),personRadiusM:0.25}),policy),'SLIP_BELOW_FAIL'),id).toBe('pass');
+ }
+ const b=summariseTrayRun(facts({experimentId:'tray-accel-high-v1',cupSliding:0.15,traySliding:0.15,accelerationLimitMps2:2.5,records:slide}),policy);
+ expect(result(b,'SLIP_BELOW_FAIL')).toBeUndefined();expect(b.slipLevel).toBe('fail');
+});
+
+const good={policySha:'p',loadId:'cup-triple',cupSliding:0.6,physicsId:'serve-drive-contact-v1',traySliding:0.6,accelerationLimitMps2:0.5,driveModelPath:'serve-drive-nominal-v1.json',baseLimitMps2:1};
+test('the inputs a run really used are compared with the registered ones, field by field',()=>{
+ const r=registeredTrayInputs('tray-nominal-v1',{policySha:'p'});expect(r).toMatchObject({loadId:'cup-triple',cupSliding:0.6,traySliding:0.6,accelerationLimitMps2:0.5,driveModelPath:'serve-drive-nominal-v1.json',baseLimitMps2:1});
+ expect(trayInputIssues('tray-nominal-v1',good,'p')).toEqual([]);
+ expect(trayInputIssues('tray-nominal-v1',{...good,accelerationLimitMps2:0.6},'p')).toEqual(['accelerationLimitMps2']);
+ expect(trayInputIssues('tray-nominal-v1',{...good,policySha:'q'},'p')).toEqual(['policySha']);
+ expect(trayInputIssues('tray-nominal-v1',{...good,driveModelPath:'serve-drive-torque-limited-v1.json'},'p')).toEqual(['driveModelPath']);
+ expect(trayInputIssues('tray-nominal-v1',{...good,cupSliding:0.15,traySliding:0.15,loadId:'cup-triple-low-friction'},'p').sort()).toEqual(['cupSliding','loadId','traySliding']);
+ const high=registeredTrayInputs('tray-accel-high-v1',{policySha:'p'});expect(high).toMatchObject({accelerationLimitMps2:2.5,baseLimitMps2:3,cupSliding:0.15,traySliding:0.15});
+ expect(registeredTrayInputs('tray-torque-limited-v1',{policySha:'p'}).driveModelPath).toBe('serve-drive-torque-limited-v1.json');
+});
