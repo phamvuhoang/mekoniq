@@ -13,6 +13,7 @@ import {droppedPlantCups,observedSegments,sceneEntities,type SceneEntity,type Tw
 import {amrFootprint,assetOf} from '../twin/amr';
 import {footprintInMap} from '../twin/lidar';
 import {placeBody,rosQuat,yawOf} from '../twin/pose3d';
+import {ghostsAt} from '../twin/belief';
 import {armFrames,type ArmJointDef} from '../twin/arm/arm-frames';
 import {armJointsView,armModelFor,displayJoints} from '../twin/arm/arm-telemetry';
 import {armChain,poseArmChain} from './arm-chain';
@@ -157,7 +158,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
  scene.add(new THREE.HemisphereLight(0xc9e8ff,0x24373b,2.6));
  // one directional light casts soft shadows; its shadow camera covers the floor (set on each rebuild)
  const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun,sun.target);
- const world=new THREE.Group(),overlays=new THREE.Group();scene.add(world,overlays);
+ const world=new THREE.Group(),overlays=new THREE.Group(),beliefs=new THREE.Group();scene.add(world,overlays,beliefs);
  /** Per drawn entity: its object, the height of its centre above the base origin (AMR), and the arm chain to re-pose. */
  const objs=new Map<string,{obj:THREE.Object3D;c:number;arm?:ArmDraw}>();
  let userMoved=false,key='',okeys=new Map<string,string>(),rebuilds=0,redraws=0,lf:TwinFrame|null=null,floor='',okey='',overlayBuilds=0,gone=false;
@@ -303,6 +304,19 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
   for(const id of ids){const ax=new THREE.AxesHelper(0.4);ax.position.y=0.5;anchor(id).add(ax);}
   canvas.dataset.overlayBuilds=String(++overlayBuilds);
  };
+ /** R4.4: the believed position of each cup as a wireframe cup (the real cup stays solid), a dot where it was observed and the link between them. Drawn only when the report has the stream at the cursor; rebuilt only when that data changes. */
+ let bkey='';
+ const drawBeliefs=(f:TwinFrame)=>{
+  const g=ghostsAt(f,armBase(f)),k=JSON.stringify(g,r6);if(k===bkey)return;bkey=k;free(beliefs);
+  if(g.status==='data')for(const i of g.items){
+   const cup=f.world?.scene.armCell.props.find(p=>p.propId===i.objectId)??xarmLayout.cup,geo=new THREE.CylinderGeometry(cup.radiusM,cup.radiusM,cup.heightM,20,1,true),ghost=new THREE.Mesh(geo,mat(0x7a3fb0,{wire:true}));
+   ghost.position.copy(at(i.beliefMapM[0],i.beliefMapM[1],i.beliefMapM[2]));ghost.userData.belief=i.objectId;
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(0.008,10,8),mat(0x122207));dot.position.copy(at(i.truthMapM[0],i.truthMapM[1],i.truthMapM[2]));
+   const link=new THREE.Line(new THREE.BufferGeometry().setFromPoints([ghost.position,dot.position]),new THREE.LineBasicMaterial({color:0x7a3fb0}));
+   beliefs.add(ghost,dot,link);
+  }
+  canvas.dataset.beliefs=g.status==='data'?g.items.map(i=>i.objectId).join(' '):'';canvas.dataset.beliefState=g.status;
+ };
  /** Transforms only: bodies, the arm chain, the overlays anchored to a body and the first point of its path (moved in place). */
  const pose=(p:TwinPoses)=>{
   for(const [id,b] of Object.entries(p.bodies)){
@@ -351,7 +365,7 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    const w=f.preset.project.world,size=`${w.width}x${w.height} ${f.preset.view??''}`;if(size!==floor){floor=size;home();}
    // objects without a pose of their own (cups, a cylinder arm, machines) move with the frame
    for(const {e} of drawn(f)){const o=objs.get(e.id);if(o&&e.kind!=='amr'&&!o.arm&&!e.plant)o.obj.position.copy(at(e.x,e.y,heightOf(e)));}
-   drawOverlays(f,vs);pose(displayPoses??posesOf(f));
+   drawOverlays(f,vs);drawBeliefs(f);pose(displayPoses??posesOf(f));
   },
   camera(mode){explicitCamera=mode;if(!lf)return;if(mode==='overview'){const original=lf;lf={...lf,preset:{...lf.preset,view:undefined}};home();lf=original;}else if(mode==='cell'){const original=lf;lf={...lf,preset:{...lf.preset,view:'arm_cell'}};home();lf=original;}else this.fit(lf.preset.project.entities.find(e=>e.kind==='amr')?.id??null);},
   fit(id){
@@ -361,6 +375,6 @@ export function mountTwin3d(host:HTMLElement,onSelect:(id:string)=>void,onFail:(
    controls.target.copy(s.center);camera.position.copy(s.center).addScaledVector(dir,d);userMoved=true;controls.update();render();
   },
   // the shared geometry stays parsed in the page cache, but its GPU buffers (and this renderer's dispose listeners on it) go with this view; a later view re-uploads it
-  dispose(){gone=true;loads.get(XARM)?.set?.group.traverse(o=>(o as THREE.Mesh).geometry?.dispose());free(world);free(overlays);objs.clear();anchors.clear();heads.clear();sun.dispose();ro.disconnect();controls.dispose();renderer.dispose();canvas.remove();},
+  dispose(){gone=true;loads.get(XARM)?.set?.group.traverse(o=>(o as THREE.Mesh).geometry?.dispose());free(world);free(overlays);free(beliefs);objs.clear();anchors.clear();heads.clear();sun.dispose();ro.disconnect();controls.dispose();renderer.dispose();canvas.remove();},
  };
 }

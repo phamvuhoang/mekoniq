@@ -2429,6 +2429,8 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .tw-cell.derived{stroke-dasharray:2 3}
 .tw-glyph{fill:var(--ink);font:700 12px var(--mono)}
 .tw-cup{fill:#f5f0e6;stroke:#122207;stroke-width:2}
+/* R4.4: belief dashed, truth solid, the error as the link between them */
+.tw-belief-ghost{fill:none;stroke:#7a3fb0;stroke-width:2;stroke-dasharray:4 3;pointer-events:none}.tw-belief-truth{fill:#122207;pointer-events:none}.tw-belief-link{stroke:#7a3fb0;stroke-width:1.5;pointer-events:none}
 .tw-job{fill:var(--raised);stroke:var(--muted)}
 .tw-job.attention{fill:#3a2222;stroke:var(--danger);stroke-width:2;stroke-dasharray:3 2}
 .tw-footprint{fill:#9dccff22;stroke:var(--blue);stroke-width:2}
