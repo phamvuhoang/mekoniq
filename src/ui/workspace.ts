@@ -359,9 +359,9 @@ export class TwinWorkspace {
   const delay=this.readiness?Date.parse(this.readiness.expiresAt)-Date.now():NaN;
   if(Number.isFinite(delay)&&delay>0)this.readinessExpiry=setTimeout(()=>this.paint(),Math.min(delay,30000));
  }
- /** One readiness check at a time: the runtime answers a second smoke probe while one is running with a busy code that nothing retries (a drive experiment chosen right after the preset left the page stuck on it). */
- private readinessChain:Promise<unknown>=Promise.resolve();
- private checkReadiness(p=this.readinessPreset()){const run=this.readinessChain.then(()=>this.checkReadinessNow(p),()=>this.checkReadinessNow(p));this.readinessChain=run.catch(()=>undefined);return run;}
+ /** The check in flight, if any: a drive experiment chosen right after the preset waits for it, because the runtime answers a second smoke probe while one runs with a busy code that nothing retries. Checks themselves are not queued. */
+ private readinessFlight:Promise<unknown>|null=null;
+ private checkReadiness(p=this.readinessPreset()){const run=this.checkReadinessNow(p);this.readinessFlight=run;void run.then(()=>undefined,()=>undefined).then(()=>{if(this.readinessFlight===run)this.readinessFlight=null;});return run;}
  private async checkReadinessNow(p:TwinPreset){
   const request=++this.readinessRequest;this.readiness=null;this.watchReadinessExpiry();
   if(!this.health?.features?.readiness||!this.rt.paired||!this.rt.readiness)return;
@@ -826,7 +826,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const draft=this.driveDraft??(this.driveDraft=defaultDraft(catalog,ctx));
   if(id==='twin-drive-experiment'){try{this.preset=selectDriveExperiment(this.preset,value);}catch{return true;}this.driveCheck={state:'idle',codes:[]};
    // the cell's experiment is a request field and changes nothing the runtime was asked to ready; a mobile run's is in its engineering project, which is compiled again
-   if(this.preset.id!=='mujoco-cell'){this.readiness=null;void this.checkReadiness(this.preset).then(()=>this.rerender());}this.rerender();return true;}
+   if(this.preset.id!=='mujoco-cell'){this.readiness=null;const chosen=this.preset;void (this.readinessFlight??Promise.resolve()).then(()=>undefined,()=>undefined).then(()=>chosen===this.preset?this.checkReadiness(chosen):undefined).then(()=>this.rerender());}this.rerender();return true;}
   if(id==='twin-df-fault'){const item=catalog.find(f=>f.id===value);if(item)this.driveDraft={faultId:item.id,targetId:faultTargets(item,ctx)[0]??'',atMs:draft.atMs,params:defaultParams(item)};}
   else if(id==='twin-df-target')this.driveDraft={...draft,targetId:value};
   // a text field's change fires on blur, which is the mousedown of the next click: repainting there would swallow that click (the Add button), so the value is only kept
