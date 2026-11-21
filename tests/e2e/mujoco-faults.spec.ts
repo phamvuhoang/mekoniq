@@ -19,6 +19,10 @@ test('drive fault studio: compose, check (and a refused overlap that creates no 
  await openScenarioPicker(page);await page.locator('[data-action="twin-preset"][data-value="mujoco-payload"]').click();await openInspector(page,'setup');
  const studio=page.getByTestId('drive-faults');await expect(studio).toBeVisible();
  if(!await studio.evaluate((d:HTMLDetailsElement)=>d.open))await studio.locator('summary').click();
+ // a schedule without a drive experiment cannot be checked or run (the run would have no drive); choosing one lifts that
+ await studio.locator('[data-action="twin-drivefault-add"]').click();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(1);
+ await expect(page.getByTestId('drive-fault-check-button')).toBeDisabled();await expect(page.getByTestId('drive-fault-message')).toContainText('FAULT_BACKEND_UNSUPPORTED');await expect(page.locator('[data-action="twin-run"]').first()).toBeDisabled();
+ await studio.locator('[data-action="twin-drivefault-clear"]').click();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(0);
  // the runtime offers the catalog; the drive experiment is the run's, chosen here (the mobile run's lives in its engineering project)
  await page.getByTestId('drive-experiment').selectOption('drive-nominal-v1');
  await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled({timeout:90000});
@@ -41,6 +45,7 @@ test('drive fault studio: compose, check (and a refused overlap that creates no 
  // two entries that overlap on one wheel: the runtime refuses with its code, per entry kind, and still no run
  await page.locator('#twin-df-p-durationMs').fill('300');await page.locator('#twin-df-at').fill('12100');await studio.locator('[data-action="twin-drivefault-add"]').click();
  await expect(studio.locator('.fault-timeline-list li')).toHaveCount(2);
+ await expect(page.getByTestId('drive-fault-check')).toHaveAttribute('data-state','idle');   // the verdict was for one entry, not for this schedule
  await studio.getByTestId('drive-fault-check-button').click();
  await expect(page.getByTestId('drive-fault-check')).toHaveAttribute('data-state','refused');await expect(page.getByTestId('drive-fault-check')).toContainText('FAULT_OVERLAP');
  expect(creates.length).toBe(0);

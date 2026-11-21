@@ -6,7 +6,7 @@ import {storyCameraTransition,type StoryCameraState,type StoryCamera} from '../t
 import {physicsHtml,physicsTimeline} from '../reports/physics';
 import {loadPayloadBundle,selectPayloadExperiment,PAYLOAD_EXPERIMENT_IDS,experimentLabel,MUJOCO_MOBILE_SET,type PayloadBundle} from '../twin/payload';
 import {faultScheduleEditor,draftEntry,driveFaultStudio,faultCodeWords,type ScheduleDraft} from './fault-schedule';
-import {faultCatalogOf,driveFaultContext,defaultDraft,defaultParams,draftToEntry,faultTargets,parseDriveScheduleFile,serialiseSchedule,MAX_DRIVE_FAULTS,type DriveFaultDraft,type DriveFaultEntry} from '../scenarios/drive-faults';
+import {visibleCheck,driveBlock,type DriveCheck,faultCatalogOf,driveFaultContext,defaultDraft,defaultParams,draftToEntry,faultTargets,parseDriveScheduleFile,serialiseSchedule,MAX_DRIVE_FAULTS,type DriveFaultDraft,type DriveFaultEntry} from '../scenarios/drive-faults';
 import {selectDriveExperiment,driveExperimentOf} from '../twin/payload';
 import {editSchedule} from '../scenarios/fault-schedule';
 import {ProjectStore} from '../project/store';
@@ -105,7 +105,7 @@ export class TwinWorkspace {
  private study:SemanticStudyView|null=null;private studyTab:'run'|'study'='run';
  private replayPending=false;private replay:ReplayState|null=null;private replayTimer:ReturnType<typeof setInterval>|undefined;private previous:RunReport|null=null;
  // R4 V09: the drive fault schedule is an input of the next run of a MuJoCo drive preset, held here (never in the project), with the check the runtime last gave it
- private driveFaults:DriveFaultEntry[]=[];private driveFor='';private driveDraft:DriveFaultDraft|null=null;private driveOpen=false;private driveMessage:string|null=null;private driveCheck:{state:'idle'|'checking'|'ok'|'refused';codes:string[];error?:string}={state:'idle',codes:[]};
+ private driveFaults:DriveFaultEntry[]=[];private driveFor='';private driveDraft:DriveFaultDraft|null=null;private driveOpen=false;private driveMessage:string|null=null;private driveCheck:DriveCheck={state:'idle',codes:[]};private runDrive:DriveFaultEntry[]|undefined;
  private scheduleOpen=false;private scheduleDraft:ScheduleDraft={faultId:'reboot',targetId:'',trigger:'elapsed_sim_ms',value:'1000',durationMs:'1000'};private projects=new ProjectStore();
  /** IR-SIM runs: the run bundle's compiled navigation scene, loaded once per run from the bundle the runtime locked. */
  private exportBusy=false;private exportAbort:AbortController|null=null;private world:WorldDrawing|null=null;private worldView:RunView|null=null;private worldReceived=0;private worldBusy=false;private worldAbort:AbortController|null=null;private worldDrawing:Omit<WorldDrawing,'record'>|null=null;private worldRun='';private worldBoot='';private worldReason='';private storyPhase='';private storyCamera:StoryCameraState={camera:'overview',follow:false,phaseFollow:false,instant:false};
@@ -340,15 +340,19 @@ export class TwinWorkspace {
  private reportMissing(){const v=this.view;return v&&!this.replay&&!this.archived&&['completed','failed','cancelled'].includes(v.run.status)&&!this.reportFits()&&!this.reportPending()
   ?`<p class="field-error" data-testid="report-missing" role="status">${tr('Trang chưa có báo cáo khớp với lần chạy này (tải báo cáo không thành công hoặc báo cáo cũ hơn): lưu, xuất và xem lại cần báo cáo đó.','この実行に一致するレポートがページにありません(取得に失敗したか、古いレポートです)。保存・書き出し・再生にはそのレポートが必要です。','The page has no report that matches this run (its fetch failed, or it is older): saving, export and replay need that report.')}</p><button class="button secondary" data-action="twin-report-reload"${this.busy?' disabled':''}>${icon('rotate',16)}${tr('Tải lại báo cáo','レポートを再読み込み','Reload report')}</button>`:'';}
  private payloadSettings(){if(this.preset.id==='mujoco-cell')return `<p><b>${tr('Dừng và tiếp tục xử lý','停止と対応の継続','Stop and continue handling')}</b> · ${tr('Tạm dừng / tiếp tục chỉ với trạng thái Source đã biết. Kết quả chưa rõ: đối soát hoặc lần chạy mới; không gửi lại lệnh.','一時停止・再開は既知のSource状態のみ。不明な結果は照合または新しい実行で対応し、再送しません。','Pause/resume requires a known Source state. Unknown outcomes require reconciliation or a new run; commands are not resent.')}</p><label for="twin-world-experiment">${tr('Thử một thay đổi · lần chạy mới','変更を試す · 新しい実行','Try one change · new run')}</label><select id="twin-world-experiment" ${this.busy||this.playing?'disabled':''}>${WORLD_EXPERIMENTS.map(id=>`<option value="${id}" ${id===this.preset.worldExperimentId?'selected':''} ${this.health?.capabilities?.includes('sim3d_world_experiments_v1')&&this.health.worldExperiments?.some(e=>e.id===id&&e.requiresNewRun)?'':'disabled'}>${esc(worldExperimentLabel(id))}</option>`).join('')}</select><p class="field-help">${tr('Tác động đã đăng ký: cốc [30,0,30] N trong 10 substep khi vận chuyển; dock 2000 N trục X trong 10 substep trước nhả. Đổi đầu vào tạo lần chạy mới.','登録外力:輸送中カップに[30,0,30]Nを10サブステップ、解放前ドックにX方向2000Nを10サブステップ。入力変更は新しい実行です。','Registered impact: cup [30,0,30] N for 10 substeps during transport; dock 2000 N map X for 10 substeps before release. Changed inputs create a new run.')}</p>`;if(this.preset.id!=='mujoco-payload')return '';return `<label for="twin-payload-experiment">${tr('Thí nghiệm cho lần chạy mới','新しい実行の実験','Experiment for new run')}</label><select id="twin-payload-experiment" ${this.busy||this.playing||this.replay||this.archived?'disabled':''}>${PAYLOAD_EXPERIMENT_IDS.map(id=>`<option value="${id}" ${id===this.preset.engineering?.project.mujocoExperimentId?'selected':''}>${esc(experimentLabel(id))}</option>`).join('')}</select><p class="field-help">${tr('Đổi lựa chọn tạo lần chạy mới. Tốc độ phát × chỉ đổi nhịp hiển thị, không đổi giới hạn vận tốc.','選択変更は新しい実行になります。再生速度×はペースのみで速度上限を変えません。','A changed selection creates a new run. Playback × changes pacing; it does not change velocity caps.')}</p>`;}
+ /** What the runtime is asked, and what a verdict is bound to. */
+ private driveBody(){return {driveFaultSchedule:structuredClone(this.driveFaults),backendSetId:this.preset.backendSetId,scenarioId:this.preset.scenarioId,...driveExperimentOf(this.preset)&&this.preset.id==='mujoco-cell'?{driveExperimentId:driveExperimentOf(this.preset)!}:{}};}
+ /** Why a run with the studio's schedule cannot be made (no drive experiment chosen), or null. */
+ private driveBlocked(){return ['mujoco-payload','mujoco-cell'].includes(this.preset.id)&&this.driveFor===this.preset.id?driveBlock(this.driveFaults.length,driveExperimentOf(this.preset)):null;}
  /** The studio of drive faults for the current preset: empty where the runtime does not run drive faults. */
  private driveStudio():string{
   const catalog=faultCatalogOf(this.health),ctx=driveFaultContext(this.preset.id);
   if(this.driveFor!==this.preset.id){this.driveFor=this.preset.id;this.driveFaults=[];this.driveDraft=null;this.driveMessage=null;this.driveCheck={state:'idle',codes:[]};}
   if(!catalog.length||!ctx)return `<p class="field-help" data-testid="drive-faults-unavailable">${tr('Runtime này không chạy lỗi drive (không có danh mục lỗi trong health).','このランタイムはドライブ障害を実行しません(healthにカタログなし)。','This runtime does not run drive faults (no fault catalog in health).')}</p>`;
   const draft=this.driveDraft&&catalog.some(f=>f.id===this.driveDraft!.faultId)?this.driveDraft:(this.driveDraft=defaultDraft(catalog,ctx));
-  return driveFaultStudio({open:this.driveOpen,catalog,ctx,draft,entries:this.driveFaults,experiment:driveExperimentOf(this.preset),disabled:this.busy||this.playing||!!this.replay||this.archived,check:this.driveCheck,message:this.driveMessage});
+  return driveFaultStudio({open:this.driveOpen,catalog,ctx,draft,entries:this.driveFaults,experiment:driveExperimentOf(this.preset),disabled:this.busy||this.playing||!!this.replay||this.archived,check:visibleCheck(this.driveCheck,JSON.stringify(this.driveBody())),message:this.driveBlocked()?`${this.driveBlocked()} · ${faultCodeWords(this.driveBlocked()!)}`:this.driveMessage,blocked:!!this.driveBlocked()});
  }
- private runSettings(){const speed=this.preset.project.entities.find(e=>e.kind==='amr')?.speedLimitMps??0.5;return `${this.payloadSettings()}<label>${tr('Môi trường cho lần chạy mới','新しい実行の環境','Environment for new run')}<select id="twin-backend-set" ${this.busy||this.playing||this.replay||this.archived?'disabled':''}>${(this.health?backendSetOptions(this.health):[{id:this.preset.backendSetId,mode:this.preset.mode??'mock',selectable:true,reasons:[]}]).map(s=>`<option value="${esc(s.id)}" ${s.id===this.preset.backendSetId?'selected':''} ${s.selectable||s.id===this.preset.backendSetId?'':'disabled'}>${esc(s.id)} · ${esc(s.mode)}${s.reasons.length?` · ${tr('không khả dụng','利用不可','unavailable')}: ${esc(s.reasons.join(', '))}`:''}</option>`).join('')}</select></label>${['mujoco-payload','mujoco-cell'].includes(this.preset.id)?this.driveStudio():faultScheduleEditor(this.preset.project,this.scheduleDraft,this.busy||this.playing||!!this.replay||this.archived,this.preset.mode??'mock',this.scheduleOpen)}<div class="twin-settings">${['mujoco-payload','mujoco-cell'].includes(this.preset.id)?'':`<label for="twin-speed-limit">${tr('Giới hạn AMR cho lần chạy mới (m/s)','新しい実行のAMR速度上限(m/s)','AMR limit for new runs (m/s)')}</label><input id="twin-speed-limit" type="number" min="0.01" max="0.5" step="0.01" value="${esc(speed)}">`}<button class="button quiet" data-action="twin-run" ${this.busy||this.playing||!!this.replay||this.archived||!this.rt.paired||this.pinBlock()||(this.preset.id==='mujoco-payload'||this.preset.id==='mujoco-cell'&&!this.view)&&!ready(preflight(this.preset,this.health,this.rt.paired,this.readiness))?'disabled':''}>${tr('Chạy với đầu vào mới','変更した入力で実行','Run with edited inputs')}</button>${this.view?`<button class="button quiet" data-action="twin-reset" ${this.busy||this.playing||this.replay||this.pinBlock()?'disabled':''}>${icon('rotate',16)}${tr('Đặt lại (lần chạy mới)','リセット(新しい実行)','Reset (new run)')}</button>`:''}${this.rt.paired?(this.rt.recoverableRunIds??[]).filter(id=>!this.control.isBench(id)).map(id=>`<button class="text-button" data-action="twin-reclaim" data-value="${esc(id)}" ${this.busy?'disabled':''}>${tr('Mở lại chỉ xem/đối soát','表示・照合のみで再開','Reopen for view/reconcile')} · ${esc(id.slice(0,8))}</button>`).join(''):''}</div>`;}
+ private runSettings(){const speed=this.preset.project.entities.find(e=>e.kind==='amr')?.speedLimitMps??0.5;return `${this.payloadSettings()}<label>${tr('Môi trường cho lần chạy mới','新しい実行の環境','Environment for new run')}<select id="twin-backend-set" ${this.busy||this.playing||this.replay||this.archived?'disabled':''}>${(this.health?backendSetOptions(this.health):[{id:this.preset.backendSetId,mode:this.preset.mode??'mock',selectable:true,reasons:[]}]).map(s=>`<option value="${esc(s.id)}" ${s.id===this.preset.backendSetId?'selected':''} ${s.selectable||s.id===this.preset.backendSetId?'':'disabled'}>${esc(s.id)} · ${esc(s.mode)}${s.reasons.length?` · ${tr('không khả dụng','利用不可','unavailable')}: ${esc(s.reasons.join(', '))}`:''}</option>`).join('')}</select></label>${['mujoco-payload','mujoco-cell'].includes(this.preset.id)?this.driveStudio():faultScheduleEditor(this.preset.project,this.scheduleDraft,this.busy||this.playing||!!this.replay||this.archived,this.preset.mode??'mock',this.scheduleOpen)}<div class="twin-settings">${['mujoco-payload','mujoco-cell'].includes(this.preset.id)?'':`<label for="twin-speed-limit">${tr('Giới hạn AMR cho lần chạy mới (m/s)','新しい実行のAMR速度上限(m/s)','AMR limit for new runs (m/s)')}</label><input id="twin-speed-limit" type="number" min="0.01" max="0.5" step="0.01" value="${esc(speed)}">`}<button class="button quiet" data-action="twin-run" ${this.busy||this.playing||!!this.replay||this.archived||!this.rt.paired||this.pinBlock()||!!this.driveBlocked()||(this.preset.id==='mujoco-payload'||this.preset.id==='mujoco-cell'&&!this.view)&&!ready(preflight(this.preset,this.health,this.rt.paired,this.readiness))?'disabled':''}>${tr('Chạy với đầu vào mới','変更した入力で実行','Run with edited inputs')}</button>${this.view?`<button class="button quiet" data-action="twin-reset" ${this.busy||this.playing||this.replay||this.pinBlock()?'disabled':''}>${icon('rotate',16)}${tr('Đặt lại (lần chạy mới)','リセット(新しい実行)','Reset (new run)')}</button>`:''}${this.rt.paired?(this.rt.recoverableRunIds??[]).filter(id=>!this.control.isBench(id)).map(id=>`<button class="text-button" data-action="twin-reclaim" data-value="${esc(id)}" ${this.busy?'disabled':''}>${tr('Mở lại chỉ xem/đối soát','表示・照合のみで再開','Reopen for view/reconcile')} · ${esc(id.slice(0,8))}</button>`).join(''):''}</div>`;}
  private readinessPreset(){return this.view?.run.status==='ready'&&this.runPreset?this.runPreset:this.resolve(this.preset);}
  private watchReadinessExpiry(){
   clearTimeout(this.readinessExpiry);
@@ -437,6 +441,7 @@ export class TwinWorkspace {
   // a re-render (e.g. the health probe landing) must not wipe a code being typed; restored in mounted(), never written to markup
   this.tokenDraft=(document.getElementById('twin-pair-token') as HTMLInputElement|null)?.value??this.tokenDraft;
   this.addressDraft=(document.getElementById('twin-runtime-url') as HTMLInputElement|null)?.value??this.addressDraft;
+  this.readDriveFields();
   const f=this.frame(),ents=sceneEntities(f),sel=this.vs.selected,insp=inspect(f,sel,f.seen??this.seen),p=f.preset;
   // IR-SIM runs add safety/observed/scan layers, each with its provenance; other runs keep the four legacy layers
   const shown=LAYERS.filter(l=>f.navigation||!['safety','observed','scan'].includes(l));
@@ -591,7 +596,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   }
  }
  private async retire(){if(this.view&&!this.archived&&this.rt.archive&&this.retired!==this.view.run.id){this.streams?.close();this.streams=null;clearInterval(this.ticker);await this.rt.archive(this.view.run.id);this.retired=this.view.run.id;}}
- private async create(p:TwinPreset,start=true){
+ private async create(p:TwinPreset,start=true,faults?:readonly DriveFaultEntry[]){
   if(!this.health)throw new TwinRuntimeError('RUNTIME_UNAVAILABLE',[],0);
   const mismatch=this.pinBlock();if(mismatch)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',mismatch,409);// never a run on a runtime the Lab is not pinned to
   // a finished run still owns the host's one Webots slot until it is archived: retire it before readiness, or the new run is refused WEBOTS_CAPACITY
@@ -603,10 +608,14 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
    this.readiness=snapshot;this.watchReadinessExpiry();
    if(!ready(preflight(p,this.health,this.rt.paired,snapshot)))throw new TwinRuntimeError('RUNTIME_NOT_READY',snapshot.checks.flatMap(c=>c.reasonCodes),422);
   }
+  // the schedule of this run is fixed here (a rerun passes the one its run had; a new run takes the studio's) and a schedule without a drive experiment is refused before the previous run is closed
+  const studio=['mujoco-payload','mujoco-cell'].includes(p.id)&&this.driveFor===p.id;
+  const block=faults===undefined&&studio?driveBlock(this.driveFaults.length,driveExperimentOf(p)):null;if(block)throw new TwinRuntimeError(block,[],0);
+  this.runDrive=faults?structuredClone([...faults]):studio?structuredClone(this.driveFaults):undefined;
   await this.settlePrevious();
   this.worldAbort?.abort();this.worldAbort=null;this.worldBusy=false;this.exportAbort?.abort();this.clearWorld();this.gen++;this.payloadCancelPaused=false;this.archived=false;this.view=null;this.report=null;this.seen={};this.runPreset={...p,project:structuredClone(p.project)};this.stopReplay();this.replay=null;this.navigation=null;this.payloadBundle=null;const token=++this.sceneLoad;
   const ref=this.refOf(p);if(ref){if(p.backendSetId===MUJOCO_MOBILE_SET)this.payloadBundle=await loadPayloadBundle(this.rt,ref.bundleDigest).catch(()=>null);const s=await loadNavigationScene(this.rt,ref.bundleDigest).catch(()=>null);if(token===this.sceneLoad)this.navigation=s;}
-  this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';const v=await this.current(this.rt.create(requestForPreset(p,['mujoco-payload','mujoco-cell'].includes(p.id)&&this.driveFor===p.id?this.driveFaults:undefined),{sourceCommit:this.health.sourceCommit,schemaHash:this.health.schemaHash}));this.pinMismatch=null;
+  this.world=null;this.worldView=null;this.worldDrawing=null;this.worldRun='';const v=await this.current(this.rt.create(requestForPreset(p,this.runDrive),{sourceCommit:this.health.sourceCommit,schemaHash:this.health.schemaHash}));this.pinMismatch=null;
   if(p.id==='mujoco-payload'&&v.lockedInput?.engineering)this.runPreset={...this.runPreset!,project:structuredClone(v.lockedInput.engineering.runtimeProjection.project),assets:structuredClone(v.lockedInput.engineering.runtimeProjection.assets) as TwinPreset['assets']};
   await this.apply(v);this.rerender();this.openStreams(v);void this.refreshWorld();if(start){await this.act('start');if(this.clock()?.step&&p.id!=='mujoco-payload'&&p.id!=='mujoco-cell')await this.act('step',{ticks:STEP_TICKS});}
  }
@@ -722,10 +731,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
    const catalog=faultCatalogOf(this.health),ctx=driveFaultContext(this.preset.id);if(!catalog.length||!ctx)return;
    this.driveOpen=true;
    if(action==='twin-drivefault-add'){
-    // the fields are read where they are: a click that follows an edit must not depend on the edit's change event having been handled first
-    const field=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value;
-    const base=this.driveDraft??defaultDraft(catalog,ctx),item=catalog.find(f=>f.id===(field('twin-df-fault')??base.faultId))??catalog.find(f=>f.id===base.faultId);
-    if(item)this.driveDraft={faultId:item.id,targetId:field('twin-df-target')??base.targetId,atMs:field('twin-df-at')??base.atMs,params:Object.fromEntries(Object.keys(item.params).map(k=>[k,field(`twin-df-p-${k}`)??base.params[k]??'']))};
+    this.readDriveFields();   // the fields are read where they are: a click that follows an edit must not depend on the edit's change event having been handled first
     const r=draftToEntry(this.driveDraft??defaultDraft(catalog,ctx),catalog);
     if(!r.ok)return this.driveRefuse(r.code);
     if(this.driveFaults.length>=MAX_DRIVE_FAULTS)return this.driveRefuse('FAULT_SCHEDULE_TOO_LONG');
@@ -736,9 +742,10 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
    if(action==='twin-drivefault-export'){const url=URL.createObjectURL(new Blob([serialiseSchedule(this.driveFaults)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='drive-fault-schedule.json';a.click();URL.revokeObjectURL(url);return;}
    if(action==='twin-drivefault-check'){
     if(!this.rt.checkDriveFaults||!this.driveFaults.length||this.driveCheck.state==='checking')return;
-    const body={driveFaultSchedule:structuredClone(this.driveFaults),backendSetId:this.preset.backendSetId,scenarioId:this.preset.scenarioId,...driveExperimentOf(this.preset)&&this.preset.id==='mujoco-cell'?{driveExperimentId:driveExperimentOf(this.preset)!}:{}},epoch=this.gen;
-    this.driveCheck={state:'checking',codes:[]};this.rerender();
-    return void this.rt.checkDriveFaults(body).then(r=>{if(epoch!==this.gen)return;this.driveCheck=r.ok?{state:'ok',codes:[]}:{state:'refused',codes:r.codes,error:r.error};this.rerender();}).catch(e=>{if(epoch!==this.gen)return;this.driveCheck={state:'idle',codes:[]};this.driveMessage=e instanceof TwinRuntimeError?`${e.code}${e.reasonCodes.length?`: ${e.reasonCodes.join(', ')}`:''}`:String(e);this.rerender();});
+    if(this.driveBlocked())return this.rerender();
+    const body=this.driveBody(),key=JSON.stringify(body),epoch=this.gen;
+    this.driveCheck={state:'checking',codes:[],key};this.rerender();
+    return void this.rt.checkDriveFaults(body).then(r=>{if(epoch!==this.gen)return;this.driveCheck=r.ok?{state:'ok',codes:[],key}:{state:'refused',codes:r.codes,error:r.error,key};this.rerender();}).catch(e=>{if(epoch!==this.gen)return;this.driveCheck={state:'idle',codes:[]};this.driveMessage=e instanceof TwinRuntimeError?`${e.code}${e.reasonCodes.length?`: ${e.reasonCodes.join(', ')}`:''}`:String(e);this.rerender();});
    }
   }
   if(action==='twin-fault-jump'&&this.report&&!this.busy){
@@ -773,9 +780,9 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   }
   if(this.replay||this.archived)return;
   if(action==='twin-run')return void this.call(()=>this.create(this.resolve(this.preset)));
-  if(action==='twin-reset')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!,false)):undefined;
+  if(action==='twin-reset')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!,false,this.runDrive??[])):undefined;
   if(action==='twin-start')return void this.call(()=>this.act('start'));
-  if(action==='twin-rerun')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!)):undefined;
+  if(action==='twin-rerun')return this.view&&this.runPreset?void this.call(()=>this.create(this.runPreset!,true,this.runDrive??[])):undefined;
   if(!this.view)return;
   if(this.view.controlAccess&&!['twin-reconcile','twin-confirm-cancel','twin-confirm-ok'].includes(action))return;
   if(action==='twin-step'&&this.clock()?.step)return void this.call(()=>this.act('step',{ticks:STEP_TICKS}));
@@ -799,6 +806,13 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   this.health=null;this.healthChecked=false;this.readiness=null;this.pinMismatch=null;
  }
  private knownReconciliationTargets(){return this.view?[...new Set(this.view.attention.map(a=>reconciliationSubject(a,this.view!)).filter((id):id is string=>id!==null))]:[];}
+ /** Whatever sits in the studio's fields now becomes the draft: an edit not yet committed by a change event must survive a repaint and be what Add uses. */
+ private readDriveFields(){
+  const catalog=faultCatalogOf(this.health),ctx=driveFaultContext(this.preset.id),field=(id:string)=>(document.getElementById(id) as HTMLInputElement|HTMLSelectElement|null)?.value;
+  if(!catalog.length||!ctx||field('twin-df-fault')===undefined)return;
+  const base=this.driveDraft??defaultDraft(catalog,ctx),item=catalog.find(f=>f.id===field('twin-df-fault'));if(!item)return;
+  this.driveDraft={faultId:item.id,targetId:field('twin-df-target')??base.targetId,atMs:field('twin-df-at')??base.atMs,params:Object.fromEntries(Object.keys(item.params).map(k=>[k,field(`twin-df-p-${k}`)??(item.id===base.faultId?base.params[k]:undefined)??'']))};
+ }
  /** A refusal of the studio's own, shown under the schedule (the runtime's refusals come from Check). */
  private driveRefuse(code:string){this.driveMessage=`${code} · ${faultCodeWords(code)}`;this.driveOpen=true;this.rerender();}
  private driveChange(id:string,value:string):boolean{

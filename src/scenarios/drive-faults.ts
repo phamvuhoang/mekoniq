@@ -82,3 +82,10 @@ export function parseDriveScheduleFile(text:string,catalog:FaultCatalog):{ok:tru
  }
  return {ok:true,entries:out};
 }
+
+/** The runtime's verdict on a schedule, with the body it was asked about. */
+export interface DriveCheck {state:'idle'|'checking'|'ok'|'refused';codes:string[];error?:string;key?:string}
+/** What the studio may show: a verdict is for one exact body (schedule, experiment, set); after any edit, a check that was answered or is still in flight says nothing about the schedule now listed. */
+export const visibleCheck=(c:DriveCheck,key:string):DriveCheck=>c.state==='idle'||c.key===key?c:{state:'idle',codes:[]};
+/** A schedule needs a drive experiment: without one the run has no drive and the runtime refuses it (after the previous run was already closed by the new one). */
+export const driveBlock=(entries:number,experiment:string|undefined):string|null=>entries>0&&!experiment?'FAULT_BACKEND_UNSUPPORTED':null;

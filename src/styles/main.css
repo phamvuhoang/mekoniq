@@ -2745,4 +2745,4 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 @media (max-width: 520px) { .fault-timeline-plot, .fault-timeline .fault-axis { display: none; } .fault-timeline[data-empty="true"] .fault-timeline-list { display: block; } }
 [data-testid="fault-evidence"] .link-button { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; text-align: left; }
 [data-testid="fault-evidence"][data-violated="true"] h3 { color: var(--danger); }
-[data-testid="fault-evidence"] .pill[data-verdict="detected_late"], [data-testid="fault-evidence"] .pill[data-verdict="not_detected"] { border-color: var(--danger); }
+[data-testid="fault-evidence"] .pill[data-verdict="detected_late"] { border-color: var(--danger); }   /* not_detected is a valid result for the faults the oracle does not require */

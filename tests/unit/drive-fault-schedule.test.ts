@@ -39,3 +39,15 @@ test('the schedule file round-trips, and a file that is not a schedule is refuse
   JSON.stringify({schemaVersion:1,documentType:'drive-fault-schedule',entries:[e1.entry,e1.entry]})])
   expect(parseDriveScheduleFile(bad,cat),bad.slice(0,60)).toMatchObject({ok:false});
 });
+
+import {driveBlock,visibleCheck} from '../../src/scenarios/drive-faults';
+test('a runtime verdict is shown only for the exact body it was given for: any edit makes it idle again',()=>{
+ const ok={state:'ok' as const,codes:[],key:'A'},refused={state:'refused' as const,codes:['FAULT_OVERLAP'],error:'INVALID_FAULT_SCHEDULE',key:'A'};
+ expect(visibleCheck(ok,'A')).toBe(ok);expect(visibleCheck(refused,'A')).toBe(refused);
+ expect(visibleCheck(ok,'B')).toEqual({state:'idle',codes:[]});expect(visibleCheck(refused,'B')).toEqual({state:'idle',codes:[]});
+ const checking={state:'checking' as const,codes:[],key:'A'};expect(visibleCheck(checking,'B')).toEqual({state:'idle',codes:[]});expect(visibleCheck(checking,'A')).toBe(checking);
+ expect(visibleCheck({state:'idle',codes:[]},'A')).toEqual({state:'idle',codes:[]});
+});
+test('a schedule without a drive experiment cannot be checked or run: the run would have no drive, and the request would be refused after the previous run was already closed',()=>{
+ expect(driveBlock(1,undefined)).toBe('FAULT_BACKEND_UNSUPPORTED');expect(driveBlock(1,'drive-nominal-v1')).toBeNull();expect(driveBlock(0,undefined)).toBeNull();expect(driveBlock(3,'')).toBe('FAULT_BACKEND_UNSUPPORTED');
+});

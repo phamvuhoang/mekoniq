@@ -27,7 +27,7 @@ import {DRIVE_FAULT_LAYERS,faultTargets,type DriveFaultDraft,type DriveFaultEntr
 import {faultTimeline,layerName} from './fault-timeline';
 import {DRIVE_EXPERIMENT_IDS,driveExperimentLabel} from '../twin/payload';
 export interface DriveStudioState {open:boolean;catalog:FaultCatalog;ctx:DriveFaultContext;draft:DriveFaultDraft;entries:readonly DriveFaultEntry[];experiment:string|undefined;disabled:boolean;
- check:{state:'idle'|'checking'|'ok'|'refused';codes:string[];error?:string};message:string|null}
+ check:{state:'idle'|'checking'|'ok'|'refused';codes:string[];error?:string};message:string|null;/** no drive experiment chosen: nothing can be checked or run */blocked?:boolean}
 /** The runtime's reason codes in words; an unknown code is shown as itself. */
 export const faultCodeWords=(code:string)=>({FAULT_OVERLAP:tr('hai mục cùng loại chồng thời gian trên cùng đối tượng','同じ種類の2件が同じ対象で時間的に重なる','two entries of one kind overlap in time on one target'),
  FAULT_PARAM_INVALID:tr('tham số ngoài biên hoặc thiếu','パラメータが範囲外または不足','a parameter is out of bounds or missing'),FAULT_TARGET_INVALID:tr('đối tượng không đúng loại hoặc không có','対象の種類が違う、または存在しない','the target is of the wrong kind or does not exist'),
@@ -53,7 +53,7 @@ ${experiment}
 <label>${tr('Bắt đầu (ms mô phỏng)','開始(模擬ms)','Start (simulated ms)')}<input id="twin-df-at" type="number" min="0" max="3600000" step="20" value="${esc(s.draft.atMs)}" ${off}></label>${params}
 <button type="button" class="button quiet" data-action="twin-drivefault-add" ${off}>${tr('Thêm lỗi','追加','Add fault')}</button></fieldset>
 ${faultTimeline(s.entries,s.catalog,horizon,{removable:!s.disabled})}
-<div class="run-actions" role="group" aria-label="${tr('Lịch lỗi drive','ドライブ障害予定','Drive fault schedule')}"><button type="button" class="button" data-action="twin-drivefault-check" data-testid="drive-fault-check-button" ${s.entries.length&&!s.disabled&&s.check.state!=='checking'?'':'disabled'}>${tr('Kiểm tra','確認','Check')}</button>
+<div class="run-actions" role="group" aria-label="${tr('Lịch lỗi drive','ドライブ障害予定','Drive fault schedule')}"><button type="button" class="button" data-action="twin-drivefault-check" data-testid="drive-fault-check-button" ${s.entries.length&&!s.disabled&&!s.blocked&&s.check.state!=='checking'?'':'disabled'}>${tr('Kiểm tra','確認','Check')}</button>
 <button type="button" class="button quiet" data-action="twin-drivefault-export" ${s.entries.length?'':'disabled'}>${tr('Xuất lịch JSON','予定JSONを出力','Export schedule JSON')}</button>
 <label class="button quiet file-button">${tr('Nhập lịch JSON','予定JSONを読む','Import schedule JSON')}<input id="twin-drivefault-import" type="file" accept="application/json,.json" ${off}></label>
 <button type="button" class="text-button" data-action="twin-drivefault-clear" ${s.entries.length&&!s.disabled?'':'disabled'}>${tr('Xóa hết','すべて削除','Clear all')}</button></div>${check}${s.message?`<p class="field-error" role="alert" data-testid="drive-fault-message">${esc(s.message)}</p>`:''}</details>`;
