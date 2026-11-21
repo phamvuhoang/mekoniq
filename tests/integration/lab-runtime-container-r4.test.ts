@@ -21,7 +21,7 @@ const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const runId=randomUUID(),names:string[]=[];
 afterAll(()=>{for(const n of names)docker(['rm','-f',n]);});
 
-describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
+describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1, R4.2 and R4.4',()=>{
  test('CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, a scheduled drive fault reports its receipts, the three-cup tray serves 3, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only',async()=>{
   const inspected=docker(['image','inspect',image]);
   if(!inspected.ok)throw new Error(`IMAGE_MISSING: ${image} does not exist locally; build it with deploy/lab-runtime/build.sh ${image}`);
@@ -149,6 +149,63 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1 and R4.2',()=>{
    expect(docker(['diff',name]).out.split('\n').filter(l=>l&&!/^[CA] \/usr(\/local(\/share(\/ca-certificates(\/orbstack-root\.crt)?)?)?)?$/.test(l))).toEqual([]);
    expect(Number(docker(['exec',name,'id','-u']).out)).toBeGreaterThan(0);
    const stopped=docker(['stop','-t','20',name]);expect(stopped.ok).toBe(true);expect(docker(['inspect','--format','{{.State.Running}} {{.State.ExitCode}}',name]).out).toBe('false 0');
+  }finally{docker(['rm','-f',name]);await rm(exportDir,{recursive:true,force:true});}
+  expect(docker(['ps','-a','-q','--filter',`label=${LABEL}=${runId}`]).out).toBe('');
+ },1_800_000);
+ test('CLD01 (R4.4): MJ-CELL-BV01 at belief_estimated with the nominal perception profile and the recovery policy completes and serves 2 inside the image, its report carries the perception evidence, and a belief mode on the arm-only scenario is refused',async()=>{
+  const inspected=docker(['image','inspect',image]);
+  if(!inspected.ok)throw new Error(`IMAGE_MISSING: ${image} does not exist locally; build it with deploy/lab-runtime/build.sh ${image}`);
+  const [info]=JSON.parse(inspected.out);
+  const host={os:type(),machine:machine(),daemonPlatform:docker(['version','--format','{{.Server.Os}}/{{.Server.Arch}}']).out};
+  assertR4Image(host,info,head);
+  const imageId=info.Id;
+  expect(imageId).toMatch(/^sha256:[0-9a-f]{64}$/);
+  let port=await freePort();while([1880,1884,4175,4176].includes(port))port=await freePort();
+  const key=randomBytes(20).toString('hex'),name=`mekoniq-lab-r4-${runId.slice(0,8)}`;names.push(name);
+  const exportDir=await mkdtemp(join(tmpdir(),'r4-cld01-export-'));
+  try{
+   execFileSync(process.execPath,['scripts/export-lab-runtime.mjs',exportDir],{stdio:['ignore','ignore','inherit'],timeout:120_000});
+   const manifest=JSON.parse(await readFile(join(exportDir,'manifest.json'),'utf8'));
+   expect(manifest).toMatchObject({sourceCommit:head,dirty:false});
+   // the key only through the environment of the docker client (`-e NAME` copies it), never on a command line, never printed
+   const started=docker(['run','-d','--name',name,'--label',`${LABEL}=${runId}`,'--read-only','--tmpfs','/tmp','-p',`127.0.0.1:${port}:${port}`,'-e',`PORT=${port}`,'-e','MEKONIQ_LAB_ACCESS_KEY','-e',`LAB_PUBLIC_HOST=127.0.0.1:${port}`,'-e',`LAB_ALLOW_ORIGIN=${ORIGIN}`,'-e','LAB_DATA_DIR=/tmp/runs',imageId],{MEKONIQ_LAB_ACCESS_KEY:key});
+   if(!started.ok)throw new Error(`CONTAINER_START_FAILED: ${started.err.replaceAll(key,'<key>')}`);
+   const published=docker(['port',name]).out;expect(published.split('\n').every(l=>l.includes('127.0.0.1:'))).toBe(true);   // never 0.0.0.0
+   const base=`http://127.0.0.1:${port}/lab/v2`,api=async(path:string,init:{method?:string;token?:string;body?:unknown}={})=>{
+    const r=await fetch(base+path,{method:init.method??'GET',headers:{Origin:ORIGIN,...init.body!==undefined?{'Content-Type':'application/json'}:{},...init.token?{Authorization:`Bearer ${init.token}`}:{}},...init.body!==undefined?{body:JSON.stringify(init.body)}:{}});
+    return {status:r.status,body:await r.json() as Record<string,any>};
+   };
+   let health:Record<string,any>|undefined;
+   for(const deadline=Date.now()+120_000;!health&&Date.now()<deadline;){
+    try{const r=await api('/health');if(r.status===200)health=r.body;}catch{/* not listening yet */}
+    if(!health){if(docker(['inspect','--format','{{.State.Running}}',name]).out!=='true')throw new Error(`CONTAINER_EXITED: ${docker(['logs','--tail','20',name]).out.replaceAll(key,'<key>')}`);await sleep(500);}
+   }
+   if(!health)throw new Error('HEALTH_TIMEOUT');
+   const bundle=docker(['exec',name,'sha256sum','/app/runtime.mjs']);expect(bundle.ok).toBe(true);
+   assertR4Runtime(manifest,health,bundle.out.split(/\s+/)[0]!);
+   console.log('CLD01 identity',JSON.stringify({host,image,imageId,platform:info.Os+'/'+info.Architecture,sourceCommit:head,schemaHash:manifest.schemaHash,artifactSha256:manifest.artifactSha256}));
+   expect(health.backends.filter((b:{installed:boolean})=>b.installed).map((b:{id:string})=>b.id).sort()).toEqual(['mock_amr','mock_arm','mock_coffee','mujoco_3d','mujoco_arm']);
+   const paired=await api('/sessions',{method:'POST',body:{token:key}});expect(paired.status).toBe(201);
+   const token=paired.body.sessionToken as string;
+   const project=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json','utf8'));
+   const identity={sourceCommit:health.sourceCommit,schemaHash:health.schemaHash};
+   expect(health.capabilities).toContain('sim3d_belief_grasp_v1');expect(health.graspModes.map((m:{id:string})=>m.id)).toEqual(['fixed_program','belief_ground_truth','belief_estimated']);
+   const bad=await api('/runs',{method:'POST',token,body:{project,scenarioId:'MJ-BV01',backendSetId:'engineering-mujoco-arm-v1',scenarioRevision:1,seed:42,mode:'simulation',access:'simulated',graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1',runtimeIdentity:identity}});
+   expect(bad.status).toBe(422);
+   const created=await api('/runs',{method:'POST',token,body:{project,scenarioId:'MJ-CELL-BV01',backendSetId:'engineering-mujoco-cell-v1',scenarioRevision:1,seed:7,mode:'simulation',access:'simulated',graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1',recoveryPolicyId:'pick-recovery-v1',runtimeIdentity:identity}});
+   expect(created.status,JSON.stringify(created.body).slice(0,400)).toBe(201);
+   const url=`/runs/${created.body.run.id}`;let rev=created.body.run.runRevision as number,n=0;
+   const act=async(kind:string,payload:Record<string,unknown>)=>{const r=await api(`${url}/actions`,{method:'POST',token,body:{actionId:`a-${++n}`,expectedRevision:rev,kind,payload}});expect(r.status,JSON.stringify(r.body).slice(0,300)).toBe(200);rev=r.body.run.runRevision;return r.body;};
+   let view=await act('start',{});
+   while(['running','created','paused'].includes(view.run.status)){if(view.tick>14000)throw new Error(`STEP_LIMIT at ${view.tick}`);view=await act('step',{ticks:100});}
+   const rep=await api(`${url}/report`,{token});expect(rep.status).toBe(200);
+   expect(view.run.status).toBe('completed');expect(rep.body.outcome).toMatchObject({status:'completed',served:'2'});
+   expect(rep.body.manifest.perception).toMatchObject({graspMode:'belief_estimated',profile:{id:'perception-nominal-v1'},recoveryPolicy:{id:'pick-recovery-v1'}});
+   expect(rep.body.perceptionEvidence).toMatchObject({schemaVersion:1,issues:[]});
+   // no recovery is expected on this nominal run: the registered cup nudge (R4-D33) cannot provoke one in this cell (V13 ledger, REC06 blocked)
+   expect(rep.body.perceptionEvidence.attempts.map((a:{outcome:string})=>a.outcome)).toEqual(['lifted','lifted']);expect(rep.body.perceptionEvidence.recovery).toEqual([]);
+   const archived=await api(`${url}/archive`,{method:'POST',token,body:{}});expect(archived.status,JSON.stringify(archived.body)).toBe(200);
+   expect(docker(['stop','-t','20',name]).ok).toBe(true);
   }finally{docker(['rm','-f',name]);await rm(exportDir,{recursive:true,force:true});}
   expect(docker(['ps','-a','-q','--filter',`label=${LABEL}=${runId}`]).out).toBe('');
  },1_800_000);

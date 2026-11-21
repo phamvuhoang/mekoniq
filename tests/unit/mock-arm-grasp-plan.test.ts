@@ -9,10 +9,10 @@ const FILE=JSON.parse(readFileSync('robotics/simulation-mujoco/fixtures/xarm6-g2
 const P=(loadOracleProfile().profile as unknown as {mujocoArm:Record<string,number>}).mujocoArm;
 const TRACKING:ArmTracking={reachTolRad:P.reachTolRad!,settleTicks:P.settleTicks!,followTolRad:P.followTolRad!,followTicks:P.followTicks!};
 const CONTACT={openM:0.0889,closedM:0,gripSettleTicks:P.gripSettleTicks!,dropTicks:P.dropTicks!,liftMinM:P.liftMinM!,releaseTimeoutTicks:200};
-const programs=(belief:boolean):ArmProgramSet=>({...structuredClone(FILE.programs),contact:CONTACT,...belief?{beliefGrasp:true as const}:{}});
+const programs=(belief:boolean,recovery=false):ArmProgramSet=>({...structuredClone(FILE.programs),contact:CONTACT,...belief?{beliefGrasp:true as const}:{},...recovery?{recovery:true as const}:{}});
 const cmd=(id:string,program:'cup-pick'|'cup-place'='cup-pick'):CellCommand=>({runId:'r',commandId:id,deviceId:'arm',controlEpoch:1,expiresAt:'2026-11-06T00:00:00Z',recipeRevision:1,programRef:{id:program,hash:'a'.repeat(64)},payloadHash:'a'.repeat(64),capability:'start_job',payload:{jobId:'j'}});
-function make(belief=true){
- const set=programs(belief),state=MockArmPlant.initial('arm','boot-0:arm',set),reports:CellReport[]=[];
+function make(belief=true,recovery=false){
+ const set=programs(belief,recovery),state=MockArmPlant.initial('arm','boot-0:arm',set),reports:CellReport[]=[];
  const plant=new MockArmPlant(state,()=>Date.parse('2026-11-12T00:00:00Z'),()=>'boot-2',{take:id=>id??null,put:()=>{}},()=>null,XARM6_SI,TRACKING,set);plant.on(r=>reports.push(r));
  // a perfect plant: the joints are where they were commanded
  const tick=()=>{plant.advance();plant.observe(plant.state.commandedQ??plant.state.q,[],{gripper:{openingM:0.0889,heldPropIds:[]},props:[]});};
@@ -64,4 +64,32 @@ test('the next cup-pick waits for its own plan; a cup-place is not gated',()=>{
  h.plant.execute(cmd('c2'));expect(h.plant.graspPending()).toEqual({commandId:'c2',program:'cup-pick'});
  h.plant.setGraspPlan('c2',{ok:false,code:'GRASP_UNREACHABLE'});h.tick();
  const h2=make();h2.plant.execute(cmd('p1','cup-place'));expect(h2.plant.graspPending()).toBeNull();
+});
+
+// V13: the pick whose grip is known not to have formed waits for the decision of the plant's ports; the table's steps are executed by the plant.
+const toGripFailure=(recovery=true)=>{const h=make(true,recovery);h.plant.execute(cmd('c1'));h.tick();h.plant.setGraspPlan('c1',{ok:true,waypoints:planned(h.set)});
+ for(let i=0;i<2000&&!h.plant.gripFailedPending();i++){h.tick();if(h.state.programs[0]!.state!=='running')break;}return h;};
+test('without a recovery policy a grip that did not form still completes with objectPresent false (R2b behaviour)',()=>{
+ const h=toGripFailure(false);expect(h.plant.gripFailedPending()).toBeNull();
+ for(let i=0;i<600&&h.state.programs[0]!.state==='running';i++)h.tick();
+ expect(h.state.programs[0]!.state).toBe('completed');expect(h.state.programs[0]!.evidence).toMatchObject({objectPresent:false});
+});
+test('with a recovery policy a missed grip freezes the arm and the program stays running until the ports decide',()=>{
+ const h=toGripFailure();expect(h.plant.gripFailedPending()).toEqual({commandId:'c1'});
+ const q=[...h.state.q];for(let i=0;i<50;i++){h.tick();expect(h.state.programs[0]!.state).toBe('running');}expect(h.state.q).toEqual(q);expect(h.plant.gripFailedPending()).toEqual({commandId:'c1'});
+});
+test('giving up latches the arm like a lost cup: the program is unknown with the reason, never completed',()=>{
+ const h=toGripFailure();h.plant.failGrip('c1','RECOVERY_FACTS_MISSING');
+ expect(h.state.programs[0]!.state).toBe('unknown');expect(h.state.stop).toMatchObject({latched:true,reason:'RECOVERY_FACTS_MISSING'});expect(h.plant.gripFailedPending()).toBeNull();
+});
+test('the recovery steps: open the gripper (settled after its ticks), retreat to the planned approach, wait for a plan, and the retry goes to the new plan',()=>{
+ const h=toGripFailure();
+ let r=h.plant.recoverStep('c1','open_gripper');expect(r).toBe('running');expect(h.state.gripper).toBe('open');expect(h.state.gripperCommandM).toBe(CONTACT.openM);
+ for(let i=0;i<CONTACT.gripSettleTicks+2&&r!=='done';i++){h.tick();r=h.plant.recoverStep('c1','open_gripper');}expect(r).toBe('done');
+ r=h.plant.recoverStep('c1','retreat_pick_approach');for(let i=0;i<800&&r!=='done';i++){h.tick();r=h.plant.recoverStep('c1','retreat_pick_approach');}
+ expect(r).toBe('done');expect(h.plant.graspPending()).toEqual({commandId:'c1',program:'cup-pick'});expect(h.state.programs[0]!.state).toBe('running');
+ const first=planned(h.set),again={pickApproach:first.pickApproach,pick:first.pick.map(v=>v+0.01),lift:first.lift};
+ h.plant.setGraspPlan('c1',{ok:true,waypoints:again});
+ for(let i=0;i<800&&!h.plant.gripFailedPending();i++)h.tick();
+ expect(h.state.programs[0]!.index).toBe(1);expect(h.state.q.every((v,i)=>Math.abs(v-again.pick[i]!)<=TRACKING.reachTolRad)).toBe(true); // the second grip was attempted at the NEW pick pose
 });

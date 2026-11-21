@@ -1,0 +1,260 @@
+{
+  "accepted": false,
+  "expectedRuns": 92,
+  "completedRuns": 92,
+  "missingArtifacts": [],
+  "issues": [],
+  "study": {
+    "schemaVersion": 1,
+    "campaignId": "perception-gap-v1",
+    "calibration": "not_calibrated",
+    "points": [
+      {
+        "id": "fixed-0",
+        "mode": "fixed_program",
+        "runs": 1,
+        "firstTry": 1,
+        "afterRecovery": 0,
+        "attention": 0,
+        "firstTryInterval": {
+          "low": 0.20654931179180275,
+          "high": 1
+        },
+        "medianTicks": 3300,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": null,
+        "outcomes": {
+          "lifted": 1
+        }
+      },
+      {
+        "id": "fixed-20mm",
+        "mode": "fixed_program",
+        "runs": 10,
+        "firstTry": 4,
+        "afterRecovery": 0,
+        "attention": 6,
+        "firstTryInterval": {
+          "low": 0.16818032852640694,
+          "high": 0.6873262320788046
+        },
+        "medianTicks": 1850,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": null,
+        "outcomes": {
+          "lifted": 4,
+          "grip_not_established": 6
+        }
+      },
+      {
+        "id": "truth-0",
+        "mode": "belief_ground_truth",
+        "runs": 1,
+        "firstTry": 1,
+        "afterRecovery": 0,
+        "attention": 0,
+        "firstTryInterval": {
+          "low": 0.20654931179180275,
+          "high": 1
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0,
+        "outcomes": {
+          "lifted": 1
+        }
+      },
+      {
+        "id": "truth-20mm",
+        "mode": "belief_ground_truth",
+        "runs": 10,
+        "firstTry": 8,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.4901624691221323,
+          "high": 0.9433178490622331
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0,
+        "outcomes": {
+          "lifted": 8,
+          "refused": 2
+        }
+      },
+      {
+        "id": "sigma-2mm",
+        "mode": "belief_estimated",
+        "runs": 10,
+        "firstTry": 8,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.4901624691221323,
+          "high": 0.9433178490622331
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.002882142185019965,
+        "outcomes": {
+          "lifted": 8,
+          "refused": 2
+        }
+      },
+      {
+        "id": "sigma-5mm",
+        "mode": "belief_estimated",
+        "runs": 10,
+        "firstTry": 8,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.4901624691221323,
+          "high": 0.9433178490622331
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.0072040421151008255,
+        "outcomes": {
+          "lifted": 8,
+          "refused": 2
+        }
+      },
+      {
+        "id": "sigma-10mm",
+        "mode": "belief_estimated",
+        "runs": 10,
+        "firstTry": 7,
+        "afterRecovery": 0,
+        "attention": 3,
+        "firstTryInterval": {
+          "low": 0.39677814534597083,
+          "high": 0.892208733443606
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.014407208855382724,
+        "outcomes": {
+          "lifted": 7,
+          "refused": 2,
+          "unknown": 1
+        }
+      },
+      {
+        "id": "sigma-15mm",
+        "mode": "belief_estimated",
+        "runs": 10,
+        "firstTry": 7,
+        "afterRecovery": 0,
+        "attention": 3,
+        "firstTryInterval": {
+          "low": 0.39677814534597083,
+          "high": 0.892208733443606
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.021610375627362788,
+        "outcomes": {
+          "lifted": 7,
+          "refused": 3
+        }
+      },
+      {
+        "id": "bias-x-5mm",
+        "mode": "belief_estimated",
+        "runs": 5,
+        "firstTry": 3,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.23072427940911852,
+          "high": 0.8823792268590027
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.00511698767818624,
+        "outcomes": {
+          "lifted": 3,
+          "refused": 2
+        }
+      },
+      {
+        "id": "bias-y-5mm",
+        "mode": "belief_estimated",
+        "runs": 5,
+        "firstTry": 3,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.23072427940911852,
+          "high": 0.8823792268590027
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.005639215675845969,
+        "outcomes": {
+          "lifted": 3,
+          "refused": 2
+        }
+      },
+      {
+        "id": "bias-x-10mm",
+        "mode": "belief_estimated",
+        "runs": 5,
+        "firstTry": 1,
+        "afterRecovery": 0,
+        "attention": 4,
+        "firstTryInterval": {
+          "low": 0.03622410822563068,
+          "high": 0.624465372970005
+        },
+        "medianTicks": 1575,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.009793055743721394,
+        "outcomes": {
+          "unknown": 2,
+          "refused": 2,
+          "lifted": 1
+        }
+      },
+      {
+        "id": "bias-y-10mm",
+        "mode": "belief_estimated",
+        "runs": 5,
+        "firstTry": 3,
+        "afterRecovery": 0,
+        "attention": 2,
+        "firstTryInterval": {
+          "low": 0.23072427940911852,
+          "high": 0.8823792268590027
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.010635602285906064,
+        "outcomes": {
+          "lifted": 3,
+          "refused": 2
+        }
+      },
+      {
+        "id": "stale-nudge",
+        "mode": "belief_estimated",
+        "runs": 10,
+        "firstTry": 10,
+        "afterRecovery": 0,
+        "attention": 0,
+        "firstTryInterval": {
+          "low": 0.7224671969739421,
+          "high": 1
+        },
+        "medianTicks": 1700,
+        "unexpectedContacts": 0,
+        "medianBeliefErrorAtCommitM": 0.0028813159510492872,
+        "outcomes": {
+          "lifted": 10
+        }
+      }
+    ]
+  }
+}

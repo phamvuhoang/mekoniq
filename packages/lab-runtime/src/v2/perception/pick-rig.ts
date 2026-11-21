@@ -12,14 +12,14 @@ import type {WorldFactoryInput,WorldPlantBindings} from '../simulation3d/world-p
 import type {GraspAttempt} from '../../../../contracts/generated/navigation2d';
 import {rigOffsetM} from './perception-study';
 import {buildPerceptionReport} from './perception-report';
-export interface PickRigInput {seed:number;mode:'fixed_program'|'belief_ground_truth'|'belief_estimated';truthOffsetM:number;profileId:string|null;nudge:boolean;recoveryPolicyId:string|null;directory:string;sourceCommit?:string;maxTicks?:number}
+export interface PickRigInput {seed:number;mode:'fixed_program'|'belief_ground_truth'|'belief_estimated';truthOffsetM:number;profileId:string|null;nudge:boolean;recoveryPolicyId:string|null;directory:string;sourceCommit?:string;maxTicks?:number;/** test only, see MujocoRuntimeOptions.rig */transientBias?:{vectorM:[number,number];attempts:number};/** test only, see MujocoRuntimeOptions.rig */gripHoldAttempts?:number}
 export interface PickRigResult {runId:string;outcome:GraspAttempt['outcome']|'none';attempts:number;recovered:boolean;attention:boolean;ticks:number;unexpectedContacts:number;directory:string}
 export interface RigRunRecord {schemaVersion:1;input:Omit<PickRigInput,'directory'>;offsetM:[number,number];result:PickRigResult&{beliefErrorAtCommitM:number|null}}
 const TERMINAL=['completed','needs_attention','cancelled'];
 export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions):Promise<PickRigResult&{beliefErrorAtCommitM:number|null}>{
  const offsetM=rigOffsetM(input.seed,input.truthOffsetM),runDir=join(input.directory,'run');await mkdir(runDir,{recursive:true});
  const project=JSON.parse(await readFile(join(runtime.workerRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
- const factory=mujocoWorldPorts({...runtime,rig:{offsetM},...input.nudge?{cellDisturbance:{presetId:'world-cup-nudge-v1' as const,cupId:'cup-1'}}:{}});
+ const factory=mujocoWorldPorts({...runtime,rig:{offsetM,...input.transientBias?{transientBias:input.transientBias}:{},...input.gripHoldAttempts?{gripHoldAttempts:input.gripHoldAttempts}:{}},...input.nudge?{cellDisturbance:{presetId:'world-cup-nudge-v1' as const,cupId:'cup-1'}}:{}});
  let bindings!:WorldPlantBindings;
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};
  const manifest={project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:input.seed,mode:'simulation' as const,access:'simulated' as const,backendSetId:'engineering-mujoco-cell-v1',sourceCommit:input.sourceCommit??'development:pick-rig',
@@ -33,7 +33,7 @@ export async function runPickRig(input:PickRigInput,runtime:MujocoRuntimeOptions
   // the first cup's grasp is decided once its last attempt has a final outcome. ponytail: fixed_program has no stream, so a served cup is `lifted` and a run that ended without one is `grip_not_established` (it cannot tell a refused cause apart); the study's fixed points compare this proportion only.
   const cupDone=async()=>{
    if(input.mode==='fixed_program')return v.served!=='0';
-   const hot=await bindings.coffee.perceptionReport?.(),last=[...new Map((hot?.attempts??[]).map(a=>[a.attemptId,a])).values()].filter(a=>a.cupId==='cup-1').at(-1);return !!last&&last.outcome!=='unknown';
+   const hot=await bindings.coffee.perceptionReport?.(),last=[...new Map((hot?.attempts??[]).map(a=>[a.attemptId,a])).values()].filter(a=>a.cupId==='cup-1').at(-1);return !!last&&last.outcome!=='unknown'&&!(input.recoveryPolicyId&&last.outcome==='grip_not_established'); // with a recovery policy a missed grip is not final: the run goes on until the retry has an outcome or the run ends
   };
   while(v.tick<(input.maxTicks??12000)&&!TERMINAL.includes(v.run.status)){v=await act('step',{ticks:25});if(v.tick>=1200&&v.tick%50===0&&await cupDone())break;}
   report=await run.report();
