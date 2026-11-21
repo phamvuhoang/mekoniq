@@ -37,6 +37,17 @@ export function selectPayloadExperiment(p:TwinPreset,id:string):TwinPreset{
  if(!(PAYLOAD_EXPERIMENT_IDS as readonly string[]).includes(id)||p.id!=='mujoco-payload'||!p.engineering)throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');
  return {...p,engineering:{project:{...structuredClone(p.engineering.project),mujocoExperimentId:id as EngineeringProject['mujocoExperimentId']},receipt:null}};
 }
+/** The drive experiment of the cell (a request field) or of the mobile run (its engineering project, so the receipt is void until it is compiled again); the ids are the registry's. */
+export const DRIVE_EXPERIMENT_IDS=['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1'] as const;
+export const driveExperimentLabel=(id:string)=>({'drive-ideal-v1':tr('Lý tưởng (không lượng tử, không trễ)','理想(量子化・遅延なし)','Ideal (no quantisation, no delay)'),'drive-nominal-v1':tr('Danh định','公称','Nominal'),'drive-torque-limited-v1':tr('Mô-men giới hạn','トルク制限','Torque-limited'),
+ 'drive-latency-v1':tr('Trễ cao','高遅延','High latency'),'drive-coarse-encoder-v1':tr('Encoder thô','粗いエンコーダ','Coarse encoder')} as Record<string,string>)[id]??id;
+export function selectDriveExperiment(p:TwinPreset,id:string):TwinPreset{
+ if(!(DRIVE_EXPERIMENT_IDS as readonly string[]).includes(id))throw new Error('DRIVE_EXPERIMENT_UNREGISTERED');
+ if(p.id==='mujoco-cell')return {...p,driveExperimentId:id};
+ if(p.id==='mujoco-payload'&&p.engineering)return {...p,engineering:{project:{...structuredClone(p.engineering.project),driveExperimentId:id as EngineeringProject['driveExperimentId']},receipt:null}};
+ throw new Error('DRIVE_EXPERIMENT_SCOPE_INVALID');
+}
+export const driveExperimentOf=(p:TwinPreset):string|undefined=>p.id==='mujoco-cell'?p.driveExperimentId:p.id==='mujoco-payload'?p.engineering?.project.driveExperimentId:undefined;
 export interface PayloadState {payloadKind:'free';propId:string;supportId:string;loadProfileSha256:string;sceneDigest:string;geometry:{kind:'cylinder';radiusM:number;heightM:number};positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}
 export function validMobileSample(s:TwinSample):boolean{
  const {receivedAtMs:_r,epochResetAtMs:_e,...wire}=s as TwinSample&{receivedAtMs?:number;epochResetAtMs?:number};void _r;void _e;

@@ -15,7 +15,7 @@ import type {StreamDeps} from '../runtime/stream';
 import type {BenchHealth,BenchTraceReceipt} from '../control/workbench';
 import type {BenchRequestV1,DriveTrace,TuningResultV1} from '../shared/navigation2d';
 /** `tuningEnvelope`, `benchSignals` and `benchCatalog` (BenchHealth) are present only where a bench scenario is offered (R4.2, V06/V07pre). */
-export interface TwinHealth extends BenchHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
+export interface TwinHealth extends BenchHealth {/** R4 V08: present only on a runtime that can run drive faults (read with faultCatalogOf) */faultCatalog?:unknown;worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
  /** Server-advertised optional features, e.g. engineering_bundle_v1. Absent on runtimes that predate engineering. */
  capabilities?:string[];
  /** scenarioId -> backendSetId -> what that pairing needs; engineering clients must read this instead of scenarioRequirements. */
@@ -65,7 +65,7 @@ export interface DriveEvidenceBlock {testLevel:'controller_in_the_loop';complete
  axes:{axisId:string;mode:'csp'|'csv';states:{state:string;fromTick:number}[];faults:{fault:string;firstTick:number}[];enabledAtTick:number|null;saturatedSubsteps:number;trackingRms:ControlMetric;speedDeficit?:ControlMetric}[];
  events:{tick:number;code:string;axisId?:string}[]}
 /** `tuning`: a bench run's result (R4.2); null until it has one, absent on every other run. */
-export interface RunReport {bench?:{request:Omit<BenchRequestV1,'controlProfile'>&{controlProfile:Pick<BenchRequestV1['controlProfile'],'id'|'revision'|'digest'>}};tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+export interface RunReport {/** R4 V08: the runtime's own fault report, built from the recorded streams; absent on a run without a drive fault schedule (read with faultSection) */faultReport?:import('../shared/navigation2d').FaultReportV1;bench?:{request:Omit<BenchRequestV1,'controlProfile'>&{controlProfile:Pick<BenchRequestV1['controlProfile'],'id'|'revision'|'digest'>}};tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[]};
  outcome:{status:string;served:string;tick:number;simTimeNs:string};
  metrics:{maxConcurrentMovers?:number;distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
@@ -81,7 +81,7 @@ export interface RunReport {bench?:{request:Omit<BenchRequestV1,'controlProfile'
  reconciliations:{subjectId:string;commandId:string|null;nativeState:string;tick:number}[];coverage:Record<string,boolean>;limitations:string[];
  coffee?:{plantLog?:Record<string,unknown>[];jobs:{jobId:string;recipeId:string;recipeRevision:number;status:string;steps:JobStep[]}[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:{transferId:string;provenance:string;observedBy:string;at:string}[]}[];
   armTrace:{collision?:ArmCollisionView|null;stop?:ArmStopView|null;tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[]}};}
-interface CreateRunBase {worldExperimentId?:import('../twin/cell').WorldExperiment;scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
+interface CreateRunBase {/** R4 V09: the cell's drive experiment and the run-scoped drive fault schedule (never part of the project) */driveExperimentId?:string;driveFaultSchedule?:import('./drive-faults').DriveFaultEntry[];worldExperimentId?:import('../twin/cell').WorldExperiment;scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
 /** Legacy request: the project travels with it and there is no engineeringRef. */
 export interface LegacyCreateRun extends CreateRunBase {project:LabProjectV2;engineeringRef?:undefined}
 /** Engineering request: the server derives the project from the bundle; a project, if sent at all, must equal the locked projection. */
@@ -89,8 +89,9 @@ export interface EngineeringCreateRun extends CreateRunBase {engineeringRef:Engi
 /** Bench request (R4.2): the plant is the server's, so no project, bundle or run experiment travels with it. */
 export interface BenchCreateRun extends CreateRunBase {bench:BenchRequestV1;project?:undefined;engineeringRef?:undefined}
 export type CreateRun=LegacyCreateRun|EngineeringCreateRun|BenchCreateRun;
-export function requestForPreset(p:import('./catalog').TwinPreset):CreateRun{
- const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
+export function requestForPreset(p:import('./catalog').TwinPreset,driveFaults?:readonly import('./drive-faults').DriveFaultEntry[]):CreateRun{
+ // a drive fault schedule rides with the request; the cell also names its drive experiment (a mobile run's experiment is in its engineering project)
+ const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},...p.id==='mujoco-cell'&&p.driveExperimentId?{driveExperimentId:p.driveExperimentId}:{},...driveFaults?.length?{driveFaultSchedule:structuredClone([...driveFaults])}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
  // engineering never falls back to the preset project: the receipt that matches this exact draft is the only way to a ref
  if (p.engineering) return {...base,engineeringRef:engineeringRefFor(p.engineering.project,p.engineering.receipt)};
  return {project:structuredClone(p.project),...base};
@@ -112,6 +113,8 @@ export type ActionKind='start'|'pause'|'resume'|'cancel'|'step'|'confirm'|'injec
 export interface EngineeringManifest {schemaVersion:1;projectDigest:string;assemblyDigest:string;sceneDigest:string;profile:string;compilerVersion:string;files:{path:string;sha256:string;sizeBytes:number}[]}
 export interface WorldDisplay {view?:RunView;version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
 export interface TwinRuntime {
+ /** R4 V09: asks the runtime to check a drive fault schedule (schema, bounds, overlap, backend) without creating a run. 422 answers are data, anything else throws. */
+ checkDriveFaults?(body:{driveFaultSchedule:import('./drive-faults').DriveFaultEntry[];backendSetId:string;scenarioId:string;driveExperimentId?:string},signal?:AbortSignal):Promise<{ok:true}|{ok:false;error:string;codes:string[]}>;
  exportReplay?(id:string,signal:AbortSignal):Promise<{reader:import('../reports/replay-package').ReplayReader;release():Promise<void>}>;
  worldDisplay?(id:string,signal?:AbortSignal):Promise<WorldDisplay>;
  worldDisplayScene?(id:string,signal?:AbortSignal):Promise<{runId:string;availability:string;reason:string|null;scene:import('../shared/navigation2d').LabWorldSceneV1|null}>;
@@ -209,6 +212,7 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
    if(sha256Hex(bytes)!==sha256)throw new TwinRuntimeError('ENGINEERING_BLOB_CORRUPT',[],409);
    return bytes;
   },
+  async checkDriveFaults(body,signal){try{await request('/projects/validate',body,signal);return {ok:true as const};}catch(e){if(e instanceof TwinRuntimeError&&e.status===422)return {ok:false as const,error:e.code,codes:e.reasonCodes};throw e;}},
   readiness:(scenarioId,backendSetId,project,engineeringRef)=>engineeringRef?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,engineeringRef,...project?{project}:{}}):project?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,project}):request<ReadinessSnapshot>(`/readiness?scenarioId=${encodeURIComponent(scenarioId)}&backendSetId=${encodeURIComponent(backendSetId)}`),
   async pair(code){
    const g=++generation,r=await request<{csrfToken?:string;sessionToken?:string}>('/sessions',{token:code},AbortSignal.timeout(30000));assertSession(g);
