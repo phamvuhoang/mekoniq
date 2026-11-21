@@ -1,0 +1,1 @@
+Superseded by `../v12-perception-gap-def9c240-2026-11-21/` (21/11/2026). This record (source `cedda186`) predates the review fixes: its commit was decided at job start, its unexpected-contact counts were a constant 0 and runs that stopped with `CUP_DROPPED` were labelled grip-not-established. Kept unchanged as history; do not cite its numbers.
