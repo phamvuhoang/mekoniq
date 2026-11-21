@@ -353,19 +353,23 @@ def test_a_world_step_carries_injections_and_answers_receipts_in_the_wire_schema
     s.end()
 
 
-def test_a_wheel_that_went_quiet_does_not_make_the_pair_a_refused_body_twist(tmp_path):
-    """command-loss repeats one wheel's last seq. The (v, omega) the pair amounts to is then no command anybody gave: the navigation-limit admission applies to fresh pairs only (each wheel's own range still applies)."""
+def test_alternating_which_wheel_is_silenced_cannot_sustain_a_twist_beyond_the_limits(tmp_path):
     s, _ = started(tmp_path, 3)
     kin = s.scene["robots"][0]["model"]["kinematics"]
     radius, sep = s.engine.radius, s.engine.separation
     top = float(s.engine.physical["drive"]["actuatorMaxSpeedRadps"]["value"])
-    r_target = 0.99 * top
-    v, w = (0 + r_target) / 2 * radius, (r_target - 0) * radius / sep
-    assert abs(v) > kin["maxLinearMps"] or abs(w) > kin["maxAngularRadps"], "the test needs a pair beyond the navigation limits"
-    quiet = [{**c} for c in wheels(3, 0.0)]       # both wheels were last sent seq 3 with target 0.0
-    mixed = [quiet[0], {**quiet[1], "seq": 4, "target": r_target}]   # left repeats seq 3, right is fresh at a speed the pair cannot carry
-    r = s.handle(request("step", {"targetTick": 4, "velocities": [], "actorUpdates": [], "driveCommands": mixed}, 3, rid="mixed"))
-    assert r["ok"], r
-    both = s.handle(request("step", {"targetTick": 5, "velocities": [], "actorUpdates": [], "driveCommands": wheels(5, r_target)}, 4, rid="fresh"))
-    assert not both["ok"] and both["error"]["code"] == "VELOCITY_TARGET_OUT_OF_RANGE", both   # a fresh pair is still checked
+    bound = (kin["maxLinearMps"] + kin["maxAngularRadps"] * sep / 2) / radius   # the largest single wheel target any admitted pair can carry
+    assert 1.02 * bound < top, "the test needs a wheel target above the bound but inside the plant range"
+    c1 = 0.9 * kin["maxAngularRadps"] * sep / (2 * radius)                       # an admitted turn in place: left -c1, right +c1
+    assert s.handle(request("step", {"targetTick": 4, "velocities": [], "actorUpdates": [], "driveCommands": [
+        {**wheels(3, 0.0)[0], "seq": 4, "target": -c1}, {**wheels(3, 0.0)[1], "seq": 4, "target": c1}]}, 3, rid="turn"))["ok"]
+    # left silenced (repeats seq 4), right fresh at the bound: any pair a controller could have sent lets a wheel carry this much, the loss pair beyond the limits is admitted
+    ok = s.handle(request("step", {"targetTick": 5, "velocities": [], "actorUpdates": [], "driveCommands": [
+        {**wheels(3, 0.0)[0], "seq": 4, "target": -c1}, {**wheels(3, 0.0)[1], "seq": 5, "target": bound}]}, 4, rid="loss"))
+    assert (bound + c1) * radius / sep > kin["maxAngularRadps"], "the loss pair is beyond the navigation limits as a body twist"
+    assert ok["ok"], ok
+    # a fresh wheel beyond what any admitted pair can carry is refused even while the other one is silenced
+    bad = s.handle(request("step", {"targetTick": 6, "velocities": [], "actorUpdates": [], "driveCommands": [
+        {**wheels(3, 0.0)[0], "seq": 6, "target": -1.02 * bound}, {**wheels(3, 0.0)[1], "seq": 5, "target": bound}]}, 5, rid="alternate"))
+    assert not bad["ok"] and bad["error"]["code"] == "VELOCITY_TARGET_OUT_OF_RANGE", bad
     s.end()

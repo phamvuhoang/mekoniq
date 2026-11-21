@@ -1,7 +1,7 @@
 import {join} from 'node:path';
 import {hashJson} from '../hash';
 import {BASE_CONTROLLER_DEFAULTS,mobileDrive} from '../control/drive-run';
-import {driveDocumentDigest,splitDriveSnapshot,type ControlProfileV1,type DriveCommandV1,type DriveModelV1,type FaultOracleV1} from '../control/drive-io';
+import {driveDocumentDigest,splitDriveSnapshot,type ControlProfileV1,type DriveCommandV1,type DriveModelV1,type FaultOracleV1,type FaultReportV1} from '../control/drive-io';
 import {buildDriveEvidence} from '../control/drive-report';
 import type {ControllerEvent} from '../control/controller';
 import {applyCommandLoss,runtimeFaultsAt,type FaultReceipt} from '../control/drive-faults';
@@ -44,7 +44,7 @@ export function replayWorldDrive(admission:WorldAdmission,records:WorldEvidenceR
    if(!command){issues=[...issues,'WORLD_DRIVE_COMMAND_MISSING'];break;}
    try{
     const replay=drive.step(records[i-1]!.snapshot,command);
-    const lost=new Set(runtimeFaultsAt(faults,snapshot.tick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(replay.commands,lastSent,lost):replay.commands;lastSent=sent;
+    const lost=new Set(command.worldControl?.movementInterlocked?[]:runtimeFaultsAt(faults,snapshot.tick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(replay.commands,lastSent,lost):replay.commands;lastSent=sent;
     const seqOf=(axisId:string)=>faults.length?sent.find(c=>c.axisId===axisId)?.seq:snapshot.tick;
     if(!command.driveCommands||hashJson(sent)!==hashJson(command.driveCommands)||snapshot.drives.some(d=>d.commandSeq!==seqOf(d.axisId)))throw Error('WORLD_DRIVE_COMMAND_REPLAY');
     events.push(...replay.events);
@@ -75,12 +75,17 @@ export async function readWorldDriveReport(directory:string,admission:WorldAdmis
  if(prefix.publication.terminal||prefix.publication.gaps.length)issues.push('WORLD_FAILED');
  return buildWorldDriveReport(admission,prefix.records,issues,faults);
 }
-/** The same read, to a fault report; undefined when the prefix is not whole (a fault report is only made from complete evidence). */
+/** The same read, to a fault report. A prefix that is not whole, or evidence that does not reconcile, throws: the caller reports it, a fault report is only made from complete evidence and never goes missing quietly. */
 export async function readWorldFaultReport(directory:string,admission:WorldAdmission,identity:{runId:string;bootId:string;publicCommittedTick:number},o:Omit<Parameters<typeof buildWorldFaultReport>[3],'runId'>){
  const capture=await captureWorldPrefixDisk(join(directory,'world-evidence'),admission,{...identity,sceneDigest:admission.scene.sceneDigest,admissionDigest:admission.digest});
  const prefix=await materializeWorldPrefix(capture,admission);
- if(prefix.issues.length||prefix.publication.terminal||prefix.publication.gaps.length)return undefined;
+ if(prefix.issues.length||prefix.publication.terminal||prefix.publication.gaps.length)throw Error(`FAULT_EVIDENCE_INVALID:${prefix.issues[0]??'WORLD_FAILED'}`);
  return buildWorldFaultReport(admission,prefix.records,[],{...o,runId:identity.runId});
+}
+/** What a read of the fault report gave: the report, or the reasons there is none. */
+export async function faultReadOutcome(read:()=>Promise<FaultReportV1|undefined>):Promise<{report?:FaultReportV1;issues:string[]}>{
+ try{const report=await read();return report?{report,issues:[]}:{issues:['FAULT_REPORT_UNAVAILABLE']};}
+ catch(e){return {issues:[(e as NodeJS.ErrnoException).code==='ENOENT'?'WORLD_RETAINED_BUNDLE_UNAVAILABLE':(e as Error).message]};}
 }
 
 /** No installed replacement document may supply measurements for an unavailable cold bundle. */
@@ -92,7 +97,5 @@ export async function readRetainedWorldDriveReport(directory:string,identity:{ru
  }
 }
 
-export async function readRetainedWorldFaultReport(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number},o:Omit<Parameters<typeof buildWorldFaultReport>[3],'runId'>){
- try{return await readWorldFaultReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity,o);}
- catch{return undefined;}
-}
+export const readRetainedWorldFaultReport=(directory:string,identity:{runId:string;bootId:string;sceneDigest:string;publicCommittedTick:number},o:Omit<Parameters<typeof buildWorldFaultReport>[3],'runId'>)=>
+ faultReadOutcome(async()=>readWorldFaultReport(directory,await readRetainedWorldAdmission(directory,identity.sceneDigest),identity,o));

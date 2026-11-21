@@ -633,7 +633,9 @@ class Run implements ScenarioRun {
   const hoisted=(report.coffee as {driveEvidence?:import('./control/drive-report').DriveEvidenceReport}|undefined)?.driveEvidence;if(hoisted){report.driveEvidence=hoisted;delete (report.coffee as {driveEvidence?:unknown}).driveEvidence;}
   if(this.coffee&&c.manifest.driveFaultSchedule){
    const fr=await this.coffee.faultReport({serveTicks:serveTicksOf(businessEvents,EPOCH),attention:v.attention.map(a=>({tick:a.tick,reason:a.reason})),custodyChanged:((report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[]).some(x=>x.status==='unknown')});
-   if(fr)report.faultReport=fr;
+   // a fault report that could not be made says why in the drive section; it never goes missing quietly
+   if(fr?.report)report.faultReport=fr.report;
+   else if(fr&&report.driveEvidence)report.driveEvidence={...report.driveEvidence,complete:false,issues:[...report.driveEvidence.issues,...fr.issues]};
   }
   if(this.worldConfig){report.worldSweep=unavailableWorldSweep(c.tick,['WORLD_HISTORY_UNAVAILABLE']);report.worldSweep.scope={kind:'source_committed_prefix',publicCommittedTick:c.tick,prefixCovered:false,streamFinalized:false,identity:{runId:c.runId,bootId:c.world?.snapshot?.bootId??'unavailable',sceneDigest:c.world?.snapshot?.sceneDigest??'unavailable',admissionDigest:null}};}
   return {report,materializeArm};

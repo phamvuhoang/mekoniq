@@ -314,7 +314,13 @@ class WorkerSession:
         left, right = by_id[mob.rid + "/wheel-left"]["target"], by_id[mob.rid + "/wheel-right"]["target"]
         v, w = (left + right) / 2 * mob.radius, (right - left) * mob.radius / mob.separation
         # a wheel that repeats its last seq (a silenced command channel) holds a target no controller paired with the other wheel's: only a pair of fresh commands is a body twist to admit
-        fresh = all(c["seq"] > g.seq[g.index[c["axisId"]]] for c in commands if c["axisId"] in (mob.rid + "/wheel-left", mob.rid + "/wheel-right"))
+        wheel_cmds = [c for c in commands if c["axisId"] in (mob.rid + "/wheel-left", mob.rid + "/wheel-right")]
+        fresh = all(c["seq"] > g.seq[g.index[c["axisId"]]] for c in wheel_cmds)
+        if not fresh:
+            # a pair with a silenced wheel is not a body twist to admit, but a fresh wheel may not carry more than any admitted pair could give one wheel: |t| <= (vmax + wmax * sep / 2) / R
+            bound = (kin["maxLinearMps"] + kin["maxAngularRadps"] * mob.separation / 2) / mob.radius * (1 + 1e-9)
+            if any(c["seq"] > g.seq[g.index[c["axisId"]]] and abs(c["target"]) > bound for c in wheel_cmds):
+                raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "a fresh wheel command exceeds what the admitted navigation limits allow one wheel")
         if fresh and (abs(v) > kin["maxLinearMps"] * (1 + 1e-9) or abs(w) > kin["maxAngularRadps"] * (1 + 1e-9)):
             raise WorkerError("VELOCITY_TARGET_OUT_OF_RANGE", "wheel commands exceed the admitted navigation limits")
         return by_id

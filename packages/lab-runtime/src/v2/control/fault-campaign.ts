@@ -142,7 +142,7 @@ export async function verifyFaultCampaign(root:string,onlyCase?:string):Promise<
      facts:{reportedServed:serveTicks.length,confirmedServed:servedFacts(rows,serveTicks).confirmedServed,resendsAfterUnknown:0,custodyChanged:null}});
    }else if(spec.schedule.length){
     const physical=(report.coffee as {physicalCustody?:{status:string}[]}|undefined)?.physicalCustody??[];
-    again=await readRetainedWorldFaultReport(join(dir,'run'),{sceneDigest:cp.world.snapshot.sceneDigest,runId:cp.runId,bootId:cp.world.snapshot.bootId,publicCommittedTick:cp.tick},{faults:spec.schedule,oracle,facts:{serveTicks,custodyChanged:physical.some(x=>x.status==='unknown'),attention}});
+    again=(await readRetainedWorldFaultReport(join(dir,'run'),{sceneDigest:cp.world.snapshot.sceneDigest,runId:cp.runId,bootId:cp.world.snapshot.bootId,publicCommittedTick:cp.tick},{faults:spec.schedule,oracle,facts:{serveTicks,custodyChanged:physical.some(x=>x.status==='unknown'),attention}})).report;
    }
    if(spec.schedule.length){
     check(again,'FLT_REPORT_UNAVAILABLE');check(hashJson(again as never)===hashJson(report.faultReport as never),'FLT_REPORT_NOT_FROM_STREAM');

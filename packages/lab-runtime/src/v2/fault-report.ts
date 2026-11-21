@@ -84,9 +84,9 @@ function invariants(input:FaultReportInput):Invariant[]{
  const resets=input.receipts.filter(r=>r.faultId==='drive-reset'&&r.phase==='start');
  const latch=first(()=>{
   for(const a of axes){const s=series(a);for(let i=1;i<s.length;i++){const p=s[i-1]!.s,c=s[i]!.s;
-   if(p.fault!==null&&c.fault===null&&c.commandSeq<=p.commandSeq&&!resets.some(r=>r.targetId===a&&r.appliedTick===c.tick))return {tick:c.tick,note:`${a} cleared ${p.fault} at tick ${c.tick} without a fresh command or an injected reset`};}}
+   if(p.fault!==null&&c.fault===null&&!resets.some(r=>r.targetId===a&&r.appliedTick===c.tick))return {tick:c.tick,note:`${a} cleared ${p.fault} at tick ${c.tick} without an injected reset (the controllers never send one)`};}}
   return null;
- },'LATCH_HELD','no latched fault cleared without a fresh command or an injected reset (drives)');
+ },'LATCH_HELD','no latched fault cleared without an injected reset (drives)');
  let timeouts=false;
  const torque=first(()=>{
   for(const a of axes){const s=series(a),f=s.find(x=>x.s.fault==='COMMAND_TIMEOUT');if(!f)continue;timeouts=true;

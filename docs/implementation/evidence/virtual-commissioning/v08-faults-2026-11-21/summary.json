@@ -1,0 +1,192 @@
+{
+  "accepted": false,
+  "expectedRuns": 23,
+  "completedCases": 23,
+  "missingArtifacts": [],
+  "issues": [],
+  "coverage": [
+    {
+      "faultId": "encoder-dropout",
+      "runs": 4,
+      "targets": 3,
+      "params": 1
+    },
+    {
+      "faultId": "motor-weak",
+      "runs": 3,
+      "targets": 3,
+      "params": 3
+    },
+    {
+      "faultId": "drive-trip",
+      "runs": 4,
+      "targets": 3,
+      "params": 1
+    },
+    {
+      "faultId": "command-delay",
+      "runs": 3,
+      "targets": 2,
+      "params": 3
+    },
+    {
+      "faultId": "command-loss",
+      "runs": 4,
+      "targets": 2,
+      "params": 1
+    },
+    {
+      "faultId": "grip-weak",
+      "runs": 2,
+      "targets": 1,
+      "params": 2
+    },
+    {
+      "faultId": "lidar-noise",
+      "runs": 2,
+      "targets": 1,
+      "params": 2
+    },
+    {
+      "faultId": "drive-reset",
+      "runs": 1,
+      "targets": 1,
+      "params": 1
+    }
+  ],
+  "verdicts": [
+    {
+      "id": "m01-encoder-dropout-right",
+      "entries": {
+        "encoder-dropout-wheel-right-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m02-encoder-dropout-left",
+      "entries": {
+        "encoder-dropout-wheel-left-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m03-command-loss-right",
+      "entries": {
+        "command-loss-wheel-right-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m04-command-loss-left",
+      "entries": {
+        "command-loss-wheel-left-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m05-drive-trip-right",
+      "entries": {
+        "drive-trip-wheel-right-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m06-drive-trip-left",
+      "entries": {
+        "drive-trip-wheel-left-12000": "detected_in_time"
+      }
+    },
+    {
+      "id": "m07-motor-weak-right",
+      "entries": {
+        "motor-weak-wheel-right-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m08-motor-weak-left",
+      "entries": {
+        "motor-weak-wheel-left-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m09-command-delay-right",
+      "entries": {
+        "command-delay-wheel-right-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m10-command-delay-left",
+      "entries": {
+        "command-delay-wheel-left-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m11-lidar-noise-a",
+      "entries": {
+        "lidar-noise-lidar-2d-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m12-lidar-noise-b",
+      "entries": {
+        "lidar-noise-lidar-2d-8000": "not_detected"
+      }
+    },
+    {
+      "id": "m13-trip-then-reset",
+      "entries": {
+        "drive-trip-wheel-right-12000": "detected_in_time",
+        "drive-reset-wheel-right-12020": "not_detected"
+      }
+    },
+    {
+      "id": "m14-not-fired",
+      "entries": {
+        "encoder-dropout-wheel-right-3000000": "not_fired"
+      }
+    },
+    {
+      "id": "c01-command-loss-left",
+      "entries": {
+        "command-loss-wheel-left-30000": "detected_in_time"
+      }
+    },
+    {
+      "id": "c02-command-loss-right",
+      "entries": {
+        "command-loss-wheel-right-30000": "detected_in_time"
+      }
+    },
+    {
+      "id": "c03-encoder-dropout-arm-j2",
+      "entries": {
+        "encoder-dropout-J2-25000": "detected_in_time"
+      }
+    },
+    {
+      "id": "c04-drive-trip-arm-j1",
+      "entries": {
+        "drive-trip-J1-25000": "detected_in_time"
+      }
+    },
+    {
+      "id": "c05-motor-weak-arm-j3",
+      "entries": {
+        "motor-weak-J3-1000": "not_detected"
+      }
+    },
+    {
+      "id": "c06-grip-weak-0.1",
+      "entries": {
+        "grip-weak-gripper-0": "not_detected"
+      }
+    },
+    {
+      "id": "c07-grip-weak-0.5",
+      "entries": {
+        "grip-weak-gripper-0": "not_detected"
+      }
+    },
+    {
+      "id": "c08-command-delay-right",
+      "entries": {
+        "command-delay-wheel-right-10000": "not_detected"
+      }
+    }
+  ]
+}

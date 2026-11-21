@@ -57,18 +57,19 @@ const open:Cell[]=[];
 afterEach(async()=>{for(const h of open.splice(0)){await h.run.close().catch(()=>{});await rm(h.directory,{recursive:true,force:true});}});
 const deadline=cellCampaign.nativeDeadlineSecondsPerCase*1000;
 
-test('cell: a command loss on the base wheel is detected by the drive; the arm and the cups are untouched; no false serve',async()=>{
- const e=entry('command-loss','amr-1/wheel-left',30_000,200),h=await openCell(7,'fault-loss',{},{driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[e]});open.push(h);
+test('cell: a command loss on a moving base wheel is detected by the drive; no refused step, no false serve',async()=>{
+ const e=entry('command-loss','amr-1/wheel-left',55_000,200),h=await openCell(7,'fault-loss',{},{driveExperimentId:'drive-nominal-v1',driveFaultSchedule:[e]});open.push(h);
  await h.run.start();await cellUntil(h.run,()=>false,cellCampaign.maxTicks,50);
  const {report}=await h.save('fault-loss');await h.run.close();
  const fr=report.faultReport!;expect(fr,JSON.stringify(report.driveEvidence?.issues)).toBeDefined();
- expect(fr.entries[0]).toMatchObject({faultId:'command-loss',targetId:'amr-1/wheel-left',injection:{appliedTick:1501},detection:{by:'drive',code:'COMMAND_TIMEOUT'}});
+ expect(fr.entries[0]).toMatchObject({faultId:'command-loss',targetId:'amr-1/wheel-left',injection:{appliedTick:2751},detection:{by:'drive',code:'COMMAND_TIMEOUT'}});
  expect(fr.entries[0]!.verdict).toBe('detected_in_time');
  expect(fr.invariants.filter(i=>i.result==='violated'),JSON.stringify(fr.invariants)).toEqual([]);
  const read=await h.readback();expect(read.issues).toEqual([]);
  // the command that was sent repeated its last seq on the wheel for the whole window and only on it
- const rows=read.records.filter(r=>r.snapshot.tick>=1501&&r.snapshot.tick<1511),seq=(r:typeof rows[number],a:string)=>r.command!.driveCommands!.find(c=>c.axisId===a)!.seq;
- expect(new Set(rows.map(r=>seq(r,'amr-1/wheel-left'))).size).toBe(1);expect(new Set(rows.map(r=>seq(r,'amr-1/wheel-right'))).size).toBeGreaterThan(1);
+ const rows=read.records.filter(r=>r.snapshot.tick>=2751&&r.snapshot.tick<2761),seq=(r:typeof rows[number],a:string)=>r.command!.driveCommands!.find(c=>c.axisId===a)!.seq;
+ // until the drive trips and the cell's interlock takes the movement away (command-loss yields to it), only the faulted wheel repeats its seq
+ const head=rows.slice(0,4);expect(new Set(head.map(r=>seq(r,'amr-1/wheel-left'))).size).toBe(1);expect(new Set(head.map(r=>seq(r,'amr-1/wheel-right'))).size).toBeGreaterThan(1);
  expect(rows.every(r=>r.command!.faultInjections===undefined||r.command!.faultInjections.every(i=>i.faultId==='command-loss'))).toBe(true);
 },deadline);
 

@@ -130,3 +130,9 @@ test('a serve confirmed after a fault latched on an axis that never recovered do
  const healed=drives(30,(a,t)=>a===AX&&t>=10&&t<15?{fault:'EXTERNAL_TRIP',state:'fault'}:{});
  expect(servedFacts(healed,[20])).toEqual({reportedServed:1,confirmedServed:1});
 });
+
+test('a latched fault that clears on a tick with a fresh seq is still a violation: controllers never send a reset, only an injected one clears',()=>{
+ const e=entry('command-loss',100,200),start=faultStartTick(100);
+ const r=buildFaultReport({...base,schedule:[e],receipts:[receipt(e,'start',start)],drives:drives(40,(a,t)=>a===AX&&t>=start+4&&t<start+8?{fault:'COMMAND_TIMEOUT',state:'fault',torqueNm:0,commandSeq:t}:{commandSeq:t})});
+ expect(r.invariants.find(i=>i.id==='LATCH_HELD')).toMatchObject({result:'violated',tick:start+8});
+});

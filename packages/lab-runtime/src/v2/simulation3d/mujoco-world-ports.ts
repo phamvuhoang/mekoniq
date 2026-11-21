@@ -155,8 +155,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
      const interlocked=!!cellHalted||st.arm.holding!==null||st.arm.programs.some(p=>p.state==='running')||st.arm.stop?.latched,nav=interlocked?{velocities:[{robotId:rid,vMps:0,omegaRadps:0}],decisions:[]}:controller.advance(last,{},!last.drives?.some(d=>d.state!=='enabled'));decisions=nav.decisions;
      const propPlacements:WorldTickCommand['propPlacements']=[],worldInteractions:NonNullable<WorldTickCommand['worldInteractions']>=[];
      for(const binding of scene.propBindings){const born=history.some(i=>i.propId===binding.propId&&i.kind==='birth'),gone=history.some(i=>i.propId===binding.propId&&i.kind==='remove');
-      // a halted cell births no cup: the arm will not take the one at the nozzle, and a second one would be placed over it (the worker refuses that, which ended the run as an exception)
-      const kind=!born&&!cellHalted&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;
+      // a halted cell with a fault schedule births no cup (runs without one keep their R2b behaviour): the arm will not take the one at the nozzle, and a second one would be placed over it (the worker refuses that, which ended the run as an exception)
+      const kind=!born&&!(faults.length&&cellHalted)&&st.plant.cups.some(c=>c.cupId===binding.cupId&&c.at==='nozzle')&&(!workflow||birthEvents.has(binding.cupId))?'birth':born&&!gone&&removed.has(binding.cupId)?'remove':null;if(!kind)continue;
       if(workflow&&last.arms![0]!.gripper!.heldPropIds.includes(binding.propId))throw Error('WORLD_MOVE_HELD_PROP');
       propPlacements.push({propId:binding.propId,pose:kind==='birth'?{position:hp.birth.centerM,quaternionXyzw:[0,0,0,1]}:null});worldInteractions.push({eventId:workflow?(kind==='birth'?birthEvents:removeEvents).get(binding.cupId)!:`source:${input.runId}:${binding.cupId}:${kind}`,cupId:binding.cupId,propId:binding.propId,kind,targetTick});
      }
@@ -173,7 +173,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       for(const e of result.events)if((e.code==='DRIVE_FAULT'||e.code==='DRIVE_NOT_READY')&&!cellHalted){invalidate();cellHalted=e.code;arm.halt(e.code,undefined,last.tick);}
       if(faults.length){
        // command-loss repeats the last command sent, seq included; every injection due on this tick is the intent this command carries
-       const lost=new Set(runtimeFaultsAt(faults,targetTick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
+       // command-loss yields to the world movement interlock: where the interlock holds (a stop latched after a drive fault, a program running) the supervisor commands a stop and a stale target would be refused
+       const lost=new Set(pending.worldControl?.movementInterlocked?[]:runtimeFaultsAt(faults,targetTick).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId));
        if(lost.size)pending.driveCommands=applyCommandLoss(pending.driveCommands!,lastWire,lost);
        lastWire=pending.driveCommands;
        const events=faultEventsAt(faults,targetTick);if(events.length)pending.faultInjections=events;
