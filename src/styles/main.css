@@ -2755,7 +2755,6 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .maturity-badge[data-level="calibrated"] { border-color: var(--accent); }
 .maturity-badge[data-level="illustrative"] { border-style: dashed; }
 .maturity-groups { color: var(--muted); }
-.twin-runbar-left .maturity-badge { margin-left: 8px; }
 .calibration-loader { margin-top: 12px; }
 .calibration-view table { margin: 4px 0 12px; }
 .calibration-view tr[data-bound="true"] td, .calibration-view tr[data-bound="true"] th { color: var(--amber); }
