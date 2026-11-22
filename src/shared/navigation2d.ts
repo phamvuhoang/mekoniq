@@ -1,6 +1,6 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ c0dca439098f60b3c290e4ac1ebfa5b17881c96e (sha256 42763f8a10877f954bdf855e75d1f183082f04dbaa0e5558d2f3203875cb3f10). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ 5d016ddfd52bd68f581740aef95c78de74ad67c5 (sha256 6a96a176ca6ad6ac0ec95a635679919bf0e2b14c2a530ade14d4577139d24708). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
-import type { Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
+import type { CalibrationResult, Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
  * @minItems 2
  * @maxItems 2
@@ -3529,4 +3529,114 @@ export interface BeliefEvidenceManifestV1 {
     reason: string;
   }[];
   terminalReason: string | null;
+}
+/**
+ * What an identification run may change and by how much, declared and hashed BEFORE the fit (R4-C §4, contracts §8): the registered parameters with their start and bounds, the channels and weights of the objective, and the optimizer settings that make the run deterministic. At most 12 parameters (the validator names the limit).
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "IdentificationPlanV1".
+ */
+export interface IdentificationPlanV1 {
+  schemaVersion: 1;
+  documentType: 'identification-plan';
+  id: string;
+  revision: number;
+  digest: Digest;
+  datasetDigest: Digest;
+  baseDriveModelDigest: Digest;
+  plantModelDigest: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  parameters: {
+    path: string;
+    initial: number;
+    lower: number;
+    upper: number;
+    unit: string;
+  }[];
+  objective: {
+    /**
+     * @minItems 1
+     * @maxItems 8
+     */
+    channels: string[];
+    weights: {
+      [k: string]: number;
+    };
+  };
+  optimizer: {
+    method: 'bounded_least_squares';
+    maxIterations: number;
+    tolerance: number;
+    relativeStep: number;
+    maxJacobianCondition: number;
+  };
+}
+/**
+ * The outcome of one identification run (R4-C, V15): which parameters were fitted from which dataset within which declared bounds, how the fit ended, how it did on the held-out validation split, and which new model revisions it produced. A record that did not pass, touched a bound, did not converge, could not separate its parameters, or came from synthetic data / the tool self-test produces nothing. Always accepted:false.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "CalibrationRecordV1".
+ */
+export interface CalibrationRecordV1 {
+  schemaVersion: 1;
+  documentType: 'calibration-record';
+  digest: Digest;
+  planDigest: Digest;
+  datasetDigest: Digest;
+  configDigest: Digest;
+  baseDriveModelDigest: Digest;
+  fitDigest: Digest;
+  sourceKind: 'measured' | 'synthetic';
+  /**
+   * @minItems 1
+   * @maxItems 64
+   */
+  fitted: {
+    path: string;
+    value: number;
+    atBound: boolean;
+    unit: string;
+    standardError: number | null;
+  }[];
+  convergence: {
+    iterations: number;
+    converged: boolean;
+    objectiveInitial: number;
+    objectiveFinal: number;
+    /**
+     * null: the Jacobian is singular (unbounded condition number); JSON cannot carry Infinity.
+     */
+    jacobianCondition: number | null;
+  };
+  validation: CalibrationResult;
+  domain: {
+    [k: string]: {
+      min: number;
+      max: number;
+    };
+  };
+  /**
+   * @maxItems 8
+   */
+  produced: {
+    document: 'drive_model' | 'arm_physics';
+    id: string;
+    revision: number;
+    digest: Digest;
+  }[];
+  reasonCodes: (
+    | 'SYNTHETIC_DATA'
+    | 'TOOL_SELF_TEST'
+    | 'NOT_CONVERGED'
+    | 'PARAMETER_AT_BOUND'
+    | 'IDENTIFIABILITY_POOR'
+    | 'VALIDATION_FAILED'
+    | 'CONFIG_DIGEST_MISMATCH'
+    | 'PREDICTION_FAILED'
+  )[];
+  toolSelfTest: boolean;
+  accepted: false;
 }

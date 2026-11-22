@@ -12,6 +12,7 @@ import {reasonWords,tuningHtml} from '../reports/control';
 import {linePlot,plotTable,sig,type PlotSeries} from './svg-plot';
 import {esc,icon} from './icons';
 import {locale,tr} from '../i18n';
+import {maturityBadgeHtml,maturityOf} from '../reports/calibration';
 
 /** Ticks per step request (unpaced): a stop waits behind at most one such batch. The seed and scenario revision are the bench's only (registry revision 1). */
 const STEP_TICKS=50,SEED=7,SCENARIO_REVISION=1;
@@ -402,7 +403,9 @@ export class ControlPanel {
   // an open table stays open across re-renders (view state only)
   this.tableOpen=(typeof document.getElementById==='function'?(document.getElementById('twin-ctl-table') as HTMLDetailsElement|null)?.open:undefined)??this.tableOpen;
   const c=this.ctx(),pin=this.host.pinBlock(),engine=[...this.history].reverse().find(b=>b.tuning)?.tuning?.engine;
-  const head=`<header class="control-head"><h2 id="control-title" class="visually-hidden">${tr('Điều khiển · bàn chỉnh một trục','制御 · 単軸チューニングベンチ','Control · single-axis tuning bench')}</h2>${c.ok?`<p class="control-plant" data-testid="control-plant">Plant: MuJoCo${engine?` ${esc(engine.version)}`:''} · ${esc(c.entry.plant.id)} r${esc(c.entry.plant.revision)} · ${esc(c.experiment)} · ${tr('tải','負荷','load')} ${esc(c.entry.plant.load)} · profile ${esc(this.base(c).id)} r${esc(this.base(c).revision)} · SHA-256 <abbr title="${esc(this.base(c).digest)}">${esc(this.base(c).digest.slice(0,12))}</abbr>${this.edited(c)?' · '+tr('Bản nháp gain đã sửa','編集したゲイン下書き','Edited gain draft'):''}</p>`:''}<p class="control-banner" data-testid="control-banner"><b>${tr('Mô phỏng · chưa hiệu chuẩn','シミュレーション · 未校正','Simulation · not calibrated')}</b> <span>${tr('Mức model: giả định','モデル水準:仮定','Model level: assumed')}</span></p></header>`;
+  // V15 / R4-D48: the level is the runtime's, per group, never a string typed here (an older runtime that lists none shows none)
+  const maturity=maturityBadgeHtml((c.ok&&maturityOf(this.host.health())?.[c.scenarioId==='MJ-BENCH-WHEEL'?'mujoco_3d':'mujoco_arm'])||null,{testid:'control-model-maturity'});
+  const head=`<header class="control-head"><h2 id="control-title" class="visually-hidden">${tr('Điều khiển · bàn chỉnh một trục','制御 · 単軸チューニングベンチ','Control · single-axis tuning bench')}</h2>${c.ok?`<p class="control-plant" data-testid="control-plant">Plant: MuJoCo${engine?` ${esc(engine.version)}`:''} · ${esc(c.entry.plant.id)} r${esc(c.entry.plant.revision)} · ${esc(c.experiment)} · ${tr('tải','負荷','load')} ${esc(c.entry.plant.load)} · profile ${esc(this.base(c).id)} r${esc(this.base(c).revision)} · SHA-256 <abbr title="${esc(this.base(c).digest)}">${esc(this.base(c).digest.slice(0,12))}</abbr>${this.edited(c)?' · '+tr('Bản nháp gain đã sửa','編集したゲイン下書き','Edited gain draft'):''}</p>`:''}<p class="control-banner" data-testid="control-banner"><b>${tr('Mô phỏng · chưa hiệu chuẩn','シミュレーション · 未校正','Simulation · not calibrated')}</b> ${maturity}</p></header>`;
   if(!c.ok)return `<section class="control-bench" data-testid="control-bench" aria-labelledby="control-title">${head}<p class="field-help" data-testid="control-unavailable" role="status">${icon('info',15)}${tr('Bàn chỉnh không khả dụng','ベンチは利用できません','The bench is unavailable')}: ${esc(codeWords(c.reason))}${c.reason==='UNPAIRED'?'':` (<code>${esc(c.reason)}</code>)`}</p>${this.recovery()}</section>`;
   const d=this.draft(c),s=this.signal(c),busy=this.phase!=='idle',sizes=sizesFor(c.axis,c.signals),labels=GAIN_LABEL(),err=(k:string)=>this.errors[k];
   const invalid=(k:string)=>err(k)?` aria-invalid="true" aria-describedby="twin-ctl-${k}-error"`:'',why=(k:string)=>err(k)?`<p class="field-error" id="twin-ctl-${k}-error">${esc(err(k))}</p>`:'';

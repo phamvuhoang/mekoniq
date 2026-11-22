@@ -2748,3 +2748,14 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 [data-testid="fault-evidence"] .link-button { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; text-align: left; }
 [data-testid="fault-evidence"][data-violated="true"] h3 { color: var(--danger); }
 [data-testid="fault-evidence"] .pill[data-verdict="detected_late"] { border-color: var(--danger); }   /* not_detected is a valid result for the faults the oracle does not require */
+
+/* V15: the model-maturity badge (words first: the level is never carried by colour alone) and the calibration record screen */
+.maturity-badge { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; max-width: 100%; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; }
+.maturity-badge[data-level="calibrated"] { border-color: var(--accent); }
+.maturity-badge[data-level="illustrative"] { border-style: dashed; }
+.maturity-groups { color: var(--muted); }
+.twin-runbar-left .maturity-badge { margin-left: 8px; }
+.calibration-loader { margin-top: 12px; }
+.calibration-view table { margin: 4px 0 12px; }
+.calibration-view tr[data-bound="true"] td, .calibration-view tr[data-bound="true"] th { color: var(--amber); }
+.calibration-view .calibration-reasons { margin: 4px 0; padding-left: 20px; }
