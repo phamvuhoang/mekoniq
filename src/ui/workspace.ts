@@ -36,7 +36,7 @@ import {transportBar,transportTime,type TransportState} from './transport';
 import {keyAction,shortcutsDialog,TWIN_ONLY_KEYS} from './keys';
 import {inspector,loadUi,saveUi,TABS,type InspectorTab} from './inspector';
 import {ControlPanel} from './control-panel';
-import {calibrationHtml,maturityBadgeHtml,maturityForBackends,maturityOfReport,readCalibrationFile,type CalibrationView} from '../reports/calibration';
+import {CalibrationFile,calibrationHtml,maturityBadgeHtml,maturityForBackends,maturityOfReport} from '../reports/calibration';
 import {engineeringPanel,engineeringInspection,telemetryLine} from './engineering-panel';
 import type {Twin3d,TwinPoses} from '../viewer/twin3d';
 import {LivePlayback} from '../twin/live-playback';
@@ -105,7 +105,7 @@ export class TwinWorkspace {
  /** Telemetry (lossy) lives in the store; the durable view only changes from action receipts, resets and polled snapshots. */
  private store=new TwinStore();private link:Link={state:'closed',lastHeartbeatMs:null,paused:false};private streams:ReturnType<typeof openRunStreams>|null=null;private streamRun='';
  private business=0;private ticker:ReturnType<typeof setInterval>|undefined;private painted='';private refreshing=false;
- private calibrationView:CalibrationView|null=null;private calibrationError:string|null=null;private perceptionStudy:PerceptionStudyV1|null=null;private perceptionStudyError:string|null=null;private study:SemanticStudyView|null=null;private studyTab:'run'|'study'='run';
+ private calibration=new CalibrationFile();private perceptionStudy:PerceptionStudyV1|null=null;private perceptionStudyError:string|null=null;private study:SemanticStudyView|null=null;private studyTab:'run'|'study'='run';
  private replayPending=false;private replay:ReplayState|null=null;private replayTimer:ReturnType<typeof setInterval>|undefined;private previous:RunReport|null=null;
  // R4 V09: the drive fault schedule is an input of the next run of a MuJoCo drive preset, held here (never in the project), with the check the runtime last gave it
  private driveFaults:DriveFaultEntry[]=[];private driveFor='';private driveDraft:DriveFaultDraft|null=null;private driveOpen=false;private driveMessage:string|null=null;private driveCheck:DriveCheck={state:'idle',codes:[]};private runDrive:DriveFaultEntry[]|undefined;
@@ -349,7 +349,8 @@ export class TwinWorkspace {
  }
  /** V15: a calibration record read from a local file (no runtime needed); shown beside the bench it was made for. */
  private calibrationBlock(){
-  return `<details class="calibration-loader" data-testid="calibration-loader" ${this.calibrationView||this.calibrationError?'open':''}><summary>${tr('Hiệu chuẩn · bản ghi (tệp)','校正 · レコード(ファイル)','Calibration · record (file)')}</summary><label class="button quiet" for="twin-import-calibration">${tr('Nhập bản ghi hiệu chuẩn (JSON)','校正レコード(JSON)を読み込む','Import calibration record (JSON)')}</label><input class="visually-hidden" id="twin-import-calibration" type="file" accept="application/json,.json">${calibrationHtml(this.calibrationView,this.calibrationError)}</details>`;
+  const shown=this.calibration.show((this.health as {calibrationConfigDigests?:Record<string,string>}|null)?.calibrationConfigDigests??null);
+  return `<details class="calibration-loader" data-testid="calibration-loader" ${this.calibration.loaded?'open':''}><summary>${tr('Hiệu chuẩn · bản ghi (tệp)','校正 · レコード(ファイル)','Calibration · record (file)')}</summary><label class="button quiet" for="twin-import-calibration">${tr('Nhập bản ghi hiệu chuẩn (JSON)','校正レコード(JSON)を読み込む','Import calibration record (JSON)')}</label><input class="visually-hidden" id="twin-import-calibration" type="file" accept="application/json,.json">${calibrationHtml(shown.view,shown.error)}</details>`;
  }
  /** R4.4: the perception-gap study screen: a `PerceptionStudyV1` file (the study of `lab-mujoco.mjs verify`) read from disk, so it works without a runtime. */
  private perceptionStudyBlock(){
@@ -508,7 +509,7 @@ ${this.notice?`<div class="notice" role="status">${icon('info',17)}<span>${esc(t
   const studyImporter=document.getElementById('twin-import-study') as HTMLInputElement|null;
   studyImporter?.addEventListener('change',()=>{const file=studyImporter.files?.[0];if(!file)return;void this.call(async()=>{if(file.size>8*1024*1024)throw Error('SEMANTIC_STUDY_LIMIT');this.study=parseSemanticStudy(await file.text());this.studyTab='study';});},{once:true});
   const calibrationImporter=document.getElementById('twin-import-calibration') as HTMLInputElement|null;
-  calibrationImporter?.addEventListener('change',()=>{const file=calibrationImporter.files?.[0];if(!file)return;void (async()=>{if(file.size>8*1024*1024){this.calibrationView=null;this.calibrationError='CALIBRATION_FILE_LIMIT';}else{const r=readCalibrationFile(await file.text(),{configDigests:(this.health as {calibrationConfigDigests?:Record<string,string>}|null)?.calibrationConfigDigests??null});this.calibrationView=r.ok?r.view:null;this.calibrationError=r.ok?null:r.reason;}this.rerender();})();},{once:true});
+  calibrationImporter?.addEventListener('change',()=>{const file=calibrationImporter.files?.[0];if(!file)return;void (async()=>{if(file.size>8*1024*1024)this.calibration.load(null,true);else this.calibration.load(await file.text());this.rerender();})();},{once:true});
   const perceptionImporter=document.getElementById('twin-import-perception-study') as HTMLInputElement|null;
   perceptionImporter?.addEventListener('change',()=>{const file=perceptionImporter.files?.[0];if(!file)return;void (async()=>{if(file.size>1024*1024){this.perceptionStudy=null;this.perceptionStudyError='STUDY_LIMIT';}else{const r=parseStudy(await file.text());this.perceptionStudy=r.ok?r.study:null;this.perceptionStudyError=r.ok?null:r.reason;}this.rerender();})();},{once:true});
   const importer=document.getElementById('twin-import-evidence') as HTMLInputElement|null;

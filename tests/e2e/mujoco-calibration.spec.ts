@@ -3,11 +3,14 @@
 // The records are written here (a record is a local file); nothing is uploaded and no runtime route reads one.
 import {test,expect} from '@playwright/test';
 import {openInspector} from '../support/twin';
+import {hashJson} from '../../src/twin/hash';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL;
 const d=(c:string)=>c.repeat(64);
-const record=(o:Record<string,unknown>={})=>({schemaVersion:1,documentType:'calibration-record',digest:d('1'),planDigest:d('2'),datasetDigest:d('3'),configDigest:d('c'),baseDriveModelDigest:d('4'),fitDigest:d('5'),sourceKind:'measured',
+const unsealed=(o:Record<string,unknown>={})=>({schemaVersion:1,documentType:'calibration-record',digest:d('1'),planDigest:d('2'),datasetDigest:d('3'),configDigest:d('c'),baseDriveModelDigest:d('4'),fitDigest:d('5'),sourceKind:'measured',
  fitted:[{path:'armatureKgM2[2]',value:0.1304,atBound:false,unit:'kg*m^2',standardError:0.001}],convergence:{iterations:3,converged:true,objectiveInitial:20.7,objectiveFinal:3.97,jacobianCondition:7.5},
  validation:{status:'fail',reasons:['MEASURED_DATA_REQUIRED'],residuals:{},domain:{},calibratedCapabilities:[],invalidatedBy:null},domain:{position:{min:-1.14,max:-0.25}},produced:[],reasonCodes:['VALIDATION_FAILED'],toolSelfTest:false,accepted:false,...o});
+/** sealed as the tool seals a record: the digest is the hash of everything else */
+const record=(o:Record<string,unknown>={})=>{const {digest:_,...rest}=unsealed(o);void _;return {...rest,digest:hashJson(rest)};};
 const file=(r:unknown)=>({name:'record.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(r))});
 
 test('Control tab: the maturity badge comes from the runtime, a record of this plant is read from a file, a record of another plant is refused, a self-test is labelled, and none of them changes the badge',async({page,request,baseURL})=>{
@@ -46,6 +49,9 @@ test('Control tab: the maturity badge comes from the runtime, a record of this p
  await page.locator('#twin-import-calibration').setInputFiles(file(record({configDigest:wheel,sourceKind:'synthetic',toolSelfTest:true,reasonCodes:['SYNTHETIC_DATA','TOOL_SELF_TEST']})));
  await expect(page.getByTestId('calibration-record')).toHaveAttribute('data-label','self_test');await expect(page.getByTestId('calibration-label')).toContainText('Tool self-test');
  await expect(badge).toHaveAttribute('data-level','assumed');
+ // a record edited after it was written (same digest, another value) is refused
+ await page.locator('#twin-import-calibration').setInputFiles(file({...record({configDigest:wheel}),fitted:[{path:'armatureKgM2[2]',value:99,atBound:false,unit:'kg*m^2',standardError:0.001}]}));
+ await expect(page.getByTestId('calibration-error')).toContainText('CALIBRATION_FILE_INVALID');
  // a file that is not a record, a record claiming acceptance
  await page.locator('#twin-import-calibration').setInputFiles(file({...record({configDigest:wheel}),accepted:true}));
  await expect(page.getByTestId('calibration-error')).toContainText('CALIBRATION_FILE_INVALID');

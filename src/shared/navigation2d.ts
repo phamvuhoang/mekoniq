@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 5d016ddfd52bd68f581740aef95c78de74ad67c5 (sha256 6a96a176ca6ad6ac0ec95a635679919bf0e2b14c2a530ade14d4577139d24708). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ a01c2a7512c8e32698d5c0fd284f19027d430a2e (sha256 75e09d01ba3c63830401e63e0899920e57586ee259fb98d209ceaabc44a688c3). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { CalibrationResult, Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -3545,6 +3545,8 @@ export interface IdentificationPlanV1 {
   datasetDigest: Digest;
   baseDriveModelDigest: Digest;
   plantModelDigest: Digest;
+  controlProfileDigest: Digest;
+  benchBinding: Digest;
   /**
    * @minItems 1
    * @maxItems 64

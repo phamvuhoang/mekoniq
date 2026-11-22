@@ -3,6 +3,7 @@
 // a record on this screen never changes a badge. Read-only: it counts what was recorded and says nothing is certified.
 import type {CalibrationRecordV1} from '../shared/navigation2d';
 import {tr} from '../i18n';
+import {hashJson} from '../twin/hash';
 import {esc} from '../ui/icons';
 import {linePlot,plotTable,sig,type PlotSeries} from '../ui/svg-plot';
 
@@ -53,11 +54,13 @@ export function maturityOfReport(report:unknown,health:unknown):MaturityLevels|n
 // ---- the calibration screen -------------------------------------------------------------------------------------------------------------------------------------
 export type CalibrationLabel='measured'|'synthetic'|'self_test';
 export interface CalibrationPlot {trialId:string;channel:string;unit:string;measured:[number,number][];predicted:[number,number][]}
-export interface CalibrationView {record:CalibrationRecordV1;label:CalibrationLabel;/** `valid`: the record's configuration is the plant's, for that axis. `unchecked`: no runtime to compare with. */validity:'valid'|'unchecked';axisId:string|null;plot:CalibrationPlot|null}
+export interface CalibrationView {record:CalibrationRecordV1;label:CalibrationLabel;/** `valid`: the record's configuration is the plant's, for that axis. `unchecked`: no runtime to compare with. */validity:'valid'|'unchecked';axisId:string|null;plot:CalibrationPlot|null;/** SERIES_NOT_BOUND: the file brought series that do not belong to the record; none is drawn */plotIssue:string|null}
 export type CalibrationRead={ok:true;view:CalibrationView}|{ok:false;reason:string};
 const LIMIT_BYTES=8*1024*1024,HEX=/^[0-9a-f]{64}$/,finite=(v:unknown):v is number=>typeof v==='number'&&Number.isFinite(v);
 const num=(v:unknown)=>finite(v);
 
+/** The same rule as the runtime's validator: sha-256 of the canonical JSON of the record without its `digest`. An edited file keeps its old digest and does not pass. */
+const sealed=(x:Record<string,unknown>)=>{const {digest,...rest}=x;try{return hashJson(rest)===digest;}catch{return false;}};
 function recordOk(x:unknown):x is CalibrationRecordV1{
  if(!isObject(x)||x.schemaVersion!==1||x.documentType!=='calibration-record'||x.accepted!==false||typeof x.toolSelfTest!=='boolean'||!['measured','synthetic'].includes(x.sourceKind as string))return false;
  if(!['digest','planDigest','datasetDigest','configDigest','baseDriveModelDigest','fitDigest'].every(k=>typeof x[k]==='string'&&HEX.test(x[k] as string)))return false;
@@ -67,23 +70,40 @@ function recordOk(x:unknown):x is CalibrationRecordV1{
  if(!isObject(v)||!['pass','fail','not_run'].includes(v.status as string)||!Array.isArray(v.reasons)||!isObject(v.residuals)||!Object.values(v.residuals).every(r=>isObject(r)&&num(r.samples)&&num(r.meanAbs)&&num(r.maxAbs)&&typeof r.withinTolerance==='boolean'))return false;
  if(!isObject(x.domain)||!Object.values(x.domain).every(d=>isObject(d)&&num(d.min)&&num(d.max))||!Array.isArray(x.reasonCodes)||!x.reasonCodes.every(r=>typeof r==='string'))return false;
  if(!Array.isArray(x.produced)||!x.produced.every(p=>isObject(p)&&['drive_model','arm_physics'].includes(p.document as string)&&typeof p.id==='string'&&Number.isSafeInteger(p.revision)&&typeof p.digest==='string'&&HEX.test(p.digest)))return false;
- // a record that produced a revision must be one the tool could have written: measured, not the self-test, converged, inside its bounds, and passed on the held-out split
- return !x.produced.length||(x.sourceKind==='measured'&&!x.toolSelfTest&&v.status==='pass'&&c.converged===true&&x.fitted.every(f=>!(f as {atBound:boolean}).atBound));
+ if(!sealed(x))return false;
+ // a record that produced a revision must be one the tool could have written: measured, not the self-test, converged, inside its bounds, passed on the held-out split, separable (a finite condition) and carrying no reason code
+ return !x.produced.length||(x.sourceKind==='measured'&&!x.toolSelfTest&&v.status==='pass'&&c.converged===true&&c.jacobianCondition!==null&&x.reasonCodes.length===0&&x.fitted.every(f=>!(f as {atBound:boolean}).atBound));
 }
-function plotOf(bundle:Record<string,unknown>):CalibrationPlot|null{
+/** The series a comparison file draws must belong to the record: the dataset hashes to the record's dataset digest, dataset and prediction carry its configuration, the prediction uses the dataset's clock and unit, and the
+ * prediction is no further from the measurement, for that trial, than the record's own worst residual of the channel (a prediction that was not the one judged would not pass this). Else nothing is drawn. */
+function plotOf(bundle:Record<string,unknown>,record:CalibrationRecordV1):{plot:CalibrationPlot|null;issue:string|null}{
  const ds=bundle.dataset,pr=bundle.prediction;
- if(!isObject(ds)||!isObject(pr)||!Array.isArray(ds.trials)||!Array.isArray(pr.trials)||!isObject(ds.clockMapping)||!finite(ds.clockMapping.offsetNs))return null;
+ if(ds===undefined&&pr===undefined)return {plot:null,issue:null};
+ const bad={plot:null,issue:'SERIES_NOT_BOUND'};
+ try{
+  if(!isObject(ds)||!isObject(pr)||hashJson(ds)!==record.datasetDigest||ds.configDigest!==record.configDigest||pr.configDigest!==record.configDigest)return bad;
+ }catch{return bad;}
+ if(!Array.isArray(ds.trials)||!Array.isArray(pr.trials)||!isObject(ds.clockMapping)||!finite(ds.clockMapping.offsetNs)||pr.clockDomain!==ds.clockMapping.domain)return bad;
  for(const t of ds.trials as unknown[]){
   if(!isObject(t)||t.split!=='validation'||typeof t.trialId!=='string'||!Array.isArray(t.timesNs)||!isObject(t.channels))continue;
   const p=(pr.trials as unknown[]).find(q=>isObject(q)&&q.trialId===t.trialId);if(!isObject(p)||!Array.isArray(p.timesNs)||!isObject(p.channels))continue;
   const pc=p.channels as Record<string,unknown>,channel=Object.keys(t.channels).includes('position')?'position':Object.keys(t.channels).find(c=>Array.isArray(pc[c]));
   const m=channel?t.channels[channel]:null,q=channel?pc[channel]:null;
   if(!channel||!Array.isArray(m)||!Array.isArray(q)||m.length!==t.timesNs.length||q.length!==p.timesNs.length||m.length>100000||q.length>100000||![...m,...q,...t.timesNs,...p.timesNs].every(finite))continue;
-  const unit=isObject(ds.units)&&typeof ds.units[channel]==='string'?ds.units[channel] as string:'';
+  const unit=isObject(ds.units)&&typeof ds.units[channel]==='string'?ds.units[channel] as string:'',punit=isObject(pr.units)?pr.units[channel]:undefined,judged=record.validation.residuals[channel];
+  if(punit!==unit||!judged)return bad;
   // the measured clock plus its declared offset is the prediction's clock (the assessor's own rule); seconds on the screen
-  return {trialId:t.trialId,channel,unit,measured:(t.timesNs as number[]).map((x,i)=>[(x+(ds.clockMapping as {offsetNs:number}).offsetNs)/1e9,m[i] as number]),predicted:(p.timesNs as number[]).map((x,i)=>[x/1e9,q[i] as number])};
+  const offset=(ds.clockMapping as {offsetNs:number}).offsetNs,pt=p.timesNs as number[],pv=q as number[];
+  let worst=0;
+  for(let i=0;i<m.length;i++){
+   const at=(t.timesNs as number[])[i]!+offset;let k=pt.findIndex(x=>x>=at);
+   if(k<0||k===0&&pt[0]!==at)continue;   // outside the prediction: not compared (the assessor calls it a gap)
+   const y=pt[k]===at?pv[k]!:pv[k-1]!+(pv[k]!-pv[k-1]!)*(at-pt[k-1]!)/(pt[k]!-pt[k-1]!);worst=Math.max(worst,Math.abs(y-(m[i] as number)));
+  }
+  if(worst>judged.maxAbs*(1+1e-6)+1e-12)return bad;
+  return {issue:null,plot:{trialId:t.trialId,channel,unit,measured:(t.timesNs as number[]).map((x,i)=>[(x+offset)/1e9,m[i] as number]),predicted:pt.map((x,i)=>[x/1e9,pv[i]!])}};
  }
- return null;
+ return {plot:null,issue:null};
 }
 /** A local file: a calibration record, or `{record, dataset?, prediction?}` (the record and the series it was judged on). `current.configDigests`: the runtime's digest of the measured configuration of each bench axis
  * (health `calibrationConfigDigests`), or null without a runtime. A record whose configuration is none of the plant's is refused with CONFIG_DIGEST_MISMATCH and shows nothing of its values. */
@@ -98,7 +118,8 @@ export function readCalibrationFile(text:string,current:{configDigests:Record<st
   if(!axisId)return {ok:false,reason:'CONFIG_DIGEST_MISMATCH'};
  }
  const label:CalibrationLabel=record.toolSelfTest?'self_test':record.sourceKind==='synthetic'?'synthetic':'measured';
- return {ok:true,view:{record,label,validity:axisId?'valid':'unchecked',axisId,plot:bundle?plotOf(bundle):null}};
+ const drawn=bundle?plotOf(bundle,record):{plot:null,issue:null};
+ return {ok:true,view:{record,label,validity:axisId?'valid':'unchecked',axisId,plot:drawn.plot,plotIssue:drawn.issue}};
 }
 
 const ERROR_WORDS:Record<string,()=>string>={
@@ -123,7 +144,7 @@ export function calibrationHtml(view:CalibrationView|null,error:string|null):str
  const residuals=Object.entries(r.validation.residuals),resTable=`<table class="eng-table" data-testid="calibration-residuals"><thead><tr><th scope="col">${tr('Kênh','チャンネル','Channel')}</th><th scope="col">${tr('Mẫu','サンプル','Samples')}</th><th scope="col">${tr('Trung bình |sai số|','平均|誤差|','Mean |error|')}</th><th scope="col">${tr('Lớn nhất |sai số|','最大|誤差|','Max |error|')}</th><th scope="col">${tr('Trong dung sai','許容内','Within tolerance')}</th></tr></thead><tbody>${residuals.length?residuals.map(([k,v])=>`<tr><th scope="row"><code>${esc(k)}</code></th><td>${esc(v.samples)}</td><td>${esc(sig(v.meanAbs))}</td><td>${esc(sig(v.maxAbs))}</td><td>${v.withinTolerance?tr('có','はい','yes'):tr('không','いいえ','no')}</td></tr>`).join(''):`<tr><td colspan="5">${tr('Không có residual (đánh giá dừng ở bước cấu trúc).','残差なし(評価は構造チェックで停止)。','No residuals (the assessment stopped at its structural checks).')}</td></tr>`}</tbody></table>`;
  const domain=Object.entries(r.domain),domTable=`<table class="eng-table" data-testid="calibration-domain"><thead><tr><th scope="col">${tr('Kênh','チャンネル','Channel')}</th><th scope="col">min</th><th scope="col">max</th></tr></thead><tbody>${domain.map(([k,v])=>`<tr><th scope="row"><code>${esc(k)}</code></th><td>${esc(sig(v.min))}</td><td>${esc(sig(v.max))}</td></tr>`).join('')||`<tr><td colspan="3">—</td></tr>`}</tbody></table>`;
  const plot=view.plot?`<figure data-testid="calibration-plot">${linePlot([{id:'measured',label:tr('đo','計測','measured'),points:view.plot.measured},{id:'predicted',label:tr('dự đoán','予測','predicted'),points:view.plot.predicted,dashed:true}] as PlotSeries[],{width:560,height:220,xLabel:'t (s)',yLabel:`${view.plot.channel}${view.plot.unit?` (${view.plot.unit})`:''}`,title:`${tr('Đo và dự đoán','計測と予測','Measured and predicted')} · ${view.plot.trialId}`})}<details><summary>${tr('Bảng','表','Table')}</summary>${plotTable([{id:'measured',label:tr('đo','計測','measured'),points:view.plot.measured},{id:'predicted',label:tr('dự đoán','予測','predicted'),points:view.plot.predicted}],12)}</details></figure>`
-  :`<p class="field-help" data-testid="calibration-no-series">${tr('Không có chuỗi đo/dự đoán trong tệp này (tệp so sánh gồm record, dataset và prediction).','このファイルに計測/予測の系列はありません(比較ファイルは record、dataset、prediction を含みます)。','No measured/predicted series in this file (a comparison file holds the record, the dataset and the prediction).')}</p>`;
+  :view.plotIssue?`<p class="field-error" role="alert" data-testid="calibration-series-mismatch"><code>${esc(view.plotIssue)}</code> ${tr('Chuỗi đo/dự đoán trong tệp không thuộc bản ghi này (dataset, cấu hình, đơn vị hoặc dự đoán không khớp): không vẽ.','ファイルの計測/予測系列はこのレコードのものではありません(データセット、構成、単位、予測が一致しません)。描画しません。','The measured/predicted series in the file do not belong to this record (dataset, configuration, unit or prediction do not match): not drawn.')}</p>`:`<p class="field-help" data-testid="calibration-no-series">${tr('Không có chuỗi đo/dự đoán trong tệp này (tệp so sánh gồm record, dataset và prediction).','このファイルに計測/予測の系列はありません(比較ファイルは record、dataset、prediction を含みます)。','No measured/predicted series in this file (a comparison file holds the record, the dataset and the prediction).')}</p>`;
  const validity=view.validity==='valid'?tr(`Hợp lệ cho cấu hình của trục ${esc(view.axisId)}. Đổi plant, tải hoặc bộ trục làm bản ghi hết hiệu lực.`,`軸 ${esc(view.axisId)} の構成に対して有効です。プラント、負荷、軸の構成が変わると無効になります。`,`Valid for the configuration of axis ${esc(view.axisId)}. A changed plant, load or axis set makes it expire.`)
   :tr('Chưa kiểm tra: cần runtime để so với cấu hình của plant.','未確認:プラント構成との照合にはランタイムが必要です。','Not checked: a runtime is needed to compare it with the plant’s configuration.');
  const produced=r.produced.length?tr(`Sinh ${r.produced.length} revision mới: ${r.produced.map(p=>`${esc(p.document)} r${esc(p.revision)}`).join(', ')}.`,`新しいリビジョンを ${r.produced.length} 件生成: ${r.produced.map(p=>`${esc(p.document)} r${esc(p.revision)}`).join(', ')}。`,`Produced ${r.produced.length} new revision(s): ${r.produced.map(p=>`${esc(p.document)} r${esc(p.revision)}`).join(', ')}.`):tr('Không sinh revision.','リビジョンは生成されませんでした。','No revision produced.');
@@ -132,4 +153,18 @@ export function calibrationHtml(view:CalibrationView|null,error:string|null):str
   +`<h4>${tr('Tham số đã fit','フィットしたパラメータ','Fitted parameters')}</h4>${fitted}<p class="field-help" data-testid="calibration-convergence">${tr('Vòng lặp','反復','Iterations')} ${esc(c.iterations)} · ${c.converged?tr('hội tụ','収束','converged'):tr('không hội tụ','収束せず','not converged')} · ${tr('hàm mục tiêu','目的関数','objective')} ${esc(sig(c.objectiveInitial))} → ${esc(sig(c.objectiveFinal))} · ${tr('số điều kiện Jacobian','ヤコビアン条件数','Jacobian condition')} ${c.jacobianCondition===null?'∞':esc(sig(c.jacobianCondition))}</p>`
   +`<h4>${tr('Tập validation giữ lại','保留した検証データ','Held-out validation')}: <span data-testid="calibration-status">${esc(r.validation.status)}</span></h4>${resTable}<h4>${tr('Miền hiệu lực (đã đo)','有効範囲(計測済み)','Domain (measured)')}</h4>${domTable}${plot}`
   +`<p class="field-help">${tr('Khớp số đo trong một miền không nói gì về hành vi ngoài miền đó. Mức model do runtime báo, bản ghi này không đổi nó.','計測値との一致は、その範囲の外での挙動については何も示しません。モデルの成熟度はランタイムが報告し、このレコードでは変わりません。','Matching measurements inside a domain says nothing about behaviour outside it. The model maturity is the runtime’s report; this record does not change it.')}</p></section></div>`;
+}
+
+/** The file the page holds and what it shows NOW: the record is read again whenever the runtime's configuration digests change (a runtime switch, a disconnect, a new configuration), never kept as the validity it had at import. */
+export class CalibrationFile {
+ private text:string|null=null;private limit=false;private memo:{text:string;key:string;read:CalibrationRead}|null=null;
+ load(text:string|null,limit=false){this.text=limit?null:text;this.limit=limit;this.memo=null;}
+ get loaded(){return this.text!==null||this.limit;}
+ show(configDigests:Record<string,string>|null):{view:CalibrationView|null;error:string|null}{
+  if(this.limit)return {view:null,error:'CALIBRATION_FILE_LIMIT'};
+  if(this.text===null)return {view:null,error:null};
+  const key=JSON.stringify(configDigests);
+  if(!this.memo||this.memo.text!==this.text||this.memo.key!==key)this.memo={text:this.text,key,read:readCalibrationFile(this.text,{configDigests})};
+  const r=this.memo.read;return r.ok?{view:r.view,error:null}:{view:null,error:r.reason};
+ }
 }
