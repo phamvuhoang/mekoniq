@@ -1,0 +1,71 @@
+{
+  "sourceKind": "synthetic",
+  "generator": "tests/fixtures/calibration hand-written first-order response (not measured, not from the simulator)",
+  "deviceId": "synthetic-fixture",
+  "configDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "clockDomain": "sim",
+  "clockOffsetNs": 0,
+  "units": {
+    "command": "rad",
+    "position": "rad"
+  },
+  "uncertainty": {
+    "command": 0.0001,
+    "position": 0.0005
+  },
+  "policy": {
+    "channels": {
+      "command": {
+        "absoluteTolerance": 0.002,
+        "relativeTolerance": 0.01
+      },
+      "position": {
+        "absoluteTolerance": 0.002,
+        "relativeTolerance": 0.01
+      }
+    },
+    "minTrialsPerCondition": 1,
+    "maxClockGapNs": 20000000,
+    "capabilities": {
+      "position": "actuator"
+    }
+  },
+  "trials": [
+    {
+      "trialId": "trial-tune-1",
+      "split": "tune",
+      "condition": "step-0.1",
+      "file": "trial-tune-1.csv",
+      "axisId": "xarm-1/J3",
+      "signal": {
+        "kind": "step",
+        "amplitude": 0.1,
+        "atTick": 10
+      }
+    },
+    {
+      "trialId": "trial-val-1",
+      "split": "validation",
+      "condition": "step-0.1",
+      "file": "trial-val-1.csv",
+      "axisId": "xarm-1/J3",
+      "signal": {
+        "kind": "step",
+        "amplitude": 0.1,
+        "atTick": 10
+      }
+    },
+    {
+      "trialId": "trial-val-2",
+      "split": "validation",
+      "condition": "step-0.1",
+      "file": "trial-val-2.csv",
+      "axisId": "xarm-1/J3",
+      "signal": {
+        "kind": "step",
+        "amplitude": 0.1,
+        "atTick": 10
+      }
+    }
+  ]
+}

@@ -248,6 +248,7 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   expect(report.bench.anchorTick).toBe((await benchCatalog(mujocoRoot))['MJ-BENCH-WHEEL'].experiments['drive-nominal-v1']!.anchorTick);   // V07pre: the anchor health announces is the run's
   expect(t.metrics.riseTimeS).toMatchObject({available:true,unit:'s',basis:'actual'});
   expect(report.manifest.backends.map(x=>x.id)).toEqual(['mujoco_3d']);expect(report.bench.traceIssues).toEqual([]);
+  expect(report.manifest.calibration).toMatchObject({status:'not_calibrated',modelMaturity:{geometry:'assumed',inertia:'assumed',drive:'assumed',contact:'assumed',sensing:'assumed'}});   // V15: the report says how far the plant can be trusted, per group
   // D2: the bytes the worker read are the bytes the request carried (JSON of the submitted object), and the create named exactly them
   const bytes=await readFile(join(directory,'bundle/bench-control.json'));
   expect(bytes.toString()).toBe(JSON.stringify(b.controlProfile));expect(seen.create!.bench.controlProfileRef.sha256).toBe(sha(bytes));
@@ -424,12 +425,19 @@ describe.skipIf(!mujocoReady)('bench runs on the real engine',()=>{
   const directory=await mujocoTemp('mj-bench-gw-');
   const p=await mujocoProcessScope.observe(async()=>mujocoFromOptions({enabled:true,python:mujocoPython,workerRoot:mujocoRoot,lockPath:join(mujocoRoot,'requirements.lock'),directory:join(directory,'probe'),bundleFile:async()=>{throw Error('NO_BUNDLE');}}));
   const sim=await portableSimulationFromOptions({enabled:false,python:'python3',workerRoot:'robotics/navigation-2d',lockPath:'robotics/navigation-2d/requirements.lock',directory,mujoco:{arm:p.arm,mobile:p.mobile}});
-  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks,benchInfo:sim.benchInfo,...sim.benchCatalog?{benchCatalog:sim.benchCatalog}:{}}});
+  const g:LabGateway=await startLabGateway({port:0,directory,sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{stream:{heartbeatMs:50,pollMs:50,telemetryMs:50},catalog:sim.catalog,enabledBackends:sim.enabledBackends,simulationFactory:async(i,pr)=>mujocoProcessScope.observeRun(await sim.simulationFactory(i,pr)),portableChecks:sim.readinessChecks,benchInfo:sim.benchInfo,...sim.benchCatalog?{benchCatalog:sim.benchCatalog}:{},...sim.modelMaturity?{modelMaturity:sim.modelMaturity,calibrationConfigDigests:sim.calibrationConfigDigests}:{}}});
   try{
    const health=await (await fetch(g.url+'/lab/v2/health')).json() as {scenarioIds:string[];backendSets:{id:string}[];tuningEnvelope:{revision:number};benchSignals:object;benchCatalog:BenchCatalog};
    expect(health.scenarioIds).toEqual(expect.arrayContaining(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']));expect(health.backendSets.map(s=>s.id)).toContain(SET);
    expect(health.tuningEnvelope).toEqual(doc('tuning-envelope-v1.json'));expect(health.tuningEnvelope.revision).toBe(2);
    expect(health.benchSignals).toEqual({kinds:['step','trapezoid','hold'],maxTicks:500,amplitudes:{wheelRadS:[2,5],jointRad:[0.05,0.1,0.2]},suggestOptions:{bandwidthRadS:[5,10,20,40],damping:[0.7,1]},wheelDirection:'forward'});
+   // V15 / R4-D48: health lists the maturity of every group of each plant: a function of the sources the fixtures declare, so today nothing is calibrated and the whole plant is `assumed`
+   const maturity=(health as unknown as {modelMaturity:Record<string,Record<string,string>>}).modelMaturity;
+   expect(Object.keys(maturity).sort()).toEqual(['mujoco_3d','mujoco_arm']);
+   for(const plant of Object.values(maturity))expect(plant).toEqual({geometry:'assumed',inertia:'assumed',drive:'assumed',contact:'assumed',sensing:'assumed'});
+   // and, per bench axis, the digest of the configuration a calibration is valid for (the one `identify-drive-model.mjs --config-digest` prints)
+   const digests=(health as unknown as {calibrationConfigDigests:Record<string,string>}).calibrationConfigDigests;
+   expect(Object.keys(digests)).toEqual(expect.arrayContaining(['amr-1/wheel-left','amr-1/wheel-right','xarm-1/J1','xarm-1/J3','xarm-1/gripper']));expect(Object.values(digests).every(d=>/^[0-9a-f]{64}$/.test(d))).toBe(true);expect(new Set(Object.values(digests)).size).toBe(Object.keys(digests).length);
    // V07pre: the catalog the runtime built from its own worker root, with the starting draft the Lab sends unchanged below
    expect(Object.keys(health.benchCatalog)).toEqual(['MJ-BENCH-WHEEL','MJ-BENCH-ARM']);expect(health.benchCatalog['MJ-BENCH-ARM'].startingProfile).toEqual(doc('xarm6-control-v1.json'));
    const paired=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});

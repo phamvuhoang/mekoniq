@@ -6,8 +6,12 @@
 // attention and has no tuning. GET /lab/v2/runs/:id/trace serves the trace as read back (trace()), never from memory.
 import type {BenchTraceIdentity,BenchTraceManifest,BenchTraceTick} from '../../../../contracts/generated/navigation2d';
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
-import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
+import {mkdir,mkdtemp,readFile,readdir,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import type {HeadlessBench} from '../../engineering/bench-prediction';
+import {modelMaturity,mujocoPlantSources} from '../../engineering/maturity';
+import {applyPhysicsOverride} from '../../engineering/parameter-paths';
 import {gunzipSync,gzipSync} from 'node:zlib';
 import {BENCH_SET_ID} from '../capabilities';
 import {checkScenario,scenarioHash,scenarioRegistry} from '../scenario-registry';
@@ -26,12 +30,12 @@ import {sealDocument,type NavigationSceneV1} from '../navigation2d/contracts';
 import {activeRunCount,holdSlot,releaseSlot} from '../navigation2d/runner';
 import {WorkerLostError,type IRSimWorkerClient,type SpawnOptions} from '../navigation2d/worker-client';
 import {physicsDirectoryBytes,readBoundedPhysicsFile} from '../simulation3d/physics-evidence';
-import {buildArmCellScene,readXArmFixture,writeArmCellBundle} from '../simulation3d/arm-cell-scene';
+import {buildArmCellScene,readXArmFixture,writeArmCellBundle,type XArmPhysics} from '../simulation3d/arm-cell-scene';
 import {spawnMujocoWorker} from '../simulation3d/worker-client';
 import {MUJOCO_MAX_ACTIVE_RUNS,MUJOCO_SLOT,type MujocoRuntimeOptions} from '../simulation3d/mujoco';
 import {BENCH_MAX_TICKS,BENCH_WHEEL_DIRECTION,benchAnchorTick,benchAxisMode,benchAxisUnit,benchSignalLastTick,benchTarget,validateBenchRequest} from './bench-signals';
 import {DRIVE_EXPERIMENTS,driveExperiment,type DriveExperimentId} from './drive-experiments';
-import {BENCH_AXES,BENCH_SCENARIO_IDS,validateBenchRequestShape,validateDriveModel,validateTuningEnvelope,validateTraceManifestShape,validateTraceIdentityShape,validateTraceTickShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
+import {BENCH_AXES,BENCH_SCENARIO_IDS,sealDriveDocument,validateBenchRequestShape,validateDriveModel,validateTuningEnvelope,validateTraceManifestShape,validateTraceIdentityShape,validateTraceTickShape,validateControlEvidenceShape,validateControlProfile,type BenchRequestV1,type ControlMetric,type ControlProfileV1,type DriveAxisSnapshot,type DriveModelV1,type DriveTrace,type TuningEnvelopeV1,type TuningResultV1} from './drive-io';
 import {gainSuggestions} from './gain-suggest';
 import {stepResponseMetrics,unavailableMetrics} from './tuning-metrics';
 
@@ -48,9 +52,10 @@ type Policy={finalWindowS:number;settleBand:number;holdWindowS:number};
 /** What the server knows of a bench plant before any engine: its id, revision and bench load, the experiment's drive model (its bytes as committed), the envelope, the plant the profile must be sealed for,
  * the traced axes, where every axis rests (the arm's home, the gripper open, a wheel at rest) and, for an arm axis, its limits. */
 export interface BenchPlant {wheelRadiusM?:number;kind:'amr'|'arm';id:string;revision:number;/** both benches run without a load (ruling 14; the arm's cup stays parked) */load:'empty';axisIds:string[];/** the engine tick of signal tick 0 the drive model's enable sequence gives (benchAnchorTick) */anchorTick:number;model:DriveModelV1;modelBytes:Buffer;envelope:TuningEnvelopeV1;plantModelDigest:string;start:Record<string,number>;limits?:{lower:number;upper:number;start:number};policy:Policy}
-export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>,engineVersion?:string):Promise<BenchPlant>{
+/** `offlineModel` (V14): an offline tool's own sealed drive model in place of the experiment's file (the model is validated all the same); never a request field. */
+export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'scenarioId'|'axis'|'driveExperimentId'>,engineVersion?:string,offlineModel?:DriveModelV1):Promise<BenchPlant>{
  const kind=bench.scenarioId==='MJ-BENCH-WHEEL'?'amr':'arm',e=driveExperiment(bench.driveExperimentId),file=(p:string)=>readFile(join(workerRoot,p));
- const modelBytes=await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
+ const modelBytes=offlineModel?Buffer.from(JSON.stringify(offlineModel)):await file(join(DRIVE,kind==='amr'?e.mobileModel:e.armModel)),model=JSON.parse(modelBytes.toString()) as DriveModelV1;
  if(!validateDriveModel(model).ok||model.axes.some(a=>!benchDriveAxes.some(b=>a.axisId===b.axisId&&a.mode===b.mode)))throw Error('BENCH_DRIVE_MODEL_INVALID');
  const envelope=JSON.parse((await file(join(DRIVE,'tuning-envelope-v1.json'))).toString()) as TuningEnvelopeV1;
  if(!validateTuningEnvelope(envelope,benchDriveAxes).ok)throw Error('BENCH_ENVELOPE_INVALID');
@@ -75,9 +80,9 @@ export async function benchPlant(workerRoot:string,bench:Pick<BenchRequestV1,'sc
 /** Admission of a bench request against its plant, before any directory, slot or engine (ruling 2): shape and signal (registered amplitude, the joint limits, and ticks: the signal must end
  * by engine tick 500 counted from the anchor the drive model's enable sequence gives, else TICK_OUT_OF_RANGE), the draft profile against the experiment's
  * drive model and the envelope (validateControlProfile calls withinEnvelope), and the plant it is sealed for. Refusals are INVALID_BENCH_REQUEST with their codes (a 422). */
-export async function admitBench(bench:unknown,workerRoot:string,engineVersion?:string):Promise<BenchPlant>{
+export async function admitBench(bench:unknown,workerRoot:string,engineVersion?:string,offlineModel?:DriveModelV1):Promise<BenchPlant>{
  const shape=validateBenchRequestShape(bench);if(!shape.ok)throw Error(`INVALID_BENCH_REQUEST:${shape.reasonCodes.join(',')}`);
- const b=bench as BenchRequestV1,plant=await benchPlant(workerRoot,b,engineVersion),codes=new Set<string>();
+ const b=bench as BenchRequestV1,plant=await benchPlant(workerRoot,b,engineVersion,offlineModel),codes=new Set<string>();
  for(const c of [validateBenchRequest(b,{anchorTick:plant.anchorTick,...plant.limits?{limits:plant.limits}:{}}),validateControlProfile(b.controlProfile,plant.model,plant.envelope)])for(const x of c.reasonCodes)codes.add(x);
  // D2: a draft is never re-sealed for the plant; one sealed for another plant is refused
  if(b.controlProfile.plantModelDigest!==plant.plantModelDigest)codes.add('DRIVE_PLANT_MISMATCH');
@@ -129,7 +134,7 @@ export async function benchCatalog(workerRoot:string):Promise<BenchCatalog>{
 }
 
 /** The worker's bundle: the plant's scene and files from the fixture, the drive model's committed bytes and the draft as it was submitted (JSON.stringify of the request's object: never re-sealed). */
-async function writeBenchBundle(dir:string,workerRoot:string,bench:BenchRequestV1,plant:BenchPlant,seed:number){
+async function writeBenchBundle(dir:string,workerRoot:string,bench:BenchRequestV1,plant:BenchPlant,seed:number,physics?:XArmPhysics){
  await mkdir(dir,{recursive:true,mode:0o700});const put=(p:string,b:Uint8Array|string)=>writeFile(join(dir,p),b,{mode:0o600,flag:'wx'});
  let sceneDigest:string,create:Record<string,unknown>;
  if(plant.kind==='amr'){
@@ -141,7 +146,7 @@ async function writeBenchBundle(dir:string,workerRoot:string,bench:BenchRequestV
  }else{
   // the arm scene schema needs one cup: it stays parked (pinned, contacts off) for the whole bench; nothing ever places it
   const f=readXArmFixture(workerRoot),project=JSON.parse(await readFile(join(workerRoot,'fixtures/xarm6-g2-v1/coffee-cell-project.json'),'utf8')) as LabProjectV2;
-  const scene=buildArmCellScene(project,f,seed,{armId:ARM_ID,propIds:['cup-1']});await writeArmCellBundle(dir,scene,f);
+  const scene=buildArmCellScene(project,f,seed,{armId:ARM_ID,propIds:['cup-1']});await writeArmCellBundle(dir,scene,f,physics);
   sceneDigest=scene.sceneDigest;create={sceneRef:'arm-cell-scene.json',seed,arms:[{armId:ARM_ID,sceneRef:'arm-cell-scene.json'}]};
  }
  const control=Buffer.from(JSON.stringify(bench.controlProfile));await put('bench-drive.json',plant.modelBytes);await put('bench-control.json',control);
@@ -325,7 +330,8 @@ export function benchIdleLease(durationMs=BENCH_IDLE_LEASE_MS){
 }
 interface LeaseClock {now():number;schedule(fn:()=>void,delayMs:number):()=>void}
 const hostLeaseClock:LeaseClock={now:()=>performance.now(),schedule(fn,delayMs){const timer=setTimeout(fn,delayMs);timer.unref();return ()=>clearTimeout(timer);}};
-export interface BenchProviders extends RunProviders {idleLeaseMs?:number;leaseClock?:LeaseClock;runtime:MujocoRuntimeOptions;spawn?:(o:SpawnOptions)=>Promise<IRSimWorkerClient>}
+/** `offline` (V14): inputs of the offline calibration tools, never request fields: a sealed drive model in place of the experiment's, and an arm physics profile in place of the fixture's. */
+export interface BenchProviders extends RunProviders {idleLeaseMs?:number;leaseClock?:LeaseClock;runtime:MujocoRuntimeOptions;spawn?:(o:SpawnOptions)=>Promise<IRSimWorkerClient>;offline?:{driveModel?:DriveModelV1;physics?:XArmPhysics}}
 export async function createBenchRun(input:RunManifestInput&{bench?:unknown},providers:BenchProviders):Promise<ScenarioRun>{
  benchIdleLease(providers.idleLeaseMs);
  const scenario=scenarioRegistry.get(input.scenarioId);
@@ -339,12 +345,40 @@ export async function createBenchRun(input:RunManifestInput&{bench?:unknown},pro
  if(providers.reclaimOnly)throw Error('RECOVERY_CHECKPOINT_MISSING');
  const bench=input.bench as BenchRequestV1;
  if(bench.scenarioId!==scenario.id)throw Error('INVALID_BENCH_REQUEST:BENCH_SCOPE_INVALID');
- const plant=await admitBench(bench,providers.runtime.workerRoot,providers.runtime.engineVersion);
+ const plant=await admitBench(bench,providers.runtime.workerRoot,providers.runtime.engineVersion,providers.offline?.driveModel);
  const dir=providers.directory;await mkdir(dir,{recursive:true,mode:0o700});if((await readdir(dir)).length)throw Error('RECOVERY_CHECKPOINT_MISSING');
- const {sceneDigest,create}=await writeBenchBundle(join(dir,'bundle'),providers.runtime.workerRoot,bench,plant,input.seed);
+ const {sceneDigest,create}=await writeBenchBundle(join(dir,'bundle'),providers.runtime.workerRoot,bench,plant,input.seed,providers.offline?.physics);
  const runId=randomUUID(),identity:BenchTraceIdentity={runId,axisIds:plant.axisIds,plantModelDigest:plant.plantModelDigest,driveModelDigest:plant.model.digest,controlProfileDigest:bench.controlProfile.digest};
  const rec=await openBenchTrace(join(dir,'trace'),identity);
  return new BenchRun(runId,dir,input,scenario,bench,plant,sceneDigest,create,identity,rec,providers);
+}
+
+/** V14: one bench to its result with no gateway, no session and no Lab: the offline calibration tools' way of running "the same bench" on a model of their own (D42). The directory is a temp one removed after;
+ * only a COMPLETED bench with a complete trace returns (a fault, an unstable plant, a collision or a gap is an Error with its code: a fit never reads a partial response). The profile is the one that ran on the
+ * device; when the model under test is another document the profile only gains that model's digest (the tool's own copy, never written back). */
+export function createHeadlessBench(runtime:MujocoRuntimeOptions,options:{seed?:number;sourceCommit?:string}={}):HeadlessBench{
+ return async input=>{
+  const arm=!WHEELS.includes(input.axisId),axis=input.axisId.split('/')[1]!,scenarioId=arm?'MJ-BENCH-ARM' as const:'MJ-BENCH-WHEEL' as const,bench:BenchRequestV1={schemaVersion:1,scenarioId,axis:(arm?axis:'wheels') as BenchRequestV1['axis'],signal:input.signal,driveExperimentId:'drive-nominal-v1',
+   controlProfile:input.control.driveModelDigests.includes(input.driveModel.digest)?input.control:sealDriveDocument({...input.control,driveModelDigests:[...input.control.driveModelDigests,input.driveModel.digest]})};
+  if(input.physicsOverride&&!arm)throw Error('PHYSICS_OVERRIDE_ARM_ONLY');
+  const root=await mkdtemp(join(tmpdir(),'headless-bench-'));
+  try{
+   const physics=input.physicsOverride?applyPhysicsOverride(readXArmFixture(runtime.workerRoot).physics,input.physicsOverride):undefined;
+   const run=await createBenchRun({project:undefined,scenarioId,scenarioRevision:1,seed:options.seed??7,mode:'simulation',access:'simulated',backendSetId:BENCH_SET_ID,sourceCommit:options.sourceCommit??'headless-bench',bench},
+    {directory:join(root,'run'),enabledBackends:['mujoco_3d','mujoco_arm'],runtime,offline:{driveModel:input.driveModel,...physics?{physics}:{}}});
+   try{
+    let v=await run.start();
+    while(v.run.status==='running')v=await run.action({actionId:`step-${v.run.runRevision}`,expectedRevision:v.run.runRevision,kind:'step',payload:{ticks:500}});
+    if(v.run.status!=='completed')throw Error(`HEADLESS_BENCH_${v.run.status.toUpperCase()}`);
+    const report=await run.report() as unknown as {tuning:{status:string}|null};
+    if(report.tuning?.status!=='completed')throw Error(`HEADLESS_BENCH_${(report.tuning?.status??'unknown').toUpperCase()}`);
+    const {traces,issues}=await run.trace!() as {traces:DriveTrace[];issues:string[]};
+    if(issues.length)throw Error(`HEADLESS_BENCH_TRACE:${issues[0]}`);
+    const trace=traces.find(t=>t.axisId===input.axisId);if(!trace)throw Error('HEADLESS_BENCH_AXIS_NOT_TRACED');
+    return trace;
+   }finally{await run.close();}
+  }finally{await rm(root,{recursive:true,force:true});}
+ };
 }
 
 class BenchRun implements ScenarioRun {
@@ -533,7 +567,7 @@ class BenchRun implements ScenarioRun {
     project:{id:`bench:${fixture}`,revision:1,hash:this.sceneDigest},world:{id:fixture,revision:this.plant.revision,hash:this.sceneDigest},assets:[],hashAlgorithm:'sha256-canonical-json-v1',designHash:hashJson(this.bench),
     adapterHash:hashJson({sourceCommit:this.input.sourceCommit,backends,workerLockDigest:o.lockDigest,sceneDigest:this.sceneDigest}),configuration:{revision:1,hash:hashJson({signal:this.bench.signal,axisIds:this.plant.axisIds,start:this.plant.start,maxTicks:BENCH_MAX_TICKS})},recipes:[],
     models:[{id:'mujoco_3d',revision:o.engineVersion,hash:this.sceneDigest,provenance:'simulated_plant'},{id:this.plant.model.id,revision:String(this.plant.model.revision),hash:this.plant.model.digest,provenance:'assumed'}],
-    profiles:[{id:cp.id,revision:cp.revision,hash:cp.digest,provenance:'draft'}],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'SIMULATED_PLANT'}},
+    profiles:[{id:cp.id,revision:cp.revision,hash:cp.digest,provenance:'draft'}],calibration:{status:'not_calibrated',revision:null,hash:null,reason:'SIMULATED_PLANT',modelMaturity:modelMaturity({mock:false,groups:await mujocoPlantSources(o.workerRoot,this.plant.kind==='amr'?'mobile':'arm'),records:[],currentConfigDigest:''})}},
    outcome:{status:v.run.status,served:'0',tick:s.tick,simTimeNs:v.simTimeNs},attention:v.attention,workload:[],entities:[],businessEvents:[],effects:[],
    metrics:{maxConcurrentMovers:0,distanceM:{},collision:{available:false,reason:'BENCH_RUN',contacts:null,minSeparationM:null}},rejectedObservations:[],reconciliations:[],recoveredOps:[],confirmations:[],faults:[],
    coverage:{businessSimulation:false,kinematicModel:true,dynamics:true,nativeExecution:false,physicalStop:false,sensorEvidence:false,eventStream:true},

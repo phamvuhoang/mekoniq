@@ -48,6 +48,10 @@ export interface V2Deps {
  wall?:WallClock;
  /** The bench catalog the runtime built at start from its MuJoCo worker root (bench-runner.ts benchCatalog); health lists the entries of the offered bench scenarios. */
  benchInfo?:BenchInfo;benchCatalog?:Partial<BenchCatalog>;
+ /** The maturity of each group of each plant (V15, R4-D48): a function of the sources its fixtures declare. Health lists it; no request can change it. */
+ modelMaturity?:import('../engineering/maturity').ModelMaturityByPlant;
+ /** per bench axis, the digest of the measured configuration (calibrationConfigDigest): what a calibration record is valid for */
+ calibrationConfigDigests?:Record<string,string>;
  /** Present only when this runtime can run drive faults (a MuJoCo drive runtime): what a schedule may name for a request, and the switch for `faultCatalog` in health. */
  driveFaultContext?:import('./control/fault-context').DriveFaultContextOf;
 }
@@ -127,6 +131,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    ...deps.worldExperiments?{graspModes:[{id:'fixed_program'},{id:'belief_ground_truth',recoveryPolicyIds:['pick-recovery-v1']},{id:'belief_estimated',profileIds:['perception-nominal-v1'],recoveryPolicyIds:['pick-recovery-v1']}]}:{},
    ...deps.worldExperiments?{worldExperiments:[{id:'world-nominal-v1',requiresNewRun:true},{id:'world-dock-drift-v1',requiresNewRun:true,cause:'registered_external_impulse'},{id:'world-cup-fall-v1',requiresNewRun:true,cause:'registered_external_impulse'}]}:{},
    ...benchHealth(),
+   ...deps.modelMaturity?{modelMaturity:structuredClone(deps.modelMaturity),...deps.calibrationConfigDigests?{calibrationConfigDigests:{...deps.calibrationConfigDigests}}:{}}:{},
    ...deps.driveFaultContext?{faultCatalog:Object.entries(DRIVE_FAULTS).filter(([,f])=>!f.campaignOnly).map(([id,f])=>({id,layer:f.layer,target:f.target,appliedBy:f.appliedBy,params:structuredClone(f.params)}))}:{},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
    capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1','sim3d_belief_grasp_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
