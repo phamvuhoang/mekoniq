@@ -2751,6 +2751,7 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 
 /* V15: the model-maturity badge (words first: the level is never carried by colour alone) and the calibration record screen */
 .maturity-badge { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; max-width: 100%; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; }
+.control-maturity { margin: 0; }
 .maturity-badge[data-level="calibrated"] { border-color: var(--accent); }
 .maturity-badge[data-level="illustrative"] { border-style: dashed; }
 .maturity-groups { color: var(--muted); }

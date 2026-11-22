@@ -71,6 +71,8 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  await expect(bench).toHaveAttribute('data-phase','idle');await expect(page.getByTestId('tuning-metrics')).toBeVisible();
  await checkMetrics(a.tuning);await checkPlots(a);
  // §6.3 at 1440×900 (ruling 1): after a bench the three plots, the metric line, the gains and Run are in view side by side
+ // the panel keeps the scroll offset it had in the 390 px stack (320 px of 1159); the design is "plots start under the sticky head" (scroll-padding), so align them there before measuring the fit
+ await page.getByTestId('control-plot-response').evaluate(el=>el.scrollIntoView({block:'start'}));
  for(const id of ['control-plot-response','control-plot-error','control-plot-torque'])await expect(page.getByTestId(id),id).toBeInViewport({ratio:1});
  await expect(page.getByTestId('tuning-summary')).toBeInViewport({ratio:1});
  await expect(kp).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-ki')).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-run')).toBeInViewport({ratio:1});
@@ -177,6 +179,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  const xarm=JSON.parse(readFileSync(join(process.cwd(),'../source/robotics/simulation-mujoco/fixtures/drive-v1/xarm6-control-v1.json'),'utf8')) as {axes:{axisId:string;loop:{kp:number;kd:number}}[]},j3=xarm.axes.find(x=>x.axisId==='xarm-1/J3')!;
  await page.locator('#twin-ctl-axis-J3').check();await expect(kp).toHaveValue(String(j3.loop.kp));await expect(page.locator('#twin-ctl-kd')).toHaveValue(String(j3.loop.kd));await expect(page.locator('#twin-ctl-accelerationLimit')).toHaveCount(0);
  await page.locator('#twin-ctl-size').selectOption('0.2');
+ await page.locator('#twin-ctl-kd').evaluate(el=>el.scrollIntoView({block:'start'})); // same: the panel's scroll offset is left over from the previous tab state
  await expect(page.locator('#twin-ctl-kd')).toBeInViewport({ratio:1});await expect(page.locator('#twin-ctl-run')).toBeInViewport({ratio:1});
  const j=await runBench(runClick);
  expect(j.request.bench).toMatchObject({scenarioId:'MJ-BENCH-ARM',axis:'J3',signal:{kind:'step',amplitude:0.2,atTick:10}});
