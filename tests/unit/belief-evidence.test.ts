@@ -63,14 +63,14 @@ test('R08: the manifest of a finished recording carries the record count of ever
  const r=await readBeliefEvidence(dir,m,{identity});expect(r.issues).toEqual([]);expect(r.complete).toBe(true);
 });
 test('R08: a manifest that drops every belief chunk is not complete, and neither is one that no longer says how many records there are',async()=>{
- const dropped=await recorded(),m1=await rewrite(dropped,m=>{m.streams.find(s=>s.stream==='belief').chunks=[];});
+ const dropped=await recorded(),m1=await rewrite(dropped,m=>{m.streams.find(s=>s.stream==='belief')!.chunks=[];});
  const a=await readBeliefEvidence(dropped,m1,{identity});expect(a.complete).toBe(false);expect(a.issues).toContain('BELIEF_RECORD_COUNT_MISMATCH');expect(a.issues).toContain('BELIEF_ATTEMPT_REFERENCE_MISSING');
- const stripped=await recorded(),m2=await rewrite(stripped,m=>{m.streams.find(s=>s.stream==='belief').chunks=[];for(const s of m.streams)delete s.records;});
+ const stripped=await recorded(),m2=await rewrite(stripped,m=>{m.streams.find(s=>s.stream==='belief')!.chunks=[];for(const s of m.streams)delete s.records;});
  const b=await readBeliefEvidence(stripped,m2,{identity});expect(b.complete).toBe(false);expect(b.issues).toContain('BELIEF_COVERAGE_UNVERIFIABLE');expect(b.issues).toContain('BELIEF_ATTEMPT_REFERENCE_MISSING');
 });
 test('R08: chunk indices must run 0..n-1 in the manifest',async()=>{
  const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});for(let t=10;t<=1110;t++)await rec.appendBelief(belief(t));await rec.finish(null);
- const m=await rewrite(dir,m=>{m.streams.find(s=>s.stream==='belief').chunks.shift();});const r=await readBeliefEvidence(dir,m,{identity});expect(r.complete).toBe(false);expect(r.issues).toContain('BELIEF_CHUNK_SEQUENCE');
+ const m=await rewrite(dir,m=>{m.streams.find(s=>s.stream==='belief')!.chunks.shift();});const r=await readBeliefEvidence(dir,m,{identity});expect(r.complete).toBe(false);expect(r.issues).toContain('BELIEF_CHUNK_SEQUENCE');
 });
 test('R08: an attempt that used a belief nobody recorded is refused',async()=>{
  const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});await rec.appendBelief(belief(10));await rec.appendAttempt(withBelief as never);await rec.finish(null);

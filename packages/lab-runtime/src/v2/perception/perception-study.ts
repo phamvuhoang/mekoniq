@@ -81,11 +81,14 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
      const reportScene=(report.manifest?.models as {id:string;hash:string}[]|undefined)?.find(x=>x.id==='mujoco_shared_world')?.hash;
      const wrong=[m.identity.graspMode!==p.mode&&'mode',m.identity.seed!==seed&&'seed',m.identity.perceptionProfileDigest!==profileDoc.digest&&'profile',(!reportScene||m.identity.sceneDigest!==reportScene)&&'scene',m.identity.runId!==rec.result.runId&&'run'].filter(Boolean);
      if(wrong.length)throw new Error(`BELIEF_IDENTITY_MISMATCH:${wrong.join(',')}`);
-     // a nudge point must show the nudge in the stream's own truth: the cup moves at least 3 mm within NUDGE_WINDOW_TICKS after the commit, before any grip can touch it
+     // a nudge point must show the nudge in the run's own per-tick truth: the cup (the shared world's committed pose, run/arm-props-trace-*, hashed with the run) moves at least 3 mm within NUDGE_WINDOW_TICKS after the
+     // first commit, before any grip can touch it. The belief stream is not the witness: a stale profile has no sample right after the commit, which is exactly when the cup is pushed.
      if(p.nudge){
-      const commit=r.attempts.find(a=>a.cupId==='cup-1'&&a.stage==='commit')?.recordedTick; // the first commit: the nudge fires after it
-      const samples=r.beliefs.flatMap(b=>b.truthAtObservedTick&&b.belief?[{t:b.belief.observedTick,x:b.truthAtObservedTick}]:[]).sort((a,b)=>a.t-b.t),before=samples.filter(x=>commit!==undefined&&x.t<=commit).at(-1),after=samples.filter(x=>commit!==undefined&&x.t>commit&&x.t<=commit+NUDGE_WINDOW_TICKS);
-      if(!before||!after.some(x=>Math.hypot(x.x[0]-before.x[0],x.x[1]-before.x[1])>=0.003))throw new Error('NUDGE_NOT_OBSERVED');
+      const commit=r.attempts.find(a=>a.cupId==='cup-1'&&a.stage==='commit')?.recordedTick,tracePath=c.artifacts.find(a=>/^run\/arm-props-trace-[0-9a-f]{64}\.json$/.test(a.path))?.path;
+      if(commit===undefined||!tracePath)throw new Error('NUDGE_NOT_OBSERVED');
+      const trace=JSON.parse(await readFile(join(dir,tracePath),'utf8')) as {samples:{tick:number;props:{propId:string;positionM:number[]}[]}[]};
+      const cup=(t:number)=>trace.samples.find(x=>x.tick===t)?.props.find(x=>x.propId==='cup-1')?.positionM,before=cup(commit);
+      if(!before||!Array.from({length:NUDGE_WINDOW_TICKS},(_,k)=>cup(commit+1+k)).some(q=>q&&Math.hypot(q[0]!-before[0]!,q[1]!-before[1]!)>=0.003))throw new Error('NUDGE_NOT_OBSERVED');
      }
      evidence={attempts:[...new Map(r.attempts.map(a=>[a.attemptId,a])).values()],recovery:r.recovery};
     }
