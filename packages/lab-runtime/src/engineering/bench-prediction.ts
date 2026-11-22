@@ -2,7 +2,7 @@
 // the sample just before the first substep under the signal (a step's tick, a hold's anchor), the origin benchMetrics uses; samples before it carry negative times, so a log that starts a little early is covered.
 // The assessor (assessCalibration) is unchanged and decides; this file only produces what it compares.
 import type {CalibrationDataset,PredictionSeries} from './calibration';
-import type {CalibrationSidecar} from './calibration-import';
+import {sidecarMatchesDataset,type CalibrationSidecar} from './calibration-import';
 import {BENCH_SUBSTEPS,benchAnchorTick} from '../v2/control/bench-signals';
 import type {BenchSignal,ControlProfileV1,DriveModelV1,DriveTrace} from '../v2/control/drive-io';
 import {hashJson} from '../v2/hash';
@@ -22,6 +22,7 @@ export const calibrationConfigDigest=(parts:{plantModelDigest:string;load:string
 
 export async function predictTrials(dataset:CalibrationDataset,sidecar:CalibrationSidecar,models:PredictionModels,bench:HeadlessBench,options:{physicsOverride?:Record<string,number>;trialIds?:ReadonlySet<string>}={}):Promise<PredictionSeries>{
  const channels=Object.keys(dataset.units);
+ if(!sidecarMatchesDataset(sidecar,dataset))throw Error('SIDECAR_DATASET_MISMATCH');
  for(const c of channels)if(!isChannel(c))throw Error(`CHANNEL_UNKNOWN:${c}`);
  const anchor=benchAnchorTick(models.driveModel),trials:PredictionSeries['trials']=[];
  let units:Record<string,string>|null=null;

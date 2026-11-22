@@ -7,6 +7,8 @@ export const LEAST_SQUARES_MAX_PARAMETERS=12;
 /** Above this the Jacobian cannot separate the parameters (columns of the scaled Jacobian are almost parallel): the standard errors are `null`, whatever the plan allows. */
 const SINGULAR_CONDITION=1e8;
 const BOUND_EPS=1e-9;
+/** The condition number read at a step and at a quarter of it must agree within this factor, else it is a finite-difference artefact. */
+const STEP_STABLE_RATIO=2;
 
 const sumSquares=(r:readonly number[])=>r.reduce((s,v)=>s+v*v,0);
 /** Singular values and right vectors of an m x n matrix by one-sided Jacobi (Hestenes): exact to relative machine precision, so two identical columns give a singular value ~1e-16 of the largest, not a rounding guess. */
@@ -54,16 +56,20 @@ export async function fitBoundedLeastSquares(residual:(x:readonly number[])=>Pro
   m=r.length;return r;
  };
  const clip=(x:number[])=>x.map((v,j)=>Math.min(upper[j]!,Math.max(lower[j]!,v)));
- /** forward differences, backward when a forward step would leave the bounds; in units of the parameters' ranges (J_s = J D) */
- const jacobian=async(x:number[],r:number[])=>{
+ /** One finite-difference step of parameter j: relative to its value, in the direction with room, never longer than the room the bounds leave (a valid interval narrower than the step is fitted inside it). */
+ const stepOf=(x:number[],j:number,rel:number)=>{
+  const h=rel*(Math.abs(x[j]!)>0?Math.abs(x[j]!):range[j]!),up=upper[j]!-x[j]!,down=x[j]!-lower[j]!,sign=up>=h||up>=down&&down<h?1:-1,room=sign>0?up:down,mag=Math.min(h,room);
+  // a step that does not move the parameter in floating point is a problem the finite differences cannot pose
+  if(!(mag>0)||x[j]!+sign*mag===x[j])throw Error('PROBLEM_INVALID');
+  return sign*mag;
+ };
+ /** forward (or, at the upper end, backward) differences with relative step `rel`, in units of the parameters' ranges (J_s = J D) */
+ const jacobian=async(x:number[],r:number[],rel=relativeStep)=>{
   const cols:number[][]=[];
   for(let j=0;j<n;j++){
-   let h=relativeStep*(Math.abs(x[j]!)>0?Math.abs(x[j]!):range[j]!);
-   if(x[j]!+h>upper[j]!)h=-h;
-   const xs=[...x];xs[j]=x[j]!+h;
-   if(xs[j]!<lower[j]!||xs[j]!>upper[j]!)throw Error('PROBLEM_INVALID');
+   const h=stepOf(x,j,rel),xs=[...x];xs[j]=Math.min(upper[j]!,Math.max(lower[j]!,x[j]!+h));
    const rj=await evaluate(xs);
-   cols.push(rj.map((v,i)=>(v-r[i]!)/h*range[j]!));
+   cols.push(rj.map((v,i)=>(v-r[i]!)/(xs[j]!-x[j]!)*range[j]!));
   }
   return Array.from({length:r.length},(_,i)=>cols.map(c=>c[i]!));
  };
@@ -96,8 +102,16 @@ export async function fitBoundedLeastSquares(residual:(x:readonly number[])=>Pro
   }
   if(converged)break;
  }
- const J=await jacobian(x,r),{sigma,v}=m>=n?svd(J,n):{sigma:Array<number>(n).fill(0),v:[] as number[][]};
- const smax=Math.max(...sigma),smin=Math.min(...sigma),jacobianCondition=m<n||!(smin>0)||!(smax>0)?Infinity:smax/smin;
+ // The conditioning that decides identifiability is read at two finite-difference steps. Two parameters that only ever act through their sum have exactly parallel true derivatives, but forward differences with
+ // different steps leave truncation errors that look like a second direction (a condition of 10^3-10^4 at a step of 1 %, shrinking as the step does): a condition that moves with the step is that artefact, not
+ // information, and counts as unbounded. A separable problem's condition is the same at both steps.
+ const svdOf=(J:number[][])=>m>=n?svd(J,n):{sigma:Array<number>(n).fill(0),v:[] as number[][]};
+ const condOf=(sigma:number[])=>{const hi=Math.max(...sigma),lo=Math.min(...sigma);return m<n||!(lo>0)||!(hi>0)?Infinity:hi/lo;};
+ const J=await jacobian(x,r),{sigma,v}=svdOf(J);let jacobianCondition=condOf(sigma);
+ if(n>1&&Number.isFinite(jacobianCondition)){
+  const c2=condOf(svdOf(await jacobian(x,r,relativeStep/4)).sigma),hi=Math.max(jacobianCondition,c2),lo=Math.min(jacobianCondition,c2);
+  jacobianCondition=Number.isFinite(c2)&&hi/lo<=STEP_STABLE_RATIO?hi:Infinity;
+ }
  let standardError:(number|null)[]=Array<number|null>(n).fill(null);
  if(m>n&&jacobianCondition<=SINGULAR_CONDITION){
   const s2=f/(m-n);

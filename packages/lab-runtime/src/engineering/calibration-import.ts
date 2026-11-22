@@ -3,6 +3,7 @@
 import {createHash} from 'node:crypto';
 import {isCalibrationDataset,type CalibrationDataset} from './calibration';
 import type {BenchRequestV1} from '../v2/control/drive-io';
+import {hashJson} from '../v2/hash';
 
 export type BenchSignal=BenchRequestV1['signal'];
 export type CalibrationUnit='rad'|'rad/s'|'N*m'|'m'|'m/s';
@@ -15,6 +16,15 @@ export interface CalibrationSidecar {
 }
 /** The row cap is the dataset schema's (maxItems 100,000 per trial array): a longer log could not be assessed. */
 export const CALIBRATION_LOG_LIMITS={rows:100_000,bytes:16*1024*1024} as const;
+/** What decides the bench a trial ran: which trial, in which split and condition, on which axis, with which signal. The dataset does not carry the axis or the signal, so a plan binds this digest and the identification
+ * refuses a sidecar that does not hash to it: the same CSVs under another signal are another experiment. */
+export const benchBindingDigest=(sidecar:Pick<CalibrationSidecar,'trials'>)=>hashJson(sidecar.trials.map(t=>({trialId:t.trialId,split:t.split,condition:t.condition,axisId:t.axisId,signal:t.signal})));
+/** The sidecar and the dataset describe the same trials one to one (id, split, condition) and the same clock, configuration and source; anything else is two different experiments. */
+export function sidecarMatchesDataset(sidecar:CalibrationSidecar,dataset:CalibrationDataset):boolean{
+ const a=dataset.trials,b=sidecar.trials;
+ return a.length===b.length&&a.every((t,i)=>b[i]!.trialId===t.trialId&&b[i]!.split===t.split&&b[i]!.condition===t.condition)&&new Set(b.map(t=>t.trialId)).size===b.length
+  &&sidecar.configDigest===dataset.configDigest&&sidecar.clockDomain===dataset.clockMapping.domain&&sidecar.clockOffsetNs===dataset.clockMapping.offsetNs&&sidecar.sourceKind===dataset.sourceKind;
+}
 const NUMBER=/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/,INTEGER=/^-?\d+$/;
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
 const isObject=(x:unknown):x is Record<string,unknown>=>typeof x==='object'&&x!==null&&!Array.isArray(x);
@@ -71,14 +81,15 @@ export async function importCalibrationLog(sidecar:unknown,readText:(file:string
  const ids=s.trials.map(t=>t.trialId),files=s.trials.map(t=>t.file);
  if(new Set(ids).size!==ids.length||new Set(files).size!==files.length)issues.push('CALIBRATION_SPLIT_LEAKAGE');
  if(issues.length)return {ok:false,issues};
- const trials:CalibrationDataset['trials']=[],raw:[string,string][]=[];
+ const trials:CalibrationDataset['trials']=[],raw:[string,string,string,string][]=[];
  for(const t of s.trials){
   let text:string;try{text=await readText(t.file);}catch{issues.push(`${t.file}:LOG_UNREADABLE`);continue;}
   const r=parseCalibrationCsv(text,channels);
   if(!r.ok){issues.push(...r.issues.map(i=>`${t.file}:${i}`));continue;}
-  raw.push([t.file,sha(text)]);trials.push({trialId:t.trialId,split:t.split,condition:t.condition,timesNs:r.timesNs,channels:r.channels});
+  raw.push([t.file,sha(text),t.axisId,hashJson(t.signal)]);trials.push({trialId:t.trialId,split:t.split,condition:t.condition,timesNs:r.timesNs,channels:r.channels});
  }
  if(issues.length)return {ok:false,issues};
+ // the raw digest covers the bytes AND the bench each file was recorded under (axis, signal): changing either changes the identity of the data
  const dataset:CalibrationDataset={schemaVersion:1,configDigest:s.configDigest,instrument:{id:s.attestation?.instrument??s.deviceId,revision:s.attestation?.recordedAt??'synthetic'},units:{...s.units},
   clockMapping:{domain:s.clockDomain,offsetNs:s.clockOffsetNs},uncertainty:{...s.uncertainty},rawDigest:sha(JSON.stringify(raw)),sourceKind:s.sourceKind,policy:structuredClone(s.policy),trials};
  return isCalibrationDataset(dataset)?{ok:true,dataset,sidecar:s}:{ok:false,issues:['DATASET_SCHEMA_INVALID']};

@@ -10,6 +10,7 @@ import type {CalibrationSidecar} from '../../packages/lab-runtime/src/engineerin
 import type {HeadlessBench} from '../../packages/lab-runtime/src/engineering/bench-prediction';
 import {datasetDigestOf,identify,writeCalibratedRevision,writeCalibrationRecord,type CalibrationRecordV1,type IdentificationPlanV1} from '../../packages/lab-runtime/src/engineering/identification';
 import {validateCalibrationRecord} from '../../packages/lab-runtime/src/engineering/calibration-record';
+import {benchBindingDigest} from '../../packages/lab-runtime/src/engineering/calibration-import';
 import {benchAnchorTick} from '../../packages/lab-runtime/src/v2/control/bench-signals';
 import {sealDriveDocument,type BenchSignal,type ControlProfileV1,type DriveModelV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import type {XArmPhysics} from '../../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene';
@@ -19,6 +20,7 @@ const driveModel=JSON.parse(readFileSync(join(fixtures,'drive-v1/xarm6-drive-nom
 const control=JSON.parse(readFileSync(join(fixtures,'drive-v1/xarm6-control-v1.json'),'utf8')) as ControlProfileV1;
 const physics=JSON.parse(readFileSync(join(fixtures,'xarm6-g2-v1/physics.json'),'utf8')) as XArmPhysics;
 const AXIS='xarm-1/J3',CONFIG='c'.repeat(64),ARM='armatureKgM2[2]',DAMP='jointDynamics.damping';
+const sidecars=new WeakMap<object,CalibrationSidecar>();   // dataset -> the sidecar it was imported with (the plan binds its digest)
 const dirs:string[]=[];afterAll(async()=>{for(const d of dirs)await rm(d,{recursive:true,force:true});});
 
 /** y(t) = A g(d) (1 - exp(-t/tau(a))): the armature sets how fast, the damping how far. Two parameters with separate signatures. `sumOnly` makes them appear only as a + d (not separable). */
@@ -41,13 +43,14 @@ async function dataset(hidden:{a:number;d:number},kind:'measured'|'synthetic'='m
   trials.push({trialId,split,condition:'step',timesNs:idx.map(i=>(i-i0)*2_000_000),channels:{position:idx.map(i=>t.samples[i]!.actual)}});
  }
  const policy={channels:{position:{absoluteTolerance:5e-4,relativeTolerance:0}},minTrialsPerCondition:1,maxClockGapNs:20_000_000,capabilities:{position:'actuator' as const}};
- return {dataset:{schemaVersion:1,configDigest:CONFIG,instrument:{id:'fixture',revision:'1'},units:{position:'rad'},clockMapping:{domain:'sim',offsetNs:0},uncertainty:{position:1e-6},rawDigest:'e'.repeat(64),sourceKind:kind,policy,trials},
+ const out={dataset:{schemaVersion:1,configDigest:CONFIG,instrument:{id:'fixture',revision:'1'},units:{position:'rad'},clockMapping:{domain:'sim',offsetNs:0},uncertainty:{position:1e-6},rawDigest:'e'.repeat(64),sourceKind:kind,policy,trials},
   sidecar:{sourceKind:kind==='measured'?'measured':'synthetic',deviceId:'fixture',configDigest:CONFIG,clockDomain:'sim',clockOffsetNs:0,units:{position:'rad'},uncertainty:{position:1e-6},policy,trials:TRIALS.map(([trialId,split,amp])=>({trialId,split,condition:'step',file:`${trialId}.csv`,axisId:AXIS,signal:signal(amp)}))}};
+ sidecars.set(out.dataset,out.sidecar as CalibrationSidecar);return out as {dataset:CalibrationDataset;sidecar:CalibrationSidecar};
 }
-const plan=(ds:CalibrationDataset,o:Partial<IdentificationPlanV1>={}):IdentificationPlanV1=>sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'plan-j3',revision:1,datasetDigest:datasetDigestOf(ds),baseDriveModelDigest:driveModel.digest,plantModelDigest:'d'.repeat(64),
+const plan=(ds:CalibrationDataset,o:Partial<IdentificationPlanV1>={}):IdentificationPlanV1=>sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'plan-j3',revision:1,datasetDigest:datasetDigestOf(ds),baseDriveModelDigest:driveModel.digest,plantModelDigest:'d'.repeat(64),controlProfileDigest:control.digest,benchBinding:benchBindingDigest(sidecars.get(ds)!),
  parameters:[{path:ARM,initial:0.1,lower:0.02,upper:0.5,unit:'kg*m^2'},{path:DAMP,initial:1,lower:0.2,upper:4,unit:'N*m*s/rad'}],objective:{channels:['position'],weights:{position:1}},
  optimizer:{method:'bounded_least_squares',maxIterations:40,tolerance:1e-10,relativeStep:1e-4,maxJacobianCondition:1e6},...o}) as IdentificationPlanV1;
-const models={driveModel,control,configDigest:CONFIG,physics};
+const models={driveModel,control,configDigest:CONFIG,physics,plantModelDigest:'d'.repeat(64)};
 
 describe('identify',()=>{
  test('a measured, validated fit within its bounds recovers the hidden parameters and produces a revision of the physics profile; the base documents keep their bytes',async()=>{
@@ -104,6 +107,29 @@ describe('identify',()=>{
   await expect(identify(scale,ds,sidecar,models,b,{toolSelfTest:false})).rejects.toThrow('DRIVE_PATH_NOT_APPLICABLE');
   expect(calls).toEqual([]);
  });
+ test('R02: the same data under another signal, axis, order or split is another experiment: the sidecar must hash to what the plan declared, and agree with the dataset, before any bench run',async()=>{
+  const {dataset:ds,sidecar}=await dataset({a:0.13,d:1.5}),calls:unknown[]=[],b=fakeBench(calls as never),p=plan(ds);
+  // the review's probe: halve every amplitude in the sidecar; the CSVs, the dataset digest and the plan are untouched
+  const halved={...sidecar,trials:sidecar.trials.map(t=>({...t,signal:{...(t.signal as {kind:'step';amplitude:number;atTick:number}),amplitude:(t.signal as {amplitude:number}).amplitude/2}}))};
+  await expect(identify(p,ds,halved,models,b,{toolSelfTest:false})).rejects.toThrow('SIDECAR_BINDING_MISMATCH');
+  await expect(identify(p,ds,{...sidecar,trials:sidecar.trials.map(t=>({...t,axisId:'xarm-1/J2'}))},models,b,{toolSelfTest:false})).rejects.toThrow('SIDECAR_BINDING_MISMATCH');
+  await expect(identify(p,ds,{...sidecar,trials:[...sidecar.trials].reverse()},models,b,{toolSelfTest:false})).rejects.toThrow('SIDECAR_DATASET_MISMATCH');
+  await expect(identify(p,ds,{...sidecar,trials:sidecar.trials.map((t,i)=>i===0?{...t,split:'validation' as const}:t)},models,b,{toolSelfTest:false})).rejects.toThrow('SIDECAR_DATASET_MISMATCH');
+  await expect(identify(p,ds,{...sidecar,trials:sidecar.trials.slice(1)},models,b,{toolSelfTest:false})).rejects.toThrow('SIDECAR_DATASET_MISMATCH');
+  expect(calls).toEqual([]);
+  expect(benchBindingDigest(sidecar)).not.toBe(benchBindingDigest(halved));
+ });
+ test('R03: a plan sealed for another plant, or for another control profile, is refused before the first bench run',async()=>{
+  const {dataset:ds,sidecar}=await dataset({a:0.13,d:1.5}),calls:unknown[]=[],b=fakeBench(calls as never);
+  await expect(identify(plan(ds,{plantModelDigest:'0'.repeat(64)}),ds,sidecar,models,b,{toolSelfTest:false})).rejects.toThrow('PLAN_PLANT_MISMATCH');
+  await expect(identify(plan(ds,{controlProfileDigest:'0'.repeat(64)}),ds,sidecar,models,b,{toolSelfTest:false})).rejects.toThrow('PLAN_CONTROL_MISMATCH');
+  expect(calls).toEqual([]);
+ });
+ test('R01 through identify(): a response that depends on the sum of the two parameters is IDENTIFIABILITY_POOR at the self-test settings (relative step 1e-2, limit 1e4), with no revision',async()=>{
+  const {dataset:ds,sidecar}=await dataset({a:0.13,d:1.5},'measured',true);
+  const r=await identify(plan(ds,{optimizer:{method:'bounded_least_squares',maxIterations:15,tolerance:1e-6,relativeStep:1e-2,maxJacobianCondition:1e4}}),ds,sidecar,models,fakeBench([],true),{toolSelfTest:false});
+  expect(r.reasonCodes).toContain('IDENTIFIABILITY_POOR');expect(r.produced).toEqual([]);expect(r.fitted.every(f=>f.standardError===null)).toBe(true);expect(r.convergence.jacobianCondition).toBeNull();
+ },60_000);
  test('a fit that cannot run a trial (a bench fault, a gap) is an error, never a partial fit',async()=>{
   const {dataset:ds,sidecar}=await dataset({a:0.13,d:1.5});
   await expect(identify(plan(ds),ds,sidecar,models,async()=>{throw Error('HEADLESS_BENCH_DRIVE_FAULT');},{toolSelfTest:false})).rejects.toThrow('HEADLESS_BENCH_DRIVE_FAULT');

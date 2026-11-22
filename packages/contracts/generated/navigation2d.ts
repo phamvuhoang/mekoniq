@@ -3544,6 +3544,8 @@ export interface IdentificationPlanV1 {
   datasetDigest: Digest;
   baseDriveModelDigest: Digest;
   plantModelDigest: Digest;
+  controlProfileDigest: Digest;
+  benchBinding: Digest;
   /**
    * @minItems 1
    * @maxItems 64

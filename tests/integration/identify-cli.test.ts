@@ -6,6 +6,8 @@ import {readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {importCalibrationLog,type CalibrationSidecar} from '../../packages/lab-runtime/src/engineering/calibration-import';
+import {benchBindingDigest} from '../../packages/lab-runtime/src/engineering/calibration-import';
+import {benchPlant} from '../../packages/lab-runtime/src/v2/control/bench-runner';
 import {datasetDigestOf} from '../../packages/lab-runtime/src/engineering/identification';
 import {sealDriveDocument,type DriveModelV1} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import {mujocoReady,mujocoRoot} from '../support/mujoco-arm';
@@ -31,7 +33,7 @@ describe.skipIf(!mujocoReady)('on the real engine',()=>{
    policy:{channels:{command:{absoluteTolerance:0.01,relativeTolerance:0},position:{absoluteTolerance:0.01,relativeTolerance:0}},minTrialsPerCondition:1,maxClockGapNs:20_000_000,capabilities:{position:'actuator'}},
    trials:[{trialId:'t1',split:'tune',condition:'hold',file:'t1.csv',axisId:'xarm-1/J3',signal:{kind:'hold',ticks:50}}]};
   const imported=await importCalibrationLog(sidecar,async()=>csv);expect(imported.ok).toBe(true);if(!imported.ok)return;
-  const plan=sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'cli-plan',revision:1,datasetDigest:datasetDigestOf(imported.dataset),baseDriveModelDigest:drive.digest,plantModelDigest:'d'.repeat(64),
+  const plan=sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'cli-plan',revision:1,datasetDigest:datasetDigestOf(imported.dataset),baseDriveModelDigest:drive.digest,plantModelDigest:(await benchPlant(mujocoRoot,{scenarioId:'MJ-BENCH-ARM',axis:'J3',driveExperimentId:'drive-nominal-v1'})).plantModelDigest,controlProfileDigest:JSON.parse(readFileSync(join(mujocoRoot,'fixtures/drive-v1/xarm6-control-v1.json'),'utf8')).digest as string,benchBinding:benchBindingDigest(sidecar),
    parameters:[{path:'armatureKgM2[2]',initial:0.1,lower:0.05,upper:0.3,unit:'kg*m^2'}],objective:{channels:['position'],weights:{position:1}},optimizer:{method:'bounded_least_squares',maxIterations:2,tolerance:1e-6,relativeStep:1e-2,maxJacobianCondition:1e4}});
   for(const [name,value] of [['plan.json',plan],['dataset.json',imported.dataset],['sidecar.json',sidecar]] as const)await writeFile(join(dir,name),JSON.stringify(value));
   const out=join(dir,'out'),args=['--plan',join(dir,'plan.json'),'--dataset',join(dir,'dataset.json'),'--sidecar',join(dir,'sidecar.json'),'--out',out,'--tool-self-test'];

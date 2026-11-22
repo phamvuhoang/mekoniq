@@ -11,7 +11,7 @@ import {afterAll,beforeAll,describe,expect,test} from 'vitest';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {assessCalibration} from '../../packages/lab-runtime/src/engineering/calibration';
-import {importCalibrationLog,type CalibrationSidecar} from '../../packages/lab-runtime/src/engineering/calibration-import';
+import {benchBindingDigest,importCalibrationLog,type CalibrationSidecar} from '../../packages/lab-runtime/src/engineering/calibration-import';
 import {calibrationConfigDigest,predictTrials} from '../../packages/lab-runtime/src/engineering/bench-prediction';
 import {datasetDigestOf,identify,type IdentificationPlanV1} from '../../packages/lab-runtime/src/engineering/identification';
 import {createHeadlessBench} from '../../packages/lab-runtime/src/v2/control/bench-runner';
@@ -21,7 +21,7 @@ import {readXArmFixture} from '../../packages/lab-runtime/src/v2/simulation3d/ar
 import {sealDriveDocument,type BenchSignal,type ControlProfileV1,type DriveModelV1,type DriveTrace} from '../../packages/lab-runtime/src/v2/control/drive-io';
 import {mujocoPython,mujocoReady,mujocoRoot,mujocoTemp,removeMujocoDirs,mujocoProcessScope} from '../support/mujoco-arm';
 
-const TOLERANCE=0.05,HIDDEN={a:0.13,d:1.5},ARM='armatureKgM2[2]',DAMP='jointDynamics.damping',QUANTUM=2*Math.PI/16384;
+const PLANT='d'.repeat(64),TOLERANCE=0.05,HIDDEN={a:0.13,d:1.5},ARM='armatureKgM2[2]',DAMP='jointDynamics.damping',QUANTUM=2*Math.PI/16384;
 const doc=<T,>(name:string)=>JSON.parse(readFileSync(join(mujocoRoot,'fixtures/drive-v1',name),'utf8')) as T;
 const step=(amplitude:number):BenchSignal=>({kind:'step',amplitude,atTick:10});
 // the validation signals are smaller than their tune counterparts, so every validation value lies inside the domain the tune split measured (the assessor's OUT_OF_DOMAIN rule)
@@ -52,10 +52,10 @@ describe.skipIf(!mujocoReady)('identification self-test on the real engine',()=>
    policy:{channels:{command:{absoluteTolerance:1e-3,relativeTolerance:0},position:{absoluteTolerance:1e-3,relativeTolerance:0}},minTrialsPerCondition:1,maxClockGapNs:20_000_000,capabilities:{position:'actuator'}},
    trials:TRIALS.map(([trialId,split,axisId,signal])=>({trialId,split,condition:`${axisId}`,file:`${trialId}.csv`,axisId,signal}))};
   const imported=await importCalibrationLog(sidecar,async f=>csv[f]!);expect(imported.ok,JSON.stringify(imported)).toBe(true);if(!imported.ok)return;
-  const plan=sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'selftest-j3',revision:1,datasetDigest:datasetDigestOf(imported.dataset),baseDriveModelDigest:driveModel.digest,plantModelDigest:'d'.repeat(64),
+  const plan=sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'selftest-j3',revision:1,datasetDigest:datasetDigestOf(imported.dataset),baseDriveModelDigest:driveModel.digest,plantModelDigest:PLANT,controlProfileDigest:control.digest,benchBinding:benchBindingDigest(sidecar),
    parameters:[{path:ARM,initial:0.1,lower:0.03,upper:0.4,unit:'kg*m^2'},{path:DAMP,initial:1,lower:0.2,upper:3,unit:'N*m*s/rad'}],objective:{channels:['position'],weights:{position:1}},
    optimizer:{method:'bounded_least_squares',maxIterations:15,tolerance:1e-6,relativeStep:1e-2,maxJacobianCondition:1e4}}) as IdentificationPlanV1;
-  const models={driveModel,control,configDigest,physics:readXArmFixture(runtime.workerRoot).physics};
+  const models={driveModel,control,configDigest,plantModelDigest:PLANT,physics:readXArmFixture(runtime.workerRoot).physics};
   const record=await identify(plan,imported.dataset,sidecar,models,bench,{toolSelfTest:true});
   const by=Object.fromEntries(record.fitted.map(f=>[f.path,f]));
   console.log(JSON.stringify({fitted:record.fitted,convergence:record.convergence,reasonCodes:record.reasonCodes}));

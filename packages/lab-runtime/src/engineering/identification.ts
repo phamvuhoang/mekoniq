@@ -7,7 +7,7 @@ import {join} from 'node:path';
 import type {SourceRef} from '../../../contracts/generated/engineering';
 import {assessCalibration,sampleAt,type CalibrationDataset,type CalibrationResult} from './calibration';
 import {predictTrials,type HeadlessBench,type PredictionModels} from './bench-prediction';
-import type {CalibrationSidecar} from './calibration-import';
+import {benchBindingDigest,sidecarMatchesDataset,type CalibrationSidecar} from './calibration-import';
 import {validateCalibrationRecord,validateIdentificationPlan,type CalibrationRecordV1,type IdentificationPlanV1} from './calibration-record';
 import {fitBoundedLeastSquares} from './least-squares';
 import {applyDriveOverride,applyPhysicsOverride,isPhysicsPath} from './parameter-paths';
@@ -20,7 +20,7 @@ export {IDENTIFIABLE_PATHS} from './parameter-paths';
 export {validateIdentificationPlan} from './calibration-record';
 export type {CalibrationRecordV1,IdentificationPlanV1};
 /** The documents the fit starts from. `physics` is the arm physics profile the headless bench uses when it runs without an override (the fixture's); needed to write a revision of it. */
-export interface IdentificationModels extends PredictionModels {physics?:XArmPhysics}
+export interface IdentificationModels extends PredictionModels {physics?:XArmPhysics;/** the plant the bench runs on (its model digest): the plan names it and a plan for another plant is not run */plantModelDigest:string}
 type Revisioned=XArmPhysics&{revision?:number;calibrationSources?:Record<string,SourceRef>};
 
 const hashSha=(s:string)=>createHash('sha256').update(s).digest('hex');
@@ -64,6 +64,11 @@ export async function identify(plan:IdentificationPlanV1,dataset:CalibrationData
  const check=validateIdentificationPlan(plan);if(!check.ok)throw Error(`PLAN_INVALID:${check.reasonCodes.join(',')}`);
  if(plan.datasetDigest!==datasetDigestOf(dataset))throw Error('DATASET_DIGEST_MISMATCH');
  if(plan.baseDriveModelDigest!==models.driveModel.digest)throw Error('BASE_MODEL_MISMATCH');
+ // everything the plan declared about the experiment is checked against what will actually run, before the first bench call
+ if(plan.plantModelDigest!==models.plantModelDigest)throw Error('PLAN_PLANT_MISMATCH');
+ if(plan.controlProfileDigest!==models.control.digest)throw Error('PLAN_CONTROL_MISMATCH');
+ if(!sidecarMatchesDataset(sidecar,dataset))throw Error('SIDECAR_DATASET_MISMATCH');
+ if(plan.benchBinding!==benchBindingDigest(sidecar))throw Error('SIDECAR_BINDING_MISMATCH');
  if(options.toolSelfTest&&dataset.sourceKind!=='synthetic')throw Error('SELF_TEST_REQUIRES_SYNTHETIC_DATA');
  const noValidation:CalibrationResult={status:'fail',reasons:['CONFIG_DIGEST_MISMATCH'],residuals:{},domain:{},calibratedCapabilities:[],invalidatedBy:models.configDigest};
  // a dataset recorded for another configuration is not fitted at all: nothing is run, the record says why (R4-D49)

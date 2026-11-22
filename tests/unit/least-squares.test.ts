@@ -53,6 +53,24 @@ describe('fitBoundedLeastSquares',()=>{
   const r=await fitBoundedLeastSquares(async x=>[x[0]!+x[1]!-3,2*(x[0]!+x[1]!)-6,0.5*(x[0]!+x[1]!)-1.5],problem());
   expect(r.jacobianCondition).toBeGreaterThan(1e8);expect(r.standardError).toEqual([null,null]);expect(r.x[0]!+r.x[1]!).toBeCloseTo(3,6);
  });
+ test('R01: a NONLINEAR response that depends on the sum of two parameters is not separable at the settings the self-test uses (relative step 1e-2): the condition is unbounded, not an artefact of two different finite-difference steps',async()=>{
+  const sumOnly=async(x:readonly number[])=>{const s=x[0]!+x[1]!;return [0,0.2,0.4,0.6,0.8,1].map(t=>0.1*(1-Math.exp(-t/(0.02*s/1.1)))-0.1*(1-Math.exp(-t/(0.02*1.63/1.1))));};
+  for(const relativeStep of [1e-2,1e-3,1e-4]){
+   const r=await fitBoundedLeastSquares(sumOnly,problem({initial:[0.1,1],lower:[0.02,0.2],upper:[0.5,4],relativeStep,tolerance:1e-6,maxIterations:15}));
+   expect(r.jacobianCondition,`step ${relativeStep}`).toBe(Infinity);expect(r.standardError).toEqual([null,null]);
+  }
+  // a separable nonlinear problem keeps a small, step-independent condition number and its error bars
+  const separable=async(x:readonly number[])=>[0,0.2,0.4,0.6,0.8,1].flatMap(t=>[0.1*(1-Math.exp(-t/(0.02*x[0]!/0.1)))-0.1*(1-Math.exp(-t/0.026)),0.1/(1+0.1*(x[1]!-1))-0.1/(1+0.1*0.5)]);
+  const ok=await fitBoundedLeastSquares(separable,problem({initial:[0.1,1],lower:[0.02,0.2],upper:[0.5,4],relativeStep:1e-2,tolerance:1e-6,maxIterations:30}));
+  expect(ok.jacobianCondition).toBeLessThan(100);expect(ok.standardError.every(e=>e!==null)).toBe(true);
+ });
+ test('R08: a valid interval narrower than the finite-difference step is fitted inside it, never PROBLEM_INVALID',async()=>{
+  const r=await fitBoundedLeastSquares(async x=>[x[0]!-1.000002],problem({initial:[1],lower:[0.99999],upper:[1.00001],relativeStep:1e-4,tolerance:1e-9}));
+  expect(r.x[0]).toBeCloseTo(1.000002,9);expect(r.atBound).toEqual([false]);expect(r.converged).toBe(true);
+  // a start on the upper bound steps backwards, by what the interval allows
+  const edge=await fitBoundedLeastSquares(async x=>[x[0]!-1.000005],problem({initial:[1.00001],lower:[0.99999],upper:[1.00001],relativeStep:1e-4,tolerance:1e-9}));
+  expect(edge.x[0]).toBeCloseTo(1.000005,9);
+ });
  test('the Jacobian is conditioned in units of the bounds: a parameter 1e6 times larger than another is not "ill-conditioned" for that',async()=>{
   const r=await fitBoundedLeastSquares(async x=>[(x[0]!-2e6)/1e6,(x[1]!-3e-3)/1e-3,0.1*x[0]!/1e6+0.1*x[1]!/1e-3-0.5],problem({initial:[1e6,1e-3],lower:[0,0],upper:[1e7,1e-2]}));
   expect(r.jacobianCondition).toBeLessThan(1e3);

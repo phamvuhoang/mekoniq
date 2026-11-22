@@ -4,7 +4,7 @@ import {sealDriveDocument} from '../../packages/lab-runtime/src/v2/control/drive
 import {validateCalibrationRecord,validateIdentificationPlan} from '../../packages/lab-runtime/src/engineering/calibration-record';
 
 const d=(c:string)=>c.repeat(64);
-const plan=(o:Record<string,unknown>={})=>sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'plan-j3',revision:1,datasetDigest:d('a'),baseDriveModelDigest:d('b'),plantModelDigest:d('c'),
+const plan=(o:Record<string,unknown>={})=>sealDriveDocument({schemaVersion:1,documentType:'identification-plan',id:'plan-j3',revision:1,datasetDigest:d('a'),baseDriveModelDigest:d('b'),plantModelDigest:d('c'),controlProfileDigest:d('7'),benchBinding:d('8'),
  parameters:[{path:'armatureKgM2[2]',initial:0.1,lower:0.05,upper:0.3,unit:'kg*m^2'},{path:'jointDynamics.damping',initial:1,lower:0.2,upper:3,unit:'N*m*s/rad'}],
  objective:{channels:['position'],weights:{position:1}},optimizer:{method:'bounded_least_squares',maxIterations:20,tolerance:1e-8,relativeStep:1e-3,maxJacobianCondition:1e6},...o});
 const result={status:'pass',reasons:[],residuals:{position:{samples:10,meanAbs:1e-4,maxAbs:2e-4,withinTolerance:true}},domain:{position:{min:0,max:0.1}},calibratedCapabilities:['actuator'],invalidatedBy:null};
@@ -54,4 +54,18 @@ test('a record that did not pass, touched a bound, did not converge, came from s
 test('an unbounded condition number is null in JSON, not Infinity',()=>{
  expect(validateCalibrationRecord(record({convergence:{iterations:1,converged:true,objectiveInitial:1,objectiveFinal:1,jacobianCondition:null},produced:[]})).ok).toBe(true);
  expect(validateCalibrationRecord(record({convergence:{iterations:1,converged:true,objectiveInitial:1,objectiveFinal:1,jacobianCondition:Infinity},produced:[]})).reasonCodes).toContain('NON_FINITE_NUMBER');
+});
+
+test('R02/R03: a plan names the control profile and the bench binding it was made for; without them it is not a plan',()=>{
+ const {controlProfileDigest:_c,...noControl}=plan() as Record<string,unknown>,{benchBinding:_b,...noBinding}=plan() as Record<string,unknown>;void _c;void _b;
+ expect(validateIdentificationPlan(sealDriveDocument(noControl)).reasonCodes).toContain('FIELD_REQUIRED');expect(validateIdentificationPlan(sealDriveDocument(noBinding)).reasonCodes).toContain('FIELD_REQUIRED');
+});
+test('R09: a record that carries any reason code, or an unbounded Jacobian, produces nothing; a forged record that says otherwise is not a valid document',()=>{
+ const produced=[{document:'arm_physics',id:'x',revision:2,digest:d('9')}];
+ for(const code of ['IDENTIFIABILITY_POOR','SYNTHETIC_DATA','TOOL_SELF_TEST','NOT_CONVERGED','PARAMETER_AT_BOUND','VALIDATION_FAILED','CONFIG_DIGEST_MISMATCH','PREDICTION_FAILED'])
+  expect(validateCalibrationRecord(record({reasonCodes:[code],produced})).ok,code).toBe(false);
+ const unbounded={iterations:5,converged:true,objectiveInitial:1,objectiveFinal:1e-6,jacobianCondition:null};
+ expect(validateCalibrationRecord(record({convergence:unbounded,produced})).ok).toBe(false);
+ expect(validateCalibrationRecord(record({convergence:unbounded,produced:[]})).ok).toBe(true);
+ expect(validateCalibrationRecord(record({produced})).ok,'a clean record still produces').toBe(true);
 });

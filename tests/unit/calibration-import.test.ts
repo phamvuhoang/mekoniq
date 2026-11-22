@@ -4,7 +4,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {describe,expect,test} from 'vitest';
 import {assessCalibration} from '../../packages/lab-runtime/src/engineering/calibration';
-import {CALIBRATION_LOG_LIMITS,importCalibrationLog,parseCalibrationCsv,type CalibrationSidecar} from '../../packages/lab-runtime/src/engineering/calibration-import';
+import {CALIBRATION_LOG_LIMITS,benchBindingDigest,importCalibrationLog,parseCalibrationCsv,sidecarMatchesDataset,type CalibrationSidecar} from '../../packages/lab-runtime/src/engineering/calibration-import';
 
 const FIXTURE=join(__dirname,'../fixtures/calibration');
 const fixtureText=(file:string)=>readFile(join(FIXTURE,file),'utf8');
@@ -59,6 +59,15 @@ describe('importCalibrationLog',()=>{
   const {s,files}=await fromFixture(),a=await importCalibrationLog(s,read(files));
   const f=s.trials[0]!.file,b=await importCalibrationLog(s,read({...files,[f]:files[f]!.replace(/\n(\d+),/,'\n$1,'+'0')}));
   expect(a.ok&&b.ok&&a.dataset.rawDigest!==b.dataset.rawDigest).toBe(true);
+ });
+ test('R02: the identity of the data covers the bench each file was recorded under: another signal or axis is another raw digest, and a sidecar agrees with its dataset only trial for trial',async()=>{
+  const {s,files}=await fromFixture(),a=await importCalibrationLog(s,read(files));
+  const sig=await importCalibrationLog({...s,trials:s.trials.map((t,i)=>i===0?{...t,signal:{...(t.signal as {kind:'step';amplitude:number;atTick:number}),amplitude:0.0123}}:t)},read(files));
+  const axis=await importCalibrationLog({...s,trials:s.trials.map((t,i)=>i===0?{...t,axisId:'xarm-1/J2'}:t)},read(files));
+  expect(a.ok&&sig.ok&&axis.ok).toBe(true);if(!(a.ok&&sig.ok&&axis.ok))return;
+  expect(new Set([a.dataset.rawDigest,sig.dataset.rawDigest,axis.dataset.rawDigest]).size).toBe(3);
+  expect(sidecarMatchesDataset(s,a.dataset)).toBe(true);expect(sidecarMatchesDataset({...s,trials:[...s.trials].reverse()},a.dataset)).toBe(false);expect(sidecarMatchesDataset({...s,configDigest:'0'.repeat(64)},a.dataset)).toBe(false);
+  expect(benchBindingDigest(s)).not.toBe(benchBindingDigest(sig.sidecar));
  });
  test('a file path that leaves the log directory is rejected before anything is read',async()=>{
   const {s,files}=await fromFixture();

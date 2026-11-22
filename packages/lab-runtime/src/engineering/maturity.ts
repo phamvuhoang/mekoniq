@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import type {SourceRef} from '../../../contracts/generated/engineering';
-import type {CalibrationRecordV1} from './calibration-record';
+import {validateCalibrationRecord,type CalibrationRecordV1} from './calibration-record';
 export type ParameterMaturity='illustrative'|'assumed'|'nominal'|'calibrated';
 /** What health lists: per plant provider (`mujoco_arm`, `mujoco_3d`) the maturity of each group. Computed from the plant's fixtures, never typed. */
 export type ModelMaturityByPlant=Record<string,Record<MaturityGroup,ParameterMaturity>>;
@@ -12,8 +12,10 @@ export const MATURITY_GROUPS=['geometry','inertia','drive','contact','sensing'] 
 export type MaturityGroup=typeof MATURITY_GROUPS[number];
 const RANK:Record<ParameterMaturity,number>={illustrative:0,assumed:1,nominal:2,calibrated:3};
 
-/** A record lifts a derived parameter only if it came from MEASURED data (not the tool self-test), passed on the held-out split, produced a revision, is about the dataset the parameter cites and is still valid for the configuration. */
-const lifts=(r:CalibrationRecordV1,source:SourceRef,currentConfigDigest:string)=>r.sourceKind==='measured'&&!r.toolSelfTest&&r.validation.status==='pass'&&r.produced.length>0&&r.datasetDigest===source.contentSha256&&r.configDigest===currentConfigDigest;
+/** A record lifts a derived parameter only if it is a valid, sealed document, came from MEASURED data (not the tool self-test), passed on the held-out split, produced a revision, is about the dataset the parameter cites, is
+ * still valid for the configuration, and is THE fit the source names (`calibration-fit:<fitDigest>`), for the path it names (`fitted:<path>`) and the revision it created: a pass of one fit proves nothing about another. */
+const lifts=(r:CalibrationRecordV1,source:SourceRef,currentConfigDigest:string)=>validateCalibrationRecord(r).ok&&r.sourceKind==='measured'&&!r.toolSelfTest&&r.validation.status==='pass'&&r.produced.length>0&&r.datasetDigest===source.contentSha256&&r.configDigest===currentConfigDigest
+ &&source.documentId===`calibration-fit:${r.fitDigest}`&&r.fitted.some(f=>source.locator===`fitted:${f.path}`)&&r.produced.some(p=>String(p.revision)===source.revision);
 const sourceMaturity=(s:SourceRef,records:readonly CalibrationRecordV1[],currentConfigDigest:string):ParameterMaturity=>
  s.kind==='measured'?'calibrated':s.kind==='manufacturer'?'nominal':s.kind==='derived'&&records.some(r=>lifts(r,s,currentConfigDigest))?'calibrated':'assumed';
 export function groupMaturity(sources:readonly SourceRef[],records:readonly CalibrationRecordV1[],currentConfigDigest:string):ParameterMaturity{

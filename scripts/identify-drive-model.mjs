@@ -17,7 +17,8 @@ if(spawnSync(python,['-c','import mujoco; assert mujoco.__version__ == "3.17.0"'
 const ts=f=>tsImport(f,import.meta.url);
 const [{mujocoFromOptions},{benchPlant,createHeadlessBench},{calibrationConfigDigest},ident,{readXArmFixture}]=await Promise.all([ts('../packages/lab-runtime/src/v2/simulation3d/mujoco.ts'),ts('../packages/lab-runtime/src/v2/control/bench-runner.ts'),ts('../packages/lab-runtime/src/engineering/bench-prediction.ts'),ts('../packages/lab-runtime/src/engineering/identification.ts'),ts('../packages/lab-runtime/src/v2/simulation3d/arm-cell-scene.ts')]);
 const scenarioOf=axisId=>axisId.startsWith('amr-1/')?{scenarioId:'MJ-BENCH-WHEEL',axis:'wheels'}:{scenarioId:'MJ-BENCH-ARM',axis:axisId.split('/')[1]};
-const configOf=async axisId=>{const p=await benchPlant(workerRoot,{...scenarioOf(axisId),driveExperimentId:'drive-nominal-v1'});return calibrationConfigDigest({plantModelDigest:p.plantModelDigest,load:p.load,axisIds:[axisId]});};
+const plantOf=axisId=>benchPlant(workerRoot,{...scenarioOf(axisId),driveExperimentId:'drive-nominal-v1'});
+const configOf=async axisId=>{const p=await plantOf(axisId);return calibrationConfigDigest({plantModelDigest:p.plantModelDigest,load:p.load,axisIds:[axisId]});};
 if(opt['--config-digest']){console.log(await configOf(opt['--config-digest']));process.exit(0);}
 if(!opt['--plan']||!opt['--dataset']||!opt['--sidecar']||!opt['--out'])missing('usage: identify-drive-model.mjs --plan F --dataset F --sidecar F --out NEW-DIR');
 const out=resolve(opt['--out']);
@@ -34,7 +35,7 @@ const probe=await mkdtemp(join(tmpdir(),'identify-probe-'));
 try{
  const p=await mujocoFromOptions({enabled:true,python,workerRoot,lockPath:join(workerRoot,'requirements.lock'),directory:probe,bundleFile:async()=>{throw Error('NO_BUNDLE');}});
  if(!p.arm.runtime)missing(`MUJOCO_PREREQUISITE_MISSING: ${p.arm.capability.reason}`);
- const models={driveModel,control,configDigest:await configOf(axisIds[0]),...arm?{physics:readXArmFixture(workerRoot).physics}:{}};
+ const models={driveModel,control,configDigest:await configOf(axisIds[0]),plantModelDigest:(await plantOf(axisIds[0])).plantModelDigest,...arm?{physics:readXArmFixture(workerRoot).physics}:{}};
  let record;
  try{record=await ident.identify(plan,dataset,sidecar,models,createHeadlessBench(p.arm.runtime),{toolSelfTest:flags.has('--tool-self-test')});}
  catch(e){console.error(e.message);process.exit(2);}
