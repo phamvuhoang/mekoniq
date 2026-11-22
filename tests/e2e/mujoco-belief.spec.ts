@@ -7,6 +7,7 @@ import {mkdtempSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {gunzipSync} from 'node:zlib';
 import {openInspector,openScenarioPicker} from '../support/twin';
+import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL;
 const isCreate=(r:Request)=>r.method()==='POST'&&/\/lab\/v2\/runs$/.test(r.url());
 test('belief_estimated cell: ids in the request, attempts in the report, the exported package draws the belief at the cursor, an older report has no perception data',async({page})=>{
@@ -44,6 +45,7 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  await offline.locator('.replay-files>summary').click();await offline.locator('#replay-import').setInputFiles(join(folder,'pkg'));await expect(offline.locator('#replay-cursor')).toBeVisible({timeout:90000});
  await offline.locator('#replay-cursor').evaluate((el:HTMLInputElement,t)=>{el.value=String(t);el.dispatchEvent(new Event('input',{bubbles:true}));},cursor);await expect(offline.locator('#replay-time')).toContainText(`tick ${cursor}`);
  const legend=offline.getByTestId('belief-legend');await expect(legend).toHaveAttribute('data-state','data',{timeout:30000});
+ await sweepWeb07(offline,{panel:'belief',testId:'belief-legend'});
  await expect(offline.locator('#replay-stage canvas')).toHaveAttribute('data-belief-state','data');await expect(offline.locator('#replay-stage canvas')).toHaveAttribute('data-beliefs',/cup-1/);
  await expect(legend).toContainText(`cup-1 ↔ ${Number((expected.errorM! *1000).toFixed(1))} mm`);
  // the 2D plan draws the same record: dashed belief, solid truth dot, the error

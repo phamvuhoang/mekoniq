@@ -3,6 +3,7 @@
 //   node scripts/test-irsim-e2e.mjs --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-tray.spec.ts
 import {test,expect,type Page,type Request} from '@playwright/test';
 import {openInspector,openScenarioPicker} from '../support/twin';
+import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL,dir=process.env.LAB_IRSIM_SCREENSHOTS;
 const shot=async(p:Page,name:string)=>{if(dir)await p.screenshot({path:`${dir}/V10-${name}.png`,fullPage:true});};
 const isCreate=(r:Request)=>r.method()==='POST'&&/\/lab\/v2\/runs$/.test(r.url());
@@ -43,5 +44,6 @@ test('tray: five registered variants, A-prime then B, and a design hint or the r
  if(available==='true'){await expect(hint).toContainText('physical test');await expect(hint).toContainText('acceleration limit');await expect(hint).not.toContainText(/optimal|p95/i);}
  else{await expect(hint).toContainText('Not enough data to compare');}
  for(const [lang,word] of available==='true'?[['JA','物理試験'],['VI','thử nghiệm vật lý']] as const:[['JA','比較に十分なデータがありません'],['VI','Không đủ dữ liệu để so sánh']] as const){await page.getByRole('button',{name:lang,exact:true}).click();await expect(page.getByTestId('tray-hint')).toContainText(word);}
+ await sweepWeb07(page,{panel:'tray',testId:'tray-hint'});
  expect(errors).toEqual([]);
 });

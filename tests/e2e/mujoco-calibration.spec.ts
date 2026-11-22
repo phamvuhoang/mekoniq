@@ -4,6 +4,7 @@
 import {test,expect} from '@playwright/test';
 import {openInspector} from '../support/twin';
 import {hashJson} from '../../src/twin/hash';
+import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL;
 const d=(c:string)=>c.repeat(64);
 const unsealed=(o:Record<string,unknown>={})=>({schemaVersion:1,documentType:'calibration-record',digest:d('1'),planDigest:d('2'),datasetDigest:d('3'),configDigest:d('c'),baseDriveModelDigest:d('4'),fitDigest:d('5'),sourceKind:'measured',
@@ -58,5 +59,6 @@ test('Control tab: the maturity badge comes from the runtime, a record of this p
  // three languages
  await page.getByRole('button',{name:'VI',exact:true}).click();await expect(page.getByTestId('control-model-maturity')).toContainText('Mức model');
  await page.getByRole('button',{name:'JA',exact:true}).click();await expect(page.getByTestId('control-model-maturity')).toContainText('モデルの成熟度');
+ await sweepWeb07(page,{panel:'calibration',testId:'control-model-maturity',reopen:()=>openInspector(page,'control')});
  expect(errors).toEqual([]);
 });

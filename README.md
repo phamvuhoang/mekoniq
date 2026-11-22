@@ -230,6 +230,8 @@ pnpm build
 
 ## Phạm vi và bước kế tiếp
 
+R4 (virtual commissioning): tab Control, studio lỗi drive, khay ba cốc, lớp belief/phục hồi và màn hình hiệu chuẩn + huy hiệu mức model đều là mô phỏng `not_calibrated`; Lab không nối robot thật. Phạm vi, cách ghi record `r4` và giới hạn: `docs/simulation-compatibility.md` (mục R4) và `source/docs/operations/r4-qualification.md`.
+
 Plan 01 hiện có phần mềm mock cho delivery, coffee, mixed workload, arm model, SSE/recovery, replay/evidence và gói offline. Source vẫn quyết định arrival, fulfillment, cup custody và effect; renderer không quyết định nghiệp vụ. Candidate chỉ là draft, không chứa credentials, quyền điều khiển hay hàng đợi mission.
 
 **R-MOCK chưa được nghiệm thu.** Phần mềm, pin và vòng CI/browser cuối đã được kiểm; owner vẫn cần review bằng chứng. UX timing với ít nhất 5 người dùng mới, máy macOS mới, ngắt mạng thật, cold boot và Linux là gate riêng. Phép đo tablet 2D emulated trên Mac không thay phép đo thiết bị tablet thật. Plans 02/03, Gazebo/Nav2, LinuxCNC, native adapters, calibration và hardware/venue acceptance vẫn thuộc các gate tương ứng.

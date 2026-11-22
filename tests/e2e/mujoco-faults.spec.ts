@@ -2,6 +2,7 @@
 //   node scripts/test-irsim-e2e.mjs --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-faults.spec.ts
 import {test,expect,type Page,type Request} from '@playwright/test';
 import {openInspector,openScenarioPicker} from '../support/twin';
+import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL,dir=process.env.LAB_IRSIM_SCREENSHOTS;
 const shot=async(p:Page,name:string)=>{if(dir)await p.screenshot({path:`${dir}/V09-${name}.png`,fullPage:true});};
 const isCreate=(r:Request)=>r.method()==='POST'&&/\/lab\/v2\/runs$/.test(r.url());
@@ -80,5 +81,6 @@ test('drive fault studio: compose, check (and a refused overlap that creates no 
  await row.locator('[data-action="twin-fault-jump"]').click();
  await expect(page.locator('#twin-replay-cursor')).toHaveValue('601',{timeout:60000});
  for(const [lang,word] of [['JA','期限内に検出'],['VI','Phát hiện đúng hạn'],['EN','Detected in time']] as const){await page.getByRole('button',{name:lang,exact:true}).click();await expect(page.getByTestId('fault-evidence')).toContainText(word);}
+ await sweepWeb07(page,{panel:'faults',testId:'fault-evidence'});
  expect(errors).toEqual([]);
 });

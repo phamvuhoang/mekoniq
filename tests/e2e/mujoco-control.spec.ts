@@ -5,6 +5,7 @@ import {test,expect,type Page,type Request,type Response} from '@playwright/test
 import {readFileSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {openInspector} from '../support/twin';
+import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL,dir=process.env.LAB_IRSIM_SCREENSHOTS;
 const shot=async(p:Page,name:string)=>{if(dir)await p.screenshot({path:`${dir}/V07a-${name}.png`,fullPage:true});};
 const isCreate=(r:Request)=>r.method()==='POST'&&/\/lab\/v2\/runs$/.test(r.url());
@@ -192,5 +193,6 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
   else {expect(new URL(mutation.url()).origin).toBe(new URL(page.url()).origin);expect(!!h.cookie).toBe(true);expect(h.authorization).toBeUndefined();expect(!!h['x-csrf-token']).toBe(true);}
  }
  await shot(page,'1440-j3');
+ await sweepWeb07(page,{panel:'control',testId:'control-bench',reopen:()=>openInspector(page,'control')});
  expect(errors).toEqual([]);
 });
