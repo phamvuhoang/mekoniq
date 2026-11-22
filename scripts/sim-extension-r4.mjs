@@ -58,7 +58,9 @@ export const CLOSING_GATES_R4=Object.keys(GATES_R4).filter(g=>g!=='G-CAL1');
 const equalKeys=(a,b)=>JSON.stringify(Object.keys(a??{}).sort())===JSON.stringify(Object.keys(b).sort());
 export function tableR4(){
  const used=new Set(Object.values(CASES_R4).flatMap(c=>c.suites??[]));
- return {documentType:'sim-extension-qualification',campaign:false,checkSuiteResult:checkR2bExecutedFiles,cases:CASES_R4,gates:GATES_R4,suites:SUITES_R4.filter(s=>used.has(s.id)),inputs(m){const reasons=[];
+ return {documentType:'sim-extension-qualification',campaign:false,
+  // the exact-file check reads a Vitest JSON; a Playwright result has its own counts (the core derives them from stats), and its one spec is named in the suite's command
+  checkSuiteResult:(suite,bytes)=>suite.kind==='vitest'?checkR2bExecutedFiles(suite,bytes):[],cases:CASES_R4,gates:GATES_R4,suites:SUITES_R4.filter(s=>used.has(s.id)),inputs(m){const reasons=[];
   if(m.accepted!==false||m.acceptedBy!==null||m.acceptedAt!==null)reasons.push('RECORD_ACCEPTED');
   if(!equalKeys(m.cases,CASES_R4))reasons.push('CASE_TABLE_MISMATCH');
   if(!equalKeys(m.gates,GATES_R4))reasons.push('GATE_TABLE_MISMATCH');

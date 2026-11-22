@@ -41,6 +41,10 @@ test('a suite that did not pass fails its case even when its input reads back cl
  const q=qualifyR4Structure({suites:SUITES_R4.map((s:{id:string;kind:string})=>s.id==='drv-engine'?{...green(s.id),exitCode:1}:green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:artifactDispositionsFromGroups({})});
  expect(q.cases.DRV08.status).toBe('failed');expect(q.gates['G-DRV1'].status).toBe('failed');
 });
+test('the exact-file Vitest check applies to Vitest suites only; a Playwright suite is judged by its own counts',()=>{
+ const t=tableR4();expect(t.checkSuiteResult({id:'e2e-x',kind:'playwright',files:[]},Buffer.from('{"stats":{"expected":1,"unexpected":0,"skipped":0}}'))).toEqual([]);
+ expect(t.checkSuiteResult({id:'x',kind:'vitest',files:['tests/a.test.ts']},Buffer.from('{"stats":{}}')).length).toBeGreaterThan(0);
+});
 test('a record that says accepted, or has another case/gate table, is refused',()=>{
  const m:Record<string,unknown>={schemaVersion:1,documentType:'sim-extension-qualification',release:'r4',accepted:true,acceptedBy:null,acceptedAt:null,cases:{},gates:{},suites:[]};
  expect(checkR4Structure(m,()=>null)).toContain('ACCEPTED_WITHOUT_REVIEWER');

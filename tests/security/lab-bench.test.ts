@@ -125,7 +125,7 @@ test('the recorded trace (GET /runs/:id/trace) is behind the report\'s gate: own
  expect(await a.call(`/runs/${'0'.repeat(8)}-0000-0000-0000-${'0'.repeat(12)}/trace`)).toMatchObject({status:404,body:{error:'RUN_NOT_FOUND'}});
  expect(await a.call(`/runs/${id}/trace`,{})).toMatchObject({status:405,body:{error:'METHOD_NOT_ALLOWED'}});
  // never started: the durable trace holds nothing yet and says so (the verified read, never memory)
- expect(await a.call(`/runs/${id}/trace`)).toEqual({status:200,body:{traces:[{axisId:'xarm-1/J3',dtS:0.002,samples:Array(10).fill(null)}],issues:['TRACE_TAIL_MISSING']}});
+ expect(await a.call(`/runs/${id}/trace`)).toMatchObject({status:200,body:{runId:id,manifestSha256:expect.stringMatching(/^[0-9a-f]{64}$/),traces:[{axisId:'xarm-1/J3',dtS:0.002,samples:Array(10).fill(null)}],issues:['TRACE_TAIL_MISSING']}}); // the body names its run and manifest (R4.2 review), so a trace is never read as another run's
  expect((await a.call(`/runs/${id}/writer`,{operation:'grant_read',recipientSessionId:b.sessionId,controlEpoch:0})).status).toBe(200);
  expect((await b.call(`/runs/${id}/trace`)).status).toBe(200);
  const mission=await a.call('/runs',{project:restaurant(),scenarioId:'FD01',scenarioRevision:1,seed:42,mode:'mock',backendSetId:'mock-amr',access:'simulated',runtimeIdentity:identity});expect(mission.status,JSON.stringify(mission.body)).toBe(201);

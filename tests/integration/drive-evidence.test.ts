@@ -26,10 +26,11 @@ test('the drive snapshots are recorded with the physics tick, in model order, an
  expect(r.prepared.admission.driveAxes).toEqual(['amr-1/wheel-left','amr-1/wheel-right']);
  for(const [t,rec] of r.read.records.entries()){const d=(rec as Drive).drives as {axisId:string;tick:number}[];expect(d.map(x=>x.axisId)).toEqual(['amr-1/wheel-left','amr-1/wheel-right']);expect(d.every(x=>x.tick===t)).toBe(true);}
  const section=r.report.driveEvidence!;
- expect(section).toMatchObject({testLevel:'controller_in_the_loop',complete:true,issues:[],ticks:61});
+ // this run is stepped 60 ticks and closed, never finished: its control evidence is not complete, and the section says so (fail closed) instead of calling a part of a run controller-in-the-loop evidence
+ expect(section).toMatchObject({testLevel:'controller_in_the_loop',complete:false,issues:['CIL_CONTROL_EVIDENCE'],ticks:61});
  expect(section.axes.map(a=>a.axisId)).toEqual(['amr-1/wheel-left','amr-1/wheel-right']);
  expect(section.axes[0]!.states.map(s=>s.state)).toEqual(['disabled','ready','enabled']);   // the enable sequence is in the evidence
- expect(section.axes[0]!.enabledAtTick).toBeGreaterThan(1);expect(section.axes[0]!.trackingRms.available).toBe(true);
+ expect(section.axes[0]!.enabledAtTick).toBeGreaterThan(1);expect(section.axes[0]!.trackingRms.available).toBe(false); // no tracking error without the run's commands (its control evidence is incomplete)
 });
 test('a run without a drive records no drives and its report has no drive section; a record that carries drives is then refused',async()=>{
  const r=await recorded();
