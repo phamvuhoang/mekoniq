@@ -72,3 +72,38 @@ export function checkCloudRunEvidence(read,r2aBytes){
  fail(contiguous,'STREAM_NOT_CONTIGUOUS');
  return [...new Set(errors)];
 }
+
+/** CLD03 supplements an immutable R4 record after ONE deployment ordered by the user. Stored evidence only: it never deploys, edits the record or accepts anything.
+ * Files: checksums.json (sha256 of every other file), deployment.json, health.json, cell-report.json, bench-report.json, summary.json. */
+export function checkCloudRunR4Evidence(read,r4Bytes){
+ const errors=[],fail=(c,code)=>{if(!c)errors.push(code);};let checks,q;
+ try{checks=JSON.parse(read('checksums.json'));q=JSON.parse(r4Bytes);}catch{return ['RECORD_INVALID'];}
+ if(!checks||checks.algorithm!=='sha256'||!checks.files||typeof checks.files!=='object'||Array.isArray(checks.files)||!q)return ['RECORD_INVALID'];
+ const files=new Map();
+ for(const [path,digest] of Object.entries(checks.files)){
+  if(!safe(path)){errors.push(`ARTIFACT_PATH_INVALID:${path}`);continue;}
+  if(!hex.test(digest)){errors.push(`ARTIFACT_HASH_INVALID:${path}`);continue;}
+  let bytes;try{bytes=read(path);}catch{bytes=null;}
+  if(!bytes){errors.push(`ARTIFACT_MISSING:${path}`);continue;}
+  if(sha(bytes)!==digest){errors.push(`ARTIFACT_HASH_MISMATCH:${path}`);continue;}
+  files.set(path,bytes);
+ }
+ const parse=path=>{if(!files.has(path)){errors.push(`ARTIFACT_MISSING:${path}`);return null;}try{const v=JSON.parse(files.get(path));if(!v||typeof v!=='object'||Array.isArray(v))throw new Error();return v;}catch{errors.push(`ARTIFACT_JSON_INVALID:${path}`);return null;}};
+ const d=parse('deployment.json'),health=parse('health.json'),cell=parse('cell-report.json'),bench=parse('bench-report.json'),s=parse('summary.json');
+ if(!d||!health||!cell||!bench||!s||errors.length)return [...new Set(errors)];
+ fail(d.schema==='mekoniq-cloud-run-deployment/2'&&s.schema==='mekoniq-cloud-run-r4-smoke/1','RECORD_INVALID');
+ fail(d.accepted===false&&s.accepted===false&&q.accepted===false,'ACCEPTANCE_FORBIDDEN');
+ fail(q.release==='r4'&&q.identity?.identityStable===true&&q.cases?.CLD03?.status==='not_run'&&q.gates?.['G-CLOUD2']?.status!=='tested','R4_RECORD_NOT_SUPPLEMENTABLE');
+ fail(d.qualification?.sha256===sha(r4Bytes)&&d.qualification?.candidateId===q.candidateId,'R4_HASH_MISMATCH');
+ const commit=q.identity?.before?.sourceCommit,pin=q.lab?.pin;
+ fail(/^[a-f0-9]{40}$/.test(commit)&&hex.test(pin?.schemaHash)&&hex.test(pin?.artifactSha256)&&[pin.sourceCommit,d.sourceCommit,s.expectedCommit,health.sourceCommit,cell.manifest?.sourceCommit,bench.manifest?.sourceCommit].every(c=>c===commit)&&
+  d.artifactSha256===pin.artifactSha256&&[health.schemaHash,cell.schemaHash,bench.schemaHash].every(h=>h===pin.schemaHash),'IDENTITY_MISMATCH');
+ let cloudUrl=false;try{const u=new URL(d.url);cloudUrl=u.protocol==='https:'&&u.hostname.endsWith('.run.app')&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';}catch{/* fails below */}
+ fail(cloudUrl&&d.platform==='linux/amd64'&&/@sha256:[a-f0-9]{64}$/.test(d.image)&&typeof d.revision==='string'&&Array.isArray(d.traffic)&&d.traffic.filter(t=>t.percent>0).length===1&&d.traffic.some(t=>t.revisionName===d.revision&&t.percent===100)&&s.service===d.url,'DEPLOYMENT_MISMATCH');
+ fail(cell.manifest?.scenario?.id==='MJ-CELL-BV01'&&cell.outcome?.status==='completed'&&cell.outcome?.served==='2'&&cell.manifest?.driveExperimentId==='drive-nominal-v1','CELL_NOT_COMPLETED');
+ fail(bench.outcome?.status==='completed'&&Number.isInteger(bench.outcome?.tick)&&bench.outcome.tick>0,'BENCH_NOT_COMPLETED');
+ const t=s.timing;fail(t&&[t.cellMsPerTick,t.benchMsPerTick,t.realtimeFactor].every(v=>Number.isFinite(v)&&v>0)&&Number.isInteger(t.cellTicks)&&t.cellTicks>0,'TIMING_MISSING');
+ fail(s.macComparison&&['servedMac','servedCloud'].every(k=>typeof s.macComparison[k]==='string')&&s.macComparison.servedMac===s.macComparison.servedCloud,'MAC_COMPARISON_MISSING_OR_DIFFERENT');
+ fail(s.status==='tested'&&['health','cell','bench'].every(k=>s.cases?.[k]==='tested'),'CLD03_NOT_TESTED');
+ return [...new Set(errors)];
+}

@@ -1,0 +1,43 @@
+# Qualification R4 (V16): ghi, đọc, giới hạn
+
+Record `r4` đóng R4.1–R4.5 ở một tuple (source commit, Lab commit, pin runtime, portable tools). Nó dùng cùng lõi `qualify`/`checkQualification` với R2b ([`scripts/sim-extension-r4.mjs`](../../scripts/sim-extension-r4.mjs)); mọi record `accepted:false`, chấp nhận chỉ nằm trong sidecar do người ký viết. Bộ thiết kế: [virtual-commissioning/design](../implementation/virtual-commissioning/design/README.md).
+
+## Ghi
+
+Điều kiện: cây source và Lab sạch, pin Lab = source HEAD, không có bytecode dưới portable root, output ngoài hai repo và chưa tồn tại. Chuỗi, mỗi bước exit 0 mới sang bước sau, dưới `caffeinate -dims`, không commit Lab giữa chừng, dừng stack `mekoniq-w00-w04` trước:
+
+```
+Lab regression → IR-SIM → r1 → r1.1 → r2a → r2b → campaign R4 → container (CLD01) → r4
+```
+
+Campaign R4 (từ worktree sạch tại đúng commit; symlink `node_modules`, `apps/*/node_modules`, `packages/*/node_modules` và `.venv-mujoco`):
+
+```sh
+for c in cil-v2 bench-v2 fault-v1 tray-v1 perception-gap-v1; do node scripts/lab-mujoco.mjs run --campaign $c --out $OUT/$c; node scripts/lab-mujoco.mjs verify --input $OUT/$c; done
+node scripts/record-r4-container.mjs --out $OUT/container            # CLD01 (arm64 image + test), CLD02 not_run nếu không có --cld02-result
+node scripts/record-sim-extension-r4.mjs --r2b-record $OUT/r2b --cil-campaign $OUT/cil-v2 --fault-campaign $OUT/fault-v1 --tray-campaign $OUT/tray-v1 \
+  --perception-study $OUT/perception-gap-v1 --bench-record $OUT/bench-v2 --container-record $OUT/container --mock-regression $OUT/mock --out $OUT/r4-candidate-NN
+LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extension
+```
+
+`--plan` liệt kê suite và gate mà không chạy gì. `--calibration-selftest` chưa có recorder: không truyền thì các ca CAL ghi `not_run` (G-CAL1 nằm ngoài điều kiện đóng R4, contracts §10).
+
+## Đọc
+
+`scripts/r4-readback.mjs` đọc lại cả thư mục, không tin trạng thái nào trong `qualification.json`:
+
+- Mỗi campaign được copy cạnh record, băm, rồi chạy lại verifier đã ghi nó (`verifyCilCampaign`, `verifyBenchCampaign`, `verifyFaultCampaign`, `verifyTrayCampaign`, `verifyPerceptionStudy`); sai id, sai commit, `accepted:true` hoặc thiếu run → case `failed`/`not_run`, không bao giờ `tested`.
+- REG05 cần record R2b cùng tuple (đọc lại bằng reader R2b) và manifest hồi quy Lab của cùng commit.
+- CLD01/CLD02 đọc từ `container.json` (băm file kết quả vitest; platform đúng; commit đúng).
+- WEB07 đọc các dòng `web07-<panel>.json` mà chính các spec e2e chạy trên run thật ghi ra (5 panel × VI/JA/EN × 390/1024/1440, axe serious/critical = 0, reduced motion, không cuộn ngang). WEB08/WEB10 đọc gói replay mẫu của Lab chép cạnh record (hash manifest = catalog, `not_calibrated`, `accepted:false`, nhãn).
+- Thiếu đầu vào → `not_run` kèm lý do; hỏng/khác tuple/đã `accepted` → `failed`.
+
+## Không ghi ở đây
+
+- **CLD03** (deploy Cloud Run và smoke) chỉ chạy theo lệnh deploy của người dùng. Bằng chứng là thư mục bổ sung dưới `docs/implementation/evidence/cloud-run/`, kiểm bằng `checkCloudRunR4Evidence` (`scripts/cloud-run-qualification.mjs`): gắn với đúng byte của record R4, không sửa record, không chấp nhận gì. Chưa deploy → CLD03 `not_run: deploy_order_pending`.
+- **CLD02** cần host Linux x86-64 thật (`scripts/r4-cld02.sh`; image runtime không mang test, giả lập không phải bằng chứng). Chưa có → `not_run`.
+- **REC06** bị chặn: không lực đẩy nào làm kẹp hụt mà cốc còn trong tầm nhìn; không chỉnh gì để vừa. G-REC1 vì vậy không `tested`.
+- **WEB09** (frame p95 với đồ thị 5.000 mẫu và lớp belief) chưa có recorder đo: `not_run`.
+- G3 (hiệu chuẩn bằng dữ liệu đo), phần cứng và chữ ký chấp nhận nằm ngoài R4.
+
+R4 chỉ được gọi là đầy đủ khi G-DRV1, G-CIL1, G-TUNE1, G-FLT1, G-TRAY1, G-BEL1, G-REC1, G-WEB2, G-REG5 và G-CLOUD2 đều `tested`.
