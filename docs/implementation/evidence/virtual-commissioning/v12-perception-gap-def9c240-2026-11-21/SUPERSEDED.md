@@ -1,0 +1,1 @@
+Superseded by `../v12-perception-gap-c1a79540-2026-11-22/` (22/11/2026). This record (source `def9c240`) predates the second review fixes (R01–R10): the reader now refuses its stream manifests (no record counts) and the verifier recomputes what it reported. Kept unchanged as history; do not cite it as current.
