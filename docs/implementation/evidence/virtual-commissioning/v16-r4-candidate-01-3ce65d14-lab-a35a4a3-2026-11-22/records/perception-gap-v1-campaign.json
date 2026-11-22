@@ -1,0 +1,223 @@
+{
+  "campaign": {
+    "schemaVersion": 1,
+    "id": "perception-gap-v1",
+    "maxTicks": 12000,
+    "note": "The registered perception-gap study (R4-B 8.2): 92 pick-rig runs on pick-rig-v1. Every number is assumed and not_calibrated; the interval describes the registered offset directions and noise draws, not a physical arm.",
+    "points": [
+      {
+        "id": "fixed-0",
+        "mode": "fixed_program",
+        "truthOffsetM": 0,
+        "profileId": null,
+        "nudge": false,
+        "seeds": [
+          1
+        ]
+      },
+      {
+        "id": "fixed-20mm",
+        "mode": "fixed_program",
+        "truthOffsetM": 0.02,
+        "profileId": null,
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "truth-0",
+        "mode": "belief_ground_truth",
+        "truthOffsetM": 0,
+        "profileId": null,
+        "nudge": false,
+        "seeds": [
+          1
+        ]
+      },
+      {
+        "id": "truth-20mm",
+        "mode": "belief_ground_truth",
+        "truthOffsetM": 0.02,
+        "profileId": null,
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "sigma-2mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-sigma-2mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "sigma-5mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-sigma-5mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "sigma-10mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-sigma-10mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "sigma-15mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-sigma-15mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "id": "bias-x-5mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-bias-x-5mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "bias-y-5mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-bias-y-5mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "bias-x-10mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-bias-x-10mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "bias-y-10mm",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0.02,
+        "profileId": "perception-bias-y-10mm-v1",
+        "nudge": false,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "id": "stale-nudge",
+        "mode": "belief_estimated",
+        "truthOffsetM": 0,
+        "profileId": "perception-short-age-v1",
+        "nudge": true,
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    ]
+  },
+  "sourceCommit": "3ce65d145be10d2e7b5a9b69a47e6fa1c2a98564",
+  "accepted": false,
+  "execution": "actual_mujoco",
+  "calibration": "not_calibrated"
+}

@@ -1,0 +1,77 @@
+{
+ "schemaVersion": 1,
+ "accepted": false,
+ "sourceCommit": "3ce65d145be10d2e7b5a9b69a47e6fa1c2a98564",
+ "labCommit": "a35a4a3f910a5320ea2850b282dc94bcdada06b0",
+ "rawArchive": "robot/evidence-archive/r4-chain-3ce65d14/ (outside git, 4.8 GB; guards need the extracted archive)",
+ "records": {
+  "r4-candidate-01": {
+   "file": "qualification.json",
+   "sha256": "f801d37ff22794eac6a4347d53510a3e3342e257321f1adacf114ec415241d24",
+   "rawDir": "r4-candidate-01",
+   "artifacts": 11527
+  },
+  "irsim": {
+   "file": "records/irsim-qualification.json",
+   "sha256": "b141f392038ff58111c5e4675585538f45e0e288c2c45383650728cf8e4e55ea",
+   "rawDir": "irsim"
+  },
+  "r1": {
+   "file": "records/r1-qualification.json",
+   "sha256": "162b2b1347414ae6e3f5835a4a8b67708b4f2fafb92e4d8945abdda7976b62d5",
+   "rawDir": "r1"
+  },
+  "r1.1": {
+   "file": "records/r11-qualification.json",
+   "sha256": "2998aeb9b8eebb94bc51cde79d4346f33130b2ee20e6e526981dacb0a6098606",
+   "rawDir": "r11"
+  },
+  "r2a": {
+   "file": "records/r2a-qualification.json",
+   "sha256": "03504f02e37367acbe6bc7c9092fad18452ae2ee5916a9ce15545061b2a93a7c",
+   "rawDir": "r2a"
+  },
+  "r2b": {
+   "file": "records/r2b-qualification.json",
+   "sha256": "0a0dd06312577ba96244a198327ba0fdd0d9392affb0a9d291872b6a95101faa",
+   "rawDir": "r2b"
+  }
+ },
+ "campaigns": {
+  "cil-v2": {
+   "file": "records/cil-v2-campaign.json",
+   "sha256": "14bfd20ab43925a99776b212475016fdfbde592a6658f1fc9d429850f2e35873",
+   "rawDir": "cil-v2"
+  },
+  "bench-v2": {
+   "file": "records/bench-v2-campaign.json",
+   "sha256": "dfffaa31f1799d6568e50dee510e97b3e8f69f7b349f58a95f2ed5064e6bff97",
+   "rawDir": "bench-v2"
+  },
+  "fault-v1": {
+   "file": "records/fault-v1-campaign.json",
+   "sha256": "dfd862fdb90b363181175a73e0c592e536ca9e9c73d571920add56f269d75719",
+   "rawDir": "fault-v1"
+  },
+  "tray-v1": {
+   "file": "records/tray-v1-campaign.json",
+   "sha256": "0d65eaf6b636702cef03e86c4e229c034aa1d4a30fed5657c70c4d34df376575",
+   "rawDir": "tray-v1"
+  },
+  "perception-gap-v1": {
+   "file": "records/perception-gap-v1-campaign.json",
+   "sha256": "e62feb9fcc6c04a70db7136181a9d36a5d3d24bb72eeb4f59124f849da505a95",
+   "rawDir": "perception-gap-v1"
+  }
+ },
+ "other": {
+  "container": {
+   "file": "records/container.json",
+   "sha256": "fc60e165956bc0eccd209f77ca2e313b284f98a93a4d922d05e842b303262b49"
+  },
+  "mockRegression": {
+   "file": "records/regression-manifest.json",
+   "sha256": "e7c60ae2b65b2a60cdd52d0df2a288e45f76fecb0f286f3fbf1f04302991fafd"
+  }
+ }
+}
