@@ -3,7 +3,7 @@ import {productionAssetDependencies} from './production-assets.mjs';
 const sha=b=>createHash('sha256').update(b).digest('hex'),hex=/^[a-f0-9]{64}$/;
 export const WEB07_PANELS={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration','fault-composer':'e2e-faults','perception-study':'e2e-belief',recovery:'e2e-belief'};
 const targets={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery']};
-function production(read,base,record){
+export function production(read,base,record){
  const bytes=read(base+'production-ui.json');if(!bytes)return {issue:'PRODUCTION_MISSING'};
  try{
   const p=JSON.parse(bytes),source=record.identity?.before?.sourceCommit,lab=record.lab,pin=lab?.pin;

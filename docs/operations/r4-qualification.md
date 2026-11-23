@@ -38,7 +38,7 @@ LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extensi
   Supplement cần `deployment.json`, `health.json`, `cell-report.json`, `bench-report.json`, `mac-cell-report.json`, `summary.json` và `checksums.json`. Cell và bench phải là hai run riêng, đúng scenario/backend, worker báo `x86_64`; bản so sánh Mac là report cell `arm64` cùng Source commit. `summary.timing.cellTicks`/`benchTicks` phải khớp report, `realtimeFactor = cell.manifest.clock.tickMs / cellMsPerTick` (sai số tối đa 1e-6), và `macComparison.servedMac`/`servedCloud` phải khớp từng report. Fixture unit chỉ kiểm reader, không thay bằng chứng deploy.
 - **CLD02** cần host Linux x86-64 thật (`scripts/r4-cld02.sh`; image runtime không mang test, giả lập không phải bằng chứng). Chưa có → `not_run`.
 - **REC06** bị chặn: không lực đẩy nào làm kẹp hụt mà cốc còn trong tầm nhìn; không chỉnh gì để vừa. G-REC1 vì vậy không `tested`.
-- **WEB09** (frame p95 với đồ thị 5.000 mẫu và lớp belief) chưa có recorder đo: `not_run`.
+- **WEB09** (frame p95 với đồ thị 5.000 mẫu và lớp belief): suite `e2e-perf` (`lab/tests/e2e/mujoco-perf.spec.ts`, build production, runtime thật). Hai kịch bản mỗi cái ≥ 60 s: đồ thị của một bench thật (≥ 5.000 mẫu/trục, cuộn liên tục) và replay offline của một run cell `belief_estimated` thật với ghost belief vẽ ở ≥ 80 % khung. Giới hạn: p95 ≤ 33 ms (mục tiêu 3D desktop của R2b). `scripts/r4-web09-readback.mjs` tính lại p95 từ các khoảng rAF thô, kiểm cửa sổ, workload và ràng buộc với build production của đúng tuple. Thiếu bản đo → `not_run`.
 - G3 (hiệu chuẩn bằng dữ liệu đo), phần cứng và chữ ký chấp nhận nằm ngoài R4.
 
 R4 chỉ được gọi là đầy đủ khi G-DRV1, G-CIL1, G-TUNE1, G-FLT1, G-TRAY1, G-BEL1, G-REC1, G-WEB2, G-REG5 và G-CLOUD2 đều `tested`.

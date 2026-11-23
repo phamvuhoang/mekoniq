@@ -6,6 +6,7 @@ import {checkR4Structure,tableR4,CASES_R4} from './sim-extension-r4.mjs';
 import {boundedEvidenceRead,evidenceInventory,verifyR2bDirectory} from './r2b-readback.mjs';
 import {checkArmContainer,readNativeContainer} from './r4-container-readback.mjs';
 import {verifyWeb07Record} from './r4-web07-readback.mjs';
+import {verifyWeb09Record} from './r4-web09-readback.mjs';
 export {WEB07_PANELS} from './r4-web07-readback.mjs';
 import {verifyReplayRecord} from './r4-replay-readback.mjs';
 export {WEB10_SAMPLES} from './r4-replay-readback.mjs';
@@ -55,9 +56,10 @@ export async function verifyContainerRecord(root,m,source){
  });
  return out;
 }
-/** WEB07 rows come from the suites' own artifacts (tests/support/web07.ts writes them while the real-run specs execute); WEB08/WEB10 from the replay samples copied beside the record; WEB09 has no measurement yet. */
+/** WEB07 rows come from the suites' own artifacts (tests/support/web07.ts writes them while the real-run specs execute); WEB08/WEB10 from the replay samples copied beside the record; WEB09 comes from the e2e-perf suite's frame timing (raw intervals). */
 export async function verifyWebRecord(root,m){
- const read=p=>{try{return boundedEvidenceRead(root,p);}catch{return null;}},out={WEB07:[],WEB08:[],WEB09:['WEB09_MEASUREMENT_MISSING:frame p95 with a 5,000-sample plot and the belief layer is not measured by any recorder yet'],WEB10:[]};
+ const read=p=>{try{return boundedEvidenceRead(root,p);}catch{return null;}},out={WEB07:[],WEB08:[],WEB09:[],WEB10:[]};
+ out.WEB09=verifyWeb09Record(read,m);
  out.WEB07=verifyWeb07Record(read,m);
  Object.assign(out,await verifyReplayRecord(read,m));
  return out;
