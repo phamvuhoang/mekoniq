@@ -20,7 +20,11 @@
         "model": "mujoco_drive_bench",
         "dynamics": true
       }
-    ]
+    ],
+    "seed": 3,
+    "calibration": {
+      "status": "not_calibrated"
+    }
   },
   "outcome": {
     "status": "completed",
@@ -36,6 +40,40 @@
       "id": "mujoco_3d",
       "version": "3.17.0",
       "hostArch": "arm64"
+    },
+    "seed": 3,
+    "axisIds": [
+      "amr-1/wheel-left",
+      "amr-1/wheel-right"
+    ],
+    "signal": {
+      "kind": "step",
+      "amplitude": 2,
+      "atTick": 10
+    },
+    "trace": {
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "samples": 5000
+    },
+    "metrics": {
+      "rmsError": {
+        "available": true,
+        "basis": "actual",
+        "samples": 5000,
+        "value": 1
+      },
+      "peakTorqueNm": {
+        "available": true,
+        "basis": "actual",
+        "samples": 5000,
+        "value": 1
+      },
+      "saturationRatio": {
+        "available": true,
+        "basis": "actual",
+        "samples": 5000,
+        "value": 1
+      }
     }
   },
   "bench": {

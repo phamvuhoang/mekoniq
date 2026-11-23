@@ -67,3 +67,19 @@ Thiếu đầu vào này thì các ca CAL ghi `not_run`. G-CAL1 nằm ngoài đi
 - G3 (hiệu chuẩn bằng dữ liệu đo), phần cứng và chữ ký chấp nhận nằm ngoài R4.
 
 R4 chỉ được gọi là đầy đủ khi G-DRV1, G-CIL1, G-TUNE1, G-FLT1, G-TRAY1, G-BEL1, G-REC1, G-WEB2, G-REG5 và G-CLOUD2 đều `tested`.
+
+### Native image handoff and CLD03
+
+A successful native workflow produces two artifacts with the same Source SHA, run ID and attempt. The small `r4-cld02-…` artifact is the qualification inventory. The separate `r4-image-…` artifact contains `image.tar` and `handoff.json`. Before loading, compare the archive SHA-256 and the native `image.json` SHA-256 to the handoff. After `docker load --input image.tar`, inspect the recorded `imageId` and check the Linux/amd64 platform and the OCI revision against the native record. Keep that configuration ID when tagging the release. Publication and deployment require the operator's release order. Deploy the immutable Artifact Registry repository digest. After publication the local Docker daemon must resolve that digest to the same configuration ID as CLD02.
+
+From the clean candidate Source checkout, validate the complete candidate and identify its release image with the following command. Plan mode uses local evidence only.
+
+```sh
+node scripts/record-r4-cloud.mjs plan --candidate "$R4_DIR" --endpoint "$SERVICE_URL" --origin "$LAB_ORIGIN"
+```
+
+After the approved release, use the same arguments with `execute --release-approved --out "$NEW_SUPPLEMENT"`. The output parent must exist. Supply the runtime key through the process environment `MEKONIQ_LAB_ACCESS_KEY`. The recorder runs read-only gcloud service and revision descriptions with explicit project `mekoniq` and region `asia-southeast1`, and inspects the local Docker promotion by repository digest. It retains the public host, allowed origin, named secret reference, sizing, routing and readiness. It pairs a new session, checks cell and wheel readiness, then creates, steps and archives one run of each type. A failed attempt keeps its own summary and cleanup receipts in its output directory. Select a new directory for another attempt.
+
+The Mac reference is the candidate's `inputs/cil/cell/nominal-7/report.json`. Both reports must serve two orders using seed 7, the same scene, models, drive and fixed arm program, with zero drive faults. For the continuous metric, the cloud AMR distance must fall within 5% of the Mac AMR distance. Wall timing runs from the first step's monotonic send time to the final step's response and includes HTTP/serialization time. The reader replays the recorded tick and revision sequence. Verify the supplement against the immutable candidate with `LAB_SIMEXT_EVIDENCE_DIR="$R4_DIR" LAB_CLOUD_EVIDENCE_DIR="$NEW_SUPPLEMENT" pnpm test:acceptance -- cloud-run`.
+
+For a local arm64 production container use `diagnose --runtime-manifest "$EXPORT/manifest.json" --endpoint "http://127.0.0.1:$PORT" --origin "http://127.0.0.1:4175" --out "$NEW_DIAGNOSTIC"`. This mode records `local-diagnostic` and can never qualify CLD03. All automated records set `accepted:false`.

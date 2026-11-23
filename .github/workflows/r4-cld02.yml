@@ -41,3 +41,12 @@ jobs:
           name: r4-cld02-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/r4-cld02/
           if-no-files-found: error
+      - name: Save the tested image by ID
+        if: success()
+        run: scripts/save-r4-native-image.sh "$RUNNER_TEMP/r4-cld02" "$RUNNER_TEMP/r4-image" "$GITHUB_SHA"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: r4-image-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/r4-image/
+          if-no-files-found: error
