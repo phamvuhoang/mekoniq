@@ -23,7 +23,7 @@ function actions(runId:string,ticks:number){let ns=0;const rows=[];for(let t=0;t
  return {created:{runId,runRevision:0,tick:0,status:'ready'},start:{runId,actionId:'start',kind:'start',expectedRevision:0,runRevision:1,startTick:0,endTick:0,status:'running',startNs:'0',endNs:'1'},steps:rows.map(r=>({...r,startNs:String(Number(r.startNs)+2),endNs:String(Number(r.endNs)+2)}))};}
 function fixture(){
  const cell=structuredClone(nominal) as any;cell.schemaHash=schemaHash;cell.manifest.runId=cellId;cell.manifest.drive.hostArch='x86_64';
- const bench=structuredClone(wheel) as any;bench.schemaHash=schemaHash;bench.tuning.engine.hostArch='x86_64';
+ const bench=structuredClone(wheel) as any;bench.schemaHash=schemaHash;bench.manifest.sourceCommit=commit;bench.tuning.engine.hostArch='x86_64';
  const env=[{name:'LAB_ALLOW_ORIGIN',value:origin},{name:'LAB_PUBLIC_HOST',value:new URL(url).host},{name:'MEKONIQ_LAB_ACCESS_KEY',valueFrom:{secretKeyRef:{name:'lab-access-key',key:'latest'}}}];
  const spec={serviceAccountName:account,timeoutSeconds:3600,containerConcurrency:20,containers:[{image,env,resources:{limits:{cpu:'1',memory:'2Gi'}}}]};
  const annotations={'autoscaling.knative.dev/maxScale':'1','run.googleapis.com/execution-environment':'gen2'};
@@ -38,7 +38,7 @@ function fixture(){
  'promotion.json':{Id:id,Os:'linux',Architecture:'amd64',RepoDigests:[image],Config:{Labels:{'org.opencontainers.image.revision':commit}}},
  'native-container.json':container,'mac-cell-report.json':mac,'cell-report.json':cell,'bench-report.json':bench,
  'health.json':{...structuredClone(health),allowOrigin:origin},'readiness.json':{cell:readiness('MJ-CELL-BV01',cellSet),bench:readiness('MJ-BENCH-WHEEL',benchSet)},
- 'bench-trace.json':{runId:bench.manifest.runId,manifestSha256:bench.tuning.trace.sha256,issues:[],traces:bench.tuning.axisIds.map((axisId:string)=>({axisId,samples:Array(5010).fill({actual:0})}))},
+ 'bench-trace.json':{runId:bench.manifest.runId,manifestSha256:bench.tuning.trace.sha256,issues:[],traces:bench.tuning.axisIds.map((axisId:string)=>({axisId,dtS:0.002,samples:Array(5010).fill({target:0,actual:0,feedback:0,torqueNm:0,saturated:false})}))},
  'actions.json':{cell:steps,bench:actions(bench.manifest.runId,500)},
  'summary.json':{schema:'mekoniq-cloud-run-r4-smoke/1',mode:'qualification',accepted:false,status:'tested',cases:{health:'tested',cell:'tested',bench:'tested'},expectedCommit:commit,service:url,origin,cleanup:[cellId,bench.manifest.runId].map(runId=>({runId,archived:true})),timing:{cellTicks:cell.outcome.tick,benchTicks:500,cellMsPerTick,benchMsPerTick:0.1,realtimeFactor:20/cellMsPerTick},macComparison:{servedMac:'2',servedCloud:'2',distanceMacM:mac.metrics.distanceM['amr-1'],distanceCloudM:mac.metrics.distanceM['amr-1'],relativeTolerance:0.05}}};
  return {q,f};
@@ -65,6 +65,15 @@ test.each([
  ['mock bench','bench-report.json',(x:any)=>{x.tuning.engine.id='mock';}],
  ['failed cell','cell-report.json',(x:any)=>{x.outcome.status='failed';}],
  ['failed bench','bench-report.json',(x:any)=>{x.tuning.status='failed';}],
+ ['different executed profile','bench-report.json',(x:any)=>{x.tuning.plant.controlProfileDigest='f'.repeat(64);}],
+ ['tuning fault at completion','bench-report.json',(x:any)=>{x.tuning.fault={tick:500,axisId:'amr-1/wheel-left',code:'DRIVE_TRIP'};}],
+ ['tuning collision at completion','bench-report.json',(x:any)=>{x.tuning.collision={tick:30};}],
+ ['contradictory terminal faults','bench-report.json',(x:any)=>{x.faults=[{code:'DRIVE_TRIP'}];}],
+ ['invalid timebase','bench-trace.json',(x:any)=>{x.traces[1].dtS=0.02;}],
+ ['missing timebase','bench-trace.json',(x:any)=>{delete x.traces[0].dtS;}],
+ ['missing wheel setpoint','bench-trace.json',(x:any)=>{delete x.traces[0].samples[100].target;}],
+ ['missing wheel torque','bench-trace.json',(x:any)=>{delete x.traces[1].samples[10].torqueNm;}],
+ ['malformed initial substeps','bench-trace.json',(x:any)=>{x.traces[0].samples[1]={actual:0};}],
  ['wrong bench profile','bench-report.json',(x:any)=>{x.bench.request.controlProfile.revision++;}],
  ['wrong seed','cell-report.json',(x:any)=>{x.manifest.seed=8;}],
  ['different scene','cell-report.json',(x:any)=>{x.manifest.models[0].hash='1'.repeat(64);}],
@@ -82,6 +91,16 @@ test.each([
  ['failed cleanup','summary.json',(x:any)=>{x.cleanup[1].archived=false;}],
  ['wrong trace','bench-trace.json',(x:any)=>{x.runId=cellId;}],
 ] as const)('refuses %s',(_,file,mutate)=>{const {q,f}=fixture();mutate(f[file]);expect(check(q,f)).not.toEqual([]);});
+test.each(['cell-report.json','mac-cell-report.json'])('both nominal selectors are checked on %s',file=>{
+ for(const [selector,id] of [['worldExperimentId','world-cup-nudge-v2'],['graspProgramId','cup-pick-two-stage-v1'],['worldExperimentId','world-nominal-v1']]){
+  const {q,f}=fixture();f[file].manifest[selector!]=id;
+  if(file==='mac-cell-report.json'){
+   q.artifacts[0].sha256=sha(JSON.stringify(f[file]));
+   f['deployment.json'].qualification.sha256=sha(JSON.stringify(q));
+  }
+  expect(check(q,f),selector).toEqual(id==='world-nominal-v1'?[]:['CELL_NOMINAL_SCOPE']);
+ }
+});
 test('recorder plan validates a supplied candidate with the actual R4 reader',()=>{
  const dir=mkdtempSync(join(tmpdir(),'r4-plan-'));try{const {q}=fixture();writeFileSync(join(dir,'qualification.json'),JSON.stringify(q));
  const p=spawnSync(process.execPath,['scripts/record-r4-cloud.mjs','plan','--candidate',dir,'--endpoint',url,'--origin',origin],{encoding:'utf8'});expect(p.status).toBe(1);expect(p.stderr).toContain('CANDIDATE_INVALID');

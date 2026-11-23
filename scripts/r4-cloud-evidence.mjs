@@ -1,6 +1,7 @@
 // Validation shared by the preflight, HTTP producer and offline CLD03 reader.
 import {createHash} from 'node:crypto';
 import {isDeepStrictEqual as equal} from 'node:util';
+import {completedWheelBench,measuredWheelTrace,WHEEL_AXES} from './r4-wheel-bench-readback.mjs';
 import {CLOSING_GATES_R4} from './sim-extension-r4.mjs';
 
 export const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -10,7 +11,6 @@ export const macPath='inputs/cil/cell/nominal-7/report.json',nativePath='inputs/
 export const scenarios={cell:['MJ-CELL-BV01','engineering-mujoco-cell-v1'],bench:['MJ-BENCH-WHEEL','engineering-mujoco-bench-v1']};
 const uuid=/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 const hex=/^[0-9a-f]{64}$/,git=/^[0-9a-f]{40}$/,positive=x=>Number.isFinite(x)&&x>0,empty=x=>Array.isArray(x)&&x.length===0;
-const axes=['amr-1/wheel-left','amr-1/wheel-right'];
 const signal={kind:'step',amplitude:2,atTick:10};
 const limits={cell:14000,bench:500};
 export const digestRef=new RegExp('^asia-southeast1-docker\\.pkg\\.dev/mekoniq/lab/mekoniq-lab-runtime@sha256:[a-f0-9]{64}$');
@@ -73,10 +73,14 @@ function completed(kind,r,commit){
   m.seed===(kind==='cell'?7:3)&&m.calibration?.status==='not_calibrated'&&m.clock?.tickMs===20&&o?.status==='completed'&&Number.isSafeInteger(o.tick)&&o.tick>0&&o.tick<=limits[kind]&&
   o.simTimeNs===String(o.tick*20_000_000),'RUN_IDENTITY_OR_OUTCOME');
 }
+// The registered nominal world ID resolves to the same no-disturbance configuration as the default.
+function nominalSelection(m){
+ return (m.worldExperimentId===undefined||m.worldExperimentId==='world-nominal-v1')&&m.graspProgramId===undefined;
+}
 export function checkCell(r,arch,commit){
  completed('cell',r,commit);
  const m=r.manifest,d=m.drive,e=r.driveEvidence,program=m.armProgram,jobs=r.coffee?.jobs;
- must(d?.hostArch===arch&&d.experimentId==='drive-nominal-v1'&&d.testLevel==='controller_in_the_loop'&&hex.test(d.controlProfileDigest)&&hex.test(d.driveModelDigest)&&
+ must(nominalSelection(m)&&d?.hostArch===arch&&d.experimentId==='drive-nominal-v1'&&d.testLevel==='controller_in_the_loop'&&hex.test(d.controlProfileDigest)&&hex.test(d.driveModelDigest)&&
   m.backends?.some(b=>b.id==='mujoco_3d'&&b.model==='mujoco_shared_world'&&b.dynamics===true)&&m.backends.some(b=>b.id==='mujoco_arm'&&b.dynamics===true)&&
   m.models?.some(v=>v.id==='mujoco_shared_world'&&hex.test(v.hash))&&m.project?.id==='coffee-delivery-world-v1'&&hex.test(m.project.hash)&&m.world?.id==='coffee-delivery-world'&&hex.test(m.world.hash)&&
   program?.fixture?.id==='coffee-delivery-cell-v1'&&hex.test(program.programsDigest)&&hex.test(program.waypointsDigest)&&!program.graspProgram&&!m.perception&&!m.driveFaultSchedule&&!m.faultSchedule&&
@@ -86,17 +90,15 @@ export function checkCell(r,arch,commit){
   e?.testLevel==='controller_in_the_loop'&&e.complete===true&&empty(e.issues)&&e.axes?.length===9&&e.axes.every(a=>empty(a.faults))&&positive(r.metrics?.distanceM?.['amr-1']),'CELL_NOT_COMPLETED');
 }
 export function checkBench(r,trace,h,arch,commit){
- completed('bench',r,commit);const m=r.manifest,t=r.tuning;
+ completed('bench',r,commit);const t=r.tuning;
  const expected={schemaVersion:1,scenarioId:scenarios.bench[0],axis:'wheels',signal,driveExperimentId:'drive-nominal-v1',controlProfile:h.benchCatalog['MJ-BENCH-WHEEL'].startingProfile};
- must(equal(r.bench?.request,expected)&&m.backends?.some(b=>b.id==='mujoco_3d'&&b.model==='mujoco_drive_bench'&&b.dynamics===true)&&t?.engine?.id==='mujoco_3d'&&t.engine.hostArch===arch&&
-  t.runId===m.runId&&t.status==='completed'&&t.accepted===false&&t.seed===3&&equal(t.signal,signal)&&equal(t.axisIds,axes)&&r.outcome.tick===500&&empty(r.bench.traceIssues)&&
+ must(equal(r.bench?.request,expected)&&completedWheelBench(r)&&t.engine.hostArch===arch&&equal(t.axisIds,WHEEL_AXES)&&
   ['rmsError','peakTorqueNm','saturationRatio'].every(k=>{const v=t.metrics?.[k];return v?.available===true&&v.basis==='actual'&&Number.isFinite(v.value)&&v.samples>0;}),'BENCH_NOT_COMPLETED');
- must(trace.runId===m.runId&&hex.test(trace.manifestSha256)&&trace.manifestSha256===t.trace?.sha256&&t.trace.samples===5000&&empty(trace.issues)&&
-  equal(trace.traces?.map(a=>a.axisId),axes)&&trace.traces.every(a=>a.samples?.length===5010&&a.samples.slice(10).every(s=>Number.isFinite(s?.actual))),'BENCH_TRACE_INVALID');
+ must(measuredWheelTrace(trace,t),'BENCH_TRACE_INVALID');
 }
 export function comparison(mac,cell){
  const a=mac.manifest,b=cell.manifest;
- must(a.runId!==b.runId&&['project','world','scenario','models','profiles','backends'].every(k=>equal(a[k],b[k]))&&
+ must(nominalSelection(a)&&nominalSelection(b)&&a.runId!==b.runId&&['project','world','scenario','models','profiles','backends'].every(k=>equal(a[k],b[k]))&&
   ['driveModelDigest','controlProfileDigest','controllers','experimentId'].every(k=>equal(a.drive[k],b.drive[k]))&&['fixture','physicsDigest','programsDigest','waypointsDigest'].every(k=>equal(a.armProgram[k],b.armProgram[k])),'MAC_INPUT_MISMATCH');
  const distanceMacM=mac.metrics.distanceM['amr-1'],distanceCloudM=cell.metrics.distanceM['amr-1'],relativeTolerance=0.05;
  must(Math.abs(distanceCloudM-distanceMacM)<=relativeTolerance*distanceMacM,'MAC_DISTANCE_MISMATCH');
