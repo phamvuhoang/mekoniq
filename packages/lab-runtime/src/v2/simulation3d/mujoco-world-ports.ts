@@ -35,6 +35,7 @@ import {graspProgramExecutionDigest} from '../perception/grasp-programs';
 import {loadGraspConfig,graspOffsetsFrom} from '../perception/grasp-config';
 import {openBeliefRecorder} from '../perception/belief-evidence';
 import {createWorldBelief,type ArmFacade} from '../perception/world-belief';
+import {declaredCupCentreHeightM} from '../perception/pose-estimator-sim';
 import {buildPerceptionReport} from '../perception/perception-report';
 import type {GraspPlanInput} from '../perception/grasp-conditioning';
 import {invertPose,composePose} from '../frames';
@@ -86,6 +87,14 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   const grasp=await loadGraspConfig(runtime.workerRoot,input.manifest);if(grasp){programs.beliefGrasp=true;if(grasp.recovery)programs.recovery=true;
    if(grasp.program){const c=programs.contact!,p=grasp.program;if(!Number.isFinite(p.captureM)||p.captureM<c.closedM||p.captureM>=c.openM||!Number.isFinite(p.pickInsetM)||p.pickInsetM<0)throw Error('GRASP_PROGRAM_INVALID');c.captureM=p.captureM;}
   }
+  // Validate the declared 2D belief geometry before starting a worker. Fixed runs
+  // do not gain a new geometry check or any extra manifest/state fields.
+  const beliefCups=grasp?scene.propBindings.map(b=>{
+   const supports=scene.armCell.supports.filter(s=>s.id===grasp.regions.view.supportId),props=scene.armCell.props.filter(p=>p.propId===b.propId);
+   if(supports.length!==1||props.length!==1||props[0]!.kind!=='cup')throw Error('BELIEF_SUPPORT_GEOMETRY_INVALID');
+   const geometry={baseInMap:scene.armCell.arm.baseInMap,support:supports[0]!,cupHeightM:props[0]!.heightM};declaredCupCentreHeightM(geometry);
+   return {cupId:b.cupId,propId:b.propId,geometry};
+  }):undefined;
   try{await mkdir(join(input.directory,'mujoco-world'),{mode:0o700});}catch(e){if((e as NodeJS.ErrnoException).code==='EEXIST')throw Error('WORLD_RESTART_UNKNOWN');throw e;}
   const bundle=join(input.directory,'mujoco-world','bundle');await mkdir(bundle,{recursive:true,mode:0o700});
   for(const [name,b] of files){const path=join(bundle,name);await mkdir(dirname(path),{recursive:true});await writeFile(path,b);}
@@ -120,9 +129,9 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   let graspOffsets:GraspPlanInput['graspOffsets']|undefined,graspExecutionDigest:string|undefined;
   let beliefFinished=false,beliefIdentity:import('../../../../contracts/generated/navigation2d').BeliefEvidenceManifestV1['identity']|undefined,beliefRecorder:Awaited<ReturnType<typeof openBeliefRecorder>>|undefined,belief:ReturnType<typeof createWorldBelief>|undefined;
   const armFacade:ArmFacade={graspPending:()=>arm.graspPending(),setGraspPlan:(c,p)=>arm.setGraspPlan(c,p),program:c=>st.arm.programs.find(x=>x.commandId===c),stopReason:()=>st.arm.stop?.reason,
-   commitPending:()=>arm.commitPending(),setCommitPlan:(c,p)=>arm.setCommitPlan(c,p),gripFailedPending:()=>arm.gripFailedPending(),failGrip:(c,r)=>arm.failGrip(c,r),recoverStep:(c,a)=>arm.recoverStep(c,a),
+   commitPending:()=>arm.commitPending(),setCommitPlan:(c,p)=>arm.setCommitPlan(c,p),gripFailedPending:()=>arm.gripFailedPending(),failGrip:(c,r,f)=>arm.failGrip(c,r,f),recoverStep:(c,a)=>arm.recoverStep(c,a),
    // what only the plant can say; the cup and pad facts come from the observation of the same tick (world-belief.ts)
-   facts:()=>({armFresh:st.arm.tracking!==undefined&&!st.arm.stop,noUnknown:!st.arm.programs.some(x=>x.state==='unknown')&&!st.arm.stop?.latched&&!st.arm.stop?.reconcileRequired})};
+   facts:()=>arm.recoveryFacts()};
   if(grasp){
    const fx=readXArmFixture(runtime.workerRoot),centre=composePose(inverse,{position:hp.birth.centerM,quaternionXyzw:[0,0,0,1]}).position,ik=loadOracleProfile().profile;
    const solve:GraspPlanInput['solve']=(pose,seed)=>{const r=solvePose(XARM6_SI,{position:pose.positionM as never,quaternionXyzw:pose.quaternionXyzw as never},{q:seed});
@@ -136,7 +145,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
    beliefIdentity={...grasp.program?{graspProgramDigest:graspExecutionDigest!}:{},runId:input.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,perceptionProfileDigest:grasp.profile.digest,recoveryPolicyDigest:grasp.recovery?.policy.digest??null,graspMode:grasp.mode,seed:input.manifest.seed};
    beliefRecorder=await openBeliefRecorder({directory:join(input.directory,'belief-evidence'),identity:beliefIdentity});
    const w=programs.waypoints;
-   belief=createWorldBelief({mode:grasp.mode,profile:grasp.profile,seed:input.manifest.seed,cups:scene.propBindings.map(b=>({cupId:b.cupId,propId:b.propId})),recorder:beliefRecorder,
+   belief=createWorldBelief({mode:grasp.mode,profile:grasp.profile,seed:input.manifest.seed,cups:beliefCups!,recorder:beliefRecorder,
     view:{centerM:[centre[0]!,centre[1]!],halfExtentM:grasp.regions.view.halfExtentM,supportId:grasp.regions.view.supportId},region:{centerM:[centre[0]!,centre[1]!],halfExtentM:rigWork??grasp.regions.workHalfExtentM},beliefWaitTicks:grasp.beliefWaitTicks,
     graspOffsets,seeds:{pickApproach:w.pickApproach!,pick:w.pick!,lift:w.lift!},solve,sweep,
     ...runtime.rig?.transientBias?{injectBias:runtime.rig.transientBias}:{},...grasp.recovery?{recovery:{policy:grasp.recovery.policy,declaredSupportId:grasp.regions.view.supportId}}:{},cupOf:commandId=>[...transfers.values()].find(x=>x.pending.commandId===commandId)?.pending.cupId??null});
@@ -242,7 +251,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
     async commit(s){if(failed||!pending||s.tick!==pending.targetTick||durableTick!==s.tick)throw Error('WORLD_COMMIT_INVALID');observing=s;try{
       setScene(s);if(st.arm.holding&&!docked(s)&&st.arm.programs.some(p=>p.state==='running'&&p.program==='cup-place')&&st.arm.gripperCommandM===programs.contact!.closedM){invalidate();cellHalted='DOCK_OUT_OF_TOLERANCE';arm.halt(cellHalted,undefined,s.tick);}
       dockTicks=docked(s)?dockTicks+1:0;arm.advance();const a=s.arms![0]!,extras:PlantExtras={gripper:a.gripper,releaseObservation:release(s),props:(s.props??[]).map(p=>{const q=composePose(inverse,{position:p.position,quaternionXyzw:p.quaternionXyzw});return {propId:p.propId,position:q.position,restingOn:p.restingOn,inMap:{positionM:p.position as [number,number,number],quaternionXyzw:p.quaternionXyzw as [number,number,number,number]}};})};arm.observe(a.positionsRad,a.collisionIds,extras);const t=st.arm.tracking!;(t.props??=[]).push({tick:s.tick,props:(extras.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:a.gripper!.heldPropIds.includes(p.propId)}))});
-      if(belief){await belief.observe(s.tick,extras.props??[]);await belief.step(s.tick,armFacade,{heldPropIds:a.gripper!.heldPropIds});}
+      if(belief){await belief.observe(s.tick,extras.props??[]);await belief.step(s.tick,armFacade,{tick:s.tick,heldPropIds:a.gripper!.heldPropIds});}
       boundWorldArmHistory(st.arm);observeTransfers(s);adapter.sink.observe(s);for(const d of decisions)adapter.sink.decide(d);history.push(...(pending.worldInteractions??[]).map(i=>({...i,tick:i.targetTick})));last=structuredClone(s);pending=null;sent=false;
      }catch(e){failed=true;invalidate();throw e;}finally{observing=undefined;}},close}
   };

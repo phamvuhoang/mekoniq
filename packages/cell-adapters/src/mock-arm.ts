@@ -32,6 +32,9 @@ export const PUMA_PROGRAMS:ArmProgramSet={modelId:PUMA560_SI.id,waypoints:W,chor
 /** What a contact plant reports each tick beside the joints: the measured gripper opening (m, between the pads), the cups both pads touch, and each cup's position (m, arm base frame) and support. */
 /** `inMap` (optional) is the same cup's pose in the map frame, kept untouched with the entry for the telemetry projection; the machine reads only `position`. */
 export interface PlantExtras {releaseObservation?:{propId:string;valid:boolean};gripper?:{openingM:number;heldPropIds:readonly string[]};props?:readonly {propId:string;position:readonly number[];restingOn:string|null;inMap?:{positionM:[number,number,number];quaternionXyzw:[number,number,number,number]}}[]}
+/** The ports' admitted cup/support binding. This is context, not proof: failGrip
+ * independently checks the plant's current validated observation and grip state. */
+export interface FailedGripContext {tick:number;propId:string;declaredSupportId:string}
 /** Contact grip counters (JSON). `ticks`: closing = ticks the opening changed < 1e-4 m, opening = ticks the cup rested on the tray; `lost`: ticks the held cup was not between the pads.
  * `maxSlipM` (the largest norm of the change of the cup's position in the TCP frame since the baseline) is null until a baseline was measured. `openingM` the last measured opening,
  * `slipFromM` the cup's position in the TCP frame (m) on the first tick, at or after the take, the held cup's position was seen, `elapsed` ticks since the release command, `receiver` the receiver the release started for. */
@@ -88,6 +91,7 @@ export interface ArmPlantState {
  props?:PlantExtras['props'];/** The gripper opening the plant measured on the last observed tick (m), whatever the grip phase. */gripperOpeningM?:number;grip?:ArmGripState;/** quintic-sync-v1: the segment being commanded (k ticks done of from -> to). */segment?:{from:number[];to:number[];k:number}}
 export class MockArmPlant {
  private listeners=new Set<(r:CellReport)=>void>();
+ private recoveryObservation:{tick:number;extras:PlantExtras}|undefined;
  constructor(readonly state:ArmPlantState,private nowMs:()=>number,private newBootId:()=>string,private cups:ArmCupWorld,private receiver:()=>{robotId:string;slot:number}|null,private model:ArmModelSI=PUMA560_SI,private tracking?:ArmTracking,private programs:ArmProgramSet=PUMA_PROGRAMS){
   if(programs.modelId!==model.id)throw new Error(`ARM_PROGRAM_MODEL_MISMATCH: ${programs.modelId} on ${model.id}`);
   if(programs.contact&&!tracking)throw new Error('ARM_CONTACT_NEEDS_TRACKING');
@@ -129,8 +133,23 @@ export class MockArmPlant {
  }
  /** The cup-pick whose grip is known not to have formed and that waits for the ports' decision (recovery policy only), or null. */
  gripFailedPending(){const g=this.state.grasp;if(g?.status!=='grip_failed')return null;const p=this.state.programs.find(x=>x.commandId===g.commandId&&x.state==='running');return p?{commandId:p.commandId}:null;}
- /** The ports gave up on the failed grip (facts missing, bound exhausted, no belief): the arm latches like a lost cup, the cup stays where it is, nothing is opened. */
- failGrip(commandId:string,reason:string){const g=this.state.grasp;if(g?.commandId!==commandId||!['grip_failed','retreating','commit_pending'].includes(g.status))throw new Error('GRASP_NOT_FAILED');this.state.grasp={...g,status:'refused',code:reason};this.stop(reason);}
+ /** The ports gave up on the failed grip: latch, retain custody, never open. Only
+  * an exhausted grip proven empty by current plant facts has a known failed outcome. */
+ failGrip(commandId:string,reason:string,context?:FailedGripContext){
+  const s=this.state,g=s.grasp;if(g?.commandId!==commandId||!['grip_failed','retreating','commit_pending'].includes(g.status))throw new Error('GRASP_NOT_FAILED');
+  const p=s.programs.find(p=>p.commandId===commandId&&p.state==='running'),o=this.recoveryObservation,gripper=o?.extras.gripper,cup=context&&o?.extras.props?.find(p=>p.propId===context.propId);
+  const known=reason==='RECOVERY_EXHAUSTED'&&this.programs.recovery&&g.status==='grip_failed'&&g.committed===true&&p?.program==='cup-pick'&&p.evidence.objectPresent===false&&p.evidence.cupId===null&&s.holding===null&&
+   context?.tick===s.tick&&o?.tick===s.tick&&this.recoveryFacts().armFresh&&this.recoveryFacts().noUnknown&&gripper&&Number.isFinite(gripper.openingM)&&gripper.openingM>=0&&Array.isArray(gripper.heldPropIds)&&gripper.heldPropIds.length===0&&
+   typeof context.propId==='string'&&context.propId.length>0&&typeof context.declaredSupportId==='string'&&context.declaredSupportId.length>0&&cup?.restingOn===context.declaredSupportId&&cup.position.length===3&&cup.position.every(Number.isFinite);
+  s.grasp={...g,status:'refused',code:reason};
+  if(known){
+   p!.state='failed';Object.assign(p!.evidence,{stopReason:reason,stopProvenance:'modelled',actualJointsRad:[...s.q],commandedJointsRad:s.commandedQ??[...s.q],failedGripObservation:{tick:o!.tick,propId:cup!.propId,restingOn:cup!.restingOn,positionM:[...cup!.position],openingM:gripper!.openingM,heldPropIds:[]}});
+   this.stop(reason);this.emit(p!,'failed',[reason],{...p!.evidence});
+  }else this.stop(reason);
+ }
+ /** Only a validated observation at this tick can support recovery. It is kept
+  * outside persisted state; a reconstructed plant must observe again. */
+ recoveryFacts(){const s=this.state;return {armFresh:this.recoveryObservation?.tick===s.tick&&s.limitsOk&&!s.stop,noUnknown:!s.programs.some(p=>p.state==='unknown')&&!s.stop?.latched&&!s.stop?.reconcileRequired};}
  /** One tick of a recovery step of the plant; the ports call it until it says done. open_gripper: command open and wait the grip settle time. retreat_pick_approach: back to the planned approach, then a new plan is awaited. */
  recoverStep(commandId:string,action:'open_gripper'|'retreat_pick_approach'):'running'|'done'{
   const s=this.state,g=s.grasp,p=s.programs.find(x=>x.commandId===commandId&&x.state==='running');if(!p||!g||g.commandId!==commandId)throw new Error('GRASP_NOT_RECOVERING');
@@ -309,6 +328,7 @@ export class MockArmPlant {
  observe(actualQ:readonly number[],collisionIds:readonly string[],extras?:PlantExtras){
   const s=this.state,t=s.tracking;
   if(!this.tracking||!t)throw new Error('ARM_TRACKING_DISABLED: observe needs the tracking mode');
+  if(this.programs.recovery)this.recoveryObservation=undefined;
   if(this.programs.contact)s.props=structuredClone(extras?.props??[]);
   if(extras?.gripper)s.gripperOpeningM=extras.gripper.openingM;
   const finite=actualQ.length===s.q.length&&actualQ.every(Number.isFinite);
@@ -333,6 +353,7 @@ export class MockArmPlant {
    if(s.tick%MOCK_ARM_PARAMS.traceEvery===0&&s.trace.length<MOCK_ARM_PARAMS.traceCap)s.trace.push({tick:s.tick,q:[...s.q],tcp:this.tcp(s.q)});
   }
   if(Math.max(...error)>this.tracking.followTolRad){if(++t.followCount>=this.tracking.followTicks){this.stop('ARM_FOLLOWING_ERROR');return;}}else t.followCount=0;
+  if(this.programs.recovery&&extras?.gripper&&Number.isFinite(extras.gripper.openingM)&&extras.gripper.openingM>=0&&Array.isArray(extras.gripper.heldPropIds))this.recoveryObservation={tick:s.tick,extras:structuredClone(extras)};
   if(this.programs.contact&&this.watchContact(p,extras))return;
   if(!p)return;
   // a belief pick that waits for a decision (the plan, the commit, the recovery) owns the program: the choreography, the grip and the take are not driven by an observation (the checks above still ran)

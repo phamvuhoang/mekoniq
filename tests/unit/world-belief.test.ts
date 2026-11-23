@@ -6,6 +6,7 @@ const profile=(o:object={})=>({schemaVersion:1,id:'t',revision:1,digest:'0'.repe
 const id=[0,0,0,1] as [number,number,number,number];
 const offsets={pickApproach:{positionM:[0,-0.1,0] as [number,number,number],quaternionXyzw:id},pick:{positionM:[0.022,0,-0.001] as [number,number,number],quaternionXyzw:id},lift:{positionM:[0,0,0.15] as [number,number,number],quaternionXyzw:id}};
 const q=[0,0,0,0,0,0],seeds={pickApproach:q,pick:q,lift:q};
+const geometry={baseInMap:{position:[0,0,0],quaternionXyzw:[0,0,0,1]},support:{centerM:[0.49,0,0.05],sizeM:[0.1,0.1,0.1]},cupHeightM:0.1};
 const view={centerM:[0.49,0] as [number,number],halfExtentM:[0.05,0.05] as [number,number],supportId:'nozzle-stand'};
 const region={centerM:[0.49,0] as [number,number],halfExtentM:[0.02,0.02] as [number,number]};
 const ok=(p:{positionM:number[]})=>({ok:true as const,q:[p.positionM[0]!,p.positionM[1]!,p.positionM[2]!,0,0,0],residual:{positionM:1e-6,orientationRad:1e-6,condition:10}});
@@ -14,7 +15,7 @@ function make(o:{profile?:PerceptionProfileV1;beliefWaitTicks?:number;solve?:nev
  const recorder={appendBelief:async(r:unknown)=>{beliefs.push(r);},appendAttempt:async(a:GraspAttempt)=>{log.push(`attempt:${a.attemptId}:${a.outcome}`);attempts.push(a);},appendRecovery:async()=>{}};
  const prog={state:'running',evidence:{} as Record<string,unknown>};let pending:{commandId:string}|null=null,stopReason:string|undefined;
  const arm:ArmFacade={graspPending:()=>pending,setGraspPlan:(c,p)=>{log.push(`plan:${c}:${p.ok?'ok':p.code}`);pending=null;},program:()=>prog,stopReason:()=>stopReason};
- const wb=createWorldBelief({mode:o.mode??'belief_estimated',profile:o.profile??profile(),seed:42,cups:[{cupId:'cup-1',propId:'prop-1'}],recorder,view,region,beliefWaitTicks:o.beliefWaitTicks??250,graspOffsets:offsets,seeds,
+ const wb=createWorldBelief({mode:o.mode??'belief_estimated',profile:o.profile??profile(),seed:42,cups:[{cupId:'cup-1',propId:'prop-1',geometry}],recorder,view,region,beliefWaitTicks:o.beliefWaitTicks??250,graspOffsets:offsets,seeds,
   solve:o.solve??((p:{positionM:number[]})=>ok(p)) as never,sweep:o.sweep??(()=>({ok:true})) as never,cupOf:()=>'cup-1'});
  const truth=(x=0.49,resting:string|null='nozzle-stand')=>[{propId:'prop-1',position:[x,0,0.151] as [number,number,number],restingOn:resting}];
  return {wb,arm,log,attempts,beliefs,prog,setPending:(c:string|null)=>{pending=c?{commandId:c}:null;},setStop:(r:string)=>{stopReason=r;},truth};

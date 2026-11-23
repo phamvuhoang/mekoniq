@@ -287,7 +287,7 @@
         "truthAtObservedTick",
         "errorM"
       ],
-      "description": "Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code.",
+      "description": "Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code. Both belief modes estimate x/y; belief z is the declared upright support surface plus half cup height, transformed into arm-base coordinates. ground_truth means exact x/y, not access to truth z.",
       "properties": {
         "tick": {
           "type": "integer",
@@ -327,6 +327,7 @@
           }
         },
         "errorM": {
+          "description": "Euclidean x/y estimator error in metres against truthAtObservedTick. Excludes z, which comes from declared support geometry in both belief modes.",
           "anyOf": [
             {
               "type": "number",

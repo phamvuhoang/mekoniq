@@ -158,3 +158,41 @@ test('two-stage recovery opens fully, repeats capture on retry, and secures only
  }
  expect(h.state.holding).toBe('cup-1');expect(h.state.gripperCommandM).toBe(0);expect(h.state.programs[0]!.index).toBe(2);
 });
+
+// A known exhausted empty grip is still latched, but its command outcome is known failed.
+const emptyGripObservation=(h:ReturnType<typeof make>,held:string[]=[],restingOn:string|null='nozzle-stand')=>{
+ h.plant.advance();h.plant.observe(h.state.commandedQ??h.state.q,[],{gripper:{openingM:0.0889,heldPropIds:held},props:[{propId:'prop-1',position:[0.49,0,0.15],restingOn}]});
+ return {tick:h.state.tick,propId:'prop-1',declaredSupportId:'nozzle-stand'};
+};
+test('recovery freshness needs a current valid native observation, including a physical gripper opening',()=>{
+ const h=toGripFailure();emptyGripObservation(h);expect(h.plant.recoveryFacts()).toEqual({armFresh:true,noUnknown:true});
+ h.plant.advance();expect(h.plant.recoveryFacts().armFresh).toBe(false);
+ h.plant.observe(h.state.q,[],{gripper:{openingM:-1,heldPropIds:[]},props:[]});expect(h.plant.recoveryFacts().armFresh).toBe(false);
+ emptyGripObservation(h);h.state.limitsOk=false;expect(h.plant.recoveryFacts().armFresh).toBe(false);
+});
+test('a proven exhausted empty grip emits failed, retains the latch/reconcile requirement and never takes or opens a cup',()=>{
+ const h=toGripFailure(),facts=emptyGripObservation(h),opening=h.state.gripperCommandM;
+ h.plant.failGrip('c1','RECOVERY_EXHAUSTED',facts);
+ expect(h.state.programs[0]!.state).toBe('failed');expect(h.plant.reconcile('c1')).toMatchObject({status:'failed',evidence:{objectPresent:false,cupId:null}});
+ expect(h.reports.filter(r=>r.observation?.result!=='accepted'&&r.observation).map(r=>r.observation!.result)).toEqual(['failed']);
+ expect(h.reports.at(-1)?.observation?.reasonCodes).toEqual(['RECOVERY_EXHAUSTED']);
+ expect(h.state.stop).toMatchObject({latched:true,reconcileRequired:true,reason:'RECOVERY_EXHAUSTED'});expect(h.state.holding).toBeNull();expect(h.state.gripperCommandM).toBe(opening);
+ for(let i=0;i<3;i++)h.tick();expect(h.plant.reconcile('c1').status).toBe('failed');expect(h.state.gripperCommandM).toBe(opening);
+ expect(h.plant.execute(cmd('c2'))).toMatchObject({accepted:false,reason:'ARM_STOP_LATCHED'});
+ h.plant.fault('arm-reset');expect(h.plant.execute(cmd('c2'))).toMatchObject({accepted:false,reason:'ARM_RECONCILE_REQUIRED'});
+});
+test.each(['no-context','wrong-tick','stale-native','wrong-prop','wrong-support','fallen','held-target','held-other','previously-held','unknown-command','missing-native','wrong-reason','before-grip'])('an exhausted label cannot turn ambiguous grip state into known failure: %s',change=>{
+ const h=change==='before-grip'?toApproach(true):toGripFailure();
+ const facts=emptyGripObservation(h,change==='held-target'?['prop-1']:change==='held-other'?['prop-2']:[],change==='fallen'?null:'nozzle-stand');
+ if(change==='wrong-tick')facts.tick--;
+ if(change==='stale-native')h.plant.advance();
+ if(change==='wrong-prop')facts.propId='other';
+ if(change==='wrong-support')facts.declaredSupportId='other';
+ if(change==='previously-held')Object.assign(h.state.programs[0]!.evidence,{objectPresent:true,cupId:'prop-1'});
+ if(change==='unknown-command')h.state.programs.push({...h.state.programs[0]!,commandId:'unknown-old',state:'unknown'});
+ if(change==='missing-native'){h.plant.advance();h.plant.observe(h.state.commandedQ??h.state.q,[]);facts.tick=h.state.tick;}
+ const opening=h.state.gripperCommandM;
+ h.plant.failGrip('c1',change==='wrong-reason'?'BELIEF_STALE':'RECOVERY_EXHAUSTED',change==='no-context'?undefined:facts);
+ expect(h.plant.reconcile('c1').status).toBe('unknown');expect(h.reports.some(r=>r.observation?.result==='outcome_unknown')).toBe(true);
+ expect(h.state.stop).toMatchObject({latched:true,reconcileRequired:true});expect(h.state.gripperCommandM).toBe(opening);
+});

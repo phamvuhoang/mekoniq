@@ -3427,7 +3427,7 @@ export interface BeliefObject {
   reason?: string;
 }
 /**
- * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code.
+ * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code. Both belief modes estimate x/y; belief z is the declared upright support surface plus half cup height, transformed into arm-base coordinates. ground_truth means exact x/y, not access to truth z.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "BeliefRecord".
@@ -3443,6 +3443,9 @@ export interface BeliefRecord {
    * @maxItems 3
    */
   truthAtObservedTick: number[];
+  /**
+   * Euclidean x/y estimator error in metres against truthAtObservedTick. Excludes z, which comes from declared support geometry in both belief modes.
+   */
   errorM: number | null;
 }
 /**
