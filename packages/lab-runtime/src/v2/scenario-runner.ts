@@ -1,4 +1,4 @@
-import {worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
+import {MEASURED_CUP_NUDGE,worldExperiment,type WorldExperimentId} from './simulation3d/world-disturbance';
 import type {RobotAdapter} from '../../../robot-adapters/src/contract';
 import {validateSim3DSnapshot,type Sim3DSnapshotV1} from './navigation2d/contracts';
 import type {WorldPlantBindings,WorldPortsFactory} from './simulation3d/world-ports';
@@ -419,7 +419,11 @@ class Run implements ScenarioRun {
    c.world!.pending={targetTick,stage:'prepared',ackTick:null};await writeCheckpoint(this.dir,c);
    try{
     const snapshot=await stepWorldOnce({...w.world,
-     step:async command=>{c.world!.pending!.command=structuredClone(command);c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c);const s=await w.world.step(command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;},
+     step:async command=>{
+      const sent=structuredClone(command),measured=sent.worldPerturbations?.[0]?.presetId===MEASURED_CUP_NUDGE;
+      c.world!.pending!.command=sent;c.world!.pending!.stage='sent';await writeCheckpoint(this.dir,c,{sync:measured});
+      const s=await w.world.step(measured?sent:command);c.world!.pending!.ackTick=s.tick;c.world!.pending!.stage='acked';return s;
+     },
      commit:async s=>{this.observationTick=s.tick;try{await w.world.commit(s);await this.coffee?.advance();}finally{this.observationTick=undefined;}}
     },c.tick,async s=>{await w.evidence.append(s);c.world!.pending!.stage='durable';await writeCheckpoint(this.dir,c);});
     this.clock.advance(1);c.tick=this.clock.tick;const committedCommand=c.world!.pending!.command!;c.world!.committedDisplay={command:structuredClone({targetTick:committedCommand.targetTick,worldControl:committedCommand.worldControl,velocities:committedCommand.velocities})};c.world!.snapshot=structuredClone(snapshot);this.applyWorldView(snapshot);delete c.world!.pending;

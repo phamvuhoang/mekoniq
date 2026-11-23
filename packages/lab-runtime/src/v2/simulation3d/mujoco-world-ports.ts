@@ -26,6 +26,8 @@ import {createIRSimNavigationAdapter} from '../navigation2d/adapter';
 import {holdSlot,releaseSlot,activeRunCount} from '../navigation2d/runner';
 import type {Sim3DSnapshotV1,RobotPhysicalModelV1,LoadProfileV1} from '../navigation2d/contracts';
 import {documentDigest} from '../navigation2d/contracts';
+import {writeDurable} from '../navigation2d/evidence';
+import type {WireRequest} from '../navigation2d/worker-client';
 import type {LabProjectV2} from '../contracts';
 import {hashJson} from '../hash';
 import {XARM6_SI,solvePose} from '../models/arm-kinematics';
@@ -104,7 +106,9 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   await writeFile(join(bundle,'lab-world-scene.json'),JSON.stringify(scene));
   worker=await spawn({python:runtime.python,workerRoot:runtime.workerRoot,runId:input.runId,bundleRoot:bundle,runDirectory:join(input.directory,'mujoco-world','run'),lockDigest:runtime.lockDigest,schemaDir:runtime.schemaDir,sceneDigest:scene.sceneDigest,...runtime.onRequestTiming?{onRequestTiming:runtime.onRequestTiming}:{},...runtime.entry?{entry:runtime.entry}:{}});
   let requests=0,engineTick=0,failed=false,sent=false,durableTick=-1,pending:WorldTickCommand|null=null,decisions:Decision[]=[],last:Sim3DSnapshotV1,observing:Sim3DSnapshotV1|undefined;
-  const ask=async(op:string,payload:unknown)=>{const r=await worker!.request({protocol:'mekoniq-sim3d/1',requestId:`world-${++requests}`,runId:input.runId,expectedTick:engineTick,op,payload} as Parameters<NonNullable<typeof worker>['request']>[0]);if(!r.ok)throw Error(r.error.code);return r.result as Sim3DSnapshotV1;};
+  const request=(op:string,payload:unknown):WireRequest=>({protocol:'mekoniq-sim3d/1',requestId:`world-${++requests}`,runId:input.runId,expectedTick:engineTick,op,payload});
+  const send=async(req:WireRequest)=>{const r=await worker!.request(req);if(!r.ok)throw Error(r.error.code);return r.result as Sim3DSnapshotV1;};
+  const ask=(op:string,payload:unknown)=>send(request(op,payload));
   // the architecture the worker runs on, from its own identity (not the runtime's: an emulated worker differs); only a drive run records it
   const hostArch=driveBundle?(await worker!.request({protocol:'mekoniq-sim3d/1',requestId:'world-describe',runId:input.runId,expectedTick:0,op:'describe',payload:{}} as Parameters<NonNullable<typeof worker>['request']>[0]).then(r=>r.ok?(r.result as {hostArch?:'arm64'|'x86_64'}).hostArch:undefined)):undefined;
   last=await ask('create',{sceneRef:'lab-world-scene.json',seed:input.manifest.seed});validateWorldObservation(last,scene,[]);await ask('start',{});
@@ -244,16 +248,23 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       }
      }
      return structuredClone(pending);
-    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{const wire=worldWireCommand(command,!!driveDocs),worker=wire.faultInjections??[];
-      const s=await ask('step',wire);engineTick=s.tick;
+    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{
+      const segment=pending.worldPerturbations?.[0],measured=segment?.presetId===MEASURED_CUP_NUDGE;
+      // The caller owns its command copy and can mutate it during an awaited filesystem operation.
+      const prepared=measured?structuredClone(pending):command,wire=worldWireCommand(prepared,!!driveDocs),worker=wire.faultInjections??[],req=request('step',wire);
+      if(measured){
+       const intent={schemaVersion:1,runId:req.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,requestId:req.requestId,requestDigest:hashJson(wire),graspProgramExecutionDigest:graspExecutionDigest!,command:prepared};
+       await writeDurable(input.directory,`world-pulse-intent-${segment.segmentIndex}.json`,JSON.stringify(intent));
+      }
+      const s=await send(req);engineTick=s.tick;
       // the worker's receipts are its answer to this very step (run, boot, scene, request, tick); a receipt on a tick that owes none is as wrong as a missing one
       {const got=(s as {faultReceipts?:FaultReceipt[]}).faultReceipts,digest=hashJson(wire);
-       if(!receiptsMatch(got,worker,{runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,targetTick:command.targetTick}))throw Error('FAULT_RECEIPT_MISMATCH');}
-      if(command.faultInjections?.length){
+       if(!receiptsMatch(got,worker,{runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,targetTick:prepared.targetTick}))throw Error('FAULT_RECEIPT_MISMATCH');}
+      if(prepared.faultInjections?.length){
        const digest=hashJson(wire);
-       const own=command.faultInjections.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:command.targetTick,runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,...overriddenEntries.has(e.entryId)?{overriddenBy:'WORLD_MOVEMENT_INTERLOCK' as const}:{}}));
+       const own=prepared.faultInjections.filter(e=>!worker.includes(e)).map((e):FaultReceipt=>({...e,appliedTick:prepared.targetTick,runId:input.runId,bootId:s.bootId,sceneDigest:scene.sceneDigest,requestDigest:digest,...overriddenEntries.has(e.entryId)?{overriddenBy:'WORLD_MOVEMENT_INTERLOCK' as const}:{}}));
        if(own.length)pending!.faultReceipts=own;
-      }validateWorldObservation(s,scene,[...history,...(command.worldInteractions??[]).map(i=>({...i,tick:i.targetTick}))]);return s;}catch(e){failed=true;invalidate();throw e;}},
+      }validateWorldObservation(s,scene,[...history,...(prepared.worldInteractions??[]).map(i=>({...i,tick:i.targetTick}))]);return s;}catch(e){failed=true;invalidate();throw e;}},
     async commit(s){if(failed||!pending||s.tick!==pending.targetTick||durableTick!==s.tick)throw Error('WORLD_COMMIT_INVALID');observing=s;try{
       setScene(s);if(st.arm.holding&&!docked(s)&&st.arm.programs.some(p=>p.state==='running'&&p.program==='cup-place')&&st.arm.gripperCommandM===programs.contact!.closedM){invalidate();cellHalted='DOCK_OUT_OF_TOLERANCE';arm.halt(cellHalted,undefined,s.tick);}
       dockTicks=docked(s)?dockTicks+1:0;arm.advance();const a=s.arms![0]!,extras:PlantExtras={gripper:a.gripper,releaseObservation:release(s),props:(s.props??[]).map(p=>{const q=composePose(inverse,{position:p.position,quaternionXyzw:p.quaternionXyzw});return {propId:p.propId,position:q.position,restingOn:p.restingOn,inMap:{positionM:p.position as [number,number,number],quaternionXyzw:p.quaternionXyzw as [number,number,number,number]}};})};arm.observe(a.positionsRad,a.collisionIds,extras);const t=st.arm.tracking!;(t.props??=[]).push({tick:s.tick,props:(extras.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:a.gripper!.heldPropIds.includes(p.propId)}))});

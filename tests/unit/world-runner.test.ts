@@ -1,3 +1,4 @@
+import {traceSyncs} from '../support/world-sync';
 import {afterEach,expect,test,vi} from 'vitest';
 import {readFile} from 'node:fs/promises';
 import * as fs from 'node:fs/promises';
@@ -10,7 +11,7 @@ import {scenarioRegistry} from '../../packages/lab-runtime/src/v2/scenario-regis
 import {MockPlant} from '../../packages/lab-runtime/src/v2/backends/mock-amr';
 import {SourceSession} from '../../packages/lab-runtime/src/v2/session';
 import {createMockCoffeePorts} from '../../packages/lab-runtime/src/v2/beverage/coffee-ports';
-import type {WorldPortsFactory,WorldFactoryInput} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
+import type {WorldPortsFactory,WorldFactoryInput,WorldTickCommand} from '../../packages/lab-runtime/src/v2/simulation3d/world-ports';
 import type {RobotAdapter} from '../../packages/robot-adapters/src/contract';
 import type {Sim3DSnapshotV1} from '../../packages/lab-runtime/src/v2/navigation2d/contracts';
 import * as durable from '../../packages/lab-runtime/src/v2/navigation2d/evidence';
@@ -29,7 +30,7 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
  const scene=JSON.parse(await readFile(fx+'/lab-world-scene.json','utf8'));
  const snap=(tick:number):Sim3DSnapshotV1=>({schemaVersion:1,worldStep:{workerPid:1,modelCount:1,physicsSubsteps:(tick+1)*10,primingSubsteps:10,nq:35,nv:32,nbody:30,ngeom:27},runId:'assigned',bootId:'engine-boot',seq:String(tick+1),tick,simTimeNs:String(tick*20_000_000),sceneDigest:scene.sceneDigest,robots:[{robotId:'amr-1',poseDriveMap:[.35+tick*.001,.48591366218667575,Math.PI/2],bodyVelocity:[.05,0],collisionIds:[],scans:[],pose3d:{z:.09,roll:0,pitch:0},wheels:{leftRadS:0,rightRadS:0}}],arms:[{armId:'arm-1',positionsRad:scene.armCell.arm.homeRad,velocitiesRadS:[0,0,0,0,0,0],collisionIds:[],gripper:{openingM:.0889,heldPropIds:[]}}],props:[]});
  const fixture=await readWorldFixture(resolve('robotics/simulation-mujoco')),admission=prepareWorldAdmission(fixture.scene,fixture.files);
- const directory=await runDirectory(),evidenceDirectory=join(directory,'actual-world-evidence'),calls:string[]=[],hooks:{afterAppend?:(tick:number)=>Promise<void>}={};let opens=0,committed=snap(0),ctx:WorldFactoryInput['context'];
+ const directory=await runDirectory(),evidenceDirectory=join(directory,'actual-world-evidence'),calls:string[]=[],hooks:{prepare?:(command:WorldTickCommand)=>WorldTickCommand;beforeStep?:(command:WorldTickCommand)=>Promise<void>;afterAppend?:(tick:number)=>Promise<void>}={};let opens=0,committed=snap(0),ctx:WorldFactoryInput['context'];
  const factory:WorldPortsFactory=async input=>{opens++;ctx=input.context;committed={...snap(0),runId:input.runId};
   const adapter={observe:()=>()=>{},describe:async()=>({id:'amr-1'}),requestStop:async()=>({acknowledged:true,physicalStopConfirmed:false}),reconcile:async()=>({status:'unknown'})} as unknown as RobotAdapter;
   const rec=failure==='actual'||failure?.startsWith('flush-')?await openWorldRecorder({directory:evidenceDirectory,admission,runId:input.runId,bootId:'engine-boot',chunkTicks:failure==='actual'?250:2}):undefined;if(rec)recorders.push(rec);
@@ -37,18 +38,10 @@ async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-wr
   if(reporting){const baseReport=coffee.report;coffee.report=()=>({...baseReport(),armPlant:{engine:'webots_3d',control:'position_servo',grip:'event',dynamics:'assumed',calibration:'not_calibrated',tracking:{samples:0,peakRad:Array(6).fill(0),rmsRad:Array(6).fill(0)}},armCell:{waypoints:{digest:'nonnative-report-fixture',table:[]},allowedContacts:[],releaseTimeoutTicks:25,notes:['Nonnative publication seam only']}});coffee.armReportState=async tick=>{const state=structuredClone(input.state.arm);state.tracking!.trace=Array.from({length:tick+1},(_,n)=>({tick:n,actualRad:[...state.q],commandedRad:[...state.q]}));state.tracking!.props=Array.from({length:tick+1},(_,n)=>({tick:n,props:[]}));return {async materialize(){return {state,worldTrace:{method:'world-committed-trace-v1',scope:'all_world_ticks',publicCommittedTick:tick,prefixCovered:true,streamFinalized:false,trackingStatisticsScope:'active_program_ticks',trackingSamples:0,firstTick:0,lastTick:tick,samples:tick+1,reasonCodes:[]},worldSweep:unavailableWorldSweep(tick,['NONNATIVE_PUBLICATION_FIXTURE'])};}};};}
   if(failure==='coffee-commit')coffee.advance=async()=>{await advance();throw Error('COFFEE_COMMIT_FAILED');};return {navigation:{mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map((p:{id:string;x:number;y:number})=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map',x:p.x,y:p.y,yaw:Math.PI/2}]))},robots:new Map([['amr-1',adapter]]),coffee,displayScene:()=>structuredClone(scene),snapshot:()=>committed,
    evidence:rec?{async append(s){const p=physicsTick(s.tick);p.loads=[];p.contacts=[];for(const b of p.base)b.robotId='amr-1';for(const w of p.wheels)w.robotId='amr-1';for(const o of p.odometry)o.robotId='amr-1';await rec.append({...s,physics:p},s.tick?{targetTick:s.tick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]}:null);await hooks.afterAppend?.(s.tick);},fail:rec.fail,finish:rec.finish}:{async append(s){calls.push(`append:${s.tick}`);if(failure==='append'&&s.tick>0)throw Error('DISK_FAILED');},async fail(e){calls.push(`fail:${e.lastCommittedTick}:${e.targetTick}:${e.ackTick}`);},async finish(){calls.push('finish');}},
-   world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);return {targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};},async step(c){calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
+   world:{prepareTick(targetTick){calls.push(`prepare:${targetTick}`);const command={targetTick,velocities:[],actorUpdates:[],jointTargets:[],gripperTargets:[],propPlacements:[]};return hooks.prepare?.(command)??command;},async step(c){await hooks.beforeStep?.(c);calls.push(`step:${c.targetTick}`);if(failure==='lost')throw Error('WORKER_LOST');return {...snap(c.targetTick),runId:input.runId};},async commit(s){calls.push(`commit:${s.tick}:${ctx.tick()}:${ctx.nowMs()}`);if(failure==='source-write')await ctx.must('Session.Open',{sessionId:'forbidden',tableId:'table-1'});if(failure==='direct-source-write')await ctx.source.submit('Session.Open',{sessionId:'forbidden',tableId:'table-1'},'forbidden');if(failure==='commit')throw Error('COMMIT_FAILED');committed=s;},async close(){calls.push('close');}}};};
  const scenario=structuredClone(scenarioRegistry.get('MJ-BV01')!);for(const o of scenario.coffee!.orders)o.atTick=[5000,5000];
  const providers={directory,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],scenarios:new Map([[scenario.id,scenario]]),worldPorts:factory};
  const open=(reclaimOnly=false,wall?:import('../../packages/lab-runtime/src/v2/pace').WallClock,dir=directory)=>createScenarioRun(manifest,{...providers,directory:dir,reclaimOnly,...wall?{wall}:{}});return {open,calls,hooks,directory,evidenceDirectory,admission,opens:()=>opens,source:()=>ctx.source};
-}
-/** Names every FileHandle.sync by the path its handle was opened with; `steps` is the world step in flight when it ran. */
-async function traceSyncs(h:{calls:string[]},onSync=async(_file:string)=>{}){
- const actual=await vi.importActual<typeof fs>('node:fs/promises'),paths=new WeakMap<object,string>(),syncs:{file:string;steps:number}[]=[];
- vi.mocked(fs.open).mockImplementation(async(...a:Parameters<typeof fs.open>)=>{const f=await actual.open(...a);paths.set(f,String(a[0]));return f;});
- const probe=await actual.open(fx+'/project.json','r'),proto=Object.getPrototypeOf(probe) as {sync():Promise<void>},sync=proto.sync;await probe.close();
- vi.spyOn(proto,'sync').mockImplementation(async function(this:object){await sync.call(this);const file=paths.get(this)??'?';syncs.push({file,steps:h.calls.filter(c=>c.startsWith('step:')).length});await onSync(file);});
- return syncs;
 }
 const lastWalTick=(text:string)=>text.trim()?(JSON.parse(text.trim().split('\n').at(-1)!) as {snapshot:{tick:number}}).snapshot.tick:-1;
 test('a world tick fsyncs at most twice and run.json never carries a tick before its WAL record is synced',async()=>{
@@ -240,5 +233,29 @@ test('a failed journal read leaves the event cursor stale so the next read retri
   vi.spyOn(Object.getPrototypeOf(source.store) as {journal:typeof source.store.journal},'journal').mockRejectedValueOnce(Error('JOURNAL_READ_FAILED'));
   await expect(source.cursor()).rejects.toThrow('JOURNAL_READ_FAILED');const after=await source.cursor();
   expect(before).toBeNull();expect(after).toBe((await source.journal()).at(-1)!.sequence);expect(after).not.toBeNull();
+ }finally{await run.close();}
+});
+
+function measuredTick(command:WorldTickCommand):WorldTickCommand{
+ return {...command,worldPerturbations:[{eventId:'disturbance:test:world-cup-nudge-v2',presetId:'world-cup-nudge-v2',revision:2,targetId:'cup-1',segmentIndex:command.targetTick-1,targetTick:command.targetTick}]};
+}
+test('all five measured commands have completed file and directory sync before world.step',async()=>{
+ const h=await setup();h.hooks.prepare=measuredTick;const run=await h.open();
+ const actual=await vi.importActual<typeof fs>('node:fs/promises'),tmp=join(h.directory,'run.json.tmp'),path=join(h.directory,'run.json'),completed:string[]=[];
+ try{
+  await run.start();
+  await traceSyncs(h,async file=>{if(file!==tmp&&file!==h.directory)return;
+   const cp=JSON.parse(await actual.readFile(file===tmp?tmp:path,'utf8'));if(cp.world.pending?.stage==='sent')completed.push(JSON.stringify([file===tmp?'file':'directory',cp.world.pending.command]));
+  });
+  h.hooks.beforeStep=async c=>{expect(completed.splice(0)).toEqual(['file','directory'].map(kind=>JSON.stringify([kind,c])));};
+  expect((await act(run,'step',{ticks:5})).tick).toBe(5);expect(h.calls.filter(c=>c.startsWith('step:'))).toEqual(['step:1','step:2','step:3','step:4','step:5']);
+ }finally{await run.close();}
+});
+test.each(['file','directory'])('a measured command %s sync failure prevents the world send and its retry',async boundary=>{
+ const h=await setup();h.hooks.prepare=measuredTick;const run=await h.open(),tmp=join(h.directory,'run.json.tmp'),path=join(h.directory,'run.json');
+ try{
+  await run.start();let injected=false;const actual=await vi.importActual<typeof fs>('node:fs/promises');
+  await traceSyncs(h,undefined,async file=>{if(injected||file!==(boundary==='file'?tmp:h.directory))return;const cp=JSON.parse(await actual.readFile(boundary==='file'?tmp:path,'utf8'));if(cp.world.pending?.stage==='sent'){injected=true;throw Error('PULSE_SYNC_FAILED');}});
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow('PULSE_SYNC_FAILED');expect(injected).toBe(true);await expect(act(run,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');expect(h.calls.filter(c=>c.startsWith('step:'))).toEqual([]);
  }finally{await run.close();}
 });
