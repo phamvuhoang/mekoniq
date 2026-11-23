@@ -1,7 +1,7 @@
 // Recorder for release `r4` (plan V16, contracts §10). Refuses an existing output, a dirty source or Lab tree, a Lab pin that is not this commit, and any bytecode under the portable roots (the closure identity covers it).
 // It copies every input beside the record, runs the closed suites, then reads the whole directory back through scripts/r4-readback.mjs. qualification.json is always `accepted:false`.
 import {execFileSync} from 'node:child_process';
-import {mkdir,writeFile,readFile,cp} from 'node:fs/promises';
+import {mkdir,writeFile,readFile,cp,lstat} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -25,8 +25,12 @@ export async function recordR4(args){
  const git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8'}).trim(),identity=()=>({sourceCommit:git(root,'rev-parse','HEAD'),dirty:!!git(root,'status','--porcelain','--untracked-files=all'),toolClosures:closureIdentity(),node:process.version}),before=identity();if(before.dirty)throw Error('SOURCE_DIRTY');
  const pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),labCommit=git(lab,'rev-parse','HEAD');if(git(lab,'status','--porcelain','--untracked-files=all'))throw Error('LAB_DIRTY');if(pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
  await mkdir(out,{mode:0o700});await mkdir(join(out,'inputs'));await mkdir(join(out,'suites'));const refs={};
- for(const [opt,[key,dest,entry]] of Object.entries(INPUTS)){if(!o[opt])continue;const source=resolve(o[opt]),original=evidenceInventory(source);await cp(source,join(out,dest),{recursive:true,force:false,errorOnExist:true});
-  if(JSON.stringify(evidenceInventory(join(out,dest)))!==JSON.stringify(original))throw Error('INPUT_CHANGED:'+key);const file=dest+'/'+entry;refs[key]={file,sha256:sha(boundedEvidenceRead(out,file))};}
+ for(const [opt,[key,dest,entry]] of Object.entries(INPUTS)){if(!o[opt])continue;const source=resolve(o[opt]);if((await lstat(source)).isSymbolicLink())throw Error('EVIDENCE_SYMLINK');
+  const original=evidenceInventory(source);await cp(source,join(out,dest),{recursive:true,force:false,errorOnExist:true});
+  if(JSON.stringify(evidenceInventory(join(out,dest)))!==JSON.stringify(original))throw Error('INPUT_CHANGED:'+key);const file=dest+'/'+entry;
+  // Retaining the headerless directory lets the reader distinguish a supplied corrupt recovery from an omitted input.
+  try{refs[key]={file,sha256:sha(boundedEvidenceRead(out,file))};}
+  catch(error){if(key!=='recoveryCampaign'||error.code!=='ENOENT')throw error;}}
  // WEB10: the R4 replay samples of the Lab checkout, byte for byte (the catalog and the two package directories; a package that does not exist is simply absent and its case is not_run)
  {const dest=join(out,'inputs/web/replays'),from=join(lab,'public/replays');await mkdir(dest,{recursive:true});await cp(join(from,'catalog.json'),join(dest,'catalog.json'));for(const id of ['drive-fault','belief-recovery'])if(existsSync(join(from,id)))await cp(join(from,id),join(dest,id),{recursive:true});refs.webSamples={file:'inputs/web/replays/catalog.json',sha256:sha(boundedEvidenceRead(out,'inputs/web/replays/catalog.json'))};}
  const abort=new globalThis.AbortController();for(const s of ['SIGINT','SIGTERM','SIGHUP'])process.once(s,()=>abort.abort());const suites=[],commands=[];

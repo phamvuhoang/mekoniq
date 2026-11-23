@@ -42,7 +42,7 @@ if(command==='bench'){
  finally{await rm(probe,{recursive:true,force:true});}
 }else try{
  const {runPayloadCampaign,verifyPayloadCampaign}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/payload-campaign.ts',import.meta.url);
- const {runCellCampaign,verifyCellCampaign,verifyRecoveryCampaign}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/cell-campaign.ts',import.meta.url);
+ const {readCellJson,runCellCampaign,verifyCellCampaign,verifyRecoveryCampaign}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/cell-campaign.ts',import.meta.url);
  const {runCilCampaign,verifyCilCampaign}=await tsImport('../packages/lab-runtime/src/v2/control/cil-campaign.ts',import.meta.url);
  const {runBenchCampaign,verifyBenchCampaign}=await tsImport('../packages/lab-runtime/src/v2/control/bench-campaign.ts',import.meta.url);
  const {runFaultCampaign,verifyFaultCampaign}=await tsImport('../packages/lab-runtime/src/v2/control/fault-campaign.ts',import.meta.url);
@@ -50,7 +50,7 @@ if(command==='bench'){
  const {runPerceptionStudy,verifyPerceptionStudy}=await tsImport('../packages/lab-runtime/src/v2/perception/perception-study.ts',import.meta.url);
  const abort=new AbortController();for(const name of ['SIGINT','SIGTERM','SIGHUP'])process.once(name,()=>abort.abort());
  let verdict;
- if(command==='verify'){const {readFile}=await import('node:fs/promises');const doc=JSON.parse(await readFile(resolve(options['--input'],'campaign.json'),'utf8'));verdict=await(doc.campaign?.id==='mj-cell-recovery-v2'?verifyRecoveryCampaign:doc.campaign?.id==='perception-gap-v1'?verifyPerceptionStudy:doc.campaign?.id==='tray-v1'?verifyTrayCampaign:doc.campaign?.id==='fault-v1'?verifyFaultCampaign:['bench-v1','bench-v2'].includes(doc.campaign?.id)?verifyBenchCampaign:['cil-v1','cil-v2'].includes(doc.campaign?.id)?verifyCilCampaign:doc.campaign?.id==='mj-cell-bv01-v1'?verifyCellCampaign:verifyPayloadCampaign)(resolve(options['--input']));}
+ if(command==='verify'){const doc=await readCellJson(resolve(options['--input']),'campaign.json');verdict=await(doc.campaign?.id==='mj-cell-recovery-v2'?verifyRecoveryCampaign:doc.campaign?.id==='perception-gap-v1'?verifyPerceptionStudy:doc.campaign?.id==='tray-v1'?verifyTrayCampaign:doc.campaign?.id==='fault-v1'?verifyFaultCampaign:['bench-v1','bench-v2'].includes(doc.campaign?.id)?verifyBenchCampaign:['cil-v1','cil-v2'].includes(doc.campaign?.id)?verifyCilCampaign:doc.campaign?.id==='mj-cell-bv01-v1'?verifyCellCampaign:verifyPayloadCampaign)(resolve(options['--input']));}
  else{
   const head=git('rev-parse','HEAD').stdout.trim(),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
   if(!mujocoPresent()){console.error('MUJOCO_PREREQUISITE_MISSING');process.exit(2);}

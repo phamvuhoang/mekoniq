@@ -81,7 +81,7 @@ export async function runCellCampaign(o:{root:string;out:string;sourceCommit:str
  }
  const verdict=await (recovery?verifyRegisteredCellCampaign(o.out,RECOVERY_CASES,true):verifyCellCampaign(o.out));await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return o.caseId?{...verdict,expectedRuns:1,completedCases:verdict.missingArtifacts.includes(o.caseId)?0:1,missingArtifacts:verdict.missingArtifacts.filter(id=>id===o.caseId),issues:verdict.issues.filter(x=>x.startsWith(o.caseId+':')||!x.includes(':'))}:verdict;
 }
-async function readCellJson(root:string,path:string){
+export async function readCellJson(root:string,path:string){
  if(!/^[\w.-]+(?:\/[\w.-]+)*$/.test(path)||path.split('/').some(p=>p==='.'||p==='..'))throw Error('CELL_ARTIFACT_PATH');let current=root;if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');for(const part of path.split('/')){current=join(current,part);if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');}const st=await lstat(current);if(!st.isFile()||st.size>64*1024*1024)throw Error('CELL_ARTIFACT_LIMIT');return JSON.parse(await readFile(current,'utf8'));
 }
 export async function verifyRecoveryCampaign(root:string){

@@ -6,7 +6,11 @@ import {readBoundedPhysicsFile} from '../simulation3d/physics-evidence';
 import type {CupPhysicalState} from '../beverage/cup-ledger';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
-import type {ArmProgramSet,ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
+import {MOCK_ARM_PARAMS,type ArmProgramSet,type ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
+import {quinticSegment} from '../../../../cell-adapters/src/arm-motion';
+import {XARM6_SI} from '../models/arm-kinematics';
+import {decideRecovery,type RecoveryFact} from './recovery-policy';
+import {createBeliefWorld} from './belief';
 import type {WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import {hashJson} from '../hash';
 import {composePose,invertPose,qrotate} from '../frames';
@@ -16,7 +20,8 @@ import {loadOracleProfile} from '../algorithm/checker';
 import {readXArmFixture,type XArmPhysics} from '../simulation3d/arm-cell-scene';
 import {worldDocument,worldArmGeometry} from '../simulation3d/world-control';
 import {readWorldFixture} from '../simulation3d/world-scene';
-import type {WorldAdmission} from '../simulation3d/world-evidence';
+import {MUJOCO_WIRE} from '../simulation3d/worker-client';
+import {validateWorldRecord,type WorldAdmission} from '../simulation3d/world-evidence';
 import type {WorldSweepResult} from '../simulation3d/world-sweep';
 import {MEASURED_CUP_NUDGE,MEASURED_GRASP_PROGRAM,WORLD_DISTURBANCE_PRESETS,validateWorldDisturbance} from '../simulation3d/world-disturbance';
 import {worldWireCommand,type WorldTickCommand} from '../simulation3d/world-ports';
@@ -74,11 +79,52 @@ async function registeredExecution(report:RunReport,admission:WorldAdmission,spe
  const birth=worldDocument<{birth:{centerM:[number,number,number]}}>(admission.files,scene.handoffPolicyRef.path).birth.centerM;
  const centre=composePose(invertPose(scene.armCell.arm.baseInMap),{position:birth,quaternionXyzw:[0,0,0,1]}).position,offsets=graspOffsetsFrom(readXArmFixture(root).layout,centre,cfg.program);
  check(same(arm.graspOffsets,offsets)&&same(arm.fixture,{id:scene.id,revision:String(scene.revision)})&&arm.physicsDigest===scene.models.armPhysics.sha256&&arm.waypointsDigest===doc.digest&&same(arm.programs,{...doc.programs,contact,collision:{geometry:worldArmGeometry(scene,admission.files),allowedPairs:[]},beliefGrasp:true,recovery:true}),'PROGRAM_CONFIGURATION');
- return {cfg,contact,centre,birth,programs:doc.programs};
+ return {cfg,contact,centre,birth,oracle,programs:doc.programs};
+}
+// A step receipt is written after observe(t). Its first changed actuator command is sent at t+1.
+function verifyRecoveryMotion(execution:Awaited<ReturnType<typeof registeredExecution>>,e:NonNullable<RunReport['perceptionEvidence']>,rows:readonly Row[],armId:string){
+ const {cfg,programs,contact,oracle}=execution;
+ const plan=e.attemptRecords.find(a=>a.stage==='plan'&&a.attemptId==='cup-1#0'),miss=e.attemptRecords.find(a=>a.outcome==='grip_not_established')!,retry=e.attemptRecords.find(a=>a.stage==='commit'&&a.attemptId==='cup-1#1')!;
+ const start=miss.recordedTick!,openStart=start+1,openDone=openStart+contact.gripSettleTicks,retreatStart=openDone+1;
+ check(e.recovery[1]!.completedTick===openDone,'OPEN_SETTLE');
+ const base=rows[start]!.command?.worldControl?.program,pick=miss.waypointsRad?.pick,approach=plan?.waypointsRad?.pickApproach,motion=programs.motion;
+ check(base&&pick&&approach&&motion.profile==='quintic-sync-v1','RETREAT_PLAN');
+ const segment=quinticSegment(pick,approach,{maxVelocity:XARM6_SI.limits.map(l=>l.maxVelocity),maxAcceleration:motion.maxAccelerationRadS2,speedFraction:motion.speedFraction,dtS:MOCK_ARM_PARAMS.dtS});
+ let settled=0,retreatDone:number|undefined,following=0;
+ for(let t=start;t<=retry.decidedTick;t++){
+  const {snapshot,command}=rows[t]!,ctl=command?.worldControl,p=ctl?.program,arm=snapshot.arms?.find(a=>a.armId===armId),cup=snapshot.props?.find(x=>x.propId===miss.cupId);
+  const q=arm?.positionsRad,target=command?.jointTargets?.find(a=>a.armId===armId)?.positionsRad,gripper=arm?.gripper;
+  const moving=t>retreatStart,phase=moving?'pickApproach':'pick';
+  check(p&&same(p,{...base,stage:moving?0:1,waypoint:phase})&&ctl?.movementInterlocked===true&&ctl.attachmentProxyPropId===null&&ctl.stopLatched===false,'GUARD_PROGRAM');
+  check(q&&q.length===XARM6_SI.limits.length&&target&&same(target,segment.at(t-retreatStart)),'RETREAT_TARGET');
+  following=q.some((v,i)=>Math.abs(v-target[i]!)>oracle.followTolRad)?following+1:0;
+  const facts=new Set<RecoveryFact>();
+  if(gripper&&Number.isFinite(gripper.openingM)&&gripper.openingM>=0&&q.every((v,i)=>v>=XARM6_SI.limits[i]!.min&&v<=XARM6_SI.limits[i]!.max)&&arm!.collisionIds.length===0&&following<oracle.followTicks)facts.add('arm_state_fresh');
+  facts.add('no_unknown_command'); // continuous, unlatched cup-pick identity above
+  if(gripper?.heldPropIds.length===0)facts.add('cup_not_between_pads');
+  if(cup?.restingOn===cfg.regions.view.supportId&&cup.position.length===3&&cup.position.every(Number.isFinite))facts.add('cup_on_declared_support');
+  check(decideRecovery(cfg.recovery!.policy,{code:'GRIP_NOT_ESTABLISHED'},facts,0).action==='recover','GUARD');
+  check(command!.gripperTargets?.find(g=>g.armId===armId)?.openingM===(t<=openStart?contact.captureM:contact.openM),'OPEN_COMMAND');
+  if(moving&&retreatDone===undefined){
+   settled=target.every((v,i)=>v===approach[i])&&q.every((v,i)=>Math.abs(v-approach[i]!)<=oracle.reachTolRad)?settled+1:0;
+   if(settled===oracle.settleTicks)retreatDone=t;
+  }
+ }
+ check(retreatDone!==undefined&&e.recovery[3]!.completedTick===retreatDone,'RETREAT_SETTLE');
+ const beliefs=createBeliefWorld(cfg.profile.maxAgeTicks),publications=e.beliefs.filter(b=>b.objectId===miss.cupId);
+ let index=0;
+ for(let t=retreatDone+1;t<=Math.min(retry.decidedTick,retreatDone+1+cfg.beliefWaitTicks);t++){
+  while(index<publications.length&&publications[index]!.tick<=t)beliefs.apply(publications[index++]!);
+  const view=beliefs.view().get(miss.cupId,t);
+  if(view.status==='ok'&&view.belief.observedTick>retreatDone){
+   check(e.recovery[5]!.completedTick===t&&e.recovery[7]!.completedTick===t+1&&retry.decidedTick===t+2&&retry.beliefUsed?.observedTick===view.belief.observedTick,'FRESH_RETRY');return;
+  }
+ }
+ check(false,'FRESH_RETRY');
 }
 /** Input is the captured report, authenticated scene bundle and ordered native world records. The private journal and write-before-send intents are checked only in the full campaign. */
 export async function verifyNativeRecoveryCase(report:RunReport,admission:WorldAdmission,rows:readonly Row[],spec:Spec){
- const {scene}=admission,{cfg,contact,centre,birth,programs}=await registeredExecution(report,admission,spec),m=report.manifest,e=report.perceptionEvidence;
+ const {scene}=admission,execution=await registeredExecution(report,admission,spec),{cfg,contact,centre,birth,programs}=execution,m=report.manifest,e=report.perceptionEvidence;
  verifyRecoveryBirths(rows,birth);
  const unknown=['worker-loss','lost-ack'].includes(spec.kind),success=['nominal','pulse'].includes(spec.kind),pulse=spec.kind==='pulse',h=report.outcome.tick;
  check(e&&h<=12000&&rows.length===h+1&&rows.every((r,t)=>r.snapshot.tick===t&&r.snapshot.runId===m.runId&&r.snapshot.bootId===rows[0]!.snapshot.bootId&&r.snapshot.sceneDigest===scene.sceneDigest&&r.snapshot.worldStep?.workerPid===rows[0]!.snapshot.worldStep?.workerPid)&&rows[0]!.snapshot.worldStep!.workerPid>0,'WORLD_HORIZON');
@@ -109,8 +155,7 @@ export async function verifyNativeRecoveryCase(report:RunReport,admission:WorldA
  for(const [i,action] of actions.entries()){const pending=e.recovery[2*i]!,done=e.recovery[2*i+1]!,at=done.completedTick;
   check(at!==null&&at>=pending.recordedTick&&same(pending,{attemptId:miss.attemptId,stepId:miss.attemptId+'/grip-not-established/'+i,rule:'grip-not-established',action,commandId:'recovery:'+grip.commandId+':g0:'+i,recordedTick:previous+1,completedTick:null,result:'pending'})&&same(done,{...pending,completedTick:at,result:'done'}),'RECOVERY_ORDER');previous=at;
  }
- const retry=attempts.find(a=>a.stage==='commit'&&a.attemptId==='cup-1#1')!,retreat=e.recovery[3]!.completedTick!,fresh=e.recovery[5]!.completedTick!;
- check(retry.decidedTick===previous+1&&retry.beliefUsed&&retry.beliefUsed.observedTick>retreat&&retry.beliefUsed.publishedTick===fresh&&rows.slice(e.recovery[0]!.recordedTick+1,previous+1).every(r=>r.command?.gripperTargets?.find(g=>g.armId===armId)?.openingM===contact.openM),'FRESH_RETRY');
+ verifyRecoveryMotion(execution,e,rows,armId);
  return {identity,receipts};
 }
 interface WorkerStep {requestId:string;targetTick:number;delivered:boolean;requestDigest:string;responseDigest?:string}
@@ -132,7 +177,7 @@ async function readPhysicalCustody(directory:string,runId:string){
 }
 interface PrivateCase {
  spec:Spec;report:RunReport;admission:WorldAdmission;rows:Row[];steps:WorkerStep[];sweep:WorldSweepResult;paths:Set<string>;directory:string;
- checkpoint:{manifest:RunReport['manifest'];coffee:{arm:ArmPlantState};world:{snapshot:Row['snapshot']}};
+ checkpoint:{manifest:RunReport['manifest'];coffee:{arm:ArmPlantState};world:{snapshot:Row['snapshot'];pending?:{stage:string;ackTick:number|null;targetTick:number;command:WorldTickCommand}}};
  read(path:string):Promise<unknown>;
 }
 export async function verifyRecoveryCell({spec,report,admission,rows,read,paths,steps,checkpoint,sweep,directory}:PrivateCase){
@@ -161,10 +206,19 @@ export async function verifyRecoveryCell({spec,report,admission,rows,read,paths,
   }
  }else if(unknown){
   check(same(rows.at(-1)?.snapshot.arms?.[0]?.gripper?.heldPropIds,['cup-1'])&&physical.some(p=>p.cupId==='cup-1'&&p.status==='unknown'&&p.parent===null),'LATCHED_CUSTODY');
-  if(spec.kind==='worker-loss')check(steps.at(-1)?.responseDigest===undefined,'WORKER_LOSS_RESPONSE');
-  if(spec.kind==='lost-ack'){
-   const lost=await read('lost-ack-native-response.json') as {request:{requestId:string;payload:unknown};response:{requestId:string;result:unknown}};
-   const last=steps.at(-1)!;check(lost.request.requestId===last.requestId&&lost.response.requestId===last.requestId&&hashJson(lost.request.payload)===last.requestDigest&&hashJson(lost.response.result)===last.responseDigest,'LOST_NATIVE_ACK');
+  const pending=checkpoint.world.pending,last=steps.at(-1)!,next=h+1;
+  check(pending?.stage==='sent'&&pending.ackTick===null&&pending.targetTick===next&&pending.command?.targetTick===next&&last.targetTick===next&&!last.delivered,'PENDING_REQUEST');
+  const payload=worldWireCommand(pending.command,false);
+  const envelope={protocol:MUJOCO_WIRE.protocol,requestId:last.requestId,runId:identity.runId};
+  const request={...envelope,expectedTick:h,op:'step',payload};
+  check(hashJson(payload)===last.requestDigest&&MUJOCO_WIRE.validateRequest(request).ok,'PENDING_REQUEST');
+  if(spec.kind==='worker-loss')check(last.responseDigest===undefined,'WORKER_LOSS_RESPONSE');
+  else{
+   const lost=await read('lost-ack-native-response.json') as {request:unknown;response:{result:Row['snapshot']}};
+   const result=lost.response.result;
+   check(same(lost.request,request)&&MUJOCO_WIRE.validateResponse(lost.response).ok&&same(lost.response,{...envelope,bootId:identity.bootId,tick:next,ok:true,result})&&hashJson(result)===last.responseDigest,'LOST_NATIVE_ACK');
+   validateWorldRecord({command:pending.command as Row['command'],snapshot:result,interactions:[]},admission,rows.flatMap(r=>r.interactions),rows[h]!.snapshot,identity,new Set());
+   check(result.worldStep?.modelCount===1&&same(result.arms?.[0]?.gripper?.heldPropIds,['cup-1']),'LOST_NATIVE_ACK_SNAPSHOT');
   }
  }else if(spec.kind==='cup-fall')check(physical.some(p=>p.cupId==='cup-1'&&p.status==='lost'&&p.parent===null),'LOST_CUSTODY');
  else check(physical.some(p=>p.cupId==='cup-1'&&p.status==='known'&&p.parent==='arm:'+admission.scene.armCell.arm.armId+'/tcp'),'RETAINED_CUSTODY');
