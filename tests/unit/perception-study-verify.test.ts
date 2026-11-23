@@ -13,7 +13,7 @@ const read=(h:Awaited<ReturnType<typeof fixture>>)=>readPickRigEvidence(h.direct
 const syncProps=(h:Awaited<ReturnType<typeof fixture>>)=>{h.props.samples=h.records.map(r=>({tick:r.snapshot.tick,props:r.snapshot.props!.map(p=>({propId:p.propId,positionM:[...p.position],quaternionXyzw:[...p.quaternionXyzw],restingOn:p.restingOn,held:r.snapshot.arms![0]!.gripper!.heldPropIds.includes(p.propId)}))}));};
 test.each(['truth-0','fixed-20mm','stale-nudge'])('the %s reader derives one shared grasp endpoint and binds birth/props to the world',async point=>{
  const h=await fixture(point,point==='fixed-20mm'?2:1);expect(await check(h)).toEqual([]);
- const d=await read(h);expect(d).toMatchObject({outcome:'lifted',ticks:30,unexpectedContacts:0,endpoint:{lastTick:30,reason:'resolved'},birth:{tick:1,cupId:'cup-1'}});
+ const d=await read(h);expect(d).toMatchObject({outcome:'lifted',ticks:point==='stale-nudge'?50:30,unexpectedContacts:0,endpoint:{lastTick:point==='stale-nudge'?50:30,reason:'resolved'},birth:{tick:1,cupId:'cup-1'}});
 });
 test('historical study bytes explicitly require a new endpoint protocol',async()=>{
  const h=await fixture();await writeFile(join(h.root,'campaign.json'),JSON.stringify({campaign:{id:'perception-gap-v1'}}));const v=await verifyPerceptionStudy(h.root,'truth-0');expect(v.completedRuns).toBe(0);expect(v.issues).toEqual(['STUDY_ENDPOINT_PROTOCOL_UNSUPPORTED']);
@@ -73,11 +73,12 @@ test.each(['absent','wrong_reference','wrong_hash','wrong_count','duplicate_tick
 });
 test('only actual per-tick props in the referenced trace observe a nudge; no recent belief is required',async()=>{
  const h=await fixture('stale-nudge');expect(await check(h)).toEqual([]);
- for(const r of h.records)if(r.snapshot.tick>=5)r.snapshot.props![0]!.position[0]!-=.005;
+ for(const r of h.records)if(r.snapshot.tick>=h.nudgeTick)r.snapshot.props![0]!.position[0]!-=.005;
+ for(const r of h.beliefs)if(r.belief!.observedTick>=h.nudgeTick){r.truthAtObservedTick[0]-=.005;r.belief!.positionM[0]-=.005;}
  syncProps(h);await h.write();expect((await check(h)).join()).toContain('NUDGE_NOT_OBSERVED');
 });
 test('a nudge without its actual receipt is refused even when a displacement remains',async()=>{
- const h=await fixture('stale-nudge');h.records[5]!.snapshot.worldStep!.disturbances=[];await h.write();expect((await check(h)).join()).toContain('WORLD_PERTURBATION_EVIDENCE_INVALID');
+ const h=await fixture('stale-nudge');h.records[h.nudgeTick]!.snapshot.worldStep!.disturbances=[];await h.write();expect((await check(h)).join()).toContain('WORLD_PERTURBATION_EVIDENCE_INVALID');
 });
 test('an explicit timeout remains unknown, never a failed or successful grip',async()=>{
  const h=await fixture();h.input.maxTicks=30;h.report.pickRig!.maxTicks=30;h.checkpoint.coffee.arm.programs[0]!.state='running';h.sourceEvents.splice(2);h.attempts.pop();await h.write();expect(await read(h)).toMatchObject({outcome:'unknown',endpoint:{reason:'timeout',lastTick:30}});

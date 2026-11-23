@@ -3534,6 +3534,17 @@ export interface BeliefEvidenceManifestV1 {
     graspMode: 'belief_ground_truth' | 'belief_estimated';
     graspProgramDigest?: Digest;
     seed: number;
+    /**
+     * Test-only transient decision bias; disqualifies registered perception studies. The reader checks the exact vector against published estimates.
+     */
+    diagnosticBias?: {
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      vectorM: number[];
+      attempts: number;
+    };
   };
   /**
    * @minItems 1
@@ -3557,6 +3568,10 @@ export interface BeliefEvidenceManifestV1 {
   coverage: {
     lastTick: number;
     complete: boolean;
+    /**
+     * Contiguous completed estimator/controller evaluations from world tick 1 through this tick (tick 0 is initialization). Published atomically with flushed stream counts; lastTick remains the last appended record.
+     */
+    evaluatedThroughTick?: number;
   };
   /**
    * @maxItems 64

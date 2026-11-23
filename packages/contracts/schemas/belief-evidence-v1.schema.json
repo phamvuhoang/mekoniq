@@ -81,6 +81,30 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 4294967295
+        },
+        "diagnosticBias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "vectorM",
+            "attempts"
+          ],
+          "description": "Test-only transient decision bias; disqualifies registered perception studies. The reader checks the exact vector against published estimates.",
+          "properties": {
+            "vectorM": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "number"
+              }
+            },
+            "attempts": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            }
+          }
         }
       }
     },
@@ -154,6 +178,12 @@
         },
         "complete": {
           "type": "boolean"
+        },
+        "evaluatedThroughTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "Contiguous completed estimator/controller evaluations from world tick 1 through this tick (tick 0 is initialization). Published atomically with flushed stream counts; lastTick remains the last appended record."
         }
       }
     },

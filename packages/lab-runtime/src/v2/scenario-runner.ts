@@ -15,6 +15,7 @@ import {dueFaults,validateFaultSchedule,validateFaultTarget,type FaultFireRecord
 import {mkdir,chmod,readdir,readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {validateGraspRequest} from './perception/perception-contracts';
+import {bindPerceptionWorld} from './perception/belief-world-proof';
 import {buildRetainedPerceptionReport} from './perception/perception-report';
 import {registeredGraspProgram} from './perception/grasp-programs';
 import {driveDocumentDigest} from './control/drive-io';
@@ -618,12 +619,17 @@ class Run implements ScenarioRun {
    return {id:r.id,kind:'amr',pose:{...r.pose},quality:this.recoveryOnly||r.stale?'stale':'valid',moving:r.moving,hold:r.hold,goal:g?{commandId:g.commandId,state:g.state}:null,path:g?.state==='executing'?g.path.map(p=>[p[0],p[1]] as [number,number]):[],distanceM:r.distanceM};});
  }
  async captureReplay(options:{signal?:AbortSignal}={}):Promise<import('./replay/export').CapturedReplay>{
-  if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();world=owned;});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return {directory:this.dir,report,...world?{world}:{}};
+  if(!this.worldConfig)throw Error('REPLAY_PROVIDER_UNSUPPORTED');const check=()=>{if(options.signal?.aborted)throw Error('REPLAY_ABORTED');};check();const capture=this.queue.then(()=>{check();return this.captureReport(true);});this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;let world:import('./replay/export').CapturedReplay['world'];if(materializeArm){const evidence=await materializeArm(async owned=>{check();world=owned;bindPerceptionWorld(report,owned);});check();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return {directory:this.dir,report,...world?{world}:{}};
  }
  async report():Promise<RunReport>{
   if(!this.worldConfig){await this.queue;return (await this.captureReport()).report;}
   const capture=this.queue.then(()=>this.captureReport(true));this.queue=capture.then(()=>undefined,()=>undefined);const {report,materializeArm}=await capture;
-  if(materializeArm){const evidence=await materializeArm();report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;}return report;
+  if(materializeArm){
+   let evidence;
+   try{evidence=await materializeArm(report.perceptionEvidence?async owned=>{bindPerceptionWorld(report,owned);}:undefined);}
+   catch(error){if(!report.perceptionEvidence||(error as Error).message!=='REPLAY_WORLD_PREFIX_UNAVAILABLE')throw error;evidence=await materializeArm();report.perceptionEvidence.issues.push('BELIEF_WORLD_COVERAGE');report.perceptionEvidence.complete=false;if(report.perceptionEvidence.coverage)report.perceptionEvidence.coverage.prefixCovered=false;}
+   report.arm=evidence.arm;if(evidence.worldSweep)report.worldSweep=evidence.worldSweep;
+  }return report;
  }
  private async captureReport(deferred=false):Promise<{report:RunReport;materializeArm:((replay?:import('./beverage/coffee-ports').WorldReplaySink)=>Promise<{arm:ArmReportBlock;worldSweep?:WorldSweepResult}>)|null}>{
   if(this.closed)throw new Error('RUN_CLOSED');

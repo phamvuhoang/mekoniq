@@ -15,7 +15,7 @@ test.each([0,-1,.001,undefined])('F01: an unlifted cup cannot qualify by declari
  await reject(h,'RIG_LIFT_ORACLE_MISMATCH');
 });
 test('F01: a cup below the registered lift threshold fails even with completed receipts',async()=>{
- const h=await fixture();h.records.at(-1)!.snapshot.props![0]!.position[2]=.152;h.props.samples.at(-1)!.props[0]!.positionM[2]=.152;await reject(h,'RIG_LIFT_OBSERVATION_MISSING');
+ const h=await fixture();h.records.at(-1)!.snapshot.props![0]!.position[2]=.152;h.props.samples.at(-1)!.props[0]!.positionM[2]=.152;h.beliefs.at(-1)!.truthAtObservedTick[2]=.152;await reject(h,'RIG_LIFT_OBSERVATION_MISSING');
 });
 test.each(['mode','access','backendSetId','backends','scenario','scenario.id','scenario.revision','scenario.hash','project'])('F02: missing execution identity %s is refused',async key=>{
  const h=await fixture(),[parent,child]=key.split('.'),m=h.report.manifest as unknown as Record<string,unknown>;
@@ -50,7 +50,8 @@ test('F03: a recovered final grasp retains its outcome and has no invented atten
  const h=await fixture(),policy=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/recovery-v1/pick-recovery-v1.json','utf8'));
  h.input.recoveryPolicyId=policy.id;h.report.manifest.perception!.recoveryPolicy={id:policy.id,digest:policy.digest};
  const last=h.attempts.at(-1)!;last.outcome='grip_not_established';last.recordedTick=10;
- h.attempts.push({...last,attemptId:'cup-1#1',index:1,decidedTick:21,recordedTick:30,outcome:'lifted'});
+ const commit={...last,attemptId:'cup-1#1',index:1,decidedTick:21,recordedTick:21,stage:'commit' as const,outcome:'unknown' as const,beliefUsed:structuredClone(h.beliefs.find(b=>b.tick===21)!.belief!)};
+ h.attempts.push(commit,{...commit,recordedTick:30,stage:'outcome',outcome:'lifted'});
  h.recovery.push({stepId:'recovery-1',attemptId:'cup-1#0',rule:'empty_pick',action:'retry_pick',commandId:'retry-1',recordedTick:20,completedTick:21,result:'done'});
  await h.write();expect(await read(h)).toMatchObject({outcome:'lifted',attempts:2,recovered:true,attention:false,ticks:30});
 });

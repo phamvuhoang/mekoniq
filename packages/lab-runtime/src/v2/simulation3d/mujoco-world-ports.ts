@@ -142,7 +142,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
     for(const to of ws){const r=checkArmSweep(XARM6_SI,from,to,{world,heldCup:false,...programs.collision});if(!r.ok)return {ok:false,code:r.reason==='COLLISION'?'ARM_COLLISION':'ARM_SWEEP_UNCERTAIN'};from=to;}return {ok:true};};
    graspOffsets=graspOffsetsFrom(fx.layout,centre,grasp.program);
    graspExecutionDigest=grasp.program?graspProgramExecutionDigest(grasp.program,graspOffsets,programs.contact!):undefined;
-   beliefIdentity={...grasp.program?{graspProgramDigest:graspExecutionDigest!}:{},runId:input.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,perceptionProfileDigest:grasp.profile.digest,recoveryPolicyDigest:grasp.recovery?.policy.digest??null,graspMode:grasp.mode,seed:input.manifest.seed};
+   beliefIdentity={...runtime.rig?.transientBias?{diagnosticBias:structuredClone(runtime.rig.transientBias)}:{},...grasp.program?{graspProgramDigest:graspExecutionDigest!}:{},runId:input.runId,bootId:last.bootId,sceneDigest:scene.sceneDigest,perceptionProfileDigest:grasp.profile.digest,recoveryPolicyDigest:grasp.recovery?.policy.digest??null,graspMode:grasp.mode,seed:input.manifest.seed};
    beliefRecorder=await openBeliefRecorder({directory:join(input.directory,'belief-evidence'),identity:beliefIdentity});
    const w=programs.waypoints;
    belief=createWorldBelief({mode:grasp.mode,profile:grasp.profile,seed:input.manifest.seed,cups:beliefCups!,recorder:beliefRecorder,
@@ -251,7 +251,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
     async commit(s){if(failed||!pending||s.tick!==pending.targetTick||durableTick!==s.tick)throw Error('WORLD_COMMIT_INVALID');observing=s;try{
       setScene(s);if(st.arm.holding&&!docked(s)&&st.arm.programs.some(p=>p.state==='running'&&p.program==='cup-place')&&st.arm.gripperCommandM===programs.contact!.closedM){invalidate();cellHalted='DOCK_OUT_OF_TOLERANCE';arm.halt(cellHalted,undefined,s.tick);}
       dockTicks=docked(s)?dockTicks+1:0;arm.advance();const a=s.arms![0]!,extras:PlantExtras={gripper:a.gripper,releaseObservation:release(s),props:(s.props??[]).map(p=>{const q=composePose(inverse,{position:p.position,quaternionXyzw:p.quaternionXyzw});return {propId:p.propId,position:q.position,restingOn:p.restingOn,inMap:{positionM:p.position as [number,number,number],quaternionXyzw:p.quaternionXyzw as [number,number,number,number]}};})};arm.observe(a.positionsRad,a.collisionIds,extras);const t=st.arm.tracking!;(t.props??=[]).push({tick:s.tick,props:(extras.props??[]).map(p=>({propId:p.propId,positionM:p.inMap!.positionM,quaternionXyzw:p.inMap!.quaternionXyzw,restingOn:p.restingOn,held:a.gripper!.heldPropIds.includes(p.propId)}))});
-      if(belief){await belief.observe(s.tick,extras.props??[]);await belief.step(s.tick,armFacade,{tick:s.tick,heldPropIds:a.gripper!.heldPropIds});}
+      if(belief){await belief.observe(s.tick,extras.props??[]);await belief.step(s.tick,armFacade,{tick:s.tick,heldPropIds:a.gripper!.heldPropIds});await beliefRecorder!.evaluatedThrough(s.tick);}
       boundWorldArmHistory(st.arm);observeTransfers(s);adapter.sink.observe(s);for(const d of decisions)adapter.sink.decide(d);history.push(...(pending.worldInteractions??[]).map(i=>({...i,tick:i.targetTick})));last=structuredClone(s);pending=null;sent=false;
      }catch(e){failed=true;invalidate();throw e;}finally{observing=undefined;}},close}
   };

@@ -247,3 +247,10 @@ test('cloud-run acceptance selects the R4 directory reader for an R4 qualificati
  const p=spawnSync(process.execPath,['scripts/test-runner.mjs','acceptance','cloud-run'],{encoding:'utf8',env:{...process.env,LAB_SIMEXT_EVIDENCE_DIR:root,LAB_CLOUD_EVIDENCE_DIR:root},timeout:30000});
  expect(p.status).toBe(1);expect(p.stdout+p.stderr).toContain('ARTIFACT_DISPOSITION_MISMATCH');
 });
+
+test.each([['bel-unit','tests/unit/belief-integrity.test.ts'],['r4-regression','tests/unit/r4-web09-readback.test.ts']])('R4 requires %s to execute %s', (id,file)=>{
+ const suite=SUITES_R4.find((s:{id:string})=>s.id===id);expect(suite.files).toContain(file);
+ const result=(files:string[])=>Buffer.from(JSON.stringify({testResults:files.map(name=>({name,status:'passed',assertionResults:[{status:'passed'}]}))}));
+ expect(tableR4().checkSuiteResult(suite,result(suite.files.filter((name:string)=>name!==file)))).toContain(`SUITE_FILE_MISSING:${id}:${file}`);
+ expect(tableR4().checkSuiteResult(suite,result(suite.files))).toEqual([]);
+});

@@ -5,6 +5,8 @@ import {mkdirSync,mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import profile from '../../robotics/simulation-mujoco/fixtures/perception-v1/perception-nominal-v1.json';
+import scene from '../../robotics/simulation-mujoco/fixtures/pick-rig-v1/lab-world-scene.json';
 import type {TuningResultV1} from '../../packages/contracts/generated/navigation2d';
 // @ts-expect-error plain ESM script without types
 import {verifyWeb09Record} from '../../scripts/r4-web09-readback.mjs';
@@ -48,8 +50,15 @@ function benchReport(over:Record<string,unknown>={},man:Record<string,unknown>={
   ...over
  };
 }
-const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated'},...man},perceptionEvidence:{issues:[],beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},{objectId:'cup-1',tick:900,belief:{valid:true}}],...pe}});
-const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>({manifest:{runId:'run-cell',horizon:{tick:HORIZON},coverage:{prefixCovered:true},provenance:{accepted:false},...o.manifest},capturedReport:o.report??cellReport(),close(){}});
+const profileSha256=sha(readFileSync('robotics/simulation-mujoco/fixtures/perception-v1/perception-nominal-v1.json','utf8'));
+const beliefRecord=(tick:number)=>({objectId:'cup-1',tick,belief:{objectId:'cup-1',kind:'cup',frameId:'arm-base',positionM:[.49,0,.15],sigmaM:[.002,.002,0],observedTick:tick-5,publishedTick:tick,ageTicks:0,source:'pose_estimator_sim',valid:true},dropped:false,truthAtObservedTick:[.49,0,.151],errorM:0});
+const published=()=>Array.from({length:HORIZON/10},(_,k)=>beliefRecord((k+1)*10));
+const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated',profile:{id:profile.id,revision:profile.revision,digest:profile.digest,sha256:profileSha256}},...man},outcome:{tick:HORIZON},arm:{worldTrace:{prefixCovered:true,firstTick:0,lastTick:HORIZON,publicCommittedTick:HORIZON,samples:HORIZON+1,reasonCodes:[]}},perceptionEvidence:{schemaVersion:1,complete:true,issues:[],policy:{ageBasis:'publishedTick',profile,profileSha256,profileBytes:readFileSync('robotics/simulation-mujoco/fixtures/perception-v1/perception-nominal-v1.json','utf8')},coverage:{scope:'belief_evaluations',firstTick:0,lastTick:HORIZON,prefixCovered:true,streamFinalized:true},beliefs:published(),attempts:[],attemptRecords:[],recovery:[],...pe}});
+const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>{
+ const horizon=(o.manifest?.horizon as {tick:number}|undefined)?.tick??HORIZON,report=cellReport();report.outcome.tick=horizon;report.arm.worldTrace={...report.arm.worldTrace,lastTick:horizon,publicCommittedTick:horizon,samples:horizon+1};report.perceptionEvidence.coverage.lastTick=horizon;report.perceptionEvidence.beliefs=report.perceptionEvidence.beliefs.filter(b=>b.tick<=horizon);
+ return {manifest:{runId:'run-cell',horizon:{tick:horizon},assets:[{role:'scene',path:'scene.json'}],coverage:{prefixCovered:true,streamFinalized:true,issues:[],terminal:null,gaps:[]},provenance:{accepted:false},...o.manifest},capturedReport:o.report??report,async readAsset(){return Buffer.from(JSON.stringify({...scene,propBindings:[{cupId:'cup-1',propId:'cup-1'}]}));},async *samples(){for(let t=0;t<=horizon;t++)yield {snapshot:{tick:t,props:t?[{propId:'cup-1',position:[.49,0,.151],quaternionXyzw:[0,0,0,1],restingOn:'nozzle-stand'}]:[]}};},close(){}};
+};
+
 interface Opt{doc?:Record<string,unknown>;plot?:Record<string,unknown>;belief?:Record<string,unknown>;plotWork?:Record<string,unknown>;beliefWork?:Record<string,unknown>;skip?:string[];trace?:unknown;report?:unknown;attempt?:Record<string,unknown>;proc?:Record<string,unknown>;testWindow?:Record<string,unknown>}
 function fixture(o:Opt={}){
  const root=mkdtempSync(join(tmpdir(),'r4-web09-'));dirs.push(root);
@@ -146,7 +155,7 @@ test.each([-1,HORIZON])('WEB09 rejects a first tick outside the playback range (
 test('WEB09 counts the belief ghost per rendered frame and checks it against the package',async()=>{
  expect(await withOpt({belief:TWO_PASSES({belief:false})})).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
  // belief drawn at ticks before the package's first estimate
- expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:900,belief:{valid:true}}]})}))).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:published().filter(r=>r.tick>=900)})}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
  // a replay that never moves is not playback
  const still=TWO_PASSES();still.renders.forEach(e=>{e.worldTick=300;});still.seeks.forEach(s=>{s.tick=300;});expect(await withOpt({belief:still})).toContain('WEB09_RENDER_PROGRESSION:belief-layer');
 });
@@ -292,16 +301,31 @@ test('WEB09 requires 60 s of playback supported by wall time as well as cursor p
  const belief=probe(BELIEF_START,61000,{seeks:starts.map(atMs=>({atMs:atMs-10,tick:FIRST})),renders});
  expect(await withOpt({belief,beliefWork:{replayHorizonTick:horizon}},fakeOpen({manifest:{horizon:{tick:horizon}}}))).toEqual(['WEB09_PLAYBACK_SHORT:belief-layer']);
 });
-test('WEB09 checks every ghost frame against the package at its cursor: a cup out of view ends the belief, a dropped update keeps it',async()=>{
- const bad='WEB09_BELIEF_NOT_DRAWN:belief-layer',rec=(extra:unknown[])=>fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},...extra]})});
- // from tick 1000 the cup is out of view; every frame still flagged as drawing the ghost is a contradiction
- expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:null,dropped:false,reason:'OUT_OF_VIEW'}]))).toContain(bad);
- // a dropped update keeps the last published belief
- expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:null,dropped:true}]))).not.toContain(bad);
- // an invalid belief is never drawn
- expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:{valid:false},dropped:false}]))).toContain(bad);
- // other cups do not count
- expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-2',tick:10,belief:{valid:true}}]})}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
+test('WEB09 checks every ghost against a finite published estimate and the admitted published-tick age bound',async()=>{
+ const bad='WEB09_BELIEF_NOT_DRAWN:belief-layer';
+ const records=(change:(r:ReturnType<typeof beliefRecord>)=>unknown)=>published().map(r=>r.tick>=1000?change(r):r);
+ const drop=(r:ReturnType<typeof beliefRecord>)=>({...r,belief:null,dropped:true,reason:'DROPOUT',errorM:null});
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:records(drop)})}))).toContain(bad);
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:records(r=>r.tick<=1030?drop(r):r)})}))).toEqual([]);
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:records(r=>({...r,belief:null,dropped:false,reason:'OUT_OF_VIEW',errorM:null}))})}))).toContain(bad);
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:records(r=>({...r,belief:{...r.belief,valid:false}}))})}))).toContain(bad);
+});
+test.each(['missing_policy','age_claim','digest','profile_bytes','profile_sha','uncovered','future_observation','future_publication','nonfinite','gap'])('WEB09 refuses %s evidence instead of inventing display availability',async mode=>{
+ const r=cellReport();if(mode==='missing_policy')delete (r.perceptionEvidence as {policy?:unknown}).policy;
+ if(mode==='age_claim')r.perceptionEvidence.policy={...r.perceptionEvidence.policy,profile:{...profile,maxAgeTicks:5000}};
+ if(mode==='digest')r.perceptionEvidence.policy={...r.perceptionEvidence.policy,profile:{...profile,digest:'f'.repeat(64)}};
+ if(mode==='profile_bytes')Object.assign(r.perceptionEvidence.policy,{profileBytes:'{}'});
+ if(mode==='profile_sha')r.perceptionEvidence.policy.profileSha256='f'.repeat(64);
+ if(mode==='uncovered')r.perceptionEvidence.coverage.lastTick=100;
+ if(mode==='future_observation')r.perceptionEvidence.beliefs[0]!.belief.observedTick=11;
+ if(mode==='future_publication')r.perceptionEvidence.beliefs[0]!.belief.publishedTick=11;
+ if(mode==='nonfinite')r.perceptionEvidence.beliefs[0]!.belief.positionM[0]=Infinity;
+ if(mode==='gap')r.perceptionEvidence.beliefs.splice(50,1);
+ expect(await withOpt({},fakeOpen({report:r}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
+});
+test('WEB09 accepts a flushed and covered live prefix without calling it finalized',async()=>{
+ const r=cellReport();r.perceptionEvidence.complete=false;r.perceptionEvidence.coverage.streamFinalized=false;
+ expect(await withOpt({},fakeOpen({report:r,manifest:{coverage:{prefixCovered:true,streamFinalized:false,issues:[],terminal:null,gaps:[]}}}))).toEqual([]);
 });
 test('WEB09 cross-checks the belief package: run, manifest hash, tuple, backend, issues, horizon, belief records',async()=>{
  const bad='WEB09_BELIEF_PACKAGE:belief-layer';
@@ -325,4 +349,9 @@ test('WEB09 is bound to the production build of this tuple and to its own limit'
 test('verifyWebRecord reports WEB09 through this reader, no longer as a constant',async()=>{
  const f=fixture();expect((await verifyWebRecord(f.root,f.record,{web09:{open:fakeOpen()}})).WEB09).toEqual([]);
  rmSync(join(f.root,BASE+'web09.json'));expect((await verifyWebRecord(f.root,f.record)).WEB09).toEqual(['WEB09_MEASUREMENT_MISSING']);
+});
+
+test('WEB09 refuses an attempt score that contradicts the retained native world even when report issues are empty',async()=>{
+ const r=cellReport(),a={attemptId:'cup-1#0',cupId:'cup-1',index:0,mode:'belief_estimated',decidedTick:21,recordedTick:21,stage:'plan',beliefUsed:{...beliefRecord(20).belief,ageTicks:1},beliefErrorAtCommitM:100,gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},ikResidual:[],outcome:'unknown'};
+ Object.assign(r.perceptionEvidence,{attempts:[a],attemptRecords:[a]});expect(await withOpt({},fakeOpen({report:r}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
 });

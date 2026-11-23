@@ -1,6 +1,6 @@
 // V11 / BEL04: a belief grasp on the real engine: MJ-CELL-BV01 picks from a belief world fed by the simulated estimator; the fixed program stays the R2b run.
 import {existsSync} from 'node:fs';
-import {rm} from 'node:fs/promises';
+import {rm,readFile,writeFile} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import {afterEach,describe,expect,test} from 'vitest';
 import {openCell,cellUntil,cellCampaign} from '../support/mujoco-cell';
@@ -13,6 +13,16 @@ const finalAttempts=<T extends {attemptId:string}>(list:T[])=>[...new Map(list.m
 async function evidence(h:Cell){const dir=join(h.directory,'belief-evidence'),m=await readBeliefManifest(dir);return {m,...await readBeliefEvidence(dir,m)};}
 
 describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('belief grasp on the real engine (requires .venv-mujoco)',()=>{
+ test('a hot belief report proves its flushed live prefix and refuses a corrupted native world without throwing away the report',async()=>{
+  const h=await openCell(7,'belief-prefix',{rig:{offsetM:[0,0]}},{graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'});open.push(h);
+  await h.run.start();await cellUntil(h.run,()=>false,200,20);const report=await h.run.report();
+  expect(report.perceptionEvidence).toMatchObject({complete:false,issues:[],policy:{ageBasis:'publishedTick',profile:{id:'perception-nominal-v1',maxAgeTicks:50}},coverage:{scope:'belief_evaluations',firstTick:0,lastTick:report.outcome.tick,prefixCovered:true,streamFinalized:false}});
+  expect(report.perceptionEvidence!.beliefs.length).toBeGreaterThan(0);expect(report.arm!.worldTrace!.prefixCovered).toBe(true);
+  const manifest=JSON.parse(await readFile(join(h.directory,'world-evidence/manifest.json'),'utf8'));
+  if(manifest.chunks.length)await writeFile(join(h.directory,'world-evidence',manifest.chunks[0].path),'corrupt');
+  else await writeFile(join(h.directory,'world-evidence/pending.ndjson'),'corrupt\n');
+  const bad=await h.run.report();expect(bad.perceptionEvidence!.coverage!.prefixCovered).toBe(false);expect(bad.perceptionEvidence!.issues).toContain('BELIEF_WORLD_COVERAGE');
+ },120000);
  test('belief_ground_truth, seed 7: two coffees served, one lifted attempt per cup, the attempt before any grasp motion',async()=>{
   const h=await openCell(7,'belief-gt',{},{graspMode:'belief_ground_truth'});open.push(h);
   await h.run.start();await cellUntil(h.run,()=>false,cellCampaign.maxTicks,50);

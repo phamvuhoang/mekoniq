@@ -4,9 +4,11 @@ import {createHash,randomBytes} from 'node:crypto';
 import {lstat,mkdir,open,readFile,readdir,realpath,unlink} from 'node:fs/promises';
 import {join,sep} from 'node:path';
 import {gzipSync,gunzipSync} from 'node:zlib';
-import type {BeliefEvidenceManifestV1,BeliefRecord,GraspAttempt,RecoveryStep} from '../../../../contracts/generated/navigation2d';
+import type {BeliefEvidenceManifestV1,BeliefRecord,GraspAttempt,RecoveryStep,PerceptionProfileV1} from '../../../../contracts/generated/navigation2d';
 import {READ_LIMITS,writeDurable} from '../navigation2d/evidence';
 import {hashJson} from '../hash';
+import {beliefDecisionIssues} from './belief-integrity';
+import {registeredBeliefPolicy,type BeliefPolicy} from './belief-policy';
 import {validateBeliefManifestShape,validateBeliefRecordShape,validateGraspAttemptShape,validateRecoveryStepShape} from './perception-contracts';
 export type {BeliefRecord,GraspAttempt,RecoveryStep};
 type Stream='belief'|'attempts'|'recovery';
@@ -27,12 +29,12 @@ async function readBounded(root:string,name:string,max:number){
 export async function readBeliefManifest(root:string):Promise<BeliefEvidenceManifestV1>{
  const m:unknown=JSON.parse((await readBounded(root,MANIFEST,READ_LIMITS.manifestBytes)).toString());if(!validateBeliefManifestShape(m))throw new Error('BELIEF_MANIFEST_INVALID');return m as BeliefEvidenceManifestV1;
 }
-export interface BeliefRecorder {appendBelief(r:BeliefRecord):Promise<void>;appendAttempt(a:GraspAttempt):Promise<void>;appendRecovery(s:RecoveryStep):Promise<void>;finish(reason:string|null):Promise<void>;/** Publish what is buffered as chunks now (a hot read of a running recording). */checkpoint():Promise<void>;manifest():BeliefEvidenceManifestV1}
+export interface BeliefRecorder {evaluatedThrough(tick:number):Promise<void>;appendBelief(r:BeliefRecord):Promise<void>;appendAttempt(a:GraspAttempt):Promise<void>;appendRecovery(s:RecoveryStep):Promise<void>;finish(reason:string|null):Promise<void>;/** Publish what is buffered as chunks now (a hot read of a running recording). */checkpoint():Promise<void>;manifest():BeliefEvidenceManifestV1}
 export async function openBeliefRecorder(o:{directory:string;identity:Identity;maxBytes?:number}):Promise<BeliefRecorder>{
  const maxBytes=o.maxBytes??BELIEF_EVIDENCE_MAX_BYTES;
  if(!Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>BELIEF_EVIDENCE_MAX_BYTES)throw new Error('BELIEF_LIMIT_INVALID');
  await mkdir(o.directory,{recursive:true,mode:0o700});
- let m:BeliefEvidenceManifestV1={schemaVersion:1,documentType:'belief-evidence',identity:structuredClone(o.identity),streams:STREAMS.map(stream=>({stream,chunks:[],records:0})),coverage:{lastTick:0,complete:false},gaps:[],terminalReason:null};
+ let m:BeliefEvidenceManifestV1={schemaVersion:1,documentType:'belief-evidence',identity:structuredClone(o.identity),streams:STREAMS.map(stream=>({stream,chunks:[],records:0})),coverage:{lastTick:0,complete:false,evaluatedThroughTick:0},gaps:[],terminalReason:null};
  let queue:Promise<void>=Promise.resolve(),closed=false;const serial=<T,>(fn:()=>Promise<T>)=>{const p=queue.then(fn);queue=p.then(()=>{},()=>{});return p;};
  const buffers:Record<Stream,string[]>={belief:[],attempts:[],recovery:[]};
  const save=()=>writeDurable(o.directory,MANIFEST,JSON.stringify(m));
@@ -52,7 +54,7 @@ export async function openBeliefRecorder(o:{directory:string;identity:Identity;m
    if(await dirBytes(o.directory)+bytes.length+TERMINAL_RESERVE>maxBytes)throw new Error('BELIEF_QUOTA_EXCEEDED');
    await writeDurable(o.directory,path,bytes);refs.push({path,sha256:sha(bytes),bytes:bytes.length});
   }
-  if(!any)return;
+  if(!any){await save();return;}
   m=next;await save();await writeDurable(o.directory,WAL,'');for(const s of STREAMS)buffers[s]=[];
  };
  const append=(stream:Stream,record:unknown)=>serial(async()=>{
@@ -68,20 +70,23 @@ export async function openBeliefRecorder(o:{directory:string;identity:Identity;m
    if(buffers[stream].length>=CHUNK_LINES)await flush();
   }catch(e){await end((e as Error).message,{firstTick:tick,lastTick:tick});throw e;}
  });
- return {manifest:()=>structuredClone(m),checkpoint:()=>serial(async()=>{if(!closed&&!m.terminalReason)try{await flush();}catch(e){await end((e as Error).message);throw e;}}),appendBelief:r=>append('belief',r),appendAttempt:a=>append('attempts',a),appendRecovery:s=>append('recovery',s),
+ return {evaluatedThrough:tick=>serial(async()=>{if(closed||m.terminalReason)throw Error('BELIEF_RECORDER_TERMINAL');if(!Number.isSafeInteger(tick)||tick!==(m.coverage.evaluatedThroughTick??0)+1){await end('BELIEF_EVALUATION_GAP',{firstTick:(m.coverage.evaluatedThroughTick??0)+1,lastTick:tick});throw Error('BELIEF_EVALUATION_GAP');}m.coverage.evaluatedThroughTick=tick;}),manifest:()=>structuredClone(m),checkpoint:()=>serial(async()=>{if(!closed&&!m.terminalReason)try{await flush();}catch(e){await end((e as Error).message);throw e;}}),appendBelief:r=>append('belief',r),appendAttempt:a=>append('attempts',a),appendRecovery:s=>append('recovery',s),
   finish:reason=>serial(async()=>{if(reason)await end(reason);try{await flush();if(!reason&&!m.terminalReason&&!m.gaps.length){m.coverage.complete=true;closed=true;}}catch(e){await end((e as Error).message);throw e;}await save();await unlink(join(o.directory,WAL)).catch(()=>{});})};
 }
-export interface BeliefRead {complete:boolean;beliefs:BeliefRecord[];attempts:GraspAttempt[];recovery:RecoveryStep[];issues:string[]}
-export async function readBeliefEvidence(root:string,manifest:unknown,options?:{/** what the run that is being read is: every field given must match the manifest */identity?:Partial<Identity>}):Promise<BeliefRead>{
- const out:BeliefRead={complete:false,beliefs:[],attempts:[],recovery:[],issues:[]},issue=(s:string)=>{if(!out.issues.includes(s))out.issues.push(s);};
+export interface BeliefRead {complete:boolean;prefixCovered:boolean;policy?:BeliefPolicy;beliefs:BeliefRecord[];attempts:GraspAttempt[];recovery:RecoveryStep[];issues:string[]}
+export async function readBeliefEvidence(root:string,manifest:unknown,options?:{/** what the run that is being read is: every field given must match the manifest */identity?:Partial<Identity>;profile?:PerceptionProfileV1;allowLivePrefix?:boolean}):Promise<BeliefRead>{
+ const out:BeliefRead={complete:false,prefixCovered:false,beliefs:[],attempts:[],recovery:[],issues:[]},issue=(s:string)=>{if(!out.issues.includes(s))out.issues.push(s);};
  if(!validateBeliefManifestShape(manifest)||Buffer.byteLength(JSON.stringify(manifest))>READ_LIMITS.manifestBytes){issue('BELIEF_MANIFEST_INVALID');return out;}
  const m=manifest as BeliefEvidenceManifestV1;
  if(options?.identity&&(Object.keys(options.identity) as (keyof Identity)[]).some(k=>hashJson((options.identity![k]??null) as never)!==hashJson((m.identity[k]??null) as never)))issue('BELIEF_IDENTITY_MISMATCH');
- if(!m.coverage.complete||m.gaps.length||m.terminalReason)issue('BELIEF_COVERAGE_INCOMPLETE');
+ if((!m.coverage.complete&&!options?.allowLivePrefix)||m.gaps.length||m.terminalReason)issue('BELIEF_COVERAGE_INCOMPLETE');
+ if(options?.allowLivePrefix&&m.coverage.evaluatedThroughTick===undefined)issue('BELIEF_COVERAGE_UNVERIFIABLE');
+ try{out.policy=await registeredBeliefPolicy(m.identity.perceptionProfileDigest);if(options?.profile&&hashJson(options.profile)!==hashJson(out.policy.profile))issue('BELIEF_PROFILE_MISMATCH');}catch{issue('BELIEF_POLICY_UNAVAILABLE');}
  try{
   if(await dirBytes(root)>BELIEF_EVIDENCE_MAX_BYTES)throw new Error('BELIEF_QUOTA_EXCEEDED');
   if((await lstat(join(root,WAL)).catch(()=>null))?.size)issue('BELIEF_UNPUBLISHED_TAIL');
  }catch(e){issue((e as Error).message);return out;}
+ if(m.streams.length!==3||new Set(m.streams.map(s=>s.stream)).size!==3)issue('BELIEF_STREAM_SET_INVALID');
  const seen=new Set<string>();let inflated=0;
  for(const {stream,chunks,records} of m.streams){
   let lines=0;
@@ -102,8 +107,6 @@ export async function readBeliefEvidence(root:string,manifest:unknown,options?:{
   // the manifest's own word is not coverage: how many records there must be, against what was read
   if(records===undefined)issue('BELIEF_COVERAGE_UNVERIFIABLE');else if(records!==lines)issue('BELIEF_RECORD_COUNT_MISMATCH');
  }
- // an attempt that used a belief: it is on the belief stream (object, observed and published tick)
- const known=new Set(out.beliefs.flatMap(b=>b.belief?[`${b.belief.objectId}|${b.belief.observedTick}|${b.belief.publishedTick}`]:[]));
- if(out.attempts.some(a=>a.beliefUsed&&!known.has(`${a.beliefUsed.objectId}|${a.beliefUsed.observedTick}|${a.beliefUsed.publishedTick}`)))issue('BELIEF_ATTEMPT_REFERENCE_MISSING');
- out.complete=!out.issues.length;return out;
+ for(const code of beliefDecisionIssues(out.beliefs,out.attempts,m.identity,out.policy?.profile))issue(code);
+ out.complete=m.coverage.complete&&!out.issues.length;out.prefixCovered=!out.issues.length&&m.coverage.evaluatedThroughTick!==undefined&&m.coverage.evaluatedThroughTick>=m.coverage.lastTick;return out;
 }

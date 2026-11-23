@@ -89,7 +89,7 @@ function renders(s,issues,id,pkg){
  if(p95(r.map(e=>e.durationMs))>LIMIT_MS)issues.push('WEB09_RENDER_P95_OVER_LIMIT:'+id);
  if(gaps.length&&p95(gaps)>LIMIT_MS)issues.push('WEB09_CADENCE_P95_OVER_LIMIT:'+id);
  // every frame that claims the ghost must have a believed cup at its cursor in the package; and the ghost is in the scene in at least BELIEF_SHARE of the frames
- if(r.filter(e=>e.belief).length<BELIEF_SHARE*r.length||r.some(e=>e.belief&&!beliefAvailable(pkg.records,e.worldTick)))issues.push('WEB09_BELIEF_NOT_DRAWN:'+id);
+ if(r.filter(e=>e.belief).length<BELIEF_SHARE*r.length||r.some(e=>e.belief&&!pkg.beliefAvailable(e.worldTick)))issues.push('WEB09_BELIEF_NOT_DRAWN:'+id);
  if(Math.max(...r.map(e=>e.worldTick))-Math.min(...r.map(e=>e.worldTick))<(pkg.horizon-pkg.firstTick)*.9)issues.push('WEB09_RENDER_PROGRESSION:'+id);
 }
 function measuredAxis(axis,axisId){
@@ -135,11 +135,10 @@ function plotWorkload(read,w,record,issues){
   if(w.samplesPerSeries!==plotted||w.plottedPoints!==plotted)bad();
  }catch{bad();}
 }
-/** The Lab's beliefAt over the package's records of the cup: the newest record not later than the cursor; a dropped update keeps the held belief, another record without one ends it, an invalid belief is never drawn. */
-const beliefAvailable=(records,tick)=>{for(let i=records.length-1;i>=0;i--){const r=records[i];if(r.tick>tick)continue;if(r.belief)return r.belief.valid===true;if(!r.dropped)return false;}return false;};
 async function openPackage(manifestBytes,assets){
  const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);return openReplayPackage(manifestBytes,assets);
 }
+let beliefTools;
 async function beliefWorkload(read,w,record,issues,id,open){
  const bad=()=>{issues.push('WEB09_BELIEF_PACKAGE:'+id);return null;};
  try{
@@ -149,7 +148,18 @@ async function beliefWorkload(read,w,record,issues,id,open){
    const m=replay.manifest,r=replay.capturedReport,e=r.perceptionEvidence,all=(e?.beliefs??[]).filter(b=>b.objectId==='cup-1'),cup=all.filter(b=>b.belief?.valid===true);
    if(!(typeof w.runId==='string'&&w.runId&&m.runId===w.runId&&r.manifest?.runId===w.runId&&identity(r,record,'engineering-mujoco-cell-v1','MJ-CELL-BV01')&&r.manifest.perception?.graspMode==='belief_estimated'&&
     m.horizon.tick===w.replayHorizonTick&&m.coverage?.prefixCovered&&m.provenance?.accepted!==true&&e?.issues?.length===0&&cup.length>0&&w.view==='3d'&&Number.isInteger(w.firstTick)&&w.firstTick>=0&&w.firstTick<m.horizon.tick))return bad();
-   return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick,records:all};
+   const {registeredBeliefPolicy,displayedBeliefAt,beliefDecisionIssues,beliefPublicationIssues,nativeBeliefTruth,scoreBeliefAttempts,validateBeliefRecordShape,validateGraspAttemptShape,validateRecoveryStepShape}=await (beliefTools??=tsImport('../packages/lab-runtime/src/v2/perception/belief-world-proof.ts',import.meta.url));
+   const pm=r.manifest.perception,policy=await registeredBeliefPolicy(pm.profile?.digest),c=e.coverage,wt=r.arm?.worldTrace;
+   if(!isDeepStrictEqual(e.policy,policy)||!isDeepStrictEqual(pm.profile,{id:policy.profile.id,revision:policy.profile.revision,digest:policy.profile.digest,sha256:policy.profileSha256})||
+    c?.scope!=='belief_evaluations'||c.prefixCovered!==true||c.firstTick!==0||c.lastTick!==m.horizon.tick||typeof c.streamFinalized!=='boolean'||e.complete!==c.streamFinalized||
+    wt?.prefixCovered!==true||wt.firstTick!==0||wt.lastTick!==m.horizon.tick||wt.publicCommittedTick!==m.horizon.tick||wt.samples!==m.horizon.tick+1||wt.reasonCodes?.length!==0||
+    m.coverage.issues?.length!==0||m.coverage.terminal!==null||m.coverage.gaps?.length!==0||!e.beliefs.every(validateBeliefRecordShape)||!Array.isArray(e.attemptRecords)||!e.attemptRecords.every(validateGraspAttemptShape)||!Array.isArray(e.recovery)||!e.recovery.every(validateRecoveryStepShape))return bad();
+   if(beliefDecisionIssues(e.beliefs,e.attemptRecords,{graspMode:pm.graspMode},policy.profile).length)return bad();
+   const sceneRef=m.assets.find(a=>a.role==='scene'),scene=JSON.parse(Buffer.from(await replay.readAsset(sceneRef.path)).toString()),world=[];
+   for await(const row of replay.samples('world'))world.push(row);
+   if(beliefPublicationIssues(e.beliefs,policy.profile,world,scene,m.horizon.tick).length||!isDeepStrictEqual(e.attempts,[...new Map(e.attemptRecords.map(a=>[a.attemptId,a])).values()]))return bad();
+   scoreBeliefAttempts(e.attemptRecords,nativeBeliefTruth(world,scene));
+   return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick,beliefAvailable:tick=>displayedBeliefAt(e,'cup-1',tick)!==null};
   }finally{replay.close?.();}
  }catch{return bad();}
 }

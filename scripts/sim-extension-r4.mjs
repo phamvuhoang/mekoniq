@@ -20,7 +20,7 @@ export const SUITES_R4=[
  V('flt-engine',['tests/integration/mujoco-drive-faults.test.ts','tests/integration/mujoco-arm-faults.test.ts','tests/integration/lab-fault-gateway.test.ts']),
  V('tray-unit',['tests/unit/tray-fixture.test.ts','tests/unit/tray-inputs.test.ts','tests/unit/tray-experiments.test.ts','tests/unit/tray-oracle.test.ts','tests/unit/tray-verdict.test.ts','tests/unit/physics-comparison.test.ts']),
  V('tray-engine',['tests/integration/mujoco-tray-compile.test.ts','tests/integration/mujoco-tray.test.ts']),
- V('bel-unit',['tests/contracts/belief-contracts.test.ts','tests/unit/belief.test.ts','tests/unit/belief-evidence.test.ts','tests/unit/world-belief.test.ts','tests/unit/pose-estimator-sim.test.ts','tests/unit/sensor-transforms.test.ts','tests/unit/gaussian.test.ts','tests/unit/grasp-config.test.ts','tests/unit/grasp-conditioning.test.ts','tests/unit/perception-report.test.ts']),
+ V('bel-unit',['tests/contracts/belief-contracts.test.ts','tests/unit/belief.test.ts','tests/unit/belief-evidence.test.ts','tests/unit/belief-integrity.test.ts','tests/unit/world-belief.test.ts','tests/unit/pose-estimator-sim.test.ts','tests/unit/sensor-transforms.test.ts','tests/unit/gaussian.test.ts','tests/unit/grasp-config.test.ts','tests/unit/grasp-conditioning.test.ts','tests/unit/perception-report.test.ts']),
  V('bel-engine',['tests/integration/mujoco-belief-pick.test.ts','tests/integration/mujoco-pick-rig.test.ts','tests/unit/pick-rig-fixture.test.ts','tests/unit/pick-rig-outcome.test.ts','tests/unit/perception-study.test.ts','tests/unit/perception-study-verify.test.ts','tests/unit/pick-rig-review.test.ts']),
  V('rec-unit',['tests/unit/recovery-policy.test.ts','tests/unit/world-belief-recovery.test.ts']),
  V('rec-engine',['tests/integration/mujoco-recovery-rig.test.ts','tests/integration/mujoco-cell-belief.test.ts']),
@@ -31,7 +31,7 @@ export const SUITES_R4=[
  E('e2e-control','mujoco-control.spec.ts',false),E('e2e-faults','mujoco-faults.spec.ts'),E('e2e-tray','mujoco-tray.spec.ts'),E('e2e-belief','mujoco-belief.spec.ts'),E('e2e-calibration','mujoco-calibration.spec.ts',false),E('e2e-perf','mujoco-perf.spec.ts'),
  // the replay spec serves its own production preview (tests/support/replay-preview.ts): it is not behind a launcher
  {id:'e2e-replay',repo:'lab',kind:'playwright',command:['node_modules/@playwright/test/cli.js','test','tests/e2e/replay-offline.spec.ts','--reporter=json']},
- V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-calibration-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts'])
+ V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-web09-readback.test.ts','tests/unit/r4-calibration-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts'])
 ];
 const cases=(ids,suites,extra={})=>Object.fromEntries(ids.map(id=>[id,{suites,...extra}]));
 const REC06='blocked: no nudge force makes a known grip miss with the cup still in view (LEDGER-v11-v13); not tuned to fit';
