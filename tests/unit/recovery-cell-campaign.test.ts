@@ -4,7 +4,7 @@ import {artifactDispositionsFromGroups,CAMPAIGNS} from '../../scripts/r4-readbac
 // @ts-expect-error plain ESM script without types
 import {CASES_R4} from '../../scripts/sim-extension-r4.mjs';
 test('REC06 requires verified recovery campaign input and an executed native suite',()=>{
- expect(CASES_R4.REC06).toMatchObject({input:'recoveryCampaign',suites:['rec-unit','rec-engine']});
+ expect(CASES_R4.REC06).toMatchObject({input:'recoveryCampaign',suites:['rec-unit','rec-campaign-engine']});
  expect(CAMPAIGNS.recoveryCampaign.ids).toEqual(['mj-cell-recovery-v2']);
  for(const [issues,status] of [[['RECOVERY_CAMPAIGN_MISSING'],'not_run'],[['RECOVERY_CAMPAIGN_CORRUPT'],'failed'],[[],'tested']] as const)
   expect(artifactDispositionsFromGroups({recoveryCampaign:issues}).REC06.status).toBe(status);

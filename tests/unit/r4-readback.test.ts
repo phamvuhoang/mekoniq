@@ -254,3 +254,13 @@ test.each([['bel-unit','tests/unit/belief-integrity.test.ts'],['r4-regression','
  expect(tableR4().checkSuiteResult(suite,result(suite.files.filter((name:string)=>name!==file)))).toContain(`SUITE_FILE_MISSING:${id}:${file}`);
  expect(tableR4().checkSuiteResult(suite,result(suite.files))).toEqual([]);
 });
+test('an omitted REC06 recording leaves independently executed REC01–05 tested',()=>{
+ const suites=SUITES_R4.map((s:{id:string;kind:string;files?:string[]})=>{
+  const result=green(s.id,s.kind);
+  if(s.files?.includes('tests/integration/recovery-cell-recorded.test.ts'))result.result.summary={passed:0,failed:0,skipped:2,total:2};
+  return result;
+ });
+ const q=qualifyR4Structure({suites,sourceCommit:SRC,lab:true,artifactDispositions:artifactDispositionsFromGroups({recoveryCampaign:['RECOVERY_CAMPAIGN_MISSING']})});
+ expect(['REC01','REC02','REC03','REC04','REC05'].map(id=>q.cases[id].status)).toEqual(Array(5).fill('tested'));
+ expect(q.cases.REC06.status).toBe('not_run');
+});

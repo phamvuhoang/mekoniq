@@ -35,7 +35,7 @@ export async function recordR4(args){
   const shots=join(directory,'screens');if(suite.kind==='playwright')await mkdir(shots);
   const cmd=suite.kind==='vitest'?[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...suite.files,'--reporter=default','--reporter=json','--outputFile='+abs]:suite.command;
   // the two engine suites that also read a recorded campaign are pointed at the copy beside the record (without it their "recorded campaign" test is skipped, which the core counts as not_run)
-  const recorded={'rec-engine':{RECOVERY_RECORDED_DIR:join(out,'inputs/recovery')},'cil-engine':{CIL_RECORDED_DIR:join(out,'inputs/cil')},'tune-engine':{BENCH_RECORDED_DIR:join(out,'inputs/bench')}}[suite.id]??{};
+  const recorded={'rec-campaign-engine':{RECOVERY_RECORDED_DIR:join(out,'inputs/recovery')},'cil-engine':{CIL_RECORDED_DIR:join(out,'inputs/cil')},'tune-engine':{BENCH_RECORDED_DIR:join(out,'inputs/bench')}}[suite.id]??{};
   const suiteEnv={...env,...recorded,...suite.kind==='playwright'?{LAB_PW_JSON:abs,LAB_IRSIM_SCREENSHOTS:shots,LAB_EVIDENCE_DIR:shots,PLAYWRIGHT_JSON_OUTPUT_NAME:abs}:{}};
   const p=await runR2bCaseCommand(process.execPath,cmd,{out:directory,cwd,env:suiteEnv,timeoutMs:6100000,signal:abort.signal});let result=null;
   // the Lab launcher names a spec's result <name>-<spec>.json; a suite here runs exactly one spec
