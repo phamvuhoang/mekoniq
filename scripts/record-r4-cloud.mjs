@@ -67,7 +67,7 @@ function projectHealth(h,allowOrigin){
 async function smoke({endpoint,origin,pin,local,mac,store,summary}){
  const key=process.env.MEKONIQ_LAB_ACCESS_KEY;must(typeof key==='string'&&key.length>0,'ACCESS_KEY_REQUIRED');secrets.add(key);
  const runtimeIdentity={sourceCommit:pin.sourceCommit,schemaHash:pin.schemaHash},projectDoc=JSON.parse(readFileSync(join(source,fixture)));
- const arch=local?'aarch64':'x86_64',actions={},readiness={},reports={},owned=new Set(),archived=new Set();let bearer;
+ const arch=local?'arm64':'x86_64',actions={},readiness={},reports={},owned=new Set(),archived=new Set();let bearer;
  const api=async(path,body,status=200)=>{
   const r=await fetch(endpoint+'/lab/v2'+path,{method:body===undefined?'GET':'POST',redirect:'error',signal:AbortSignal.timeout(120000),
    headers:{Origin:origin,...body===undefined?{}:{'Content-Type':'application/json'},...bearer?{Authorization:'Bearer '+bearer}:{}},...body===undefined?{}:{body:JSON.stringify(body)}});
@@ -93,8 +93,8 @@ async function smoke({endpoint,origin,pin,local,mac,store,summary}){
     ...isCell?{project:projectDoc,driveExperimentId:'drive-nominal-v1'}:{bench:{schemaVersion:1,scenarioId,axis:'wheels',signal:{kind:'step',amplitude:2,atTick:10},driveExperimentId:'drive-nominal-v1',controlProfile:h.value.benchCatalog[scenarioId].startingProfile}}};
    const created=(await api('/runs',request,201)).value,id=created.run?.id;
    must(uuid.test(id)&&!owned.has(id),'CREATE_RUN_ID_INVALID');owned.add(id);if(typeof created.reclaimToken==='string')secrets.add(created.reclaimToken);
-   const c={runId:id,runRevision:created.run.runRevision,tick:created.tick,status:created.run.status};must(c.runRevision===0&&c.tick===0&&c.status==='created','CREATE_RECEIPT_INVALID');
-   const record={created:c,steps:[]};actions[kind]=record;let current=c;
+   const c={runId:id,runRevision:created.run.runRevision,tick:created.tick,status:created.run.status};
+   const record={created:c,steps:[]};actions[kind]=record;must(c.runRevision===0&&c.tick===0&&c.status==='ready','CREATE_RECEIPT_INVALID');let current=c;
    const act=async (kind,payload)=>{
     const actionId=randomUUID(),startNs=process.hrtime.bigint().toString(),expectedRevision=current.runRevision;
     const {value}=await api('/runs/'+id+'/actions',{actionId,expectedRevision,kind,payload});

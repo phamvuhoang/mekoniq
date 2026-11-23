@@ -104,7 +104,7 @@ export function comparison(mac,cell){
 }
 export function elapsed(kind,a,r){
  const id=r.manifest.runId,c=a.created,start=a.start,steps=a.steps;
- must(c?.runId===id&&c.tick===0&&c.status==='created'&&c.runRevision===0&&Array.isArray(steps)&&steps.length>0&&steps.length<=limits[kind]/100,'ACTION_SEQUENCE_INVALID');
+ must(c?.runId===id&&c.tick===0&&c.status==='ready'&&c.runRevision===0&&Array.isArray(steps)&&steps.length>0&&steps.length<=limits[kind]/100,'ACTION_SEQUENCE_INVALID');
  let revision=c.runRevision,tick=0,end=-1n;const ids=new Set();
  for(const [i,row] of [start,...steps].entries()){
   must(row?.runId===id&&row.expectedRevision===revision&&row.runRevision===++revision&&row.startTick===tick&&Number.isSafeInteger(row.endTick)&&

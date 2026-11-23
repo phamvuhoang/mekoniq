@@ -20,7 +20,7 @@ const health={sourceCommit:commit,schemaHash,protocolMajor:2,features:{bearer:tr
 const cellSet='engineering-mujoco-cell-v1',benchSet='engineering-mujoco-bench-v1';
 function readiness(scenarioId:string,backendSetId:string){return {scenarioId,backendSetId,canStart:true,checks:['host','runner','backend:mujoco_3d',...(backendSetId===cellSet?['backend:mujoco_arm','backend:mock_coffee']:[])].map(id=>({id,status:'ready',reasonCodes:[]}))};}
 function actions(runId:string,ticks:number){let ns=0;const rows=[];for(let t=0;t<ticks;t+=100){const i:number=rows.length;rows.push({runId,actionId:'step-'+i,kind:'step',ticks:100,expectedRevision:i+1,runRevision:i+2,startTick:t,endTick:Math.min(t+100,ticks),startNs:String(ns),endNs:String(ns+=10_000_000),status:t+100>=ticks?'completed':'running'});}
- return {created:{runId,runRevision:0,tick:0,status:'created'},start:{runId,actionId:'start',kind:'start',expectedRevision:0,runRevision:1,startTick:0,endTick:0,status:'running',startNs:'0',endNs:'1'},steps:rows.map(r=>({...r,startNs:String(Number(r.startNs)+2),endNs:String(Number(r.endNs)+2)}))};}
+ return {created:{runId,runRevision:0,tick:0,status:'ready'},start:{runId,actionId:'start',kind:'start',expectedRevision:0,runRevision:1,startTick:0,endTick:0,status:'running',startNs:'0',endNs:'1'},steps:rows.map(r=>({...r,startNs:String(Number(r.startNs)+2),endNs:String(Number(r.endNs)+2)}))};}
 function fixture(){
  const cell=structuredClone(nominal) as any;cell.schemaHash=schemaHash;cell.manifest.runId=cellId;cell.manifest.drive.hostArch='x86_64';
  const bench=structuredClone(wheel) as any;bench.schemaHash=schemaHash;bench.tuning.engine.hostArch='x86_64';
@@ -107,10 +107,10 @@ test.each(['ok','health','secret','cleanup','primary-and-cleanup'])('HTTP diagno
   else if(path==='/readiness'){const query=new URL(req.url!,'http://localhost').searchParams;data=readiness(body.scenarioId??query.get('scenarioId'),body.backendSetId??query.get('backendSetId'));}
   else if(path==='/runs'){const isCell=body.scenarioId==='MJ-CELL-BV01',id=isCell?cellId:wheel.manifest.runId;code=201;
    if(body.seed!==(isCell?7:3)||body.runtimeIdentity.sourceCommit!==sourceCommit||(isCell?body.driveExperimentId!=='drive-nominal-v1':JSON.stringify(body.bench)!==JSON.stringify({...wheel.bench.request,controlProfile:{...profile,axes:[{id:'fixture'}]}})))code=422;
-   state[id]={tick:0,rev:0,status:'created'};data={run:{id,runRevision:0,status:'created'},tick:0,reclaimToken:reclaim};}
+   state[id]={tick:0,rev:0,status:'ready'};data={run:{id,runRevision:0,status:'ready'},tick:0,reclaimToken:reclaim};}
   else {const [, ,id,op]=path.split('/');const isCell=id===cellId,s=state[id!],limit=isCell?nominal.outcome.tick:500;if(!s){code=404;}
    else if(op==='actions'){if(body.expectedRevision!==s.rev)code=409;s.rev++;if(body.kind==='step')s.tick=Math.min(limit,s.tick+body.payload.ticks);s.status=s.tick===limit?'completed':'running';data={run:{id,status:s.status,runRevision:s.rev},tick:s.tick,writer:{reclaimToken:reclaim}};}
-   else if(op==='report'){data=structuredClone(f[isCell?'cell-report.json':'bench-report.json']);data.manifest.sourceCommit=sourceCommit;if(isCell)data.manifest.drive.hostArch='aarch64';else data.tuning.engine.hostArch='aarch64';if(mode==='secret')data.extraPrivateField=token;if(mode==='primary-and-cleanup')code=503;}
+   else if(op==='report'){data=structuredClone(f[isCell?'cell-report.json':'bench-report.json']);data.manifest.sourceCommit=sourceCommit;if(isCell)data.manifest.drive.hostArch='arm64';else data.tuning.engine.hostArch='arm64';if(mode==='secret')data.extraPrivateField=token;if(mode==='primary-and-cleanup')code=503;}
    else if(op==='trace')data=f['bench-trace.json'];
    else if(op==='archive'){archives.push(id!);data={runId:id,archived:true};if(mode==='cleanup'||mode==='primary-and-cleanup'){code=409;data={error:key};}}
   }res.writeHead(code,{'content-type':'application/json'});res.end(JSON.stringify(data));});
