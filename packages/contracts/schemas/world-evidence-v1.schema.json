@@ -350,11 +350,15 @@
                         "enum": [
                           "world-dock-drift-v1",
                           "world-cup-fall-v1",
-                          "world-cup-nudge-v1"
+                          "world-cup-nudge-v1",
+                          "world-cup-nudge-v2"
                         ]
                       },
                       "revision": {
-                        "const": 1
+                        "enum": [
+                          1,
+                          2
+                        ]
                       },
                       "targetId": {
                         "type": "string",
@@ -365,6 +369,11 @@
                         "type": "integer",
                         "minimum": 1,
                         "maximum": 30000
+                      },
+                      "segmentIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4
                       }
                     },
                     "required": [
@@ -373,7 +382,33 @@
                       "revision",
                       "targetId",
                       "targetTick"
-                    ]
+                    ],
+                    "if": {
+                      "properties": {
+                        "presetId": {
+                          "const": "world-cup-nudge-v2"
+                        }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "revision": {
+                          "const": 2
+                        },
+                        "segmentIndex": true
+                      },
+                      "required": [
+                        "segmentIndex"
+                      ]
+                    },
+                    "else": {
+                      "properties": {
+                        "revision": {
+                          "const": 1
+                        },
+                        "segmentIndex": false
+                      }
+                    }
                   }
                 },
                 "worldControl": {

@@ -252,3 +252,97 @@ def test_pick_rig_session_birth_receipt_binds_native_read_to_source_intent_and_r
  assert birth['requestId']=='world-3' and birth['requestDigest']==hashlib.sha256(rfc8785.dumps(req['payload'])).hexdigest()
  assert birth['qposPositionM']==[.49,0,.151] and birth['frame']=='map'
  assert not list(load_validators(SCHEMAS)[1].iter_errors(r))
+
+def test_measured_pulse_wrench_reproduces_fifty_native_substeps_and_clears_on_failure(monkeypatch):
+    home=load('programs.json')['programs']['waypoints']['home']
+    wrench=np.array([4.025,0.,0.,0.,-.05*4.025,0.])
+    engines=[WorldEngine(*inputs()),WorldEngine(*inputs())]
+    native_step=mujoco.mj_step
+    try:
+        for e in engines:
+            e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+            for _ in range(50): e.step(home,.0889,[],0,0)
+        positions=[]
+        for e in engines:
+            target=e.arm.prop['cup-1']['body'];trace=[];poses=[]
+            ctrl_before=e.data.ctrl[e.arm.grip_act].copy()
+            def sample(m,d):
+                trace.append(d.xfrc_applied.copy())
+                assert np.array_equal(d.ctrl[e.arm.grip_act],ctrl_before)
+                native_step(m,d)
+            with monkeypatch.context() as patch:
+                patch.setattr(mujoco,'mj_step',sample)
+                patch.setattr(e.arm,'_put',lambda *args:pytest.fail('unexpected pose write'))
+                for idx in range(-1,6):
+                    intent={'presetId':'world-cup-nudge-v2','targetId':'cup-1','segmentIndex':idx} if 0<=idx<5 else None
+                    row=e.step(home,.0889,[],0,0,intent)
+                    assert np.count_nonzero(e.data.xfrc_applied)==0
+                    poses.append(row['world']['props'][0]['position'])
+            assert len(trace)==70
+            for k,actual in enumerate(trace):
+                expected=np.zeros_like(actual)
+                if 10<=k<60: expected[target]=wrench
+                np.testing.assert_array_equal(actual,expected)
+            positions.append(poses)
+        np.testing.assert_array_equal(*positions)
+        assert positions[0][5][0]>positions[0][0][0]+.001
+        with monkeypatch.context() as patch:
+            def fail(m,d):
+                np.testing.assert_array_equal(d.xfrc_applied[target],wrench)
+                raise RuntimeError('native failure')
+            patch.setattr(mujoco,'mj_step',fail)
+            with pytest.raises(RuntimeError,match='native failure'):e.step(home,.0889,[],0,0,{'presetId':'world-cup-nudge-v2','targetId':'cup-1','segmentIndex':0})
+        assert np.count_nonzero(e.data.xfrc_applied)==0
+    finally:
+        for e in engines:e.close()
+
+
+def _start_measured_pulse(session):
+    from mujoco_worker.session import scene_digest_of
+    path=session.bundle_root/'lab-world-scene.json';scene=json.loads(path.read_text())
+    pulse='world-cup-nudge-v2'
+    scene['disturbance']={'presetId':pulse,'revision':2,'targetId':'cup-1','cupId':'cup-1','trigger':'after_belief_commit'}
+    scene['sceneDigest']=scene_digest_of(scene);path.write_text(json.dumps(scene));session.expected_scene_digest=scene['sceneDigest']
+    start_world(session)
+    intent={'eventId':'rig-birth-1','cupId':'cup-1','propId':'cup-1','kind':'birth','targetTick':1}
+    assert session.handle(world_step(session,placements=[{'propId':'cup-1','pose':{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]}}],intents=[intent]))['ok']
+    for _ in range(12):assert session.handle(world_step(session,session.tick))['ok']
+    return pulse
+
+def test_session_measured_pulse_requires_five_adjacent_receipts_before_another_world_step(session):
+    import hashlib,rfc8785
+    pulse=_start_measured_pulse(session)
+    serial=0
+    def send(idx,**patch):
+        nonlocal serial
+        serial+=1;req=world_step(session,session.tick);req['requestId']=f'segment-{serial}'
+        if idx is not None:req['payload']['worldPerturbations']=[{'eventId':'pulse','presetId':pulse,'revision':2,'targetId':'cup-1','targetTick':session.tick+1,'segmentIndex':idx,**patch}]
+        return session.handle(req),req
+    def reject(idx,**patch):
+        tick,substeps=session.tick,session.engine.total_substeps
+        reply,_=send(idx,**patch);assert not reply['ok'],reply
+        assert session.tick==tick and session.engine.total_substeps==substeps
+    reject(1);reject(0,forceMapN=[7,0,0]);reject(0,targetId='amr-1')
+    for idx in range(5):
+        if idx:
+            reject(None);reject(idx-1);reject(idx+1);reject(idx,eventId='another')
+        before=session.snapshot['props'][0]['position']
+        reply,req=send(idx);assert reply['ok'],reply
+        s=reply['result'];r=s['worldStep']['disturbances'][0]
+        assert r=={**req['payload']['worldPerturbations'][0],'runId':s['runId'],'bootId':s['bootId'],'sceneDigest':s['sceneDigest'],'requestId':req['requestId'],'requestDigest':hashlib.sha256(rfc8785.dumps(req['payload'])).hexdigest(),'frame':'map','forceMapN':[4.025,0,0],'torqueMapNm':[0,-.05*4.025,0],'durationSubsteps':10,'beforePositionM':before,'afterPositionM':s['props'][0]['position']}
+    reject(0);reply,_=send(None);assert reply['ok']
+    assert 'disturbances' not in reply['result']['worldStep']
+
+
+
+def test_measured_pulse_unknown_native_application_ends_session(monkeypatch,session):
+    from mujoco_worker.protocol import WorkerError
+    pulse=_start_measured_pulse(session);engine=session.engine
+    def unknown(*args):
+        raise WorkerError('NATIVE_APPLICATION_UNKNOWN','transport lost during application')
+    monkeypatch.setattr(engine,'step',unknown)
+    req=world_step(session,session.tick)
+    req['payload']['worldPerturbations']=[{'eventId':'pulse','presetId':pulse,'revision':2,'targetId':'cup-1','targetTick':session.tick+1,'segmentIndex':0}]
+    assert not session.handle(req)['ok']
+    assert session.state=='failed' and session.engine is None
+    assert not session.handle({**req,'requestId':'different-request'})['ok']

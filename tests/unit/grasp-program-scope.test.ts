@@ -23,3 +23,19 @@ test.each([undefined,'cup-pick-two-stage-v1','unregistered-v1'])('direct bench a
   expect(workerCalls).toBe(0);
  }finally{await run?.close();await rm(temporary,{recursive:true,force:true});}
 });
+
+test('direct scenario, bench and world factory enforce the measured pulse registration before touching a provider or directory',async()=>{
+ const {mujocoWorldPorts}=await import('../../packages/lab-runtime/src/v2/simulation3d/mujoco-world-ports');
+ const directory=join(await mkdtemp(join(tmpdir(),'pulse-scope-')),'run'),pulse='world-cup-nudge-v2' as const;
+ const runtime={workerRoot:'/missing-fixture',python:'/missing-worker',schemaDir:'',engineVersion:'3.17.0',lockDigest:'0'.repeat(64)};
+ try{
+  for(const patch of [{graspMode:undefined},{graspMode:'fixed_program' as const},{graspProgramId:undefined}]){
+   const manifest={...input,worldExperimentId:pulse,...patch};
+   await expect(createScenarioRun(manifest,{directory})).rejects.toThrow('WORLD_EXPERIMENT_SCOPE_INVALID');
+   const factory=mujocoWorldPorts({...runtime,cellDisturbance:{presetId:pulse,cupId:'cup-1'}});
+   await expect(factory({manifest:{...manifest,worldExperimentId:undefined},directory} as never)).rejects.toThrow('WORLD_EXPERIMENT_SCOPE_INVALID');
+  }
+  await expect(createBenchRun({...input,graspProgramId:undefined,worldExperimentId:pulse,project:undefined,scenarioId:'MJ-BENCH-WHEEL',backendSetId:'engineering-mujoco-bench-v1',bench:{} as never},{directory,catalog:defaultCatalog,enabledBackends:[],runtime})).rejects.toThrow('BENCH_SCOPE_INVALID');
+  expect(existsSync(directory)).toBe(false);
+ }finally{await rm(join(directory,'..'),{recursive:true,force:true});}
+});

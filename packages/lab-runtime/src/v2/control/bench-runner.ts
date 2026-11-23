@@ -335,7 +335,7 @@ export interface BenchProviders extends RunProviders {idleLeaseMs?:number;leaseC
 export async function createBenchRun(input:RunManifestInput&{bench?:unknown},providers:BenchProviders):Promise<ScenarioRun>{
  benchIdleLease(providers.idleLeaseMs);
  const scenario=scenarioRegistry.get(input.scenarioId);
- if(!scenario?.bench||input.backendSetId!==BENCH_SET_ID||input.bench===undefined||input.graspProgramId!==undefined)throw Error('BENCH_SCOPE_INVALID');
+ if(!scenario?.bench||input.backendSetId!==BENCH_SET_ID||input.bench===undefined||input.graspProgramId!==undefined||input.worldExperimentId!==undefined)throw Error('BENCH_SCOPE_INVALID');
  if(input.mode!=='simulation'||input.access!=='simulated')throw Error('MODE_BACKEND_MISMATCH');
  checkScenario(scenario);if(scenario.revision!==input.scenarioRevision)throw Error('SCENARIO_REVISION_MISMATCH');
  if(!Number.isSafeInteger(input.seed)||input.seed<0||input.seed>0xffffffff)throw Error('INVALID_SEED');

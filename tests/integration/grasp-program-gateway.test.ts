@@ -12,7 +12,7 @@ test.each([true,false,undefined])('HTTP admits the program exactly when health a
  const directory=await mkdtemp(join(tmpdir(),'grasp-gateway-'));dirs.push(directory);let received:RunManifestInput|undefined,readinessCalls=0;
  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)};
  const g=await startLabGateway({port:0,directory,sourceCommit:'a'.repeat(40),schemaHash:'b'.repeat(64),v2:{worldExperiments,catalog,enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],portableChecks:async()=>{readinessCalls++;return ['model','clock','fixture','profile','runner','gripper'].map(id=>({id,status:'ready',reasonCodes:[],evidenceRef:'test-native-boundary'}));},simulationFactory:async(input)=>{received=input;throw Error('TEST_NATIVE_BOUNDARY');}}});gateways.push(g);
- const health=await(await fetch(g.url+'/lab/v2/health')).json() as {graspModes?:{id:string;programIds?:string[]}[]};
+ const health=await(await fetch(g.url+'/lab/v2/health')).json() as {worldExperiments?:{id:string;requiresNewRun:boolean}[];graspModes?:{id:string;programIds?:string[]}[]};
  if(worldExperiments){expect(health.graspModes!.find(m=>m.id==='fixed_program')!.programIds).toBeUndefined();
   for(const mode of ['belief_ground_truth','belief_estimated'])expect(health.graspModes!.find(m=>m.id===mode)!.programIds).toEqual(['cup-pick-two-stage-v1']);
  }else expect(health.graspModes).toBeUndefined();
@@ -27,4 +27,11 @@ test.each([true,false,undefined])('HTTP admits the program exactly when health a
   // A request without the new program keeps the pre-existing admission path.
   expect((await post({...request,graspProgramId:undefined})).status).toBe(500);expect(received).toMatchObject({graspMode:'belief_estimated'});expect(received!.graspProgramId).toBeUndefined();
  }
+ const pulse={...request,worldExperimentId:'world-cup-nudge-v2'};
+ if(worldExperiments){
+  expect(health.worldExperiments).toContainEqual(expect.objectContaining({id:pulse.worldExperimentId,requiresNewRun:true}));
+  expect((await post(pulse)).status).toBe(500);expect(received).toMatchObject({worldExperimentId:pulse.worldExperimentId});
+  for(const patch of [{graspProgramId:undefined},{graspMode:'fixed_program'},{scenarioId:'MJ-BV01'},{worldExperimentId:'world-cup-nudge-v3'},{segmentIndex:0}])expect((await post({...pulse,...patch})).status).toBe(422);
+ }else{expect(health.worldExperiments).toBeUndefined();expect((await post(pulse)).status).toBe(422);}
+
 });

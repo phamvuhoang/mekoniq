@@ -296,7 +296,7 @@ class WorkerSession:
         disturbance=scene.get('disturbance')
         if disturbance:
             binding=next((b for b in bindings if b['cupId']==disturbance['cupId']),None)
-            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport') or (disturbance['presetId']=='world-cup-nudge-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='after_belief_commit'))
+            valid=binding and ((disturbance['presetId']=='world-dock-drift-v1' and disturbance['targetId']==rid and disturbance['trigger']=='before_release') or (disturbance['presetId']=='world-cup-fall-v1' and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='transport') or (disturbance['presetId'] in ('world-cup-nudge-v1','world-cup-nudge-v2') and disturbance['targetId']==binding['propId'] and disturbance['trigger']=='after_belief_commit'))
             if not valid:raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','admitted target binding')
         drive = self._drive_docs(scene.get("engine") or {}, document, plant_digest=world_plant_digest(scene))   # one combined drive model and profile for all nine axes, bound to this world's plant
         try:
@@ -385,11 +385,25 @@ class WorkerSession:
         disturbances=p.get('worldPerturbations') or []
         disturbance=disturbances[0] if len(disturbances)==1 else None
         admitted=self.scene.get('disturbance')
+        from .world_engine import WORLD_DISTURBANCES
+        measured=bool(admitted and admitted['presetId']=='world-cup-nudge-v2')
+        previous=(self.snapshot['worldStep'].get('disturbances') or [None])[0]
+        continuing=measured and previous and previous['segmentIndex']<WORLD_DISTURBANCES[admitted['presetId']]['segments']-1
+        if continuing and not disturbances:
+            raise WorkerError('WORLD_PERTURBATION_INCOMPLETE','the next pulse segment is required')
         if disturbances:
-            if not admitted or len(disturbances)!=1 or self.world_disturbance_consumed or any(disturbance.get(k)!=admitted[k] for k in ('presetId','revision','targetId')) or disturbance.get('targetTick')!=self.tick+1 or not disturbance.get('eventId'):
+            if not admitted or len(disturbances)!=1 or (self.world_disturbance_consumed and not continuing) or any(disturbance.get(k)!=admitted[k] for k in ('presetId','revision','targetId')) or disturbance.get('targetTick')!=self.tick+1 or not disturbance.get('eventId'):
                 raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','one admitted one-shot preset')
             target=disturbance['targetId'];arm=self.snapshot['arms'][0]
-            if admitted['presetId']=='world-dock-drift-v1':
+            if measured:
+                keys={'presetId','revision','targetId','eventId','targetTick','segmentIndex'}
+                if set(disturbance)!=keys or type(disturbance['segmentIndex']) is not int or disturbance['segmentIndex']!=(previous['segmentIndex']+1 if continuing else 0):
+                    raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','expected next registered segment')
+                if continuing and (previous['targetTick']!=self.tick or any(previous[k]!=disturbance[k] for k in ('eventId','targetId','presetId','revision'))):
+                    raise WorkerError('WORLD_PERTURBATION_NOT_ADMITTED','preceding receipt required')
+                prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
+                valid=bool(prop) and not arm['gripper']['heldPropIds'] and (continuing or prop['restingOn']=='nozzle-stand') and not any(i['propId']==target for i in intents)
+            elif admitted['presetId']=='world-dock-drift-v1':
                 valid=target==nav['robots'][0]['robotId'] and admitted['trigger']=='before_release' and any(b['cupId']==admitted['cupId'] and b['propId'] in arm['gripper']['heldPropIds'] for b in self.scene['propBindings']) and opening is not None and opening<=.001
             elif admitted['presetId']=='world-cup-nudge-v1':
                 prop=next((x for x in self.snapshot['props'] if x['propId']==target),None)
@@ -400,17 +414,21 @@ class WorkerSession:
             if not valid:raise WorkerError('WORLD_PERTURBATION_PHASE_INVALID','actual pre-release or supported transport observation required')
             before=(self.snapshot['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in self.snapshot['props'] if x['propId']==target))
             self.world_disturbance_consumed=True # before the first external force; never retry an uncertain application
-        result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance,commands)
+        try:
+            result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance,commands)
+        except WorkerError as error:
+            if measured and disturbance:
+                raise WorkerError(error.code,error.detail,fatal=True) from error
+            raise
         if self.scene.get('id')=='pick-rig-v1':
             births=[i for i in intents if i['kind']=='birth'];native=result['worldStep'].get('birthObservations',[])
             if len(births)!=len(native) or any(i['propId']!=r['propId'] for i,r in zip(births,native)):
                 raise WorkerError('WORLD_BIRTH_OBSERVATION_MISSING','native pre-step observation required',fatal=True)
             if births:result['worldStep']['birthObservations']=[{**r,**{k:i[k] for k in ('eventId','cupId','targetTick')},'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest()} for i,r in zip(births,native)]
         if disturbance:
-            from .world_engine import WORLD_DISTURBANCES
             target=disturbance['targetId'];preset=WORLD_DISTURBANCES[disturbance['presetId']]
             after=(result['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in result['props'] if x['propId']==target))
-            result['worldStep']['disturbances']=[{**disturbance,'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest(),'frame':'map','forceMapN':preset['forceMapN'],'durationSubsteps':10,'beforePositionM':list(before),'afterPositionM':list(after)}]
+            result['worldStep']['disturbances']=[{**disturbance,'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest(),'frame':'map','forceMapN':preset['forceMapN'],**({'torqueMapNm':preset['torqueMapNm']} if measured else {}),'durationSubsteps':preset['durationSubsteps'],'beforePositionM':list(before),'afterPositionM':list(after)}]
 
         self.world_events.update(seen)
         self.world_born.update(i["propId"] for i in intents if i["kind"]=="birth")

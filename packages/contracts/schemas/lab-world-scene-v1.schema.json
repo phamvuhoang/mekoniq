@@ -639,11 +639,15 @@
           "enum": [
             "world-dock-drift-v1",
             "world-cup-fall-v1",
-            "world-cup-nudge-v1"
+            "world-cup-nudge-v1",
+            "world-cup-nudge-v2"
           ]
         },
         "revision": {
-          "const": 1
+          "enum": [
+            1,
+            2
+          ]
         },
         "targetId": {
           "type": "string",
@@ -669,7 +673,34 @@
         "targetId",
         "trigger",
         "cupId"
-      ]
+      ],
+      "if": {
+        "properties": {
+          "presetId": {
+            "const": "world-cup-nudge-v2"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "revision": {
+            "const": 2
+          },
+          "cupId": {
+            "const": "cup-1"
+          },
+          "trigger": {
+            "const": "after_belief_commit"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "revision": {
+            "const": 1
+          }
+        }
+      }
     },
     "controlContextVersion": {
       "const": 1

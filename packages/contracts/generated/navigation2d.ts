@@ -382,10 +382,11 @@ export type Sim3DRequestV1 =
          */
         worldPerturbations?: {
           eventId: string;
-          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-          revision: 1;
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+          revision: 1 | 2;
           targetId: string;
           targetTick: number;
+          segmentIndex?: number;
         }[];
         worldControl?: WorldControlV1;
         /**
@@ -1714,8 +1715,8 @@ export interface WorldStep {
    */
   disturbances?: {
     eventId: string;
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
     targetTick: number;
     runId: string;
@@ -1740,6 +1741,12 @@ export interface WorldStep {
      * @maxItems 3
      */
     afterPositionM: number[];
+    segmentIndex?: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    torqueMapNm?: number[];
   }[];
   /**
    * Pick-rig-only native placement read after mj_forward and before the first integration substep. Post-step props remain separate observations.
@@ -2331,8 +2338,8 @@ export interface LabWorldSceneV1 {
     terminalApproachDirection?: 'reverse';
   };
   disturbance?: {
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
     trigger: 'before_release' | 'transport' | 'after_belief_commit';
     cupId: string;
@@ -2416,10 +2423,11 @@ export interface WorldEvidenceRecord {
      */
     worldPerturbations?: {
       eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-      revision: 1;
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+      revision: 1 | 2;
       targetId: string;
       targetTick: number;
+      segmentIndex?: number;
     }[];
     worldControl?: WorldControlV1;
     /**

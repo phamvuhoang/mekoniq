@@ -1,3 +1,4 @@
+import {admitsMeasuredPulse,MEASURED_CUP_NUDGE} from './simulation3d/world-disturbance';
 import Ajv,{type ErrorObject} from 'ajv';
 import addFormats from 'ajv-formats';
 import {hashPayload,type JsonValue} from '../../../contracts/src/index';
@@ -68,6 +69,7 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
 // R4.4 grasp modes: a belief grasp exists on the registered shared-world cell only; MJ-BV01 and every other scenario keep the fixed program
  const wantsBelief=shape.value.graspMode!==undefined&&shape.value.graspMode!=='fixed_program';
  // the registered cup nudge (R4-D33) is a belief-grasp experiment: the fixed program has no belief to be stale
+ if(v.worldExperimentId===MEASURED_CUP_NUDGE&&!admitsMeasuredPulse(v))return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'The measured pulse requires its registered grasp program and a belief mode'}]};
  if(shape.value.worldExperimentId==='world-cup-nudge-v1'&&!wantsBelief)return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'The cup nudge needs a belief grasp mode'}]};
  if((wantsBelief||shape.value.recoveryPolicyId!==undefined||shape.value.graspProgramId!==undefined)&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/graspMode',code:'GRASP_MODE_SCOPE_INVALID',message:'A belief grasp is selectable on the registered shared-world cell only'}]};
  {const g=validateGraspRequest(shape.value);if(!g.ok)return {ok:false,issues:g.reasonCodes.map(code=>({path:'/graspMode',code,message:'Invalid grasp request'}))};}

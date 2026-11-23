@@ -1,10 +1,10 @@
 import {worldDriveControllers,readRetainedWorldDriveReport,readRetainedWorldFaultReport} from './world-drive-report';
-import {DRIVE_FAULTS,applyCommandLoss,faultEventsAt,interlockOverridden,receiptsMatch,runtimeFaultsAt,validateDriveFaultSchedule,type FaultReceipt} from '../control/drive-faults';
+import {applyCommandLoss,faultEventsAt,interlockOverridden,receiptsMatch,runtimeFaultsAt,validateDriveFaultSchedule,type FaultReceipt} from '../control/drive-faults';
 import {driveDocumentDigest,type DriveCommandV1,type FaultOracleV1} from '../control/drive-io';
 /** Source-owned continuous world factory: one engine, journal-correlated custody,
  * bounded durable observations and no browser transport or hardware route. */
 import {worldArmGeometry,worldAllowedPairs,validateWorldControl} from './world-control';
-import {WORLD_DISTURBANCE_PRESETS,worldExperiment} from './world-disturbance';
+import {MEASURED_CUP_NUDGE,nextPulseSegment,WORLD_DISTURBANCE_PRESETS,worldExperiment} from './world-disturbance';
 import {boundWorldArmHistory,WORLD_HISTORY_POLICY} from './world-history';
 import {materializeWorldArmReport} from './world-arm-report';
 import {defaultCatalog} from '../capabilities';
@@ -45,14 +45,17 @@ import {spawnMujocoWorker} from './worker-client';
 import {readWorldFixture,validateWorldObservation,worldArmObstacles,type WorldInteractionIntent} from './world-scene';
 import {openWorldRecorder,prepareWorldAdmission} from './world-evidence';
 import {worldDriveBundle,worldPlantDigest} from '../control/drive-experiments';
-import {admitDriveDocuments,driveManifest,driveWireCommand,routeCorrectionOptions} from '../control/drive-run';
-import type {WorldPortsFactory,WorldTickCommand} from './world-ports';
+import {admitDriveDocuments,driveManifest,routeCorrectionOptions} from '../control/drive-run';
+import {worldWireCommand,type WorldPortsFactory,type WorldTickCommand} from './world-ports';
 
 const worldProofs=new Map<string,{fixtureDigest:string;valid:boolean}>();
 export const verifiedWorldRun=(runId:string,fixtureDigest:string)=>{const p=worldProofs.get(runId);return !!p?.valid&&p.fixtureDigest===fixtureDigest;};
 export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawnMujocoWorker=spawnMujocoWorker):WorldPortsFactory{return async input=>{
  const set=defaultCatalog.sets[input.manifest.backendSetId],workflow=set?.execution?.composition==='single_world'&&set.scenarioIds?.includes(input.manifest.scenarioId)===true;
  if(!workflow)throw Error('WORLD_SCENARIO_UNSUPPORTED');
+ const selected=worldExperiment(input.manifest),override=runtime.cellDisturbance;
+ if(override?.presetId===MEASURED_CUP_NUDGE){worldExperiment({...input.manifest,worldExperimentId:override.presetId});if(override.cupId!=='cup-1'||input.manifest.worldExperimentId!==undefined||runtime.rig)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');}
+ if(selected?.presetId===MEASURED_CUP_NUDGE&&runtime.rig)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');
  if(runtime.physicsOverride||runtime.padFrictionOverride!==undefined||runtime.armExtraStatics)throw Error('WORLD_PROFILE_OVERRIDE_UNSUPPORTED');
  if(activeRunCount(MUJOCO_SLOT)>0)throw Error('MUJOCO_CAPACITY');holdSlot(MUJOCO_SLOT,input.runId);
  let worker:Awaited<ReturnType<typeof spawnMujocoWorker>>|undefined,closing:Promise<void>|undefined;
@@ -62,8 +65,8 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   const {scene,files}=await readWorldFixture(runtime.workerRoot,runtime.rig?'pick-rig-v1':'coffee-delivery-cell-v1'),st=input.state,ctx=input.context;
   if(scene.inputs.projectDigest!==hashJson(input.manifest.project)||st.armId!==scene.armCell.arm.armId||st.arm.programs.length||hashJson([...new Set([...st.plant.cups.map(c=>c.cupId),...st.workload.map(w=>w.cupId)])].sort())!==hashJson(scene.propBindings.map(p=>p.cupId).sort()))throw Error('WORLD_SOURCE_ADMISSION_MISMATCH');
   const fixtureDigest=scene.sceneDigest;
-  const selected=worldExperiment(input.manifest);if(selected&&runtime.cellDisturbance)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');
-  if(selected??runtime.cellDisturbance){const o=(selected??runtime.cellDisturbance)!,b=scene.propBindings.find(b=>b.cupId===o.cupId);if(!b||!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,o.presetId))throw Error('WORLD_PERTURBATION_NOT_ADMITTED');const preset=WORLD_DISTURBANCE_PRESETS[o.presetId];scene.disturbance={presetId:o.presetId,revision:1,cupId:o.cupId,targetId:o.presetId==='world-dock-drift-v1'?scene.navigation.robots[0]!.robotId:b.propId,trigger:preset.trigger};}
+  if(selected&&runtime.cellDisturbance)throw Error('WORLD_PERTURBATION_NOT_ADMITTED');
+  if(selected??runtime.cellDisturbance){const o=(selected??runtime.cellDisturbance)!,b=scene.propBindings.find(b=>b.cupId===o.cupId);if(!b||!Object.hasOwn(WORLD_DISTURBANCE_PRESETS,o.presetId))throw Error('WORLD_PERTURBATION_NOT_ADMITTED');const preset=WORLD_DISTURBANCE_PRESETS[o.presetId];scene.disturbance={presetId:o.presetId,revision:preset.revision,cupId:o.cupId,targetId:o.presetId==='world-dock-drift-v1'?scene.navigation.robots[0]!.robotId:b.propId,trigger:preset.trigger};}
   // a registered drive experiment adds one combined drive model and control profile (nine axes) to the scene; without the field nothing is added and the scene is the R2b scene, byte for byte
   const driveBundle=input.manifest.driveExperimentId?await worldDriveBundle(runtime.workerRoot,input.manifest.driveExperimentId,scene.armCell.arm.armId,worldPlantDigest(scene)):undefined;
   if(driveBundle){for(const f of driveBundle.files){files.set(f.path,f.bytes);scene.files.push({path:f.path,sha256:createHash('sha256').update(f.bytes).digest('hex'),bytes:f.bytes.length});}scene.files.sort((a,b)=>a.path<b.path?-1:1);scene.engine={...driveBundle.refs};}
@@ -117,7 +120,6 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
   // the controllers of the drive: pure state machines on the measured feedback of the last verified snapshot; their events that need a person halt the cell like any other halted reason
   const driveDocs=driveBundle?await admitDriveDocuments(scene,async p=>files.get(p)!,runtime.workerRoot,worldPlantDigest(scene)):undefined;
   const drive=driveDocs?worldDriveControllers(admission):undefined;
-  const driveWire=(c:WorldTickCommand):WorldTickCommand=>driveDocs?driveWireCommand(c):c;
   const dockPolicy={robotId:rid,trayId:support.supportId,maxXyM:hp.dock.xyToleranceM,maxYawRad:hp.dock.yawToleranceRad,maxVMps:hp.dock.maxLinearMps,maxOmegaRadps:hp.dock.maxAngularRadps,holdTicks:hp.dock.holdTicks};
   const dockSamples:DockSample[]=[],receiptSamples=new Map<string,ReceiptSample[]>(),transfers=new Map<string,{pending:PendingTransferIdentity;sourceEventId:string;sent:boolean;lost?:boolean;fallTicks?:number}>(),birthEvents=new Map<string,string>(),removeEvents=new Map<string,string>(),transferReports:CellReport[]=[];let ledger:CupLedger|undefined,disturbanceUsed=false,cellHalted:string|null=null;
   const dockSample=(s:Sim3DSnapshotV1):DockSample=>{const r=s.robots[0]!,p=scene.navigation.robots[0]!.initialPoseMap;return {tick:s.tick,robotId:r.robotId,trayId:support.supportId,xyErrorM:Math.hypot(r.poseDriveMap[0]!-p[0]!,r.poseDriveMap[1]!-p[1]!),yawErrorRad:Math.atan2(Math.sin(r.poseDriveMap[2]!-p[2]!),Math.cos(r.poseDriveMap[2]!-p[2]!)),vMps:r.bodyVelocity[0]!,omegaRadps:r.bodyVelocity[1]!,valid:true};};
@@ -201,7 +203,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
 
   worldProofs.set(input.runId,{fixtureDigest,valid:true});
   const project=input.manifest.project as LabProjectV2,navigation={mapId:'lab-world',mapRevision:String(project.world.revision),bindings:Object.fromEntries(project.world.points.map(p=>[p.id,{waypointId:p.id,mapId:'lab-world',mapRevision:String(project.world.revision),frame:'map' as const,x:p.x,y:p.y,yaw:p.kind==='parking'||p.kind==='coffee_pickup'?scene.navigation.robots[0]!.initialPoseMap[2]!:0}]))};
-  return {displayScene:()=>structuredClone(scene),navigation,metadata:{...driveDocs?{drive:driveManifest(driveDocs,input.manifest.driveExperimentId,hostArch)}:{},...grasp?{perception:{...grasp.program?{program:{id:grasp.program.id,revision:grasp.program.revision,digest:grasp.program.digest,executionDigest:graspExecutionDigest!}}:{},graspMode:grasp.mode,profile:{id:grasp.profile.id,revision:grasp.profile.revision,digest:grasp.profile.digest,sha256:grasp.profileSha256},recoveryPolicy:grasp.recovery?{id:grasp.recovery.policy.id,digest:grasp.recovery.policy.digest}:null}}:{},clock:{tickMs:20,businessEpochMs:ctx.nowMs()},worldExtent:{...scene.controllerPolicy.bounds,controller:{id:scene.controllerPolicy.id,version:scene.controllerPolicy.version,hash:hashJson(scene.controllerPolicy)}},models:[{id:'mujoco_shared_world',revision:'1',hash:scene.sceneDigest,provenance:'manufacturer_nominal+assumed'},{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'}],profiles:[{id:WORLD_HISTORY_POLICY.mode,revision:1,hash:hashJson(WORLD_HISTORY_POLICY),provenance:'source_derived_cache'},...scene.disturbance?[{id:scene.disturbance.presetId,revision:1,hash:hashJson({admission:scene.disturbance,preset:WORLD_DISTURBANCE_PRESETS[scene.disturbance.presetId]}),provenance:'registered_disturbance'}]:[],{id:scene.controllerPolicy.id,revision:Number(scene.controllerPolicy.version),hash:hashJson(scene.controllerPolicy),provenance:'assumed'},{id:scene.numericalPolicy.id,revision:1,hash:hashJson(scene.numericalPolicy),provenance:'assumed'}],armProgram:{...grasp?.program?{graspProgram:structuredClone(grasp.program),graspOffsets:structuredClone(graspOffsets!)}:{},fixture:{id:scene.id,revision:String(scene.revision)},physicsDigest:scene.models.armPhysics.sha256,programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:programDoc.digest}},robots:new Map([[rid,adapter]]),coffee,snapshot:()=>structuredClone(last),
+  return {displayScene:()=>structuredClone(scene),navigation,metadata:{...driveDocs?{drive:driveManifest(driveDocs,input.manifest.driveExperimentId,hostArch)}:{},...grasp?{perception:{...grasp.program?{program:{id:grasp.program.id,revision:grasp.program.revision,digest:grasp.program.digest,executionDigest:graspExecutionDigest!}}:{},graspMode:grasp.mode,profile:{id:grasp.profile.id,revision:grasp.profile.revision,digest:grasp.profile.digest,sha256:grasp.profileSha256},recoveryPolicy:grasp.recovery?{id:grasp.recovery.policy.id,digest:grasp.recovery.policy.digest}:null}}:{},clock:{tickMs:20,businessEpochMs:ctx.nowMs()},worldExtent:{...scene.controllerPolicy.bounds,controller:{id:scene.controllerPolicy.id,version:scene.controllerPolicy.version,hash:hashJson(scene.controllerPolicy)}},models:[{id:'mujoco_shared_world',revision:'1',hash:scene.sceneDigest,provenance:'manufacturer_nominal+assumed'},{id:'mock_coffee',revision:'1',hash:hashJson(MOCK_COFFEE_PARAMS),provenance:'illustrative'}],profiles:[{id:WORLD_HISTORY_POLICY.mode,revision:1,hash:hashJson(WORLD_HISTORY_POLICY),provenance:'source_derived_cache'},...scene.disturbance?[{id:scene.disturbance.presetId,revision:scene.disturbance.revision,hash:hashJson({admission:scene.disturbance,preset:WORLD_DISTURBANCE_PRESETS[scene.disturbance.presetId]}),provenance:'registered_disturbance'}]:[],{id:scene.controllerPolicy.id,revision:Number(scene.controllerPolicy.version),hash:hashJson(scene.controllerPolicy),provenance:'assumed'},{id:scene.numericalPolicy.id,revision:1,hash:hashJson(scene.numericalPolicy),provenance:'assumed'}],armProgram:{...grasp?.program?{graspProgram:structuredClone(grasp.program),graspOffsets:structuredClone(graspOffsets!)}:{},fixture:{id:scene.id,revision:String(scene.revision)},physicsDigest:scene.models.armPhysics.sha256,programs:structuredClone(programs),programsDigest:hashJson(programs as never),waypointsDigest:programDoc.digest}},robots:new Map([[rid,adapter]]),coffee,snapshot:()=>structuredClone(last),
    evidence:{append:async s=>{await recorder.append(s,s.tick===0?null:pending);durableTick=s.tick;},fail:async f=>{failed=true;invalidate();await beliefRecorder?.finish('WORLD_FAILED').catch(()=>{});beliefFinished=true;await recorder.fail(f);},finish:async()=>{const r=await recorder.finish();await beliefRecorder?.finish(null);beliefFinished=true;return r;}},
    world:{prepareTick(targetTick){if(failed||pending)throw Error('WORLD_TERMINAL');if(targetTick!==last.tick+1||targetTick>30000)throw Error('WORLD_TARGET_TICK_INVALID');
      const active=st.arm.programs.find(p=>p.state==='running');programs.collision!.allowedPairs=worldAllowedPairs(scene,files,active?.program??null);
@@ -215,9 +217,15 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       propPlacements.push({propId:binding.propId,pose:kind==='birth'?{position:rigBirth,quaternionXyzw:[0,0,0,1]}:null});worldInteractions.push({eventId:workflow?(kind==='birth'?birthEvents:removeEvents).get(binding.cupId)!:`source:${input.runId}:${binding.cupId}:${kind}`,cupId:binding.cupId,propId:binding.propId,kind,targetTick});
      }
      let worldPerturbations:WorldTickCommand['worldPerturbations'];const fault=scene.disturbance;
-     if(fault&&!disturbanceUsed){const b=scene.propBindings.find(b=>b.cupId===fault.cupId)!,held=last.arms![0]!.gripper!.heldPropIds.includes(b.propId),p=st.arm.programs.find(p=>p.state==='running'),at=last.props?.find(p=>p.propId===b.propId),origin=scene.navigation.robots[0]!.initialPoseMap,r=last.robots[0]!;
+     const nextSegment=nextPulseSegment(last);
+     if(fault?.presetId===MEASURED_CUP_NUDGE&&nextSegment!==undefined){
+      if(last.arms![0]!.gripper!.heldPropIds.length)throw Error('WORLD_PERTURBATION_PHASE_INVALID');
+      worldPerturbations=[{eventId:last.worldStep!.disturbances![0]!.eventId,presetId:fault.presetId,revision:fault.revision,targetId:fault.targetId,targetTick,segmentIndex:nextSegment}];
+     }else if(fault&&!disturbanceUsed){const b=scene.propBindings.find(b=>b.cupId===fault.cupId)!,held=last.arms![0]!.gripper!.heldPropIds.includes(b.propId),p=st.arm.programs.find(p=>p.state==='running'),at=last.props?.find(p=>p.propId===b.propId),origin=scene.navigation.robots[0]!.initialPoseMap,r=last.robots[0]!;
       const trigger=fault.trigger==='after_belief_commit'?!!belief?.committed(fault.cupId)&&!held&&at?.restingOn==='nozzle-stand'&&prepared.gripperCommandM!==programs.contact!.closedM:fault.trigger==='before_release'?held&&p?.program==='cup-place'&&p.index===0&&prepared.gripperCommandM===programs.contact!.closedM:at?.restingOn===support.supportId&&!held&&Math.abs(r.bodyVelocity[0]!)>.01&&Math.hypot(r.poseDriveMap[0]!-origin[0]!,r.poseDriveMap[1]!-origin[1]!)>.5&&ledger?.snapshot().some(x=>x.cupId===fault.cupId&&x.parent===`robot:${rid}/tray:1`);
-      if(trigger){disturbanceUsed=true;worldPerturbations=[{eventId:`disturbance:${input.runId}:${fault.presetId}`,presetId:fault.presetId,revision:1,targetId:fault.targetId,targetTick}];}
+      const measured=fault.presetId===MEASURED_CUP_NUDGE;
+      const beforeDescent=!measured||p?.program==='cup-pick'&&programs.choreography[p.program]?.[p.index]?.waypoint==='pickApproach'&&last.arms![0]!.gripper!.heldPropIds.length===0&&belief?.attemptsStarted(fault.cupId)===1;
+      if(trigger&&beforeDescent){disturbanceUsed=true;worldPerturbations=[{eventId:`disturbance:${input.runId}:${fault.presetId}`,presetId:fault.presetId,revision:fault.revision,targetId:fault.targetId,targetTick,...measured?{segmentIndex:0}:{}}];}
      }
      const transfer=active?[...transfers.values()].find(t=>t.pending.commandId===active.commandId):undefined;if(active&&!transfer)throw Error('WORLD_CONTROL_INVALID');
      const worldControl:NonNullable<WorldTickCommand['worldControl']>={version:1,program:active?{commandId:active.commandId,transferId:transfer!.pending.transferId,cupId:transfer!.pending.cupId,sourceEventId:transfer!.sourceEventId,payloadHash:active.payloadHash,controlEpoch:active.controlEpoch,programId:active.program as 'cup-pick'|'cup-place',stage:active.index,waypoint:programs.choreography[active.program]![active.index]!.waypoint}:null,attachmentProxyPropId:st.arm.holding===null?null:scene.propBindings.find(b=>b.cupId===st.arm.holding)!.propId,movementInterlocked:!!interlocked,stopLatched:!!st.arm.stop?.latched};validateWorldControl(worldControl,scene,files);
@@ -236,9 +244,7 @@ export function mujocoWorldPorts(runtime:MujocoRuntimeOptions,spawn:typeof spawn
       }
      }
      return structuredClone(pending);
-    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{const wire=driveWire(command) as WorldTickCommand,worker=(command.faultInjections??[]).filter(e=>DRIVE_FAULTS[e.faultId as keyof typeof DRIVE_FAULTS].appliedBy==='worker');
-      // the worker is sent only the injections it applies; the runtime's own (command-loss) are in the command as intent and get their receipts below
-      if(worker.length)wire.faultInjections=worker;else delete wire.faultInjections;
+    },async step(command){if(failed||sent||!pending||hashJson(command as never)!==hashJson(pending as never))throw Error('WORLD_COMMAND_INVALID');sent=true;try{const wire=worldWireCommand(command,!!driveDocs),worker=wire.faultInjections??[];
       const s=await ask('step',wire);engineTick=s.tick;
       // the worker's receipts are its answer to this very step (run, boot, scene, request, tick); a receipt on a tick that owes none is as wrong as a missing one
       {const got=(s as {faultReceipts?:FaultReceipt[]}).faultReceipts,digest=hashJson(wire);

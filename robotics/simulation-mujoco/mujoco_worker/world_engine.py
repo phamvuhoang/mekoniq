@@ -25,6 +25,7 @@ WORLD_DISTURBANCES={
  'world-dock-drift-v1':{'revision':1,'forceMapN':[2000.,0.,0.],'durationSubsteps':10},
  'world-cup-fall-v1':{'revision':1,'forceMapN':[30.,0.,30.],'durationSubsteps':10},
  # R4.4: a small horizontal push on the cup at the nozzle stand, once, around the commit of a belief grasp (the cup must stay on its support).
+ 'world-cup-nudge-v2':{'revision':2,'forceMapN':[4.025,0.,0.],'torqueMapNm':[0.,-.05*4.025,0.],'durationSubsteps':10,'segments':5},
  'world-cup-nudge-v1':{'revision':1,'forceMapN':[14.4,0.,0.],'durationSubsteps':10},
 }
 
@@ -160,8 +161,10 @@ class WorldEngine:
                 p=a.prop[pid];q=d.qpos[p['qpos']:p['qpos']+7]
                 birth_observations.append({'method':'mujoco-freejoint-body-before-step-v1','frame':'map','propId':pid,'physicsSubstepsBefore':self.total_substeps,'qposPositionM':q[:3].tolist(),'bodyPositionM':d.xpos[p['body']].tolist(),'quaternionXyzw':q[[4,5,6,3]].tolist()})
         aggregate=ContactAccumulator(.002,self.expected);seen=set();v.saturated=0
-        if force_body is not None:d.xfrc_applied[force_body,:3]=preset['forceMapN']
         try:
+            if force_body is not None:
+                d.xfrc_applied[force_body,:3]=preset['forceMapN']
+                if 'torqueMapNm' in preset:d.xfrc_applied[force_body,3:]=preset['torqueMapNm']
             for _ in range(10):
                 old=d.qpos[v.wq].copy();saturated=False
                 if drv is not None:

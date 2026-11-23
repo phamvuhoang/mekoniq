@@ -938,7 +938,8 @@ export interface CreateRunRequest {
     bundleDigest: string;
     projectDigest: string;
   };
-  worldExperimentId?: 'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
+  worldExperimentId?:
+    'world-nominal-v1' | 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
   /**
    * Registered server-owned virtual-drive experiment (R4) of the shared-world cell. Absent: the R2b control path, byte for byte.
    */

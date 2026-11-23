@@ -10,3 +10,15 @@ test('wire admission refuses browser force/target fields, old providers and same
  for(const [mode,set]of [['mock','mock-default'],['simulation','engineering-mujoco-arm-v1'],['simulation','engineering-mujoco-mobile-v1'],['simulation','engineering-webots-3d-v1']])expect(validateRunRequestV2({...base,mode,backendSetId:set}).ok).toBe(false);
  expect(validateActionV2({actionId:'change',expectedRevision:0,kind:'setWorldExperiment',payload:{worldExperimentId:'world-cup-fall-v1'}}).ok).toBe(false);
 });
+
+test('measured nudge requires both its registered program and an explicit belief mode',()=>{
+ const base={...request('world-cup-nudge-v2'),project:undefined,engineeringRef:{bundleDigest:'a'.repeat(64),projectDigest:'b'.repeat(64)},graspProgramId:'cup-pick-two-stage-v1'};
+ for(const graspMode of ['belief_ground_truth','belief_estimated']){
+  const good={...base,graspMode,...graspMode==='belief_estimated'?{perceptionProfileId:'perception-nominal-v1'}:{}};
+  expect(worldExperiment(good)).toEqual({presetId:'world-cup-nudge-v2',cupId:'cup-1'});expect(validateRunRequestV2(good).ok).toBe(true);
+  for(const patch of [{graspMode:'fixed_program'},{graspMode:undefined},{graspMode:'arbitrary'},{graspProgramId:'other'},{graspProgramId:undefined},{scenarioId:'MJ-BV01'}]){
+   expect(()=>worldExperiment({...good,...patch})).toThrow();expect(validateRunRequestV2({...good,...patch}).ok).toBe(false);
+  }
+  for(const extra of [{forceMapN:[1,0,0]},{torqueMapNm:[0,0,0]},{targetId:'cup-2'},{segmentIndex:0},{targetTick:1}])expect(validateRunRequestV2({...good,...extra}).ok).toBe(false);
+ }
+});
