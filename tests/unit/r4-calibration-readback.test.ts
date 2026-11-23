@@ -22,13 +22,25 @@ const path='inputs/calibration/'+entry;
 const expected={sourceCommit,toolClosures};
 const arm='armatureKgM2[2]',damping='jointDynamics.damping';
 
-test('missing optional CAL evidence stays not_run',async()=>{
+test('an absent optional CAL input is not_run and a reference without payload fails',async()=>{
  const dir=await mkdtemp(join(tmpdir(),'no-calibration-'));
  try{
   const result=await collectR4ArtifactDispositions(dir,{identity:{before:expected}});
   expect(result.artifactDispositions.CAL01).toEqual({status:'not_run',issues:['CALIBRATION_SELFTEST_MISSING']});
   const supplied=await collectR4ArtifactDispositions(dir,{identity:{before:expected},inputs:{calibrationSelftest:{file:path,sha256:'f'.repeat(64)}}});
-  expect(supplied.artifactDispositions.CAL01.status).toBe('failed');
+  expect(supplied.artifactDispositions.CAL01).toEqual({status:'failed',issues:['CALIBRATION_SELFTEST_CORRUPT']});
+ }finally{await rm(dir,{force:true,recursive:true});}
+});
+
+test.each([true,false])('an unreferenced calibration directory fails with entry present = %s',async includeEntry=>{
+ const dir=await mkdtemp(join(tmpdir(),'unreferenced-calibration-'));
+ try{
+  await mkdir(join(dir,'inputs/calibration'),{recursive:true});
+  if(includeEntry)await writeFile(join(dir,path),'{}');
+  const result=await collectR4ArtifactDispositions(dir,{identity:{before:expected},inputs:{}});
+  for(const id of ['CAL01','CAL02','CAL03','CAL04','CAL05','CAL06']){
+   expect(result.artifactDispositions[id]).toEqual({status:'failed',issues:['CALIBRATION_SELFTEST_CORRUPT']});
+  }
  }finally{await rm(dir,{force:true,recursive:true});}
 });
 
