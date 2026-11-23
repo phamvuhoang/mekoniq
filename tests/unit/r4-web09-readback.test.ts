@@ -7,7 +7,8 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import profile from '../../robotics/simulation-mujoco/fixtures/perception-v1/perception-nominal-v1.json';
 import scene from '../../robotics/simulation-mujoco/fixtures/pick-rig-v1/lab-world-scene.json';
-import type {TuningResultV1} from '../../packages/contracts/generated/navigation2d';
+import type {TuningResultV1,WorldEvidenceRecord,GraspAttempt} from '../../packages/contracts/generated/navigation2d';
+import {studyFixture} from '../support/pick-rig';
 // @ts-expect-error plain ESM script without types
 import {verifyWeb09Record} from '../../scripts/r4-web09-readback.mjs';
 // @ts-expect-error plain ESM script without types
@@ -54,9 +55,9 @@ const profileSha256=sha(readFileSync('robotics/simulation-mujoco/fixtures/percep
 const beliefRecord=(tick:number)=>({objectId:'cup-1',tick,belief:{objectId:'cup-1',kind:'cup',frameId:'arm-base',positionM:[.49,0,.15],sigmaM:[.002,.002,0],observedTick:tick-5,publishedTick:tick,ageTicks:0,source:'pose_estimator_sim',valid:true},dropped:false,truthAtObservedTick:[.49,0,.151],errorM:0});
 const published=()=>Array.from({length:HORIZON/10},(_,k)=>beliefRecord((k+1)*10));
 const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated',profile:{id:profile.id,revision:profile.revision,digest:profile.digest,sha256:profileSha256}},...man},outcome:{tick:HORIZON},arm:{worldTrace:{prefixCovered:true,firstTick:0,lastTick:HORIZON,publicCommittedTick:HORIZON,samples:HORIZON+1,reasonCodes:[]}},perceptionEvidence:{schemaVersion:1,complete:true,issues:[],policy:{ageBasis:'publishedTick',profile,profileSha256,profileBytes:readFileSync('robotics/simulation-mujoco/fixtures/perception-v1/perception-nominal-v1.json','utf8')},coverage:{scope:'belief_evaluations',firstTick:0,lastTick:HORIZON,prefixCovered:true,streamFinalized:true},beliefs:published(),attempts:[],attemptRecords:[],recovery:[],...pe}});
-const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>{
+const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>;commands?:Map<number,WorldEvidenceRecord['command']>}={})=>async()=>{
  const horizon=(o.manifest?.horizon as {tick:number}|undefined)?.tick??HORIZON,report=cellReport();report.outcome.tick=horizon;report.arm.worldTrace={...report.arm.worldTrace,lastTick:horizon,publicCommittedTick:horizon,samples:horizon+1};report.perceptionEvidence.coverage.lastTick=horizon;report.perceptionEvidence.beliefs=report.perceptionEvidence.beliefs.filter(b=>b.tick<=horizon);
- return {manifest:{runId:'run-cell',horizon:{tick:horizon},assets:[{role:'scene',path:'scene.json'}],coverage:{prefixCovered:true,streamFinalized:true,issues:[],terminal:null,gaps:[]},provenance:{accepted:false},...o.manifest},capturedReport:o.report??report,async readAsset(){return Buffer.from(JSON.stringify({...scene,propBindings:[{cupId:'cup-1',propId:'cup-1'}]}));},async *samples(){for(let t=0;t<=horizon;t++)yield {snapshot:{tick:t,props:t?[{propId:'cup-1',position:[.49,0,.151],quaternionXyzw:[0,0,0,1],restingOn:'nozzle-stand'}]:[]}};},close(){}};
+ return {manifest:{runId:'run-cell',horizon:{tick:horizon},assets:[{role:'scene',path:'scene.json'}],coverage:{prefixCovered:true,streamFinalized:true,issues:[],terminal:null,gaps:[]},provenance:{accepted:false},...o.manifest},capturedReport:o.report??report,async readAsset(path:string){return path==='bundle/'+scene.programsRef.path?readFileSync('robotics/simulation-mujoco/fixtures/pick-rig-v1/programs.json'):Buffer.from(JSON.stringify({...scene,propBindings:[{cupId:'cup-1',propId:'cup-1'}]}));},async *samples(){for(let t=0;t<=horizon;t++)yield {command:o.commands?.get(t)??null,snapshot:{tick:t,props:t?[{propId:'cup-1',position:[.49,0,.151],quaternionXyzw:[0,0,0,1],restingOn:'nozzle-stand'}]:[]}};},close(){}};
 };
 
 interface Opt{doc?:Record<string,unknown>;plot?:Record<string,unknown>;belief?:Record<string,unknown>;plotWork?:Record<string,unknown>;beliefWork?:Record<string,unknown>;skip?:string[];trace?:unknown;report?:unknown;attempt?:Record<string,unknown>;proc?:Record<string,unknown>;testWindow?:Record<string,unknown>}
@@ -354,4 +355,15 @@ test('verifyWebRecord reports WEB09 through this reader, no longer as a constant
 test('WEB09 refuses an attempt score that contradicts the retained native world even when report issues are empty',async()=>{
  const r=cellReport(),a={attemptId:'cup-1#0',cupId:'cup-1',index:0,mode:'belief_estimated',decidedTick:21,recordedTick:21,stage:'plan',beliefUsed:{...beliefRecord(20).belief,ageTicks:1},beliefErrorAtCommitM:100,gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},ikResidual:[],outcome:'unknown'};
  Object.assign(r.perceptionEvidence,{attempts:[a],attemptRecords:[a]});expect(await withOpt({},fakeOpen({report:r}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
+});
+test('WEB09 binds the decision history to native descent commands, including a consistently retimed commit',async()=>{
+ const h=await studyFixture();dirs.push(h.root);const shift=26,commands=new Map(h.records.map(r=>[r.snapshot.tick+shift,r.command?{...structuredClone(r.command),targetTick:r.snapshot.tick+shift}:null])),original=h.attempts.map(a=>{
+  const decidedTick=a.decidedTick+shift,publishedTick=Math.floor(decidedTick/10)*10,beliefUsed={...beliefRecord(publishedTick).belief,ageTicks:decidedTick-publishedTick};return {...structuredClone(a),mode:'belief_estimated',decidedTick,recordedTick:a.recordedTick!+shift,beliefUsed} as GraspAttempt;
+ });
+ for(const variant of ['original','missing_commit','retimed_commit']){
+  let attempts=structuredClone(original);const plan=attempts[0]!;if(variant==='missing_commit')attempts.splice(1,1);
+  if(variant!=='original')attempts=attempts.map(a=>a.stage==='plan'?a:{...structuredClone(plan),stage:a.stage,outcome:a.outcome,recordedTick:a.stage==='outcome'?a.recordedTick:plan.decidedTick});
+  const report=cellReport({}, {attemptRecords:attempts,attempts:[attempts.at(-1)]}),issues=await withOpt({},fakeOpen({report,commands}));
+  if(variant==='original')expect(issues).toEqual([]);else expect(issues).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
+ }
 });

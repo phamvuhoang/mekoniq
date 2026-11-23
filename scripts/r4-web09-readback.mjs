@@ -148,7 +148,7 @@ async function beliefWorkload(read,w,record,issues,id,open){
    const m=replay.manifest,r=replay.capturedReport,e=r.perceptionEvidence,all=(e?.beliefs??[]).filter(b=>b.objectId==='cup-1'),cup=all.filter(b=>b.belief?.valid===true);
    if(!(typeof w.runId==='string'&&w.runId&&m.runId===w.runId&&r.manifest?.runId===w.runId&&identity(r,record,'engineering-mujoco-cell-v1','MJ-CELL-BV01')&&r.manifest.perception?.graspMode==='belief_estimated'&&
     m.horizon.tick===w.replayHorizonTick&&m.coverage?.prefixCovered&&m.provenance?.accepted!==true&&e?.issues?.length===0&&cup.length>0&&w.view==='3d'&&Number.isInteger(w.firstTick)&&w.firstTick>=0&&w.firstTick<m.horizon.tick))return bad();
-   const {registeredBeliefPolicy,displayedBeliefAt,beliefDecisionIssues,beliefPublicationIssues,nativeBeliefTruth,scoreBeliefAttempts,validateBeliefRecordShape,validateGraspAttemptShape,validateRecoveryStepShape}=await (beliefTools??=tsImport('../packages/lab-runtime/src/v2/perception/belief-world-proof.ts',import.meta.url));
+   const {registeredBeliefPolicy,displayedBeliefAt,beliefDecisionIssues,beliefPublicationIssues,verifyBeliefNativeCommits,nativeBeliefTruth,scoreBeliefAttempts,validateBeliefRecordShape,validateGraspAttemptShape,validateRecoveryStepShape}=await (beliefTools??=tsImport('../packages/lab-runtime/src/v2/perception/belief-world-proof.ts',import.meta.url));
    const pm=r.manifest.perception,policy=await registeredBeliefPolicy(pm.profile?.digest),c=e.coverage,wt=r.arm?.worldTrace;
    if(!isDeepStrictEqual(e.policy,policy)||!isDeepStrictEqual(pm.profile,{id:policy.profile.id,revision:policy.profile.revision,digest:policy.profile.digest,sha256:policy.profileSha256})||
     c?.scope!=='belief_evaluations'||c.prefixCovered!==true||c.firstTick!==0||c.lastTick!==m.horizon.tick||typeof c.streamFinalized!=='boolean'||e.complete!==c.streamFinalized||
@@ -158,6 +158,8 @@ async function beliefWorkload(read,w,record,issues,id,open){
    const sceneRef=m.assets.find(a=>a.role==='scene'),scene=JSON.parse(Buffer.from(await replay.readAsset(sceneRef.path)).toString()),world=[];
    for await(const row of replay.samples('world'))world.push(row);
    if(beliefPublicationIssues(e.beliefs,policy.profile,world,scene,m.horizon.tick).length||!isDeepStrictEqual(e.attempts,[...new Map(e.attemptRecords.map(a=>[a.attemptId,a])).values()]))return bad();
+   const programs=Buffer.from(await replay.readAsset('bundle/'+scene.programsRef.path));if(sha(programs)!==scene.programsRef.sha256)return bad();
+   verifyBeliefNativeCommits(e.attemptRecords,e.recovery,world,scene,JSON.parse(programs).programs);
    scoreBeliefAttempts(e.attemptRecords,nativeBeliefTruth(world,scene));
    return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick,beliefAvailable:tick=>displayedBeliefAt(e,'cup-1',tick)!==null};
   }finally{replay.close?.();}

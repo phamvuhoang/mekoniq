@@ -52,6 +52,6 @@ test('F03: a recovered final grasp retains its outcome and has no invented atten
  const last=h.attempts.at(-1)!;last.outcome='grip_not_established';last.recordedTick=10;
  const commit={...last,attemptId:'cup-1#1',index:1,decidedTick:21,recordedTick:21,stage:'commit' as const,outcome:'unknown' as const,beliefUsed:structuredClone(h.beliefs.find(b=>b.tick===21)!.belief!)};
  h.attempts.push(commit,{...commit,recordedTick:30,stage:'outcome',outcome:'lifted'});
- h.recovery.push({stepId:'recovery-1',attemptId:'cup-1#0',rule:'empty_pick',action:'retry_pick',commandId:'retry-1',recordedTick:20,completedTick:21,result:'done'});
+ h.recovery.push({stepId:'recovery-1',attemptId:'cup-1#0',rule:'empty_pick',action:'retry_pick',commandId:'retry-1',recordedTick:20,completedTick:20,result:'done'});h.nativePicks([{commitTick:h.commitTick,endPickTick:10},{commitTick:21,endPickTick:26}]);
  await h.write();expect(await read(h)).toMatchObject({outcome:'lifted',attempts:2,recovered:true,attention:false,ticks:30});
 });

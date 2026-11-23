@@ -4,13 +4,13 @@ import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mock-arm';
+import type {ArmPlantState,ArmPropSample,ArmProgramSet} from '../../../../cell-adapters/src/mock-arm';
 import type {GraspAttempt,RecoveryStep,WorldEvidenceRecord,BeliefRecord} from '../../../../contracts/generated/navigation2d';
 import type {RunReport} from '../report';
 import {hashJson} from '../hash';
 import {composePose,invertPose} from '../frames';
 import {scoreBeliefAttempts} from './belief-integrity';
-import {beliefPublicationIssues} from './belief-world-proof';
+import {beliefPublicationIssues,verifyBeliefNativeCommits} from './belief-world-proof';
 import {loadOracleProfile} from '../algorithm/checker';
 import {defaultCatalog} from '../capabilities';
 import {instantiateBackends} from '../backend-registry';
@@ -129,6 +129,7 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
   if(!same(sample,want))fail('RIG_PROPS_WORLD_MISMATCH');
  }
  if(cfg){const issues=beliefPublicationIssues(beliefs,cfg.profile,world.records,admission.scene,h);if(issues.length)fail(`BELIEF_EVIDENCE:${issues.join(',')}`);}
+ const committed=cfg?verifyBeliefNativeCommits(evidence.attempts,evidence.recovery,world.records,admission.scene,worldDocument<{programs:ArmProgramSet}>(admission.files,admission.scene.programsRef.path).programs):new Set<string>();
  const birth=verifyRigBirth(world.records,admission,input.seed,input.truthOffsetM),mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1),physical=world.records[h]!.snapshot,held=physical.arms![0]!.gripper!.heldPropIds.includes(birth.propId),cup=physical.props!.find(p=>p.propId===birth.propId);
  if(facts.fixedOutcome==='lifted'){
   const event=source.events.find(e=>e.kind==='cup'&&e.id==='cup-1'&&e.type==='CupTransferConfirmed'&&(e.state.movements as {evidence?:{commandId?:string}}[]|undefined)?.some(x=>x.evidence?.commandId===facts.endpoint.commandId)),movement=(event?.state.movements as {evidence?:Record<string,unknown>}[]|undefined)?.find(x=>x.evidence?.commandId===facts.endpoint.commandId),receipt=movement?.evidence,observation=receipt?.world as {tick?:number;sceneDigest?:string}|undefined;
@@ -148,5 +149,5 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  const inverse=invertPose(admission.scene.armCell.arm.baseInMap);
  const scored=scoreBeliefAttempts(mine,(cupId,tick)=>{const id=admission.scene.propBindings.find(b=>b.cupId===cupId)?.propId,p=world.records[tick]?.snapshot.props?.find(p=>p.propId===id);return p?composePose(inverse,{position:p.position,quaternionXyzw:p.quaternionXyzw}).position:undefined;});
  const attempts=[...new Map(scored.map(a=>[a.attemptId,a])).values()];
- return {outcome:facts.fixedOutcome,attempts:input.mode==='fixed_program'?(facts.endpoint.commandId?1:0):attempts.length,recovered:evidence.recovery.length>0&&facts.fixedOutcome==='lifted',attention:outcome.status==='needs_attention',ticks:h,unexpectedContacts:sweep.nativeContacts.unexpected,beliefErrorAtCommitM:attempts[0]?.beliefErrorAtCommitM??null,endpoint:facts.endpoint,birth};
+ return {outcome:facts.fixedOutcome,attempts:input.mode==='fixed_program'?(facts.endpoint.commandId?1:0):attempts.length,recovered:evidence.recovery.length>0&&facts.fixedOutcome==='lifted',attention:outcome.status==='needs_attention',ticks:h,unexpectedContacts:sweep.nativeContacts.unexpected,beliefErrorAtCommitM:committed.has('cup-1#0')?scored.find(a=>a.attemptId==='cup-1#0'&&a.stage==='commit')!.beliefErrorAtCommitM:null,endpoint:facts.endpoint,birth};
 }

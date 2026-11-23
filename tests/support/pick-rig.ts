@@ -23,6 +23,9 @@ import campaign from '../../robotics/simulation-mujoco/campaigns/perception-gap-
 import {scenarioRegistry,scenarioHash} from '../../packages/lab-runtime/src/v2/scenario-registry';
 import {defaultCatalog} from '../../packages/lab-runtime/src/v2/capabilities';
 import {instantiateBackends} from '../../packages/lab-runtime/src/v2/backend-registry';
+import type {ArmProgramSet} from '../../packages/cell-adapters/src/mock-arm';
+import {quinticSegment} from '../../packages/cell-adapters/src/arm-motion';
+import {XARM6_SI} from '../../packages/lab-runtime/src/v2/models/arm-kinematics';
 export const STUDY_COMMIT='c'.repeat(40),EPOCH=Date.UTC(2026,0,1);
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex');
 const time=(t:number)=>new Date(EPOCH+t*20).toISOString();
@@ -44,7 +47,7 @@ export async function studyFixture(pointId='truth-0',seed=1){
   if(point.nudge&&n===nudgeTick){command!.worldPerturbations=[{eventId:'nudge-1',presetId:'world-cup-nudge-v1',revision:1,targetId:'cup-1',targetTick:n}];snapshot.worldStep!.disturbances=[{...command!.worldPerturbations[0]!,runId,bootId,sceneDigest,requestId:`world-${n+2}`,requestDigest:hashJson(command),frame:'map',forceMapN:[14.4,0,0],durationSubsteps:WORLD_DISTURBANCE_PRESETS['world-cup-nudge-v1'].durationSubsteps,beforePositionM:records.at(-1)!.snapshot.props![0]!.position,afterPositionM:snapshot.props![0]!.position}];}
   records.push({snapshot,command,interactions:n===1?[{eventId:'entry-1:0',cupId:'cup-1',propId:'cup-1',kind:'birth',tick:n,commandDigest:hashJson(command),reason:'source_nozzle_birth',before:null,after:{position:snapshot.props![0]!.position,quaternionXyzw:[0,0,0,1]}}]:[]});
  }
- const beliefs:BeliefRecord[]=[],attempts:GraspAttempt[]=[];
+ const beliefs:BeliefRecord[]=[],attempts:GraspAttempt[]=[],approach=[...f.scene.armCell.arm.homeRad],pick=approach.map((q,i)=>q+(i===0?.0001:0)),lift=approach.map((q,i)=>q+(i===0?.0002:0));
  if(point.mode!=='fixed_program'){
   const profile=JSON.parse(await readFile(`robotics/simulation-mujoco/fixtures/perception-v1/${point.profileId??'perception-ground-truth-v1'}.json`,'utf8'));
   for(let t=1;t<=h;t++)if(t%profile.updateEveryTicks===0&&t-profile.latencyTicks>=1){
@@ -53,9 +56,19 @@ export async function studyFixture(pointId='truth-0',seed=1){
   }
   for(const [stage,recordedTick,outcome]of [['plan',planTick,'unknown'],['commit',commitTick,'unknown'],['outcome',h,'lifted']] as const){
    const decidedTick=stage==='plan'?planTick:commitTick,b=structuredClone(beliefs.filter(r=>r.tick<=decidedTick).at(-1)!.belief!);b.ageTicks=decidedTick-b.publishedTick;
-   attempts.push({attemptId:'cup-1#0',cupId:'cup-1',index:0,decidedTick,mode:point.mode,beliefUsed:b,beliefErrorAtCommitM:Math.hypot(b.positionM[0]-records[decidedTick]!.snapshot.props![0]!.position[0]!,b.positionM[1]-position[1]!),gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},ikResidual:[],stage,recordedTick,outcome});
+   attempts.push({attemptId:'cup-1#0',cupId:'cup-1',index:0,decidedTick,mode:point.mode,beliefUsed:b,beliefErrorAtCommitM:Math.hypot(b.positionM[0]-records[decidedTick]!.snapshot.props![0]!.position[0]!,b.positionM[1]-position[1]!),gates:{belief:'pass',region:'pass',ik:'pass',sweep:'pass'},ikResidual:[],waypointsRad:{...stage==='plan'?{pickApproach:[...approach]}:{},pick:[...pick],lift:[...lift]},stage,recordedTick,outcome});
   }
  }
+ // Synthetic short motion, but real controller ordering and the admitted generator:
+ // decision -> approach hold -> pick command. A retry returns to the same approach.
+ const nativePicks=(descents:{commitTick:number;endPickTick:number}[])=>{
+  const programs=JSON.parse(Buffer.from(f.files.get(f.scene.programsRef.path)!).toString()).programs as ArmProgramSet,m=programs.motion as Extract<ArmProgramSet['motion'],{profile:'quintic-sync-v1'}>,lim={maxVelocity:XARM6_SI.limits.map(l=>l.maxVelocity),maxAcceleration:m.maxAccelerationRadS2,speedFraction:m.speedFraction,dtS:.02};let target=[...approach],goal=[...approach],segment=quinticSegment(target,goal,lim),k=0;
+  for(const row of records){const c=row.command,p=c?.worldControl?.program;if(!c||!p)continue;const d=descents.find(d=>row.snapshot.tick>=d.commitTick+2&&row.snapshot.tick<=d.endPickTick),last=descents.at(-1),lifting=!!last&&row.snapshot.tick>last.endPickTick;
+   p.stage=d?1:lifting?2:0;p.waypoint=d?'pick':lifting?'lift':'pickApproach';const next=d?pick:lifting?lift:approach;
+   if(!next.every((v,i)=>v===goal[i])){goal=[...next];segment=quinticSegment(target,goal,lim);k=0;}target=segment.at(++k);c.jointTargets![0]!.positionsRad=[...target];row.snapshot.arms![0]!.positionsRad=[...target];for(const receipt of row.snapshot.worldStep?.disturbances??[])receipt.requestDigest=hashJson(c);
+  }
+ };
+ if(point.mode!=='fixed_program')nativePicks([{commitTick,endPickTick:h-4}]);
  const programs=[{commandId,payloadHash,controlEpoch:1,program:'cup-pick',index:3,state:'completed',waiting:0,accepted:{accepted:true,unknown:false},evidence:{source:'mujoco_arm',grip:'contact',forceModel:'none',gripperClosed:true,objectPresent:true,liftPoseReached:true,cupId:'cup-1'}}];
  const report={schemaVersion:2,pickRig:{endpointProtocol:PICK_RIG_ENDPOINT_PROTOCOL,maxTicks:12000},manifest:{runId,sourceCommit:STUDY_COMMIT,seed,clock:{tickMs:20,businessEpochMs:EPOCH},models:[{id:'mujoco_shared_world',hash:sceneDigest}],profiles:point.nudge?[{id:'world-cup-nudge-v1',provenance:'registered_disturbance'}]:[],armProgram:{fixture:{id:'pick-rig-v1'},programs:{contact:{liftMinM:.14}}},calibration:{status:'not_calibrated'}},outcome:{status:'running',served:'0',tick:h,simTimeNs:String(h*20_000_000)},coffee:{cellEffects:[{type:'cell.execute',payload:{...transfer,cupId:'cup-1',programRef:{id:'cup-pick'}}}]},businessEvents:sourceEvents,worldSweep:{scope:{publicCommittedTick:h,prefixCovered:true,identity:{runId,bootId,sceneDigest,admissionDigest:admission.digest}},nativeContacts:{status:'pass',aggregateRows:0,unexpected:0,firstUnexpected:null}},arm:{worldTrace:{firstTick:0,lastTick:h,samples:h+1,publicCommittedTick:h,prefixCovered:true,reasonCodes:[]}}} as unknown as RigReport;
  const scenario=scenarioRegistry.get('MJ-CELL-BV01')!,set=defaultCatalog.sets['engineering-mujoco-cell-v1']!,catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>({...b,installed:true,compatible:true,reachable:true}))},project=JSON.parse(Buffer.from(f.files.get('project.json')!).toString());
@@ -90,5 +103,5 @@ export async function studyFixture(pointId='truth-0',seed=1){
   await writeFile(join(run,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'report.json'),JSON.stringify(report));await writeFile(join(directory,'rig-run.json'),JSON.stringify(record));await rehash();
  };
  const rehash=async()=>writeFile(join(directory,'case.json'),JSON.stringify({sourceCommit:STUDY_COMMIT,artifacts:await cellArtifacts(directory)}));
- await write();return {root,directory,run,admission,records,report,checkpoint,record,input,props,beliefs,attempts,recovery,commitTick,nudgeTick,sourceEvents,sourceStates,write,rehash};
+ await write();return {root,directory,run,admission,records,report,checkpoint,record,input,props,beliefs,attempts,recovery,commitTick,nudgeTick,sourceEvents,sourceStates,nativePicks,write,rehash};
 }

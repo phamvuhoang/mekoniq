@@ -5,6 +5,7 @@ import {join,resolve} from 'node:path';
 import {afterEach,describe,expect,test} from 'vitest';
 import {openCell,cellUntil,cellCampaign} from '../support/mujoco-cell';
 import {readBeliefEvidence,readBeliefManifest} from '../../packages/lab-runtime/src/v2/perception/belief-evidence';
+import {displayedBeliefAt} from '../../packages/lab-runtime/src/v2/perception/belief-display';
 type Cell=Awaited<ReturnType<typeof openCell>>;
 const open:Cell[]=[];
 afterEach(async()=>{for(const h of open.splice(0)){await h.run.close().catch(()=>{});await rm(h.directory,{recursive:true,force:true});}});
@@ -13,6 +14,17 @@ const finalAttempts=<T extends {attemptId:string}>(list:T[])=>[...new Map(list.m
 async function evidence(h:Cell){const dir=join(h.directory,'belief-evidence'),m=await readBeliefManifest(dir);return {m,...await readBeliefEvidence(dir,m)};}
 
 describe.skipIf(!existsSync(resolve('.venv-mujoco/bin/python')))('belief grasp on the real engine (requires .venv-mujoco)',()=>{
+ test('a cold report without retained world admission invalidates belief coverage without starting an engine',async()=>{
+  const h=await openCell(7,'belief-cold-prefix',{rig:{offsetM:[0,0]}},{graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'});open.push(h);
+  await h.run.start();await cellUntil(h.run,()=>false,200,20);const hot=await h.run.report();
+  expect(hot.perceptionEvidence).toMatchObject({complete:false,issues:[],coverage:{prefixCovered:true}});expect(displayedBeliefAt(hot.perceptionEvidence!,'cup-1',200)).not.toBeNull();
+  await h.run.close();await writeFile(join(h.directory,'mujoco-world/bundle/lab-world-scene.json'),'{}');const reopened=await h.reopen();
+  try{const cold=await reopened.report();expect(h.opens()).toBe(1);expect(cold.arm!.worldTrace).toMatchObject({prefixCovered:false,reasonCodes:['WORLD_SCENE_INVALID']});
+   expect(cold.perceptionEvidence).toMatchObject({complete:false,issues:['BELIEF_WORLD_COVERAGE'],coverage:{prefixCovered:false}});expect(displayedBeliefAt(cold.perceptionEvidence!,'cup-1',200)).toBeNull();
+   const capture=await reopened.captureReplay!();expect(capture.world).toBeUndefined();expect(capture.report.perceptionEvidence).toMatchObject({complete:false,issues:['BELIEF_WORLD_COVERAGE'],coverage:{prefixCovered:false}});
+  }finally{await reopened.close();}
+  await rm(join(h.directory,'mujoco-world/bundle/lab-world-scene.json'));const missing=await h.reopen();try{const cold=await missing.report();expect(h.opens()).toBe(1);expect(cold.arm!.worldTrace?.reasonCodes).toEqual(['WORLD_RETAINED_BUNDLE_UNAVAILABLE']);expect(cold.perceptionEvidence).toMatchObject({complete:false,issues:['BELIEF_WORLD_COVERAGE'],coverage:{prefixCovered:false}});}finally{await missing.close();}
+ },120000);
  test('a hot belief report proves its flushed live prefix and refuses a corrupted native world without throwing away the report',async()=>{
   const h=await openCell(7,'belief-prefix',{rig:{offsetM:[0,0]}},{graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'});open.push(h);
   await h.run.start();await cellUntil(h.run,()=>false,200,20);const report=await h.run.report();
