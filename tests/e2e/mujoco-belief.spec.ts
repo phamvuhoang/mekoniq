@@ -1,6 +1,6 @@
 // V12 / BEL06: the belief layer on the real MuJoCo cell. A belief_estimated run (request carries the registered ids only) → the report has the attempts table → the exported package opens offline
 // and its ghost at a mid-run cursor is the record at that cursor → an older report (R2b sample) says "No perception data". Launch (one spec per launcher, the machine may be slow: the run is ~2000 ticks):
-//   node scripts/test-irsim-e2e.mjs --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-belief.spec.ts
+//   node scripts/test-irsim-e2e.mjs --production-ui --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-belief.spec.ts
 import {test,expect,type Request} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
 import {mkdtempSync,readFileSync} from 'node:fs';

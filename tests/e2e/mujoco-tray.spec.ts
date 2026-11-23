@@ -1,6 +1,6 @@
 // V10 (R4 §7.4/7.5): the three-cup tray on the pinned runtime with the real MuJoCo worker: choose a variant, run A' then B, read the design hint (or why there is none) in the compare panel.
 // One spec per launcher (one-use pairing code):
-//   node scripts/test-irsim-e2e.mjs --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-tray.spec.ts
+//   node scripts/test-irsim-e2e.mjs --production-ui --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-tray.spec.ts
 import {test,expect,type Page,type Request} from '@playwright/test';
 import {openInspector,openScenarioPicker} from '../support/twin';
 import {sweepWeb07} from '../support/web07';

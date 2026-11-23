@@ -19,7 +19,7 @@ test('rapid cursor work coalesces and object focus has a single-action Overview 
  await page.locator('.replay-files>summary').click();await page.selectOption('#replay-object','cup-1');await page.locator('.replay-files>summary').click();await expect(page.locator('#replay-camera')).toHaveValue('custom');await page.locator('[data-replay="camera-reset"]').click();await expect(page.locator('#replay-camera')).toHaveValue('overview');
 });
 
-test('drive-fault sample: opens with every runtime request denied, its manifest hash is the catalog\'s, the fault section reads and its row moves the recorded cursor to the applied tick',async({page})=>{
+test('drive-fault sample: opens with every runtime request denied, its manifest hash is the catalog\'s, the fault section reads and its row moves the recorded cursor to the applied tick',async({page},testInfo)=>{
  test.setTimeout(120000);const attempts:string[]=[];await page.route('**/lab/**',r=>{attempts.push(r.request().url());return r.abort();});
  await page.goto('/#replay');
  const checked=await page.evaluate(async()=>{const c=await(await fetch('/replays/catalog.json')).json(),e=c.replays.find((r:{id:string})=>r.id==='drive-fault'),bytes=await(await fetch('/replays/drive-fault/manifest.json')).arrayBuffer(),h=await crypto.subtle.digest('SHA-256',bytes);return {entry:e,sha:[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')};});
@@ -29,6 +29,7 @@ test('drive-fault sample: opens with every runtime request denied, its manifest 
  const row=section.locator('tr[data-verdict]').first();await expect(row).toHaveAttribute('data-verdict','detected_in_time');await expect(row).toContainText('drive-trip');await expect(row).toContainText('amr-1/wheel-right');await expect(row).toContainText('tick 2401');
  await row.locator('[data-action="twin-fault-jump"]').click();await expect(page.locator('#replay-cursor')).toHaveValue('2401',{timeout:30000});await expect(page.locator('#replay-time')).toContainText('tick 2401');
  expect(attempts).toEqual([]);
+ await testInfo.attach('r4-offline-replay',{body:Buffer.from(JSON.stringify({sampleId:'drive-fault',runId:checked.entry.recording,manifestSha256:checked.sha,cursorTick:2401,runtimeRequests:attempts})),contentType:'application/json'});
  // an older sample says nothing about faults: no section, and no table of zeros
  await page.goto('/#replay/external-impact');await expect(page.locator('#replay-cursor')).toBeVisible({timeout:90000});await expect(page.locator('#replay-faults [data-testid="fault-evidence"]')).toHaveCount(0);
 });

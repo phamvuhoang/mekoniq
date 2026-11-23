@@ -1,5 +1,5 @@
 // V09 (R4 §7.3): the drive fault studio on the pinned runtime with the real MuJoCo worker. One spec per launcher (one-use pairing code):
-//   node scripts/test-irsim-e2e.mjs --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-faults.spec.ts
+//   node scripts/test-irsim-e2e.mjs --production-ui --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-faults.spec.ts
 import {test,expect,type Page,type Request} from '@playwright/test';
 import {openInspector,openScenarioPicker} from '../support/twin';
 import {sweepWeb07} from '../support/web07';

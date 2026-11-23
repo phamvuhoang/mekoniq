@@ -1,5 +1,5 @@
 // V07a (R4.2 §6.3): the Control tab on the pinned runtime with the real MuJoCo worker. One spec per launcher (one-use pairing code); the wheel bench needs mujoco_3d:
-//   node scripts/test-irsim-e2e.mjs --provider mujoco --mujoco-mobile [--ui-port 4185 --runtime-port 4186] mujoco-control.spec.ts
+//   node scripts/test-irsim-e2e.mjs --production-ui --provider mujoco --mujoco-mobile [--ui-port 4185 --runtime-port 4186] mujoco-control.spec.ts
 // Add --same-origin on alternate ports for the cookie + CSRF path. Otherwise LAB_TEST_RUNTIME_URL selects a direct bearer session.
 import {test,expect,type Page,type Request,type Response} from '@playwright/test';
 import {readFileSync,writeFileSync} from 'node:fs';

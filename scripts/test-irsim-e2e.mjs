@@ -28,6 +28,7 @@ const workers=()=>{try{return execFileSync('pgrep',['-f',LEFTOVER],{encoding:'ut
 const {CI:_ci,...env}=process.env;// Playwright must reuse the launcher's UI, not start its own
 env.LAB_PW_BASE_URL=`http://127.0.0.1:${uiPort}`;if(sameOrigin)delete env.LAB_TEST_RUNTIME_URL;else if(alternate)env.LAB_TEST_RUNTIME_URL=`http://127.0.0.1:${runtimePort}`;
 env.LAB_IRSIM_SCREENSHOTS=resolve(process.env.LAB_IRSIM_SCREENSHOTS??join(root,'test-results/irsim-evidence'));await mkdir(env.LAB_IRSIM_SCREENSHOTS,{recursive:true});
+if(launcherArgs.includes('--production-ui'))env.LAB_EVIDENCE_DIR=resolve(process.env.LAB_EVIDENCE_DIR??env.LAB_IRSIM_SCREENSHOTS);
 if(specs.length>1){console.error(`ONE_SPEC_PER_LAUNCHER: the launcher's pairing code is one-use, so only the first of ${specs.join(', ')} could pair; run them one at a time.`);process.exit(2);}
 const work=await mkdtemp(join(tmpdir(),'mekoniq-irsim-e2e-')),before=new Set(workers());
 let launcher,runner;

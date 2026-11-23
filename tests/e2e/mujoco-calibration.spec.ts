@@ -1,10 +1,10 @@
 // V15 (R4.5): the model-maturity badge and the calibration screen on the pinned runtime. One spec per launcher (one-use pairing code):
-//   node scripts/test-irsim-e2e.mjs --provider mujoco --mujoco-mobile [--ui-port 4185 --runtime-port 4186] mujoco-calibration.spec.ts
+//   node scripts/test-irsim-e2e.mjs --production-ui --provider mujoco --mujoco-mobile [--ui-port 4185 --runtime-port 4186] mujoco-calibration.spec.ts
 // The records are written here (a record is a local file); nothing is uploaded and no runtime route reads one.
 import {test,expect} from '@playwright/test';
 import {openInspector} from '../support/twin';
 import {hashJson} from '../../src/twin/hash';
-import {sweepWeb07} from '../support/web07';
+import {assertWeb07Content,sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL;
 const d=(c:string)=>c.repeat(64);
 const unsealed=(o:Record<string,unknown>={})=>({schemaVersion:1,documentType:'calibration-record',digest:d('1'),planDigest:d('2'),datasetDigest:d('3'),configDigest:d('c'),baseDriveModelDigest:d('4'),fitDigest:d('5'),sourceKind:'measured',
@@ -13,6 +13,13 @@ const unsealed=(o:Record<string,unknown>={})=>({schemaVersion:1,documentType:'ca
 /** sealed as the tool seals a record: the digest is the hash of everything else */
 const record=(o:Record<string,unknown>={})=>{const {digest:_,...rest}=unsealed(o);void _;return {...rest,digest:hashJson(rest)};};
 const file=(r:unknown)=>({name:'record.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(r))});
+// A labelled synthetic display fixture. Its series and residual belong to the sealed record; it makes no calibration claim.
+const comparison=(configDigest:string)=>{
+ const timesNs=Array.from({length:20},(_,i)=>i*10000000),measured=timesNs.map((_,i)=>0.1*(1-Math.exp(-i/6))),predicted=measured.map(v=>v*1.02),maxAbs=Math.max(...measured.map((v,i)=>Math.abs(v-predicted[i]!)));
+ const dataset={configDigest,clockMapping:{domain:'sim',offsetNs:0},units:{position:'rad'},trials:[{trialId:'validation-1',split:'validation',timesNs,channels:{position:measured}}]};
+ const prediction={configDigest,clockDomain:'sim',units:{position:'rad'},trials:[{trialId:'validation-1',timesNs,channels:{position:predicted}}]};
+ return {dataset,prediction,record:record({configDigest,datasetDigest:hashJson(dataset),sourceKind:'synthetic',toolSelfTest:true,reasonCodes:['SYNTHETIC_DATA','TOOL_SELF_TEST'],validation:{status:'pass',reasons:[],residuals:{position:{samples:20,meanAbs:maxAbs/2,maxAbs,withinTolerance:true}},domain:{position:{min:0,max:0.1}},calibratedCapabilities:[],invalidatedBy:null}})};
+};
 
 test('Control tab: the maturity badge comes from the runtime, a record of this plant is read from a file, a record of another plant is refused, a self-test is labelled, and none of them changes the badge',async({page,request,baseURL})=>{
  test.setTimeout(300000);page.setDefaultTimeout(30000);
@@ -35,6 +42,8 @@ test('Control tab: the maturity badge comes from the runtime, a record of this p
  // no record yet
  await page.getByTestId('calibration-loader').locator('summary').click();
  await expect(page.getByTestId('calibration-empty')).toContainText('No calibration data yet');
+ const reopen=async()=>{await openInspector(page,'control');const loader=page.getByTestId('calibration-loader');if(await loader.getAttribute('open')===null)await loader.locator('summary').click();};
+ await sweepWeb07(page,{panel:'calibration',testId:'calibration-empty',state:'empty',reopen});
  // a record of this plant (the wheel's configuration, as the runtime digests it)
  await page.locator('#twin-import-calibration').setInputFiles(file(record({configDigest:wheel})));
  await expect(page.getByTestId('calibration-record')).toHaveAttribute('data-validity','valid');
@@ -59,6 +68,13 @@ test('Control tab: the maturity badge comes from the runtime, a record of this p
  // three languages
  await page.getByRole('button',{name:'VI',exact:true}).click();await expect(page.getByTestId('control-model-maturity')).toContainText('Mức model');
  await page.getByRole('button',{name:'JA',exact:true}).click();await expect(page.getByTestId('control-model-maturity')).toContainText('モデルの成熟度');
- await sweepWeb07(page,{panel:'calibration',testId:'control-model-maturity',reopen:()=>openInspector(page,'control')});
+ // The error screen and the badge cannot stand in for the populated calibration panel.
+ await expect(assertWeb07Content(page,{panel:'calibration',testId:'control-model-maturity'})).rejects.toThrow('WEB07_TARGET_MISMATCH');
+ await expect(assertWeb07Content(page,{panel:'calibration',testId:'calibration-record'})).rejects.toThrow('WEB07_CONTENT_MISSING:calibration-record');
+ await sweepWeb07(page,{panel:'calibration',testId:'calibration-error',state:'error',reopen});
+ await page.locator('#twin-import-calibration').setInputFiles(file(comparison(wheel)));
+ await expect(page.getByTestId('calibration-record')).toHaveAttribute('data-label','self_test');
+ await expect(page.getByTestId('calibration-plot')).toBeVisible();
+ await sweepWeb07(page,{panel:'calibration',testId:'calibration-record',reopen});
  expect(errors).toEqual([]);
 });
