@@ -46,3 +46,19 @@ test('an absent input, incomplete population, and malformed or wrong producer tu
   expect(artifactDispositionsFromGroups({recoveryCampaign:issues}).REC06.status).toBe('failed');
  }finally{await rm(root,{recursive:true,force:true});}
 });
+test('native create supplies tick zero and start acknowledges the running state',()=>{
+ const snapshot={tick:0,runId:'rec06'},seed=42;
+ const requests=[{op:'create',requestId:'world-1',targetTick:1,delivered:true,requestDigest:hashJson({sceneRef:'lab-world-scene.json',seed}),responseDigest:hashJson(snapshot)},
+  {op:'start',requestId:'world-2',targetTick:1,delivered:true,requestDigest:hashJson({}),responseDigest:hashJson({state:'running'})}];
+ const verify=(r:typeof requests)=>proof.verifyRecoverySession(r,snapshot as never,seed,0);
+ expect(()=>verify(requests)).not.toThrow();
+ expect(()=>verify([{...requests[0]!,responseDigest:requests[1]!.responseDigest},requests[1]!])).toThrow(/WORKER_SESSION/);
+ expect(()=>verify([requests[0]!,{...requests[1]!,responseDigest:hashJson(snapshot)}])).toThrow(/WORKER_SESSION/);
+});
+test('full cell births command the original upright fixture pose',()=>{
+ const centre:[number,number,number]=[.49,0,.151],pose={position:centre,quaternionXyzw:[0,0,0,1]};
+ const check=(position:number[],rotation:number[])=>proof.verifyRecoveryBirths([{command:{propPlacements:[{propId:'cup-1',pose:{position,quaternionXyzw:rotation}}]}}] as never,centre);
+ expect(()=>check(centre,pose.quaternionXyzw)).not.toThrow();
+ expect(()=>check([.50,0,.151],pose.quaternionXyzw)).toThrow(/BIRTH/);
+ expect(()=>check(centre,[1,0,0,0])).toThrow(/BIRTH/);
+});

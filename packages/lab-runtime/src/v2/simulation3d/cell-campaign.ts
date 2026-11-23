@@ -1,5 +1,5 @@
 /** Registered current cell campaign. The production runner owns Source state; observers never synthesize ACKs. */
-import {verifyRecoveryCell,RECOVERY_OPTIONS} from '../perception/recovery-cell-evidence';
+import {verifyRecoveryCell,verifyRecoverySession,RECOVERY_OPTIONS} from '../perception/recovery-cell-evidence';
 import {createHash} from 'node:crypto';
 import {mkdir,readFile,writeFile,lstat,readdir,mkdtemp,rm,cp} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -127,7 +127,7 @@ async function verifyRegisteredCellCampaign(root:string,cases:typeof CELL_CASES,
   for(const row of rows){const s=row.snapshot;check(s.bootId===cp.world.snapshot.bootId&&s.sceneDigest===admission.scene.sceneDigest&&s.worldStep?.modelCount===1&&s.worldStep.physicsSubsteps===(s.tick+1)*10&&s.worldStep.workerPid===rows[0]!.snapshot.worldStep!.workerPid,'CELL_SHARED_WORLD');}
   if(recovery){
    check(!recoveryRunIds.has(cp.runId)&&!cp.reclaimed&&!paths.has('error.txt'),'RECOVERY_RUN_IDENTITY');recoveryRunIds.add(cp.runId);
-   check(trace.requests.length===steps.length+2&&trace.requests[0].op==='create'&&trace.requests[0].requestId==='world-1'&&trace.requests[1].op==='start'&&trace.requests[1].requestId==='world-2'&&trace.requests[1].responseDigest===hashJson(rows[0]!.snapshot),'RECOVERY_WORKER_SESSION');
+   verifyRecoverySession(trace.requests,rows[0]!.snapshot,spec.seed,steps.length);
    check(paths.has('lost-ack-native-response.json')===(spec.kind==='lost-ack')&&paths.has('fault-before.json')===(unknown||spec.kind==='cancel-held'),'RECOVERY_FAULT_ARTIFACTS');
    if(unknown||spec.kind==='cancel-held'){const before=await read('fault-before.json');check(before.view.tick===cp.tick&&hashJson(before.snapshot)===hashJson(rows[cp.tick]!.snapshot)&&before.view.coffee?.cups.some((c:{cupId:string;ownerKind:string})=>c.cupId==='cup-1'&&c.ownerKind==='arm'),'RECOVERY_HELD_BOUNDARY');}
    await verifyRecoveryCell({spec,report,admission,rows,read,paths,steps,checkpoint:cp,sweep,directory:dir});

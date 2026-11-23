@@ -1,4 +1,9 @@
 // Shared semantic proof for a registered full-cell recovery and its public native replay.
+import {DatabaseSync} from 'node:sqlite';
+import {mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {readBoundedPhysicsFile} from '../simulation3d/physics-evidence';
+import type {CupPhysicalState} from '../beverage/cup-ledger';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import type {ArmProgramSet,ArmPlantState} from '../../../../cell-adapters/src/mock-arm';
@@ -29,6 +34,15 @@ type Contact=NonNullable<ArmProgramSet['contact']>;
 type Spec={kind:string;seed:number};
 const same=(a:unknown,b:unknown)=>a===b||a!==undefined&&b!==undefined&&hashJson(a)===hashJson(b);
 function check(condition:unknown,code:string):asserts condition {if(!condition)throw Error('RECOVERY_'+code);}
+export function verifyRecoverySession(requests:readonly (WorkerStep&{op:string})[],initial:Row['snapshot'],seed:number,stepCount:number){
+ const [create,start]=requests;
+ check(requests.length===stepCount+2&&same(create,{requestId:'world-1',op:'create',targetTick:1,delivered:true,requestDigest:hashJson({sceneRef:'lab-world-scene.json',seed}),responseDigest:hashJson(initial)})&&same(start,{requestId:'world-2',op:'start',targetTick:1,delivered:true,requestDigest:hashJson({}),responseDigest:hashJson({state:'running'})}),'WORKER_SESSION');
+}
+export function verifyRecoveryBirths(rows:readonly Row[],centre:readonly number[]){
+ for(const row of rows)for(const placement of row.command?.propPlacements??[]){
+  if(placement.pose)check(same(placement.pose,{position:centre,quaternionXyzw:[0,0,0,1]}),'BIRTH_COMMAND');
+ }
+}
 export function verifyRecoveryIntent(stored:unknown,row:Row,receipt:Receipt,execution:string){
  const command=structuredClone(row.command) as WorldTickCommand;delete command.faultReceipts;
  const {runId,bootId,sceneDigest}=row.snapshot,requestDigest=hashJson(worldWireCommand(command,false));
@@ -60,11 +74,12 @@ async function registeredExecution(report:RunReport,admission:WorldAdmission,spe
  const birth=worldDocument<{birth:{centerM:[number,number,number]}}>(admission.files,scene.handoffPolicyRef.path).birth.centerM;
  const centre=composePose(invertPose(scene.armCell.arm.baseInMap),{position:birth,quaternionXyzw:[0,0,0,1]}).position,offsets=graspOffsetsFrom(readXArmFixture(root).layout,centre,cfg.program);
  check(same(arm.graspOffsets,offsets)&&same(arm.fixture,{id:scene.id,revision:String(scene.revision)})&&arm.physicsDigest===scene.models.armPhysics.sha256&&arm.waypointsDigest===doc.digest&&same(arm.programs,{...doc.programs,contact,collision:{geometry:worldArmGeometry(scene,admission.files),allowedPairs:[]},beliefGrasp:true,recovery:true}),'PROGRAM_CONFIGURATION');
- return {cfg,contact,centre,programs:doc.programs};
+ return {cfg,contact,centre,birth,programs:doc.programs};
 }
 /** Input is the captured report, authenticated scene bundle and ordered native world records. The private journal and write-before-send intents are checked only in the full campaign. */
 export async function verifyNativeRecoveryCase(report:RunReport,admission:WorldAdmission,rows:readonly Row[],spec:Spec){
- const {scene}=admission,{cfg,contact,centre,programs}=await registeredExecution(report,admission,spec),m=report.manifest,e=report.perceptionEvidence;
+ const {scene}=admission,{cfg,contact,centre,birth,programs}=await registeredExecution(report,admission,spec),m=report.manifest,e=report.perceptionEvidence;
+ verifyRecoveryBirths(rows,birth);
  const unknown=['worker-loss','lost-ack'].includes(spec.kind),success=['nominal','pulse'].includes(spec.kind),pulse=spec.kind==='pulse',h=report.outcome.tick;
  check(e&&h<=12000&&rows.length===h+1&&rows.every((r,t)=>r.snapshot.tick===t&&r.snapshot.runId===m.runId&&r.snapshot.bootId===rows[0]!.snapshot.bootId&&r.snapshot.sceneDigest===scene.sceneDigest&&r.snapshot.worldStep?.workerPid===rows[0]!.snapshot.worldStep?.workerPid)&&rows[0]!.snapshot.worldStep!.workerPid>0,'WORLD_HORIZON');
  const identity={runId:m.runId,bootId:rows[0]!.snapshot.bootId,sceneDigest:scene.sceneDigest,seed:spec.seed,graspMode:cfg.mode,graspProgramDigest:m.perception!.program!.executionDigest,perceptionProfileDigest:cfg.profile.digest,recoveryPolicyDigest:cfg.recovery!.policy.digest};
@@ -99,6 +114,22 @@ export async function verifyNativeRecoveryCase(report:RunReport,admission:WorldA
  return {identity,receipts};
 }
 interface WorkerStep {requestId:string;targetTick:number;delivered:boolean;requestDigest:string;responseDigest?:string}
+// SQLite may create its SHM on a read-only connection. Open only private copies of the recorded database.
+async function readPhysicalCustody(directory:string,runId:string){
+ const temp=await mkdtemp(join(tmpdir(),'recovery-custody-')),file='cup-ledger.sqlite';
+ try{
+  for(const suffix of ['','-wal','-shm']){
+   const name=file+suffix;
+   try{await writeFile(join(temp,name),await readBoundedPhysicsFile(directory,name,32*1024*1024),{mode:0o600,flag:'wx'});}
+   catch(error){if(!suffix||(error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
+  }
+  const db=new DatabaseSync(join(temp,file),{readOnly:true});
+  try{
+   check(db.prepare('SELECT run_id FROM cup_ledger_meta WHERE id=1').get()?.run_id===runId,'PHYSICAL_LEDGER_IDENTITY');
+   return db.prepare('SELECT state FROM cup_projection ORDER BY cup_id LIMIT 3').all().map(r=>JSON.parse(String(r.state)) as CupPhysicalState);
+  }finally{db.close();}
+ }finally{await rm(temp,{recursive:true,force:true});}
+}
 interface PrivateCase {
  spec:Spec;report:RunReport;admission:WorldAdmission;rows:Row[];steps:WorkerStep[];sweep:WorldSweepResult;paths:Set<string>;directory:string;
  checkpoint:{manifest:RunReport['manifest'];coffee:{arm:ArmPlantState};world:{snapshot:Row['snapshot']}};
@@ -117,10 +148,14 @@ export async function verifyRecoveryCell({spec,report,admission,rows,read,paths,
  for(const r of pulse){const file='run/world-pulse-intent-'+r.segmentIndex+'.json',step=steps[r.targetTick-1];check(files.includes(file)&&step?.delivered&&step.requestId===r.requestId&&step.requestDigest===r.requestDigest,'PRIVATE_INTENT_REQUEST');verifyRecoveryIntent(await read(file),rows[r.targetTick]!,r,identity.graspProgramDigest);}
  const scope=report.worldSweep?.scope;
  check(scope?.prefixCovered&&scope.publicCommittedTick===h&&same(scope.identity,{runId:identity.runId,bootId:identity.bootId,sceneDigest:identity.sceneDigest,admissionDigest:admission.digest}),'WORLD_SCOPE');
- const physical=report.coffee?.physicalCustody??[];
+ const physical=report.coffee?.physicalCustody??[],ledger=await readPhysicalCustody(join(directory,'run'),identity.runId);
+ check(ledger.length>=1&&ledger.length<=2&&same(physical,ledger.map(p=>unknown&&p.status==='known'?{...p,parent:null,status:'unknown'}:p)),'PHYSICAL_LEDGER');
+ if(unknown)check(ledger.some(p=>p.cupId==='cup-1'&&p.status==='known'&&p.parent==='arm:'+admission.scene.armCell.arm.armId+'/tcp'),'LAST_KNOWN_PHYSICAL_CUSTODY');
  if(success){
-  check(sweep.complete&&sweep.status==='pass'&&sweep.nativeContacts.status==='pass'&&sweep.nativeContacts.unexpected===0&&same(report.worldSweep?.nativeContacts,sweep.nativeContacts),'SWEEP');
+  check(report.worldSweep?.status===sweep.status&&same(report.worldSweep?.geometry,sweep.geometry)&&same(report.worldSweep?.reasonCodes,sweep.reasonCodes)&&sweep.complete&&sweep.status==='pass'&&sweep.nativeContacts.status==='pass'&&sweep.nativeContacts.unexpected===0&&same(report.worldSweep?.nativeContacts,sweep.nativeContacts),'SWEEP');
   for(const cup of ['cup-1','cup-2']){
+   const miss=e.attempts.find(a=>a.cupId===cup&&a.outcome==='grip_not_established');
+   if(miss){const at=report.manifest.clock.businessEpochMs!+miss.recordedTick!*20,before=report.businessEvents.filter(x=>x.kind==='cup'&&x.id===cup&&Date.parse(x.at)<=at);check(before.length>0&&before.every(x=>x.state.ownerKind==='cell'),'SOURCE_MISS_CUSTODY');}
    const transfers=report.businessEvents.filter(x=>x.kind==='cup'&&x.id===cup&&['CupTransferConfirmed','CupHandedOff'].includes(x.type)),lift=e.attempts.find(a=>a.cupId===cup&&a.outcome==='lifted')!;
    check(same(transfers.map(x=>[x.type,x.state.ownerKind]),[['CupTransferConfirmed','arm'],['CupTransferConfirmed','robot'],['CupHandedOff','customer']])&&Date.parse(transfers[0]!.at)===report.manifest.clock.businessEpochMs!+lift.recordedTick!*20&&physical.some(p=>p.cupId===cup&&p.status==='known'&&p.parent==='table:'+transfers[2]!.state.ownerId),'SOURCE_TRANSFER');
   }
