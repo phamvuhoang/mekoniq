@@ -17,7 +17,7 @@ const nativeCases=[
 
 function verify(names:string[],extra=''){
  const xml=join(dir,'full.xml');
- writeFileSync(xml,'<testsuites><testsuite>'+names.map(name=>`<testcase name="${name}"/>`).join('')+extra+'</testsuite></testsuites>');
+ writeFileSync(xml,`<testsuites><testsuite tests="${names.length+(extra?1:0)}" skipped="0" failures="0" errors="0">`+names.map(name=>`<testcase classname="tests.${name.startsWith('test_the_legacy')?'test_drive_engine':'test_worker_protocol_regression'}" name="${name}"/>`).join('')+extra+'</testsuite></testsuites>');
  return spawnSync('python3',['-B','scripts/check-r4-cld02.py','receipt',xml],{encoding:'utf8',env:{...process.env,PYTHONOPTIMIZE:'1',PYTHONDONTWRITEBYTECODE:'1'}});
 }
 test('an optimized receipt reader accepts all four completed native comparisons',()=>{

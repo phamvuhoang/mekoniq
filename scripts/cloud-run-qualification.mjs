@@ -100,7 +100,7 @@ export function checkCloudRunR4Evidence(read,r4Bytes){
   d.artifactSha256===pin.artifactSha256&&[health.schemaHash,cell.schemaHash,bench.schemaHash].every(h=>h===pin.schemaHash),'IDENTITY_MISMATCH');
  let cloudUrl=false;try{const u=new URL(d.url);cloudUrl=u.protocol==='https:'&&u.hostname.endsWith('.run.app')&&!u.username&&!u.password&&!u.search&&!u.hash&&u.pathname==='/';}catch{/* fails below */}
  fail(cloudUrl&&d.platform==='linux/amd64'&&/@sha256:[a-f0-9]{64}$/.test(d.image)&&typeof d.revision==='string'&&Array.isArray(d.traffic)&&d.traffic.filter(t=>t.percent>0).length===1&&d.traffic.some(t=>t.revisionName===d.revision&&t.percent===100)&&s.service===d.url,'DEPLOYMENT_MISMATCH');
- fail(cell.manifest?.scenario?.id==='MJ-CELL-BV01'&&cell.outcome?.status==='completed'&&cell.outcome?.served==='2'&&cell.manifest?.driveExperimentId==='drive-nominal-v1','CELL_NOT_COMPLETED');
+ fail(cell.manifest?.scenario?.id==='MJ-CELL-BV01'&&cell.outcome?.status==='completed'&&cell.outcome?.served==='2'&&cell.manifest?.drive?.experimentId==='drive-nominal-v1','CELL_NOT_COMPLETED');
  fail(bench.outcome?.status==='completed'&&Number.isInteger(bench.outcome?.tick)&&bench.outcome.tick>0,'BENCH_NOT_COMPLETED');
  const t=s.timing;fail(t&&[t.cellMsPerTick,t.benchMsPerTick,t.realtimeFactor].every(v=>Number.isFinite(v)&&v>0)&&Number.isInteger(t.cellTicks)&&t.cellTicks>0,'TIMING_MISSING');
  fail(s.macComparison&&['servedMac','servedCloud'].every(k=>typeof s.macComparison[k]==='string')&&s.macComparison.servedMac===s.macComparison.servedCloud,'MAC_COMPARISON_MISSING_OR_DIFFERENT');

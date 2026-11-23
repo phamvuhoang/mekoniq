@@ -26,15 +26,27 @@ def check_guest():
 
 
 def check_receipt(path):
-    cases = ET.parse(path).findall(".//testcase")
-    required = {"test_the_legacy_path_gives_the_three_recorded_digests"}
-    required.update(f"test_worker_responses_match_the_pre_fix_wire_bytes[{case}]" for case in ("mobile-no-drive", "mobile-cil", "arm-no-drive"))
-    missing = required - {case.attrib["name"] for case in cases}
+    tree = ET.parse(sys.stdin.buffer if path == "-" else path)
+    suites = tree.findall(".//testsuite")
+    if not suites:
+        sys.exit("empty native suite")
+    completed = set()
+    for suite in suites:
+        cases = suite.findall("testcase")
+        for case in cases:
+            name = case.attrib.get("name", "")
+            for tag in ("skipped", "error", "failure"):
+                if case.find(tag) is not None:
+                    sys.exit(f"native worker suite {tag}: {name}")
+            completed.add((case.get("classname", "").split(".")[-1], name))
+        if any(suite.get(k) != "0" for k in ("errors", "failures", "skipped")) or suite.get("tests") != str(len(cases)):
+            sys.exit("native worker suite totals disagree")
+    required = {("test_drive_engine", "test_the_legacy_path_gives_the_three_recorded_digests")}
+    for case in ("mobile-no-drive", "mobile-cil", "arm-no-drive"):
+        required.add(("test_worker_protocol_regression", f"test_worker_responses_match_the_pre_fix_wire_bytes[{case}]"))
+    missing = required - completed
     if missing:
-        sys.exit("missing native comparison: " + ", ".join(sorted(missing)))
-    for case in cases:
-        if case.find("skipped") is not None:
-            sys.exit(f"native worker suite skipped {case.attrib['name']}")
+        sys.exit("missing native comparison: " + ", ".join(sorted(name for _, name in missing)))
 
 
 if sys.argv[1:] == ["guest"]:

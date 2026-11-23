@@ -1,5 +1,6 @@
 // R4 structural table (contracts §9/§10): the same immutable qualification core as R2b, with its own closed suites. A case is `tested` only when its suites ran green AND the artifact reader accepted the input that case
 // names (a campaign, the study, the container or web record); a missing input is `not_run` with a reason, never a pass. G3 and G-CAL1 are outside the closing condition: G-CAL1 is `not_run` (`r45_not_opened`) without --calibration-selftest.
+import {checkPlaywrightResult,checkPlaywrightProcess} from './r4-playwright.mjs';
 import {statSync} from 'node:fs';
 import {join} from 'node:path';
 import {qualify,checkQualification} from './irsim-qualification.mjs';
@@ -30,7 +31,7 @@ export const SUITES_R4=[
  E('e2e-control','mujoco-control.spec.ts',false),E('e2e-faults','mujoco-faults.spec.ts'),E('e2e-tray','mujoco-tray.spec.ts'),E('e2e-belief','mujoco-belief.spec.ts'),E('e2e-calibration','mujoco-calibration.spec.ts',false),
  // the replay spec serves its own production preview (tests/support/replay-preview.ts): it is not behind a launcher
  {id:'e2e-replay',repo:'lab',kind:'playwright',command:['node_modules/@playwright/test/cli.js','test','tests/e2e/replay-offline.spec.ts','--reporter=json']},
- V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts'])
+ V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts'])
 ];
 const cases=(ids,suites,extra={})=>Object.fromEntries(ids.map(id=>[id,{suites,...extra}]));
 const NOT_OPENED='no --calibration-selftest artifact: G-CAL1 is outside the closing condition (contracts §10) and its recorder is not written; the suites still run and their results are in the record';
@@ -60,11 +61,12 @@ export function tableR4(){
  const used=new Set(Object.values(CASES_R4).flatMap(c=>c.suites??[]));
  return {documentType:'sim-extension-qualification',campaign:false,
   // the exact-file check reads a Vitest JSON; a Playwright result has its own counts (the core derives them from stats), and its one spec is named in the suite's command
-  checkSuiteResult:(suite,bytes)=>suite.kind==='vitest'?checkR2bExecutedFiles(suite,bytes):[],cases:CASES_R4,gates:GATES_R4,suites:SUITES_R4.filter(s=>used.has(s.id)),inputs(m){const reasons=[];
+  checkSuiteResult:(suite,bytes)=>suite.kind==='vitest'?checkR2bExecutedFiles(suite,bytes):checkPlaywrightResult(suite,bytes),cases:CASES_R4,gates:GATES_R4,suites:SUITES_R4.filter(s=>used.has(s.id)),inputs(m,read){const reasons=[];
   if(m.accepted!==false||m.acceptedBy!==null||m.acceptedAt!==null)reasons.push('RECORD_ACCEPTED');
   if(!equalKeys(m.cases,CASES_R4))reasons.push('CASE_TABLE_MISMATCH');
   if(!equalKeys(m.gates,GATES_R4))reasons.push('GATE_TABLE_MISMATCH');
   const actual=m.suites??[];if(actual.length!==used.size||new Set(actual.map(s=>s.id)).size!==actual.length||actual.some(s=>!used.has(s.id)))reasons.push('SUITE_TABLE_MISMATCH');
+  for(const su of actual){const required=SUITES_R4.find(s=>s.id===su.id);if(required?.kind==='playwright')reasons.push(...checkPlaywrightProcess(required,su,read));}
   if(!/^[a-f0-9]{40}$/.test(m.lab?.commit??''))reasons.push('LAB_COMMIT_REQUIRED');
   if(!equalKeys(m.artifactDispositions,CASES_R4)||Object.values(m.artifactDispositions??{}).some(x=>!['tested','not_run','failed','blocked_external','blocked'].includes(x?.status)||!Array.isArray(x?.issues)))reasons.push('ARTIFACT_DISPOSITION_SHAPE');
   return {input:{artifactDispositions:m.artifactDispositions},reasons};},adjust(q,input){

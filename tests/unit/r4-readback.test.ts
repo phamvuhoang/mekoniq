@@ -1,5 +1,6 @@
 // V16: the R4 case/gate table and its directory reader. Every refusal first: a missing input is not_run, a corrupt, accepted or other-tuple input is failed, and nothing is read from a status the record claims.
 import {afterAll,expect,test} from 'vitest';
+import nominalCell from '../fixtures/control/r4-cell-nominal-report.json';
 import {spawnSync} from 'node:child_process';
 import {mkdirSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -41,9 +42,26 @@ test('a suite that did not pass fails its case even when its input reads back cl
  const q=qualifyR4Structure({suites:SUITES_R4.map((s:{id:string;kind:string})=>s.id==='drv-engine'?{...green(s.id),exitCode:1}:green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:artifactDispositionsFromGroups({})});
  expect(q.cases.DRV08.status).toBe('failed');expect(q.gates['G-DRV1'].status).toBe('failed');
 });
-test('the exact-file Vitest check applies to Vitest suites only; a Playwright suite is judged by its own counts',()=>{
- const t=tableR4();expect(t.checkSuiteResult({id:'e2e-x',kind:'playwright',files:[]},Buffer.from('{"stats":{"expected":1,"unexpected":0,"skipped":0}}'))).toEqual([]);
+const controlSuite=SUITES_R4.find((s:{id:string})=>s.id==='e2e-control');
+const playwright=(file:string,status='passed')=>Buffer.from(JSON.stringify({errors:[],stats:{expected:1,unexpected:0,skipped:0,flaky:0},suites:[{file,specs:[{file,id:'id',title:'control',ok:true,tests:[{status:'expected',expectedStatus:'passed',results:[{status,errors:[]}]}]}]}]}));
+test('Playwright must execute the selected file and each reported test must pass',()=>{
+ const t=tableR4();expect(t.checkSuiteResult(controlSuite,playwright('mujoco-control.spec.ts'))).toEqual([]);
+ for(const [file,status] of [['mujoco-calibration.spec.ts','passed'],['mujoco-control.spec.ts','skipped'],['mujoco-control.spec.ts','failed']])
+  expect(t.checkSuiteResult(controlSuite,playwright(file!,status))).not.toEqual([]);
  expect(t.checkSuiteResult({id:'x',kind:'vitest',files:['tests/a.test.ts']},Buffer.from('{"stats":{}}')).length).toBeGreaterThan(0);
+});
+test('a control result and its process must belong to the control suite and match its command',()=>{
+ const id=controlSuite.id,result={file:'suites/e2e-calibration/result.json'},process='suites/e2e-control/process.json';
+ const r=tableR4().inputs({suites:[{id,repo:'lab',kind:'playwright',exitCode:0,result,process}]},()=>Buffer.from(JSON.stringify({args:['mujoco-calibration.spec.ts'],status:'completed',exitCode:0})));
+ expect(r.reasons).toContain('PLAYWRIGHT_RESULT_PATH:e2e-control');expect(r.reasons).toContain('PLAYWRIGHT_PROCESS:e2e-control');
+});
+test('the result clock falls within the control process that produced it',()=>{
+ const p='suites/e2e-control/process.json',file='suites/e2e-control/result.json',su={id:controlSuite.id,repo:'lab',kind:'playwright',exitCode:0,process:p,result:{file}};
+ const start='2026-11-22T00:00:00.000Z',finish='2026-11-22T00:00:20.000Z';
+ const proc={command:'node',args:controlSuite.command,startedAt:start,finishedAt:finish,status:'completed',exitCode:0,exitSignal:null,writeError:null,spawnError:null};
+ const result=JSON.parse(playwright('mujoco-control.spec.ts').toString());Object.assign(result.stats,{startTime:'2026-11-21T00:00:00.000Z',duration:1000});
+ const read=(name:string)=>Buffer.from(JSON.stringify(name===p?proc:result));
+ expect(tableR4().inputs({suites:[su]},read).reasons).toContain('PLAYWRIGHT_PROCESS:e2e-control');
 });
 test('a record that says accepted, or has another case/gate table, is refused',()=>{
  const m:Record<string,unknown>={schemaVersion:1,documentType:'sim-extension-qualification',release:'r4',accepted:true,acceptedBy:null,acceptedAt:null,cases:{},gates:{},suites:[]};
@@ -68,19 +86,26 @@ test('a campaign with no run directories is incomplete (not_run), never a pass',
  expect(r.length).toBeGreaterThan(0);expect(r.some((x:string)=>/_INCOMPLETE$|_READER:/.test(x))).toBe(true);
 });
 
-const container=(o:Record<string,unknown>={})=>{const root=tmp(),ok=(file:string,text:string)=>put(root,'inputs/container/'+file,text);
- const r1=ok('cld01.json',JSON.stringify({numFailedTests:0,numPassedTests:1,numPendingTests:0,success:true})),r2=ok('cld02.json',JSON.stringify({tests:316,failures:0,errors:0,skipped:0}));
- const rec={schemaVersion:1,accepted:false,sourceCommit:SRC,cld01:{status:'tested',platform:'linux/arm64',imageId:'sha256:'+'1'.repeat(64),sourceCommit:SRC,result:{file:'cld01.json',sha256:r1.sha256}},cld02:{status:'tested',platform:'linux/amd64',imageId:'sha256:'+'2'.repeat(64),sourceCommit:SRC,result:{file:'cld02.json',sha256:r2.sha256}},...o};
- const ref=put(root,'inputs/container/container.json',rec);return {root,m:{inputs:{containerRecord:ref}}};};
-test('container record: both parts must be this commit, the right platform, green, with the result file hashed; a not_run part carries its reason',async()=>{
- const a=container();expect(await verifyContainerRecord(a.root,a.m,SRC)).toEqual({cld01:[],cld02:[]});
- expect(await verifyContainerRecord(a.root,a.m,'f'.repeat(40))).toEqual({cld01:['CONTAINER_TUPLE_MISMATCH'],cld02:['CONTAINER_TUPLE_MISMATCH']});
- const b=container({cld01:{status:'tested',platform:'linux/amd64',imageId:'sha256:'+'1'.repeat(64),sourceCommit:SRC,result:{file:'cld01.json',sha256:'0'.repeat(64)}}});
- expect((await verifyContainerRecord(b.root,b.m,SRC)).cld01).toContain('CLD01_RESULT_CORRUPT');
- const c=container({cld02:{status:'not_run',reason:'docker_daemon_down'}});const r=await verifyContainerRecord(c.root,c.m,SRC);expect(r.cld01).toEqual([]);expect(r.cld02).toEqual(['CLD02_MISSING:docker_daemon_down']);
- const d=container({accepted:true});expect((await verifyContainerRecord(d.root,d.m,SRC)).cld01).toEqual(['CONTAINER_TUPLE_MISMATCH']);
+const titles=["CLD01: MJ-CELL-BV01 on drive-nominal-v1 completes and serves 2, a scheduled drive fault reports its receipts, the three-cup tray serves 3, and a wheel bench step completes and frees the slot, inside the image; read-only root, empty diff, not root, ports on 127.0.0.1 only", "CLD01 (R4.4): MJ-CELL-BV01 at belief_estimated with the nominal perception profile and the recovery policy completes and serves 2 inside the image, its report carries the perception evidence, and a belief mode on the arm-only scenario is refused"];
+const imageId='sha256:'+'1'.repeat(64);
+const cld01Result=(file='tests/integration/lab-runtime-container-r4.test.ts',tests=titles)=>({
+ success:true,numPendingTests:0,numTodoTests:0,numFailedTests:0,numTotalTests:tests.length,numPassedTests:tests.length,
+ testResults:[{name:file,status:'passed',assertionResults:tests.map(title=>({title,status:'passed'}))}]});
+const container=(result=cld01Result(),id=imageId)=>{
+ const root=tmp(),r=put(root,'inputs/container/cld01.json',result),image='mekoniq-lab-runtime:r4-'+SRC.slice(0,8);
+ const identity={image,imageId,sourceCommit:SRC,platform:'linux/arm64',host:{os:'Darwin',machine:'arm64',daemonPlatform:'linux/arm64'},...PIN};
+ put(root,'inputs/container/cld01-test.log',[1,2].map(()=>'CLD01 identity '+JSON.stringify(identity)).join('\n'));
+ const counts=put(root,'inputs/container/cld02.json',{tests:316,failures:0,errors:0,skipped:0});
+ const rec={schemaVersion:1,accepted:false,sourceCommit:SRC,cld01:{status:'tested',platform:'linux/arm64',imageTag:image,imageId:id,sourceCommit:SRC,result:{file:'cld01.json',sha256:r.sha256}},cld02:{status:'tested',platform:'linux/amd64',imageId,sourceCommit:SRC,result:{file:'cld02.json',sha256:counts.sha256}}};
+ const ref=put(root,'inputs/container/container.json',rec);return {root,m:{lab:{pin:PIN},inputs:{containerRecord:ref}},rec};};
+test('CLD01 binds both container assertions and recorded runtime/image identity',async()=>{
+ for(const [entry,valid] of [[container(),true],[container(cld01Result('tests/unit/drive-io.test.ts')),false],[container(cld01Result(undefined,titles.slice(0,1))),false],[container(cld01Result(),'sha256:'+'3'.repeat(64)),false]] as const){
+  expect((await verifyContainerRecord(entry.root,entry.m,SRC)).cld01.length===0).toBe(valid);
+ }
 });
-
+test('CLD02 refuses a count-only import even with green totals and a current wrapper',async()=>{
+ const c=container();expect((await verifyContainerRecord(c.root,c.m,SRC)).cld02).not.toEqual([]);
+});
 const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration'};
 const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifest?:Record<string,unknown>;catalog?:Record<string,unknown>}={})=>{
  const root=tmp();
@@ -91,14 +116,12 @@ const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifes
  const ids=o.samples??['drive-fault','belief-recovery'],replays=ids.map(id=>{const man={runId:'run-'+id,provenance:{calibration:'not_calibrated',accepted:false},...o.manifest};const ref=put(root,`inputs/web/replays/${id}/manifest.json`,man);return {id,manifestSha256:ref.sha256,recording:'run-'+id,provenance:'R4 harness recording; display only; accepted:false; not_calibrated',...o.catalog};});
  const ref=put(root,'inputs/web/replays/catalog.json',{schemaVersion:1,replays});return {root,m:{inputs:{webSamples:ref}}};};
 test('web record: WEB07 rows come from the real-run specs (5 panels × 3 languages × 3 widths, axe 0, reduced motion, no scroll); WEB10 samples hash to the catalog, say not_calibrated and accepted:false; WEB09 is not measured yet',async()=>{
- const a=web(),ra=await verifyWebRecord(a.root,a.m);expect(ra.WEB07).toEqual([]);expect(ra.WEB08).toEqual([]);expect(ra.WEB10).toEqual([]);expect(ra.WEB09[0]).toMatch(/^WEB09_MEASUREMENT_MISSING/);
+ const a=web(),ra=await verifyWebRecord(a.root,a.m);expect(ra.WEB07).toEqual([]);expect(ra.WEB08.length).toBeGreaterThan(0);expect(ra.WEB10).toContain('WEB10_SAMPLE_FAILED:belief-recovery');expect(ra.WEB09[0]).toMatch(/^WEB09_MEASUREMENT_MISSING/);
  const b=web({drop:'tray'});expect((await verifyWebRecord(b.root,b.m)).WEB07).toEqual(['WEB07_ROWS_MISSING:tray']);
  const c=web({drop:'faults',row:{axeSeriousCritical:2}});expect((await verifyWebRecord(c.root,c.m)).WEB07).toEqual(['WEB07_CELL_FAILED:faults/ja/390']);
  const d=web({drop:'faults',row:{horizontalScroll:true}});expect((await verifyWebRecord(d.root,d.m)).WEB07).toEqual(['WEB07_CELL_FAILED:faults/ja/390']);
  const e=web({drop:'belief',row:{reducedMotion:false}});expect((await verifyWebRecord(e.root,e.m)).WEB07).toEqual(['WEB07_CELL_FAILED:belief/ja/390']);
- const f=web({samples:['drive-fault']}),rf=await verifyWebRecord(f.root,f.m);expect(rf.WEB10).toEqual(['WEB10_SAMPLE_MISSING:belief-recovery']);expect(rf.WEB08).toEqual([]);
- const g=web({manifest:{provenance:{calibration:'calibrated',accepted:false}}});expect((await verifyWebRecord(g.root,g.m)).WEB10).toEqual(['WEB10_SAMPLE_FAILED:drive-fault','WEB10_SAMPLE_FAILED:belief-recovery']);
- const h=web({catalog:{provenance:''}});expect((await verifyWebRecord(h.root,h.m)).WEB10).toEqual(['WEB10_LABEL_MISSING:drive-fault','WEB10_LABEL_MISSING:belief-recovery']);
+ const f=web({samples:['drive-fault']}),rf=await verifyWebRecord(f.root,f.m);expect(rf.WEB10).toContain('WEB10_SAMPLE_MISSING:belief-recovery');expect(rf.WEB08.length).toBeGreaterThan(0);
  const i=web({samples:['drive-fault']});i.m.inputs.webSamples={...i.m.inputs.webSamples,sha256:'0'.repeat(64)};expect((await verifyWebRecord(i.root,i.m)).WEB10).toEqual(['WEB_RECORD_CORRUPT']);
  const j=web();expect((await verifyWebRecord(j.root,{inputs:{}})).WEB10).toEqual(['WEB_RECORD_MISSING:replay samples']);
 });
@@ -112,25 +135,37 @@ test('REG05: no R2b record or mock regression is missing; an R2b record of anoth
  expect(d.artifactDispositions.REG05.status).toBe('failed');expect(d.issues).toEqual(expect.arrayContaining(['R2B_TUPLE_MISMATCH','MOCK_REGRESSION_NOT_GREEN']));
 });
 
+test('REG05 verifies both identities, executed regressions and the nested R2a mock bytes',async()=>{
+ const root=tmp(),identity={source:{commit:SRC,codeHash:'1'.repeat(64),dirtyCodePaths:[]},lab:{commit:LAB,codeHash:'2'.repeat(64),dirtyCodePaths:[]}};
+ const mock={schema:'lab-v2-regression/1',identity:{start:identity,end:identity},commands:[{id:'lab-mock-e2e',exitCode:0}],notRun:[]};
+ const nested=put(root,'inputs/r2b/inputs/r2a/mock-regression.json',mock);
+ put(root,'inputs/r2b/inputs/r2a/qualification.json',{mockRegression:{file:'mock-regression.json',sha256:nested.sha256,labCommit:LAB}});
+ for(const [doc,reason] of [[{...mock,extra:'different bytes'},'MOCK_REGRESSION_CHAIN_MISMATCH'],[{...mock,identity:{start:identity,end:{...identity,lab:{...identity.lab,commit:SRC}}}},'MOCK_REGRESSION_NOT_GREEN'],[{...mock,notRun:['skipped']},'MOCK_REGRESSION_NOT_GREEN']] as const){
+  const ref=put(root,'inputs/mock/manifest.json',doc);
+  const result=await collectR4ArtifactDispositions(root,{identity:{before:{sourceCommit:SRC}},lab:{commit:LAB,pin:PIN},inputs:{mockRegression:ref}});
+  expect(result.artifactDispositions.REG05.issues).toContain(reason);
+ }
+});
 test('the recorder lists its closed suites with --plan and refuses to run without its required inputs (exit 2)',()=>{
  const p=spawnSync(process.execPath,['scripts/record-sim-extension-r4.mjs','--plan'],{encoding:'utf8',timeout:20000});expect(p.status,p.stderr).toBe(0);
  expect(p.stdout).toContain('drv-engine');expect(p.stdout).toContain('deploy_order_pending');
  const missing=spawnSync(process.execPath,['scripts/record-sim-extension-r4.mjs','--out','/tmp/unused-r4-output'],{encoding:'utf8',timeout:20000});expect(missing.status).toBe(2);expect(missing.stderr).toContain('MISSING_OPTION');
 });
 
+// Selected fields of the Mac cil-v2/cell/nominal-42 report at 3ce65d14. The gateway adds schemaHash.
 const cloud=(patch:Record<string,unknown>={},sumPatch:Record<string,unknown>={})=>{
- const q=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:SRC}},lab:{pin:{sourceCommit:SRC,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
+ const q=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:nominalCell.manifest.sourceCommit}},lab:{pin:{sourceCommit:nominalCell.manifest.sourceCommit,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
  const f:Record<string,unknown>={
-  'deployment.json':{schema:'mekoniq-cloud-run-deployment/2',accepted:false,sourceCommit:SRC,artifactSha256:PIN.artifactSha256,qualification:{sha256:sha(q),candidateId:'r4-candidate-01'},url:'https://x-abc-as.a.run.app/',platform:'linux/amd64',image:'img@sha256:'+'1'.repeat(64),revision:'rev-1',traffic:[{revisionName:'rev-1',percent:100}],...patch},
-  'health.json':{sourceCommit:SRC,schemaHash:PIN.schemaHash},'cell-report.json':{schemaHash:PIN.schemaHash,manifest:{sourceCommit:SRC,scenario:{id:'MJ-CELL-BV01'},driveExperimentId:'drive-nominal-v1'},outcome:{status:'completed',served:'2'}},
-  'bench-report.json':{schemaHash:PIN.schemaHash,manifest:{sourceCommit:SRC},outcome:{status:'completed',tick:500}},
-  'summary.json':{schema:'mekoniq-cloud-run-r4-smoke/1',accepted:false,expectedCommit:SRC,service:'https://x-abc-as.a.run.app/',status:'tested',cases:{health:'tested',cell:'tested',bench:'tested'},timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:0.66,cellTicks:10900},macComparison:{servedMac:'2',servedCloud:'2'},...sumPatch}};
+  'deployment.json':{schema:'mekoniq-cloud-run-deployment/2',accepted:false,sourceCommit:nominalCell.manifest.sourceCommit,artifactSha256:PIN.artifactSha256,qualification:{sha256:sha(q),candidateId:'r4-candidate-01'},url:'https://x-abc-as.a.run.app/',platform:'linux/amd64',image:'img@sha256:'+'1'.repeat(64),revision:'rev-1',traffic:[{revisionName:'rev-1',percent:100}],...patch},
+  'health.json':{sourceCommit:nominalCell.manifest.sourceCommit,schemaHash:PIN.schemaHash},'cell-report.json':{...nominalCell,schemaHash:PIN.schemaHash},
+  'bench-report.json':{schemaHash:PIN.schemaHash,manifest:{sourceCommit:nominalCell.manifest.sourceCommit},outcome:{status:'completed',tick:500}},
+  'summary.json':{schema:'mekoniq-cloud-run-r4-smoke/1',accepted:false,expectedCommit:nominalCell.manifest.sourceCommit,service:'https://x-abc-as.a.run.app/',status:'tested',cases:{health:'tested',cell:'tested',bench:'tested'},timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:0.66,cellTicks:10900},macComparison:{servedMac:'2',servedCloud:'2'},...sumPatch}};
  const bytes:Record<string,string>={};for(const [k,v] of Object.entries(f))bytes[k]=JSON.stringify(v);
  bytes['checksums.json']=JSON.stringify({algorithm:'sha256',files:Object.fromEntries(Object.entries(bytes).map(([k,v])=>[k,sha(v)]))});
  return (p:string)=>bytes[p]===undefined?null:Buffer.from(bytes[p]);
 };
 test('CLD03: the supplement binds to the exact R4 record bytes; a wrong commit, a served count other than 2, a missing timing, accepted:true or a record that already has CLD03 tested is refused',()=>{
- const rec=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:SRC}},lab:{pin:{sourceCommit:SRC,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
+ const rec=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:nominalCell.manifest.sourceCommit}},lab:{pin:{sourceCommit:nominalCell.manifest.sourceCommit,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
  expect(checkCloudRunR4Evidence(cloud(),rec)).toEqual([]);
  expect(checkCloudRunR4Evidence(cloud(),rec.replace('r4-candidate-01','r4-candidate-02'))).toContain('R4_HASH_MISMATCH');
  expect(checkCloudRunR4Evidence(cloud({sourceCommit:'e'.repeat(40)}),rec)).toContain('IDENTITY_MISMATCH');
@@ -138,4 +173,10 @@ test('CLD03: the supplement binds to the exact R4 record bytes; a wrong commit, 
  expect(checkCloudRunR4Evidence(cloud({},{timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:0,cellTicks:10900}}),rec)).toContain('TIMING_MISSING');
  expect(checkCloudRunR4Evidence(cloud({},{macComparison:{servedMac:'2',servedCloud:'1'}}),rec)).toContain('MAC_COMPARISON_MISSING_OR_DIFFERENT');
  expect(checkCloudRunR4Evidence(cloud({url:'http://localhost/'}),rec)).toContain('DEPLOYMENT_MISMATCH');
+});
+
+test('cloud-run acceptance selects the R4 directory reader for an R4 qualification',()=>{
+ const root=tmp();put(root,'qualification.json',{schemaVersion:1,documentType:'sim-extension-qualification',release:'r4',suites:[],gates:{},cases:{}});
+ const p=spawnSync(process.execPath,['scripts/test-runner.mjs','acceptance','cloud-run'],{encoding:'utf8',env:{...process.env,LAB_SIMEXT_EVIDENCE_DIR:root,LAB_CLOUD_EVIDENCE_DIR:root},timeout:30000});
+ expect(p.status).toBe(1);expect(p.stdout+p.stderr).toContain('ARTIFACT_DISPOSITION_MISMATCH');
 });

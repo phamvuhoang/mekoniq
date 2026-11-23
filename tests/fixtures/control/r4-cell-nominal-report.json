@@ -1,0 +1,39 @@
+{
+  "manifest": {
+    "runId": "e6c3ca52-8715-401a-bbae-1893efc008ae",
+    "sourceCommit": "3ce65d145be10d2e7b5a9b69a47e6fa1c2a98564",
+    "scenario": {
+      "id": "MJ-CELL-BV01",
+      "revision": 1,
+      "hash": "d3042f3dac91964e803acb91cbda2ab50620231ffc146dfaac0aab99c02b1b02"
+    },
+    "backendSetId": "engineering-mujoco-cell-v1",
+    "drive": {
+      "driveModelDigest": "ea2c80f32f4adf2d1536a5244e09d31f893e54a663b71bdb44983b4998448e69",
+      "controlProfileDigest": "ab147ea004cbdea8bd29b0bb0c674c03199e2b5fc4db32e91021779f576981b7",
+      "controllers": [
+        {
+          "id": "joint-trajectory-follower-v1",
+          "revision": 1
+        },
+        {
+          "id": "diff-drive-base-v1",
+          "revision": 2
+        },
+        {
+          "id": "exhausted-route-correction",
+          "revision": 1
+        }
+      ],
+      "testLevel": "controller_in_the_loop",
+      "experimentId": "drive-nominal-v1",
+      "hostArch": "arm64"
+    }
+  },
+  "outcome": {
+    "status": "completed",
+    "served": "2",
+    "tick": 10825,
+    "simTimeNs": "216500000000"
+  }
+}

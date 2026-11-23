@@ -14,7 +14,7 @@ Campaign R4 (từ worktree sạch tại đúng commit; symlink `node_modules`, `
 
 ```sh
 for c in cil-v2 bench-v2 fault-v1 tray-v1 perception-gap-v1; do node scripts/lab-mujoco.mjs run --campaign $c --out $OUT/$c; node scripts/lab-mujoco.mjs verify --input $OUT/$c; done
-node scripts/record-r4-container.mjs --out $OUT/container            # CLD01 (arm64 image + test), CLD02 not_run nếu không có --cld02-result
+node scripts/record-r4-container.mjs --out $OUT/container            # CLD01 (arm64 image + test), CLD02 not_run nếu không có --cld02-dir <thư_mục_native_r4-cld02>
 node scripts/record-sim-extension-r4.mjs --r2b-record $OUT/r2b --cil-campaign $OUT/cil-v2 --fault-campaign $OUT/fault-v1 --tray-campaign $OUT/tray-v1 \
   --perception-study $OUT/perception-gap-v1 --bench-record $OUT/bench-v2 --container-record $OUT/container --mock-regression $OUT/mock --out $OUT/r4-candidate-NN
 LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extension
@@ -27,9 +27,9 @@ LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extensi
 `scripts/r4-readback.mjs` đọc lại cả thư mục, không tin trạng thái nào trong `qualification.json`:
 
 - Mỗi campaign được copy cạnh record, băm, rồi chạy lại verifier đã ghi nó (`verifyCilCampaign`, `verifyBenchCampaign`, `verifyFaultCampaign`, `verifyTrayCampaign`, `verifyPerceptionStudy`); sai id, sai commit, `accepted:true` hoặc thiếu run → case `failed`/`not_run`, không bao giờ `tested`.
-- REG05 cần record R2b cùng tuple (đọc lại bằng reader R2b) và manifest hồi quy Lab của cùng commit.
-- CLD01/CLD02 đọc từ `container.json` (băm file kết quả vitest; platform đúng; commit đúng).
-- WEB07 đọc các dòng `web07-<panel>.json` mà chính các spec e2e chạy trên run thật ghi ra (5 panel × VI/JA/EN × 390/1024/1440, axe serious/critical = 0, reduced motion, không cuộn ngang). WEB08/WEB10 đọc gói replay mẫu của Lab chép cạnh record (hash manifest = catalog, `not_calibrated`, `accepted:false`, nhãn).
+- REG05 cần record R2b cùng tuple (đọc lại bằng reader R2b) và manifest hồi quy Lab trùng SHA-256 với bản R2a trong chuỗi, đúng identity đầu/cuối và không bỏ qua ca nào.
+- CLD01 đọc hai ca trong suite container và đối chiếu log identity với image, commit và runtime. CLD02 nhận toàn bộ thư mục native từ `scripts/r4-cld02.sh` qua `--cld02-dir`: kiểm SHA256SUMS, host/guest, image, runtime, exit code và các ca worker trong JUnit.
+- WEB07 đọc các dòng `web07-<panel>.json` mà chính các spec e2e chạy trên run thật ghi ra (5 panel × VI/JA/EN × 390/1024/1440, axe serious/critical = 0, reduced motion, không cuộn ngang). WEB08/WEB10 đọc gói replay mẫu của Lab chép cạnh record bằng consumer Source (hash/coverage mọi asset, kể cả alias `.bin`). Receipt của test offline phải khớp manifest, run và tick có lỗi drive hoặc bước phục hồi trong cell.
 - Thiếu đầu vào → `not_run` kèm lý do; hỏng/khác tuple/đã `accepted` → `failed`.
 
 ## Không ghi ở đây
