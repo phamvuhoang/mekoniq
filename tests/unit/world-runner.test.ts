@@ -19,9 +19,9 @@ import {openWorldRecorder,prepareWorldAdmission,readWorldEvidence} from '../../p
 import {readWorldFixture} from '../../packages/lab-runtime/src/v2/simulation3d/world-scene';
 import {tick as physicsTick} from '../support/physics';
 import {act,cleanupRuns,runDirectory} from '../support/lab-v2';
-vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,readFile:vi.fn(actual.readFile),open:vi.fn(actual.open),rename:vi.fn(actual.rename)};});
+vi.mock('node:fs/promises',async importOriginal=>{const actual=await importOriginal<typeof import('node:fs/promises')>();return {...actual,readFile:vi.fn(actual.readFile),writeFile:vi.fn(actual.writeFile),open:vi.fn(actual.open),rename:vi.fn(actual.rename)};});
 const recorders:{finish():Promise<void>}[]=[];
-afterEach(async()=>{vi.restoreAllMocks();await Promise.all(recorders.splice(0).map(r=>r.finish().catch(()=>{})));const actual=await vi.importActual<typeof fs>('node:fs/promises');vi.mocked(fs.readFile).mockImplementation(actual.readFile);vi.mocked(fs.open).mockImplementation(actual.open);vi.mocked(fs.rename).mockImplementation(actual.rename);await cleanupRuns();});
+afterEach(async()=>{vi.restoreAllMocks();await Promise.all(recorders.splice(0).map(r=>r.finish().catch(()=>{})));const actual=await vi.importActual<typeof fs>('node:fs/promises');vi.mocked(fs.readFile).mockImplementation(actual.readFile);vi.mocked(fs.writeFile).mockImplementation(actual.writeFile);vi.mocked(fs.open).mockImplementation(actual.open);vi.mocked(fs.rename).mockImplementation(actual.rename);await cleanupRuns();});
 const fx=resolve('robotics/simulation-mujoco/fixtures/coffee-delivery-world-v1');
 async function setup(failure?:'append'|'commit'|'source-write'|'direct-source-write'|'lost'|'coffee-commit'|'flush-chunk'|'flush-cleanup'|'actual',reporting=false){
  const project=JSON.parse(await readFile(fx+'/project.json','utf8'));
@@ -257,5 +257,17 @@ test.each(['file','directory'])('a measured command %s sync failure prevents the
   await run.start();let injected=false;const actual=await vi.importActual<typeof fs>('node:fs/promises');
   await traceSyncs(h,undefined,async file=>{if(injected||file!==(boundary==='file'?tmp:h.directory))return;const cp=JSON.parse(await actual.readFile(boundary==='file'?tmp:path,'utf8'));if(cp.world.pending?.stage==='sent'){injected=true;throw Error('PULSE_SYNC_FAILED');}});
   await expect(act(run,'step',{ticks:1})).rejects.toThrow('PULSE_SYNC_FAILED');expect(injected).toBe(true);await expect(act(run,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');expect(h.calls.filter(c=>c.startsWith('step:'))).toEqual([]);
+ }finally{await run.close();}
+});
+
+test.each(['create','rename'])('a measured command checkpoint %s failure prevents the world send and its retry',async boundary=>{
+ const h=await setup();h.hooks.prepare=measuredTick;const run=await h.open(),tmp=join(h.directory,'run.json.tmp');
+ try{
+  await run.start();let injected=false;const actual=await vi.importActual<typeof fs>('node:fs/promises');
+  const failSent=(file:unknown,bytes:unknown)=>{if(!injected&&file===tmp&&typeof bytes==='string'&&JSON.parse(bytes).world?.pending?.stage==='sent'){injected=true;throw Error('PULSE_CHECKPOINT_FAILED');}};
+  if(boundary==='create')vi.mocked(fs.writeFile).mockImplementation(async(file,bytes,options)=>{failSent(file,bytes);return actual.writeFile(file,bytes,options);});
+  else vi.mocked(fs.rename).mockImplementation(async(from,to)=>{if(from===tmp)failSent(from,await actual.readFile(tmp,'utf8'));return actual.rename(from,to);});
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow('PULSE_CHECKPOINT_FAILED');expect(injected).toBe(true);
+  await expect(act(run,'step',{ticks:1})).rejects.toThrow('WORLD_TERMINAL');expect(h.calls.filter(c=>c.startsWith('step:'))).toEqual([]);
  }finally{await run.close();}
 });
