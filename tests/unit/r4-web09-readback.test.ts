@@ -5,6 +5,7 @@ import {mkdirSync,mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import type {TuningResultV1} from '../../packages/contracts/generated/navigation2d';
 // @ts-expect-error plain ESM script without types
 import {verifyWeb09Record} from '../../scripts/r4-web09-readback.mjs';
 // @ts-expect-error plain ESM script without types
@@ -27,10 +28,26 @@ const NPASS=2500;
 const pass=(start:number,count0:number,n=NPASS,step=STEP,o:Record<string,unknown>={}):R[]=>Array.from({length:n},(_,i)=>({atMs:start+i*step,durationMs:1.5,count:count0+i,drawCalls:34,worldTick:Math.round(FIRST+(HORIZON-FIRST)*i/(n-1)),belief:true,...o}));
 const TWO_PASSES=(o:Record<string,unknown>={})=>({seeks:[{atMs:BELIEF_START+20,tick:FIRST},{atMs:BELIEF_START+42000,tick:FIRST}],renders:[...pass(BELIEF_START+30,100,NPASS,STEP,o),...pass(BELIEF_START+42050,100+NPASS,NPASS,STEP,o)]});
 const trace=(n=5010,over:Record<string,unknown>={})=>({runId:'run-bench',manifestSha256:'9'.repeat(64),traces:['amr-1/wheel-left','amr-1/wheel-right'].map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:n},()=>({target:1,actual:1,feedback:null,torqueNm:0}))})),issues:[],...over});
-const benchReport=(over:Record<string,unknown>={},man:Record<string,unknown>={})=>({
- manifest:{runId:'run-bench',sourceCommit:SRC,backendSetId:'engineering-mujoco-bench-v1',backends:[{id:'mujoco_3d',version:'3.17.0',model:'mujoco_drive_bench',dynamics:true}],mode:'simulation',access:'simulated',scenario:{id:'MJ-BENCH-WHEEL'},...man},
- outcome:{status:'completed'},tuning:{runId:'run-bench',status:'completed',unstable:false,accepted:false,axisIds:['amr-1/wheel-left','amr-1/wheel-right'],engine:{id:'mujoco_3d',version:'3.17.0',hostArch:'arm64'},trace:{chunks:11,sha256:'9'.repeat(64),samples:5000}},...over
-});
+function benchReport(over:Record<string,unknown>={},man:Record<string,unknown>={}){
+ const signal={kind:'step',amplitude:2,atTick:10} as const;
+ const controlProfile={id:'serve-control-v2',revision:3,digest:'a'.repeat(64)};
+ const tuning={
+  schemaVersion:1,documentType:'tuning-result',runId:'run-bench',status:'completed',unstable:null,fault:null,collision:null,accepted:false,
+  axisIds:['amr-1/wheel-left','amr-1/wheel-right'],signal,seed:7,engine:{id:'mujoco_3d',version:'3.17.0',hostArch:'arm64'},
+  plant:{plantModelDigest:'b'.repeat(64),driveModelDigest:'c'.repeat(64),controlProfileDigest:controlProfile.digest,load:'empty'},
+  effectiveInertia:{valueKgM2:0.0874395,basis:'wheel_straight_line',provenance:'assumed'},
+  policy:{finalWindowS:0.5,settleBand:0.02,holdWindowS:0.25},
+  metrics:{settlingTimeS:{available:false,value:null,unit:'s',reason:'NOT_SETTLED'}},
+  trace:{chunks:11,sha256:'9'.repeat(64),samples:5000},
+  wheelMeasurement:{quantity:'wheel_angular_speed',inertiaAssumption:'straight_line_no_slip',comparison:{tick:500,bodyForwardMps:0.17,wheelSurfaceMps:0.176}}
+ } satisfies TuningResultV1;
+ return {
+  manifest:{runId:'run-bench',sourceCommit:SRC,backendSetId:'engineering-mujoco-bench-v1',backends:[{id:'mujoco_3d',version:'3.17.0',model:'mujoco_drive_bench',dynamics:true}],mode:'simulation',access:'simulated',scenario:{id:'MJ-BENCH-WHEEL'},clock:{tickMs:20},seed:7,...man},
+  outcome:{status:'completed',served:'0',tick:500,simTimeNs:'10000000000'},tuning,faults:[],coverage:{dynamics:true},
+  bench:{request:{schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'wheels',signal,driveExperimentId:'drive-nominal-v1',controlProfile},traceIssues:[]},
+  ...over
+ };
+}
 const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated'},...man},perceptionEvidence:{issues:[],beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},{objectId:'cup-1',tick:900,belief:{valid:true}}],...pe}});
 const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>({manifest:{runId:'run-cell',horizon:{tick:HORIZON},coverage:{prefixCovered:true},provenance:{accepted:false},...o.manifest},capturedReport:o.report??cellReport(),close(){}});
 interface Opt{doc?:Record<string,unknown>;plot?:Record<string,unknown>;belief?:Record<string,unknown>;plotWork?:Record<string,unknown>;beliefWork?:Record<string,unknown>;skip?:string[];trace?:unknown;report?:unknown;attempt?:Record<string,unknown>;proc?:Record<string,unknown>;testWindow?:Record<string,unknown>}
@@ -145,8 +162,6 @@ test('WEB09 cross-checks the bench workload: run, trace manifest, corruption, ax
  expect(await withOpt({report:benchReport({},{backendSetId:'engineering-mujoco-cell-v1'})})).toContain(bad);
  expect(await withOpt({report:benchReport({},{scenario:{id:'MJ-BV01'}})})).toContain(bad);
  expect(await withOpt({report:benchReport({outcome:{status:'failed'}})})).toContain(bad);
- expect(await withOpt({report:benchReport({tuning:{...benchReport().tuning,unstable:true}})})).toContain(bad);
- const noFlag=benchReport();delete (noFlag.tuning as {unstable?:boolean}).unstable;expect(await withOpt({report:noFlag})).not.toContain(bad);
  expect(await withOpt({plotWork:{runId:''}})).toContain(bad);
  expect(await withOpt({plotWork:{runId:'another'}})).toContain(bad);
  expect(await withOpt({plotWork:{plottedPoints:5000}})).toContain(bad);
@@ -167,8 +182,47 @@ test.each([
  ['missing chunk count',{chunks:undefined}],
  ['fractional chunk count',{chunks:1.5}],
  ['zero chunk count',{chunks:0}],
+ ['more than 501 nonempty tick chunks',{chunks:502}],
 ] as const)('WEB09 rejects a tuning report with %s',async(_name,counters)=>{
  const report=benchReport({tuning:{...benchReport().tuning,trace:{...benchReport().tuning.trace,...counters}}});
+ expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test.each([
+ ['terminal time too short for 5,000 samples',{tick:3,simTimeNs:'60000000'}],
+ ['inconsistent simulated nanoseconds',{simTimeNs:'9999999999'}],
+ ['missing terminal tick',{tick:undefined}],
+ ['numeric simulated nanoseconds',{simTimeNs:10_000_000_000}],
+ ['a mission delivery',{served:'1'}],
+] as const)('WEB09 rejects a completed bench outcome with %s',async(_name,outcome)=>{
+ const report=benchReport({outcome:{...benchReport().outcome,...outcome}});
+ expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test.each([
+ ['engine divergence',{unstable:{tick:500,warning:'DIVERGED'}}],
+ ['a drive fault',{fault:{tick:500,axisId:'amr-1/wheel-left',code:'FOLLOWING_ERROR'}}],
+ ['a collision',{collision:{tick:500,ids:['amr-1','edge']}}],
+ ['boolean instability',{unstable:false}],
+ ['a missing instability field',{unstable:undefined}],
+ ['a missing fault field',{fault:undefined}],
+ ['a missing collision field',{collision:undefined}],
+ ['an invalid signal shape',{signal:{kind:'step',amplitude:'2',atTick:10}}],
+] as const)('WEB09 rejects a completed tuning result with %s',async(_name,fields)=>{
+ const report=benchReport({tuning:{...benchReport().tuning,...fields}});
+ expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+const completedBench=benchReport();
+const benchRequest=completedBench.bench.request;
+test.each([
+ ['a different world clock',benchReport({},{clock:{tickMs:10}})],
+ ['a different seed',benchReport({},{seed:8})],
+ ['no runtime dynamics',benchReport({coverage:{dynamics:false}})],
+ ['a recorded fault',benchReport({faults:[{code:'FOLLOWING_ERROR'}]})],
+ ['a report-side trace gap',benchReport({bench:{...completedBench.bench,traceIssues:['TRACE_GAP:3-3']}})],
+ ['an arm request',benchReport({bench:{...completedBench.bench,request:{...benchRequest,scenarioId:'MJ-BENCH-ARM',axis:'J1'}}})],
+ ['a different bench signal',benchReport({bench:{...completedBench.bench,request:{...benchRequest,signal:{...benchRequest.signal,amplitude:1}}}})],
+ ['a different control profile digest',benchReport({bench:{...completedBench.bench,request:{...benchRequest,controlProfile:{...benchRequest.controlProfile,digest:'f'.repeat(64)}}}})],
+ ['a pre-terminal wheel comparison',benchReport({tuning:{...completedBench.tuning,wheelMeasurement:{...completedBench.tuning.wheelMeasurement,comparison:{...completedBench.tuning.wheelMeasurement.comparison,tick:499}}}})],
+] as const)('WEB09 rejects a bench report that claims %s',async(_name,report)=>{
  expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
 });
 test.each(['samplesPerSeries','plottedPoints'] as const)('WEB09 rejects a missing plot counter %s with otherwise valid data',async(counter)=>{
