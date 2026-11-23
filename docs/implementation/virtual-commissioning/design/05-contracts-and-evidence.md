@@ -10,6 +10,8 @@ Mọi thứ R4 thêm đều **tùy chọn và cộng thêm**. Tài liệu, wire 
 
 Kết quả số chỉ tất định trong một phiên bản engine và một kiến trúc CPU. Mọi so sánh trùng bit và mọi hash của trace trong R4 chỉ có nghĩa giữa các run cùng build và cùng kiến trúc. Giữa máy phát triển (arm64) và Cloud Run (x86-64), reader so kết quả nghiệp vụ và metric trong dung sai khai trước, không so hash.
 
+Đối chiếu CLD03 dùng hai run cell drive danh định cùng đầu vào và seed 7: cả hai phục vụ 2, và chênh lệch tương đối của quãng đường AMR `abs(distanceCloud - distanceMac) / distanceMac` không quá 5 %. Ngưỡng này được khai trước phép đo Cloud để phát hiện thay đổi đáng kể của đường đi; nó không phải biên sai số vật lý hay khoảng tin cậy thống kê. Thời gian ms/tick và hệ số thời gian thực vẫn được tính từ từng bản ghi thực tế.
+
 `hostArch` (`arm64` hoặc `x86_64`) là kiến trúc do worker báo trong identity của nó. Quy tắc ghi, người dùng chốt ngày 19/11 sau review V05:
 
 - **Run có drive** (scene có `engine.driveModelRef`): `manifest.drive.hostArch` bắt buộc. Với run mobile, trường này còn nằm trong header được hash của digest evidence điều hướng (`inputs.engine.hostArch`).
@@ -40,7 +42,8 @@ Manifest của run ghi thêm: digest drive model và control profile, id/revisio
 | `FaultScheduleEntry` | `lab-fault-schedule.schema.json` (cộng thêm) | Thêm `params` tùy chọn; mục cũ không đổi. Lịch lỗi drive đi trong run request (`driveFaultSchedule`), không trong project |
 | `PerceptionProfileV1` | `perception-profile-v1.schema.json` | Mô hình sai số nhận thức, biên ở spec R4-B §5.2 |
 | `RecoveryPolicyV1` | `recovery-policy-v1.schema.json` | Bảng quy tắc phục hồi có giới hạn; tối đa 8 quy tắc, mỗi quy tắc tối đa 3 lần |
-| `BeliefRecord`, `GraspAttempt`, `RecoveryStep`, `PerceptionStudyV1` | `belief-evidence-v1.schema.json` | Stream belief, lượt gắp, bước phục hồi, kết quả study |
+| `BeliefRecord`, `GraspAttempt`, `RecoveryStep` | `belief-evidence-v1.schema.json` | Stream belief, lượt gắp, bước phục hồi |
+| `PerceptionStudyV2` | Kiểu kết quả và verifier trong `perception-study.ts` | Study schema 2, protocol `first-cup-grasp-v2`; dựng lại từ artifact của đủ các lượt đăng ký |
 | `IdentificationPlanV1`, `CalibrationRecordV1` | `calibration-record-v1.schema.json` | Kế hoạch nhận dạng khai trước và bản ghi kết quả; dùng cùng `engineering-calibration.schema.json` hiện có |
 
 Schema bị mở rộng: `sim3d-worker-v1` (§3, §4); `physics-evidence-v1` (bản ghi tick của run mobile thêm `drives` và biên nhận lỗi, tùy chọn); `world-evidence-v1` (lệnh và bản ghi của cell thêm `driveCommands`, `drives`, ý định và biên nhận lỗi, tùy chọn); ba schema scene (ref ở §1); `engineering-project` (`driveExperimentId` cho run mobile, đọc lúc compile); `lab-run-v2` (`driveExperimentId` cho cell, `graspMode`, `bench`, `driveFaultSchedule`); `web-replay-package-v1` (ref tới dữ liệu mới của run một world).
@@ -199,7 +202,7 @@ interface RecoveryStep {stepId: string; attemptId: string; rule: string; action:
 
 Tái lập ngẫu nhiên: stream `perception:<objectId>` của PRNG có tên hiện có. Mỗi lần cập nhật **luôn** tiêu ba số đều `u₀, u₁, u₂` theo thứ tự đó, kể cả khi mẫu bị bỏ: `u₀` quyết định mất mẫu (`u₀ < dropoutProbability`); nhiễu x là `σₓ·sqrt(−2·ln u₁)·cos(2π·u₂)`, nhiễu y là `σᵧ·sqrt(−2·ln u₁)·sin(2π·u₂)`, với `u₁` lấy trong (0, 1]. Quy tắc tiêu số cố định giữ cho một lần mất mẫu không làm lệch các ước lượng sau.
 
-`truthAtObservedTick` và `errorM` tồn tại để chấm điểm. Chúng không nằm trong `BeliefView` mà mã quyết định nhận được.
+`truthAtObservedTick` và `errorM` tồn tại để chấm điểm. Chúng không nằm trong `BeliefView` mà mã quyết định nhận được. Trong mô hình cốc trụ đứng của R4, `errorM` là sai số x/y; z của cả hai chế độ belief lấy từ mặt đỡ đã khai và nửa chiều cao cốc, biến đổi đúng sang khung tay máy. Profile ground-truth nghĩa là x/y không nhiễu/trễ trong cùng mô hình này, không mở đường lấy z thật cho mã quyết định.
 
 `RecoveryPolicyV1` là danh sách quy tắc `{on, requires[], steps[], maxAttempts}` với `on`, `requires` và `steps` lấy từ danh mục đóng. Quy tắc tham chiếu điều kiện hoặc bước ngoài danh mục bị từ chối ở admission.
 
@@ -218,7 +221,7 @@ Giữ nguyên các stream R2b. Thêm:
 
 Nguyên tắc không đổi: chunk bất biến có hash, reader có giới hạn và fail-closed, ghi bền trước logical commit, quota chạm trần là terminal có lý do chứ không cắt im lặng, tổng mỗi run tối đa 200 MiB. Append lỗi → gap/terminal và suspend, không gửi lại tick.
 
-`FaultReportV1`, `TuningResultV1` và `PerceptionStudyV1` do **reader dựng từ stream đã kiểm**, không lấy từ trạng thái nóng của runner. Report chứa ref/hash/coverage và tóm tắt.
+`FaultReportV1`, `TuningResultV1` và `PerceptionStudyV2` do **reader dựng từ stream đã kiểm**, không lấy từ trạng thái nóng của runner. Study schema 2 dùng protocol `first-cup-grasp-v2`, cùng điểm kết thúc gắp cho mọi chế độ; các bản study trước protocol này là legacy/superseded. Report chứa ref/hash/coverage và tóm tắt.
 
 Xuất replay package giữ phạm vi R2b: chỉ run một world. Package của cell thêm ref tùy chọn tới `drives`, lỗi, `belief` và `attempts`; Lab vẽ lớp belief và dòng thời gian lỗi từ package, không gọi runtime. Run mobile, bench và rig xem lại từ report và artifact đã lưu; mở rộng xuất package cho các loại run đó không thuộc R4. Thiếu dữ liệu → hiện "không có dữ liệu" đúng phần đó.
 
@@ -314,7 +317,7 @@ export function groupMaturity(sources: readonly SourceRef[], records: readonly C
 | REC03 | Niềm tin cũ: chặn trước cam kết; hụt sau cam kết rồi phục hồi | G-REC1 |
 | REC04 | Unknown, cốc rơi, cốc còn bị giữ: không phục hồi, không mở kẹp, không phục vụ giả | G-REC1 |
 | REC05 | Cell `belief_estimated` danh định 3 seed phục vụ 2; 5 fault R2b giữ kết quả | G-REC1 |
-| REC06 | Campaign `mj-cell-recovery-v2`, cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`, 3 seed: nhiễu loạn có ý định và biên nhận; lượt 1 hụt đã biết; phục hồi trong giới hạn; phục vụ 2. `fixed_program` với thí nghiệm này bị từ chối | G-REC1 |
+| REC06 | Campaign `mj-cell-recovery-v2`: cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`, 3 seed 7/42/99: nhiễu loạn có ý định và biên nhận từng đoạn; lượt 1 hụt đã biết khi cốc còn trên giá/trong vùng cell và kẹp trống; phục hồi trong giới hạn bằng belief mới; phục vụ 2. `fixed_program` hoặc thiếu chương trình đăng ký với thí nghiệm này bị từ chối. Ba ca danh định và năm fault cùng chương trình giữ kết quả yêu cầu; chi tiết [R4-D33/R4-D34](03-r4-perception-recovery-spec.md#4-quyết-định) | G-REC1 |
 | CAL01 | Nhập log: đơn vị, clock, trùng, gap, sidecar; quy tắc `sourceKind` | G-CAL1 |
 | CAL02 | Dự đoán từ bench khớp điều kiện trial; ràng buộc `configDigest` | G-CAL1 |
 | CAL03 | Tự kiểm công cụ: phục hồi tham số ẩn của dữ liệu tổng hợp; không sinh model | G-CAL1 |
@@ -335,7 +338,7 @@ Campaign tối thiểu:
 - `cil-v1`: 5 thí nghiệm drive × 3 seed trên `MJ-FD01` (15), 3 lần lặp cùng seed (3), cell 3 seed + 5 fault (8).
 - `fault-v1`: mỗi loại lỗi ít nhất 2 run trên đối tượng khác nhau, cộng `drive-reset`; tối thiểu 16 run.
 - `tray-v1`: A × 3 seed; A′, B, C, D mỗi biến thể 2 run; tối thiểu 11 run.
-- `perception-gap-v1`: 92 lượt rig. REC06 dùng campaign riêng `mj-cell-recovery-v2` gồm 3 ca danh định, 3 ca pulse và 5 lỗi chuẩn.
+- `perception-gap-v1`: 92 lượt rig với endpoint protocol v2; giữ nudge-v1 cho điểm niềm tin cũ. REC06 ghi riêng 3 seed cell có `world-cup-nudge-v2`/`cup-pick-two-stage-v1`, cùng 3 ca danh định và 5 fault đối chứng cho chương trình đó. Regression cell mặc định vẫn giữ 3 seed danh định và 5 fault cũ.
 - Bench: mỗi trục đăng ký một `step` và một `trapezoid` với profile khởi điểm.
 
 Mỗi run có artifact riêng. Pass cả suite không thay cho artifact từng run.

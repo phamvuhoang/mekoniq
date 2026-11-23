@@ -51,7 +51,7 @@ flowchart LR
   REC --> EVI
 ```
 
-Bộ ước lượng và belief world nằm ở runtime TS, chạy mỗi tick từ observation **đã commit**. Worker không đổi: nó tiếp tục trả pose thật. Truth đi tới đúng hai nơi: bộ ước lượng mô phỏng (để tạo ra số đo có sai số) và evidence (để chấm điểm). Mã quyết định gắp không nhận truth.
+Bộ ước lượng và belief world nằm ở runtime TS, chạy mỗi tick từ observation **đã commit**. Worker tiếp tục trả pose thật. Riêng rig giữ thêm quan sát native tại lúc sinh cốc, trước bước tích phân, để kiểm offset đã áp dụng; quan sát này không đổi vật lý. Truth đi tới đúng hai nơi: bộ ước lượng mô phỏng (để tạo ra số đo có sai số) và evidence (để chấm điểm). Mã quyết định gắp không nhận truth.
 
 ## 4. Quyết định
 
@@ -69,7 +69,8 @@ Bộ ước lượng và belief world nằm ở runtime TS, chạy mỗi tick t�
 | R4-D30 | Truth và dữ liệu vào bộ ước lượng cùng đến từ một engine. Report gọi đúng tên: *sai số nhận thức được mô hình hóa*, không phải dữ liệu camera |
 | R4-D31 | Không thêm hợp đồng `WorkcellJob`. Ranh giới Source ↔ workcell vẫn là `CellAdapter`/`CellCommand` hiện có ([§9](#9-ranh-giới-workcell)) |
 | R4-D32 | Gắp theo niềm tin và phục hồi nằm **trong plant tay máy, dưới `CellAdapter`**. Source vẫn stage và start một job gắp như R2b, và job đó chạy suốt các lượt thử. Id của bước phục hồi là id nội bộ của plant. `packages/domain` và journal không đổi; thời gian phục hồi tính vào hạn của job |
-| R4-D33 | REC06 hiện dùng `world-cup-nudge-v2` cùng `cup-pick-two-stage-v1` trong cell. Năm đoạn lực liên tiếp bắt đầu ở tick ngay sau cam kết đầu. Mỗi đoạn có ý định bền vững và ACK native. Chế độ `fixed_program` bị từ chối trước khi mở worker. Các kết quả của nhiễu loạn v1 được giữ trong LEDGER-v11-v13. |
+| R4-D33 | Thí nghiệm nudge có phiên bản và registry đóng. `world-cup-nudge-v1` giữ nguyên để tái lập study và các kết quả cũ. Closeout dùng `world-cup-nudge-v2` cùng chương trình R4-D34 cho REC06: một xung cố định lên `cup-1`, bắt đầu ở tick sau cam kết gắp đầu, mỗi đoạn có ý định bền và biên nhận native. Chỉ hợp lệ với hai chế độ belief và cần run mới; browser chỉ chọn id đăng ký, không chọn lực, vật hay thời điểm. Chi tiết và trạng thái bằng chứng ở §8.3 |
+| R4-D34 | Chương trình tùy chọn `cup-pick-two-stage-v1`: điểm pick/lift lùi 20 mm theo hướng tiếp cận, giữ điểm approach; mục tiêu capture là 70 mm rồi secure-close bằng mức đóng cũ sau khi tiếp xúc ổn định và cup world chấp nhận `take` bình thường. Custody nghiệp vụ Source vẫn đợi xác nhận nhấc. Cùng chương trình cho lần đầu, retry và cả hai cốc. Giữ nguyên cốc, giá, ma sát, giới hạn mở kẹp, mở khi release/recovery và vùng làm việc cell ±20 mm. Request mang id; runtime giữ registration digest và execution digest của cấu hình đã giải. Không chọn chương trình này thì đường mặc định giữ nguyên |
 
 ## 5. Belief world và bộ ước lượng mô phỏng
 
@@ -158,7 +159,9 @@ Chính sách trên tương đương một cây `Fallback[ Retry(n){ Sequence[qua
 
 ### 8.1 Rig gắp
 
-`pick-rig-v1` là fixture mới dẫn xuất từ cell hiện có: tay máy, giá vòi, khay tĩnh, một cốc. Nó cho phép cốc sinh lệch tới 30 mm theo chính sách riêng của rig; chính sách handoff ±5 mm của cell không đổi. Lệch thật của một lượt là một vectơ có độ lớn đăng ký (0 hoặc 20 mm) và hướng rút từ stream `rig:<seed>`; hướng được ghi vào artifact vì lệch ngang và lệch dọc hướng tiếp cận cho kết quả khác nhau. Một lượt rig: sinh cốc → ước lượng → gắp → nhấc → đặt lên khay tĩnh → xác nhận. Rig là scenario chỉ dành cho campaign, không nằm trong registry của browser, cùng cách với rig B05.
+`pick-rig-v1` là fixture dẫn xuất từ cell hiện có: tay máy, giá vòi, khay và cốc đầu tiên được quan sát. Nó cho phép cốc sinh lệch tới 30 mm theo chính sách riêng của rig; chính sách handoff ±5 mm của cell không đổi. Lệch thật của một lượt là một vectơ có độ lớn đăng ký (0 hoặc 20 mm) và hướng rút từ stream `rig:<seed>`; hướng được ghi vào artifact vì lệch ngang và lệch dọc hướng tiếp cận cho kết quả khác nhau. Mọi chế độ dừng ở kết quả cuối của lệnh gắp cốc đầu tiên, gồm các retry nếu bật recovery. Không chạy chuyển động đặt cốc sau điểm đó. Việc Source nhận một lệnh đặt trong cùng tick nhưng chưa thực hiện được giữ nguyên trong bằng chứng. Rig chỉ dành cho campaign, không nằm trong registry của browser, cùng cách với rig B05.
+
+Protocol `first-cup-grasp-v2` dùng rig record và study schema 2. Reader đối chiếu lệnh/quan sát Source với journal, checkpoint, world và props trace; thời gian và contact dùng cùng horizon kết thúc gắp. Ngưỡng lift lấy từ oracle đăng ký. Offset sinh cốc được kiểm bằng qpos và body pose native trước tích phân, ràng buộc với intent/request/event/run/boot/scene; pose sau bước vật lý được giữ riêng. Bản study cũ đã trộn kết quả gắp với lần rơi khi đặt nên được đánh dấu superseded; không dùng lại tỷ lệ cũ cho so sánh mới.
 
 ### 8.2 Study sai số nhận thức
 
@@ -172,9 +175,11 @@ Chính sách trên tương đương một cây `Fallback[ Retry(n){ Sequence[qua
 | Đối chứng tốt, có lệch | `belief_ground_truth` | 20 mm, hướng theo seed | 0 | 10 |
 | Quét nhiễu | `belief_estimated` | 20 mm, hướng theo seed | σ ∈ {2, 5, 10, 15} mm, bias 0 | 4 × 10 |
 | Quét bias | `belief_estimated` | 20 mm, hướng theo seed | σ = 2 mm; bias 5 và 10 mm, mỗi mức theo trục x và theo trục y của khung tay máy | 4 × 5 |
-| Niềm tin cũ | `belief_estimated` | 0, có `rig-cup-nudge-v1` hướng theo seed | σ = 2 mm | 10 |
+| Niềm tin cũ | `belief_estimated` | 0, có `rig-cup-nudge-v1` theo hướng +x cố định | σ = 2 mm | 10 |
 
-Tổng 92 lượt rig. Điểm không có gì thay đổi giữa các seed chỉ chạy một lượt. Khoảng tin cậy mô tả tỷ lệ trên các hướng lệch và các lần rút nhiễu đã đăng ký; nó không phải xác suất của một tay máy thật. Đầu ra `PerceptionStudyV1`: với mỗi điểm, số lượt, số thành công ngay lần đầu, số thành công sau phục hồi, số cần người xử lý, khoảng tin cậy Wilson 95 %, trung vị thời gian, số va chạm ngoài dự kiến, sai số belief tại thời điểm cam kết. Không có xếp hạng, không có "ngưỡng an toàn"; chỉ có "trong fixture X với mô hình sai số Y, quan sát Z".
+Tổng 92 lượt rig. Điểm không có gì thay đổi giữa các seed chỉ chạy một lượt. Khoảng tin cậy mô tả tỷ lệ trên các hướng lệch và các lần rút nhiễu đã đăng ký; nó không phải xác suất của một tay máy thật. Đầu ra `PerceptionStudyV2`: với mỗi điểm, số lượt, số thành công ngay lần đầu, số thành công sau phục hồi, số cần người xử lý, khoảng tin cậy Wilson 95 %, trung vị thời gian tới cùng điểm kết thúc gắp, số va chạm ngoài dự kiến, sai số belief tại thời điểm cam kết. Không có xếp hạng, không có "ngưỡng an toàn"; chỉ có "trong fixture X với mô hình sai số Y, quan sát Z".
+
+Sai số cam kết của lượt đầu phải gắn với quyết định tại approach và chuỗi lệnh native dẫn tới descent. Bản ghi plan không được thay cho commit, kể cả khi sửa các trường tick/score cho nhất quán. Nếu lượt đầu kết thúc hoặc hết thời gian trước khi có cam kết được chứng minh, số đo này là `null` và không vào trung vị; outcome refused/unknown vẫn được đếm đầy đủ. Điểm sai số ở bước plan có thể giữ trong trace chẩn đoán, nhưng không được báo thành sai số tại commit.
 
 Study không khẳng định trước kết quả. Nếu chương trình cố định vẫn gắp được ở lệch 20 mm, hoặc ước lượng σ = 15 mm vẫn đạt, đó là kết quả và được ghi đúng như vậy.
 
@@ -182,7 +187,11 @@ Study không khẳng định trước kết quả. Nếu chương trình cố đ
 
 `MJ-CELL-BV01` chạy thêm ở chế độ `belief_estimated` với profile danh định và chính sách phục hồi, ba seed, phải phục vụ 2 cốc; cùng năm ca fault R2b không được tạo phục vụ giả. Đây là kiểm rằng đường mới không phá workflow, không phải study.
 
-REC06 hiện dùng campaign `mj-cell-recovery-v2` với chương trình `cup-pick-two-stage-v1` và nhiễu loạn `world-cup-nudge-v2` sau cam kết đầu của cup-1. Ba seed 7, 42 và 99 phải phục vụ hai cốc sau một lần hụt đã biết và một lần thử lại bằng quan sát mới. Đối chứng gồm ba ca danh định và năm ca lỗi chuẩn. Vùng làm việc giữ nguyên ±20 mm. Các phép đo với v1 trong LEDGER-v11-v13 là kết quả lịch sử. Xem quy trình ghi và kiểm lại ở [R4 qualification](../../../operations/r4-qualification.md).
+Campaign closeout REC06 `mj-cell-recovery-v2` dùng cùng cell, chế độ belief, `cup-pick-two-stage-v1` và `world-cup-nudge-v2` ([R4-D33/R4-D34](#4-quyết-định)), ba seed 7/42/99. Xung là 4,025 N theo +x world tại điểm thấp hơn COM 50 mm theo z world, tương ứng mô-men y −0,20125 N·m; kéo dài 50 substep 2 ms, chia thành năm đoạn liên tiếp, mỗi đoạn 10 substep trong một tick 20 ms. Mỗi đoạn có intent bền trước áp lực và receipt riêng, cùng event id và segment index. Không giữ lực ngầm qua tick, không ghi pose hoặc giả custody/held/support. Xung cũ v1 và các điểm của study giữ nguyên.
+
+Điều kiện đạt giữ nguyên: cốc bị đẩy sau cam kết đầu và lượt đó hụt đã biết, cốc vẫn đứng trên giá và nằm trong vùng cell ±20 mm, kẹp trống; bốn bước phục hồi có bản ghi trước khi thực hiện, belief retry được quan sát sau retreat, retry nhấc được và cả run phục vụ 2. Cùng chương trình phải qua ba seed danh định và năm fault cũ. `fixed_program` hoặc thiếu chương trình R4-D34 với nudge-v2 bị từ chối. Run này phải chọn được từ browser và là nguồn mẫu `belief-recovery`; không dùng test-only gripper hold để thay bằng chứng.
+
+Các phép đo chọn chương trình/xung và điểm đã loại nằm trong [closeout ledger](plans/LEDGER-r4-closeout.md). Kết quả prototype chưa đóng REC06: cần đăng ký, kiểm reader và chạy lại bằng production code ở tuple cuối. Nếu không tái lập được thì ghi blocked kèm dữ liệu. Đây là phép thử hữu hạn trong mô phỏng, không suy ra biên an toàn phần cứng.
 
 ## 9. Ranh giới workcell
 
@@ -221,9 +230,9 @@ Lượt gắp
 Số trong hình là minh họa bố cục. Quy tắc:
 
 - Vị trí tin và vị trí thật luôn vẽ khác kiểu; chú thích nói rõ vị trí thật chỉ có trong mô phỏng.
-- Lớp belief chỉ vẽ khi stream belief có dữ liệu tại con trỏ; thiếu thì hiện "không có dữ liệu nhận thức", không vẽ ghost trùng cốc thật.
+- Lớp belief chỉ vẽ trong prefix evidence đã kiểm và bao phủ con trỏ, không có issue, với profile/giới hạn tuổi được ràng buộc bằng định danh. Tuổi dùng `cursorTick - publishedTick` như controller; `observedTick` vẫn dùng cho điều kiện mới sau retreat. Dropout giữ mẫu trước trong giới hạn tuổi; out-of-view/invalid xóa ghost. Prefix sống hợp lệ không bắt buộc stream đã finalized. Thiếu proof, quá tuổi hoặc ngoài coverage thì hiện "không có dữ liệu nhận thức", không vẽ ghost trùng cốc thật.
 - Replay dùng đúng evidence đã ghi; không tính lại ước lượng ở browser.
-- Chế độ và profile được chọn **trước** khi tạo run; đổi là run mới. Trên web, hai chế độ belief có ở preset cell. Khi chế độ là belief, danh sách thí nghiệm của preset cell có thêm `world-cup-nudge-v2`.
+- Chế độ, profile và chương trình được chọn **trước** khi tạo run; đổi là run mới. Trên web, hai chế độ belief có ở preset cell. `world-cup-nudge-v2` chỉ xuất hiện khi runtime quảng bá và chương trình `cup-pick-two-stage-v1` tương thích đã chọn; gửi các id đăng ký, không gửi tham số số tùy ý. V1 vẫn được giữ để đọc/tái lập dữ liệu cũ, không dùng làm mẫu recovery mới.
 - Study có màn hình riêng trong Report: bảng điểm và đồ thị tỷ lệ thành công theo σ với khoảng tin cậy, kèm số lượt mỗi điểm.
 - VI/JA/EN, bàn phím, 390/1024/1440 px, reduced motion như các panel hiện có.
 
@@ -239,7 +248,7 @@ Số trong hình là minh họa bố cục. Quy tắc:
 | R4-26 | Phục hồi chỉ từ thất bại đã biết; giới hạn số lần; mọi bước có id và được ghi trước | V13 / REC01–REC03 |
 | R4-27 | Trạng thái unknown, cốc rơi, cốc còn bị giữ không kích hoạt phục hồi; không phục vụ giả; custody không đổi | V13 / REC04 |
 | R4-28 | Cell chạy `belief_estimated` danh định ba seed phục vụ 2; năm fault R2b giữ kết quả | V13 / REC05 |
-| R4-29 | Cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`: nhiễu loạn có ý định và biên nhận; lượt đầu hụt đã biết; phục hồi trong giới hạn; phục vụ 2. Chế độ `fixed_program` với thí nghiệm này bị từ chối | V13 / REC06 |
+| R4-29 | Cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`: nhiễu loạn có ý định và biên nhận từng đoạn; lượt đầu hụt đã biết; phục hồi trong giới hạn; phục vụ 2. Chế độ `fixed_program` với thí nghiệm này bị từ chối | V13 / REC06 |
 
 ## 12. Các việc chủ ý hoãn
 
@@ -249,3 +258,5 @@ Số trong hình là minh họa bố cục. Quy tắc:
 - **Lập kế hoạch chuyển động và gắp tổng quát:** R4 chỉ đổi điểm gắp trong vùng nhỏ quanh danh định với IK và kiểm sweep. Planner là dự án riêng.
 - **Engine behavior tree:** xem §7.3.
 - **Tích hợp Intrinsic Core, OMTS, machine tending CNC:** xem R4-C §6.
+
+Quy trình ghi và kiểm campaign nằm trong [R4 qualification](../../../operations/r4-qualification.md).

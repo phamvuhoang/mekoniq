@@ -46,8 +46,8 @@ function evidence(change:string,belief=true){
  const process=put('suites/e2e-replay/process.json',JSON.stringify({command:'node',args:suite.command,startedAt:'2026-11-22T00:00:00Z',finishedAt:'2026-11-22T00:00:05Z',status:'completed',exitCode:0,exitSignal:null,spawnError:null,writeError:null})).file;
  return {inputs:{webSamples:ref},suites:[{id:suite.id,repo:'lab',kind:'playwright',process,exitCode:0,result}]};
 }
-test('opens gzip aliases and binds the fault and completed recovery to their production offline tests',async()=>{
- const v=await verifyWebRecord(root,evidence(''));expect(v.WEB08).toEqual([]);expect(v.WEB10).toEqual([]);
+test('admits the fault gzip aliases but refuses an unregistered recovery fixture even with a matching browser observation',async()=>{
+ const v=await verifyWebRecord(root,evidence(''));expect(v.WEB08).toEqual([]);expect(v.WEB10).toEqual(['WEB10_SAMPLE_FAILED:belief-recovery']);
 });
 test.each(['missing scene','no recovery','cell','other command','wrong run','other bytes','no receipt'])('refuses %s in otherwise digest-consistent packages and results',async change=>{
  const v=await verifyWebRecord(root,evidence(change));expect(v.WEB10.length).toBeGreaterThan(0);

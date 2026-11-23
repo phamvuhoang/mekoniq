@@ -26,16 +26,34 @@ function observations(read,record){
  }
  return out;
 }
+// Public identity of the verified REC06 pulse-42 case. A later runtime pin does not change this capture.
+const recoveryCapture=Object.freeze({runId:'0bfb555d-4cee-472f-88ad-fb6a15d34f0a',sourceCommit:'eceb7681d3d3f077d335cbe80fe5aee9b6e99bd2',rawReportSha256:'82088209e796b1854dfa428ccafca2160a49dee23fe2628786d1afb9bcf27561'});
 async function verifyRecovery(replay,tick,row){
  const r=replay.capturedReport,p=r.manifest.perception,e=r.perceptionEvidence,program=row.command?.worldControl?.program;
+ const m=replay.manifest;
+ if(r.pickRig||m.runId!==recoveryCapture.runId||r.manifest.sourceCommit!==recoveryCapture.sourceCommit||m.provenance.rawReportSha256!==recoveryCapture.rawReportSha256||
+    m.coverage.terminal||m.coverage.gaps.length||m.coverage.issues.length)return false;
  if(p?.graspMode!=='belief_estimated'||p.recoveryPolicy?.id!=='pick-recovery-v1'||e?.schemaVersion!==1||e.issues?.length!==0||program?.programId!=='cup-pick'||!program.commandId)return false;
  const {validateRecoveryStepShape,validateGraspAttemptShape,validateBeliefRecordShape}=await tsImport('../packages/lab-runtime/src/v2/perception/perception-contracts.ts',import.meta.url);
- return e.recovery?.some(step=>{
+ const matchingStep=e.recovery?.some(step=>{
   if(!validateRecoveryStepShape(step)||step.result!=='done'||!Number.isSafeInteger(step.completedTick)||step.completedTick<step.recordedTick||step.completedTick>replay.manifest.horizon.tick||
    ![step.recordedTick,step.completedTick].includes(tick)||!step.commandId.startsWith('recovery:'+program.commandId+':'))return false;
   const a=e.attempts?.find(a=>a.attemptId===step.attemptId&&a.cupId===program.cupId&&a.mode===p.graspMode&&validateGraspAttemptShape(a));
   return !!a&&row.snapshot.props?.some(prop=>prop.propId===a.cupId)&&e.beliefs?.some(b=>b.objectId===a.cupId&&b.tick<=replay.manifest.horizon.tick&&b.belief?.objectId===a.cupId&&validateBeliefRecordShape(b));
  });
+ if(!matchingStep)return false;
+ const {prepareWorldAdmission,validateWorldRecord}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/world-evidence.ts',import.meta.url);
+ const {verifyNativeRecoveryCase}=await tsImport('../packages/lab-runtime/src/v2/perception/recovery-cell-evidence.ts',import.meta.url);
+ const scene=JSON.parse(Buffer.from(await replay.readAsset('bundle/lab-world-scene.json')).toString()),files=new Map();
+ for(const ref of scene.files)files.set(ref.path,await replay.readAsset('bundle/'+ref.path));
+ const admission=prepareWorldAdmission(scene,files),rows=[],seen=new Set();
+ let history=[];
+ for await(const record of replay.samples('world')){
+  history=validateWorldRecord(record,admission,history,rows.at(-1)?.snapshot,r.worldSweep.scope.identity,seen);
+  rows.push(record);
+ }
+ await verifyNativeRecoveryCase(r,admission,rows,{kind:'pulse',seed:42});
+ return true;
 }
 async function verifySample(read,entry,bytes,receipt){
  const id=entry.id;
