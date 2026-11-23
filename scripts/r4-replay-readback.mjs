@@ -27,7 +27,7 @@ function observations(read,record){
  return out;
 }
 // Public identity of the verified REC06 pulse-42 case. A later runtime pin does not change this capture.
-const recoveryCapture=Object.freeze({runId:'0bfb555d-4cee-472f-88ad-fb6a15d34f0a',sourceCommit:'eceb7681d3d3f077d335cbe80fe5aee9b6e99bd2',rawReportSha256:'82088209e796b1854dfa428ccafca2160a49dee23fe2628786d1afb9bcf27561'});
+const recoveryCapture=Object.freeze({manifestSha256:'d7c0671b9d77975c6ed9f15e27a67c9fdeb261592435ee53ef3cd587033095c4',runId:'0bfb555d-4cee-472f-88ad-fb6a15d34f0a',sourceCommit:'eceb7681d3d3f077d335cbe80fe5aee9b6e99bd2',rawReportSha256:'82088209e796b1854dfa428ccafca2160a49dee23fe2628786d1afb9bcf27561'});
 async function verifyRecovery(replay,tick,row){
  const r=replay.capturedReport,p=r.manifest.perception,e=r.perceptionEvidence,program=row.command?.worldControl?.program;
  const m=replay.manifest;
@@ -56,8 +56,8 @@ async function verifyRecovery(replay,tick,row){
  return true;
 }
 async function verifySample(read,entry,bytes,receipt){
- const id=entry.id;
- if(sha(bytes)!==entry.manifestSha256)throw Error('SAMPLE');
+ const id=entry.id,manifestSha256=sha(bytes);
+ if(manifestSha256!==entry.manifestSha256||id==='belief-recovery'&&manifestSha256!==recoveryCapture.manifestSha256)throw Error('SAMPLE');
  const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);
  const replay=await openReplayPackage(bytes,async function*(asset){
   const b=read('inputs/web/replays/'+id+'/'+asset.path+(asset.encoding==='gzip'?'.bin':''));if(!b)throw Error('ASSET');yield b;

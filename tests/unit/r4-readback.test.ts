@@ -110,8 +110,8 @@ test('CLD01 binds both container assertions and recorded runtime/image identity'
 test('CLD02 refuses a count-only import even with green totals and a current wrapper',async()=>{
  const c=container();expect((await verifyContainerRecord(c.root,c.m,SRC)).cld02).not.toEqual([]);
 });
-const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration','fault-composer':'e2e-faults','perception-study':'e2e-belief',recovery:'e2e-belief'};
-const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery']};
+const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration','fault-composer':'e2e-faults','perception-study':'e2e-belief',recovery:'e2e-belief','grasp-settings':'e2e-belief'};
+const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery'],'grasp-settings':['grasp-mode','grasp-program','world-experiment']};
 const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifest?:Record<string,unknown>;catalog?:Record<string,unknown>}={})=>{
  const root=tmp();
  for(const [panel,suite] of Object.entries(PANELS)){
@@ -126,7 +126,7 @@ const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifes
  }
  const ids=o.samples??['drive-fault','belief-recovery'],replays=ids.map(id=>{const man={runId:'run-'+id,provenance:{calibration:'not_calibrated',accepted:false},...o.manifest};const ref=put(root,`inputs/web/replays/${id}/manifest.json`,man);return {id,manifestSha256:ref.sha256,recording:'run-'+id,provenance:'R4 harness recording; display only; accepted:false; not_calibrated',...o.catalog};});
  const ref=put(root,'inputs/web/replays/catalog.json',{schemaVersion:1,replays});return {root,m:{identity:{before:{sourceCommit:SRC}},lab:{commit:LAB,pin:{sourceCommit:SRC,...PIN}},inputs:{webSamples:ref}}};};
-test('web record: WEB07 rows come from the real-run specs (5 panels × 3 languages × 3 widths, axe 0, reduced motion, no scroll); WEB10 samples hash to the catalog, say not_calibrated and accepted:false; WEB09 is not measured yet',async()=>{
+test('web record: WEB07 rows come from the real-run specs (9 panels × 3 languages × 3 widths, axe 0, reduced motion, no scroll); WEB10 samples hash to the catalog, say not_calibrated and accepted:false; WEB09 is not measured yet',async()=>{
  const a=web(),ra=await verifyWebRecord(a.root,a.m);expect(ra.WEB07).toEqual([]);expect(ra.WEB08.length).toBeGreaterThan(0);expect(ra.WEB10).toContain('WEB10_SAMPLE_FAILED:belief-recovery');expect(ra.WEB09[0]).toMatch(/^WEB09_MEASUREMENT_MISSING/);
  const b=web({drop:'tray'});expect((await verifyWebRecord(b.root,b.m)).WEB07).toEqual(['WEB07_ROWS_MISSING:tray']);
  const c=web({drop:'faults',row:{axeSeriousCritical:2}});expect((await verifyWebRecord(c.root,c.m)).WEB07).toEqual(['WEB07_CELL_FAILED:faults/ja/390']);
@@ -166,7 +166,7 @@ test('WEB07 keeps populated, empty and error calibration sweeps separate, and re
  }
 });
 test('WEB07 cannot omit the study, recovery list or fault composer from its panel coverage',async()=>{
- for(const [panel,suite] of [['perception-study','e2e-belief'],['recovery','e2e-belief'],['fault-composer','e2e-faults']]){
+ for(const [panel,suite] of [['perception-study','e2e-belief'],['recovery','e2e-belief'],['grasp-settings','e2e-belief'],['fault-composer','e2e-faults']]){
   const a=web();rmSync(join(a.root,`suites/${suite}/screens/web07-${panel}.json`),{force:true});
   expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_ROWS_MISSING:'+panel);
  }
@@ -228,4 +228,12 @@ test('an omitted REC06 recording leaves independently executed REC01–05 tested
  const q=qualifyR4Structure({suites,sourceCommit:SRC,lab:true,artifactDispositions:artifactDispositionsFromGroups({recoveryCampaign:['RECOVERY_CAMPAIGN_MISSING']})});
  expect(['REC01','REC02','REC03','REC04','REC05'].map(id=>q.cases[id].status)).toEqual(Array(5).fill('tested'));
  expect(q.cases.REC06.status).toBe('not_run');
+});
+
+test('WEB07 requires the three grasp controls and binds all nine measurements to the retained build',async()=>{
+ const a=web(),file='suites/e2e-belief/screens/web07-grasp-settings.json',panel=JSON.parse(readFileSync(join(a.root,file),'utf8'));
+ for(const [change,issue] of [[{requiredTestIds:['grasp-mode']},'TARGET_INVALID'],[{productionSha256:'e'.repeat(64)},'BUILD_BINDING'],[{rows:panel.rows.slice(1)},'ROWS_CORRUPT']] as const){
+  put(a.root,file,{...panel,...change});
+  expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_'+issue+':grasp-settings');
+ }
 });

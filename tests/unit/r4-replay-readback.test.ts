@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-import {mkdirSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
+import {existsSync,readFileSync,mkdirSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname,join} from 'node:path';
 import {gzipSync} from 'node:zlib';
@@ -8,6 +8,8 @@ import {afterEach,beforeEach,expect,test} from 'vitest';
 import {verifyWebRecord,artifactDispositionsFromGroups} from '../../scripts/r4-readback.mjs';
 // @ts-expect-error plain ESM script
 import {SUITES_R4} from '../../scripts/sim-extension-r4.mjs';
+// @ts-expect-error plain ESM script
+import {verifyReplayRecord} from '../../scripts/r4-replay-readback.mjs';
 const suite=SUITES_R4.find((s:{id:string})=>s.id==='e2e-replay');
 const sha=(b:Buffer|string)=>createHash('sha256').update(b).digest('hex');
 let root:string;
@@ -60,4 +62,14 @@ test('an absent belief-recovery sample leaves WEB10 not_run and retains a verifi
 test('a missing browser observation does not hide a recovery sample with no recorded recovery',async()=>{
  const v=await verifyWebRecord(root,evidence('no recovery or receipt'));
  expect(v.WEB10).toContain('WEB10_SAMPLE_FAILED:belief-recovery');
+});
+
+test('a newly hashed catalog cannot authorize another public recovery manifest to open its payload',async()=>{
+ const record=evidence(''),opened:string[]=[];
+ const result=await verifyReplayRecord((file:string)=>{
+  if(file.startsWith('inputs/web/replays/belief-recovery/')&&!file.endsWith('/manifest.json'))opened.push(file);
+  return existsSync(join(root,file))?readFileSync(join(root,file)):null;
+ },record);
+ expect(result.WEB10).toContain('WEB10_SAMPLE_FAILED:belief-recovery');
+ expect(opened).toEqual([]);
 });
