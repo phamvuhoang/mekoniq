@@ -69,7 +69,7 @@ Bộ ước lượng và belief world nằm ở runtime TS, chạy mỗi tick t�
 | R4-D30 | Truth và dữ liệu vào bộ ước lượng cùng đến từ một engine. Report gọi đúng tên: *sai số nhận thức được mô hình hóa*, không phải dữ liệu camera |
 | R4-D31 | Không thêm hợp đồng `WorkcellJob`. Ranh giới Source ↔ workcell vẫn là `CellAdapter`/`CellCommand` hiện có ([§9](#9-ranh-giới-workcell)) |
 | R4-D32 | Gắp theo niềm tin và phục hồi nằm **trong plant tay máy, dưới `CellAdapter`**. Source vẫn stage và start một job gắp như R2b, và job đó chạy suốt các lượt thử. Id của bước phục hồi là id nội bộ của plant. `packages/domain` và journal không đổi; thời gian phục hồi tính vào hạn của job |
-| R4-D33 | Để phục hồi nhìn thấy được trong workflow thật và trên web, cell có thêm một world experiment đăng ký `world-cup-nudge-v1`, cùng registry đóng và cùng cơ chế ý định/biên nhận với `world-cup-fall-v1`. Một lực nhỏ cố định đẩy `cup-1` trên giá, một lần, ngay sau khi lượt gắp đầu đã cam kết theo belief. Chỉ hợp lệ với hai chế độ belief và cần run mới; browser không chọn lực, vật hay thời điểm. Không có nó thì run cell danh định không có lượt hụt nào để phục hồi |
+| R4-D33 | REC06 hiện dùng `world-cup-nudge-v2` cùng `cup-pick-two-stage-v1` trong cell. Năm đoạn lực liên tiếp bắt đầu ở tick ngay sau cam kết đầu. Mỗi đoạn có ý định bền vững và ACK native. Chế độ `fixed_program` bị từ chối trước khi mở worker. Các kết quả của nhiễu loạn v1 được giữ trong LEDGER-v11-v13. |
 
 ## 5. Belief world và bộ ước lượng mô phỏng
 
@@ -182,7 +182,7 @@ Study không khẳng định trước kết quả. Nếu chương trình cố đ
 
 `MJ-CELL-BV01` chạy thêm ở chế độ `belief_estimated` với profile danh định và chính sách phục hồi, ba seed, phải phục vụ 2 cốc; cùng năm ca fault R2b không được tạo phục vụ giả. Đây là kiểm rằng đường mới không phá workflow, không phải study.
 
-Cùng cell ở chế độ belief chạy thêm với `world-cup-nudge-v1` ([R4-D33](#4-quyết-định)), ba seed: cốc bị đẩy sau khi lượt gắp đầu đã cam kết, lượt đó hụt theo cách đã biết, chính sách phục hồi thử lại bằng ước lượng mới, và run vẫn phục vụ 2 cốc (REC06). Lực và số substep lấy đúng của `rig-cup-nudge-v1`; cốc phải dịch quá dung sai gắp nhưng vẫn đứng trên giá. Đây là run mà người xem web thấy tay máy thử lại, và là nguồn của bản ghi mẫu về phục hồi. Nếu trong cell không có lực nào thỏa cả hai điều kiện thì REC06 ghi blocked kèm số đo; không sửa pose để có cảnh đẹp.
+REC06 hiện dùng campaign `mj-cell-recovery-v2` với chương trình `cup-pick-two-stage-v1` và nhiễu loạn `world-cup-nudge-v2` sau cam kết đầu của cup-1. Ba seed 7, 42 và 99 phải phục vụ hai cốc sau một lần hụt đã biết và một lần thử lại bằng quan sát mới. Đối chứng gồm ba ca danh định và năm ca lỗi chuẩn. Vùng làm việc giữ nguyên ±20 mm. Các phép đo với v1 trong LEDGER-v11-v13 là kết quả lịch sử. Xem quy trình ghi và kiểm lại ở [R4 qualification](../../../operations/r4-qualification.md).
 
 ## 9. Ranh giới workcell
 
@@ -223,7 +223,7 @@ Số trong hình là minh họa bố cục. Quy tắc:
 - Vị trí tin và vị trí thật luôn vẽ khác kiểu; chú thích nói rõ vị trí thật chỉ có trong mô phỏng.
 - Lớp belief chỉ vẽ khi stream belief có dữ liệu tại con trỏ; thiếu thì hiện "không có dữ liệu nhận thức", không vẽ ghost trùng cốc thật.
 - Replay dùng đúng evidence đã ghi; không tính lại ước lượng ở browser.
-- Chế độ và profile được chọn **trước** khi tạo run; đổi là run mới. Trên web, hai chế độ belief có ở preset cell. Khi chế độ là belief, danh sách thí nghiệm của preset cell có thêm `world-cup-nudge-v1`.
+- Chế độ và profile được chọn **trước** khi tạo run; đổi là run mới. Trên web, hai chế độ belief có ở preset cell. Khi chế độ là belief, danh sách thí nghiệm của preset cell có thêm `world-cup-nudge-v2`.
 - Study có màn hình riêng trong Report: bảng điểm và đồ thị tỷ lệ thành công theo σ với khoảng tin cậy, kèm số lượt mỗi điểm.
 - VI/JA/EN, bàn phím, 390/1024/1440 px, reduced motion như các panel hiện có.
 
@@ -239,7 +239,7 @@ Số trong hình là minh họa bố cục. Quy tắc:
 | R4-26 | Phục hồi chỉ từ thất bại đã biết; giới hạn số lần; mọi bước có id và được ghi trước | V13 / REC01–REC03 |
 | R4-27 | Trạng thái unknown, cốc rơi, cốc còn bị giữ không kích hoạt phục hồi; không phục vụ giả; custody không đổi | V13 / REC04 |
 | R4-28 | Cell chạy `belief_estimated` danh định ba seed phục vụ 2; năm fault R2b giữ kết quả | V13 / REC05 |
-| R4-29 | Cell chế độ belief với `world-cup-nudge-v1`: nhiễu loạn có ý định và biên nhận; lượt đầu hụt đã biết; phục hồi trong giới hạn; phục vụ 2. Chế độ `fixed_program` với thí nghiệm này bị từ chối | V13 / REC06 |
+| R4-29 | Cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`: nhiễu loạn có ý định và biên nhận; lượt đầu hụt đã biết; phục hồi trong giới hạn; phục vụ 2. Chế độ `fixed_program` với thí nghiệm này bị từ chối | V13 / REC06 |
 
 ## 12. Các việc chủ ý hoãn
 

@@ -314,7 +314,7 @@ export function groupMaturity(sources: readonly SourceRef[], records: readonly C
 | REC03 | Niềm tin cũ: chặn trước cam kết; hụt sau cam kết rồi phục hồi | G-REC1 |
 | REC04 | Unknown, cốc rơi, cốc còn bị giữ: không phục hồi, không mở kẹp, không phục vụ giả | G-REC1 |
 | REC05 | Cell `belief_estimated` danh định 3 seed phục vụ 2; 5 fault R2b giữ kết quả | G-REC1 |
-| REC06 | Cell chế độ belief với `world-cup-nudge-v1`, 3 seed: nhiễu loạn có ý định và biên nhận; lượt 1 hụt đã biết; phục hồi trong giới hạn; phục vụ 2. `fixed_program` với thí nghiệm này bị từ chối | G-REC1 |
+| REC06 | Campaign `mj-cell-recovery-v2`, cell chế độ belief với `cup-pick-two-stage-v1` và `world-cup-nudge-v2`, 3 seed: nhiễu loạn có ý định và biên nhận; lượt 1 hụt đã biết; phục hồi trong giới hạn; phục vụ 2. `fixed_program` với thí nghiệm này bị từ chối | G-REC1 |
 | CAL01 | Nhập log: đơn vị, clock, trùng, gap, sidecar; quy tắc `sourceKind` | G-CAL1 |
 | CAL02 | Dự đoán từ bench khớp điều kiện trial; ràng buộc `configDigest` | G-CAL1 |
 | CAL03 | Tự kiểm công cụ: phục hồi tham số ẩn của dữ liệu tổng hợp; không sinh model | G-CAL1 |
@@ -335,7 +335,7 @@ Campaign tối thiểu:
 - `cil-v1`: 5 thí nghiệm drive × 3 seed trên `MJ-FD01` (15), 3 lần lặp cùng seed (3), cell 3 seed + 5 fault (8).
 - `fault-v1`: mỗi loại lỗi ít nhất 2 run trên đối tượng khác nhau, cộng `drive-reset`; tối thiểu 16 run.
 - `tray-v1`: A × 3 seed; A′, B, C, D mỗi biến thể 2 run; tối thiểu 11 run.
-- `perception-gap-v1`: 92 lượt rig; cộng 3 seed cell danh định và 3 seed cell có `world-cup-nudge-v1`.
+- `perception-gap-v1`: 92 lượt rig. REC06 dùng campaign riêng `mj-cell-recovery-v2` gồm 3 ca danh định, 3 ca pulse và 5 lỗi chuẩn.
 - Bench: mỗi trục đăng ký một `step` và một `trapezoid` với profile khởi điểm.
 
 Mỗi run có artifact riêng. Pass cả suite không thay cho artifact từng run.

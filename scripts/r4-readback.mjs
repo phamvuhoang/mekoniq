@@ -1,5 +1,6 @@
 // R4 directory-level artifact reader (plan V16). Nothing is taken from a status in qualification.json: every input is copied beside it, hashed, and re-verified by the verifier that wrote it (campaign verifiers) or by
 // its own readback (R2b record, container record, web record). A missing input makes the cases that name it `not_run`; corruption, another tuple or `accepted:true` makes them `failed`.
+import {existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import {checkR4Structure,tableR4,CASES_R4} from './sim-extension-r4.mjs';
@@ -16,6 +17,7 @@ const sha=b=>createHash('sha256').update(b).digest('hex');
 const ENGINE='../packages/lab-runtime/src/v2/';
 /** campaign inputs: manifest key -> copy dir, verifier module + export, the code that names it */
 export const CAMPAIGNS={
+ recoveryCampaign:{dir:'inputs/recovery',code:'RECOVERY_CAMPAIGN',module:'simulation3d/cell-campaign.ts',fn:'verifyRecoveryCampaign',ids:['mj-cell-recovery-v2']},
  cilCampaign:{dir:'inputs/cil',code:'CIL_CAMPAIGN',module:'control/cil-campaign.ts',fn:'verifyCilCampaign',ids:['cil-v1','cil-v2']},
  benchCampaign:{dir:'inputs/bench',code:'BENCH_CAMPAIGN',module:'control/bench-campaign.ts',fn:'verifyBenchCampaign',ids:['bench-v1','bench-v2']},
  faultCampaign:{dir:'inputs/fault',code:'FAULT_CAMPAIGN',module:'control/fault-campaign.ts',fn:'verifyFaultCampaign',ids:['fault-v1']},
@@ -25,6 +27,7 @@ export const CAMPAIGNS={
 const absent=x=>/^[A-Z0-9_]+_MISSING(:|$)/.test(x)||x==='ARTIFACT_READBACK_PENDING'||/_INCOMPLETE$/.test(x);
 export async function verifyOneCampaign(root,m,key,spec,source){
  const r=[],x=m.inputs?.[key],path=spec.dir+'/campaign.json';let b=null;try{b=boundedEvidenceRead(root,path);}catch{/* reported below */}
+ if(key==='recoveryCampaign'&&(x||b||existsSync(join(root,spec.dir)))&&(!x||x.file!==path||!b))return [spec.code+'_CORRUPT'];
  if(!x||x.file!==path||!b){r.push(spec.code+'_MISSING');return r;}
  if(sha(b)!==x.sha256){r.push(spec.code+'_CORRUPT');return r;}
  let doc;try{doc=JSON.parse(b);}catch{r.push(spec.code+'_CORRUPT');return r;}

@@ -38,7 +38,7 @@ test('BEL05 refuses a green suite that omits the study trust-boundary regression
 test('REC06 and CLD03 are never produced by a suite: not_run with their reason, so G-REC1 and G-CLOUD2 are not tested without them',()=>{
  const d=artifactDispositionsFromGroups({});
  expect(d.REC06.status).toBe('not_run');expect(d.CLD03).toEqual({status:'not_run',issues:['deploy_order_pending']});
- const q=qualifyR4Structure({suites:SUITES_R4.map((s:{id:string;kind:string})=>green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:Object.fromEntries(Object.keys(CASES_R4).map(id=>[id,{status:'tested',issues:[]}]).map(([id,x])=>[id,CASES_R4[id as string].notRun?{status:'not_run',issues:['why']}:x]))});
+ const q=qualifyR4Structure({suites:SUITES_R4.map((s:{id:string;kind:string})=>green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:Object.fromEntries(Object.keys(CASES_R4).map(id=>[id,{status:'tested',issues:[]}]).map(([id,x])=>[id,id==='REC06'||CASES_R4[id as string].notRun?{status:'not_run',issues:['why']}:x]))});
  expect(q.gates['G-REC1'].status).toBe('not_run');expect(q.gates['G-CLOUD2'].status).toBe('not_run');expect(q.gates['G-DRV1'].status).toBe('tested');
 });
 test('with nothing supplied every case that names an input is not_run (never failed, never tested) and G-CAL1 says why',()=>{

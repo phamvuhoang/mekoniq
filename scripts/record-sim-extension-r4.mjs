@@ -13,7 +13,7 @@ import {summarizeResult} from './irsim-qualification.mjs';
 import {closureIdentity} from './lab-irsim.mjs';
 import {runR2bCaseCommand} from './native-sim/r2b-process.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=b=>createHash('sha256').update(b).digest('hex');
-const INPUTS={'r2b-record':['r2bRecord','inputs/r2b','qualification.json'],'cil-campaign':['cilCampaign','inputs/cil','campaign.json'],'fault-campaign':['faultCampaign','inputs/fault','campaign.json'],'tray-campaign':['trayCampaign','inputs/tray','campaign.json'],
+const INPUTS={'recovery-campaign':['recoveryCampaign','inputs/recovery','campaign.json'],'r2b-record':['r2bRecord','inputs/r2b','qualification.json'],'cil-campaign':['cilCampaign','inputs/cil','campaign.json'],'fault-campaign':['faultCampaign','inputs/fault','campaign.json'],'tray-campaign':['trayCampaign','inputs/tray','campaign.json'],
  'perception-study':['perceptionStudy','inputs/study','campaign.json'],'bench-record':['benchCampaign','inputs/bench','campaign.json'],'container-record':['containerRecord','inputs/container','container.json'],
  'mock-regression':['mockRegression','inputs/mock','manifest.json'],'calibration-selftest':['calibrationSelftest','inputs/calibration','calibration-selftest.json']};
 export async function recordR4(args){
@@ -35,7 +35,7 @@ export async function recordR4(args){
   const shots=join(directory,'screens');if(suite.kind==='playwright')await mkdir(shots);
   const cmd=suite.kind==='vitest'?[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...suite.files,'--reporter=default','--reporter=json','--outputFile='+abs]:suite.command;
   // the two engine suites that also read a recorded campaign are pointed at the copy beside the record (without it their "recorded campaign" test is skipped, which the core counts as not_run)
-  const recorded={'cil-engine':{CIL_RECORDED_DIR:join(out,'inputs/cil')},'tune-engine':{BENCH_RECORDED_DIR:join(out,'inputs/bench')}}[suite.id]??{};
+  const recorded={'rec-engine':{RECOVERY_RECORDED_DIR:join(out,'inputs/recovery')},'cil-engine':{CIL_RECORDED_DIR:join(out,'inputs/cil')},'tune-engine':{BENCH_RECORDED_DIR:join(out,'inputs/bench')}}[suite.id]??{};
   const suiteEnv={...env,...recorded,...suite.kind==='playwright'?{LAB_PW_JSON:abs,LAB_IRSIM_SCREENSHOTS:shots,LAB_EVIDENCE_DIR:shots,PLAYWRIGHT_JSON_OUTPUT_NAME:abs}:{}};
   const p=await runR2bCaseCommand(process.execPath,cmd,{out:directory,cwd,env:suiteEnv,timeoutMs:6100000,signal:abort.signal});let result=null;
   // the Lab launcher names a spec's result <name>-<spec>.json; a suite here runs exactly one spec

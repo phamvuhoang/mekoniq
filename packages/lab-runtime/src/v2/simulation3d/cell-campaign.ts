@@ -1,4 +1,5 @@
 /** Registered current cell campaign. The production runner owns Source state; observers never synthesize ACKs. */
+import {verifyRecoveryCell,RECOVERY_OPTIONS} from '../perception/recovery-cell-evidence';
 import {createHash} from 'node:crypto';
 import {mkdir,readFile,writeFile,lstat,readdir,mkdtemp,rm,cp} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -25,6 +26,8 @@ import type {RunReport} from '../report';
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),json=(v:unknown)=>JSON.stringify(v,null,2)+'\n';
 export const CELL_CAMPAIGN=campaign;
 export const CELL_CASES=[...campaign.nominalSeeds.map(seed=>({id:`nominal-${seed}`,seed,kind:'nominal'})),...campaign.faults.map(f=>({id:f.id,seed:f.seed,kind:f.id}))];
+export const RECOVERY_CAMPAIGN={...campaign,id:'mj-cell-recovery-v2',belief:RECOVERY_OPTIONS,pulse:'world-cup-nudge-v2',pulseSeeds:[7,42,99]};
+export const RECOVERY_CASES=[...CELL_CASES.filter(c=>c.kind==='nominal'),...RECOVERY_CAMPAIGN.pulseSeeds.map(seed=>({id:`pulse-${seed}`,seed,kind:'pulse'})),...CELL_CASES.filter(c=>c.kind!=='nominal')];
 interface Artifact {path:string;sha256:string;bytes:number}
 export async function cellArtifacts(root:string,base=''):Promise<Artifact[]>{
  const rootStat=await lstat(root);if(!rootStat.isDirectory()||rootStat.isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');
@@ -34,19 +37,21 @@ export async function cellArtifacts(root:string,base=''):Promise<Artifact[]>{
  }if(rows.length>20000||rows.reduce((n,r)=>n+r.bytes,0)>2*1024**3)throw Error('CELL_ARTIFACT_LIMIT');return rows;
 }
 export interface CellCampaignVerdict {expectedRuns:number;completedCases:number;missingArtifacts:string[];issues:string[]}
-export async function runCellCampaign(o:{root:string;out:string;sourceCommit:string;python?:string;caseId?:string;signal?:AbortSignal;/** run the same cases through a registered virtual drive (the CIL campaign) */driveExperimentId?:import('../control/drive-experiments').DriveExperimentId;/** R4.4: run the same cases through a belief grasp (and its recovery policy); the verdict is the same one */belief?:{graspMode:'belief_estimated'|'belief_ground_truth';perceptionProfileId?:string;recoveryPolicyId?:string}}):Promise<CellCampaignVerdict>{
+export async function runCellCampaign(o:{root:string;out:string;sourceCommit:string;python?:string;caseId?:string;signal?:AbortSignal;campaignId?:'mj-cell-recovery-v2';/** run the same cases through a registered virtual drive (the CIL campaign) */driveExperimentId?:import('../control/drive-experiments').DriveExperimentId;/** R4.4: run the same cases through a belief grasp (and its recovery policy); the verdict is the same one */belief?:{graspMode:'belief_estimated'|'belief_ground_truth';perceptionProfileId?:string;recoveryPolicyId?:string}}):Promise<CellCampaignVerdict>{
  o.signal?.throwIfAborted();
  if(!/^[a-f0-9]{40}$/.test(o.sourceCommit))throw Error('CELL_SOURCE_COMMIT_REQUIRED');
- if(o.caseId&&!CELL_CASES.some(c=>c.id===o.caseId))throw Error('CAMPAIGN_CASE_UNREGISTERED');
- await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign,sourceCommit:o.sourceCommit,accepted:false,execution:'actual_mujoco',calibration:'not_calibrated',...o.belief?{belief:o.belief}:{},...o.driveExperimentId?{driveExperimentId:o.driveExperimentId,driveProfileRegistry:'cil-v2',hostArch:process.arch==='arm64'?'arm64':'x86_64'}:{}}));
+ const recovery=o.campaignId===RECOVERY_CAMPAIGN.id,registry=recovery?RECOVERY_CAMPAIGN:campaign,cases=recovery?RECOVERY_CASES:CELL_CASES;
+ if(o.campaignId!==undefined&&(!recovery||o.belief||o.driveExperimentId))throw Error('CELL_CAMPAIGN_IDENTITY');
+ if(o.caseId&&!cases.some(c=>c.id===o.caseId))throw Error('CAMPAIGN_CASE_UNREGISTERED');
+ await mkdir(o.out);await writeFile(join(o.out,'campaign.json'),json({campaign:registry,sourceCommit:o.sourceCommit,accepted:false,execution:'actual_mujoco',calibration:'not_calibrated',...o.belief?{belief:o.belief}:{},...o.driveExperimentId?{driveExperimentId:o.driveExperimentId,driveProfileRegistry:'cil-v2',hostArch:process.arch==='arm64'?'arm64':'x86_64'}:{}}));
  const workerRoot=join(o.root,'robotics/simulation-mujoco'),project=JSON.parse(await readFile(join(workerRoot,'fixtures/coffee-delivery-cell-v1/project.json'),'utf8'));
- for(const spec of CELL_CASES.filter(c=>!o.caseId||c.id===o.caseId)){
+ for(const spec of cases.filter(c=>!o.caseId||c.id===o.caseId)){
   const dir=join(o.out,spec.id);await mkdir(dir);const directory=join(dir,'run');await mkdir(directory);let input!:WorldFactoryInput,bindings!:WorldPlantBindings,worker:Awaited<ReturnType<typeof spawnMujocoWorker>>|undefined,drop=false,opens=0,action=0;
   const trace:{requestId:string;op:string;targetTick:number;delivered:boolean;responseDigest?:string}[]=[],fault=campaign.faults.find(f=>f.id===spec.id);
   const factory=mujocoWorldPorts({python:o.python??join(o.root,'.venv-mujoco/bin/python'),workerRoot,schemaDir:join(o.root,'packages/contracts/schemas'),lockDigest:await lockDigestOf(join(workerRoot,'requirements.lock')),engineVersion:'3.17.0',...fault&&'presetId'in fault?{cellDisturbance:{presetId:fault.presetId as 'world-dock-drift-v1'|'world-cup-fall-v1'|'world-cup-nudge-v1',cupId:'cup-1'}}:{}},async options=>{
-   opens++;worker=await spawnMujocoWorker(options);const original=worker.request.bind(worker);return {...worker,async request(request){const observation={requestId:request.requestId,op:request.op,targetTick:request.expectedTick+1,delivered:false,responseDigest:undefined as string|undefined};trace.push(observation);const response=await original(request),lost=drop&&request.op==='step';observation.delivered=!lost;if(response.ok)observation.responseDigest=hashJson(response.result);if(lost){drop=false;await writeFile(join(dir,'lost-ack-native-response.json'),json({request,response}));throw new WorkerLostError('ACK_TIMEOUT','unknown','registered current campaign: dropped actual native response');}return response;}};
+   opens++;worker=await spawnMujocoWorker(options);const original=worker.request.bind(worker);return {...worker,async request(request){const observation={requestId:request.requestId,op:request.op,targetTick:request.expectedTick+1,delivered:false,...recovery?{requestDigest:hashJson(request.payload)}:{},responseDigest:undefined as string|undefined};trace.push(observation);const response=await original(request),lost=drop&&request.op==='step';observation.delivered=!lost;if(response.ok)observation.responseDigest=hashJson(response.result);if(lost){drop=false;await writeFile(join(dir,'lost-ack-native-response.json'),json({request,response}));throw new WorkerLostError('ACK_TIMEOUT','unknown','registered current campaign: dropped actual native response');}return response;}};
   });
-  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)},manifest={project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:spec.seed,mode:'simulation' as const,access:'simulated' as const,backendSetId:'engineering-mujoco-cell-v1',sourceCommit:o.sourceCommit,...o.driveExperimentId?{driveExperimentId:o.driveExperimentId}:{},...o.belief??{}},providers={directory,catalog,assets:[serviceAmrAsset({id:'service-robot',revision:1,chassis:'service',trays:3,sensor:'lidar'})],enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],worldPorts:async(i:WorldFactoryInput)=>{input=i;bindings=await factory(i);return bindings;}};
+  const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>['mujoco_arm','mujoco_3d'].includes(b.id)?{...b,installed:true,compatible:true,reachable:true}:b)},manifest={project,scenarioId:'MJ-CELL-BV01',scenarioRevision:1,seed:spec.seed,mode:'simulation' as const,access:'simulated' as const,backendSetId:'engineering-mujoco-cell-v1',sourceCommit:o.sourceCommit,...o.driveExperimentId?{driveExperimentId:o.driveExperimentId}:{},...o.belief??{},...recovery?{...RECOVERY_OPTIONS,...spec.kind==='pulse'?{worldExperimentId:'world-cup-nudge-v2' as const}:{}}:{}},providers={directory,catalog,assets:[serviceAmrAsset({id:'service-robot',revision:1,chassis:'service',trays:3,sensor:'lidar'})],enabledBackends:['mujoco_3d','mujoco_arm','mock_coffee'],worldPorts:async(i:WorldFactoryInput)=>{input=i;bindings=await factory(i);return bindings;}};
   let run:ScenarioRun|undefined,error:string|null=null,report:RunReport|undefined;const started=performance.now();
   try{
    run=await createScenarioRun(manifest,providers);const act=async(kind:string,payload:object={})=>{const v=await run!.snapshot();return run!.action({actionId:`cell-campaign-${++action}`,expectedRevision:v.run.runRevision,kind,payload});};
@@ -72,24 +77,31 @@ export async function runCellCampaign(o:{root:string;out:string;sourceCommit:str
     }finally{await reopened.close();}
    }finally{await rm(copy,{recursive:true,force:true});}
   }
-  await writeFile(join(dir,'case.json'),json({schemaVersion:1,case:spec,sourceCommit:o.sourceCommit,accepted:false,execution:'actual_mujoco',engineVersion:'3.17.0',artifacts:await cellArtifacts(dir)}));if(o.signal?.aborted)break;
+  await writeFile(join(dir,'case.json'),json({schemaVersion:1,case:spec,sourceCommit:o.sourceCommit,accepted:false,...recovery?{calibration:'not_calibrated'}:{},execution:'actual_mujoco',engineVersion:'3.17.0',artifacts:await cellArtifacts(dir)}));if(o.signal?.aborted)break;
  }
- const verdict=await verifyCellCampaign(o.out);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return o.caseId?{...verdict,expectedRuns:1,completedCases:verdict.missingArtifacts.includes(o.caseId)?0:1,missingArtifacts:verdict.missingArtifacts.filter(id=>id===o.caseId),issues:verdict.issues.filter(x=>x.startsWith(o.caseId+':')||!x.includes(':'))}:verdict;
+ const verdict=await (recovery?verifyRegisteredCellCampaign(o.out,RECOVERY_CASES,true):verifyCellCampaign(o.out));await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return o.caseId?{...verdict,expectedRuns:1,completedCases:verdict.missingArtifacts.includes(o.caseId)?0:1,missingArtifacts:verdict.missingArtifacts.filter(id=>id===o.caseId),issues:verdict.issues.filter(x=>x.startsWith(o.caseId+':')||!x.includes(':'))}:verdict;
 }
 async function readCellJson(root:string,path:string){
  if(!/^[\w.-]+(?:\/[\w.-]+)*$/.test(path)||path.split('/').some(p=>p==='.'||p==='..'))throw Error('CELL_ARTIFACT_PATH');let current=root;if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');for(const part of path.split('/')){current=join(current,part);if((await lstat(current)).isSymbolicLink())throw Error('CELL_ARTIFACT_PATH');}const st=await lstat(current);if(!st.isFile()||st.size>64*1024*1024)throw Error('CELL_ARTIFACT_LIMIT');return JSON.parse(await readFile(current,'utf8'));
 }
-export async function verifyCellCampaign(root:string,onlyIds?:string[],historicalDrive?:boolean):Promise<CellCampaignVerdict>{
- if(onlyIds!==undefined&&(!onlyIds.length||onlyIds.some(id=>!CELL_CASES.some(c=>c.id===id))))
+export async function verifyRecoveryCampaign(root:string){
+ const v=await verifyRegisteredCellCampaign(root,RECOVERY_CASES,true);
+ try{if(hashJson(await readCellJson(root,'summary.json'))!==hashJson({accepted:false,...v}))throw Error();}catch{v.issues.push('RECOVERY_SUMMARY_MISMATCH');}
+ return v;
+}
+export const verifyCellCampaign=(root:string,onlyIds?:string[],historicalDrive?:boolean)=>verifyRegisteredCellCampaign(root,CELL_CASES,false,onlyIds,historicalDrive);
+async function verifyRegisteredCellCampaign(root:string,cases:typeof CELL_CASES,recovery:boolean,onlyIds?:string[],historicalDrive?:boolean):Promise<CellCampaignVerdict>{
+ if(onlyIds!==undefined&&(!onlyIds.length||onlyIds.some(id=>!cases.some(c=>c.id===id))))
   return {expectedRuns:0,completedCases:0,missingArtifacts:[],issues:['CELL_CASE_UNREGISTERED']};
- const selected=CELL_CASES.filter(s=>!onlyIds||onlyIds.includes(s.id));
+ const selected=cases.filter(s=>!onlyIds||onlyIds.includes(s.id));
+ const recoveryRunIds=new Set<string>();
  const v:CellCampaignVerdict={expectedRuns:selected.length,completedCases:0,missingArtifacts:[],issues:[]};let source:string|undefined,experiment:DriveExperimentId|undefined,host:HostArch|undefined,legacyProfile=false,driveRegistry:string|undefined;
- try{const c=await readCellJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(campaign)||!/^[a-f0-9]{40}$/.test(c.sourceCommit))throw Error();experiment=c.driveExperimentId;host=c.hostArch;driveRegistry=c.driveProfileRegistry;
+ try{const c=await readCellJson(root,'campaign.json');if(c.accepted!==false||c.execution!=='actual_mujoco'||c.calibration!=='not_calibrated'||hashJson(c.campaign)!==hashJson(recovery?RECOVERY_CAMPAIGN:campaign)||recovery&&hashJson(c)!==hashJson({campaign:RECOVERY_CAMPAIGN,sourceCommit:c.sourceCommit,accepted:false,execution:'actual_mujoco',calibration:'not_calibrated'})||!/^[a-f0-9]{40}$/.test(c.sourceCommit))throw Error();experiment=c.driveExperimentId;host=c.hostArch;driveRegistry=c.driveProfileRegistry;
   if(experiment){legacyProfile=c.driveProfileRegistry===undefined;if((!legacyProfile&&c.driveProfileRegistry!=='cil-v2')||(historicalDrive!==undefined&&historicalDrive!==legacyProfile)||!['arm64','x86_64'].includes(c.hostArch))throw Error();}
   source=c.sourceCommit;
  }catch{v.issues.push('CELL_CAMPAIGN_IDENTITY');}
  for(const spec of selected){const dir=join(root,spec.id),check=(ok:unknown,code:string)=>{if(!ok)throw Error(code);};try{
-  const rec=await readCellJson(dir,'case.json');check(source!==undefined&&rec.schemaVersion===1&&rec.accepted===false&&rec.execution==='actual_mujoco'&&rec.engineVersion==='3.17.0'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec),'CELL_CASE_IDENTITY');
+  const rec=await readCellJson(dir,'case.json');check(source!==undefined&&rec.schemaVersion===1&&rec.accepted===false&&rec.execution==='actual_mujoco'&&(!recovery||rec.calibration==='not_calibrated')&&rec.engineVersion==='3.17.0'&&rec.sourceCommit===source&&hashJson(rec.case)===hashJson(spec),'CELL_CASE_IDENTITY');
   const files=await cellArtifacts(dir);check(hashJson(files)===hashJson(rec.artifacts),'CELL_ARTIFACT_INVENTORY');const paths=new Set(files.map(f=>f.path));for(const p of ['report.json','source-journal.json','controller-state.json','physical-custody.json','trace.json','run/run.json','run/journal.db','run/world-evidence/manifest.json'])check(paths.has(p),'CELL_ARTIFACT_MISSING:'+p);
   const read=(p:string)=>readCellJson(dir,p),report=await read('report.json') as RunReport,cp=await read('run/run.json'),trace=await read('trace.json');check(trace.opens===1&&!trace.error&&trace.requests.length>1,'CELL_ACTUAL_WORKER_REQUIRED');
   check(cp.manifest.seed===spec.seed&&cp.manifest.sourceCommit===source&&report.manifest.sourceCommit===source&&report.manifest.seed===spec.seed&&cp.runId===report.manifest.runId&&cp.tick===report.outcome.tick,'CELL_RUN_IDENTITY');
@@ -113,12 +125,20 @@ export async function verifyCellCampaign(root:string,onlyIds?:string[],historica
   }
   const sweep=evaluateWorldSweep(rows,admission,raw,{runId:cp.runId,bootId:cp.world.snapshot.bootId,sceneDigest:cp.world.snapshot.sceneDigest,lastCommittedTick:cp.tick,businessEpochMs:cp.manifest.clock.businessEpochMs},world.complete);
   for(const row of rows){const s=row.snapshot;check(s.bootId===cp.world.snapshot.bootId&&s.sceneDigest===admission.scene.sceneDigest&&s.worldStep?.modelCount===1&&s.worldStep.physicsSubsteps===(s.tick+1)*10&&s.worldStep.workerPid===rows[0]!.snapshot.worldStep!.workerPid,'CELL_SHARED_WORLD');}
-  if(spec.kind==='nominal'){check(report.outcome.status==='completed'&&report.outcome.served==='2'&&report.attention.length===0&&sweep.status==='pass','CELL_NOMINAL_OUTCOME');check(report.businessEvents.filter(e=>e.type==='CupHandedOff').length===2&&report.businessEvents.filter(e=>e.type==='CupTransferConfirmed').length===4,'CELL_CONFIRMED_CUSTODY');const poses=new Map<string,number[]>();for(const row of rows)for(const p of row.snapshot.props??[]){const prev=poses.get(p.propId);if(prev)check(Math.hypot(...p.position.map((n,i)=>n-prev[i]!))<=.02,'CELL_PROP_CONTINUITY');poses.set(p.propId,p.position);}check(rows.flatMap(r=>r.interactions).length===4,'CELL_INTERACTIONS');}
+  if(recovery){
+   check(!recoveryRunIds.has(cp.runId)&&!cp.reclaimed&&!paths.has('error.txt'),'RECOVERY_RUN_IDENTITY');recoveryRunIds.add(cp.runId);
+   check(trace.requests.length===steps.length+2&&trace.requests[0].op==='create'&&trace.requests[0].requestId==='world-1'&&trace.requests[1].op==='start'&&trace.requests[1].requestId==='world-2'&&trace.requests[1].responseDigest===hashJson(rows[0]!.snapshot),'RECOVERY_WORKER_SESSION');
+   check(paths.has('lost-ack-native-response.json')===(spec.kind==='lost-ack')&&paths.has('fault-before.json')===(unknown||spec.kind==='cancel-held'),'RECOVERY_FAULT_ARTIFACTS');
+   if(unknown||spec.kind==='cancel-held'){const before=await read('fault-before.json');check(before.view.tick===cp.tick&&hashJson(before.snapshot)===hashJson(rows[cp.tick]!.snapshot)&&before.view.coffee?.cups.some((c:{cupId:string;ownerKind:string})=>c.cupId==='cup-1'&&c.ownerKind==='arm'),'RECOVERY_HELD_BOUNDARY');}
+   await verifyRecoveryCell({spec,report,admission,rows,read,paths,steps,checkpoint:cp,sweep,directory:dir});
+  }
+  if(['nominal','pulse'].includes(spec.kind)){check(report.outcome.status==='completed'&&report.outcome.served==='2'&&report.attention.length===0&&sweep.status==='pass','CELL_NOMINAL_OUTCOME');check(report.businessEvents.filter(e=>e.type==='CupHandedOff').length===2&&report.businessEvents.filter(e=>e.type==='CupTransferConfirmed').length===4,'CELL_CONFIRMED_CUSTODY');const poses=new Map<string,number[]>();for(const row of rows)for(const p of row.snapshot.props??[]){const prev=poses.get(p.propId);if(prev)check(Math.hypot(...p.position.map((n,i)=>n-prev[i]!))<=.02,'CELL_PROP_CONTINUITY');poses.set(p.propId,p.position);}check(rows.flatMap(r=>r.interactions).length===4,'CELL_INTERACTIONS');}
   else{const fault=campaign.faults.find(f=>f.id===spec.id)!;check(report.outcome.served==='0'&&!report.businessEvents.some(e=>e.type==='CupHandedOff'),'CELL_FALSE_SERVED');check(journal.states.get('cup/cup-1')?.ownerKind===fault.lastSourceOwner&&report.coffee?.cups.find(c=>c.cupId==='cup-1')?.ownerKind===fault.lastSourceOwner,'CELL_LAST_SOURCE_CUSTODY');if(unknown){check(report.attention.some(a=>a.reason===fault.expectedCode),'CELL_FAULT_CODE');check(cp.world.pending?.targetTick===cp.tick+1&&cp.world.pending.stage==='sent'&&cp.world.pending.ackTick===null,'CELL_UNKNOWN_BOUNDARY');check(report.coffee?.physicalCustody?.find(c=>c.cupId==='cup-1')?.status==='unknown','CELL_UNKNOWN_CUSTODY');if(spec.kind==='lost-ack'){const ack=await read('lost-ack-native-response.json');check(ack.response.ok&&ack.response.tick===cp.tick+1&&ack.response.result.arms[0].gripper.heldPropIds.includes('cup-1'),'CELL_LOST_ACTUAL_ACK');}}
    else if(spec.kind==='cancel-held')check(report.coffee?.armTrace.stop?.reason==='CELL_CANCELLED'&&rows.at(-1)?.snapshot.arms?.[0]?.gripper?.heldPropIds.includes('cup-1'),'CELL_CANCEL_HOLD');
    else{check(report.attention.some(a=>a.reason===fault.expectedCode),'CELL_FAULT_CODE');const disturbed=rows.flatMap(r=>r.snapshot.worldStep?.disturbances??[]);check(disturbed.length===1&&disturbed[0]?.presetId===('presetId'in fault?fault.presetId:null),'CELL_ACTUAL_DISTURBANCE');}
   }
   v.completedCases++;
  }catch(e){v.missingArtifacts.push(spec.id);v.issues.push(`${spec.id}:${(e as Error).message}`);}}
+ if(recovery&&source){const entries=await readdir(root);if(entries.some(k=>!['campaign.json','summary.json',...cases.map(c=>c.id)].includes(k)))v.issues.push('RECOVERY_EXTRA_CASE');}
  return v;
 }

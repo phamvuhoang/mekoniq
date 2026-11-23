@@ -1,3 +1,4 @@
+import {verifyCellExecution} from './cell-execution';
 /** The study observes the first cup's final grasp, through its correlated program receipt.
  * A later delivery/drop is a different scope. Read-only: never reopen/resume a ScenarioRun. */
 import {createHash} from 'node:crypto';
@@ -12,9 +13,6 @@ import {composePose,invertPose} from '../frames';
 import {scoreBeliefAttempts} from './belief-integrity';
 import {beliefPublicationIssues,verifyBeliefNativeCommits} from './belief-world-proof';
 import {loadOracleProfile} from '../algorithm/checker';
-import {defaultCatalog} from '../capabilities';
-import {instantiateBackends} from '../backend-registry';
-import {scenarioRegistry,scenarioHash} from '../scenario-registry';
 import {readCampaignJournal,verifyCampaignOutcome} from '../control/campaign-source-evidence';
 import {readRetainedWorldAdmission} from '../simulation3d/world-arm-report';
 import {readWorldEvidence,type WorldAdmission} from '../simulation3d/world-evidence';
@@ -33,14 +31,6 @@ type Belief={attempts:GraspAttempt[];recovery:RecoveryStep[]};
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),same=(a:unknown,b:unknown)=>hashJson(a as never)===hashJson(b as never);
 const fail=(code:string):never=>{throw Error(code);};
 const SRC=fileURLToPath(new URL('../../../../../',import.meta.url));
-/** Compare registration metadata without starting a backend. Host availability is
- * irrelevant to a cold reader; the retained world supplies the execution witness. */
-function verifyRigExecution(m:RunReport['manifest'],admission:WorldAdmission){
- const id='engineering-mujoco-cell-v1',set=defaultCatalog.sets[id]!,scenario=scenarioRegistry.get('MJ-CELL-BV01')!;
- const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>({...b,installed:true,compatible:true,reachable:true}))},registered=instantiateBackends(id,catalog,set.backends);
- const project=worldDocument<{id:string;revision:number}>(admission.files,'project.json'),projectHash=hashJson(project);
- if(m.mode!==registered.mode||m.access!==registered.access||m.backendSetId!==id||!m.backends||!same(m.backends,registered.descriptors)||!m.scenario||!same(m.scenario,{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)})||!m.project||!same(m.project,{id:project.id,revision:project.revision,hash:projectHash})||projectHash!==admission.scene.inputs.projectDigest||admission.scene.armCell.engine.id!==set.providers!.amr||admission.scene.navigation.engine.id!==set.providers!.amr||admission.scene.navigation.engine.version!==registered.descriptors[0]!.version)fail('RIG_EXECUTION_IDENTITY');
-}
 /** No serving counter or global stop fallback. The first pick's own receipt supplies its tick.
  * This also inspects old reports truthfully, but does not qualify them under the new protocol. */
 export function rigReportFacts(report:RigReport,arm:Arm,evidence:Belief={attempts:[],recovery:[]}){
@@ -91,7 +81,7 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  const sceneDigest=m.models.find(x=>x.id==='mujoco_shared_world')?.hash;if(!sceneDigest)fail('RIG_WORLD_IDENTITY');
  const admission=await readRetainedWorldAdmission(runDir,sceneDigest!),scope=report.worldSweep?.scope,trace=report.arm?.worldTrace;
  if(admission.scene.id!=='pick-rig-v1'||m.armProgram?.fixture.id!=='pick-rig-v1'||admission.scene.armCell.engineSeed!==input.seed||scope?.identity.runId!==m.runId||scope.identity.bootId!==cp.world.snapshot.bootId||scope.identity.sceneDigest!==sceneDigest||scope.identity.admissionDigest!==admission.digest||scope.publicCommittedTick!==h||scope.prefixCovered!==true||trace?.prefixCovered!==true||trace.firstTick!==0||trace.lastTick!==h||trace.samples!==h+1||trace.publicCommittedTick!==h||trace.reasonCodes.length)fail('RIG_WORLD_IDENTITY');
- verifyRigExecution(m,admission);
+ try{verifyCellExecution(m,admission);}catch{fail('RIG_EXECUTION_IDENTITY');}
  const policyBytes=await readFile(join(SRC,'robotics/simulation-mujoco/fixtures/pick-rig-v1/handoff-policy.json'));
  if(admission.scene.handoffPolicyRef.sha256!==sha(policyBytes))fail('RIG_BIRTH_FIXTURE_MISMATCH');
  // This is the same compiled oracle used by mujocoWorldPorts. The record cannot
