@@ -3,9 +3,10 @@
 //   node scripts/test-irsim-e2e.mjs --production-ui --same-origin --provider mujoco --mujoco-mobile --ui-port 42455 --runtime-port 42456 mujoco-belief.spec.ts
 import {test,expect,type Request} from '@playwright/test';
 import {execFileSync} from 'node:child_process';
-import {mkdtempSync,readFileSync} from 'node:fs';
+import {mkdtempSync,readFileSync,cpSync,writeFileSync,rmSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {join} from 'node:path';
-import {gunzipSync} from 'node:zlib';
+import {gunzipSync,gzipSync} from 'node:zlib';
 import {openInspector,openScenarioPicker} from '../support/twin';
 import {sweepWeb07} from '../support/web07';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL;
@@ -31,6 +32,11 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  const row=page.getByTestId('perception-attempts').locator('tr[data-attempt="cup-1#0"]');
  await expect(row).toBeVisible({timeout:120000});await expect(row.locator('[data-gate="belief"]')).toHaveAttribute('data-pass','true');await expect(row.locator('td[data-outcome]')).toHaveAttribute('data-outcome','lifted');
  await expect(page.getByTestId('perception-evidence')).toContainText(/not camera data/i);
+ // Display-only study fixture, labelled in its visible first row; not a measured study or qualification input.
+ const point={mode:'belief_estimated',runs:10,firstTry:7,afterRecovery:0,attention:3,firstTryInterval:{low:0.4,high:0.9},medianTicks:1500,unexpectedContacts:0,medianBeliefErrorAtCommitM:0.002,outcomes:{lifted:7,refused:3}};
+ await page.locator('#twin-import-perception-study').setInputFiles({name:'SYNTHETIC_UI_ONLY-study.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({schemaVersion:1,campaignId:'SYNTHETIC_UI_ONLY',calibration:'not_calibrated',points:[{...point,id:'SYNTHETIC_UI_ONLY'},{...point,id:'sigma-2mm'},{...point,id:'sigma-4mm'}]}))});
+ await expect(page.getByTestId('perception-study')).toContainText('SYNTHETIC_UI_ONLY');
+ await sweepWeb07(page,{panel:'perception-study',testId:'perception-study',displayFixture:'synthetic-ui-only',reopen:()=>openInspector(page,'report')});
  // 390 px: the attempts table scrolls inside its own region, the page does not
  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await page.setViewportSize({width:1440,height:900});
  // the exported package: the report travels inside it with the stream
@@ -53,8 +59,18 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  // the table lists only the attempts decided up to the cursor: nothing believed yet at tick 5 (the first estimate is published at tick 10: update period 10, latency 5)
  await offline.locator('#replay-cursor').evaluate((el:HTMLInputElement)=>{el.value='5';el.dispatchEvent(new Event('input',{bubbles:true}));});await expect(offline.getByTestId('belief-legend')).toHaveAttribute('data-state',/no_data_at_cursor|none/);await expect(offline.locator('#replay-stage [data-belief]')).toHaveCount(0);
  expect(attempts).toEqual([]);await offline.close();
+ // A separate temporary UI fixture exercises the recovery list. It changes only a copied report, is labelled visibly, and is never a public replay or engine recovery claim.
+ const uiPackage=join(folder,'synthetic-ui-only');cpSync(join(folder,'pkg'),uiPackage,{recursive:true});
+ const uiReport=structuredClone(report);uiReport.perceptionEvidence.issues.push('SYNTHETIC_UI_ONLY_NOT_ENGINE_RECOVERY');
+ uiReport.perceptionEvidence.recovery=['open_gripper','retreat_pick_approach','await_fresh_belief','retry_pick'].map((action,i)=>({stepId:`ui-only/s${i}`,attemptId:'cup-1#0',rule:'grip-not-established',action,commandId:`synthetic-ui-only:${i}`,recordedTick:1500+i*40,completedTick:1520+i*40,result:'done'}));
+ const decoded=Buffer.from(JSON.stringify(uiReport)),stored=asset.encoding==='gzip'?gzipSync(decoded):decoded,sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
+ Object.assign(asset,{bytes:stored.length,decodedBytes:decoded.length,sha256:sha(stored),decodedSha256:sha(decoded)});writeFileSync(join(uiPackage,asset.path),stored);writeFileSync(join(uiPackage,'manifest.json'),JSON.stringify(manifest));
+ const ui=await page.context().newPage();await ui.route('**/lab/**',r=>r.abort());await ui.goto('/#replay');await ui.locator('.replay-files>summary').click();await ui.locator('#replay-import').setInputFiles(uiPackage);await expect(ui.locator('#replay-cursor')).toBeVisible({timeout:90000});
+ await ui.locator('#replay-cursor').evaluate((el:HTMLInputElement)=>{el.value='1800';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ await expect(ui.getByTestId('perception-recovery').locator('li')).toHaveCount(4);await expect(ui.getByTestId('perception-issues')).toContainText('SYNTHETIC_UI_ONLY_NOT_ENGINE_RECOVERY');
+ await sweepWeb07(ui,{panel:'recovery',testId:'perception-recovery',displayFixture:'synthetic-ui-only'});await ui.close();
  // an older (R2b) report has no perception stream: said in words, no ghost
  const old=await page.context().newPage();await old.route('**/lab/**',r=>r.abort());await old.setViewportSize({width:390,height:844});await old.goto('/#replay/coffee-delivery');await expect(old.locator('#replay-cursor')).toBeVisible({timeout:90000});
  await expect(old.getByTestId('belief-legend')).toHaveAttribute('data-state','none');await expect(old.getByTestId('belief-legend')).toContainText(/No perception data|không có dữ liệu nhận thức|認識データなし/i);await expect(old.locator('[data-belief]')).toHaveCount(0);
- expect(await old.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await old.close();
+ expect(await old.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await old.close();rmSync(folder,{recursive:true,force:true});
 });

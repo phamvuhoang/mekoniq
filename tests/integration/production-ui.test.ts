@@ -13,7 +13,8 @@ test('production UI serves the built bytes and pin, proxies runtime traffic, bin
   await mkdir(join(root,'config'),{recursive:true});
   await writeFile(join(root,'config/source-runtime.lock.json'),JSON.stringify({sourceCommit:'a'.repeat(40),artifactSha256:'b'.repeat(64),schemaHash:'c'.repeat(64)}));
   await writeFile(join(root,'index.html'),'<html><body><div id="app"></div><script type="module" src="/main.js"></script></body></html>');
-  await writeFile(join(root,'main.js'),'document.querySelector("#app").textContent="production fixture";');
+  await writeFile(join(root,'main.js'),'import("./lazy.js").then(m=>document.querySelector("#app").textContent=m.label);');
+  await writeFile(join(root,'lazy.js'),'export const label="production fixture";');
   // @ts-expect-error JavaScript CLI boundary
   const {startProductionUi,verifyProductionUi}=await import('../../scripts/production-ui.mjs');
   ui=await startProductionUi({root,runtimeRoot:root,uiPort:0,runtimePort:(runtime.address() as {port:number}).port,evidenceDir:evidence});
@@ -23,6 +24,10 @@ test('production UI serves the built bytes and pin, proxies runtime traffic, bin
   await expect(verifyProductionUi({url:`http://127.0.0.1:${(runtime.address() as {port:number}).port}/`,evidenceDir:evidence})).rejects.toThrow('PRODUCTION_SERVED_MISMATCH');
   const bytes=await readFile(join(evidence,'production-ui.json'));expect(binding).toBe(createHash('sha256').update(bytes).digest('hex'));
   const receipt=JSON.parse(bytes.toString());expect(receipt.files.some((f:{path:string})=>f.path.endsWith('.js'))).toBe(true);expect(receipt.sourceCommit).toBe('a'.repeat(40));
+  expect(receipt.files.filter((f:{path:string})=>f.path.endsWith('.js'))).toHaveLength(2);
+  await writeFile(join(evidence,'production-ui.json'),JSON.stringify({...receipt,files:receipt.files.filter((f:{path:string})=>!f.path.includes('/lazy-'))}));
+  await expect(verifyProductionUi({url:ui!.url,evidenceDir:evidence})).rejects.toThrow('PRODUCTION_DEPENDENCY_MISSING');
+  await writeFile(join(evidence,'production-ui.json'),bytes);
   const asset=receipt.files.find((f:{path:string})=>f.path.endsWith('.js'));
   await writeFile(join(evidence,'production-ui',asset.path),'changed');
   await expect(verifyProductionUi({url:ui!.url,evidenceDir:evidence})).rejects.toThrow('PRODUCTION_FILE_MISMATCH');

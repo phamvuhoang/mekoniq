@@ -56,6 +56,7 @@ test('drive fault studio: compose, check (and a refused overlap that creates no 
  await expect(studio.locator('.fault-timeline-plot')).toBeHidden();await expect(studio.locator('.fault-timeline-list li')).toHaveCount(2);await expect(studio.locator('.fault-timeline-list')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);await shot(page,'390-list');
  await page.setViewportSize({width:1440,height:900});await expect(studio.locator('.fault-timeline-plot')).toBeVisible();
+ await sweepWeb07(page,{panel:'fault-composer',testId:'drive-faults',reopen:async()=>{await openInspector(page,'setup');if(await studio.getAttribute('open')===null)await studio.locator('summary').click();}});
  // remove the second entry; the check passes again
  await studio.locator('.fault-timeline-list li').nth(1).locator('[data-action="twin-drivefault-remove"]').click();
  await expect(studio.locator('.fault-timeline-list li')).toHaveCount(1);await studio.getByTestId('drive-fault-check-button').click();await expect(page.getByTestId('drive-fault-check')).toHaveAttribute('data-state','ok');

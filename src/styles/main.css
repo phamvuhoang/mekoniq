@@ -2315,7 +2315,7 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 #twin-fault-schedule>summary{min-height:24px;cursor:pointer}
 .twin-display-menu{position:static;min-height:0;width:min(360px,calc(100vw - 48px));max-height:none}
 .twin-display-menu h2{margin:0 0 8px;font-size:13px}
-.twin-viewport .notice{position:absolute;top:8px;left:8px;z-index:2;max-width:min(560px,calc(100% - 200px));margin:0}
+.twin-viewport .notice{position:absolute;top:64px;left:8px;z-index:2;max-width:min(560px,calc(100% - 16px));margin:0}
 .twin-overlay{position:absolute;left:8px;right:8px;bottom:8px;z-index:2;display:grid;gap:6px;pointer-events:none}
 .twin-overlay>*{pointer-events:auto;margin:0}
 .twin-overlay .source-note{padding:6px 10px;background:var(--panel);border-radius:8px}
@@ -2615,8 +2615,9 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .assembly-page .asm-scene canvas{width:100%;display:block}
 .assembly-page .asm-status{color:var(--mq-text-muted)}
 
-/* A status message must retain a readable line at phone widths, clear of the viewport tools. */
-@media(max-width:767px){.twin-viewport .notice{top:64px;right:8px;max-width:calc(100% - 16px)}.twin-viewport .notice span{min-width:0}.twin-viewport .notice>svg,.twin-viewport .notice button{flex-shrink:0}}
+/* Keep the message and its dismiss button below the viewport tools, including a narrow viewport beside an open inspector. */
+.twin-viewport .notice span{min-width:0}
+.twin-viewport .notice>svg,.twin-viewport .notice button{flex-shrink:0}
 
 /* Viewport-first recorded-world workspace; keep file/evidence tools secondary. */
 .replay-app{max-width:1600px;margin:0 auto;padding:12px 20px;color:var(--ink);min-width:0}

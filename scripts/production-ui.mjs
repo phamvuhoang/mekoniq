@@ -2,11 +2,12 @@
 // bytes fetched from the server, checked against the build before Ready is printed.
 import {build,preview} from 'vite';
 import {execFileSync} from 'node:child_process';
-import {mkdtemp,mkdir,readFile,writeFile,rm,access,realpath} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,writeFile,rm,access,realpath,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
+import {productionAssetDependencies} from './production-assets.mjs';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const entries=index=>[...new Set([...index.toString().matchAll(/(?:src|href)="(\/assets\/[A-Za-z0-9_.-]+\.(?:js|css))"/g)].map(m=>m[1].slice(1)))];
 function identity(root){try{return {labCommit:execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim(),labDirty:!!execFileSync('git',['-C',root,'status','--porcelain'],{encoding:'utf8'}).trim()};}catch{return {labCommit:null,labDirty:true};}}
@@ -21,6 +22,7 @@ export async function verifyProductionUi({url,evidenceDir}){
   if(!/^(?:index\.html|source-runtime\.lock\.json|assets\/[A-Za-z0-9_.-]+\.(?:js|css))$/.test(f.path))throw Error('PRODUCTION_PATH_INVALID');
   const content=await readFile(join(evidenceDir,'production-ui',f.path));
   if(sha(content)!==f.sha256||content.length!==f.bytes)throw Error('PRODUCTION_FILE_MISMATCH');
+  if(f.path.endsWith('.js')&&productionAssetDependencies(f.path,content).some(path=>!paths.includes(path)))throw Error('PRODUCTION_DEPENDENCY_MISSING');
   if(!content.equals(await fetchBytes(origin,f.path==='index.html'?'/':'/'+f.path)))throw Error('PRODUCTION_SERVED_MISMATCH');
  }
  const index=await readFile(join(evidenceDir,'production-ui/index.html'));
@@ -42,7 +44,8 @@ export async function startProductionUi({root,runtimeRoot=root,uiPort,runtimePor
   server=await preview({root,configFile,logLevel:'error',build:{outDir:directory},preview:{host:'127.0.0.1',port:uiPort,strictPort:true,proxy:{'/lab':{target:`http://127.0.0.1:${runtimePort}`,changeOrigin:false}}}});
   const address=server.httpServer.address();if(!address||typeof address==='string')throw Error('PRODUCTION_ADDRESS_REQUIRED');const url=`http://127.0.0.1:${address.port}/`;
   const index=await readFile(join(directory,'index.html')),files=[];
-  for(const path of ['index.html','source-runtime.lock.json',...entries(index)]){
+  const assets=(await readdir(join(directory,'assets'))).filter(name=>/\.(?:js|css)$/.test(name)).sort().map(name=>'assets/'+name);
+  for(const path of ['index.html','source-runtime.lock.json',...assets]){
    const built=await readFile(join(directory,path)),served=await fetchBytes(url,path==='index.html'?'/':'/'+path);if(!built.equals(served))throw Error('PRODUCTION_SERVED_MISMATCH');
    const out=join(evidenceDir,'production-ui',path);await mkdir(join(out,'..'),{recursive:true});await writeFile(out,served);files.push({path,sha256:sha(served),bytes:served.length});
   }
