@@ -160,3 +160,31 @@ test.each(['await','retry','commit'])('a new held cup blocks the continuation af
  const commits=h.log.filter(l=>l.startsWith('commit:')).length;await run(h,tick,tick+2,{held:['prop-2']});
  expect(h.log).toContain('fail:c1:RECOVERY_FACTS_MISSING');expect(h.log.filter(l=>l.startsWith('commit:'))).toHaveLength(commits);
 });
+for(const boundary of ['plan','commit'] as const){
+ test.each(['healthy','arm','unknown','held','unsupported','refused','interrupted'])('belief wait at '+boundary+' closes on current facts and planning result: %s',async mode=>{
+  const facts={armFresh:true,noUnknown:true},h=make({wait:12,maxAge:5,facts});
+  const at=(x:number)=>h.truth.map(p=>({...p,position:[x,0,.151] as [number,number,number]}));
+  await run(h,0,60);if(boundary==='commit'){h.setPending('c1');await run(h,61,61);}
+  await run(h,62,89,{props:at(.9)});(boundary==='plan'?h.setPending:h.setCommit)('c1');
+  await run(h,90,105,{props:at(.9)});const visible=mode==='refused'?at(.525):h.truth;
+  await run(h,106,117,{props:visible});
+  facts.armFresh=mode!=='arm';facts.noUnknown=mode!=='unknown';
+  if(mode==='interrupted'){h.prog.state='cancelled';(boundary==='plan'?h.setPending:h.setCommit)(null);}
+  const obs={held:mode==='held'?['another-cup']:[],props:mode==='unsupported'?visible.map(p=>({...p,restingOn:null})):visible};
+  await run(h,118,118,obs);facts.armFresh=true;facts.noUnknown=true; // a transient guard failure interrupts even a passive recovery window
+  await run(h,119,130,obs);
+  const retries=h.steps.filter(s=>s.action==='retry_pick');
+  expect(retries.map(s=>s.result)).toEqual(mode==='healthy'?['pending','done']:mode==='refused'?['pending','failed']:[]);
+  expect(h.log.includes(boundary+':c1:ok')).toBe(mode==='healthy');
+  expect(h.steps.filter(s=>s.result==='pending').every(s=>h.steps.some(end=>end.stepId===s.stepId&&end.result!=='pending'))).toBe(true);
+  if(['arm','unknown','held','unsupported'].includes(mode))expect(h.log).toContain(boundary+':c1:RECOVERY_FACTS_MISSING');
+  if(mode==='refused')expect(h.log).toContain(boundary+':c1:BELIEF_OUT_OF_REGION');
+ });
+}
+test.each(['plan','commit'] as const)('a stopped command cannot restart %s when the recovery window closes',async boundary=>{
+ const h=make({wait:12,maxAge:5}),away=h.truth.map(p=>({...p,position:[.9,0,.151] as [number,number,number]}));
+ await run(h,0,60);if(boundary==='commit'){h.setPending('c1');await run(h,61,61);}
+ await run(h,62,89,{props:away});(boundary==='plan'?h.setPending:h.setCommit)('c1');await run(h,90,105,{props:away});await run(h,106,117);
+ h.arm.stopReason=()=>'ARM_COLLISION';await run(h,118,135);
+ expect(h.log).not.toContain(boundary+':c1:ok');expect(h.steps.at(-1)?.result).toBe('failed');
+});

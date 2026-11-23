@@ -102,6 +102,6 @@ export async function studyFixture(pointId='truth-0',seed=1){
   }}finally{db.close();}
   await writeFile(join(run,'run.json'),JSON.stringify(checkpoint));await writeFile(join(directory,'report.json'),JSON.stringify(report));await writeFile(join(directory,'rig-run.json'),JSON.stringify(record));await rehash();
  };
- const rehash=async()=>writeFile(join(directory,'case.json'),JSON.stringify({sourceCommit:STUDY_COMMIT,artifacts:await cellArtifacts(directory)}));
+ const rehash=async()=>writeFile(join(directory,'case.json'),JSON.stringify({schemaVersion:1,point:pointId,seed,accepted:false,sourceCommit:STUDY_COMMIT,artifacts:await cellArtifacts(directory)}));
  await write();return {root,directory,run,admission,records,report,checkpoint,record,input,props,beliefs,attempts,recovery,commitTick,nudgeTick,sourceEvents,sourceStates,nativePicks,write,rehash};
 }

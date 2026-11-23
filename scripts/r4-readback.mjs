@@ -1,9 +1,12 @@
 // R4 directory-level artifact reader (plan V16). Nothing is taken from a status in qualification.json: every input is copied beside it, hashed, and re-verified by the verifier that wrote it (campaign verifiers) or by
 // its own readback (R2b record, container record, web record). A missing input makes the cases that name it `not_run`; corruption, another tuple or `accepted:true` makes them `failed`.
+import {isDeepStrictEqual as equal} from 'node:util';
+import currentCil from '../robotics/simulation-mujoco/campaigns/cil-v2.json' with {type:'json'};
+import currentBench from '../robotics/simulation-mujoco/campaigns/bench-v2.json' with {type:'json'};
 import {lstatSync} from 'node:fs';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
-import {checkR4Structure,tableR4,CASES_R4} from './sim-extension-r4.mjs';
+import {checkR4Structure,tableR4,CASES_R4,GATES_R4} from './sim-extension-r4.mjs';
 import {boundedEvidenceRead,evidenceInventory,verifyR2bDirectory} from './r2b-readback.mjs';
 import {checkArmContainer,readNativeContainer} from './r4-container-readback.mjs';
 import {readCalibrationInput} from './r4-calibration-readback.mjs';
@@ -121,3 +124,30 @@ export async function assessR4Directory(root,m){
 }
 export async function verifyR4Directory(root){let m;try{m=JSON.parse(boundedEvidenceRead(root,'qualification.json'));}catch(e){return ['R4_RECORD_MISSING:'+e.message];}return assessR4Directory(root,m);}
 export {tableR4};
+
+// Additional requirements of this local closeout execution. Generic readers continue
+// to report accurate incomplete or historical evidence on their own terms.
+export function closeoutProfileIssues(root,m,source,lab){
+ const issues=[],pending='artifact not_run: deploy_order_pending';
+ if(m.release!=='r4'||m.accepted!==false||m.acceptedBy!==null||m.acceptedAt!==null)issues.push('CLOSEOUT_ACCEPTANCE');
+ if(![source,lab].every(x=>/^[a-f0-9]{40}$/.test(x))||m.identity?.identityStable!==true||
+  m.identity?.before?.sourceCommit!==source||m.identity?.after?.sourceCommit!==source||m.lab?.pin?.sourceCommit!==source||m.lab?.commit!==lab)issues.push('CLOSEOUT_TUPLE');
+ for(const id of Object.keys(CASES_R4))if(m.cases?.[id]?.status!==(id==='CLD03'?'not_run':'tested'))issues.push('CLOSEOUT_CASE:'+id);
+ for(const id of Object.keys(GATES_R4))if(m.gates?.[id]?.status!==(id==='G-CLOUD2'?'not_run':'tested')||m.gates[id].accepted!==false)issues.push('CLOSEOUT_GATE:'+id);
+ if(m.cases?.CLD03?.reason!==pending||!equal(m.notRun,[{id:'CLD03',reason:pending}]))issues.push('CLOSEOUT_EXCEPTION');
+ for(const [key,registry] of [['cilCampaign',currentCil],['benchCampaign',currentBench]]){
+  try{
+   const ref=m.inputs[key],path=CAMPAIGNS[key].dir+'/campaign.json',bytes=boundedEvidenceRead(root,path),d=JSON.parse(bytes);
+   if(ref.file!==path||ref.sha256!==sha(bytes)||d.sourceCommit!==source||d.accepted!==false||!equal(d.campaign,registry))throw Error();
+  }catch{issues.push('CLOSEOUT_POPULATION:'+key);}
+ }
+ return issues;
+}
+export async function verifyR4Closeout(root,source,lab){
+ const m=JSON.parse(boundedEvidenceRead(root,'qualification.json'));
+ return [...await assessR4Directory(root,m),...closeoutProfileIssues(root,m,source,lab)];
+}
+if(import.meta.main){
+ const [root,source,lab]=process.argv.slice(2),issues=await verifyR4Closeout(root,source,lab);
+ console.log(JSON.stringify({source,lab,accepted:false,issues}));process.exitCode=issues.length?1:0;
+}

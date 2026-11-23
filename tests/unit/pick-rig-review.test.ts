@@ -1,7 +1,7 @@
 import {afterEach,expect,test} from 'vitest';
 import {readFile,rm} from 'node:fs/promises';
 import {studyFixture} from '../support/pick-rig';
-import {verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
+import {derivePerceptionStudy,verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
 import {readPickRigEvidence} from '../../packages/lab-runtime/src/v2/perception/pick-rig-evidence';
 const dirs:string[]=[];
 afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
@@ -44,7 +44,7 @@ test.each(['refused','unknown','grip_not_established'] as const)('F03: a retaine
  (h.sourceEvents[2]!.state.pendingTransfer as Record<string,unknown>).lastResult=outcome==='refused'?'failed':'outcome_unknown';h.sourceEvents.pop();h.attempts.at(-1)!.outcome=outcome;
  h.report.outcome.status='needs_attention';h.checkpoint.attention.push({reason:outcome==='refused'?'ARM_COLLISION':outcome==='unknown'?'COMMAND_OUTCOME_UNKNOWN':'RECOVERY_EXHAUSTED',tick:30,subjectId:'mission-1'});h.sourceStates.set('mission/mission-1',{status:'needs_attention'});
  h.records.at(-1)!.snapshot.arms![0]!.gripper!.heldPropIds=[];h.props.samples.at(-1)!.props[0]!.held=false;Object.assign(h.record.result,{outcome,attention:true});await h.write();
- expect(await read(h)).toMatchObject({outcome,attention:true,endpoint:{reason:'resolved',lastTick:30}});expect((await verifyPerceptionStudy(h.root,'truth-0')).issues).toEqual([]);
+ expect(await read(h)).toMatchObject({outcome,attention:true,endpoint:{reason:'resolved',lastTick:30}});expect((await derivePerceptionStudy(h.root,'truth-0')).issues).toEqual([]);
 });
 test('F03: a recovered final grasp retains its outcome and has no invented attention',async()=>{
  const h=await fixture(),policy=JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/recovery-v1/pick-recovery-v1.json','utf8'));

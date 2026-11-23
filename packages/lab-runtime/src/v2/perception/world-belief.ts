@@ -26,7 +26,7 @@ export function createWorldBelief(o:WorldBeliefOptions){
  const world=createBeliefWorld(o.profile.maxAgeTicks),estimators=new Map(o.cups.map(c=>[c.cupId,createPoseEstimator(o.profile,o.seed,c.cupId,c.geometry)])),truth=new Map<string,Map<number,TruthSample>>(o.cups.map(c=>[c.cupId,new Map()]));
  let lastObservedTick=-1;
  const firstCommitted=new Set<string>(),keep=o.profile.latencyTicks+o.profile.updateEveryTicks+2,waitStart=new Map<string,number>(),index=new Map<string,number>(),open=new Map<string,GraspAttempt>();
- const recoveries=new Map<string,number>(),lastProps=new Map<string,PropTruth>(),attemptOf=new Map<string,number>(),beliefWaits=new Map<string,{st:RecoveryStep;k:number}>(),retryCommits=new Set<string>();let active:{k:number;commandId:string;cupId:string;attemptId:string;rule:string;steps:RecoveryAction[];i:number;failTick:number;/** the tick the retreat ended: a fresh belief must be observed after it */retreatDone:number;recorded:boolean;since:number}|null=null;
+ const recoveries=new Map<string,number>(),lastProps=new Map<string,PropTruth>(),attemptOf=new Map<string,number>(),beliefWaits=new Map<string,{st:RecoveryStep;k:number;cupId:string;trigger:string}>(),retryCommits=new Set<string>();let active:{k:number;commandId:string;cupId:string;attemptId:string;rule:string;steps:RecoveryAction[];i:number;failTick:number;/** the tick the retreat ended: a fresh belief must be observed after it */retreatDone:number;recorded:boolean;since:number}|null=null;
  const inView=(p:PropTruth)=>p.restingOn===o.view.supportId&&Math.abs(p.position[0]!-o.view.centerM[0])<=o.view.halfExtentM[0]&&Math.abs(p.position[1]!-o.view.centerM[1])<=o.view.halfExtentM[1];
  return {
   /** True once the first COMMIT of this cup was accepted (the attempt is on the stream with the belief of the start of the descent, the arm goes down); the registered cup nudge of R4-D33 fires on it. */
@@ -61,11 +61,31 @@ export function createWorldBelief(o:WorldBeliefOptions){
     const ran=beliefWaits.get(commandId);if(ran){await o.recorder.appendRecovery({...ran.st,completedTick:tick,result:'failed'});beliefWaits.delete(commandId);} // the window that ran out ends here, as failed
     if(!o.recovery)return false;const count=recoveries.get(cupId)??0,d=decideRecovery(o.recovery.policy,{code},factsOf(cupId),count);if(d.action!=='recover')return false;
     recoveries.set(cupId,count+1);const st:RecoveryStep={stepId:`${cupId}#${n}/${d.rule}/w${count}`,attemptId:`${cupId}#${n}`,rule:d.rule,action:'await_fresh_belief',commandId:`recovery:${commandId}:w${count}`,recordedTick:tick,completedTick:null,result:'pending'};
-    await o.recorder.appendRecovery(st);beliefWaits.set(commandId,{st,k:count});return true;};
+    await o.recorder.appendRecovery(st);beliefWaits.set(commandId,{st,k:count,cupId,trigger:code});return true;};
    // a usable belief ends the open window (done) and is followed by the table's retry_pick; a window still open when the plan is refused for another reason ends failed
-   const closeWaits=async(commandId:string,usable:boolean)=>{const w=beliefWaits.get(commandId);if(!w)return;beliefWaits.delete(commandId);
+   const closeWaits=async(commandId:string,usable:boolean,planned=false)=>{const w=beliefWaits.get(commandId);if(!w)return;beliefWaits.delete(commandId);
     await o.recorder.appendRecovery({...w.st,completedTick:tick,result:usable?'done':'failed'});
-    if(usable){const r:RecoveryStep={stepId:`${w.st.attemptId}/${w.st.rule}/r${w.k}`,attemptId:w.st.attemptId,rule:w.st.rule,action:'retry_pick',commandId:`recovery:${commandId}:w${w.k}:retry`,recordedTick:tick,completedTick:null,result:'pending'};await o.recorder.appendRecovery(r);await o.recorder.appendRecovery({...r,completedTick:tick,result:'done'});}};
+    if(usable){const r:RecoveryStep={stepId:`${w.st.attemptId}/${w.st.rule}/r${w.k}`,attemptId:w.st.attemptId,rule:w.st.rule,action:'retry_pick',commandId:`recovery:${commandId}:w${w.k}:retry`,recordedTick:tick,completedTick:null,result:'pending'};await o.recorder.appendRecovery(r);await o.recorder.appendRecovery({...r,completedTick:tick,result:planned?'done':'failed'});}};
+   const cp=arm.commitPending?.();
+   for(const [commandId,w] of beliefWaits){
+    const planning=pend?.commandId===commandId,committing=cp?.commandId===commandId;
+    if(!planning&&!committing){
+     await closeWaits(commandId,false);retryCommits.delete(commandId);
+     continue;
+    }
+    const facts=factsOf(w.cupId);
+    const rule=decideRecovery(o.recovery!.policy,{code:w.trigger},facts,0);
+    // The wait rule permits a passive wait for an unseen cup. Any affirmative
+    // motion additionally needs current support and empty-pad observations (§7.1).
+    const canSeeEstimate=world.view().get(w.cupId,tick).status==='ok';
+    const stopped=arm.stopReason()??(arm.program(commandId)?.state!=='running'?'RECOVERY_NOT_APPLICABLE':undefined);
+    if(stopped||rule.action==='attention'||(canSeeEstimate&&(!facts.has('cup_on_declared_support')||!facts.has('cup_not_between_pads')))){
+     await closeWaits(commandId,false);retryCommits.delete(commandId);
+     const refusal={ok:false as const,code:stopped??'RECOVERY_FACTS_MISSING'};
+     if(planning)arm.setGraspPlan(commandId,refusal);else arm.setCommitPlan!(commandId,refusal);
+     return;
+    }
+   }
    // a recovery in progress owns the cup-pick: nothing is planned until its `retry_pick` step
    if(o.recovery&&active){const a=active,action=a.steps[a.i]!;
     // the program ended or the arm latched under the recovery: nothing more is done to it, and the step that did not finish says so
@@ -92,7 +112,7 @@ export function createWorldBelief(o:WorldBeliefOptions){
     active={k,commandId:failed.commandId,cupId:failedCup,attemptId:a?.attemptId??`${failedCup}#${(attemptOf.get(failed.commandId)??0)}`,rule:d.rule,steps:d.steps,i:0,failTick:tick,retreatDone:0,recorded:false,since:tick};
     return;
    }
-   const cp=arm.commitPending?.(),cpCup=cp?o.cupOf(cp.commandId):null;
+   const cpCup=cp?o.cupOf(cp.commandId):null;
    if(cp&&cpCup){
     if(o.recovery&&retryCommits.has(cp.commandId)){
      const d=decideRecovery(o.recovery.policy,{code:'GRIP_NOT_ESTABLISHED'},factsOf(cpCup),0);
@@ -103,7 +123,7 @@ export function createWorldBelief(o:WorldBeliefOptions){
     const unusable=!r.ok&&(r.code==='BELIEF_UNAVAILABLE'||r.code==='BELIEF_STALE');
     if(unusable&&tick-start<o.beliefWaitTicks)return;                                                  // no usable estimate at the approach: wait, nothing commanded
     if(unusable&&await waitAgain(cpCup,cp.commandId,r.code,n)){waitStart.set(key,tick);return;}
-    const a=scored(r,cpCup);a.stage='commit';a.recordedTick=tick;open.delete(cp.commandId);await o.recorder.appendAttempt(a);waitStart.delete(key);retryCommits.delete(cp.commandId);await closeWaits(cp.commandId,!unusable);
+    const a=scored(r,cpCup);a.stage='commit';a.recordedTick=tick;open.delete(cp.commandId);await o.recorder.appendAttempt(a);waitStart.delete(key);retryCommits.delete(cp.commandId);await closeWaits(cp.commandId,!unusable,r.ok);
     if(r.ok){open.set(cp.commandId,a);if(n===0)firstCommitted.add(cpCup);arm.setCommitPlan!(cp.commandId,{ok:true,waypoints:{pick:r.waypoints.pick,lift:r.waypoints.lift}});}
     else arm.setCommitPlan!(cp.commandId,{ok:false,code:r.code});
    }
@@ -116,7 +136,8 @@ export function createWorldBelief(o:WorldBeliefOptions){
     if(unusable&&await waitAgain(cupId,pend.commandId,r.code,n)){waitStart.set(pend.commandId,tick);return;}
     const a=scored(r,cupId);a.stage='plan';a.recordedTick=tick;
     await o.recorder.appendAttempt(a);  // on the stream before any command can follow from it
-    await closeWaits(pend.commandId,!unusable);
+    if(r.ok&&beliefWaits.has(pend.commandId)&&arm.commitPending)retryCommits.add(pend.commandId);
+    await closeWaits(pend.commandId,!unusable,r.ok);
     index.set(cupId,n+1);attemptOf.set(pend.commandId,n);if(r.ok){open.set(pend.commandId,a);if(!arm.commitPending&&n===0)firstCommitted.add(cupId);}
     arm.setGraspPlan(pend.commandId,r.ok?{ok:true,waypoints:r.waypoints}:{ok:false,code:r.code});
    }

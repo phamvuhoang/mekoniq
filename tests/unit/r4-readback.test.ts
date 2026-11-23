@@ -237,3 +237,37 @@ test('WEB07 requires the three grasp controls and binds all nine measurements to
   expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_'+issue+':grasp-settings');
  }
 });
+
+test('a recovery case needs its own real production setup workflow and belief qualification runs portable hot/cold readers',()=>{
+ const id='e2e-recovery-request',spec='mujoco-recovery-request.spec.ts';
+ const suite=SUITES_R4.find((s:{id:string})=>s.id===id);
+ expect(suite?.command).toEqual([...SUITES_R4.find((s:{id:string})=>s.id==='e2e-belief').command.slice(0,-1),spec]);
+ expect(CASES_R4.REC06.suites).toContain(id);
+ const q=qualifyR4Structure({suites:SUITES_R4.filter((s:{id:string})=>s.id!==id).map((s:{id:string;kind:string})=>green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:artifactDispositionsFromGroups({recoveryCampaign:[]})});
+ expect(q.cases.REC06.status).not.toBe('tested');
+ const belief=SUITES_R4.find((s:{id:string})=>s.id==='bel-engine'),file='tests/integration/portable-belief-policy.test.ts';
+ expect(belief.files).toContain(file);
+ const bytes=Buffer.from(JSON.stringify({testResults:belief.files.filter((f:string)=>f!==file).map((name:string)=>({name,status:'passed',assertionResults:[{status:'passed'}]}))}));
+ expect(tableR4().checkSuiteResult(belief,bytes)).toContain('SUITE_FILE_MISSING:bel-engine:'+file);
+});
+
+test('local closeout requires exactly the frozen tuple, current CIL and bench, tested calibration and CLD03 alone pending',async()=>{
+ const root=tmp(),campaign=(id:string)=>JSON.parse(readFileSync('robotics/simulation-mujoco/campaigns/'+id+'.json','utf8'));
+ const inputs={cilCampaign:put(root,'inputs/cil/campaign.json',{campaign:campaign('cil-v2'),sourceCommit:SRC,accepted:false}),benchCampaign:put(root,'inputs/bench/campaign.json',{campaign:campaign('bench-v2'),sourceCommit:SRC,accepted:false})};
+ const q=qualifyR4Structure({suites:SUITES_R4.map((s:{id:string;kind:string})=>green(s.id,s.kind)),lab:true,sourceCommit:SRC,artifactDispositions:{...Object.fromEntries(Object.keys(CASES_R4).map(id=>[id,{status:'tested',issues:[]}])),CLD03:{status:'not_run',issues:['deploy_order_pending']}}});
+ const m={...q,release:'r4',accepted:false,acceptedBy:null,acceptedAt:null,identity:{before:{sourceCommit:SRC},after:{sourceCommit:SRC},identityStable:true},lab:{commit:LAB,pin:{sourceCommit:SRC}},inputs};
+ // @ts-expect-error plain ESM script without types
+ const {closeoutProfileIssues}=await import('../../scripts/r4-readback.mjs');
+ const check=()=>closeoutProfileIssues(root,m,SRC,LAB);expect(check()).toEqual([]);
+ m.cases.WEB09.status='not_run';m.notRun.push({id:'WEB09',reason:'artifact not_run: WEB09_MEASUREMENT_MISSING'});expect(check()).toContain('CLOSEOUT_CASE:WEB09');m.cases.WEB09.status='tested';m.notRun.pop();
+ m.cases.CAL02.status='not_run';expect(check()).toContain('CLOSEOUT_CASE:CAL02');m.cases.CAL02.status='tested';
+ m.accepted=true;expect(check()).toContain('CLOSEOUT_ACCEPTANCE');m.accepted=false;
+ m.lab.commit=SRC;expect(check()).toContain('CLOSEOUT_TUPLE');m.lab.commit=LAB;
+ for(const [key,dir] of [['cilCampaign','cil'],['benchCampaign','bench']] as const){
+  for(const legacy of [true,false]){
+   const table=campaign(dir+'-v1');if(!legacy)table.id=dir+'-v2';
+   inputs[key]=put(root,'inputs/'+dir+'/campaign.json',{campaign:table,sourceCommit:SRC,accepted:false});
+   expect(check()).toContain('CLOSEOUT_POPULATION:'+key);
+  }
+ }
+});

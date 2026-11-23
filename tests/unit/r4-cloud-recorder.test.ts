@@ -143,3 +143,19 @@ test.each(['ok','health','secret','cleanup','primary-and-cleanup'])('HTTP diagno
   if(mode==='primary-and-cleanup'){expect(summary.failure).toContain('503');expect(summary.cleanup[0]).toMatchObject({runId:cellId,archived:false});}
  }finally{api.closeAllConnections();await new Promise<void>(r=>api.close(()=>r()));rmSync(dir,{recursive:true,force:true});}
 });
+
+test('candidate replacement during readback cannot change the audited qualification or its supplement binding',async()=>{
+ const {q,f}=fixture(),dir=mkdtempSync(join(tmpdir(),'cloud-single-read-'));
+ try{
+  const text=JSON.stringify(q),path=join(dir,'qualification.json');writeFileSync(path,text);
+  mkdirSync(join(dir,'inputs/container'),{recursive:true});mkdirSync(join(dir,'inputs/cil/cell/nominal-7'),{recursive:true});
+  writeFileSync(join(dir,'inputs/container/container.json'),JSON.stringify(f['native-container.json']));
+  writeFileSync(join(dir,'inputs/cil/cell/nominal-7/report.json'),JSON.stringify(f['mac-cell-report.json']));
+  // @ts-expect-error plain ESM
+  const {readCandidate}=await import('../../scripts/record-r4-cloud.mjs');
+  const read=await readCandidate(dir,async(root:string,audited:unknown)=>{
+   expect(root).toBe(dir);expect(audited).toEqual(q);writeFileSync(path,JSON.stringify({...q,candidateId:'replacement',accepted:true}));return [];
+  });
+  expect(read.q).toEqual(q);expect(read.qBytes.toString()).toBe(text);
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

@@ -21,7 +21,7 @@ export const SUITES_R4=[
  V('tray-unit',['tests/unit/tray-fixture.test.ts','tests/unit/tray-inputs.test.ts','tests/unit/tray-experiments.test.ts','tests/unit/tray-oracle.test.ts','tests/unit/tray-verdict.test.ts','tests/unit/physics-comparison.test.ts']),
  V('tray-engine',['tests/integration/mujoco-tray-compile.test.ts','tests/integration/mujoco-tray.test.ts']),
  V('bel-unit',['tests/contracts/belief-contracts.test.ts','tests/unit/belief.test.ts','tests/unit/belief-evidence.test.ts','tests/unit/belief-integrity.test.ts','tests/unit/world-belief.test.ts','tests/unit/pose-estimator-sim.test.ts','tests/unit/sensor-transforms.test.ts','tests/unit/gaussian.test.ts','tests/unit/grasp-config.test.ts','tests/unit/grasp-conditioning.test.ts','tests/unit/perception-report.test.ts']),
- V('bel-engine',['tests/integration/mujoco-belief-pick.test.ts','tests/integration/mujoco-pick-rig.test.ts','tests/unit/pick-rig-fixture.test.ts','tests/unit/pick-rig-outcome.test.ts','tests/unit/perception-study.test.ts','tests/unit/perception-study-verify.test.ts','tests/unit/pick-rig-review.test.ts']),
+ V('bel-engine',['tests/integration/portable-belief-policy.test.ts','tests/integration/mujoco-belief-pick.test.ts','tests/integration/mujoco-pick-rig.test.ts','tests/unit/pick-rig-fixture.test.ts','tests/unit/pick-rig-outcome.test.ts','tests/unit/perception-study.test.ts','tests/unit/perception-study-verify.test.ts','tests/unit/pick-rig-review.test.ts']),
  V('rec-unit',['tests/unit/recovery-policy.test.ts','tests/unit/world-belief-recovery.test.ts']),
  V('rec-engine',['tests/integration/mujoco-recovery-rig.test.ts','tests/integration/mujoco-cell-belief.test.ts']),
  V('rec-campaign-engine',['tests/unit/grasp-program-scope.test.ts','tests/unit/world-experiment.test.ts','tests/unit/recovery-cell-campaign.test.ts','tests/unit/recovery-recorder-entrypoints.test.ts','tests/integration/recovery-cell-recorded.test.ts']),
@@ -29,10 +29,10 @@ export const SUITES_R4=[
  V('cal-engine',['tests/integration/bench-prediction.test.ts','tests/integration/identification-selftest.test.ts','tests/integration/identify-cli.test.ts']),
  V('web-ui',['tests/unit/control-workbench.test.ts','tests/unit/control-report.test.ts','tests/unit/belief-view.test.ts','tests/unit/recovery-view.test.ts','tests/unit/fault-report-view.test.ts','tests/unit/fault-timeline.test.ts','tests/unit/drive-fault-schedule.test.ts','tests/unit/design-hint.test.ts','tests/unit/svg-plot.test.ts','tests/unit/tray-preset.test.ts','tests/unit/grasp-mode-request.test.ts'],'lab'),
  V('web-cal-ui',['tests/unit/calibration-view.test.ts','tests/unit/maturity-badge.test.ts'],'lab'),
- E('e2e-control','mujoco-control.spec.ts',false),E('e2e-faults','mujoco-faults.spec.ts'),E('e2e-tray','mujoco-tray.spec.ts'),E('e2e-belief','mujoco-belief.spec.ts'),E('e2e-calibration','mujoco-calibration.spec.ts',false),E('e2e-perf','mujoco-perf.spec.ts'),
+ E('e2e-control','mujoco-control.spec.ts',false),E('e2e-faults','mujoco-faults.spec.ts'),E('e2e-tray','mujoco-tray.spec.ts'),E('e2e-belief','mujoco-belief.spec.ts'),E('e2e-recovery-request','mujoco-recovery-request.spec.ts'),E('e2e-calibration','mujoco-calibration.spec.ts',false),E('e2e-perf','mujoco-perf.spec.ts'),
  // the replay spec serves its own production preview (tests/support/replay-preview.ts): it is not behind a launcher
  {id:'e2e-replay',repo:'lab',kind:'playwright',command:['node_modules/@playwright/test/cli.js','test','tests/e2e/replay-offline.spec.ts','--reporter=json']},
- V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-web09-readback.test.ts','tests/unit/r4-calibration-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts','tests/unit/r4-cloud-recorder.test.ts'])
+ V('r4-regression',['tests/unit/owned-source-ci.test.ts','tests/unit/owned-ci-ports.test.ts','tests/unit/web-replay-reader.test.ts','tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-web09-readback.test.ts','tests/unit/r4-calibration-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts','tests/unit/r4-cloud-recorder.test.ts'])
 ];
 const cases=(ids,suites,extra={})=>Object.fromEntries(ids.map(id=>[id,{suites,...extra}]));
 export const CASES_R4={
@@ -42,7 +42,7 @@ export const CASES_R4={
  ...cases(['FLT01','FLT02','FLT03','FLT04','FLT05'],['flt-unit','flt-engine'],{input:'faultCampaign'}),FLT06:{suites:['web-ui','e2e-faults']},
  ...cases(['TRAY01','TRAY02','TRAY03','TRAY04'],['tray-unit','tray-engine'],{input:'trayCampaign'}),TRAY05:{suites:['tray-unit','web-ui'],input:'trayCampaign'},
  BEL01:{suites:['bel-unit']},...cases(['BEL02','BEL03','BEL04'],['bel-unit','bel-engine']),BEL05:{suites:['bel-engine'],input:'perceptionStudy'},BEL06:{suites:['web-ui','e2e-belief']},
- ...cases(['REC01','REC02','REC03','REC04','REC05'],['rec-unit','rec-engine']),REC06:{suites:['rec-unit','rec-campaign-engine'],input:'recoveryCampaign'},
+ ...cases(['REC01','REC02','REC03','REC04','REC05'],['rec-unit','rec-engine']),REC06:{suites:['rec-unit','rec-campaign-engine','e2e-recovery-request'],input:'recoveryCampaign'},
  ...cases(['CAL01','CAL02','CAL03','CAL04','CAL05'],['cal-unit','cal-engine'],{optional:'calibrationSelftest'}),CAL06:{suites:['web-cal-ui','e2e-calibration'],optional:'calibrationSelftest'},
  WEB07:{suites:['e2e-control','e2e-faults','e2e-tray','e2e-belief','e2e-calibration'],input:'web'},WEB08:{suites:['e2e-replay'],input:'web'},WEB09:{suites:['e2e-perf'],input:'web'},WEB10:{input:'web'},
  REG05:{suites:['r4-regression'],input:'r2bRecord'},

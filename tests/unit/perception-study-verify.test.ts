@@ -1,7 +1,7 @@
 import {afterEach,expect,test} from 'vitest';
 import {readFile,writeFile,rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
+import {derivePerceptionStudy,runPerceptionStudy,verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
 import {readPickRigEvidence} from '../../packages/lab-runtime/src/v2/perception/pick-rig-evidence';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 import {studyFixture} from '../support/pick-rig';
@@ -16,7 +16,7 @@ test.each(['truth-0','fixed-20mm','stale-nudge'])('the %s reader derives one sha
  const d=await read(h);expect(d).toMatchObject({outcome:'lifted',ticks:point==='stale-nudge'?50:30,unexpectedContacts:0,endpoint:{lastTick:point==='stale-nudge'?50:30,reason:'resolved'},birth:{tick:1,cupId:'cup-1'}});
 });
 test('historical study bytes explicitly require a new endpoint protocol',async()=>{
- const h=await fixture();await writeFile(join(h.root,'campaign.json'),JSON.stringify({campaign:{id:'perception-gap-v1'}}));const v=await verifyPerceptionStudy(h.root,'truth-0');expect(v.completedRuns).toBe(0);expect(v.issues).toEqual(['STUDY_ENDPOINT_PROTOCOL_UNSUPPORTED']);
+ const h=await fixture();await writeFile(join(h.root,'campaign.json'),JSON.stringify({campaign:{id:'perception-gap-v1'}}));const v=await verifyPerceptionStudy(h.root,'truth-0');expect(v.completedRuns).toBe(0);expect(v.issues).toEqual(['STUDY_ENDPOINT_PROTOCOL_UNSUPPORTED','STUDY_SUMMARY_UNREADABLE']);
 });
 test.each(['points','max_ticks','source','acceptance','calibration','execution'])('the study rejects %s outside the registered campaign identity',async mode=>{
  const h=await fixture(),path=join(h.root,'campaign.json'),doc=JSON.parse(await readFile(path,'utf8'));
@@ -82,4 +82,26 @@ test('a nudge without its actual receipt is refused even when a displacement rem
 });
 test('an explicit timeout remains unknown, never a failed or successful grip',async()=>{
  const h=await fixture();h.input.maxTicks=30;h.report.pickRig!.maxTicks=30;h.checkpoint.coffee.arm.programs[0]!.state='running';h.sourceEvents.splice(2);h.attempts.pop();await h.write();expect(await read(h)).toMatchObject({outcome:'unknown',endpoint:{reason:'timeout',lastTick:30}});
+});
+
+test.each(['point','seed','schemaVersion','accepted','omitted'])('a study case must declare its selected identity and acceptance: %s',async field=>{
+ const h=await fixture(),file=join(h.directory,'case.json'),doc={...JSON.parse(await readFile(file,'utf8')),point:'truth-0',seed:1,accepted:false,schemaVersion:1};
+ if(field==='omitted')delete doc.point;else doc[field]=field==='accepted'?true:field==='seed'?2:field==='schemaVersion'?2:'another-point';
+ await writeFile(file,JSON.stringify(doc));const v=await verifyPerceptionStudy(h.root,'truth-0');
+ expect(v.completedRuns).toBe(0);expect(v.issues.join()).toContain('STUDY_CASE_IDENTITY');
+});
+test.each(['missing','accepted','point','count','issues','omitted'])('cold verification checks the delivered summary: %s',async field=>{
+ const h=await fixture(),path=join(h.root,'summary.json'),fresh=await derivePerceptionStudy(h.root,'truth-0');
+ const saved={accepted:false,...fresh,issues:[]} as Record<string,unknown>;
+ if(field==='accepted')saved.accepted=true;if(field==='point')fresh.study!.points[0]!.medianTicks=333;
+ if(field==='count')saved.completedRuns=20;if(field==='issues')saved.issues=['other'];if(field==='omitted')delete saved.expectedRuns;
+ if(field==='missing')await rm(path,{force:true});else await writeFile(path,JSON.stringify(saved));
+ expect((await verifyPerceptionStudy(h.root,'truth-0')).issues.join()).toContain('STUDY_SUMMARY');
+});
+test('a partial producer writes the independently reproducible first summary with its missing run',async()=>{
+ const h=await fixture(),out=join(h.root,'partial');
+ const v=await runPerceptionStudy({root:process.cwd(),out,pointId:'truth-0',sourceCommit:'a'.repeat(40),python:join(h.root,'missing-python')});
+ expect(v).toMatchObject({expectedRuns:1,completedRuns:0,missingArtifacts:['truth-0/s1'],study:null});
+ expect(JSON.parse(await readFile(join(out,'summary.json'),'utf8'))).toEqual({accepted:false,...v});
+ expect(await verifyPerceptionStudy(out,'truth-0')).toEqual(v);
 });

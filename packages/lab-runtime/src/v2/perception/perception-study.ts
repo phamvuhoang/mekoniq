@@ -1,5 +1,6 @@
 // R4-B §8.2: the registered perception-gap study (92 rig runs), the Wilson interval of its proportions and the rig's offset rule. The runner and verifier are below the table.
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {isDeepStrictEqual} from 'node:util';
 import {join} from 'node:path';
 import campaign from '../../../../../robotics/simulation-mujoco/campaigns/perception-gap-v1.json';
 import {actorStream} from '../random';
@@ -44,10 +45,10 @@ export async function runPerceptionStudy(o:{root:string;out:string;sourceCommit:
   catch(e){await writeFile(join(dir,'error.txt'),String((e as Error).stack??e));}
   await writeFile(join(dir,'case.json'),json({schemaVersion:1,point:p.id,seed,sourceCommit:o.sourceCommit,accepted:false,artifacts:await cellArtifacts(dir)}));
  }
- const verdict=await verifyPerceptionStudy(o.out,o.pointId);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return verdict;
+ const verdict=await derivePerceptionStudy(o.out,o.pointId);await writeFile(join(o.out,'summary.json'),json({accepted:false,...verdict}));return verdict;
 }
 /** Read every run back from its artifacts: identity, the registered inputs, the belief stream (complete, no issue) and the outcome recomputed from it; then the per-point proportions. A run that does not check out is missing, never counted. */
-export async function verifyPerceptionStudy(root:string,only?:string):Promise<PerceptionStudyVerdict>{
+export async function derivePerceptionStudy(root:string,only?:string):Promise<PerceptionStudyVerdict>{
  const out:PerceptionStudyVerdict={expectedRuns:0,completedRuns:0,missingArtifacts:[],issues:[],study:null};
  let doc:{campaign:typeof campaign;endpointProtocol?:string;sourceCommit:string;accepted:boolean;execution:string;calibration:string};try{doc=JSON.parse(await readFile(join(root,'campaign.json'),'utf8'));}catch{out.issues.push('STUDY_CAMPAIGN_UNREADABLE');return out;}
  if(doc.endpointProtocol!==PICK_RIG_ENDPOINT_PROTOCOL){out.issues.push('STUDY_ENDPOINT_PROTOCOL_UNSUPPORTED');return out;}
@@ -59,8 +60,9 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
   for(const seed of p.seeds){
    out.expectedRuns++;const id=runId(p,seed),dir=join(root,id),bad=(code:string)=>{out.missingArtifacts.push(id);out.issues.push(`${id}: ${code}`);};
    try{
-    const rec=JSON.parse(await readFile(join(dir,'rig-run.json'),'utf8')) as RigRunRecord,c=JSON.parse(await readFile(join(dir,'case.json'),'utf8')) as {artifacts:{path:string;sha256:string;bytes:number}[];sourceCommit:string};
+    const rec=JSON.parse(await readFile(join(dir,'rig-run.json'),'utf8')) as RigRunRecord,c=JSON.parse(await readFile(join(dir,'case.json'),'utf8')) as {point:string;seed:number;schemaVersion:number;accepted:boolean;artifacts:{path:string;sha256:string;bytes:number}[];sourceCommit:string};
     if(rec.schemaVersion!==2||rec.endpointProtocol!==PICK_RIG_ENDPOINT_PROTOCOL||rec.accepted!==false||rec.calibration!=='not_calibrated')throw Error('RIG_ENDPOINT_PROTOCOL_UNSUPPORTED');
+    if(c?.schemaVersion!==1||c.point!==p.id||c.seed!==seed||c.accepted!==false)throw Error('STUDY_CASE_IDENTITY');
     if(c.sourceCommit!==doc.sourceCommit)throw new Error('SOURCE_COMMIT_MISMATCH');
     const now=await cellArtifacts(dir);if(JSON.stringify(now)!==JSON.stringify(c.artifacts))throw new Error('ARTIFACT_HASH_MISMATCH');
     const i=rec.input,want={seed,mode:p.mode,truthOffsetM:p.truthOffsetM,profileId:p.profileId,nudge:p.nudge};
@@ -77,7 +79,7 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
     const d=await readPickRigEvidence(dir,i,report),got=rec.result as unknown as Record<string,unknown>,differ=Object.entries(d).filter(([k,v])=>JSON.stringify(got[k]??null)!==JSON.stringify(v??null)).map(([k])=>k);
     if(differ.length)throw new Error(`RESULT_NOT_FROM_EVIDENCE:${differ.join(',')}`);
     rows.push(rec.result);out.completedRuns++;
-   }catch(e){bad((e as Error).message);}
+   }catch(e){bad((e as NodeJS.ErrnoException).code==='ENOENT'?'STUDY_ARTIFACT_MISSING':(e as Error).message);}
   }
   if(!rows.length)continue;
   const firstTry=rows.filter(r=>r.outcome==='lifted'&&r.attempts===1).length,after=rows.filter(r=>r.outcome==='lifted'&&r.recovered).length,outcomes:Record<string,number>={};
@@ -85,4 +87,15 @@ export async function verifyPerceptionStudy(root:string,only?:string):Promise<Pe
   points.push({id:p.id,mode:p.mode,runs:rows.length,firstTry,afterRecovery:after,attention:rows.filter(r=>r.attention).length,firstTryInterval:wilsonInterval(firstTry,rows.length),medianTicks:median(rows.map(r=>r.ticks))!,unexpectedContacts:rows.reduce((n,r)=>n+r.unexpectedContacts,0),medianBeliefErrorAtCommitM:median(rows.flatMap(r=>r.beliefErrorAtCommitM===null?[]:[r.beliefErrorAtCommitM])),outcomes});
  }
  out.study=points.length?{schemaVersion:2,endpointProtocol:PICK_RIG_ENDPOINT_PROTOCOL,accepted:false,campaignId:campaign.id,calibration:'not_calibrated',points}:null;return out;
+}
+
+/** A saved summary is part of the delivered study. Compare its entire JSON value
+ * to a fresh derivation, including partial-run counts and all per-point fields. */
+export async function verifyPerceptionStudy(root:string,only?:string):Promise<PerceptionStudyVerdict>{
+ const verdict=await derivePerceptionStudy(root,only);
+ try{
+  const saved=JSON.parse(await readFile(join(root,'summary.json'),'utf8'));
+  if(!isDeepStrictEqual(saved,{accepted:false,...verdict}))verdict.issues.push('STUDY_SUMMARY_MISMATCH');
+ }catch{verdict.issues.push('STUDY_SUMMARY_UNREADABLE');}
+ return verdict;
 }

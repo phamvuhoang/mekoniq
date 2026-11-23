@@ -6,7 +6,7 @@ import {basename,dirname,join,resolve} from 'node:path';
 import {fileURLToPath,URLSearchParams} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {boundedEvidenceRead} from './r2b-readback.mjs';
-import {verifyR4Directory} from './r4-readback.mjs';
+import {assessR4Directory} from './r4-readback.mjs';
 import {checkCloudRunR4Evidence} from './cloud-run-qualification.mjs';
 import {sha,must,project,region,service,macPath,nativePath,scenarios,checkCandidateInputs,checkDeployment,checkHealth,checkReadiness,checkCell,checkBench,elapsed,timing,comparison,digestRef} from './r4-cloud-evidence.mjs';
 
@@ -52,9 +52,11 @@ function deploymentReadback(base,native){
  checkDeployment(d,serviceDoc,revisionDoc,promotion,native);
  return {deployment:d,service:serviceDoc,revision:revisionDoc,promotion};
 }
-function readCandidate(dir){
+export async function readCandidate(dir,assess=assessR4Directory){
  const read=p=>boundedEvidenceRead(dir,p);
- const qBytes=read('qualification.json'),q=JSON.parse(qBytes),nativeBytes=read(nativePath),macBytes=read(macPath);
+ let qBytes,q;
+ try{qBytes=read('qualification.json');q=JSON.parse(qBytes);must(!(await assess(dir,q)).length,'CANDIDATE_INVALID');}catch{throw Error('CANDIDATE_INVALID');}
+ const nativeBytes=read(nativePath),macBytes=read(macPath);
  const {mac,native}=checkCandidateInputs(q,macBytes,nativeBytes);
  return {q,qBytes,nativeBytes,macBytes,mac,native};
 }
@@ -131,8 +133,7 @@ async function main(){
   must(pin.dirty===false&&pin.sourceCommit===external('git',['rev-parse','HEAD'])&&/^[0-9a-f]{64}$/.test(pin.schemaHash)&&/^[0-9a-f]{64}$/.test(pin.artifactSha256),'DIAGNOSTIC_IDENTITY');}
  else{
   must(v.candidate&&!v['runtime-manifest'],'CANDIDATE_REQUIRED');
-  const issues=await verifyR4Directory(resolve(v.candidate)).catch(()=>['INVALID']);must(!issues.length,'CANDIDATE_INVALID');
-  base=readCandidate(resolve(v.candidate));pin=base.q.lab.pin;
+  base=await readCandidate(resolve(v.candidate));pin=base.q.lab.pin;
   must(external('git',['rev-parse','HEAD'])===pin.sourceCommit&&!external('git',['status','--porcelain','--untracked-files=all']),'CLEAN_CANDIDATE_SOURCE_REQUIRED');
   if(mode==='plan'){console.log(JSON.stringify({mode,candidateId:base.q.candidateId,sourceCommit:pin.sourceCommit,labCommit:base.q.lab.commit,imageId:base.native.imageId,service,project,region,endpoint:v.endpoint,origin:v.origin,accepted:false}));return;}
   must(v['release-approved']===true,'RELEASE_APPROVAL_REQUIRED');
@@ -160,4 +161,4 @@ async function main(){
  if(base){const issues=checkCloudRunR4Evidence(p=>boundedEvidenceRead(out,p),base.qBytes);must(!issues.length,'SUPPLEMENT_READBACK_FAILED');}
  console.log(JSON.stringify({status:summary.status,accepted:false,timing:summary.timing}));
 }
-main().catch(e=>{console.error(failure(e));process.exitCode=1;});
+if(import.meta.main)main().catch(e=>{console.error(failure(e));process.exitCode=1;});

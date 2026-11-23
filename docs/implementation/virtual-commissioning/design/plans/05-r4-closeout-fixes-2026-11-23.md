@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 24.22.2, pnpm 10.32.1, TypeScript/Vitest, Python/MuJoCo, Playwright, Docker/native Linux CI.
 
-**Spec:** [Contracts and evidence](../05-contracts-and-evidence.md), [perception and recovery](../03-r4-perception-recovery-spec.md), and [WEB09 and REC06 decisions](../REVIEW-web09-7bdbc-and-rec06-decisions-2026-11-23.md). User has instructed implementation of all remaining work after reviewing the proposed design.
+**Spec:** ../05-contracts-and-evidence.md; ../03-r4-perception-recovery-spec.md; ../REVIEW-web09-7bdbc-and-rec06-decisions-2026-11-23.md. User has instructed implementation of all remaining work after reviewing the proposed design.
 
 ## Global Constraints
 
@@ -56,8 +56,8 @@
 
 **Files:** lab/public/replays/belief-recovery; catalog; tests/e2e/replay-offline.spec.ts; relevant source replay readers; optional calibration self-test recorder.
 
-- [ ] Export a real full-cell REC06 seed-42 replay and add it to catalog with not_calibrated/accepted:false provenance.
-- [ ] Verify offline views show attempts and recovery, assets match hashes, and no runtime mutation is available.
+- [x] Export a real full-cell REC06 seed-42 replay and add it to catalog with not_calibrated/accepted:false provenance. Task4B approved at Source44f38603/Lab695465c0; original manifest d7c0671b and historical producer eceb7681 preserved.
+- [x] Verify offline views show attempts and recovery, assets match hashes, and no runtime mutation is available. Real row-click reaches1620 with zero runtime requests; plain saved-report ghost and supported-backend selection regressions are fixed. Fresh final-tuple suite remains Task5.
 - [x] Complete optional CAL artifact recorder/readback; approved at812d94bf with real synthetic self-test. No measured calibration is claimed; final-tuple recording remains.
 
 ### Task 4C: Clear the deferred evidence/display defects
@@ -66,15 +66,16 @@
 - [x] Bind the requested rig birth offset to retained physical birth evidence rather than trusting only rig-run.json. Approved native pre-step witness, with default wirebytes preserved.
 - [ ] Re-record the full92runs at the final tuple; preserve old archive bytes.
 - [x] Derive estimated z from declared support/cup geometry, never measured truth z; retain truth only for estimator x/y and scoring. Task4C2 approved atb10b1126.
-- [ ] Refuse ghost display from incomplete/corrupt belief evidence and enforce the actual profile's maxAgeTicks at cursor, including dropouts; align WEB09 reader.
+- [x] Refuse ghost display from incomplete/corrupt belief evidence and enforce the actual profile's maxAgeTicks at cursor, including dropouts; align WEB09 reader. Task4B also fixes portable hot/cold policy lookup and preserves admission through saved-report projection; covered live prefixes remain available.
 - [x] Verify actual belief identity and recompute attempt x/y error from native props at the decision tick; reject missing/modified belief and scalar score forgeries reproduced on native evidence. Task4C3 Source approved at6c088193, including native descent binding and null study score before verified commitment; Lab consumer remains Task4B.
 - [x] Keep a known exhausted no-cup grip distinct from an unknown command while retaining the latch and existing unknown/drop safety behavior. NativeREC02+independent proof approved atb10b1126; recovery current-facts guard also covers every continuation through retry commit.
-- [ ] Focused tests and independent review; no changed acceptance thresholds or invented measured calibration.
+- [x] Focused tests and independent review; no changed acceptance thresholds or invented measured calibration. Task4B fix round1 approved with all5findings addressed,40Source/40Lab focused tests,870Lab tests and7clean production-browser cases; final broad review remains before freeze.
 
 ### Task 5: Freeze tuple and record the final chain
 
 **Files:** source/Lab lock and generated schemas; existing CI/native/container/qualification scripts; new immutable evidence directory.
 
+- [ ] Address the final whole-branch review's6Important/5Minor findings in one coordinated fix pass and scoped re-review: stale-belief recovery guard, saved study envelope/summary integrity, frozen suite coverage, actual owned SourceCI execution, cancellation/cleanup/restoration, strict local closeout profile, plus the deferred reader/helper/color/docs issues. Original draft has never been executed.
 - [x] Implement/review the CLD03 recorder and native-tested-image retention before freezing. Task5A approved at d27533d9 after one fix round; local ARM64 production-container diagnostic passed,158focused fix tests pass. Native image upload/load and actualCloudsmoke remain below; candidate double-read minor is on the final-review list.
 - [ ] Complete focused/required CI checks, commit Source; export/import runtime, sync contracts and commit Lab pin. Review both repos clean.
 - [ ] Run CLD01 and native CLD02 on the exact Source commit using the registered workflow/host; retain native host/image/test roster proof. Push only the qualification branch if needed, never main as a shortcut.
