@@ -2,9 +2,14 @@
 // playback passes and the workload are recomputed here. Windows are tied to the real boundaries the spec wrote (its own test window), to the Playwright attempt and to the owning process; the workload is
 // cross-checked between the bench trace, its report and the replay package, and against this tuple. The build is the production receipt of this very tuple (the WEB07 reader).
 import {createHash} from 'node:crypto';
+import Ajv from 'ajv';
 import {tsImport} from 'tsx/esm/api';
+import driveIoSchema from '../packages/contracts/schemas/drive-io-v1.schema.json' with {type:'json'};
 import {production} from './r4-web07-readback.mjs';
 const LIMIT_MS=33,MIN_MS=60000,GAP_MS=500,SEEK_GAP_MS=3000,MAX_SEEKS=4,EDGE_MS=100,FRAME_LEAD_MS=17,CLOCK_MS=50,BELIEF_SHARE=0.8,BASE='suites/e2e-perf/screens/',hex=/^[a-f0-9]{64}$/;
+const TICK_MS=20,PLAYBACK_PHASE_MS=200;
+const WHEEL_AXES=['amr-1/wheel-left','amr-1/wheel-right'],BENCH_SAMPLES=5000,INITIAL_SUBSTEPS=10,BENCH_STEP_S=0.002;
+const validDriveTrace=new Ajv().addSchema(driveIoSchema).getSchema('mekoniq.drive-io.v1#/definitions/DriveTrace');
 const sha=b=>createHash('sha256').update(b).digest('hex'),finite=n=>typeof n==='number'&&Number.isFinite(n),p95=v=>[...v].sort((a,b)=>a-b)[Math.ceil(v.length*.95)-1];
 const sum=v=>v.reduce((a,b)=>a+b,0),parse=b=>{try{return JSON.parse(b);}catch{return null;}};
 /** The attempt's start (Playwright's duration leaves out worker-fixture time, so it is not an end) and the owning process's real start and end. */
@@ -27,15 +32,32 @@ function windowOf(s,issues,id){
  if(p95(v)>LIMIT_MS)issues.push('WEB09_P95_OVER_LIMIT:'+id);
  return {start:s.timeOriginEpochMs+s.startMs,end:s.timeOriginEpochMs+s.endMs,elapsed:s.elapsedMs};
 }
+function playbackDuration(frames){
+ const first=frames[0],last=frames.at(-1),wall=last.atMs-first.atMs,sim=(last.worldTick-first.worldTick)*TICK_MS;
+ if(sim<=0||wall<=0)return 0;
+ let lastAdvance=first,minPhase=0,maxPhase=0;
+ for(const e of frames){
+  if(e.atMs-lastAdvance.atMs>GAP_MS)return 0;
+  if(e.worldTick>lastAdvance.worldTick)lastAdvance=e;
+  const phase=(e.atMs-first.atMs)-(e.worldTick-first.worldTick)*TICK_MS;
+  // Bound elapsed-time error between any two renders. Repeated ticks and small
+  // start/render delays fit the fixed envelope; longer passes earn no extra slack.
+  minPhase=Math.min(minPhase,phase);
+  maxPhase=Math.max(maxPhase,phase);
+  if(maxPhase-minPhase>PLAYBACK_PHASE_MS)return 0;
+ }
+ return Math.min(wall,sim);
+}
 /** The render stream. Playback restarts exist only as stamped seeks: passes are cut at them, a pause across one is bounded, a tick that goes back without one is an error. */
 function renders(s,issues,id,pkg){
  const r=s.renders,seeks=s.seeks,bad=()=>{issues.push('WEB09_RENDER_STREAM:'+id);};
  if(!Array.isArray(r)||r.length<2||!Array.isArray(seeks)||seeks.length<1||seeks.length>MAX_SEEKS||seeks.some((k,i)=>!finite(k?.atMs)||!Number.isInteger(k.tick)||k.tick<pkg.firstTick||k.tick>pkg.horizon||k.atMs<s.startMs||k.atMs>s.endMs||i>0&&k.atMs<=seeks[i-1].atMs))return bad();
  if(r.some((e,i)=>!finite(e?.atMs)||!finite(e.durationMs)||e.durationMs<0||!Number.isInteger(e.count)||!Number.isInteger(e.drawCalls)||e.drawCalls<1||!Number.isInteger(e.worldTick)||e.worldTick<0||e.worldTick>pkg.horizon||typeof e.belief!=='boolean'||e.atMs<s.startMs||e.atMs>s.endMs||i>0&&(e.count!==r[i-1].count+1||e.atMs<r[i-1].atMs)))return bad();
+ if(seeks[0].tick!==pkg.firstTick)issues.push('WEB09_RENDER_PASS:'+id);
  const gaps=[],passes=[];let cur=null,k=0;
  for(let i=0;i<r.length;i++){
   const e=r[i];let startsPass=false;
-  while(k<seeks.length&&seeks[k].atMs<=e.atMs){startsPass=true;cur={seek:seeks[k],first:e};k++;}
+  while(k<seeks.length&&seeks[k].atMs<=e.atMs){startsPass=true;cur={seek:seeks[k],frames:[]};k++;}
   if(i===0&&!cur){issues.push('WEB09_RENDER_PASS:'+id);return;}
   if(startsPass){
    // the first render after a stamped seek shows the sought tick, and the whole pause (end of the previous pass, seek, first render) is bounded
@@ -45,13 +67,12 @@ function renders(s,issues,id,pkg){
    const prev=r[i-1],gap=e.atMs-prev.atMs;if(e.worldTick<prev.worldTick){issues.push('WEB09_RENDER_TICK_BACKWARD:'+id);return;}
    if(gap>0)gaps.push(gap);
   }
-  cur.last=e;
+  cur.frames.push(e);
  }
  if(k<seeks.length||passes.length!==seeks.length)issues.push('WEB09_RENDER_PASS:'+id);
- // a pass plays at one tick per 20 ms: its sim time (ticks advanced x 20 ms) must match its wall time, and only sim time that advanced is counted
- let playbackMs=0;
- for(const p of passes){const sim=(p.last.worldTick-p.first.worldTick)*20,wall=p.last.atMs-p.first.atMs;if(sim<=0||Math.abs(wall-sim)>sim*.1+1000){issues.push('WEB09_PLAYBACK_STALLED:'+id);playbackMs=0;break;}playbackMs+=sim;}
- if(playbackMs<MIN_MS)issues.push('WEB09_PLAYBACK_SHORT:'+id);
+ const playback=passes.map(p=>playbackDuration(p.frames));
+ if(playback.some(ms=>ms===0))issues.push('WEB09_PLAYBACK_STALLED:'+id);
+ if(sum(playback)<MIN_MS)issues.push('WEB09_PLAYBACK_SHORT:'+id);
  if(gaps.some(g=>g>GAP_MS)||s.startMs+SEEK_GAP_MS<r[0].atMs||s.endMs-r.at(-1).atMs>SEEK_GAP_MS)issues.push('WEB09_RENDER_GAP:'+id);
  if(p95(r.map(e=>e.durationMs))>LIMIT_MS)issues.push('WEB09_RENDER_P95_OVER_LIMIT:'+id);
  if(gaps.length&&p95(gaps)>LIMIT_MS)issues.push('WEB09_CADENCE_P95_OVER_LIMIT:'+id);
@@ -59,22 +80,36 @@ function renders(s,issues,id,pkg){
  if(r.filter(e=>e.belief).length<BELIEF_SHARE*r.length||r.some(e=>e.belief&&!beliefAvailable(pkg.records,e.worldTick)))issues.push('WEB09_BELIEF_NOT_DRAWN:'+id);
  if(Math.max(...r.map(e=>e.worldTick))-Math.min(...r.map(e=>e.worldTick))<(pkg.horizon-pkg.firstTick)*.9)issues.push('WEB09_RENDER_PROGRESSION:'+id);
 }
-/** A drive-trace sample is finite numbers (feedback may be unavailable) and a saturation flag; an axis has the recorded step. Only valid samples are counted. */
-const sampleOk=x=>x!==null&&typeof x==='object'&&['target','actual','torqueNm'].every(k=>finite(x[k]))&&(x.feedback===null||finite(x.feedback))&&(x.saturated===undefined||typeof x.saturated==='boolean');
-const axisOk=a=>a!==null&&typeof a==='object'&&typeof a.axisId==='string'&&a.axisId&&a.dtS===0.002&&Array.isArray(a.samples)&&a.samples.every(x=>x===null||sampleOk(x));
+function measuredAxis(axis,axisId){
+ if(axis?.axisId!==axisId||axis.dtS!==BENCH_STEP_S||!Array.isArray(axis.samples)||axis.samples.length!==INITIAL_SUBSTEPS+BENCH_SAMPLES)return false;
+ // DriveTrace's cap is for the measured segment. The first world tick has its
+ // own ten substeps, which the plot can show but the tuning report excludes.
+ const initial=axis.samples.slice(0,INITIAL_SUBSTEPS),measured=axis.samples.slice(INITIAL_SUBSTEPS);
+ return validDriveTrace({...axis,samples:initial})&&validDriveTrace({...axis,samples:measured})&&measured.every(sample=>sample!==null);
+}
+function benchEngine(report){
+ const backends=report.manifest.backends,engine=report.tuning.engine;
+ if(!Array.isArray(backends)||backends.length!==1)return false;
+ const backend=backends[0];
+ return backend?.id==='mujoco_3d'&&backend.model==='mujoco_drive_bench'&&backend.dynamics===true&&engine?.id===backend.id&&
+  typeof engine.version==='string'&&engine.version.trim().length>0&&engine.version===backend.version;
+}
 const identity=(report,record,backend,scenario)=>report?.manifest?.sourceCommit===record.identity?.before?.sourceCommit&&report.manifest.backendSetId===backend&&report.manifest.scenario?.id===scenario&&report.manifest.mode==='simulation'&&report.manifest.access==='simulated';
 function plotWorkload(read,w,record,issues){
  const bad=()=>issues.push('WEB09_PLOT_WORKLOAD:plot-5000');
  try{
   const tb=read(BASE+w.benchTrace?.file),rb=read(BASE+w.benchReport?.file);
   if(!tb||!rb||sha(tb)!==w.benchTrace.sha256||sha(rb)!==w.benchReport.sha256)return bad();
-  const trace=JSON.parse(tb),report=JSON.parse(rb),t=report.tuning,axes=trace.traces??[],counts=axes.map(a=>a.samples?.filter(Boolean).length);
-  const ok=typeof w.runId==='string'&&w.runId&&identity(report,record,'engineering-mujoco-bench-v1','MJ-BENCH-WHEEL')&&
-   report.manifest.runId===w.runId&&trace.runId===w.runId&&t?.runId===w.runId&&report.outcome?.status==='completed'&&t.status==='completed'&&t.unstable!==true&&t.accepted===false&&
-   Array.isArray(trace.issues)&&trace.issues.length===0&&hex.test(trace.manifestSha256)&&trace.manifestSha256===t.trace?.sha256&&
-   axes.length===t.axisIds?.length&&axes.every(axisOk)&&axes.every((a,i)=>a.axisId===t.axisIds[i])&&Number.isInteger(t.trace?.samples)&&t.trace.samples>=5000&&counts.every(n=>n>=t.trace.samples)&&
-   w.samplesPerSeries===counts[0]&&w.plottedPoints===counts[0];
-  if(!ok)bad();
+  const trace=JSON.parse(tb),report=JSON.parse(rb),t=report.tuning,axes=trace.traces;
+  if(typeof w.runId!=='string'||!w.runId||!identity(report,record,'engineering-mujoco-bench-v1','MJ-BENCH-WHEEL')||
+   report.manifest.runId!==w.runId||trace.runId!==w.runId||t?.runId!==w.runId||report.outcome?.status!=='completed'||t.status!=='completed'||t.unstable===true||t.accepted!==false||!benchEngine(report))return bad();
+  if(!Array.isArray(trace.issues)||trace.issues.length!==0||!hex.test(trace.manifestSha256)||trace.manifestSha256!==t.trace?.sha256||
+   t.trace.samples!==BENCH_SAMPLES||!Number.isSafeInteger(t.trace.chunks)||t.trace.chunks<1||t.trace.chunks>4096)return bad();
+  if(!Array.isArray(t.axisIds)||t.axisIds.length!==WHEEL_AXES.length||!WHEEL_AXES.every(axisId=>t.axisIds.includes(axisId))||
+   !Array.isArray(axes)||axes.length!==WHEEL_AXES.length||!axes.every((axis,i)=>measuredAxis(axis,t.axisIds[i])))return bad();
+  // The response plot measures the first reported wheel and includes any valid initial points.
+  const plotted=axes[0].samples.filter(sample=>sample!==null).length;
+  if(w.samplesPerSeries!==plotted||w.plottedPoints!==plotted)bad();
  }catch{bad();}
 }
 /** The Lab's beliefAt over the package's records of the cup: the newest record not later than the cursor; a dropped update keeps the held belief, another record without one ends it, an invalid belief is never drawn. */
@@ -90,7 +125,7 @@ async function beliefWorkload(read,w,record,issues,id,open){
   try{
    const m=replay.manifest,r=replay.capturedReport,e=r.perceptionEvidence,all=(e?.beliefs??[]).filter(b=>b.objectId==='cup-1'),cup=all.filter(b=>b.belief?.valid===true);
    if(!(typeof w.runId==='string'&&w.runId&&m.runId===w.runId&&r.manifest?.runId===w.runId&&identity(r,record,'engineering-mujoco-cell-v1','MJ-CELL-BV01')&&r.manifest.perception?.graspMode==='belief_estimated'&&
-    m.horizon.tick===w.replayHorizonTick&&m.coverage?.prefixCovered&&m.provenance?.accepted!==true&&e?.issues?.length===0&&cup.length>0&&w.view==='3d'&&Number.isInteger(w.firstTick)))return bad();
+    m.horizon.tick===w.replayHorizonTick&&m.coverage?.prefixCovered&&m.provenance?.accepted!==true&&e?.issues?.length===0&&cup.length>0&&w.view==='3d'&&Number.isInteger(w.firstTick)&&w.firstTick>=0&&w.firstTick<m.horizon.tick))return bad();
    return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick,records:all};
   }finally{replay.close?.();}
  }catch{return bad();}

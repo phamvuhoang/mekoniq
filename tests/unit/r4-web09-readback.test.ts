@@ -27,7 +27,10 @@ const NPASS=2500;
 const pass=(start:number,count0:number,n=NPASS,step=STEP,o:Record<string,unknown>={}):R[]=>Array.from({length:n},(_,i)=>({atMs:start+i*step,durationMs:1.5,count:count0+i,drawCalls:34,worldTick:Math.round(FIRST+(HORIZON-FIRST)*i/(n-1)),belief:true,...o}));
 const TWO_PASSES=(o:Record<string,unknown>={})=>({seeks:[{atMs:BELIEF_START+20,tick:FIRST},{atMs:BELIEF_START+42000,tick:FIRST}],renders:[...pass(BELIEF_START+30,100,NPASS,STEP,o),...pass(BELIEF_START+42050,100+NPASS,NPASS,STEP,o)]});
 const trace=(n=5010,over:Record<string,unknown>={})=>({runId:'run-bench',manifestSha256:'9'.repeat(64),traces:['amr-1/wheel-left','amr-1/wheel-right'].map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:n},()=>({target:1,actual:1,feedback:null,torqueNm:0}))})),issues:[],...over});
-const benchReport=(over:Record<string,unknown>={},man:Record<string,unknown>={})=>({manifest:{runId:'run-bench',sourceCommit:SRC,backendSetId:'engineering-mujoco-bench-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-BENCH-WHEEL'},...man},outcome:{status:'completed'},tuning:{runId:'run-bench',status:'completed',unstable:false,accepted:false,axisIds:['amr-1/wheel-left','amr-1/wheel-right'],trace:{chunks:11,sha256:'9'.repeat(64),samples:5000}},...over});
+const benchReport=(over:Record<string,unknown>={},man:Record<string,unknown>={})=>({
+ manifest:{runId:'run-bench',sourceCommit:SRC,backendSetId:'engineering-mujoco-bench-v1',backends:[{id:'mujoco_3d',version:'3.17.0',model:'mujoco_drive_bench',dynamics:true}],mode:'simulation',access:'simulated',scenario:{id:'MJ-BENCH-WHEEL'},...man},
+ outcome:{status:'completed'},tuning:{runId:'run-bench',status:'completed',unstable:false,accepted:false,axisIds:['amr-1/wheel-left','amr-1/wheel-right'],engine:{id:'mujoco_3d',version:'3.17.0',hostArch:'arm64'},trace:{chunks:11,sha256:'9'.repeat(64),samples:5000}},...over
+});
 const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated'},...man},perceptionEvidence:{issues:[],beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},{objectId:'cup-1',tick:900,belief:{valid:true}}],...pe}});
 const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>({manifest:{runId:'run-cell',horizon:{tick:HORIZON},coverage:{prefixCovered:true},provenance:{accepted:false},...o.manifest},capturedReport:o.report??cellReport(),close(){}});
 interface Opt{doc?:Record<string,unknown>;plot?:Record<string,unknown>;belief?:Record<string,unknown>;plotWork?:Record<string,unknown>;beliefWork?:Record<string,unknown>;skip?:string[];trace?:unknown;report?:unknown;attempt?:Record<string,unknown>;proc?:Record<string,unknown>;testWindow?:Record<string,unknown>}
@@ -117,6 +120,12 @@ test('WEB09 counts playback from stamped passes: 60 s of real playback, seeks bo
  expect(await withOpt({belief:{...two,seeks:[...two.seeks,...[1,2,3].map(i=>({atMs:BELIEF_START+60000+i*100,tick:FIRST}))]}})).toContain('WEB09_RENDER_STREAM:belief-layer');
  expect(await withOpt({belief:{...two,seeks:[...two.seeks,{atMs:BELIEF_START+64000,tick:FIRST}]}})).toContain('WEB09_RENDER_PASS:belief-layer');
 });
+test('WEB09 binds the claimed first tick to the first stamped seek and rendered tick',async()=>{
+ expect(await withOpt({beliefWork:{firstTick:FIRST-1}})).toContain('WEB09_RENDER_PASS:belief-layer');
+});
+test.each([-1,HORIZON])('WEB09 rejects a first tick outside the playback range (%i)',async(firstTick)=>{
+ expect(await withOpt({beliefWork:{firstTick}})).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
+});
 test('WEB09 counts the belief ghost per rendered frame and checks it against the package',async()=>{
  expect(await withOpt({belief:TWO_PASSES({belief:false})})).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
  // belief drawn at ticks before the package's first estimate
@@ -143,6 +152,49 @@ test('WEB09 cross-checks the bench workload: run, trace manifest, corruption, ax
  expect(await withOpt({plotWork:{plottedPoints:5000}})).toContain(bad);
  expect(await withOpt({skip:[BASE+'web09/bench-trace.json']})).toContain(bad);
 });
+test.each([
+ ['empty',[]],
+ ['wrong',['amr-1/wheel-left','xarm-1/joint-1']],
+ ['duplicate',['amr-1/wheel-left','amr-1/wheel-left']],
+] as const)('WEB09 rejects %s axis sets even when the trace and tuning report agree',async(name,axisIds)=>{
+ const report=benchReport();report.tuning.axisIds=[...axisIds];
+ const t=trace();t.traces=axisIds.map((axisId,i)=>({...t.traces[i]!,axisId}));
+ const plotWork=name==='empty'?{samplesPerSeries:undefined,plottedPoints:undefined}:{};
+ expect(await withOpt({trace:t,report,plotWork})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test.each([
+ ['missing measured sample count',{samples:undefined}],
+ ['missing chunk count',{chunks:undefined}],
+ ['fractional chunk count',{chunks:1.5}],
+ ['zero chunk count',{chunks:0}],
+] as const)('WEB09 rejects a tuning report with %s',async(_name,counters)=>{
+ const report=benchReport({tuning:{...benchReport().tuning,trace:{...benchReport().tuning.trace,...counters}}});
+ expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test.each(['samplesPerSeries','plottedPoints'] as const)('WEB09 rejects a missing plot counter %s with otherwise valid data',async(counter)=>{
+ expect(await withOpt({plotWork:{[counter]:undefined}})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test('WEB09 requires 5,000 measured samples on both axes after the ten initial substeps',async()=>{
+ const t=trace();
+ // The first plot still has 5,010 points, but the other axis has only 4,999 measured samples.
+ t.traces[1]= {...t.traces[1]!,samples:t.traces[1]!.samples.slice(0,5009)};
+ expect(await withOpt({trace:t})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+test('WEB09 rejects a trace over the registered bench sample cap',async()=>{
+ const overCap=benchReport();overCap.tuning.trace.samples=5001;
+ expect(await withOpt({trace:trace(5011),report:overCap,plotWork:{samplesPerSeries:5011,plottedPoints:5011}})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
+const genuineBench=benchReport(),genuineEngine=genuineBench.tuning.engine,genuineBackend=genuineBench.manifest.backends[0];
+test.each([
+ ['the mock engine and backend',{id:'mock',version:'1'},[{id:'mock',version:'1',model:'mock',dynamics:false}]],
+ ['a missing engine',undefined,[genuineBackend]],
+ ['mismatched versions',{...genuineEngine,version:'3.16.0'},[genuineBackend]],
+ ['a backend without dynamics',genuineEngine,[{...genuineBackend,dynamics:false}]],
+ ['a different backend model',genuineEngine,[{...genuineBackend,model:'mock'}]],
+] as const)('WEB09 rejects %s in the bench report',async(_name,engine,backends)=>{
+ const report=benchReport({tuning:{...genuineBench.tuning,engine}},{backends});
+ expect(await withOpt({report})).toContain('WEB09_PLOT_WORKLOAD:plot-5000');
+});
 test('WEB09 counts only valid trace samples: finite numbers, the recorded step, a boolean saturation flag',async()=>{
  const bad='WEB09_PLOT_WORKLOAD:plot-5000',axes=(f:(a:{axisId:string;dtS:number;samples:unknown[]})=>unknown)=>trace(5010,{traces:trace().traces.map(f)});
  expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map(()=>({}))}))})).toContain(bad);
@@ -166,6 +218,25 @@ test('WEB09 counts no standing replay as playback: each pass advances at one tic
  expect(await withOpt({belief:{...two,renders:slow}})).toContain('WEB09_PLAYBACK_STALLED:belief-layer');
  // two real passes pass
  expect(await withOpt({belief:two})).toEqual([]);
+});
+test.each([0,1])('WEB09 rejects a 20 s cursor freeze followed by catch-up in pass %i',async(index)=>{
+ const two=TWO_PASSES(),r=two.renders.slice(index*NPASS,(index+1)*NPASS),start=r[0]!.atMs,remaining=r.at(-1)!.atMs-start-20000;
+ for(const e of r) e.worldTick=FIRST+Math.round((HORIZON-FIRST)*Math.max(0,e.atMs-start-20000)/remaining);
+ expect(await withOpt({belief:two})).toContain('WEB09_PLAYBACK_STALLED:belief-layer');
+});
+test.each([-1,1])('WEB09 rejects an interior phase excursion in direction %i with steady rendering and matching endpoints',async(direction)=>{
+ const two=TWO_PASSES(),r=two.renders.slice(0,NPASS),start=r[0]!.atMs,wall=r.at(-1)!.atMs-start;
+ for(const e of r){
+  const fraction=(e.atMs-start)/wall;
+  e.worldTick=FIRST+Math.round((HORIZON-FIRST)*(fraction+direction*1000/wall*Math.sin(Math.PI*fraction)));
+ }
+ expect(await withOpt({belief:two})).toContain('WEB09_PLAYBACK_STALLED:belief-layer');
+});
+test('WEB09 requires 60 s of playback supported by wall time as well as cursor progress',async()=>{
+ const horizon=FIRST+1500,starts=[BELIEF_START+30,BELIEF_START+30030];
+ const renders=starts.flatMap((start,i)=>pass(start,100+i*NPASS,NPASS,29900/(NPASS-1)).map((e,j)=>({...e,worldTick:FIRST+Math.round(1500*j/(NPASS-1))})));
+ const belief=probe(BELIEF_START,61000,{seeks:starts.map(atMs=>({atMs:atMs-10,tick:FIRST})),renders});
+ expect(await withOpt({belief,beliefWork:{replayHorizonTick:horizon}},fakeOpen({manifest:{horizon:{tick:horizon}}}))).toEqual(['WEB09_PLAYBACK_SHORT:belief-layer']);
 });
 test('WEB09 checks every ghost frame against the package at its cursor: a cup out of view ends the belief, a dropped update keeps it',async()=>{
  const bad='WEB09_BELIEF_NOT_DRAWN:belief-layer',rec=(extra:unknown[])=>fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},...extra]})});
