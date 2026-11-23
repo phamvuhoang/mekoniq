@@ -92,8 +92,8 @@ export interface BenchCreateRun extends CreateRunBase {bench:BenchRequestV1;proj
 export type CreateRun=LegacyCreateRun|EngineeringCreateRun|BenchCreateRun;
 export function requestForPreset(p:import('./catalog').TwinPreset,driveFaults?:readonly import('./drive-faults').DriveFaultEntry[],health?:TwinHealth):CreateRun{
  const belief=p.id==='mujoco-cell'&&(p.graspMode==='belief_ground_truth'||p.graspMode==='belief_estimated');
- if(p.graspProgramId&&(!belief||p.graspProgramId!==TWO_STAGE||health&&!compatibleProgram(health,p)))throw new TwinRuntimeError('GRASP_PROGRAM_UNAVAILABLE',[],422);
- if(p.worldExperimentId===CUP_NUDGE&&(!belief||p.graspProgramId!==TWO_STAGE||health&&!compatibleExperiment(health,p,CUP_NUDGE)))throw new TwinRuntimeError('WORLD_EXPERIMENT_UNAVAILABLE',[],422);
+ if(p.graspProgramId&&(!belief||p.graspProgramId!==TWO_STAGE||!compatibleProgram(health,p)))throw new TwinRuntimeError('GRASP_PROGRAM_UNAVAILABLE',[],422);
+ if(p.worldExperimentId===CUP_NUDGE&&(!belief||p.graspProgramId!==TWO_STAGE||!compatibleExperiment(health,p,CUP_NUDGE)))throw new TwinRuntimeError('WORLD_EXPERIMENT_UNAVAILABLE',[],422);
  // a drive fault schedule rides with the request; the cell also names its drive experiment (a mobile run's experiment is in its engineering project)
  const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},...p.id==='mujoco-cell'&&p.driveExperimentId?{driveExperimentId:p.driveExperimentId}:{},...p.id==='mujoco-cell'&&p.graspMode&&p.graspMode!=='fixed_program'?{graspMode:p.graspMode,...p.graspProgramId?{graspProgramId:p.graspProgramId} as const:{},...p.graspMode==='belief_estimated'?{perceptionProfileId:'perception-nominal-v1'}:{},recoveryPolicyId:'pick-recovery-v1'}:{},...driveFaults?.length?{driveFaultSchedule:structuredClone([...driveFaults])}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
  // engineering never falls back to the preset project: the receipt that matches this exact draft is the only way to a ref

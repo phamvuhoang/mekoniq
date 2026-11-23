@@ -13,6 +13,11 @@ test('the advertised two-stage cup experiment creates a new belief run on the de
  await expect(program).toBeDisabled();await expect(experiment.locator('option[value="'+nudge+'"]')).toBeDisabled();
  await page.locator('#twin-grasp-mode-belief_ground_truth').check();await program.selectOption(twoStage);await experiment.selectOption(nudge);
  await page.locator('#twin-grasp-mode-fixed_program').check();await expect(program).toHaveValue('');await expect(experiment).toHaveValue('world-nominal-v1');
+ await page.locator('#twin-grasp-mode-belief_ground_truth').check();await program.selectOption(twoStage);await experiment.selectOption(nudge);
+ await page.locator('#twin-backend-set').selectOption('mock-default');
+ await expect(program).toHaveCount(0);await expect(experiment).toHaveCount(0);
+ await page.locator('#twin-backend-set').selectOption('engineering-mujoco-cell-v1');
+ await expect(page.locator('#twin-grasp-mode-fixed_program')).toBeChecked();await expect(program).toHaveValue('');await expect(experiment).toHaveValue('world-nominal-v1');
  await page.locator('#twin-grasp-mode-belief_estimated').check();await program.selectOption(twoStage);await experiment.selectOption(nudge);
  await page.emulateMedia({reducedMotion:'reduce'});
  for(const [lang,title] of [['VI','Gắp cốc hai giai đoạn'],['JA','2段階のカップ把持'],['EN','Two-stage cup grasp']]){
@@ -34,4 +39,12 @@ test('the advertised two-stage cup experiment creates a new belief run on the de
  await expect(table.locator('[data-attempt="cup-1#1"] [data-outcome]')).toHaveAttribute('data-outcome','lifted');
  await expect(page.getByTestId('perception-recovery').locator('li[data-result="done"]')).toHaveCount(4);
  if(process.env.LAB_IRSIM_SCREENSHOTS)await page.screenshot({path:join(process.env.LAB_IRSIM_SCREENSHOTS,'live-recovery.png')});
+ await page.locator('[data-action="twin-save-evidence"]').click();
+ await page.locator('[data-action="twin-open-evidence"]').first().click();
+ await page.locator('#twin-replay-cursor').fill('1400');
+ await expect(page.getByTestId('belief-legend')).toHaveAttribute('data-state','data');
+ await expect(page.getByTestId('cell-report-world-unavailable')).toContainText('WORLD_NOT_RECORDED_IN_REPORT');
+ if(process.env.LAB_IRSIM_SCREENSHOTS)await page.screenshot({path:join(process.env.LAB_IRSIM_SCREENSHOTS,'saved-belief-1400.png')});
+ await page.locator('#twin-replay-cursor').fill('0');
+ await expect(page.getByTestId('belief-legend')).toHaveAttribute('data-state','no_data_at_cursor');
 });

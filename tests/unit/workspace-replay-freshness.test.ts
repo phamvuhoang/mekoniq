@@ -1,3 +1,6 @@
+import {readFileSync} from 'node:fs';
+import {gunzipSync} from 'node:zlib';
+import {ghostsAt} from '../../src/twin/belief';
 import {afterEach,expect,test,vi} from 'vitest';
 import {coffeeReplay,sample} from '../support/coffee-replay';
 import type {RunReport,RunView,TwinRuntime} from '../../src/scenarios/controls';
@@ -95,4 +98,16 @@ test('cup correction requires a recoverable job and explicit confirmation before
  Object.assign(h,{rt:{paired:true,action:async(_v:unknown,kind:string)=>{actions.push(kind);return coffeeReplay().view;},report:async()=>coffeeReplay().report}});
  w.click('twin-restore-cup');expect(actions).toEqual([]);expect(w.html()).toContain('Confirm cup correction');w.click('twin-confirm-cancel');expect(actions).toEqual([]);
  w.click('twin-restore-cup');w.click('twin-confirm-ok');await vi.waitFor(()=>expect(actions).toEqual(['restoreCup']));w.leave();
+});
+
+test('opening a saved cell report retains its admitted belief at a cursor without exact world poses',()=>{
+ const {w,h}=workspace(),p=presetById('mujoco-cell')!;
+ const report=JSON.parse(gunzipSync(readFileSync('public/replays/belief-recovery/report.json.gz.bin')).toString());
+ Object.assign(h,{saved:[{id:'recovery',report,project:p.project}]});
+ w.click('twin-open-evidence','recovery');
+ w.input('twin-replay-cursor','30');
+ const frame=h.frame();
+ expect(frame.world).toBeUndefined();expect(frame.report?.arm).toBeUndefined();expect(frame.report?.physicsEvidence).toBeUndefined();
+ expect(ghostsAt(frame,p.project.armCollisionProfile?.baseInMap).status).toBe('data');
+ w.leave();
 });

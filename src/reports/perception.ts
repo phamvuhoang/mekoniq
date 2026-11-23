@@ -66,18 +66,25 @@ export interface PointResult {id:string;mode:string;runs:number;firstTry:number;
 export interface PerceptionStudyV2 {schemaVersion:2;endpointProtocol:'first-cup-grasp-v2';accepted:false;campaignId:string;calibration:'not_calibrated';points:PointResult[]}
 const num=(x:unknown):x is number=>typeof x==='number'&&Number.isFinite(x);
 const count=(n:unknown):n is number=>num(n)&&Number.isSafeInteger(n)&&n>=0;
+/** Source writes full-precision Wilson limits using z = 1.959964. A JSON round trip preserves each number. */
+function matchesWilson(firstTry:number,runs:number,interval:PointResult['firstTryInterval']){
+ const z=1.959964,z2=z*z,p=firstTry/runs,d=1+z2/runs,c=p+z2/(2*runs),h=z*Math.sqrt(p*(1-p)/runs+z2/(4*runs*runs));
+ return interval.low===(firstTry===0?0:Math.max(0,(c-h)/d))&&interval.high===(firstTry===runs?1:Math.min(1,(c+h)/d));
+}
 function pointOk(p:PointResult){
  if(!p||typeof p.id!=='string'||!p.id||!['fixed_program','belief_ground_truth','belief_estimated'].includes(p.mode)||!count(p.runs)||!p.runs||
   !count(p.firstTry)||!count(p.afterRecovery)||!count(p.attention)||p.attention>p.runs||!count(p.unexpectedContacts)||!num(p.medianTicks)||p.medianTicks<0||
   !(p.medianBeliefErrorAtCommitM===null||num(p.medianBeliefErrorAtCommitM)&&p.medianBeliefErrorAtCommitM>=0))return false;
  const i=p.firstTryInterval,o=p.outcomes;
- return !!i&&num(i.low)&&num(i.high)&&i.low>=0&&i.high<=1&&i.low<=i.high&&!!o&&typeof o==='object'&&!Array.isArray(o)&&Object.values(o).every(count)&&
+ return !!i&&matchesWilson(p.firstTry,p.runs,i)&&!!o&&typeof o==='object'&&!Array.isArray(o)&&Object.values(o).every(count)&&
   Object.values(o).reduce((n,v)=>n+v,0)===p.runs&&p.firstTry+p.afterRecovery===(o.lifted??0);
 }
 /** Accepts the study itself or the verdict/summary document that carries it as `study`. */
 export function parseStudy(text:string):{ok:true;study:PerceptionStudyV2}|{ok:false;reason:string}{
  let v:unknown;try{v=JSON.parse(text);}catch{return {ok:false,reason:'STUDY_NOT_JSON'};}
- const s=((v as {study?:unknown})?.study??v) as PerceptionStudyV2|null;
+ const wrapper=v!==null&&typeof v==='object'&&'study' in v?v:null;
+ if(wrapper&&'accepted' in wrapper&&wrapper.accepted!==false)return {ok:false,reason:'STUDY_SHAPE_INVALID'};
+ const s=(wrapper?wrapper.study:v) as PerceptionStudyV2|null;
  if((s as {schemaVersion?:number}|null)?.schemaVersion===1)return {ok:false,reason:'STUDY_LEGACY_ENDPOINT'};
  if(!s||typeof s!=='object'||s.schemaVersion!==2||s.endpointProtocol!=='first-cup-grasp-v2'||s.accepted!==false||s.calibration!=='not_calibrated'||typeof s.campaignId!=='string'||!s.campaignId||!Array.isArray(s.points)||!s.points.length)return {ok:false,reason:'STUDY_SHAPE_INVALID'};
  return s.points.every(pointOk)&&new Set(s.points.map(p=>p.id)).size===s.points.length?{ok:true,study:s}:{ok:false,reason:'STUDY_POINT_INVALID'};

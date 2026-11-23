@@ -29,7 +29,7 @@ test('all three languages are present for the block',()=>{
  for(const l of ['vi','ja','en'] as const){setLocale(l);const html=perceptionBlockHtml(rep([attempt()]));expect(html.length).toBeGreaterThan(200);if(l==='ja')expect(html).toContain('認識');if(l==='vi')expect(html).toContain('nhận thức');}
 });
 const point=(id:string,mode:string,runs:number,firstTry:number,low:number,high:number)=>({id,mode,runs,firstTry,afterRecovery:0,attention:runs-firstTry,firstTryInterval:{low,high},medianTicks:1700,unexpectedContacts:0,medianBeliefErrorAtCommitM:id.startsWith('sigma')?0.004:null,outcomes:{lifted:firstTry,refused:runs-firstTry}});
-const study={schemaVersion:2,endpointProtocol:'first-cup-grasp-v2',accepted:false,campaignId:'perception-gap-v1',calibration:'not_calibrated',points:[point('fixed-20mm','fixed_program',10,8,0.49,0.94),point('sigma-2mm','belief_estimated',10,9,0.6,0.98),point('sigma-5mm','belief_estimated',10,7,0.4,0.89),point('sigma-10mm','belief_estimated',10,3,0.1,0.6)]};
+const study={schemaVersion:2,endpointProtocol:'first-cup-grasp-v2',accepted:false,campaignId:'perception-gap-v1',calibration:'not_calibrated',points:[point('fixed-20mm','fixed_program',10,8,0.4901624691221323,0.9433178490622331),point('sigma-2mm','belief_estimated',10,9,0.5958499704752279,0.9821237871039259),point('sigma-5mm','belief_estimated',10,7,0.39677814534597083,0.892208733443606),point('sigma-10mm','belief_estimated',10,3,0.10779126655639397,0.603221854654029)]};
 test('a study file is parsed with its shape checked, and a malformed one is refused with a reason',()=>{
  expect(parseStudy(JSON.stringify({study}))).toMatchObject({ok:true});expect(parseStudy(JSON.stringify(study))).toMatchObject({ok:true});
  for(const bad of ['not json','{}',JSON.stringify({...study,points:[{id:'x'}]}),JSON.stringify({...study,points:[{...study.points[0],firstTryInterval:{low:0.9,high:0.1}}]}),JSON.stringify({...study,points:[{...study.points[0],runs:0}]}),JSON.stringify({...study,schemaVersion:1}),JSON.stringify({...study,accepted:true}),JSON.stringify({...study,endpointProtocol:null}),JSON.stringify({...study,endpointProtocol:'other'}),JSON.stringify({...study,points:[{...study.points[0],afterRecovery:10}]}),JSON.stringify({...study,points:[{...study.points[0],outcomes:{lifted:Infinity}}]})])expect(parseStudy(bad).ok,bad.slice(0,40)).toBe(false);
@@ -55,4 +55,15 @@ test('R10: at a replay cursor an attempt shows the record that existed then (pla
 test('R10: the attempt counter counts the attempts that exist at the cursor',()=>{
  const r=rep([attempt()],{attemptRecords:[attempt({stage:'plan',recordedTick:1444}),attempt({stage:'outcome',recordedTick:1700})]});
  expect(attemptCounter(r,1000,'cup-1')).toBe('');expect(attemptCounter(r,1444,'cup-1')).toContain('1/3');
+});
+
+test('only the Wilson interval computed from the recorded first-try count can be displayed',()=>{
+ const all=point('all','belief_estimated',10,10,0.7224671969739421,1);
+ const parse=(firstTryInterval:typeof all.firstTryInterval)=>parseStudy(JSON.stringify({...study,points:[{...all,firstTryInterval}]}));
+ expect(parse(all.firstTryInterval).ok).toBe(true);
+ for(const interval of [{low:0,high:0},{low:0.72,high:1}])expect(parse(interval).ok).toBe(false);
+});
+test('a summary cannot claim acceptance for its nested study',()=>{
+ expect(parseStudy(JSON.stringify({accepted:false,study})).ok).toBe(true);
+ expect(parseStudy(JSON.stringify({accepted:true,study})).ok).toBe(false);
 });

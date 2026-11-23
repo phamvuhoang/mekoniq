@@ -36,7 +36,7 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  await expect(row).toBeVisible({timeout:120000});await expect(row.locator('[data-gate="belief"]')).toHaveAttribute('data-pass','true');await expect(row.locator('td[data-outcome]')).toHaveAttribute('data-outcome','lifted');
  await expect(page.getByTestId('perception-evidence')).toContainText(/not camera data/i);
  // Display-only study fixture, labelled in its visible first row; not a measured study or qualification input.
- const point={mode:'belief_estimated',runs:10,firstTry:7,afterRecovery:0,attention:3,firstTryInterval:{low:0.4,high:0.9},medianTicks:1500,unexpectedContacts:0,medianBeliefErrorAtCommitM:0.002,outcomes:{lifted:7,refused:3}};
+ const point={mode:'belief_estimated',runs:10,firstTry:7,afterRecovery:0,attention:3,firstTryInterval:{low:0.39677814534597083,high:0.892208733443606},medianTicks:1500,unexpectedContacts:0,medianBeliefErrorAtCommitM:0.002,outcomes:{lifted:7,refused:3}};
  await page.locator('#twin-import-perception-study').setInputFiles({name:'SYNTHETIC_UI_ONLY-study.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({schemaVersion:2,accepted:false,endpointProtocol:'first-cup-grasp-v2',campaignId:'SYNTHETIC_UI_ONLY',calibration:'not_calibrated',points:[{...point,id:'SYNTHETIC_UI_ONLY'},{...point,id:'sigma-2mm'},{...point,id:'sigma-4mm'}]}))});
  await expect(page.getByTestId('perception-study')).toContainText('SYNTHETIC_UI_ONLY');
  await sweepWeb07(page,{panel:'perception-study',testId:'perception-study',displayFixture:'synthetic-ui-only',reopen:()=>openInspector(page,'report')});
