@@ -74,14 +74,14 @@ export async function openBeliefRecorder(o:{directory:string;identity:Identity;m
   finish:reason=>serial(async()=>{if(reason)await end(reason);try{await flush();if(!reason&&!m.terminalReason&&!m.gaps.length){m.coverage.complete=true;closed=true;}}catch(e){await end((e as Error).message);throw e;}await save();await unlink(join(o.directory,WAL)).catch(()=>{});})};
 }
 export interface BeliefRead {complete:boolean;prefixCovered:boolean;policy?:BeliefPolicy;beliefs:BeliefRecord[];attempts:GraspAttempt[];recovery:RecoveryStep[];issues:string[]}
-export async function readBeliefEvidence(root:string,manifest:unknown,options?:{/** what the run that is being read is: every field given must match the manifest */identity?:Partial<Identity>;profile?:PerceptionProfileV1;allowLivePrefix?:boolean}):Promise<BeliefRead>{
+export async function readBeliefEvidence(root:string,manifest:unknown,options?:{/** what the run that is being read is: every field given must match the manifest */identity?:Partial<Identity>;profile?:PerceptionProfileV1;workerRoot?:string;allowLivePrefix?:boolean}):Promise<BeliefRead>{
  const out:BeliefRead={complete:false,prefixCovered:false,beliefs:[],attempts:[],recovery:[],issues:[]},issue=(s:string)=>{if(!out.issues.includes(s))out.issues.push(s);};
  if(!validateBeliefManifestShape(manifest)||Buffer.byteLength(JSON.stringify(manifest))>READ_LIMITS.manifestBytes){issue('BELIEF_MANIFEST_INVALID');return out;}
  const m=manifest as BeliefEvidenceManifestV1;
  if(options?.identity&&(Object.keys(options.identity) as (keyof Identity)[]).some(k=>hashJson((options.identity![k]??null) as never)!==hashJson((m.identity[k]??null) as never)))issue('BELIEF_IDENTITY_MISMATCH');
  if((!m.coverage.complete&&!options?.allowLivePrefix)||m.gaps.length||m.terminalReason)issue('BELIEF_COVERAGE_INCOMPLETE');
  if(options?.allowLivePrefix&&m.coverage.evaluatedThroughTick===undefined)issue('BELIEF_COVERAGE_UNVERIFIABLE');
- try{out.policy=await registeredBeliefPolicy(m.identity.perceptionProfileDigest);if(options?.profile&&hashJson(options.profile)!==hashJson(out.policy.profile))issue('BELIEF_PROFILE_MISMATCH');}catch{issue('BELIEF_POLICY_UNAVAILABLE');}
+ try{out.policy=await registeredBeliefPolicy(m.identity.perceptionProfileDigest,options?.workerRoot);if(options?.profile&&hashJson(options.profile)!==hashJson(out.policy.profile))issue('BELIEF_PROFILE_MISMATCH');}catch{issue('BELIEF_POLICY_UNAVAILABLE');}
  try{
   if(await dirBytes(root)>BELIEF_EVIDENCE_MAX_BYTES)throw new Error('BELIEF_QUOTA_EXCEEDED');
   if((await lstat(join(root,WAL)).catch(()=>null))?.size)issue('BELIEF_UNPUBLISHED_TAIL');

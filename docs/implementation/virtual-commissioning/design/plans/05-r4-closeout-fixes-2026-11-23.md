@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 24.22.2, pnpm 10.32.1, TypeScript/Vitest, Python/MuJoCo, Playwright, Docker/native Linux CI.
 
-**Spec:** ../05-contracts-and-evidence.md; ../03-r4-perception-recovery-spec.md; ../REVIEW-web09-7bdbc-and-rec06-decisions-2026-11-23.md. User has instructed implementation of all remaining work after reviewing the proposed design.
+**Spec:** [Contracts and evidence](../05-contracts-and-evidence.md), [perception and recovery](../03-r4-perception-recovery-spec.md), and [WEB09 and REC06 decisions](../REVIEW-web09-7bdbc-and-rec06-decisions-2026-11-23.md). User has instructed implementation of all remaining work after reviewing the proposed design.
 
 ## Global Constraints
 
