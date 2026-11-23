@@ -57,9 +57,9 @@ export async function verifyContainerRecord(root,m,source){
  return out;
 }
 /** WEB07 rows come from the suites' own artifacts (tests/support/web07.ts writes them while the real-run specs execute); WEB08/WEB10 from the replay samples copied beside the record; WEB09 comes from the e2e-perf suite's frame timing (raw intervals). */
-export async function verifyWebRecord(root,m){
+export async function verifyWebRecord(root,m,opts={}){
  const read=p=>{try{return boundedEvidenceRead(root,p);}catch{return null;}},out={WEB07:[],WEB08:[],WEB09:[],WEB10:[]};
- out.WEB09=verifyWeb09Record(read,m);
+ out.WEB09=await verifyWeb09Record(read,m,opts.web09);
  out.WEB07=verifyWeb07Record(read,m);
  Object.assign(out,await verifyReplayRecord(read,m));
  return out;
