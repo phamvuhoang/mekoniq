@@ -25,7 +25,7 @@ test('a held-open trace cannot stand in for the registered capture at a known mi
  expect(()=>check([.0889,.07,.07])).not.toThrow();
  for(const targets of [[.0889,.0889,.0889],[.07,.0889,.0889],[.07,.07,0]])expect(()=>check(targets)).toThrow(/CAPTURE/);
 });
-import {mkdir,mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {mkdir,mkdtemp,rm,symlink,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
@@ -61,4 +61,19 @@ test('full cell births command the original upright fixture pose',()=>{
  expect(()=>check(centre,pose.quaternionXyzw)).not.toThrow();
  expect(()=>check([.50,0,.151],pose.quaternionXyzw)).toThrow(/BIRTH/);
  expect(()=>check(centre,[1,0,0,0])).toThrow(/BIRTH/);
+});
+
+test('present malformed recovery input returns failed even for null JSON, a null reference, or a broken directory link',async()=>{
+ const root=await mkdtemp(join(tmpdir(),'rec06-malformed-')),dir=join(root,'inputs/recovery'),key='recoveryCampaign',spec=CAMPAIGNS[key];
+ const verify=(inputs:unknown)=>verifyOneCampaign(root,{inputs},key,spec,'a'.repeat(40));
+ try{
+  expect(await verify({[key]:null})).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);
+  await mkdir(join(root,'inputs'));await symlink('absent-target',dir);expect(await verify({})).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);
+  await rm(dir);await mkdir(dir);
+  for(const bytes of ['null','[]','3']){
+   await writeFile(join(dir,'campaign.json'),bytes);
+   const ref={file:'inputs/recovery/campaign.json',sha256:createHash('sha256').update(bytes).digest('hex')},issues=await verify({[key]:ref});
+   expect(issues).toEqual(['RECOVERY_CAMPAIGN_CORRUPT']);expect(artifactDispositionsFromGroups({[key]:issues}).REC06.status).toBe('failed');
+  }
+ }finally{await rm(root,{recursive:true,force:true});}
 });
