@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/navigation2d.ts @ 7bdbc1a532dc713b1a75ee2d0a164c297e9ea24d (sha256 75e09d01ba3c63830401e63e0899920e57586ee259fb98d209ceaabc44a688c3). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/navigation2d.ts @ f71370b9b418270722586814f947b8022a9a10e2 (sha256 da84988857c0c1c874626614958e48231bd79eb8e50584da0fdd2ceb7869dbff). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the navigation/validation schemas. Run pnpm contracts:generate; do not edit. */
 import type { CalibrationResult, Digest, EngineeringId, Link, Joint, Pose, Scalar, SensorModel, SourceRef } from './engineering';
 /**
@@ -383,10 +383,11 @@ export type Sim3DRequestV1 =
          */
         worldPerturbations?: {
           eventId: string;
-          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-          revision: 1;
+          presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+          revision: 1 | 2;
           targetId: string;
           targetTick: number;
+          segmentIndex?: number;
         }[];
         worldControl?: WorldControlV1;
         /**
@@ -1715,8 +1716,8 @@ export interface WorldStep {
    */
   disturbances?: {
     eventId: string;
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
     targetTick: number;
     runId: string;
@@ -1741,6 +1742,47 @@ export interface WorldStep {
      * @maxItems 3
      */
     afterPositionM: number[];
+    segmentIndex?: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    torqueMapNm?: number[];
+  }[];
+  /**
+   * Pick-rig-only native placement read after mj_forward and before the first integration substep. Post-step props remain separate observations.
+   *
+   * @minItems 1
+   * @maxItems 16
+   */
+  birthObservations?: {
+    method: 'mujoco-freejoint-body-before-step-v1';
+    frame: 'map';
+    propId: string;
+    cupId: string;
+    eventId: string;
+    runId: string;
+    bootId: string;
+    requestId: string;
+    sceneDigest: string;
+    requestDigest: string;
+    targetTick: number;
+    physicsSubstepsBefore: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    qposPositionM: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    bodyPositionM: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
   }[];
 }
 /**
@@ -2297,8 +2339,8 @@ export interface LabWorldSceneV1 {
     terminalApproachDirection?: 'reverse';
   };
   disturbance?: {
-    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-    revision: 1;
+    presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+    revision: 1 | 2;
     targetId: string;
     trigger: 'before_release' | 'transport' | 'after_belief_commit';
     cupId: string;
@@ -2382,10 +2424,11 @@ export interface WorldEvidenceRecord {
      */
     worldPerturbations?: {
       eventId: string;
-      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1';
-      revision: 1;
+      presetId: 'world-dock-drift-v1' | 'world-cup-fall-v1' | 'world-cup-nudge-v1' | 'world-cup-nudge-v2';
+      revision: 1 | 2;
       targetId: string;
       targetTick: number;
+      segmentIndex?: number;
     }[];
     worldControl?: WorldControlV1;
     /**
@@ -3393,7 +3436,7 @@ export interface BeliefObject {
   reason?: string;
 }
 /**
- * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code.
+ * Scoring record. truthAtObservedTick and errorM exist for evaluation only; they never reach the decision code. Both belief modes estimate x/y; belief z is the declared upright support surface plus half cup height, transformed into arm-base coordinates. ground_truth means exact x/y, not access to truth z.
  *
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
  * via the `definition` "BeliefRecord".
@@ -3409,6 +3452,9 @@ export interface BeliefRecord {
    * @maxItems 3
    */
   truthAtObservedTick: number[];
+  /**
+   * Euclidean x/y estimator error in metres against truthAtObservedTick. Excludes z, which comes from declared support geometry in both belief modes.
+   */
   errorM: number | null;
 }
 /**
@@ -3495,7 +3541,19 @@ export interface BeliefEvidenceManifestV1 {
     perceptionProfileDigest: Digest | null;
     recoveryPolicyDigest: Digest | null;
     graspMode: 'belief_ground_truth' | 'belief_estimated';
+    graspProgramDigest?: Digest;
     seed: number;
+    /**
+     * Test-only transient decision bias; disqualifies registered perception studies. The reader checks the exact vector against published estimates.
+     */
+    diagnosticBias?: {
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      vectorM: number[];
+      attempts: number;
+    };
   };
   /**
    * @minItems 1
@@ -3519,6 +3577,10 @@ export interface BeliefEvidenceManifestV1 {
   coverage: {
     lastTick: number;
     complete: boolean;
+    /**
+     * Contiguous completed estimator/controller evaluations from world tick 1 through this tick (tick 0 is initialization). Published atomically with flushed stream counts; lastTick remains the last appended record.
+     */
+    evaluatedThroughTick?: number;
   };
   /**
    * @maxItems 64

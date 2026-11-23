@@ -7,7 +7,7 @@ import {join} from 'node:path';
 // @ts-expect-error JavaScript CLI boundary
 import {verifyProductionUi} from '../../scripts/production-ui.mjs';
 declare global { interface Window { axe: typeof axe } }
-const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery']};
+const TARGETS:Record<string,string[]>={'grasp-settings':['grasp-mode','grasp-program','world-experiment'],control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery']};
 type Target={panel:string;testId:string;state?:'populated'|'empty'|'error';displayFixture?:'synthetic-ui-only'};
 export async function assertWeb07Content(page:Page,o:Target){
  const ids=o.panel==='calibration'&&o.state&&o.state!=='populated'?[`calibration-${o.state}`]:TARGETS[o.panel];if(!ids||ids[0]!==o.testId)throw Error('WEB07_TARGET_MISMATCH');
@@ -18,7 +18,8 @@ export async function assertWeb07Content(page:Page,o:Target){
  }
  if(o.panel==='fault-composer'&&await page.getByTestId('fault-timeline').locator('li[data-entry]').count()<1)throw Error('WEB07_CONTENT_EMPTY:fault-timeline');
  if(o.panel==='perception-study'&&(await page.getByTestId('perception-study-rows').locator('tbody th').count()<1||await page.getByTestId('perception-study').locator('svg .study-interval').count()<1))throw Error('WEB07_CONTENT_EMPTY:perception-study');
- if(o.panel==='recovery'&&await page.getByTestId('perception-recovery').locator('li[data-step]').count()<1)throw Error('WEB07_CONTENT_EMPTY:recovery');
+ if(o.panel==='recovery'&&await page.getByTestId('perception-recovery').locator('li[data-step] button[data-replay=recovery]').count()<1)throw Error('WEB07_CONTENT_EMPTY:recovery');
+ if(o.panel==='grasp-settings'&&(await page.getByTestId('grasp-program').inputValue()!=='cup-pick-two-stage-v1'||await page.getByTestId('world-experiment').inputValue()!=='world-cup-nudge-v2'))throw Error('WEB07_CONTENT_EMPTY:grasp-settings');
  return ids;
 }
 export type Web07Row={panel:string;lang:'vi'|'ja'|'en';width:number;axeSeriousCritical:number;axeIds:string[];axeDetails:{id:string;targets:string[];details:(string|undefined)[]}[];reducedMotion:boolean;horizontalScroll:boolean;populated:boolean;productionSha256:string};

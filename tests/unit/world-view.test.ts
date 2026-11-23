@@ -1,3 +1,4 @@
+import {loadedReport} from '../support/belief-display';
 import {expect,test} from 'vitest';
 import {mapExtent,worldEntities} from '../../src/twin/world-view';
 import {knownWorldDrawing,cellPreset} from '../../src/twin/cell';
@@ -19,9 +20,9 @@ test('a world with no admitted extent refuses display instead of borrowing zero-
 
 test('the 2D plan draws the belief dashed against the truth dot at the cursor, and nothing when the report has no perception stream',()=>{
  const drawing=knownWorldDrawing(scene as unknown as LabWorldSceneV1)!,world={...drawing,record:{snapshot:{runId:'run',tick:20,robots:[{robotId:'amr-1',poseDriveMap:[.35,.49,0]}],props:[]}}} as never;
- const rec=(tick:number)=>({tick,objectId:'cup-1',dropped:false,errorM:0.007,truthAtObservedTick:[0.49,0,0.15],belief:{objectId:'cup-1',kind:'cup',frameId:'arm-base',positionM:[0.497,0,0.15],sigmaM:[0,0,0],observedTick:tick-5,publishedTick:tick,ageTicks:0,source:'pose_estimator_sim',valid:true}});
+ const rec=(tick:number)=>({tick,objectId:'cup-1',dropped:false,errorM:0.007,truthAtObservedTick:[0.49,0,0.15],belief:{objectId:'cup-1',kind:'cup',frameId:'arm-base',positionM:[0.497,0,0.15],sigmaM:[0.002,0.002,0],observedTick:tick-5,publishedTick:tick,ageTicks:0,source:'pose_estimator_sim',valid:true}});
  const vs={view:'2d' as const,selected:null,layers:{...defaultLayers(),footprint:false}},base={preset:cellPreset(),view:{tick:20,entities:[]},world} as never as TwinFrame;
- const with_=renderTwin({...base,report:{perceptionEvidence:{schemaVersion:1,beliefs:[rec(10),rec(20)],attempts:[],recovery:[],complete:true,issues:[]}}} as never,vs);
+ const with_=renderTwin({...base,report:loadedReport([rec(10),rec(20)] as never)} as never,vs);
  expect(with_).toContain('data-belief="cup-1"');expect(with_).toContain('data-error-mm="7.00"');expect(with_).toContain('tw-belief-ghost');
  expect(renderTwin({...base,report:{}} as never,vs)).not.toContain('tw-belief');
  expect(renderTwin({...base,report:{perceptionEvidence:{schemaVersion:1,beliefs:[rec(30)],attempts:[],recovery:[],complete:true,issues:[]}}} as never,vs)).not.toContain('tw-belief'); // nothing believed yet at the cursor

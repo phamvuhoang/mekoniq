@@ -29,10 +29,10 @@ test('all three languages are present for the block',()=>{
  for(const l of ['vi','ja','en'] as const){setLocale(l);const html=perceptionBlockHtml(rep([attempt()]));expect(html.length).toBeGreaterThan(200);if(l==='ja')expect(html).toContain('認識');if(l==='vi')expect(html).toContain('nhận thức');}
 });
 const point=(id:string,mode:string,runs:number,firstTry:number,low:number,high:number)=>({id,mode,runs,firstTry,afterRecovery:0,attention:runs-firstTry,firstTryInterval:{low,high},medianTicks:1700,unexpectedContacts:0,medianBeliefErrorAtCommitM:id.startsWith('sigma')?0.004:null,outcomes:{lifted:firstTry,refused:runs-firstTry}});
-const study={schemaVersion:1,campaignId:'perception-gap-v1',calibration:'not_calibrated',points:[point('fixed-20mm','fixed_program',10,8,0.49,0.94),point('sigma-2mm','belief_estimated',10,9,0.6,0.98),point('sigma-5mm','belief_estimated',10,7,0.4,0.89),point('sigma-10mm','belief_estimated',10,3,0.1,0.6)]};
+const study={schemaVersion:2,endpointProtocol:'first-cup-grasp-v2',accepted:false,campaignId:'perception-gap-v1',calibration:'not_calibrated',points:[point('fixed-20mm','fixed_program',10,8,0.49,0.94),point('sigma-2mm','belief_estimated',10,9,0.6,0.98),point('sigma-5mm','belief_estimated',10,7,0.4,0.89),point('sigma-10mm','belief_estimated',10,3,0.1,0.6)]};
 test('a study file is parsed with its shape checked, and a malformed one is refused with a reason',()=>{
  expect(parseStudy(JSON.stringify({study}))).toMatchObject({ok:true});expect(parseStudy(JSON.stringify(study))).toMatchObject({ok:true});
- for(const bad of ['not json','{}',JSON.stringify({...study,points:[{id:'x'}]}),JSON.stringify({...study,points:[{...study.points[0],firstTryInterval:{low:0.9,high:0.1}}]}),JSON.stringify({...study,points:[{...study.points[0],runs:0}]}),JSON.stringify({...study,schemaVersion:2})])expect(parseStudy(bad).ok,bad.slice(0,40)).toBe(false);
+ for(const bad of ['not json','{}',JSON.stringify({...study,points:[{id:'x'}]}),JSON.stringify({...study,points:[{...study.points[0],firstTryInterval:{low:0.9,high:0.1}}]}),JSON.stringify({...study,points:[{...study.points[0],runs:0}]}),JSON.stringify({...study,schemaVersion:1}),JSON.stringify({...study,accepted:true}),JSON.stringify({...study,endpointProtocol:null}),JSON.stringify({...study,endpointProtocol:'other'}),JSON.stringify({...study,points:[{...study.points[0],afterRecovery:10}]}),JSON.stringify({...study,points:[{...study.points[0],outcomes:{lifted:Infinity}}]})])expect(parseStudy(bad).ok,bad.slice(0,40)).toBe(false);
 });
 test('the study screen: a row per point, the interval plot over sigma with n, no ranking, the not-camera statement',()=>{
  const p=parseStudy(JSON.stringify(study));if(!p.ok)throw Error('x');const html=studyHtml(p.study);
@@ -41,7 +41,7 @@ test('the study screen: a row per point, the interval plot over sigma with n, no
 });
 test('the legend says what is drawn, or that nothing is (never silent), in three languages',()=>{
  const data=ghostLegendHtml({status:'data',items:[{objectId:'cup-1',beliefMapM:[0,0,0],truthMapM:[0,0,0],errorMm:7.04}]});
- expect(data).toContain('data-state="data"');expect(data).toContain('cup-1 ↔ 7 mm');expect(data).toMatch(/simulation only/);
+ expect(data).toContain('data-state="data"');expect(data).toContain('cup-1 ↔ XY 7 mm');expect(data).toMatch(/simulation only/);
  expect(ghostLegendHtml({status:'none'})).toContain('No perception data');expect(ghostLegendHtml({status:'no_data_at_cursor'})).toContain('at this point');
  setLocale('ja');expect(ghostLegendHtml({status:'none'})).toContain('認識データなし');setLocale('vi');expect(ghostLegendHtml({status:'none'})).toContain('Không có dữ liệu nhận thức');
 });

@@ -21,6 +21,9 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  const modes=page.getByTestId('grasp-mode');await expect(modes).toBeVisible();await expect(page.locator('#twin-grasp-mode-fixed_program')).toBeChecked();
  for(const [button,word] of [['JA','認識'],['VI','Nhận thức'],['EN','Perception']] as const){await page.getByRole('button',{name:button,exact:true}).click();await expect(modes.locator('legend')).toContainText(word);}
  await page.locator('#twin-grasp-mode-belief_estimated').check();await expect(page.getByTestId('grasp-profile')).toContainText('σ 2 mm');await expect(page.getByTestId('grasp-profile')).toContainText('Assumed');
+ await page.getByTestId('grasp-program').selectOption('cup-pick-two-stage-v1');await page.getByTestId('world-experiment').selectOption('world-cup-nudge-v2');
+ await sweepWeb07(page,{panel:'grasp-settings',testId:'grasp-mode',reopen:()=>openInspector(page,'setup')});
+ await page.getByTestId('grasp-program').selectOption('');await expect(page.getByTestId('world-experiment')).toHaveValue('world-nominal-v1');
  await expect(page.locator('[data-action="twin-run"]').first()).toBeEnabled({timeout:120000});
  const created=page.waitForResponse(r=>isCreate(r.request()));await page.locator('[data-action="twin-run"]').first().click();const response=await created;expect(response.status()).toBe(201);
  const body=response.request().postDataJSON();expect(body).toMatchObject({graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'});expect(JSON.stringify(body)).not.toMatch(/sigma|dropout|biasM/i);
@@ -34,7 +37,7 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  await expect(page.getByTestId('perception-evidence')).toContainText(/not camera data/i);
  // Display-only study fixture, labelled in its visible first row; not a measured study or qualification input.
  const point={mode:'belief_estimated',runs:10,firstTry:7,afterRecovery:0,attention:3,firstTryInterval:{low:0.4,high:0.9},medianTicks:1500,unexpectedContacts:0,medianBeliefErrorAtCommitM:0.002,outcomes:{lifted:7,refused:3}};
- await page.locator('#twin-import-perception-study').setInputFiles({name:'SYNTHETIC_UI_ONLY-study.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({schemaVersion:1,campaignId:'SYNTHETIC_UI_ONLY',calibration:'not_calibrated',points:[{...point,id:'SYNTHETIC_UI_ONLY'},{...point,id:'sigma-2mm'},{...point,id:'sigma-4mm'}]}))});
+ await page.locator('#twin-import-perception-study').setInputFiles({name:'SYNTHETIC_UI_ONLY-study.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({schemaVersion:2,accepted:false,endpointProtocol:'first-cup-grasp-v2',campaignId:'SYNTHETIC_UI_ONLY',calibration:'not_calibrated',points:[{...point,id:'SYNTHETIC_UI_ONLY'},{...point,id:'sigma-2mm'},{...point,id:'sigma-4mm'}]}))});
  await expect(page.getByTestId('perception-study')).toContainText('SYNTHETIC_UI_ONLY');
  await sweepWeb07(page,{panel:'perception-study',testId:'perception-study',displayFixture:'synthetic-ui-only',reopen:()=>openInspector(page,'report')});
  // 390 px: the attempts table scrolls inside its own region, the page does not
@@ -44,6 +47,7 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  await page.locator('[data-action="twin-world-export"]').first().click();await(await download).saveAs(zip);execFileSync('unzip',['-q',zip,'-d',join(folder,'pkg')]);
  const manifest=JSON.parse(readFileSync(join(folder,'pkg/manifest.json'),'utf8')),asset=manifest.assets.find((a:{role:string})=>a.role==='report'),raw=readFileSync(join(folder,'pkg',asset.path));
  const report=JSON.parse((asset.encoding==='gzip'?gunzipSync(raw):raw).toString()),beliefs=report.perceptionEvidence.beliefs as {tick:number;objectId:string;belief:unknown;dropped:boolean;errorM:number|null}[];
+ expect(report.perceptionEvidence.issues).toEqual([]);expect(report.perceptionEvidence.policy.profileSha256).toBe(report.manifest.perception.profile.sha256);expect(report.perceptionEvidence.coverage).toMatchObject({prefixCovered:true,lastTick:manifest.horizon.tick});
  expect(report.perceptionEvidence.attempts.length).toBeGreaterThan(0);
  const cursor=1400,expected=[...beliefs].reverse().find(r=>r.objectId==='cup-1'&&r.tick<=cursor&&r.belief)!;expect(expected).toBeTruthy();
  const offline=await page.context().newPage();const attempts:string[]=[];await offline.route('**/lab/**',r=>{attempts.push(r.request().url());return r.abort();});
@@ -53,7 +57,7 @@ test('belief_estimated cell: ids in the request, attempts in the report, the exp
  const legend=offline.getByTestId('belief-legend');await expect(legend).toHaveAttribute('data-state','data',{timeout:30000});
  await sweepWeb07(offline,{panel:'belief',testId:'belief-legend'});
  await expect(offline.locator('#replay-stage canvas')).toHaveAttribute('data-belief-state','data');await expect(offline.locator('#replay-stage canvas')).toHaveAttribute('data-beliefs',/cup-1/);
- await expect(legend).toContainText(`cup-1 ↔ ${Number((expected.errorM! *1000).toFixed(1))} mm`);
+ await expect(legend).toContainText(`cup-1 ↔ XY ${Number((expected.errorM! *1000).toFixed(1))} mm`);
  // the 2D plan draws the same record: dashed belief, solid truth dot, the error
  await offline.getByRole('button',{name:'2D',exact:true}).click();const ghost=offline.locator('#replay-stage [data-belief="cup-1"]');await expect(ghost).toHaveAttribute('data-error-mm',(expected.errorM!*1000).toFixed(2));
  // the table lists only the attempts decided up to the cursor: nothing believed yet at tick 5 (the first estimate is published at tick 10: update period 10, latency 5)

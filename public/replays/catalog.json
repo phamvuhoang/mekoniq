@@ -48,6 +48,18 @@
       "recording": "b733d671-1ad6-4aec-b879-0c1fca662269",
       "horizon": 2550,
       "provenance": "R4 V09 recording of the real MuJoCo cell (drive-nominal-v1, drive-trip on amr-1/wheel-right at 48 s); display only; accepted:false; not_calibrated"
+    },
+    {
+      "id": "belief-recovery",
+      "title": [
+        "Gắp lại cốc sau khi cốc bị xê dịch",
+        "カップの位置ずれ後に把持を再試行",
+        "Retrying a grasp after the cup shifts"
+      ],
+      "manifestSha256": "d7c0671b9d77975c6ed9f15e27a67c9fdeb261592435ee53ef3cd587033095c4",
+      "recording": "0bfb555d-4cee-472f-88ad-fb6a15d34f0a",
+      "horizon": 11050,
+      "provenance": "REC06 pulse-42, Source eceb7681d3d3f077d335cbe80fe5aee9b6e99bd2; display_only_not_requalification; accepted:false; not_calibrated"
     }
   ]
 }

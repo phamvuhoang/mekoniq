@@ -16,7 +16,7 @@ import {footprintInMap,scanLayer,type ScanSample} from './lidar';
 import {layerProvenance} from './overlays';
 import {plantCupPose} from './arm/arm-telemetry';
 import {ghostsAt} from './belief';
-export interface TwinFrame {world?:WorldDrawing;extent?:{minM:number[];maxM:number[]};preset:TwinPreset;view:RunView|null;report:RunReport|null;seen?:Record<string,number>;/** latest telemetry per entity from the browser store (plan 03: arm joints) */samples?:Record<string,Held>;nowMs?:number;
+export interface TwinFrame {beliefReport?:RunReport|null;world?:WorldDrawing;extent?:{minM:number[];maxM:number[]};preset:TwinPreset;view:RunView|null;report:RunReport|null;seen?:Record<string,number>;/** latest telemetry per entity from the browser store (plan 03: arm joints) */samples?:Record<string,Held>;nowMs?:number;
  /** IR-SIM 2D runs: the run bundle's compiled navigation scene (footprints, sensors, obstacles) and, for imported evidence only, scans with their own-tick poses. */
  payloadBundle?:PayloadBundle|null;navigation?:NavigationSceneV1|null;scans?:{scans:ScanSample[]};
  /** Replay: entities with recorded samples but none drawn at the cursor (before their first one, or in a recorded gap); drawn as without telemetry. */unrecorded?:string[]}
@@ -108,7 +108,7 @@ export function renderTwin(f:TwinFrame,vs:ViewState):string {
   for(const h of w.handoffPoints??[])overlay+=h.yawRad===null?`<text class="tw-unknown-label" x="${X(h.position[0]!)}" y="${Y(h.position[1]!)+30}">${esc(h.id)} · yaw ?</text>`:axes(h.position[0]!,h.position[1]!,h.yawRad,h.id);
  }
  // R4.4: the belief of each cup at the cursor (dashed) against where it was when observed (solid dot), joined by the error; only when the report carries the stream, never on top of the real cup
- const gh=ghostsAt(f,f.world?.scene.armCell.arm.baseInMap??f.preset.project.armCollisionProfile?.baseInMap),ghosts=gh.status==='data'?gh.items.map(i=>`<g class="tw-belief" data-belief="${esc(i.objectId)}" data-error-mm="${i.errorMm===null?'':i.errorMm.toFixed(2)}"><line class="tw-belief-link" x1="${X(i.beliefMapM[0])}" y1="${Y(i.beliefMapM[1])}" x2="${X(i.truthMapM[0])}" y2="${Y(i.truthMapM[1])}"/><circle class="tw-belief-truth" cx="${X(i.truthMapM[0])}" cy="${Y(i.truthMapM[1])}" r="2.5"/><circle class="tw-belief-ghost" cx="${X(i.beliefMapM[0])}" cy="${Y(i.beliefMapM[1])}" r="8"/><title>${esc(i.objectId)} · ${tr('vị trí tin','信じる位置','believed position')}${i.errorMm===null?'':` · ${i.errorMm.toFixed(1)} mm`}</title></g>`).join(''):'';
+ const gh=ghostsAt(f,f.world?.scene.armCell.arm.baseInMap??f.preset.project.armCollisionProfile?.baseInMap),ghosts=gh.status==='data'?gh.items.map(i=>`<g class="tw-belief" data-belief="${esc(i.objectId)}" data-error-mm="${i.errorMm===null?'':i.errorMm.toFixed(2)}"><line class="tw-belief-link" x1="${X(i.beliefMapM[0])}" y1="${Y(i.beliefMapM[1])}" x2="${X(i.truthMapM[0])}" y2="${Y(i.truthMapM[1])}"/><circle class="tw-belief-truth" cx="${X(i.truthMapM[0])}" cy="${Y(i.truthMapM[1])}" r="2.5"/><circle class="tw-belief-ghost" cx="${X(i.beliefMapM[0])}" cy="${Y(i.beliefMapM[1])}" r="8"/><title>${esc(i.objectId)} · ${tr('vị trí tin','信じる位置','believed position')}${i.errorMm===null?'':` · XY ${i.errorMm.toFixed(1)} mm`}</title></g>`).join(''):'';
  const marks=ents.filter(e=>Number.isFinite(e.x)).map(e=>{
   const on=e.id===sel,label=`${kindLabel(e.kind)} ${e.name}${e.status?` · ${stateLabel(e.status)}`:''}`;
   const shape=e.kind==='amr'?`<circle r="17" class="tw-amr ${e.source}"/><path d="m-6 5 6-12 6 12" class="tw-amr-nose"/>`
