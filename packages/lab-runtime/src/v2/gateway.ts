@@ -291,6 +291,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    let engineering:LockedEngineering|undefined;
    if(!PAIRING_ACCESS.includes(r.access))return deny(response,403,'CAPABILITY_DENIED',['ACCESS_NOT_GRANTED']);
    if(r.runtimeIdentity.sourceCommit!==deps.sourceCommit||r.runtimeIdentity.schemaHash!==deps.schemaHash)return deny(response,409,'CONTRACT_MISMATCH',['CONTRACT_MISMATCH']);
+   if(r.graspProgramId!==undefined&&deps.worldExperiments!==true)return deny(response,422,'GRASP_PROGRAM_UNAVAILABLE',['GRASP_PROGRAM_UNAVAILABLE']);
    if(r.engineeringRef){
      // Engineering never falls back to a preset: no capability, wrong mode or an unauthorised/mismatched bundle is a refusal.
      if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);
