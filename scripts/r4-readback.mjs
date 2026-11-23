@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {checkR4Structure,tableR4,CASES_R4} from './sim-extension-r4.mjs';
 import {boundedEvidenceRead,evidenceInventory,verifyR2bDirectory} from './r2b-readback.mjs';
 import {checkArmContainer,readNativeContainer} from './r4-container-readback.mjs';
+import {readCalibrationInput} from './r4-calibration-readback.mjs';
 import {verifyWeb07Record} from './r4-web07-readback.mjs';
 import {verifyWeb09Record} from './r4-web09-readback.mjs';
 export {WEB07_PANELS} from './r4-web07-readback.mjs';
@@ -21,7 +22,7 @@ export const CAMPAIGNS={
  trayCampaign:{dir:'inputs/tray',code:'TRAY_CAMPAIGN',module:'simulation3d/tray-campaign.ts',fn:'verifyTrayCampaign',ids:['tray-v1']},
  perceptionStudy:{dir:'inputs/study',code:'PERCEPTION_STUDY',module:'perception/perception-study.ts',fn:'verifyPerceptionStudy',ids:['perception-gap-v1']}
 };
-const absent=x=>/^[A-Z0-9_]+_MISSING(:|$)/.test(x)||x==='ARTIFACT_READBACK_PENDING'||x==='CALIBRATION_SELFTEST_MISSING'||/_INCOMPLETE$/.test(x);
+const absent=x=>/^[A-Z0-9_]+_MISSING(:|$)/.test(x)||x==='ARTIFACT_READBACK_PENDING'||/_INCOMPLETE$/.test(x);
 export async function verifyOneCampaign(root,m,key,spec,source){
  const r=[],x=m.inputs?.[key],path=spec.dir+'/campaign.json';let b=null;try{b=boundedEvidenceRead(root,path);}catch{/* reported below */}
  if(!x||x.file!==path||!b){r.push(spec.code+'_MISSING');return r;}
@@ -90,6 +91,7 @@ export async function collectR4ArtifactDispositions(root,m){
    !bytes||sha(bytes)!==mock.sha256)reg.push('MOCK_REGRESSION_CHAIN_MISMATCH');
  }catch{reg.push('MOCK_REGRESSION_CORRUPT');}}
  groups.r2bRecord=reg;issues.push(...reg);
+ groups.calibrationSelftest=await readCalibrationInput(root,m);issues.push(...groups.calibrationSelftest);
  const cont=await verifyContainerRecord(root,m,source);groups.cld01=cont.cld01;groups.cld02=cont.cld02;issues.push(...cont.cld01,...cont.cld02);
  const web=await verifyWebRecord(root,m);Object.assign(groups,{WEB07:web.WEB07,WEB08:web.WEB08,WEB09:web.WEB09,WEB10:web.WEB10});for(const k of ['WEB07','WEB08','WEB09','WEB10'])issues.push(...web[k]);
  return {issues:[...new Set(issues)],artifactDispositions:artifactDispositionsFromGroups(groups)};
@@ -97,7 +99,7 @@ export async function collectR4ArtifactDispositions(root,m){
 export function artifactDispositionsFromGroups(groups){
  const out={};for(const [id,c] of Object.entries(CASES_R4)){
   if(c.notRun){out[id]={status:'not_run',issues:[c.notRun.split(':')[0]==='blocked'?'blocked':c.notRun]};continue;}
-  const g=c.optional?['CALIBRATION_SELFTEST_MISSING']:c.input==='containerRecord'?groups[id==='CLD01'?'cld01':'cld02']:/^WEB/.test(id)?groups[id]:c.input?groups[c.input]:[];
+  const g=c.optional?groups[c.optional]??['CALIBRATION_SELFTEST_MISSING']:c.input==='containerRecord'?groups[id==='CLD01'?'cld01':'cld02']:/^WEB/.test(id)?groups[id]:c.input?groups[c.input]:[];
   const issues=g??['ARTIFACT_READBACK_PENDING'];
   out[id]={status:issues.length?(issues.every(absent)?'not_run':'failed'):'tested',issues};
  }return out;

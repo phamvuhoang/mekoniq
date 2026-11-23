@@ -1,5 +1,5 @@
 // R4 structural table (contracts §9/§10): the same immutable qualification core as R2b, with its own closed suites. A case is `tested` only when its suites ran green AND the artifact reader accepted the input that case
-// names (a campaign, the study, the container or web record); a missing input is `not_run` with a reason, never a pass. G3 and G-CAL1 are outside the closing condition: G-CAL1 is `not_run` (`r45_not_opened`) without --calibration-selftest.
+// names (a campaign, the study, the container or web record); a missing input is `not_run` with a reason, never a pass. G3 and G-CAL1 are outside the closing condition: G-CAL1 is `not_run` without --calibration-selftest.
 import {checkPlaywrightResult,checkPlaywrightProcess} from './r4-playwright.mjs';
 import {statSync} from 'node:fs';
 import {join} from 'node:path';
@@ -31,10 +31,9 @@ export const SUITES_R4=[
  E('e2e-control','mujoco-control.spec.ts',false),E('e2e-faults','mujoco-faults.spec.ts'),E('e2e-tray','mujoco-tray.spec.ts'),E('e2e-belief','mujoco-belief.spec.ts'),E('e2e-calibration','mujoco-calibration.spec.ts',false),E('e2e-perf','mujoco-perf.spec.ts'),
  // the replay spec serves its own production preview (tests/support/replay-preview.ts): it is not behind a launcher
  {id:'e2e-replay',repo:'lab',kind:'playwright',command:['node_modules/@playwright/test/cli.js','test','tests/e2e/replay-offline.spec.ts','--reporter=json']},
- V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts'])
+ V('r4-regression',['tests/unit/bv01-mock-golden.test.ts','tests/integration/portable-tool-closure.test.ts','tests/integration/lab-runtime-artifact.test.ts','tests/unit/sim-extension-qualification.test.ts','tests/unit/r4-readback.test.ts','tests/unit/r4-calibration-readback.test.ts','tests/unit/r4-native-import.test.ts','tests/unit/r4-replay-readback.test.ts','tests/unit/r4-cld02-guards.test.ts'])
 ];
 const cases=(ids,suites,extra={})=>Object.fromEntries(ids.map(id=>[id,{suites,...extra}]));
-const NOT_OPENED='no --calibration-selftest artifact: G-CAL1 is outside the closing condition (contracts §10) and its recorder is not written; the suites still run and their results are in the record';
 const REC06='blocked: no nudge force makes a known grip miss with the cup still in view (LEDGER-v11-v13); not tuned to fit';
 export const CASES_R4={
  ...cases(['DRV01'],['drv-contracts']),...cases(['DRV02','DRV03','DRV04','DRV05'],['drv-model','drv-engine']),...cases(['DRV06'],['drv-model','drv-engine']),...cases(['DRV07'],['drv-engine']),...cases(['DRV08'],['drv-engine']),
@@ -44,7 +43,7 @@ export const CASES_R4={
  ...cases(['TRAY01','TRAY02','TRAY03','TRAY04'],['tray-unit','tray-engine'],{input:'trayCampaign'}),TRAY05:{suites:['tray-unit','web-ui'],input:'trayCampaign'},
  BEL01:{suites:['bel-unit']},...cases(['BEL02','BEL03','BEL04'],['bel-unit','bel-engine']),BEL05:{suites:['bel-engine'],input:'perceptionStudy'},BEL06:{suites:['web-ui','e2e-belief']},
  ...cases(['REC01','REC02','REC03','REC04','REC05'],['rec-unit','rec-engine']),REC06:{notRun:REC06},
- ...cases(['CAL01','CAL02','CAL03','CAL04','CAL05'],['cal-unit','cal-engine'],{optional:'calibrationSelftest',optionalReason:NOT_OPENED}),CAL06:{suites:['web-cal-ui','e2e-calibration'],optional:'calibrationSelftest',optionalReason:NOT_OPENED},
+ ...cases(['CAL01','CAL02','CAL03','CAL04','CAL05'],['cal-unit','cal-engine'],{optional:'calibrationSelftest'}),CAL06:{suites:['web-cal-ui','e2e-calibration'],optional:'calibrationSelftest'},
  WEB07:{suites:['e2e-control','e2e-faults','e2e-tray','e2e-belief','e2e-calibration'],input:'web'},WEB08:{suites:['e2e-replay'],input:'web'},WEB09:{suites:['e2e-perf'],input:'web'},WEB10:{input:'web'},
  REG05:{suites:['r4-regression'],input:'r2bRecord'},
  CLD01:{input:'containerRecord'},CLD02:{input:'containerRecord'},CLD03:{notRun:'deploy_order_pending'}

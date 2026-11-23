@@ -20,7 +20,14 @@ node scripts/record-sim-extension-r4.mjs --r2b-record $OUT/r2b --cil-campaign $O
 LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extension
 ```
 
-`--plan` liệt kê suite và gate mà không chạy gì. `--calibration-selftest` chưa có recorder: không truyền thì các ca CAL ghi `not_run` (G-CAL1 nằm ngoài điều kiện đóng R4, contracts §10).
+`--plan` liệt kê suite và gate. Nếu ghi R4.5, chạy hai lệnh sau từ cây Source sạch tại commit dùng cho record R4. Sau đó thêm `--calibration-selftest "$OUT/calibration"` vào lệnh `record-sim-extension-r4.mjs`.
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 node scripts/record-calibration-selftest.mjs --out "$OUT/calibration"
+node scripts/r4-calibration-readback.mjs --input "$OUT/calibration"
+```
+
+Thiếu đầu vào này thì các ca CAL ghi `not_run`. G-CAL1 nằm ngoài điều kiện đóng R4 (contracts §10).
 
 ## Đọc
 
@@ -30,6 +37,7 @@ LAB_SIMEXT_EVIDENCE_DIR=$OUT/r4-candidate-NN pnpm test:acceptance -- sim-extensi
 - REG05 cần record R2b cùng tuple (đọc lại bằng reader R2b) và manifest hồi quy Lab trùng SHA-256 với bản R2a trong chuỗi, đúng identity đầu/cuối và không bỏ qua ca nào.
 - CLD01 đọc hai ca trong suite container và đối chiếu log identity với image, commit và runtime. CLD02 nhận toàn bộ thư mục native từ `scripts/r4-cld02.sh` qua `--cld02-dir`: kiểm SHA256SUMS, host/guest, image, runtime, exit code và đủ 316 test worker đã đăng ký (kể cả từng tham số) trong JUnit lẫn `pytest/collection.json` của cùng lần pytest. Thay test worker phải cập nhật roster đã review trong `scripts/native-sim/r4-cld02-pytest-roster.txt` từ collection thật.
 - WEB07 chạy launcher `--production-ui`: lưu và kiểm byte index, pin, mọi chunk JS/CSS (kể cả import động), rồi gắn từng sweep với build, Lab commit và tuple Source/runtime/schema/portable tools. Tám panel gồm Control, báo cáo lỗi, bộ soạn lỗi/timeline, khay, belief, study, recovery và calibration; mỗi panel đo VI/JA/EN × 390/1024/1440, axe serious/critical = 0, reduced motion, không cuộn ngang. Calibration đo riêng trạng thái có bảng/series, rỗng và lỗi. Fixture study/recovery có nhãn `synthetic-ui-only`, chỉ chứng minh giao diện; không đóng REC06 hoặc WEB10. WEB08/WEB10 đọc gói replay mẫu của Lab chép cạnh record bằng consumer Source (hash/coverage mọi asset, kể cả alias `.bin`). Receipt của test offline phải khớp manifest, run và tick có lỗi drive hoặc bước phục hồi trong cell.
+- CAL01–CAL06 cần cả artifact R4.5 hợp lệ và các suite tương ứng đạt. Reader kiểm danh tính Source và MuJoCo, tái tạo CSV lượng tử encoder từ vết thô, nhập lại dataset, chạy lại thuật toán fit từ các vết bench đã lưu và đối chiếu đánh giá held-out. Bài tự kiểm dùng 5 trial tổng hợp, dung sai phục hồi dưới 5% cho armature J3 và damping khớp. Bản ghi giữ `sourceKind:synthetic`, `toolSelfTest:true`, `produced:[]`, `accepted:false`. Phép kiểm này chưa chứng minh `torque.scale`. G3 ở trạng thái `not_run` cho tới khi có dữ liệu đo thật.
 - Thiếu đầu vào → `not_run` kèm lý do; hỏng/khác tuple/đã `accepted` → `failed`.
 
 ## Không ghi ở đây
