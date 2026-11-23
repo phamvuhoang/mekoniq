@@ -48,14 +48,20 @@ function renders(s,issues,id,pkg){
   cur.last=e;
  }
  if(k<seeks.length||passes.length!==seeks.length)issues.push('WEB09_RENDER_PASS:'+id);
- const playbackMs=sum(passes.map(p=>p.last.atMs-p.first.atMs));
+ // a pass plays at one tick per 20 ms: its sim time (ticks advanced x 20 ms) must match its wall time, and only sim time that advanced is counted
+ let playbackMs=0;
+ for(const p of passes){const sim=(p.last.worldTick-p.first.worldTick)*20,wall=p.last.atMs-p.first.atMs;if(sim<=0||Math.abs(wall-sim)>sim*.1+1000){issues.push('WEB09_PLAYBACK_STALLED:'+id);playbackMs=0;break;}playbackMs+=sim;}
  if(playbackMs<MIN_MS)issues.push('WEB09_PLAYBACK_SHORT:'+id);
  if(gaps.some(g=>g>GAP_MS)||s.startMs+SEEK_GAP_MS<r[0].atMs||s.endMs-r.at(-1).atMs>SEEK_GAP_MS)issues.push('WEB09_RENDER_GAP:'+id);
  if(p95(r.map(e=>e.durationMs))>LIMIT_MS)issues.push('WEB09_RENDER_P95_OVER_LIMIT:'+id);
  if(gaps.length&&p95(gaps)>LIMIT_MS)issues.push('WEB09_CADENCE_P95_OVER_LIMIT:'+id);
- if(r.filter(e=>e.belief).length<BELIEF_SHARE*r.length||r.some(e=>e.belief&&e.worldTick<pkg.firstBeliefTick))issues.push('WEB09_BELIEF_NOT_DRAWN:'+id);
+ // every frame that claims the ghost must have a believed cup at its cursor in the package; and the ghost is in the scene in at least BELIEF_SHARE of the frames
+ if(r.filter(e=>e.belief).length<BELIEF_SHARE*r.length||r.some(e=>e.belief&&!beliefAvailable(pkg.records,e.worldTick)))issues.push('WEB09_BELIEF_NOT_DRAWN:'+id);
  if(Math.max(...r.map(e=>e.worldTick))-Math.min(...r.map(e=>e.worldTick))<(pkg.horizon-pkg.firstTick)*.9)issues.push('WEB09_RENDER_PROGRESSION:'+id);
 }
+/** A drive-trace sample is finite numbers (feedback may be unavailable) and a saturation flag; an axis has the recorded step. Only valid samples are counted. */
+const sampleOk=x=>x!==null&&typeof x==='object'&&['target','actual','torqueNm'].every(k=>finite(x[k]))&&(x.feedback===null||finite(x.feedback))&&(x.saturated===undefined||typeof x.saturated==='boolean');
+const axisOk=a=>a!==null&&typeof a==='object'&&typeof a.axisId==='string'&&a.axisId&&a.dtS===0.002&&Array.isArray(a.samples)&&a.samples.every(x=>x===null||sampleOk(x));
 const identity=(report,record,backend,scenario)=>report?.manifest?.sourceCommit===record.identity?.before?.sourceCommit&&report.manifest.backendSetId===backend&&report.manifest.scenario?.id===scenario&&report.manifest.mode==='simulation'&&report.manifest.access==='simulated';
 function plotWorkload(read,w,record,issues){
  const bad=()=>issues.push('WEB09_PLOT_WORKLOAD:plot-5000');
@@ -66,11 +72,13 @@ function plotWorkload(read,w,record,issues){
   const ok=typeof w.runId==='string'&&w.runId&&identity(report,record,'engineering-mujoco-bench-v1','MJ-BENCH-WHEEL')&&
    report.manifest.runId===w.runId&&trace.runId===w.runId&&t?.runId===w.runId&&report.outcome?.status==='completed'&&t.status==='completed'&&t.unstable!==true&&t.accepted===false&&
    Array.isArray(trace.issues)&&trace.issues.length===0&&hex.test(trace.manifestSha256)&&trace.manifestSha256===t.trace?.sha256&&
-   axes.length===t.axisIds?.length&&axes.every((a,i)=>a.axisId===t.axisIds[i])&&Number.isInteger(t.trace?.samples)&&t.trace.samples>=5000&&counts.every(n=>n>=t.trace.samples)&&
+   axes.length===t.axisIds?.length&&axes.every(axisOk)&&axes.every((a,i)=>a.axisId===t.axisIds[i])&&Number.isInteger(t.trace?.samples)&&t.trace.samples>=5000&&counts.every(n=>n>=t.trace.samples)&&
    w.samplesPerSeries===counts[0]&&w.plottedPoints===counts[0];
   if(!ok)bad();
  }catch{bad();}
 }
+/** The Lab's beliefAt over the package's records of the cup: the newest record not later than the cursor; a dropped update keeps the held belief, another record without one ends it, an invalid belief is never drawn. */
+const beliefAvailable=(records,tick)=>{for(let i=records.length-1;i>=0;i--){const r=records[i];if(r.tick>tick)continue;if(r.belief)return r.belief.valid===true;if(!r.dropped)return false;}return false;};
 async function openPackage(manifestBytes,assets){
  const {openReplayPackage}=await tsImport('../packages/lab-runtime/src/v2/replay/reader.ts',import.meta.url);return openReplayPackage(manifestBytes,assets);
 }
@@ -80,10 +88,10 @@ async function beliefWorkload(read,w,record,issues,id,open){
   const manifestBytes=read(BASE+w.package?.dir+'/manifest.json');if(!manifestBytes||sha(manifestBytes)!==w.package.manifestSha256)return bad();
   const replay=await open(manifestBytes,async function*(asset){const b=read(BASE+w.package.dir+'/'+asset.path);if(!b)throw Error('ASSET');yield b;});
   try{
-   const m=replay.manifest,r=replay.capturedReport,e=r.perceptionEvidence,cup=(e?.beliefs??[]).filter(b=>b.objectId==='cup-1'&&b.belief);
+   const m=replay.manifest,r=replay.capturedReport,e=r.perceptionEvidence,all=(e?.beliefs??[]).filter(b=>b.objectId==='cup-1'),cup=all.filter(b=>b.belief?.valid===true);
    if(!(typeof w.runId==='string'&&w.runId&&m.runId===w.runId&&r.manifest?.runId===w.runId&&identity(r,record,'engineering-mujoco-cell-v1','MJ-CELL-BV01')&&r.manifest.perception?.graspMode==='belief_estimated'&&
     m.horizon.tick===w.replayHorizonTick&&m.coverage?.prefixCovered&&m.provenance?.accepted!==true&&e?.issues?.length===0&&cup.length>0&&w.view==='3d'&&Number.isInteger(w.firstTick)))return bad();
-   return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick};
+   return {firstBeliefTick:Math.min(...cup.map(b=>b.tick)),horizon:m.horizon.tick,firstTick:w.firstTick,records:all};
   }finally{replay.close?.();}
  }catch{return bad();}
 }

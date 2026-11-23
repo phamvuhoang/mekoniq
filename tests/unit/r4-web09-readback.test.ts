@@ -15,7 +15,7 @@ import {SUITES_R4,CASES_R4} from '../../scripts/sim-extension-r4.mjs';
 const dirs:string[]=[];afterAll(()=>{for(const d of dirs)rmSync(d,{recursive:true,force:true});});
 const sha=(b:string)=>createHash('sha256').update(b).digest('hex'),SRC='a'.repeat(40),LAB='b'.repeat(40),PIN={artifactSha256:'c'.repeat(64),schemaHash:'d'.repeat(64),portableToolsDigest:'e'.repeat(64)};
 const BASE='suites/e2e-perf/screens/',ORIGIN=1_800_000_000_000,HORIZON=2100,FIRST=20,STEP=16.7;
-const PLOT_START=100,BELIEF_START=100+63000,BELIEF_MS=65000,TEST_START=ORIGIN+50,ATTEMPT_START=ORIGIN;
+const PLOT_START=100,BELIEF_START=100+63000,BELIEF_MS=85000,TEST_START=ORIGIN+50,ATTEMPT_START=ORIGIN;
 const put=(root:string,file:string,doc:unknown)=>{const text=typeof doc==='string'?doc:JSON.stringify(doc);mkdirSync(join(root,file,'..'),{recursive:true});writeFileSync(join(root,file),text);return {sha256:sha(text)};};
 /** A probe: frames every 16.7 ms from startMs+5 for durationMs-10, so the window is `durationMs` long. */
 const probe=(startMs:number,durationMs:number,o:Record<string,unknown>={})=>{
@@ -23,11 +23,12 @@ const probe=(startMs:number,durationMs:number,o:Record<string,unknown>={})=>{
  return {timeOriginEpochMs:ORIGIN,startMs,endMs:last+5,elapsedMs:last+5-startMs,firstFrameMs:first,lastFrameMs:last,seeks:[],intervalsMs:iv,longTasksMs:[],renders:[],visibilityState:'visible',userAgent:'Chrome',devicePixelRatio:2,webglRenderer:'Apple M',...o};
 };
 type R={atMs:number;durationMs:number;count:number;drawCalls:number;worldTick:number;belief:boolean};
-const pass=(start:number,count0:number,n=1900,step=STEP,o:Record<string,unknown>={}):R[]=>Array.from({length:n},(_,i)=>({atMs:start+i*step,durationMs:1.5,count:count0+i,drawCalls:34,worldTick:Math.round(FIRST+(HORIZON-FIRST)*i/(n-1)),belief:true,...o}));
-const TWO_PASSES=(o:Record<string,unknown>={})=>({seeks:[{atMs:BELIEF_START+20,tick:FIRST},{atMs:BELIEF_START+32000,tick:FIRST}],renders:[...pass(BELIEF_START+30,100,1900,STEP,o),...pass(BELIEF_START+32050,2000,1900,STEP,o)]});
+const NPASS=2500;
+const pass=(start:number,count0:number,n=NPASS,step=STEP,o:Record<string,unknown>={}):R[]=>Array.from({length:n},(_,i)=>({atMs:start+i*step,durationMs:1.5,count:count0+i,drawCalls:34,worldTick:Math.round(FIRST+(HORIZON-FIRST)*i/(n-1)),belief:true,...o}));
+const TWO_PASSES=(o:Record<string,unknown>={})=>({seeks:[{atMs:BELIEF_START+20,tick:FIRST},{atMs:BELIEF_START+42000,tick:FIRST}],renders:[...pass(BELIEF_START+30,100,NPASS,STEP,o),...pass(BELIEF_START+42050,100+NPASS,NPASS,STEP,o)]});
 const trace=(n=5010,over:Record<string,unknown>={})=>({runId:'run-bench',manifestSha256:'9'.repeat(64),traces:['amr-1/wheel-left','amr-1/wheel-right'].map(axisId=>({axisId,dtS:0.002,samples:Array.from({length:n},()=>({target:1,actual:1,feedback:null,torqueNm:0}))})),issues:[],...over});
 const benchReport=(over:Record<string,unknown>={},man:Record<string,unknown>={})=>({manifest:{runId:'run-bench',sourceCommit:SRC,backendSetId:'engineering-mujoco-bench-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-BENCH-WHEEL'},...man},outcome:{status:'completed'},tuning:{runId:'run-bench',status:'completed',unstable:false,accepted:false,axisIds:['amr-1/wheel-left','amr-1/wheel-right'],trace:{chunks:11,sha256:'9'.repeat(64),samples:5000}},...over});
-const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated'},...man},perceptionEvidence:{issues:[],beliefs:[{objectId:'cup-1',tick:10,belief:{}},{objectId:'cup-1',tick:900,belief:{}}],...pe}});
+const cellReport=(man:Record<string,unknown>={},pe:Record<string,unknown>={})=>({manifest:{runId:'run-cell',sourceCommit:SRC,backendSetId:'engineering-mujoco-cell-v1',mode:'simulation',access:'simulated',scenario:{id:'MJ-CELL-BV01'},perception:{graspMode:'belief_estimated'},...man},perceptionEvidence:{issues:[],beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},{objectId:'cup-1',tick:900,belief:{valid:true}}],...pe}});
 const fakeOpen=(o:{report?:unknown;manifest?:Record<string,unknown>}={})=>async()=>({manifest:{runId:'run-cell',horizon:{tick:HORIZON},coverage:{prefixCovered:true},provenance:{accepted:false},...o.manifest},capturedReport:o.report??cellReport(),close(){}});
 interface Opt{doc?:Record<string,unknown>;plot?:Record<string,unknown>;belief?:Record<string,unknown>;plotWork?:Record<string,unknown>;beliefWork?:Record<string,unknown>;skip?:string[];trace?:unknown;report?:unknown;attempt?:Record<string,unknown>;proc?:Record<string,unknown>;testWindow?:Record<string,unknown>}
 function fixture(o:Opt={}){
@@ -76,7 +77,7 @@ test('WEB09 takes no tolerance from the data itself: a 60 s interval appended, a
 });
 test('WEB09 ties its windows to real boundaries: the spec\'s test window, the attempt start and the process end; Playwright\'s duration is not an end time',async()=>{
  // a clean capture whose Playwright duration leaves out worker-fixture time ends after startTime+duration: it must pass
- expect(await withOpt({attempt:{duration:BELIEF_START+BELIEF_MS+300-100}})).toEqual([]);
+ expect(await withOpt({attempt:{duration:149000}})).toEqual([]);
  // but the duration can never be shorter than the measured time it contained
  expect(await withOpt({attempt:{duration:100000}})).toContain('WEB09_WINDOW_OUTSIDE_ATTEMPT');
  expect(await withOpt({testWindow:{startEpochMs:ATTEMPT_START-1}})).toContain('WEB09_WINDOW_OUTSIDE_ATTEMPT');
@@ -97,7 +98,7 @@ test('WEB09 judges the renderer, not only requestAnimationFrame: cadence, durati
  const skipped=TWO_PASSES();skipped.renders[10]={...skipped.renders[10]!,count:skipped.renders[10]!.count+3};expect(await withOpt({belief:skipped})).toContain('WEB09_RENDER_STREAM:belief-layer');
 });
 test('WEB09 allows no stall inside playback and no restart that is not a stamped seek (a tick one lower hides nothing)',async()=>{
- const stalled=(by:number,lower=false)=>{const t=TWO_PASSES();move(t.renders,900,by);t.seeks[1]={...t.seeks[1]!,atMs:t.seeks[1]!.atMs+by};if(lower)t.renders[900]={...t.renders[900]!,worldTick:t.renders[899]!.worldTick-1};return t;};
+ const stalled=(by:number,lower=false)=>{const t=TWO_PASSES();move(t.renders,1200,by);t.seeks[1]={...t.seeks[1]!,atMs:t.seeks[1]!.atMs+by};if(lower)t.renders[1200]={...t.renders[1200]!,worldTick:t.renders[1199]!.worldTick-1};return t;};
  expect(await withOpt({belief:stalled(700)})).toContain('WEB09_RENDER_GAP:belief-layer');
  // the same stall with the first render after it showing the previous tick minus one: a backward tick without a seek
  expect(await withOpt({belief:stalled(700,true)})).toContain('WEB09_RENDER_TICK_BACKWARD:belief-layer');
@@ -106,10 +107,10 @@ test('WEB09 allows no stall inside playback and no restart that is not a stamped
 });
 test('WEB09 counts playback from stamped passes: 60 s of real playback, seeks bounded in number, latency and target tick',async()=>{
  const two=TWO_PASSES();
- // one pass is 31.7 s of playback, not 60
- expect(await withOpt({belief:{seeks:[two.seeks[0]],renders:two.renders.slice(0,1900)}})).toContain('WEB09_PLAYBACK_SHORT:belief-layer');
+ // one pass is 41.7 s of playback, not 60
+ expect(await withOpt({belief:{seeks:[two.seeks[0]],renders:two.renders.slice(0,NPASS)}})).toContain('WEB09_PLAYBACK_SHORT:belief-layer');
  // a seek that took 4 s to show its first render
- expect(await withOpt({belief:{...two,seeks:[two.seeks[0],{atMs:BELIEF_START+32050-4000,tick:FIRST}]}})).toContain('WEB09_RENDER_PASS:belief-layer');
+ expect(await withOpt({belief:{...two,seeks:[two.seeks[0],{atMs:BELIEF_START+42050-4000,tick:FIRST}]}})).toContain('WEB09_RENDER_PASS:belief-layer');
  // a pass that does not start at the sought tick
  expect(await withOpt({belief:{...two,seeks:[two.seeks[0],{...two.seeks[1]!,tick:300}]}})).toContain('WEB09_RENDER_PASS:belief-layer');
  // more seeks than the spec makes; a seek without a pass
@@ -119,7 +120,7 @@ test('WEB09 counts playback from stamped passes: 60 s of real playback, seeks bo
 test('WEB09 counts the belief ghost per rendered frame and checks it against the package',async()=>{
  expect(await withOpt({belief:TWO_PASSES({belief:false})})).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
  // belief drawn at ticks before the package's first estimate
- expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:900,belief:{}}]})}))).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:900,belief:{valid:true}}]})}))).toContain('WEB09_BELIEF_NOT_DRAWN:belief-layer');
  // a replay that never moves is not playback
  const still=TWO_PASSES();still.renders.forEach(e=>{e.worldTick=300;});still.seeks.forEach(s=>{s.tick=300;});expect(await withOpt({belief:still})).toContain('WEB09_RENDER_PROGRESSION:belief-layer');
 });
@@ -141,6 +142,41 @@ test('WEB09 cross-checks the bench workload: run, trace manifest, corruption, ax
  expect(await withOpt({plotWork:{runId:'another'}})).toContain(bad);
  expect(await withOpt({plotWork:{plottedPoints:5000}})).toContain(bad);
  expect(await withOpt({skip:[BASE+'web09/bench-trace.json']})).toContain(bad);
+});
+test('WEB09 counts only valid trace samples: finite numbers, the recorded step, a boolean saturation flag',async()=>{
+ const bad='WEB09_PLOT_WORKLOAD:plot-5000',axes=(f:(a:{axisId:string;dtS:number;samples:unknown[]})=>unknown)=>trace(5010,{traces:trace().traces.map(f)});
+ expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map(()=>({}))}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map(x=>({...(x as object),actual:'1'}))}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,dtS:-1}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,dtS:0.001}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map(x=>({...(x as object),torqueNm:Infinity}))}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map(x=>({...(x as object),saturated:'yes'}))}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,samples:a.samples.map((x,i)=>i<20?{}:x)}))})).toContain(bad);
+ expect(await withOpt({trace:axes(a=>({...a,axisId:''}))})).toContain(bad);
+ // a few unrecorded samples (null) and an unavailable feedback are fine as long as enough valid samples remain
+ expect(await withOpt({plotWork:{samplesPerSeries:5005,plottedPoints:5005},trace:axes(a=>({...a,samples:a.samples.map((x,i)=>i<5?null:{...(x as object),feedback:null})}))})).not.toContain(bad);
+});
+test('WEB09 counts no standing replay as playback: each pass advances at one tick per 20 ms',async()=>{
+ const two=TWO_PASSES();
+ // the second pass stands at the first tick for its whole 41.7 s
+ const standing=two.renders.map((e,i)=>i<NPASS?e:{...e,worldTick:FIRST});
+ expect(await withOpt({belief:{...two,renders:standing}})).toEqual(expect.arrayContaining(['WEB09_PLAYBACK_STALLED:belief-layer']));
+ // a pass that advances at a tenth of real time
+ const slow=two.renders.map((e,i)=>i<NPASS?e:{...e,worldTick:Math.round(FIRST+(e.worldTick-FIRST)/10)});
+ expect(await withOpt({belief:{...two,renders:slow}})).toContain('WEB09_PLAYBACK_STALLED:belief-layer');
+ // two real passes pass
+ expect(await withOpt({belief:two})).toEqual([]);
+});
+test('WEB09 checks every ghost frame against the package at its cursor: a cup out of view ends the belief, a dropped update keeps it',async()=>{
+ const bad='WEB09_BELIEF_NOT_DRAWN:belief-layer',rec=(extra:unknown[])=>fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-1',tick:10,belief:{valid:true}},...extra]})});
+ // from tick 1000 the cup is out of view; every frame still flagged as drawing the ghost is a contradiction
+ expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:null,dropped:false,reason:'OUT_OF_VIEW'}]))).toContain(bad);
+ // a dropped update keeps the last published belief
+ expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:null,dropped:true}]))).not.toContain(bad);
+ // an invalid belief is never drawn
+ expect(await withOpt({},rec([{objectId:'cup-1',tick:1000,belief:{valid:false},dropped:false}]))).toContain(bad);
+ // other cups do not count
+ expect(await withOpt({},fakeOpen({report:cellReport({},{beliefs:[{objectId:'cup-2',tick:10,belief:{valid:true}}]})}))).toContain('WEB09_BELIEF_PACKAGE:belief-layer');
 });
 test('WEB09 cross-checks the belief package: run, manifest hash, tuple, backend, issues, horizon, belief records',async()=>{
  const bad='WEB09_BELIEF_PACKAGE:belief-layer';
