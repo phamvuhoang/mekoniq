@@ -9,14 +9,14 @@ import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {gunzipSync} from 'node:zlib';
 import {openInspector,openScenarioPicker} from '../support/twin';
-import {startProbe,finishProbe,p95,WEB09_LIMIT_MS,WEB09_MIN_DURATION_MS} from '../support/web09';
+import {startProbe,finishProbe,seek as stampedSeek,p95,WEB09_LIMIT_MS,WEB09_MIN_DURATION_MS} from '../support/web09';
 // @ts-expect-error JavaScript CLI boundary
 import {verifyProductionUi} from '../../scripts/production-ui.mjs';
 const token=process.env.LAB_TEST_PAIRING_TOKEN,runtime=process.env.LAB_TEST_RUNTIME_URL,dir=process.env.LAB_EVIDENCE_DIR;
 const sha=(b:Buffer)=>createHash('sha256').update(b).digest('hex');
 const isCreate=(r:Request)=>r.method()==='POST'&&/\/lab\/v2\/runs$/.test(r.url());
 test('WEB09: frame p95 stays within the R2b target with a 5,000-sample plot and with the belief layer',async({page})=>{
- test.setTimeout(1800000);page.setDefaultTimeout(60000);expect(token).toBeTruthy();expect(dir,'LAB_EVIDENCE_DIR is required (the launcher sets it)').toBeTruthy();
+ const testStartEpochMs=Date.now();test.setTimeout(1800000);page.setDefaultTimeout(60000);expect(token).toBeTruthy();expect(dir,'LAB_EVIDENCE_DIR is required (the launcher sets it)').toBeTruthy();
  await page.setViewportSize({width:1440,height:900});
  await page.goto('/#twin');await page.getByRole('button',{name:'EN',exact:true}).click();if(runtime)await page.locator('#twin-runtime-url').fill(runtime);
  await page.locator('#twin-pair-token').fill(token!);await page.locator('#twin-pair-form button[type="submit"]').click();await expect(page.getByTestId('runtime-popover')).toBeHidden();
@@ -56,11 +56,12 @@ test('WEB09: frame p95 stays within the R2b target with a 5,000-sample plot and 
  const first=20;await seek(first);await expect(replay.getByTestId('belief-legend')).toHaveAttribute('data-state','data',{timeout:30000});await expect(replay.locator('#replay-stage canvas')).toHaveAttribute('data-belief-state','data');
  const max=Number(await replay.locator('#replay-cursor').getAttribute('max'));expect(max).toBeGreaterThan(first+500);
  // the replay advances one tick per 20 ms: play from the first estimate to the horizon and again, until the window is full
- await startProbe(replay,{replay:true});const began=Date.now();
- while(Date.now()-began<WEB09_MIN_DURATION_MS+1000){await seek(first);await replay.locator('[data-replay="play"]').click();await replay.waitForTimeout(Math.min(WEB09_MIN_DURATION_MS+1000-(Date.now()-began),(max-first)*20+500));}
+ // the package is 39 s of playback at one tick per 20 ms: two passes fill the 60 s. Each pass starts with a stamped seek (a recorded event) and ends at the horizon.
+ const passes=Math.ceil((WEB09_MIN_DURATION_MS+1000)/((max-first)*20));await startProbe(replay,{replay:true});
+ for(let i=0;i<passes;i++){await stampedSeek(replay,first);await replay.locator('[data-replay="play"]').click();await replay.waitForTimeout((max-first)*20+700);}
  const belief=await finishProbe(replay);await replay.close();rmSync(folder,{recursive:true,force:true});
  scenarios.push({id:'belief-layer',workload:{runId:cellRunId,replayHorizonTick:max,firstTick:first,view:'3d',package:{dir:'web09/belief-package',manifestSha256:sha(packageManifest)}},...belief});
  expect(await verifyProductionUi({url,evidenceDir:dir!})).toBe(productionSha256);
- mkdirSync(dir!,{recursive:true});writeFileSync(join(dir!,'web09.json'),JSON.stringify({schemaVersion:2,kind:'web09-frame-timing',productionSha256,limitMs:WEB09_LIMIT_MS,minimumDurationMs:WEB09_MIN_DURATION_MS,viewport:{width:1440,height:900},scenarios})+'\n');
+ mkdirSync(dir!,{recursive:true});writeFileSync(join(dir!,'web09.json'),JSON.stringify({schemaVersion:3,kind:'web09-frame-timing',testWindow:{startEpochMs:testStartEpochMs,endEpochMs:Date.now()},productionSha256,limitMs:WEB09_LIMIT_MS,minimumDurationMs:WEB09_MIN_DURATION_MS,viewport:{width:1440,height:900},scenarios})+'\n');
  for(const s of scenarios as {id:string;intervalsMs:number[];beliefFrames:number}[])expect(p95(s.intervalsMs),`frame p95 of ${s.id}`).toBeLessThanOrEqual(WEB09_LIMIT_MS);
 });
