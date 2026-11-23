@@ -1,0 +1,60 @@
+{
+  "manifest": {
+    "runId": "77236914-da06-4885-b643-4e4595c0be18",
+    "sourceCommit": "3ce65d145be10d2e7b5a9b69a47e6fa1c2a98564",
+    "scenario": {
+      "id": "MJ-BENCH-WHEEL",
+      "revision": 1,
+      "hash": "4b6ec023c4efa98e570f9902373d3f261153f05c76c2af7aa4f603a50d773e09"
+    },
+    "backendSetId": "engineering-mujoco-bench-v1",
+    "mode": "simulation",
+    "access": "simulated",
+    "clock": {
+      "tickMs": 20
+    },
+    "backends": [
+      {
+        "id": "mujoco_3d",
+        "version": "3.17.0",
+        "model": "mujoco_drive_bench",
+        "dynamics": true
+      }
+    ]
+  },
+  "outcome": {
+    "status": "completed",
+    "served": "0",
+    "tick": 500,
+    "simTimeNs": "10000000000"
+  },
+  "tuning": {
+    "runId": "77236914-da06-4885-b643-4e4595c0be18",
+    "status": "completed",
+    "accepted": false,
+    "engine": {
+      "id": "mujoco_3d",
+      "version": "3.17.0",
+      "hostArch": "arm64"
+    }
+  },
+  "bench": {
+    "request": {
+      "schemaVersion": 1,
+      "scenarioId": "MJ-BENCH-WHEEL",
+      "axis": "wheels",
+      "signal": {
+        "kind": "step",
+        "amplitude": 2,
+        "atTick": 10
+      },
+      "driveExperimentId": "drive-nominal-v1",
+      "controlProfile": {
+        "id": "serve-control-v2",
+        "revision": 2,
+        "digest": "e80f6ad8c5cea4323c2643a9b55855db73ace512b0e3a993ba65b0d5019a72ca"
+      }
+    },
+    "traceIssues": []
+  }
+}

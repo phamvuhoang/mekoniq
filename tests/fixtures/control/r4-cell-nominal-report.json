@@ -28,7 +28,33 @@
       "testLevel": "controller_in_the_loop",
       "experimentId": "drive-nominal-v1",
       "hostArch": "arm64"
-    }
+    },
+    "mode": "simulation",
+    "access": "simulated",
+    "clock": {
+      "tickMs": 20,
+      "businessEpochMs": 1793491200000
+    },
+    "backends": [
+      {
+        "id": "mujoco_3d",
+        "version": "3.17.0",
+        "model": "mujoco_shared_world",
+        "dynamics": true
+      },
+      {
+        "id": "mujoco_arm",
+        "version": "3.17.0",
+        "model": "mujoco_position_actuator_arm",
+        "dynamics": true
+      },
+      {
+        "id": "mock_coffee",
+        "version": "1",
+        "model": "mock_process",
+        "dynamics": false
+      }
+    ]
   },
   "outcome": {
     "status": "completed",

@@ -1,6 +1,7 @@
 // V16: the R4 case/gate table and its directory reader. Every refusal first: a missing input is not_run, a corrupt, accepted or other-tuple input is failed, and nothing is read from a status the record claims.
 import {afterAll,expect,test} from 'vitest';
 import nominalCell from '../fixtures/control/r4-cell-nominal-report.json';
+import wheelBench from '../fixtures/control/r4-wheel-bench-report.json';
 import {spawnSync} from 'node:child_process';
 import {mkdirSync,mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -15,7 +16,7 @@ import {artifactDispositionsFromGroups,verifyOneCampaign,verifyContainerRecord,v
 
 const dirs:string[]=[];afterAll(()=>{for(const d of dirs)rmSync(d,{recursive:true,force:true});});
 const tmp=()=>{const d=mkdtempSync(join(tmpdir(),'r4-readback-'));dirs.push(d);return d;};
-const sha=(b:string)=>createHash('sha256').update(b).digest('hex'),SRC='a'.repeat(40),LAB='b'.repeat(40),PIN={artifactSha256:'c'.repeat(64),schemaHash:'d'.repeat(64)};
+const sha=(b:string)=>createHash('sha256').update(b).digest('hex'),SRC='a'.repeat(40),LAB='b'.repeat(40),PIN={artifactSha256:'c'.repeat(64),schemaHash:'d'.repeat(64),portableToolsDigest:'e'.repeat(64)};
 const put=(root:string,file:string,doc:unknown)=>{const text=typeof doc==='string'?doc:JSON.stringify(doc);mkdirSync(join(root,file,'..'),{recursive:true});writeFileSync(join(root,file),text);return {file,sha256:sha(text)};};
 const green=(id:string,kind='vitest')=>({id,repo:'source',kind,exitCode:0,result:{file:`suites/${id}/result.json`,sha256:'0'.repeat(64),summary:{passed:3,failed:0,skipped:0,total:3}}});
 
@@ -106,8 +107,8 @@ test('CLD01 binds both container assertions and recorded runtime/image identity'
 test('CLD02 refuses a count-only import even with green totals and a current wrapper',async()=>{
  const c=container();expect((await verifyContainerRecord(c.root,c.m,SRC)).cld02).not.toEqual([]);
 });
-const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration'};
-const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot']};
+const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration','fault-composer':'e2e-faults','perception-study':'e2e-belief',recovery:'e2e-belief'};
+const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot'],'fault-composer':['drive-faults','fault-timeline'],'perception-study':['perception-study','perception-study-rows'],recovery:['perception-recovery']};
 const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifest?:Record<string,unknown>;catalog?:Record<string,unknown>}={})=>{
  const root=tmp();
  for(const [panel,suite] of Object.entries(PANELS)){
@@ -161,6 +162,21 @@ test('WEB07 keeps populated, empty and error calibration sweeps separate, and re
   const b=web({drop:'control',row:change});expect((await verifyWebRecord(b.root,b.m)).WEB07).toContain('WEB07_CELL_FAILED:control/ja/390');
  }
 });
+test('WEB07 cannot omit the study, recovery list or fault composer from its panel coverage',async()=>{
+ for(const [panel,suite] of [['perception-study','e2e-belief'],['recovery','e2e-belief'],['fault-composer','e2e-faults']]){
+  const a=web();rmSync(join(a.root,`suites/${suite}/screens/web07-${panel}.json`),{force:true});
+  expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_ROWS_MISSING:'+panel);
+ }
+});
+test('WEB07 refuses resealed builds missing a dynamic app chunk or carrying another portable tool pin',async()=>{
+ for(const [path,text] of [['assets/main.js','import("./missing-app.js");'],['source-runtime.lock.json',JSON.stringify({sourceCommit:SRC,...PIN,portableToolsDigest:'f'.repeat(64),dirty:false})]]){
+  const a=web(),base='suites/e2e-control/screens/',doc=JSON.parse(readFileSync(join(a.root,base+'production-ui.json'),'utf8')),ref=put(a.root,base+'production-ui/'+path,text);
+  doc.files=doc.files.map((f:{path:string})=>f.path===path?{path,sha256:ref.sha256,bytes:Buffer.byteLength(text!)}:f);
+  const receipt=put(a.root,base+'production-ui.json',doc),rowPath=base+'web07-control.json',rows=JSON.parse(readFileSync(join(a.root,rowPath),'utf8'));
+  put(a.root,rowPath,{...rows,productionSha256:receipt.sha256,rows:rows.rows.map((r:Record<string,unknown>)=>({...r,productionSha256:receipt.sha256}))});
+  expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_PRODUCTION_INVALID:control');
+ }
+});
 
 test('REG05: no R2b record or mock regression is missing; an R2b record of another commit, or a mock regression of another commit, fails',async()=>{
  const root=tmp();let d=await collectR4ArtifactDispositions(root,{identity:{before:{sourceCommit:SRC}},lab:{commit:LAB,pin:PIN},inputs:{}});
@@ -188,15 +204,16 @@ test('the recorder lists its closed suites with --plan and refuses to run withou
  const missing=spawnSync(process.execPath,['scripts/record-sim-extension-r4.mjs','--out','/tmp/unused-r4-output'],{encoding:'utf8',timeout:20000});expect(missing.status).toBe(2);expect(missing.stderr).toContain('MISSING_OPTION');
 });
 
-// Selected fields of the Mac cil-v2/cell/nominal-42 report at 3ce65d14. The gateway adds schemaHash.
-const cloud=(patch:Record<string,unknown>={},sumPatch:Record<string,unknown>={})=>{
+// Real Mac report shapes; cloud fixtures explicitly substitute x86_64 and a distinct run ID. These are reader tests, never native/cloud evidence.
+const cloud=(patch:Record<string,unknown>={},sumPatch:Record<string,unknown>={},reports:Record<string,unknown>={})=>{
  const q=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:nominalCell.manifest.sourceCommit}},lab:{pin:{sourceCommit:nominalCell.manifest.sourceCommit,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
  const f:Record<string,unknown>={
   'deployment.json':{schema:'mekoniq-cloud-run-deployment/2',accepted:false,sourceCommit:nominalCell.manifest.sourceCommit,artifactSha256:PIN.artifactSha256,qualification:{sha256:sha(q),candidateId:'r4-candidate-01'},url:'https://x-abc-as.a.run.app/',platform:'linux/amd64',image:'img@sha256:'+'1'.repeat(64),revision:'rev-1',traffic:[{revisionName:'rev-1',percent:100}],...patch},
-  'health.json':{sourceCommit:nominalCell.manifest.sourceCommit,schemaHash:PIN.schemaHash},'cell-report.json':{...nominalCell,schemaHash:PIN.schemaHash},
-  'bench-report.json':{schemaHash:PIN.schemaHash,manifest:{sourceCommit:nominalCell.manifest.sourceCommit},outcome:{status:'completed',tick:500}},
-  'summary.json':{schema:'mekoniq-cloud-run-r4-smoke/1',accepted:false,expectedCommit:nominalCell.manifest.sourceCommit,service:'https://x-abc-as.a.run.app/',status:'tested',cases:{health:'tested',cell:'tested',bench:'tested'},timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:0.66,cellTicks:10900},macComparison:{servedMac:'2',servedCloud:'2'},...sumPatch}};
- const bytes:Record<string,string>={};for(const [k,v] of Object.entries(f))bytes[k]=JSON.stringify(v);
+  'health.json':{sourceCommit:nominalCell.manifest.sourceCommit,schemaHash:PIN.schemaHash},'cell-report.json':{...nominalCell,schemaHash:PIN.schemaHash,manifest:{...nominalCell.manifest,runId:'synthetic-cloud-cell',drive:{...nominalCell.manifest.drive,hostArch:'x86_64'}}},
+  'bench-report.json':{...wheelBench,schemaHash:PIN.schemaHash,tuning:{...wheelBench.tuning,engine:{...wheelBench.tuning.engine,hostArch:'x86_64'}}},
+  'mac-cell-report.json':nominalCell,
+  'summary.json':{schema:'mekoniq-cloud-run-r4-smoke/1',accepted:false,expectedCommit:nominalCell.manifest.sourceCommit,service:'https://x-abc-as.a.run.app/',status:'tested',cases:{health:'tested',cell:'tested',bench:'tested'},timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:2/3,cellTicks:nominalCell.outcome.tick,benchTicks:wheelBench.outcome.tick},macComparison:{servedMac:'2',servedCloud:'2'},...sumPatch}};
+ Object.assign(f,reports);const bytes:Record<string,string>={};for(const [k,v] of Object.entries(f))bytes[k]=JSON.stringify(v);
  bytes['checksums.json']=JSON.stringify({algorithm:'sha256',files:Object.fromEntries(Object.entries(bytes).map(([k,v])=>[k,sha(v)]))});
  return (p:string)=>bytes[p]===undefined?null:Buffer.from(bytes[p]);
 };
@@ -209,6 +226,13 @@ test('CLD03: the supplement binds to the exact R4 record bytes; a wrong commit, 
  expect(checkCloudRunR4Evidence(cloud({},{timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:0,cellTicks:10900}}),rec)).toContain('TIMING_MISSING');
  expect(checkCloudRunR4Evidence(cloud({},{macComparison:{servedMac:'2',servedCloud:'1'}}),rec)).toContain('MAC_COMPARISON_MISSING_OR_DIFFERENT');
  expect(checkCloudRunR4Evidence(cloud({url:'http://localhost/'}),rec)).toContain('DEPLOYMENT_MISMATCH');
+});
+test('CLD03 refuses Mac reports presented as Cloud, a cell presented as a bench, and summary facts that contradict the reports',()=>{
+ const rec=JSON.stringify({release:'r4',accepted:false,candidateId:'r4-candidate-01',identity:{identityStable:true,before:{sourceCommit:nominalCell.manifest.sourceCommit}},lab:{pin:{sourceCommit:nominalCell.manifest.sourceCommit,...PIN}},cases:{CLD03:{status:'not_run'}},gates:{'G-CLOUD2':{status:'not_run'}}});
+ expect(checkCloudRunR4Evidence(cloud({},{},{'cell-report.json':{...nominalCell,schemaHash:PIN.schemaHash}}),rec)).toContain('CLOUD_ARCH_MISMATCH');
+ expect(checkCloudRunR4Evidence(cloud({},{},{'bench-report.json':{...nominalCell,schemaHash:PIN.schemaHash}}),rec)).toContain('BENCH_NOT_COMPLETED');
+ expect(checkCloudRunR4Evidence(cloud({},{macComparison:{servedMac:'1',servedCloud:'1'}}),rec)).toContain('MAC_COMPARISON_MISSING_OR_DIFFERENT');
+ expect(checkCloudRunR4Evidence(cloud({},{timing:{cellMsPerTick:30,benchMsPerTick:12,realtimeFactor:2/3,cellTicks:1,benchTicks:500}}),rec)).toContain('TIMING_MISSING');
 });
 
 test('cloud-run acceptance selects the R4 directory reader for an R4 qualification',()=>{
