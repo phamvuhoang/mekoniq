@@ -26,6 +26,8 @@ const NAME={irsim:['IRSIM','lab:irsim (real IR-SIM worker)','irsim-journey.spec.
 const LEFTOVER=provider==='webots'?'^[^ ]*/Contents/MacOS/webots |^[^ ]+ -I -B -X utf8 [^ ]*webots_worker/(supervisor|robot_controller)\\.py|webots_worker':provider==='mujoco'?'mujoco_worker':'irsim_worker';
 const workers=()=>{try{return execFileSync('pgrep',['-f',LEFTOVER],{encoding:'utf8'}).trim().split('\n').filter(Boolean);}catch{return [];}};
 const {CI:_ci,...env}=process.env;// Playwright must reuse the launcher's UI, not start its own
+// Playwright forces worker colors. Its child environment must not also request NO_COLOR.
+delete env.NO_COLOR;env.FORCE_COLOR='1';
 env.LAB_PW_BASE_URL=`http://127.0.0.1:${uiPort}`;if(sameOrigin)delete env.LAB_TEST_RUNTIME_URL;else if(alternate)env.LAB_TEST_RUNTIME_URL=`http://127.0.0.1:${runtimePort}`;
 env.LAB_IRSIM_SCREENSHOTS=resolve(process.env.LAB_IRSIM_SCREENSHOTS??join(root,'test-results/irsim-evidence'));await mkdir(env.LAB_IRSIM_SCREENSHOTS,{recursive:true});
 if(launcherArgs.includes('--production-ui'))env.LAB_EVIDENCE_DIR=resolve(process.env.LAB_EVIDENCE_DIR??env.LAB_IRSIM_SCREENSHOTS);
