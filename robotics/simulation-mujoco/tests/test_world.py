@@ -52,6 +52,7 @@ def test_one_priming_then_ten_native_substeps_per_logical_tick_and_actual_readin
 def test_active_cup_placement_keeps_identity_and_reports_real_nozzle_support():
  e=WorldEngine(*inputs());home=load('programs.json')['programs']['waypoints']['home']
  r=e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+ assert 'birthObservations' not in r['world']['worldStep']
  for _ in range(50):r=e.step(home,.0889,[],0,0)
  assert r['world']['props'][0]['propId']=='cup-1'
  assert r['world']['props'][0]['restingOn']=='nozzle-stand'
@@ -197,3 +198,57 @@ def test_cup_nudge_is_a_registered_push_that_moves_the_cup_but_keeps_it_on_its_s
  assert .006<moved<.03 and p['restingOn']=='nozzle-stand' and abs(p['position'][2]-before[2])<.001
  assert np.count_nonzero(e.data.xfrc_applied)==0
  e.close()
+
+
+def test_pick_rig_birth_witness_reads_native_pose_before_any_integration():
+ args=list(inputs());args[0]['id']='pick-rig-v1'
+ e=WorldEngine(*args);home=load('programs.json')['programs']['waypoints']['home']
+ try:
+  e.step(home,.0889,[],0,0)
+  requested=[.5017669098901882,.016172193160984373,.151]
+  r=e.step(home,.0889,[('cup-1',{'position':requested,'quaternionXyzw':[0,0,0,1]})],0,0)
+  assert 'birthObservations' in r['world']['worldStep']
+  birth=r['world']['worldStep']['birthObservations'][0]
+  assert birth['method']=='mujoco-freejoint-body-before-step-v1'
+  assert birth['physicsSubstepsBefore']==10 and e.total_substeps==20
+  assert birth['qposPositionM']==requested and birth['bodyPositionM']==pytest.approx(requested,abs=1e-12)
+  assert np.linalg.norm(np.array(r['world']['props'][0]['position'])-requested)>1e-5
+  assert 'birthObservations' not in e.step(home,.0889,[],0,0)['world']['worldStep']
+ finally:e.close()
+
+
+def test_pick_rig_birth_witness_does_not_echo_a_placement_that_engine_applied_differently(monkeypatch):
+ args=list(inputs());args[0]['id']='pick-rig-v1'
+ e=WorldEngine(*args);home=load('programs.json')['programs']['waypoints']['home']
+ try:
+  e.step(home,.0889,[],0,0)
+  put=e.arm._put
+  def misplaced(pid,qpos):
+   actual=list(qpos);actual[0]+=.002;put(pid,actual)
+  monkeypatch.setattr(e.arm,'_put',misplaced)
+  r=e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
+  assert 'birthObservations' in r['world']['worldStep']
+  birth=r['world']['worldStep']['birthObservations'][0]
+  assert birth['qposPositionM'][0]==pytest.approx(.492,abs=1e-12)
+  assert birth['bodyPositionM'][0]==pytest.approx(.492,abs=1e-12)
+ finally:e.close()
+
+
+def test_pick_rig_session_birth_receipt_binds_native_read_to_source_intent_and_request(session):
+ import hashlib
+ import rfc8785
+ from mujoco_worker.session import scene_digest_of
+ from mujoco_worker.protocol import load_validators
+ from scene_fixture import SCHEMAS
+ path=session.bundle_root/'lab-world-scene.json';scene=json.loads(path.read_text());scene['id']='pick-rig-v1';scene['sceneDigest']=scene_digest_of(scene);path.write_text(json.dumps(scene));session.expected_scene_digest=scene['sceneDigest']
+ start_world(session)
+ intent={'eventId':'source-birth-1','cupId':'cup-1','propId':'cup-1','kind':'birth','targetTick':1}
+ req=world_step(session,placements=[{'propId':'cup-1','pose':{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]}}],intents=[intent]);req['requestId']='world-3'
+ r=session.handle(req);assert r['ok'],r
+ assert 'birthObservations' in r['result']['worldStep']
+ birth=r['result']['worldStep']['birthObservations'][0]
+ assert {k:birth[k] for k in ('eventId','cupId','propId','targetTick')}=={k:intent[k] for k in ('eventId','cupId','propId','targetTick')}
+ assert birth['runId']==session.run_id and birth['bootId']==session.boot_id and birth['sceneDigest']==scene['sceneDigest']
+ assert birth['requestId']=='world-3' and birth['requestDigest']==hashlib.sha256(rfc8785.dumps(req['payload'])).hexdigest()
+ assert birth['qposPositionM']==[.49,0,.151] and birth['frame']=='map'
+ assert not list(load_validators(SCHEMAS)[1].iter_errors(r))

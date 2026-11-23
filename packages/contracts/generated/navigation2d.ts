@@ -1741,6 +1741,41 @@ export interface WorldStep {
      */
     afterPositionM: number[];
   }[];
+  /**
+   * Pick-rig-only native placement read after mj_forward and before the first integration substep. Post-step props remain separate observations.
+   *
+   * @minItems 1
+   * @maxItems 16
+   */
+  birthObservations?: {
+    method: 'mujoco-freejoint-body-before-step-v1';
+    frame: 'map';
+    propId: string;
+    cupId: string;
+    eventId: string;
+    runId: string;
+    bootId: string;
+    requestId: string;
+    sceneDigest: string;
+    requestDigest: string;
+    targetTick: number;
+    physicsSubstepsBefore: number;
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    qposPositionM: number[];
+    /**
+     * @minItems 3
+     * @maxItems 3
+     */
+    bodyPositionM: number[];
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    quaternionXyzw: number[];
+  }[];
 }
 /**
  * One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw.

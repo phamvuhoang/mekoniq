@@ -149,6 +149,16 @@ class WorldEngine:
                 x,y,z,w=at['quaternionXyzw'];q=np.array([w,x,y,z],dtype=float)
                 a._put(pid,[*at['position'],*(q/np.linalg.norm(q))]);a._set_contacts(pid,True);a.in_scene.add(pid)
         for pid in a.prop.keys()-a.in_scene:a._put(pid,a.prop[pid]['park'])
+        # The derived pick study needs the native birth pose before contacts can
+        # move it. Read both free-joint state and body transform; never echo `at`.
+        # Ordinary worlds keep their existing step path and snapshot bytes.
+        born=[pid for pid,at in placements if at is not None] if self.scene.get('id')=='pick-rig-v1' else []
+        birth_observations=[]
+        if born:
+            mujoco.mj_forward(m,d)
+            for pid in born:
+                p=a.prop[pid];q=d.qpos[p['qpos']:p['qpos']+7]
+                birth_observations.append({'method':'mujoco-freejoint-body-before-step-v1','frame':'map','propId':pid,'physicsSubstepsBefore':self.total_substeps,'qposPositionM':q[:3].tolist(),'bodyPositionM':d.xpos[p['body']].tolist(),'quaternionXyzw':q[[4,5,6,3]].tolist()})
         aggregate=ContactAccumulator(.002,self.expected);seen=set();v.saturated=0
         if force_body is not None:d.xfrc_applied[force_body,:3]=preset['forceMapN']
         try:
@@ -192,6 +202,7 @@ class WorldEngine:
             if touching:prop['restingOn']=self.support_id if np.linalg.norm(pv[3:]-support_velocity)<.01 else None
             result['physics']['loads'].append({'propId':pid,'poseMap':matrix_pose(at),'linearVelocityMapMps':pv[3:].tolist(),'angularVelocityMapRadps':pv[:3].tolist(),'supportId':self.support_id,'poseInSupport':relative})
         result['worldStep']={'workerPid':os.getpid(),'modelCount':1,'physicsSubsteps':self.total_substeps,'primingSubsteps':10,**{k:int(getattr(m,k)) for k in ('nq','nv','nbody','ngeom')}}
+        if birth_observations:result['worldStep']['birthObservations']=birth_observations
         if drv is not None:result['drives']=drv.g.end_tick()
         self.last=result
         return {'time':float(d.time),'unstable':None,'world':result}

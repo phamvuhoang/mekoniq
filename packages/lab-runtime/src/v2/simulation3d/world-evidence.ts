@@ -14,6 +14,7 @@ import {activeWorldProps,validateWorldScene,validateWorldObservation,type WorldI
 import type {WorldFailure,WorldTickCommand} from './world-ports';
 import {validateWorldControl} from './world-control';
 import {validateWorldDisturbance} from './world-disturbance';
+import {validateWorldBirth} from './world-birth';
 import {hashJson} from '../hash';
 import {driveCommandProblem,driveRecordProblem} from '../control/drive-evidence';
 /** The same free-joint pose and matrix pose differ at floating-point roundoff; q and -q are equivalent. No raw values are changed. */
@@ -45,6 +46,7 @@ export function validateWorldRecord(r:WorldEvidenceRecord,a:WorldAdmission,histo
   if(intent.targetTick!==tick||p.propId!==intent.propId||(intent.kind==='birth')!==(p.pose!==null)||record.eventId!==intent.eventId||record.cupId!==intent.cupId||record.propId!==intent.propId||record.kind!==intent.kind||record.tick!==tick||record.commandDigest!==hashJson(c as never)||hashJson(record.before as never)!==hashJson(pose(previous,intent.propId) as never)||hashJson(record.after as never)!==hashJson(pose(s,intent.propId) as never)||(intent.kind==='birth'?(record.before!==null||record.after===null):(record.before===null||record.after!==null)))throw Error('WORLD_INTERACTION_INVALID');
   next.push({eventId:intent.eventId,cupId:intent.cupId,propId:intent.propId,kind:intent.kind,tick});
  }
+ validateWorldBirth(s,c,a.scene,previous);
  // with a drive every tick carries its nine axis snapshots and (after tick 0) its nine commands; without one, neither
  if(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)||driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0))throw Error(driveRecordProblem(s.drives,a.driveAxes,tick,a.physics.substeps)??driveCommandProblem(c?.driveCommands,a.driveAxes,tick>0)!);
  validateWorldObservation(s,a.scene,next);if(s.worldStep!.nbody!==a.modelCounts.nbody||s.worldStep!.ngeom!==a.modelCounts.ngeom)throw Error('WORLD_MODEL_COUNTS_INVALID');if(!s.physics)throw Error('WORLD_PHYSICS_REQUIRED');

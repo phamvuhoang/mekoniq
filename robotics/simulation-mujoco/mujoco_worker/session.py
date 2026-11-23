@@ -401,6 +401,11 @@ class WorkerSession:
             before=(self.snapshot['physics']['base'][0]['poseMap']['positionM'] if target==nav['robots'][0]['robotId'] else next(x['position'] for x in self.snapshot['props'] if x['propId']==target))
             self.world_disturbance_consumed=True # before the first external force; never retry an uncertain application
         result=self._advance_world(q,opening,checked,v,w,self.tick+1,disturbance,commands)
+        if self.scene.get('id')=='pick-rig-v1':
+            births=[i for i in intents if i['kind']=='birth'];native=result['worldStep'].get('birthObservations',[])
+            if len(births)!=len(native) or any(i['propId']!=r['propId'] for i,r in zip(births,native)):
+                raise WorkerError('WORLD_BIRTH_OBSERVATION_MISSING','native pre-step observation required',fatal=True)
+            if births:result['worldStep']['birthObservations']=[{**r,**{k:i[k] for k in ('eventId','cupId','targetTick')},'runId':self.run_id,'bootId':self.boot_id,'sceneDigest':self.scene['sceneDigest'],'requestId':self.current_request_id,'requestDigest':hashlib.sha256(rfc8785.dumps(p)).hexdigest()} for i,r in zip(births,native)]
         if disturbance:
             from .world_engine import WORLD_DISTURBANCES
             target=disturbance['targetId'];preset=WORLD_DISTURBANCES[disturbance['presetId']]
