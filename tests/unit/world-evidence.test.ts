@@ -163,3 +163,13 @@ test('a pulse receipt hashes the native request when a runtime-owned drive fault
  s.worldStep!.disturbances![0]!.requestDigest=hashJson(command);
  expect(()=>validateWorldDisturbance(s,command,scene,previous,new Set())).toThrow();
 });
+
+test('a finalized manifest ending mid-pulse cannot use later unpublished WAL rows to claim completion',async()=>{
+ const {captureWorldPrefixDisk,materializeWorldPrefix}=await import('../../packages/lab-runtime/src/v2/simulation3d/world-evidence');
+ const h=await openPulse();for(let i=0;i<5;i++){const {s,c}=h.segment(i,i+2);await h.rec.append(s,c);}await h.rec.finish();
+ const m=h.rec.manifest(),unpublished=await Promise.all(m.chunks.filter(c=>c.firstTick>2).map(async c=>zlib.gunzipSync(await readFile(join(h.directory,c.path)))));
+ await writeFile(join(h.directory,'manifest.json'),JSON.stringify({...m,lastTick:2,chunks:m.chunks.filter(c=>c.lastTick<=2)}));
+ await writeFile(join(h.directory,'pending.ndjson'),Buffer.concat(unpublished));
+ const prefix=await materializeWorldPrefix(await captureWorldPrefixDisk(h.directory,h.admission,prefixAuthority(h,6)),h.admission);
+ expect(prefix.publication.streamFinalized).toBe(false);expect(prefix.covered).toBe(false);expect(prefix.issues).toContain('WORLD_PERTURBATION_INCOMPLETE');
+});
