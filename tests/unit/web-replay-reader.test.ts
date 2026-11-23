@@ -2,6 +2,7 @@ import {expect,test,vi} from 'vitest';
 import {createHash} from 'node:crypto';
 import {gzipSync} from 'node:zlib';
 import {openReplayPackage,REPLAY_LIMITS} from '../../packages/lab-runtime/src/v2/replay/reader';
+import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 const fixture=()=>{const plain=Buffer.from(JSON.stringify({schemaVersion:2,manifest:{runId:'run-1'},outcome:{tick:7},metrics:{distanceM:{a:3}},physicsEvidence:{manifest:{identity:{runId:'run-1',sceneDigest:'a'.repeat(64)}},metrics:{maxTiltRad:2}}})),bytes=gzipSync(plain),asset={path:'report.json.gz',sha256:sha(bytes),decodedSha256:sha(plain),bytes:bytes.length,decodedBytes:plain.length,encoding:'gzip',role:'report',mediaType:'application/json'};return {bytes,manifest:{schemaVersion:1,documentType:'web-replay-package',runId:'run-1',horizon:{tick:7,tickMs:20},provenance:{kind:'imported_integrity_only',accepted:false,calibration:'not_calibrated',scope:'display_only_not_requalification',reportTransform:'credential_redaction_v1',rawReportSha256:sha(plain)},coverage:{prefixCovered:false,streamFinalized:false,sampled:false,terminal:null,gaps:[],issues:['NO_STREAM']},assets:[asset],streams:[],licensing:[]}};};
 test('pure reader verifies digest, exposes capture-only aggregates, closes and refuses bad paths before asset read',async()=>{const f=fixture();let calls=0;const read=async function*(){calls++;yield f.bytes;};const r=await openReplayPackage(JSON.stringify(f.manifest),read);expect(r.metricsAt(7).metrics).toEqual({distanceM:{a:3}});expect(r.metricsAt(6)).toMatchObject({metrics:null,reason:'CAPTURE_HORIZON_ONLY'});r.close();await expect(r.sampleAt('world',7)).rejects.toThrow(/CLOSED/);const bad=structuredClone(f.manifest);bad.assets[0]!.path='../secret';await expect(openReplayPackage(JSON.stringify(bad),read)).rejects.toThrow(/MANIFEST|PATH/);expect(calls).toBe(1);});
@@ -19,3 +20,24 @@ test('scene renderer references cannot disguise a model as metadata',async()=>{c
 test('stored-byte export preserves original gzip identity and keeps validation/cancellation bounds',async()=>{const f=fixture(),abort=new AbortController();let corrupt=false;const r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield corrupt?Buffer.alloc(f.bytes.length):f.bytes;},{signal:abort.signal});const stored=await r.readStoredAsset('report.json.gz');expect(Buffer.from(stored)).toEqual(f.bytes);expect(sha(stored)).toBe(f.manifest.assets[0]!.sha256);expect(await r.readAsset('report.json.gz')).not.toEqual(stored);stored.fill(0);expect(Buffer.from(await r.readStoredAsset('report.json.gz'))).toEqual(f.bytes);corrupt=true;await expect(r.readStoredAsset('report.json.gz')).rejects.toThrow('REPLAY_ASSET_HASH');await expect(r.readStoredAsset('../secret')).rejects.toThrow('REPLAY_ASSET_NOT_ADMITTED');abort.abort();await expect(r.readStoredAsset('report.json.gz')).rejects.toThrow('REPLAY_ABORTED');});
 
 test('stored-byte identity assets remain exact and close prevents further reads',async()=>{const f=fixture(),plain=Buffer.from(JSON.stringify({manifest:{runId:'run-1'},outcome:{tick:7}})),asset=f.manifest.assets[0]!;Object.assign(asset,{path:'report.json',encoding:'identity',bytes:plain.length,decodedBytes:plain.length,sha256:sha(plain),decodedSha256:sha(plain)});const r=await openReplayPackage(JSON.stringify(f.manifest),async function*(){yield plain;});expect(Buffer.from(await r.readStoredAsset(asset.path))).toEqual(plain);r.close();await expect(r.readStoredAsset(asset.path)).rejects.toThrow('REPLAY_CLOSED');});
+test('program-selected replay binds request, arm program, perception configuration and actual belief evidence digest',async()=>{
+ const definition={id:'cup-pick-two-stage-v1',revision:1,calibration:'not_calibrated',pickInsetM:0.02,captureM:0.07,approach:'unchanged',secureClose:'original_closed_target'},registration={...definition,digest:hashJson(definition)},graspOffsets={pick:{positionM:[0,0,0]}},contact={openM:0.0889,captureM:0.07,closedM:0};
+ const digest=hashJson({registration,graspOffsets,contact}),ref={id:registration.id,revision:1,digest:registration.digest,executionDigest:digest};
+ const base={manifest:{runId:'run-1',graspProgramId:ref.id,perception:{program:ref},armProgram:{graspProgram:registration,graspOffsets,programs:{contact}}},outcome:{tick:7},perceptionEvidence:{graspProgramDigest:digest,issues:[]}};
+ const contradictory=structuredClone(base);contradictory.manifest.armProgram.graspProgram.pickInsetM=0.021;
+ const otherExecution=hashJson({registration:contradictory.manifest.armProgram.graspProgram,graspOffsets,contact});contradictory.manifest.perception.program.executionDigest=otherExecution;contradictory.perceptionEvidence.graspProgramDigest=otherExecution;
+ const open=async(report:unknown)=>{const f=fixture(),plain=Buffer.from(JSON.stringify(report)),asset=f.manifest.assets[0]!;Object.assign(asset,{path:'report.json',encoding:'identity',bytes:plain.length,decodedBytes:plain.length,sha256:sha(plain),decodedSha256:sha(plain)});return openReplayPackage(JSON.stringify(f.manifest),async function*(){yield plain;});};
+ (await open(base)).close();
+ for(const bad of [
+  {...base,perceptionEvidence:{graspProgramDigest:'e'.repeat(64),issues:[]}},
+  {...base,perceptionEvidence:{issues:[]}},
+  {...base,perceptionEvidence:{graspProgramDigest:digest,issues:['BELIEF_IDENTITY_MISMATCH']}},
+  {...base,manifest:{...base.manifest,graspProgramId:undefined}},
+  {...base,manifest:{...base.manifest,perception:{program:{...ref,id:'other-v1'}}}},
+  {...base,manifest:{...base.manifest,armProgram:{graspProgram:{...ref,digest:'e'.repeat(64)}}}},
+  {...base,manifest:{...base.manifest,armProgram:{}}},
+  {...base,manifest:{...base.manifest,armProgram:{...base.manifest.armProgram,graspOffsets:{pick:{positionM:[0.001,0,0]}}}}},
+  {...base,manifest:{...base.manifest,armProgram:{...base.manifest.armProgram,programs:{contact:{...contact,captureM:0.065}}}}},
+  contradictory,
+ ])await expect(open(bad)).rejects.toThrow('REPLAY_GRASP_PROGRAM_IDENTITY');
+});

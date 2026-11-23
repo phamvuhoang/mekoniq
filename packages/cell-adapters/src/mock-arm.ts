@@ -21,7 +21,7 @@ export const ARM_CHOREOGRAPHY:Record<string,{waypoint:string;action?:'grip'|'rel
 export interface ArmProgramSet {modelId:string;waypoints:Record<string,number[]>;choreography:Record<string,{waypoint:string;action?:'grip'|'release'}[]>;
  motion:{profile:'linear-clamp'}|{profile:'quintic-sync-v1';maxAccelerationRadS2:number[];speedFraction:number};
  /** Present = grip by contact (tracking only): the plant's pads say what is held, the plant's supports say where a cup rests. Absent = grip is an event (mock, webots_arm). */
- contact?:{openM:number;closedM:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
+ contact?:{openM:number;closedM:number;/** Optional first close: secure closedM is commanded only after stable measured contact and custody. */captureM?:number;gripSettleTicks:number;dropTicks:number;liftMinM:number;releaseTimeoutTicks:number;releaseObservationRequired?:boolean;releaseSettleTicks?:number};
  /** Present = checkArmSweep gets this geometry and these allowed pairs; absent = DEFAULT_ARM_GEOMETRY and no pair (as before). */
  collision?:{geometry:ArmGeometry;allowedPairs:readonly (readonly [string,string])[]};
  /** R4.4: a cup-pick waits for a grasp plan (setGraspPlan) before its first motion, and then goes to the planned pickApproach/pick/lift instead of the fixture's. Needs the tracking mode. */
@@ -57,6 +57,7 @@ function validatePrograms(set:ArmProgramSet,model:ArmModelSI){
  if(c){
   if(!tick(c.gripSettleTicks)||!tick(c.dropTicks)||!tick(c.releaseTimeoutTicks)||(c.releaseSettleTicks!==undefined&&!tick(c.releaseSettleTicks)))bad('contact tick counts must be integers >= 1');
   if(![c.openM,c.closedM,c.liftMinM].every(Number.isFinite)||!(c.openM>c.closedM)||!(c.closedM>=0))bad('contact needs finite openM > closedM >= 0 and liftMinM');
+  if(c.captureM!==undefined&&(!Number.isFinite(c.captureM)||c.captureM<c.closedM||c.captureM>=c.openM))bad('captureM needs finite closedM <= captureM < openM');
  }
 }
 const dist=(a:readonly number[],b:readonly number[])=>Math.hypot(a[0]!-b[0]!,a[1]!-b[1]!,a[2]!-b[2]!);
@@ -255,7 +256,7 @@ export class MockArmPlant {
   * release: command open, wait until the cup rests on the tray, then put it. The cup is taken and put only on the plant's word. */
  private completeContact(p:Program,stage:{waypoint:string;action?:'grip'|'release'},steps:{waypoint:string;action?:'grip'|'release'}[],extras?:PlantExtras){
   const s=this.state,c=this.programs.contact!,g=s.grip;
-  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:null,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
+  if(stage.action==='grip'&&s.gripper==='open'){s.gripper='closed';s.gripperCommandM=c.captureM??c.closedM;s.holding=null;s.grip={phase:'closing',ticks:0,lost:0,liftFromM:null,maxSlipM:null,openingM:extras?.gripper?.openingM??null,slipFromM:null,elapsed:0};return;}
   if(stage.action==='grip'&&g?.phase==='closing'&&s.holding===null){
    if(g.ticks<c.gripSettleTicks)return;
    const held=extras?.gripper?.heldPropIds[0]??null,cup=held===null?null:this.cups.take(held);
@@ -264,7 +265,7 @@ export class MockArmPlant {
    if(held===null&&this.programs.recovery&&s.grasp?.commandId===p.commandId&&s.grasp.status==='ready'){s.grasp={...s.grasp,status:'grip_failed'};return;}
    // the pads hold a cup the cup world did not hand over: custody is unknown, never a completed pick
    if(held!==null&&cup===null){Object.assign(p.evidence,{heldPropId:held});this.stop('CUP_CUSTODY_MISMATCH');return;}
-   s.holding=cup;if(!cup)delete s.grip;else{this.baseline(g,extras);p.evidence.maxSlipM=g.maxSlipM;}
+   s.holding=cup;if(!cup)delete s.grip;else{if(c.captureM!==undefined)s.gripperCommandM=c.closedM;this.baseline(g,extras);p.evidence.maxSlipM=g.maxSlipM;}
   }
   if(stage.action==='release'&&s.gripper==='closed'){
    if(g?.phase!=='opening'){

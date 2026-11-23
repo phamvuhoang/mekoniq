@@ -11,8 +11,8 @@ const TRACKING:ArmTracking={reachTolRad:P.reachTolRad!,settleTicks:P.settleTicks
 const CONTACT={openM:0.0889,closedM:0,gripSettleTicks:P.gripSettleTicks!,dropTicks:P.dropTicks!,liftMinM:P.liftMinM!,releaseTimeoutTicks:200};
 const programs=(belief:boolean,recovery=false):ArmProgramSet=>({...structuredClone(FILE.programs),contact:CONTACT,...belief?{beliefGrasp:true as const}:{},...recovery?{recovery:true as const}:{}});
 const cmd=(id:string,program:'cup-pick'|'cup-place'='cup-pick'):CellCommand=>({runId:'r',commandId:id,deviceId:'arm',controlEpoch:1,expiresAt:'2026-11-06T00:00:00Z',recipeRevision:1,programRef:{id:program,hash:'a'.repeat(64)},payloadHash:'a'.repeat(64),capability:'start_job',payload:{jobId:'j'}});
-function make(belief=true,recovery=false){
- const set=programs(belief,recovery),state=MockArmPlant.initial('arm','boot-0:arm',set),reports:CellReport[]=[];
+function make(belief=true,recovery=false,captureM?:number){
+ const set=programs(belief,recovery);if(captureM!==undefined)set.contact={...set.contact!,captureM};const state=MockArmPlant.initial('arm','boot-0:arm',set),reports:CellReport[]=[];
  const plant=new MockArmPlant(state,()=>Date.parse('2026-11-12T00:00:00Z'),()=>'boot-2',{take:id=>id??null,put:()=>{}},()=>null,XARM6_SI,TRACKING,set);plant.on(r=>reports.push(r));
  // a perfect plant: the joints are where they were commanded
  const tick=()=>{plant.advance();plant.observe(plant.state.commandedQ??plant.state.q,[],{gripper:{openingM:0.0889,heldPropIds:[]},props:[]});};
@@ -139,4 +139,22 @@ test('R02: after a missed grip the observation of the next tick does not close t
  const index=h.state.programs[0]!.index;h.plant.recoverStep('c1','open_gripper');expect(h.state.gripperCommandM).toBe(CONTACT.openM);
  for(const held of [[],['prop-1'],['prop-1']]){h.plant.advance();h.plant.observe(h.plant.state.commandedQ??h.plant.state.q,[],{gripper:{openingM:0.0889,heldPropIds:held},props:[]});
   expect(h.state.programs[0]!.index).toBe(index);expect(h.state.grasp!.status).toBe('grip_failed');expect(h.state.gripperCommandM).toBe(CONTACT.openM);expect(h.state.holding).toBeNull();}
+});
+test('two-stage recovery opens fully, repeats capture on retry, and secures only after retry contact is stable',()=>{
+ const h=make(true,true,0.07);h.plant.execute(cmd('c1'));h.plant.setGraspPlan('c1',{ok:true,waypoints:same(h.set)});
+ for(let i=0;i<2000&&!h.plant.commitPending();i++)h.tick();commit(h);
+ for(let i=0;i<2000&&!h.plant.gripFailedPending();i++)h.tick();
+ expect(h.plant.gripFailedPending()).toEqual({commandId:'c1'});expect(h.state.gripperCommandM).toBe(0.07);expect(h.state.holding).toBeNull();
+ let opened=h.plant.recoverStep('c1','open_gripper');expect(h.state.gripperCommandM).toBe(CONTACT.openM);
+ for(let i=0;i<50&&opened!=='done';i++){h.tick();opened=h.plant.recoverStep('c1','open_gripper');}expect(opened).toBe('done');
+ let retreat=h.plant.recoverStep('c1','retreat_pick_approach');
+ for(let i=0;i<2000&&retreat!=='done';i++){h.tick();retreat=h.plant.recoverStep('c1','retreat_pick_approach');}expect(retreat).toBe('done');commit(h);
+ for(let i=0;i<2000&&h.state.gripper!=='closed';i++)h.tick();
+ expect(h.state.gripperCommandM).toBe(0.07);expect(h.state.holding).toBeNull();
+ // A pad observation cannot bypass the existing stable-opening threshold.
+ for(let i=0;i<CONTACT.gripSettleTicks+5&&h.state.holding===null;i++){
+  h.plant.advance();h.plant.observe(h.state.commandedQ??h.state.q,[],{gripper:{openingM:0.0793,heldPropIds:['cup-1']},props:[]});
+  if(h.state.holding===null)expect(h.state.gripperCommandM).toBe(0.07);
+ }
+ expect(h.state.holding).toBe('cup-1');expect(h.state.gripperCommandM).toBe(0);expect(h.state.programs[0]!.index).toBe(2);
 });

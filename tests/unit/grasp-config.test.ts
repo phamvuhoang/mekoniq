@@ -32,3 +32,21 @@ test('the grasp frames are offsets from the cup: the pick is 22 mm past and 1 mm
  expect(o.pickApproach.positionM[0]).toBeCloseTo(0.022-0.12,9);expect(o.lift.positionM[2]).toBeCloseTo(-0.001+0.15,9);
  expect(o.pick.quaternionXyzw).toEqual(layout.grasp.pick.quaternionXyzw);
 });
+test('a registered two-stage program resolves only in belief mode and keeps the original work and view bounds',async()=>{
+ const g=await loadGraspConfig(root,{graspMode:'belief_ground_truth',graspProgramId:'cup-pick-two-stage-v1'});
+ expect(g!.program).toMatchObject({id:'cup-pick-two-stage-v1',revision:1,calibration:'not_calibrated',pickInsetM:0.02,captureM:0.07});
+ expect(g!.program!.digest).toMatch(/^[0-9a-f]{64}$/);expect(g!.regions.workHalfExtentM).toEqual([0.02,0.02]);
+ expect((await loadGraspConfig(root,{graspMode:'belief_ground_truth'}))!.program).toBeUndefined();
+ for(const mode of [undefined,'fixed_program'])await expect(loadGraspConfig(root,{graspMode:mode,graspProgramId:'cup-pick-two-stage-v1'})).rejects.toThrow('GRASP_PROGRAM_NOT_ALLOWED');
+ await expect(loadGraspConfig(root,{graspMode:'belief_ground_truth',graspProgramId:'cup-pick-two-stage-v2'})).rejects.toThrow('GRASP_PROGRAM_NOT_REGISTERED');
+});
+test.each([
+ [[0,Math.SQRT1_2,0,Math.SQRT1_2],[0.002,0,-0.001],[-0.098,0,-0.001]],
+ [[-Math.SQRT1_2,0,0,Math.SQRT1_2],[0.022,-0.02,-0.001],[0.022,-0.12,-0.001]],
+])('the registered insertion shift follows the tool axis while the approach stays fixed (%s)',async(q,pick,approach)=>{
+ const g=await loadGraspConfig(root,{graspMode:'belief_ground_truth',graspProgramId:'cup-pick-two-stage-v1'});
+ const layout={grasp:{approachM:0.12,liftM:0.15,pick:{position:[0.512,0,0.15],quaternionXyzw:q}}};
+ const offsets=graspOffsetsFrom(layout as never,[0.49,0,0.151],g!.program);
+ for(let i=0;i<3;i++){expect(offsets.pick.positionM[i]).toBeCloseTo(pick[i]!,9);expect(offsets.pickApproach.positionM[i]).toBeCloseTo(approach[i]!,9);expect(offsets.lift.positionM[i]).toBeCloseTo(pick[i]!+(i===2?0.15:0),9);}
+ expect(offsets.pick.quaternionXyzw).toEqual(q);
+});

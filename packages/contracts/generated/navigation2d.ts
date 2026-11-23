@@ -3494,6 +3494,7 @@ export interface BeliefEvidenceManifestV1 {
     perceptionProfileDigest: Digest | null;
     recoveryPolicyDigest: Digest | null;
     graspMode: 'belief_ground_truth' | 'belief_estimated';
+    graspProgramDigest?: Digest;
     seed: number;
   };
   /**

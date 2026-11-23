@@ -957,6 +957,10 @@ export interface CreateRunRequest {
    */
   recoveryPolicyId?: string;
   /**
+   * Registered server-owned grasp program; belief modes of the shared-world cell only. Absent preserves the original program.
+   */
+  graspProgramId?: string;
+  /**
    * Single-axis bench request (R4, BenchRequestV1); only the bench scenarios accept it. The server validates its shape and cross-field rules itself.
    */
   bench?: {

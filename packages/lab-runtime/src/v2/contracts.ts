@@ -58,7 +58,7 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  if(bench!==undefined||scenarioRegistry.get(v.scenarioId)?.bench){
   const scope=(message:string):Validated<CreateRunRequest>=>({ok:false,issues:[{path:'/bench',code:'BENCH_SCOPE_INVALID',message}]});
   if(bench===undefined||!scenarioRegistry.get(v.scenarioId)?.bench||v.mode!=='simulation'||v.backendSetId!==BENCH_SET_ID)return scope('A bench request runs only a bench scenario on engineering-mujoco-bench-v1, and a bench scenario only with a bench request');
-  if(v.project!==undefined||v.engineeringRef!==undefined||v.worldExperimentId!==undefined||v.driveExperimentId!==undefined||v.driveFaultSchedule!==undefined)return scope('A bench plant is built by the server: no project, engineering bundle or run experiment (the drive experiment is the bench request\'s own)');
+  if(v.project!==undefined||v.engineeringRef!==undefined||v.worldExperimentId!==undefined||v.driveExperimentId!==undefined||v.driveFaultSchedule!==undefined||v.graspProgramId!==undefined)return scope('A bench plant is built by the server: no project, engineering bundle or run experiment (the drive experiment is the bench request\'s own)');
   const checked=validateBenchRequestShape(bench);
   if(!checked.ok)return {ok:false,issues:checked.reasonCodes.map(code=>({path:'/bench',code,message:'Invalid bench request'}))};
   return (bench as {scenarioId:string}).scenarioId===v.scenarioId?shape:scope('The bench request names another scenario than the run');
@@ -69,7 +69,7 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  const wantsBelief=shape.value.graspMode!==undefined&&shape.value.graspMode!=='fixed_program';
  // the registered cup nudge (R4-D33) is a belief-grasp experiment: the fixed program has no belief to be stale
  if(shape.value.worldExperimentId==='world-cup-nudge-v1'&&!wantsBelief)return {ok:false,issues:[{path:'/worldExperimentId',code:'WORLD_EXPERIMENT_SCOPE_INVALID',message:'The cup nudge needs a belief grasp mode'}]};
- if((wantsBelief||shape.value.recoveryPolicyId!==undefined)&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/graspMode',code:'GRASP_MODE_SCOPE_INVALID',message:'A belief grasp is selectable on the registered shared-world cell only'}]};
+ if((wantsBelief||shape.value.recoveryPolicyId!==undefined||shape.value.graspProgramId!==undefined)&&(shape.value.mode!=='simulation'||shape.value.backendSetId!=='engineering-mujoco-cell-v1'||shape.value.scenarioId!=='MJ-CELL-BV01'))return {ok:false,issues:[{path:'/graspMode',code:'GRASP_MODE_SCOPE_INVALID',message:'A belief grasp is selectable on the registered shared-world cell only'}]};
  {const g=validateGraspRequest(shape.value);if(!g.ok)return {ok:false,issues:g.reasonCodes.map(code=>({path:'/graspMode',code,message:'Invalid grasp request'}))};}
  // the browser-selectable ids are the ones health advertises; the study, lossy and out-of-region profiles are campaign inputs
  if(shape.value.perceptionProfileId!==undefined&&shape.value.perceptionProfileId!=='perception-nominal-v1')return {ok:false,issues:[{path:'/perceptionProfileId',code:'PERCEPTION_PROFILE_NOT_REGISTERED',message:'Not a profile this runtime offers'}]};

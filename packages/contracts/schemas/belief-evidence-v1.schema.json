@@ -73,6 +73,10 @@
             "belief_estimated"
           ]
         },
+        "graspProgramDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest",
+          "description": "Present only when this run selects a registered grasp program. Binds its registration, resolved grasp offsets and contact configuration."
+        },
         "seed": {
           "type": "integer",
           "minimum": 0,

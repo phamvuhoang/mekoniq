@@ -54,6 +54,21 @@ test('a belief grasp mode is admitted on the shared-world cell only; MJ-BV01 sta
 test('a request without the new fields still validates exactly as before',()=>{
  expect(run({}).ok).toBe(true);
 });
+test('HTTP admits only the registered program ID on a simulation cell with a belief grasp',()=>{
+ const program={graspProgramId:'cup-pick-two-stage-v1'};
+ expect(run({...program,graspMode:'belief_ground_truth'}).ok).toBe(true);
+ expect(run({...program,graspMode:'belief_estimated',perceptionProfileId:'perception-nominal-v1'}).ok).toBe(true);
+ for(const extra of [{},{graspMode:'fixed_program'}])expect(run({...program,...extra})).toMatchObject({ok:false,issues:[{code:'GRASP_PROGRAM_NOT_ALLOWED'}]});
+ expect(run({...program,graspMode:'belief_ground_truth'},'MJ-BV01','engineering-mujoco-arm-v1')).toMatchObject({ok:false,issues:[{code:'GRASP_MODE_SCOPE_INVALID'}]});
+ expect(run({graspMode:'belief_ground_truth',graspProgramId:'cup-pick-two-stage-v2'})).toMatchObject({ok:false,issues:[{code:'GRASP_PROGRAM_NOT_REGISTERED'}]});
+ for(const extra of [{captureM:0.06},{graspProgram:{captureM:0.07}},{pickInsetM:0.02}])expect(run({...program,graspMode:'belief_ground_truth',...extra}).ok).toBe(false);
+});
+test('a valid bench request cannot bypass the program scope guard',()=>{
+ const bench={schemaVersion:1,scenarioId:'MJ-BENCH-WHEEL',axis:'wheels',signal:{kind:'step',amplitude:2,atTick:5},driveExperimentId:'drive-nominal-v1',controlProfile:JSON.parse(readFileSync('robotics/simulation-mujoco/fixtures/drive-v1/serve-control-v1.json','utf8'))};
+ const request={scenarioId:'MJ-BENCH-WHEEL',scenarioRevision:1,seed:7,mode:'simulation',backendSetId:'engineering-mujoco-bench-v1',access:'simulated',runtimeIdentity:{sourceCommit:'a'.repeat(40),schemaHash:'b'.repeat(64)},bench};
+ expect(validateRunRequestV2(request).ok).toBe(true);
+ expect(validateRunRequestV2({...request,graspMode:'belief_ground_truth',graspProgramId:'cup-pick-two-stage-v1'})).toMatchObject({ok:false,issues:[{code:'BENCH_SCOPE_INVALID'}]});
+});
 
 const belief={objectId:'cup-1',kind:'cup',frameId:'arm-base',positionM:[0.5,0,0.15],sigmaM:[0.002,0.002,0],observedTick:15,publishedTick:20,ageTicks:0,source:'pose_estimator_sim',valid:true};
 const record={tick:20,objectId:'cup-1',belief,dropped:false,truthAtObservedTick:[0.5,0,0.15],errorM:0.001};

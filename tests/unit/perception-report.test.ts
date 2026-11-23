@@ -36,3 +36,9 @@ test('R10: attemptRecords keeps the plan, the commit and the outcome of an attem
  await rec.finish(null);const r=await buildPerceptionReport(dir);
  expect(r.attemptRecords.map(a=>[a.stage,a.recordedTick,a.outcome])).toEqual([['plan',30,'unknown'],['commit',40,'unknown'],['outcome',90,'lifted']]);expect(r.attempts.map(a=>a.outcome)).toEqual(['lifted']);
 });
+test('a program-selected report carries the evidence digest through hot and cold reads; mismatches remain incomplete',async()=>{
+ const dir=await mkdtemp(join(tmpdir(),'perc-program-')),id={...identity,graspProgramDigest:'d'.repeat(64)},rec=await openBeliefRecorder({directory:dir,identity:id});
+ await rec.appendBelief(belief(10));const hot=await buildPerceptionReport(dir,rec,id);expect(hot.graspProgramDigest).toBe(id.graspProgramDigest);expect(hot.issues).toEqual([]);
+ await rec.finish(null);const cold=await buildPerceptionReport(dir,undefined,id);expect(cold.graspProgramDigest).toBe(id.graspProgramDigest);expect(cold.complete).toBe(true);
+ const bad=await buildPerceptionReport(dir,undefined,{...id,graspProgramDigest:'e'.repeat(64)});expect(bad.issues).toContain('BELIEF_IDENTITY_MISMATCH');expect(bad.complete).toBe(false);
+});

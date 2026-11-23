@@ -41,6 +41,15 @@ test('another run identity is refused',async()=>{
  const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:1<<20});await rec.appendBelief(belief(10));await rec.finish(null);
  expect((await readBeliefEvidence(dir,await readBeliefManifest(dir),{identity:{...identity,seed:8}})).issues).toContain('BELIEF_IDENTITY_MISMATCH');
 });
+test('a new program identity survives recording and refuses a different, missing or substituted digest',async()=>{
+ const dir=await tmp(),id={...identity,graspProgramDigest:'d'.repeat(64)},rec=await openBeliefRecorder({directory:dir,identity:id});
+ await rec.appendBelief(belief(10));await rec.finish(null);const m=await readBeliefManifest(dir);
+ expect(m.identity).toEqual(id);expect((await readBeliefEvidence(dir,m,{identity:id})).issues).toEqual([]);
+ expect((await readBeliefEvidence(dir,m,{identity:{graspProgramDigest:'e'.repeat(64)}})).issues).toContain('BELIEF_IDENTITY_MISMATCH');
+ const stripped=structuredClone(m);delete stripped.identity.graspProgramDigest;
+ expect((await readBeliefEvidence(dir,stripped,{identity:id})).issues).toContain('BELIEF_IDENTITY_MISMATCH');
+ await expect(openBeliefRecorder({directory:dir,identity})).rejects.toThrow('BELIEF_IDENTITY_MISMATCH');
+});
 test('the quota ends the recording with a reason instead of cutting records',async()=>{
  const dir=await tmp(),rec=await openBeliefRecorder({directory:dir,identity,maxBytes:6000});let failed:string|null=null;
  for(let t=10;t<5000&&!failed;t++)try{await rec.appendBelief(belief(t));}catch(e){failed=(e as Error).message;}
