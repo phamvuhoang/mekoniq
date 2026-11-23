@@ -28,6 +28,13 @@ test('every case is in exactly one gate, every suite a case names exists, and th
  expect(CLOSING_GATES_R4).not.toContain('G-CAL1');expect(CLOSING_GATES_R4).toContain('G-CLOUD2');
  expect(Object.keys(tableR4().cases)).toEqual(Object.keys(CASES_R4));
 });
+test('BEL05 refuses a green suite that omits the study trust-boundary regressions',()=>{
+ const suite=SUITES_R4.find((s:{id:string})=>s.id==='bel-engine'),file='tests/unit/pick-rig-review.test.ts';
+ expect(CASES_R4.BEL05.suites).toContain(suite.id);
+ const result=(files:string[])=>Buffer.from(JSON.stringify({testResults:files.map(name=>({name,status:'passed',assertionResults:[{status:'passed'}]}))}));
+ expect(tableR4().checkSuiteResult(suite,result(suite.files.filter((name:string)=>name!==file)))).toContain(`SUITE_FILE_MISSING:bel-engine:${file}`);
+ expect(tableR4().checkSuiteResult(suite,result(suite.files))).toEqual([]);
+});
 test('REC06 and CLD03 are never produced by a suite: not_run with their reason, so G-REC1 and G-CLOUD2 are not tested without them',()=>{
  const d=artifactDispositionsFromGroups({});
  expect(d.REC06.status).toBe('not_run');expect(d.CLD03).toEqual({status:'not_run',issues:['deploy_order_pending']});

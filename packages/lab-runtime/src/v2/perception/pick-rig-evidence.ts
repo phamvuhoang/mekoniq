@@ -8,7 +8,11 @@ import type {ArmPlantState,ArmPropSample} from '../../../../cell-adapters/src/mo
 import type {GraspAttempt,RecoveryStep,WorldEvidenceRecord} from '../../../../contracts/generated/navigation2d';
 import type {RunReport} from '../report';
 import {hashJson} from '../hash';
-import {readCampaignJournal} from '../control/campaign-source-evidence';
+import {loadOracleProfile} from '../algorithm/checker';
+import {defaultCatalog} from '../capabilities';
+import {instantiateBackends} from '../backend-registry';
+import {scenarioRegistry,scenarioHash} from '../scenario-registry';
+import {readCampaignJournal,verifyCampaignOutcome} from '../control/campaign-source-evidence';
 import {readRetainedWorldAdmission} from '../simulation3d/world-arm-report';
 import {readWorldEvidence,type WorldAdmission} from '../simulation3d/world-evidence';
 import {readBoundedPhysicsFile} from '../simulation3d/physics-evidence';
@@ -26,6 +30,14 @@ type Belief={attempts:GraspAttempt[];recovery:RecoveryStep[]};
 const sha=(b:Uint8Array|string)=>createHash('sha256').update(b).digest('hex'),same=(a:unknown,b:unknown)=>hashJson(a as never)===hashJson(b as never);
 const fail=(code:string):never=>{throw Error(code);};
 const SRC=fileURLToPath(new URL('../../../../../',import.meta.url));
+/** Compare registration metadata without starting a backend. Host availability is
+ * irrelevant to a cold reader; the retained world supplies the execution witness. */
+function verifyRigExecution(m:RunReport['manifest'],admission:WorldAdmission){
+ const id='engineering-mujoco-cell-v1',set=defaultCatalog.sets[id]!,scenario=scenarioRegistry.get('MJ-CELL-BV01')!;
+ const catalog={...defaultCatalog,backends:defaultCatalog.backends.map(b=>({...b,installed:true,compatible:true,reachable:true}))},registered=instantiateBackends(id,catalog,set.backends);
+ const project=worldDocument<{id:string;revision:number}>(admission.files,'project.json'),projectHash=hashJson(project);
+ if(m.mode!==registered.mode||m.access!==registered.access||m.backendSetId!==id||!m.backends||!same(m.backends,registered.descriptors)||!m.scenario||!same(m.scenario,{id:scenario.id,revision:scenario.revision,hash:scenarioHash(scenario)})||!m.project||!same(m.project,{id:project.id,revision:project.revision,hash:projectHash})||projectHash!==admission.scene.inputs.projectDigest||admission.scene.armCell.engine.id!==set.providers!.amr||admission.scene.navigation.engine.id!==set.providers!.amr||admission.scene.navigation.engine.version!==registered.descriptors[0]!.version)fail('RIG_EXECUTION_IDENTITY');
+}
 /** No serving counter or global stop fallback. The first pick's own receipt supplies its tick.
  * This also inspects old reports truthfully, but does not qualify them under the new protocol. */
 export function rigReportFacts(report:RigReport,arm:Arm,evidence:Belief={attempts:[],recovery:[]}){
@@ -71,13 +83,18 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  if(report.pickRig?.endpointProtocol!==PICK_RIG_ENDPOINT_PROTOCOL)fail('RIG_ENDPOINT_PROTOCOL_UNSUPPORTED');
  const max=report.pickRig!.maxTicks,h=report.outcome.tick,runDir=join(directory,'run'),m=report.manifest;
  if(!Number.isSafeInteger(max)||max<1||max>12000||!Number.isSafeInteger(h)||h<0||h>max||max!==(input.maxTicks??12000)||m.seed!==input.seed||m.sourceCommit!==input.sourceCommit||m.calibration.status!=='not_calibrated')fail('RIG_RUN_IDENTITY');
- const cp=JSON.parse((await readBoundedPhysicsFile(runDir,'run.json',32*1024*1024)).toString()) as {runId:string;tick:number;manifest:RunReport['manifest'];coffee:{arm:ArmPlantState};world:{snapshot:{bootId:string;tick:number}}};
+ const cp=JSON.parse((await readBoundedPhysicsFile(runDir,'run.json',32*1024*1024)).toString()) as Parameters<typeof verifyCampaignOutcome>[0]&{runId:string;tick:number;manifest:RunReport['manifest'];coffee:{arm:ArmPlantState};world:{snapshot:{bootId:string;tick:number}}};
  if(cp.runId!==m.runId||cp.tick!==h||cp.world?.snapshot.tick!==h||!same(cp.manifest,m))fail('RIG_CHECKPOINT_IDENTITY');
  const sceneDigest=m.models.find(x=>x.id==='mujoco_shared_world')?.hash;if(!sceneDigest)fail('RIG_WORLD_IDENTITY');
  const admission=await readRetainedWorldAdmission(runDir,sceneDigest!),scope=report.worldSweep?.scope,trace=report.arm?.worldTrace;
  if(admission.scene.id!=='pick-rig-v1'||m.armProgram?.fixture.id!=='pick-rig-v1'||admission.scene.armCell.engineSeed!==input.seed||scope?.identity.runId!==m.runId||scope.identity.bootId!==cp.world.snapshot.bootId||scope.identity.sceneDigest!==sceneDigest||scope.identity.admissionDigest!==admission.digest||scope.publicCommittedTick!==h||scope.prefixCovered!==true||trace?.prefixCovered!==true||trace.firstTick!==0||trace.lastTick!==h||trace.samples!==h+1||trace.publicCommittedTick!==h||trace.reasonCodes.length)fail('RIG_WORLD_IDENTITY');
+ verifyRigExecution(m,admission);
  const policyBytes=await readFile(join(SRC,'robotics/simulation-mujoco/fixtures/pick-rig-v1/handoff-policy.json'));
  if(admission.scene.handoffPolicyRef.sha256!==sha(policyBytes))fail('RIG_BIRTH_FIXTURE_MISMATCH');
+ // This is the same compiled oracle used by mujocoWorldPorts. The record cannot
+ // choose a weaker criterion by changing its own report/checkpoint declaration.
+ const lift=loadOracleProfile().profile.mujocoArm!.liftMinM;
+ if(m.armProgram?.programs.contact?.liftMinM!==lift)fail('RIG_LIFT_ORACLE_MISMATCH');
  const cfg=await loadGraspConfig(join(SRC,'robotics/simulation-mujoco'),{graspMode:input.mode,...input.profileId?{perceptionProfileId:input.profileId}:{},...input.recoveryPolicyId?{recoveryPolicyId:input.recoveryPolicyId}:{}}),pm=m.perception;
  let evidence:Belief={attempts:[],recovery:[]};
  if(cfg){
@@ -93,6 +110,9 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  if(!same(source.events,report.businessEvents))fail('RIG_SOURCE_REPORT_MISMATCH');
  const facts=rigReportFacts(report,cp.coffee.arm,evidence);
  if(facts.endpointTick!==h)fail('RIG_ENDPOINT_HORIZON_MISMATCH');
+ // Controller-local latches/flags come from the retained checkpoint; fulfillment
+ // and mission state come from verified Source mutations, not the report label.
+ const outcome=verifyCampaignOutcome(cp,source,report,'CELL');
  // Accepted place on the completion tick is visible in run.json. No subsequent place
  // command may have reached the engine; acceptance does not mean physical execution.
  if(world.records.some(r=>r.command?.worldControl?.program?.programId==='cup-place'))fail('RIG_PLACE_EXECUTED');
@@ -108,7 +128,7 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  const birth=verifyRigBirth(world.records,admission,input.seed,input.truthOffsetM),mine=evidence.attempts.filter(a=>a.cupId==='cup-1'),last=mine.at(-1),physical=world.records[h]!.snapshot,held=physical.arms![0]!.gripper!.heldPropIds.includes(birth.propId),cup=physical.props!.find(p=>p.propId===birth.propId);
  if(facts.fixedOutcome==='lifted'){
   const event=source.events.find(e=>e.kind==='cup'&&e.id==='cup-1'&&e.type==='CupTransferConfirmed'&&(e.state.movements as {evidence?:{commandId?:string}}[]|undefined)?.some(x=>x.evidence?.commandId===facts.endpoint.commandId)),movement=(event?.state.movements as {evidence?:Record<string,unknown>}[]|undefined)?.find(x=>x.evidence?.commandId===facts.endpoint.commandId),receipt=movement?.evidence,observation=receipt?.world as {tick?:number;sceneDigest?:string}|undefined;
-  const hp=worldDocument<{birth:{centerM:number[]}}>(admission.files,admission.scene.handoffPolicyRef.path),lift=m.armProgram?.programs.contact?.liftMinM;
+  const hp=worldDocument<{birth:{centerM:number[]}}>(admission.files,admission.scene.handoffPolicyRef.path);
   if(!receipt||receipt.objectPresent!==true||receipt.liftPoseReached!==true||observation?.tick!==h||observation.sceneDigest!==sceneDigest||!held||!cup||!Number.isFinite(lift)||cup.position[2]!<hp.birth.centerM[2]!+lift!)fail('RIG_LIFT_OBSERVATION_MISSING');
  }
  if(facts.fixedOutcome==='grip_not_established'&&held)fail('RIG_MISS_OBSERVATION_CONTRADICTION');
@@ -122,5 +142,5 @@ export async function readPickRigEvidence(directory:string,input:Omit<PickRigInp
  if(!sweep.complete||sweep.nativeContacts.status==='not_run')fail(`RIG_CONTACT_EVIDENCE:${sweep.reasonCodes.join(',')}`);
  if(!same(sweep.nativeContacts,report.worldSweep!.nativeContacts))fail('RIG_CONTACT_REPORT_MISMATCH');
  const attempts=[...new Map(mine.map(a=>[a.attemptId,a])).values()];
- return {outcome:facts.fixedOutcome,attempts:input.mode==='fixed_program'?(facts.endpoint.commandId?1:0):attempts.length,recovered:evidence.recovery.length>0&&facts.fixedOutcome==='lifted',attention:report.outcome.status==='needs_attention',ticks:h,unexpectedContacts:sweep.nativeContacts.unexpected,beliefErrorAtCommitM:attempts[0]?.beliefErrorAtCommitM??null,endpoint:facts.endpoint,birth};
+ return {outcome:facts.fixedOutcome,attempts:input.mode==='fixed_program'?(facts.endpoint.commandId?1:0):attempts.length,recovered:evidence.recovery.length>0&&facts.fixedOutcome==='lifted',attention:outcome.status==='needs_attention',ticks:h,unexpectedContacts:sweep.nativeContacts.unexpected,beliefErrorAtCommitM:attempts[0]?.beliefErrorAtCommitM??null,endpoint:facts.endpoint,birth};
 }
