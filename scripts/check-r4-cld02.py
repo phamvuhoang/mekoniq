@@ -1,6 +1,8 @@
 """Admission checks for the production image interpreter and its completed pytest run."""
+from collections import Counter
 import hashlib
 import importlib.metadata
+import json
 import platform
 import re
 import sys
@@ -25,33 +27,52 @@ def check_guest():
             sys.exit(f"LOCKED_VERSION_MISMATCH: {package} installed {installed}, expected {locked}")
 
 
-def check_receipt(path):
-    tree = ET.parse(sys.stdin.buffer if path == "-" else path)
-    suites = tree.findall(".//testsuite")
-    if not suites:
-        sys.exit("empty native suite")
-    completed = set()
-    for suite in suites:
-        cases = suite.findall("testcase")
-        for case in cases:
-            name = case.attrib.get("name", "")
-            for tag in ("skipped", "error", "failure"):
-                if case.find(tag) is not None:
-                    sys.exit(f"native worker suite {tag}: {name}")
-            completed.add((case.get("classname", "").split(".")[-1], name))
-        if any(suite.get(k) != "0" for k in ("errors", "failures", "skipped")) or suite.get("tests") != str(len(cases)):
-            sys.exit("native worker suite totals disagree")
-    required = {("test_drive_engine", "test_the_legacy_path_gives_the_three_recorded_digests")}
-    for case in ("mobile-no-drive", "mobile-cil", "arm-no-drive"):
-        required.add(("test_worker_protocol_regression", f"test_worker_responses_match_the_pre_fix_wire_bytes[{case}]"))
-    missing = required - completed
-    if missing:
-        sys.exit("missing native comparison: " + ", ".join(sorted(name for _, name in missing)))
+def check_receipt(xml, collection, source, image):
+    invocation = collection.get("invocationId")
+    if (collection.get("schemaVersion") != 1 or collection.get("sourceCommit") != source
+            or collection.get("imageId") != image or not re.fullmatch("[a-f0-9]{32}", invocation or "")):
+        sys.exit("native collection identity mismatch")
+    # This reviewed source-side roster is independent of both files in the receipt.
+    # Regenerate it with `pytest --collect-only -q tests` in robotics/simulation-mujoco
+    # when the contractual worker suite or its parametrization intentionally changes.
+    roster = (Path(__file__).parent / "native-sim/r4-cld02-pytest-roster.txt").read_text().splitlines()
+    selected = collection.get("nodeIds")
+    if not isinstance(selected, list) or Counter(selected) != Counter(roster):
+        sys.exit("native pytest collection differs from the full worker roster")
+    root = ET.fromstring(xml)
+    suites = root.findall("testsuite")
+    if root.tag != "testsuites" or len(suites) != 1 or len(root.findall(".//testsuite")) != 1:
+        sys.exit("expected one native pytest suite")
+    suite = suites[0]
+    expected_properties = {"cld02Source": source, "cld02Image": image, "cld02Invocation": invocation}
+    for key, value in expected_properties.items():
+        actual = [p.get("value") for p in suite.findall("properties/property") if p.get("name") == key]
+        if actual != [value]:
+            sys.exit("native JUnit collection identity mismatch: " + key)
+    cases = suite.findall("testcase")
+    if len(cases) != len(root.findall(".//testcase")):
+        sys.exit("unexpected native JUnit testcase location")
+    completed = []
+    for case in cases:
+        for tag in ("skipped", "error", "failure"):
+            if case.find(tag) is not None:
+                sys.exit(f"native worker suite {tag}: {case.get('name')}")
+        module = case.get("classname", "").replace(".", "/")
+        completed.append(f"{module}.py::{case.get('name')}")
+    if any(suite.get(k) != "0" for k in ("errors", "failures", "skipped")) or suite.get("tests") != str(len(cases)):
+        sys.exit("native worker suite totals disagree")
+    if Counter(completed) != Counter(selected):
+        sys.exit("native JUnit cases differ from the collected worker suite")
 
 
 if sys.argv[1:] == ["guest"]:
     check_guest()
-elif len(sys.argv) == 3 and sys.argv[1] == "receipt":
-    check_receipt(sys.argv[2])
+elif sys.argv[1:] == ["receipt", "-"]:
+    # Readback already bounded, inventoried and hash-checked these bytes.
+    args = json.load(sys.stdin)
+    check_receipt(args["xml"], args["collection"], args["sourceCommit"], args["imageId"])
+elif len(sys.argv) == 5 and sys.argv[1] == "receipt":
+    files = Path(sys.argv[2])
+    check_receipt((files / "full.xml").read_bytes(), json.loads((files / "collection.json").read_bytes()), *sys.argv[3:])
 else:
-    sys.exit("usage: check-r4-cld02.py guest | receipt FILE")
+    sys.exit("usage: check-r4-cld02.py guest | receipt PYTEST_DIR SOURCE IMAGE | receipt -")

@@ -2,36 +2,30 @@ import {spawnSync} from 'node:child_process';
 import {mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
+import {fullRoster,pytestArtifact,pytestIdentity} from '../support/r4-pytest-receipt';
 import {afterEach,beforeEach,expect,test} from 'vitest';
 
 let dir:string;
 beforeEach(()=>{dir=mkdtempSync(join(tmpdir(),'r4-cld02-guards-'));});
 afterEach(()=>rmSync(dir,{recursive:true,force:true}));
 
-const nativeCases=[
- 'test_the_legacy_path_gives_the_three_recorded_digests',
- 'test_worker_responses_match_the_pre_fix_wire_bytes[mobile-no-drive]',
- 'test_worker_responses_match_the_pre_fix_wire_bytes[mobile-cil]',
- 'test_worker_responses_match_the_pre_fix_wire_bytes[arm-no-drive]',
-];
-
-function verify(names:string[],extra=''){
- const xml=join(dir,'full.xml');
- writeFileSync(xml,`<testsuites><testsuite tests="${names.length+(extra?1:0)}" skipped="0" failures="0" errors="0">`+names.map(name=>`<testcase classname="tests.${name.startsWith('test_the_legacy')?'test_drive_engine':'test_worker_protocol_regression'}" name="${name}"/>`).join('')+extra+'</testsuite></testsuites>');
- return spawnSync('python3',['-B','scripts/check-r4-cld02.py','receipt',xml],{encoding:'utf8',env:{...process.env,PYTHONOPTIMIZE:'1',PYTHONDONTWRITEBYTECODE:'1'}});
+function verify(ids:string[],extra=''){
+ const {source,imageId}=pytestIdentity,artifacts=pytestArtifact(ids,fullRoster,extra);
+ writeFileSync(join(dir,'collection.json'),artifacts['pytest/collection.json']);
+ writeFileSync(join(dir,'full.xml'),artifacts['pytest/full.xml']);
+ return spawnSync('python3',['-B','scripts/check-r4-cld02.py','receipt',dir,source,imageId],{encoding:'utf8',env:{...process.env,PYTHONOPTIMIZE:'1',PYTHONDONTWRITEBYTECODE:'1'}});
 }
-test('an optimized receipt reader accepts all four completed native comparisons',()=>{
- expect(verify(nativeCases).status).toBe(0);
+test('an optimized receipt reader accepts the completed full native roster',()=>{
+ expect(verify(fullRoster).status).toBe(0);
 });
-test('an optimized receipt reader refuses a skip elsewhere in a suite with all the required comparisons',()=>{
- const r=verify(nativeCases,'<testcase name="other"><skipped/></testcase>');
+test('an optimized receipt reader refuses a skip elsewhere in the full suite',()=>{
+ const r=verify(fullRoster,'<testcase name="other"><skipped/></testcase>');
  expect(r.status).toBe(1);expect(r.stderr).toContain('skipped');
 });
 test('an optimized receipt reader refuses a suite missing a native comparison',()=>{
- const r=verify(nativeCases.slice(1));
- expect(r.status).toBe(1);expect(r.stderr).toContain(nativeCases[0]);
+ const r=verify(fullRoster.filter(id=>!id.endsWith('test_the_legacy_path_gives_the_three_recorded_digests')));
+ expect(r.status).toBe(1);expect(r.stderr).toContain('native JUnit cases differ');
 });
-
 test('refuses an optimized worker interpreter before its archived protocol assertions can be disabled',()=>{
  const r=spawnSync('python3',['-B','scripts/check-r4-cld02.py','guest'],{encoding:'utf8',env:{...process.env,PYTHONOPTIMIZE:'1',PYTHONDONTWRITEBYTECODE:'1'}});
  expect(r.status).toBe(1);expect(r.stderr).toContain('PYTHON_OPTIMIZATION_ENABLED');

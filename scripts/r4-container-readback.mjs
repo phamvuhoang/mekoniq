@@ -27,7 +27,7 @@ export function checkArmContainer(root,entry,bytes,pin){
 
 const nativeSteps=['install','export','build','guest','capture','pytest','receipt'];
 const wireCases=['mobile-no-drive','mobile-cil','arm-no-drive'],legacy=['mobile','arm','world'];
-const required=['host.txt','image.json','image-file-hashes.txt','runtime-manifest.json','qualification-exit.txt','pytest/full.xml','baseline-trees.txt','baseline/legacy-digests.json',
+const required=['host.txt','image.json','image-file-hashes.txt','runtime-manifest.json','qualification-exit.txt','pytest/full.xml','pytest/collection.json','baseline-trees.txt','baseline/legacy-digests.json',
  ...nativeSteps.flatMap(k=>[k+'.log',k+'-exit.txt']),...wireCases.map(k=>'baseline/'+k+'.ndjson'),...legacy.map(k=>'baseline/legacy-'+k+'.npz')];
 const check=(ok,code)=>{if(!ok)throw Error('CLD02_'+code);};
 // The checksum table is produced by sha256sum on the native host. Compare every row against an independently enumerated file.
@@ -54,7 +54,8 @@ export function readNativeContainer(dir,expectedSource,pin){
  check(/^Linux-[^\n]*\bx86_64\b[^\n]* 3\.11\./m.test(guest)&&guest.split('\n').includes('mujoco requirements.lock sha256 '+lock.sha256),'GUEST_IDENTITY');
  const baseline=JSON.parse(read('baseline/legacy-digests.json'));check(baseline.platform?.[0]==='Linux'&&baseline.platform[1]==='x86_64'&&legacy.every(k=>digest.test(baseline.digests?.[k])),'BASELINES');
  check(['qualification',...nativeSteps].every(k=>/^0\n?$/.test(read(k+'-exit.txt').toString())),'PROCESS_EXIT');
- const junit=spawnSync('python3',['-B',fileURLToPath(new URL('./check-r4-cld02.py',import.meta.url)),'receipt','-'],{input:read('pytest/full.xml'),timeout:30000,encoding:'utf8'});
+ const input=JSON.stringify({xml:read('pytest/full.xml').toString(),collection:JSON.parse(read('pytest/collection.json')),sourceCommit,imageId:image.Id});
+ const junit=spawnSync('python3',['-B',fileURLToPath(new URL('./check-r4-cld02.py',import.meta.url)),'receipt','-'],{input,timeout:30000,encoding:'utf8'});
  check(junit.status===0,'PYTEST_RECEIPT');
  return {status:'tested',sourceCommit,platform,imageId:image.Id,result:{file:'cld02/SHA256SUMS',sha256:sha(sums)}};
 }

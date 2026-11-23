@@ -103,11 +103,13 @@ current=("${guest[@]}" --user "$(id -u):$(id -g)" -w "/app/$tool" -v "$root/$too
   -v "$root/scripts/native-sim:/app/scripts/native-sim:ro" -v "$root/robotics/algorithm:/app/robotics/algorithm:ro"
   -v "$root/docs/research:/app/docs/research:ro" -v "$out/baseline:/baseline:ro" -v "$out/pytest:/results:rw"
   -e MUJOCO_PROTOCOL_RESPONSE_DIR=/baseline -e MUJOCO_LEGACY_DIGEST_FILE=/baseline/legacy-digests.json
-  --entrypoint "$python" "$image" -B -m pytest -p no:cacheprovider -q -ra)
+  -e PYTHONPATH=/app/scripts/native-sim
+  -e R4_CLD02_SOURCE="$sha" -e R4_CLD02_IMAGE="$image" -e R4_CLD02_COLLECTION=/results/collection.json
+  --entrypoint "$python" "$image" -B -m pytest -p r4_cld02_roster -p no:cacheprovider -q -ra)
 pytest_status=0
 record pytest perl -e 'alarm 900; exec @ARGV' "${current[@]}" --junitxml=/results/full.xml tests || pytest_status=$?
 [[ -z $(git status --porcelain --untracked-files=all) ]] || die 'CHECKOUT_CHANGED'
 if (( capture_status )); then exit "$capture_status"; fi
 if (( pytest_status )); then exit "$pytest_status"; fi
 # A skipped comparison or empty suite cannot close the native gate.
-record receipt python3 -B scripts/check-r4-cld02.py receipt "$out/pytest/full.xml"
+record receipt python3 -B scripts/check-r4-cld02.py receipt "$out/pytest" "$sha" "$image"

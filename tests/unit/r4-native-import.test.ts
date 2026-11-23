@@ -2,11 +2,13 @@ import {createHash} from 'node:crypto';
 import {mkdirSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {dirname,join} from 'node:path';
+import {fullRoster,pytestArtifact,pytestIdentity} from '../support/r4-pytest-receipt';
 import {afterEach,beforeEach,expect,test} from 'vitest';
 // @ts-expect-error plain ESM script
 import {verifyContainerRecord} from '../../scripts/r4-readback.mjs';
 
-const source='a'.repeat(40),artifactSha256='b'.repeat(64),schemaHash='d'.repeat(64),lock='c'.repeat(64),imageId='sha256:'+'1'.repeat(64);
+const {source,imageId,invocation}=pytestIdentity;
+const artifactSha256='b'.repeat(64),schemaHash='d'.repeat(64),lock='c'.repeat(64);
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
 const cases=['mobile-no-drive','mobile-cil','arm-no-drive'];
 const comparisons=[...cases.map(s=>['test_worker_protocol_regression','test_worker_responses_match_the_pre_fix_wire_bytes['+s+']']),['test_drive_engine','test_the_legacy_path_gives_the_three_recorded_digests']];
@@ -19,7 +21,7 @@ function receipt(){
   'image.json':JSON.stringify({Id:imageId,revision:source,Os:'linux',Architecture:'amd64'}),
   'runtime-manifest.json':JSON.stringify({sourceCommit:source,dirty:false,artifactSha256,schemaHash,entrypoint:'runtime.mjs',portableSimulationTools:{tools:[{id:'mujoco_worker',lock:{path:'robotics/simulation-mujoco/requirements.lock',sha256:lock}}]}}),
   'image-file-hashes.txt':`${artifactSha256}  /app/runtime.mjs\n${lock}  /app/robotics/simulation-mujoco/requirements.lock\n`,
-  'pytest/full.xml':'<testsuites><testsuite tests="4" errors="0" failures="0" skipped="0">'+comparisons.map(([file,name])=>`<testcase classname="tests.${file}" name="${name}"/>`).join('')+'</testsuite></testsuites>',
+  ...pytestArtifact(fullRoster),
   'baseline-trees.txt':'archived trees\n','qualification-exit.txt':'0\n','baseline/legacy-digests.json':JSON.stringify({platform:['Linux','x86_64','3.11.9','3.3.7','2.2.6'],digests:Object.fromEntries(['mobile','arm','world'].map(s=>[s,lock]))}),
  };
  for(const s of ['install','export','build','guest','capture','pytest','receipt']){files[s+'-exit.txt']='0\n';files[s+'.log']='';}
@@ -51,7 +53,24 @@ test.each(['commit','host','image','runtime','worker','failed','skipped','exit',
  if(change==='runtime')f['image-file-hashes.txt']=f['image-file-hashes.txt']!.replace(artifactSha256,lock);
  if(change==='worker')f['pytest/full.xml']=f['pytest/full.xml']!.replace('mobile-cil','unrelated');
  if(change==='class')f['pytest/full.xml']=f['pytest/full.xml']!.replaceAll('test_worker_protocol_regression','test_other');
- if(change==='failed'||change==='skipped')f['pytest/full.xml']=f['pytest/full.xml']!.replace('/>','><'+(change==='failed'?'failure':'skipped')+'/></testcase>');
+ if(change==='failed'||change==='skipped')f['pytest/full.xml']=f['pytest/full.xml']!.replace(/(<testcase [^>]+)\/>/,'$1><'+(change==='failed'?'failure':'skipped')+'/></testcase>');
  if(change==='exit')f['pytest-exit.txt']='1\n';if(change==='missing log')delete f['build.log'];
  expect(await check(f,change==='checksum')).not.toEqual([]);
+});
+
+test.each(['four only','paired truncation','one parametrization missing','duplicate case','other invocation','other image','other source','other collection','nested failed case'])('refuses digest-consistent %s full-suite evidence',async change=>{
+ const f=receipt(),four=comparisons.map(([file,name])=>'tests/'+file+'.py::'+name);
+ if(change==='four only')Object.assign(f,pytestArtifact(four,fullRoster));
+ if(change==='paired truncation')Object.assign(f,pytestArtifact(four));
+ if(change==='one parametrization missing'){
+  const index=fullRoster.findIndex(x=>x.includes('[')&&x.includes('test_bench.py'));
+  Object.assign(f,pytestArtifact(fullRoster.filter((_,i)=>i!==index)));
+ }
+ if(change==='duplicate case')Object.assign(f,pytestArtifact([...fullRoster,fullRoster[0]!]));
+ if(change==='nested failed case')f['pytest/full.xml']=f['pytest/full.xml']!.replace('</testsuite>','<testsuite><testcase name="extra"><failure/></testcase></testsuite></testsuite>');
+ if(change==='other invocation')f['pytest/full.xml']=f['pytest/full.xml']!.replace(invocation,'f'.repeat(32));
+ if(change==='other image')f['pytest/collection.json']=f['pytest/collection.json']!.replace(imageId,'sha256:'+'f'.repeat(64));
+ if(change==='other source')f['pytest/collection.json']=f['pytest/collection.json']!.replace(source,'f'.repeat(40));
+ if(change==='other collection')Object.assign(f,pytestArtifact(fullRoster,four));
+ expect(await check(f)).not.toEqual([]);
 });
