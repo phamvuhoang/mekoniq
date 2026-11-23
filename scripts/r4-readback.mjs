@@ -5,6 +5,8 @@ import {createHash} from 'node:crypto';
 import {checkR4Structure,tableR4,CASES_R4} from './sim-extension-r4.mjs';
 import {boundedEvidenceRead,evidenceInventory,verifyR2bDirectory} from './r2b-readback.mjs';
 import {checkArmContainer,readNativeContainer} from './r4-container-readback.mjs';
+import {verifyWeb07Record} from './r4-web07-readback.mjs';
+export {WEB07_PANELS} from './r4-web07-readback.mjs';
 import {verifyReplayRecord} from './r4-replay-readback.mjs';
 export {WEB10_SAMPLES} from './r4-replay-readback.mjs';
 import {tsImport} from 'tsx/esm/api';
@@ -54,16 +56,9 @@ export async function verifyContainerRecord(root,m,source){
  return out;
 }
 /** WEB07 rows come from the suites' own artifacts (tests/support/web07.ts writes them while the real-run specs execute); WEB08/WEB10 from the replay samples copied beside the record; WEB09 has no measurement yet. */
-export const WEB07_PANELS={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration'};
 export async function verifyWebRecord(root,m){
  const read=p=>{try{return boundedEvidenceRead(root,p);}catch{return null;}},out={WEB07:[],WEB08:[],WEB09:['WEB09_MEASUREMENT_MISSING:frame p95 with a 5,000-sample plot and the belief layer is not measured by any recorder yet'],WEB10:[]};
- for(const [panel,suite] of Object.entries(WEB07_PANELS)){
-  const b=read(`suites/${suite}/screens/web07-${panel}.json`);if(!b){out.WEB07.push('WEB07_ROWS_MISSING:'+panel);continue;}
-  let d;try{d=JSON.parse(b);}catch{out.WEB07.push('WEB07_ROWS_CORRUPT:'+panel);continue;}
-  const got=new Map((d.rows??[]).map(e=>[[e.lang,e.width].join('/'),e]));
-  for(const l of ['vi','ja','en'])for(const w of [390,1024,1440]){const e=got.get(l+'/'+w);
-   if(!e||e.panel!==panel)out.WEB07.push(`WEB07_CELL_UNMEASURED:${panel}/${l}/${w}`);else if(e.axeSeriousCritical!==0||e.reducedMotion!==true||e.horizontalScroll!==false)out.WEB07.push(`WEB07_CELL_FAILED:${panel}/${l}/${w}`);}
- }
+ out.WEB07=verifyWeb07Record(read,m);
  Object.assign(out,await verifyReplayRecord(read,m));
  return out;
 }

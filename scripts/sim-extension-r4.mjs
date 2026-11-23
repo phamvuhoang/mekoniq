@@ -7,7 +7,7 @@ import {qualify,checkQualification} from './irsim-qualification.mjs';
 import {checkR2bExecutedFiles} from './sim-extension-r2b.mjs';
 const V=(id,files,repo='source')=>({id,repo,kind:'vitest',files});
 // one spec per launcher (its pairing code is one-use); alternate ports so a developer's running Lab on 4175/4176 is never touched; the same flags each spec's header documents
-const E=(id,spec,sameOrigin=true)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs',...sameOrigin?['--same-origin']:[],'--provider','mujoco','--mujoco-mobile','--ui-port','42455','--runtime-port','42456',spec]});
+const E=(id,spec,sameOrigin=true)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','--production-ui',...sameOrigin?['--same-origin']:[],'--provider','mujoco','--mujoco-mobile','--ui-port','42455','--runtime-port','42456',spec]});
 export const SUITES_R4=[
  V('drv-contracts',['tests/contracts/drive-contracts.test.ts','tests/contracts/control-profile-admission.test.ts','tests/unit/drive-io.test.ts','tests/unit/drive-fixture.test.ts','tests/unit/study-drive-admission.test.ts']),
  V('drv-model',['tests/unit/mock-drive.test.ts','tests/unit/mujoco-drive.test.ts','tests/unit/drive-experiments.test.ts']),

@@ -2,7 +2,7 @@
 import {afterAll,expect,test} from 'vitest';
 import nominalCell from '../fixtures/control/r4-cell-nominal-report.json';
 import {spawnSync} from 'node:child_process';
-import {mkdirSync,mkdtempSync,rmSync,writeFileSync} from 'node:fs';
+import {mkdirSync,mkdtempSync,rmSync,writeFileSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -107,14 +107,21 @@ test('CLD02 refuses a count-only import even with green totals and a current wra
  const c=container();expect((await verifyContainerRecord(c.root,c.m,SRC)).cld02).not.toEqual([]);
 });
 const PANELS:Record<string,string>={control:'e2e-control',faults:'e2e-faults',tray:'e2e-tray',belief:'e2e-belief',calibration:'e2e-calibration'};
+const TARGETS:Record<string,string[]>={control:['control-bench'],faults:['fault-evidence'],tray:['tray-hint'],belief:['belief-legend'],calibration:['calibration-record','calibration-fitted','calibration-residuals','calibration-domain','calibration-plot']};
 const web=(o:{drop?:string;row?:Record<string,unknown>;samples?:string[];manifest?:Record<string,unknown>;catalog?:Record<string,unknown>}={})=>{
  const root=tmp();
  for(const [panel,suite] of Object.entries(PANELS)){
-  const rows=['vi','ja','en'].flatMap(lang=>[390,1024,1440].map(width=>({panel,lang,width,axeSeriousCritical:0,axeIds:[],reducedMotion:true,horizontalScroll:false,...panel===o.drop&&lang==='ja'&&width===390?o.row:{}})));
-  if(panel===o.drop&&!o.row)continue;put(root,`suites/${suite}/screens/web07-${panel}.json`,{schemaVersion:1,panel,rows});
+  const base=`suites/${suite}/screens/`,files=Object.entries({'index.html':'<script type="module" src="/assets/main.js"></script>','source-runtime.lock.json':JSON.stringify({sourceCommit:SRC,...PIN,dirty:false}),'assets/main.js':'document.body.textContent="production fixture";'}).map(([path,bytes])=>{const ref=put(root,base+'production-ui/'+path,bytes);return {path,sha256:ref.sha256,bytes:Buffer.byteLength(bytes)};});
+  const receipt=put(root,base+'production-ui.json',{schemaVersion:1,kind:'lab-production-ui',labCommit:LAB,labDirty:false,sourceCommit:SRC,runtimeArtifact:PIN.artifactSha256,schemaHash:PIN.schemaHash,files});
+  if(panel===o.drop&&!o.row)continue;
+  for(const state of panel==='calibration'?['populated','empty','error']:['populated']){
+   const rows=['vi','ja','en'].flatMap(lang=>[390,1024,1440].map(width=>({panel,lang,width,axeSeriousCritical:0,axeIds:[],reducedMotion:true,horizontalScroll:false,populated:state==='populated',productionSha256:receipt.sha256,...panel===o.drop&&lang==='ja'&&width===390?o.row:{}})));
+   const requiredTestIds=state==='populated'?TARGETS[panel]!:[`calibration-${state}`];
+   put(root,base+`web07-${panel}${state==='populated'?'':'-'+state}.json`,{schemaVersion:1,panel,state,testId:requiredTestIds[0],requiredTestIds,productionSha256:receipt.sha256,rows});
+  }
  }
  const ids=o.samples??['drive-fault','belief-recovery'],replays=ids.map(id=>{const man={runId:'run-'+id,provenance:{calibration:'not_calibrated',accepted:false},...o.manifest};const ref=put(root,`inputs/web/replays/${id}/manifest.json`,man);return {id,manifestSha256:ref.sha256,recording:'run-'+id,provenance:'R4 harness recording; display only; accepted:false; not_calibrated',...o.catalog};});
- const ref=put(root,'inputs/web/replays/catalog.json',{schemaVersion:1,replays});return {root,m:{inputs:{webSamples:ref}}};};
+ const ref=put(root,'inputs/web/replays/catalog.json',{schemaVersion:1,replays});return {root,m:{identity:{before:{sourceCommit:SRC}},lab:{commit:LAB,pin:{sourceCommit:SRC,...PIN}},inputs:{webSamples:ref}}};};
 test('web record: WEB07 rows come from the real-run specs (5 panels × 3 languages × 3 widths, axe 0, reduced motion, no scroll); WEB10 samples hash to the catalog, say not_calibrated and accepted:false; WEB09 is not measured yet',async()=>{
  const a=web(),ra=await verifyWebRecord(a.root,a.m);expect(ra.WEB07).toEqual([]);expect(ra.WEB08.length).toBeGreaterThan(0);expect(ra.WEB10).toContain('WEB10_SAMPLE_FAILED:belief-recovery');expect(ra.WEB09[0]).toMatch(/^WEB09_MEASUREMENT_MISSING/);
  const b=web({drop:'tray'});expect((await verifyWebRecord(b.root,b.m)).WEB07).toEqual(['WEB07_ROWS_MISSING:tray']);
@@ -124,6 +131,35 @@ test('web record: WEB07 rows come from the real-run specs (5 panels × 3 languag
  const f=web({samples:['drive-fault']}),rf=await verifyWebRecord(f.root,f.m);expect(rf.WEB10).toContain('WEB10_SAMPLE_MISSING:belief-recovery');expect(rf.WEB08.length).toBeGreaterThan(0);
  const i=web({samples:['drive-fault']});i.m.inputs.webSamples={...i.m.inputs.webSamples,sha256:'0'.repeat(64)};expect((await verifyWebRecord(i.root,i.m)).WEB10).toEqual(['WEB_RECORD_CORRUPT']);
  const j=web();expect((await verifyWebRecord(j.root,{inputs:{}})).WEB10).toEqual(['WEB_RECORD_MISSING:replay samples']);
+});
+test('WEB07 refuses measurements without a production build or with only the calibration badge',async()=>{
+ const a=web();rmSync(join(a.root,'suites/e2e-control/screens/production-ui.json'),{force:true});
+ expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_PRODUCTION_MISSING:control');
+ const b=web(),path='suites/e2e-calibration/screens/web07-calibration.json',rows=JSON.parse(readFileSync(join(b.root,path),'utf8'));
+ put(b.root,path,{...rows,testId:'control-model-maturity',requiredTestIds:['control-model-maturity']});
+ expect((await verifyWebRecord(b.root,b.m)).WEB07).toContain('WEB07_TARGET_INVALID:calibration');
+});
+test('the five runtime WEB07 suites explicitly select production UI',()=>{
+ for(const id of Object.values(PANELS))expect(SUITES_R4.find((s:{id:string})=>s.id===id).command).toContain('--production-ui');
+});
+test('WEB07 binds a clean production build to both commits, the runtime pin and the stored asset bytes',async()=>{
+ for(const changed of [{labCommit:'e'.repeat(40)},{sourceCommit:'e'.repeat(40)},{labDirty:true},{runtimeArtifact:'e'.repeat(64)}]){
+  const a=web(),path='suites/e2e-control/screens/production-ui.json',doc=JSON.parse(readFileSync(join(a.root,path),'utf8'));put(a.root,path,{...doc,...changed});
+  expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_PRODUCTION_INVALID:control');
+ }
+ const a=web();put(a.root,'suites/e2e-control/screens/production-ui/assets/main.js','substituted');
+ expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_PRODUCTION_INVALID:control');
+ const b=web(),base='suites/e2e-control/screens/',path=base+'production-ui.json',doc=JSON.parse(readFileSync(join(b.root,path),'utf8'));
+ const index='<script src="/@vite/client"></script><script src="/assets/main.js"></script>',ref=put(b.root,base+'production-ui/index.html',index);
+ doc.files=doc.files.map((f:{path:string})=>f.path==='index.html'?{path:f.path,sha256:ref.sha256,bytes:Buffer.byteLength(index)}:f);put(b.root,path,doc);
+ expect((await verifyWebRecord(b.root,b.m)).WEB07).toContain('WEB07_PRODUCTION_INVALID:control');
+});
+test('WEB07 keeps populated, empty and error calibration sweeps separate, and refuses rows from another build',async()=>{
+ const a=web();rmSync(join(a.root,'suites/e2e-calibration/screens/web07-calibration-empty.json'));
+ expect((await verifyWebRecord(a.root,a.m)).WEB07).toContain('WEB07_ROWS_MISSING:calibration-empty');
+ for(const change of [{populated:false},{productionSha256:'f'.repeat(64)}]){
+  const b=web({drop:'control',row:change});expect((await verifyWebRecord(b.root,b.m)).WEB07).toContain('WEB07_CELL_FAILED:control/ja/390');
+ }
 });
 
 test('REG05: no R2b record or mock regression is missing; an R2b record of another commit, or a mock regression of another commit, fails',async()=>{
