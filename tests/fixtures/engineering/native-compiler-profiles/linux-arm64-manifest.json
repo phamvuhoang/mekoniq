@@ -1,0 +1,91 @@
+{
+  "compiler": {
+    "id": "engineering-gazebo-canonical",
+    "version": "1"
+  },
+  "inputHash": "9b85b4e8ca0173a57b70d7cf20e594b0760b4480f64bc39f84b2df77d1a08f23",
+  "manifestHash": "95576339954662f4ee1229304215dc9c00d0beecfdc07679ed4b2e4bcd77f5e5",
+  "map": {
+    "mapId": "eng-serve-serve-3d",
+    "mapRevision": "1"
+  },
+  "outputs": [
+    {
+      "path": "bindings.json",
+      "sha256": "bebee712c53438fe27aa34f50963ac4332d507849f0c70bbf52f10c3021dd733"
+    },
+    {
+      "path": "controllers/amr-1.yaml",
+      "sha256": "6471f1f779271303840b6ded6b251808e0148d54c87931a096654b3d4b5aa743"
+    },
+    {
+      "path": "engineering-project.json",
+      "sha256": "b32c6d4d96edf0a82a9dae58ab417804c6677ced642372e4e4e070eb05d84abf"
+    },
+    {
+      "path": "map.identity.json",
+      "sha256": "0733d0b318db0a6c40b151ab21bb2bc04eea21d0ae09d96e3c655e9b095f0304"
+    },
+    {
+      "path": "map.pgm",
+      "sha256": "a17d6b1b022e982123a94a5aecbdb7b91d2fea5d709f68dc46337c7c75e07aba"
+    },
+    {
+      "path": "map.yaml",
+      "sha256": "160f68bfa681bc856b03efe99c03b0a3675940af451c8b5bbfdba62460cf711f"
+    },
+    {
+      "path": "native-mapping.json",
+      "sha256": "44e44bde4cc708c4821840e600212e6b0ad83c80468db0197390895a7dcb22ab"
+    },
+    {
+      "path": "navigation-scene.json",
+      "sha256": "f95f5afb6bcc44dbb6e8f12a9cb83b8a3d480b1e6bb891429f29ad8d4f142ceb"
+    },
+    {
+      "path": "physical-model.json",
+      "sha256": "5fecddde81df06fbb642359752a82cd0745cca6468fe9e5db8dccc28085257c8"
+    },
+    {
+      "path": "robots/amr-1.urdf",
+      "sha256": "69a350c3f5d9b1ab23ea8613294cc1d550f9fd3e073375c5b3e98d7f0de01400"
+    },
+    {
+      "path": "runtime-project.json",
+      "sha256": "531b2c54c15c1d225d4ab13b316d87acb450ec55efc0333edeec0646e6258bbb"
+    },
+    {
+      "path": "scene-index.json",
+      "sha256": "8699158158640a2ab59bd9050a4ce726ce7490b48d391f919566c8a97dbaf2e7"
+    },
+    {
+      "path": "world.sdf",
+      "sha256": "8c8b2a42cc5bf0f2d227e1fdb958c0ef16fdf5196dbff11cc681d80d70fc4485"
+    }
+  ],
+  "robots": [
+    {
+      "baseFrame": "chassis/base",
+      "entityId": "amr-1",
+      "footprint": {
+        "max": [
+          0.3,
+          0.27
+        ],
+        "min": [
+          -0.40534674241424906,
+          -0.27
+        ]
+      },
+      "namespace": "amr_1",
+      "sensorFrame": "lidar/head",
+      "spawn": {
+        "x": 2,
+        "y": 1.5,
+        "yaw": 0,
+        "z": 0.09
+      }
+    }
+  ],
+  "schemaVersion": 1
+}
