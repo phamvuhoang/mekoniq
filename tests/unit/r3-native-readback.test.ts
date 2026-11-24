@@ -1,3 +1,4 @@
+import {engineeringPython} from '../support/engineering-python';
 import {expect,test} from 'vitest';
 import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
@@ -15,7 +16,7 @@ type Doc=Record<string,any>; // eslint-disable-line @typescript-eslint/no-explic
 const commit='1'.repeat(40),sha=(b:Buffer|string)=>createHash('sha256').update(b).digest('hex'),hex='a'.repeat(64);
 async function engineering(){
  const root=await mkdtemp(join(tmpdir(),'r3-engineering-fixture-')),put=async(p:string,v:unknown)=>{await mkdir(join(root,p,'..'),{recursive:true});await writeFile(join(root,p),typeof v==='string'?v:JSON.stringify(v));};
- const p=spawnSync(resolve('.venv-irsim/bin/python'),['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',join(root,'bundle')],{cwd:resolve('robotics/simulation'),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});expect(p.status,p.stderr).toBe(0);
+ const p=spawnSync(engineeringPython,['-m','compiler.engineering_native','--project',resolve('robotics/simulation-3d/fixtures/serve-3d-v1/serve-3d-project.json'),'--out',join(root,'bundle')],{cwd:resolve('robotics/simulation'),encoding:'utf8',env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'},timeout:15000});expect(p.status,[p.error?.message,p.signal,p.stderr].filter(Boolean).join(' ')).toBe(0);
  await mkdir(join(root,'rosbag2'));const db=new DatabaseSync(join(root,'rosbag2/observations.db3'));db.exec('CREATE TABLE topics(id INTEGER PRIMARY KEY,name TEXT); CREATE TABLE messages(id INTEGER PRIMARY KEY,topic_id INTEGER,timestamp INTEGER,data BLOB)');let id=0;for(const [i,topic]of ENGINEERING_TOPICS.entries()){db.prepare('INSERT INTO topics VALUES(?,?)').run(i,topic);for(let j=0;j<11;j++)db.prepare('INSERT INTO messages VALUES(?,?,?,?)').run(++id,i,1_000_000_000+j*100_000_000,Buffer.from('synthetic CDR fixture'));}db.close();
  const bag=await readEngineeringBag(join(root,'rosbag2')),clockMapping=[{providerSimNs:'1000000000',sourceTick:0,receiveMonotonicNs:'100'},{providerSimNs:'2000000000',sourceTick:50,receiveMonotonicNs:'1000000100'}];
  const inventory:Doc={id:'engineering-amd64',available:true,reasonCodes:[],installation:'native_apt',headless:true,image:null,profileSha256:hex,inventorySha256:hex,actual:{platform:'linux',arch:'amd64',os:'ubuntu24.04',packages:{ros:'fixture'},digests:{'/fixture':hex},aptProvenance:{sources:{'/fixture':hex}},runtime:{rosDistro:'jazzy',amentPrefixes:[],overlayManifests:{},pythonPath:'',libraryPath:'',gazeboPluginPath:'',executables:Object.fromEntries(['ros2','gz','python3'].map(k=>[k,{path:'/fixture/'+k,sha256:hex}]))}}};

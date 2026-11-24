@@ -102,9 +102,29 @@ test('success: cup-pick then cup-place complete; the cup is taken only once the 
   expect(JSON.parse(JSON.stringify(h.state))).toEqual(h.state);
 });
 
-test('the legacy contact command and state trace retains its pre-two-stage digest',()=>{
- const h=make();h.drive('p1','cup-pick');h.drive('p2','cup-place');
- expect(createHash('sha256').update(JSON.stringify({trace:h.trace,state:h.state,reports:h.reports})).digest('hex')).toBe('e46f830d6ee9136954199fa087514657977fe6a5df8b1317ae9420068b946b04');
+test('the complete legacy pick/place trace matches a pre-two-stage v1 reference profile', () => {
+  const h = make(); h.drive('p1', 'cup-pick'); h.drive('p2', 'cup-place');
+  const reference = [
+    'e46f830d6ee9136954199fa087514657977fe6a5df8b1317ae9420068b946b04',
+    'de8dbb169535faafb4d4f8b8a86e78e6834b50fc21138aae9214d5d0b290659d',
+  ];
+  const output = { trace: h.trace, state: h.state, reports: h.reports };
+  const digest = (value: typeof output) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  expect(reference).toContain(digest(output));
+  for (const field of ['command', 'grip', 'report', 'TCP']) {
+    const changed = structuredClone(output);
+    if (field === 'report') changed.reports.pop();
+    else if (field === 'TCP') changed.state.trace[0]!.tcp[0] += 1e-12;
+    else {
+      const index = field === 'command' ? 0 : changed.trace.findIndex(row => JSON.parse(row)[3]?.phase === 'closing');
+      expect(index).toBeGreaterThanOrEqual(0);
+      const tick = JSON.parse(changed.trace[index]!);
+      if (field === 'command') tick[1][0] += 1e-12;
+      else tick[3].phase = 'opening';
+      changed.trace[index] = JSON.stringify(tick);
+    }
+    expect(reference, field).not.toContain(digest(changed));
+  }
 });
 test('a capture target holds until stable measured contact and custody, then secures before lift and opens fully at release',()=>{
  const h=make({}, {...PROGRAMS,contact:{...CONTACT,captureM:0.07}});

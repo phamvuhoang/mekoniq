@@ -69,6 +69,14 @@ Thiếu đầu vào này thì các ca CAL ghi `not_run`. G-CAL1 nằm ngoài đi
 
 R4 chỉ được gọi là đầy đủ khi G-DRV1, G-CIL1, G-TUNE1, G-FLT1, G-TRAY1, G-BEL1, G-REC1, G-WEB2, G-REG5 và G-CLOUD2 đều `tested`.
 
+### General platform CI inputs and v1 reference profiles
+
+The platform workflow checks the Source suite selectors against published Lab commit `65a4593ba728db32a54dfb5d2005f70816422113`. Final R4 qualification checks the current clean Source and Lab commits, the Lab runtime pin and all selected suites together. From Source, `bash scripts/restore-platform-ci-inputs.sh` restores the published regression corpus into a fresh private directory and prints the two environment settings for subsequent tests after verifying the catalog. Hosted integration uses `scripts/owned-source-ci.mjs` to start and clean up its own database.
+
+Three historical v1 regressions compare complete byte hashes. The legacy mock pick/place trace has 485 commands and six reports at both pre-two-stage Source `812d94bf` and Source `e000dba0`. Nine TCP coordinates differ between the two observed traces. Darwin arm64 Node 24.22.2 reproduced the frozen trace. A diagnostic replay with Node 20.18.0 reproduced the hosted x64 Node 24.22.2 trace SHA exactly. The project toolchain remains Node 24.22.2. [Hosted platform run](https://github.com/phamvuhoang/mekoniq/actions/runs/45295030940)
+
+For xArm, the two measured profiles differ in the solved program table and its manifest row. For native navigation, five URDF joint origins differ by one representable pitch step. Each output must match its own complete program/manifest or URDF/manifest pair and every other declared file. A third profile fails verification. The checks establish historical compiler and mock compatibility. Native engine results, physical qualification and human acceptance have separate evidence requirements. [Linux and Darwin reproductions](../implementation/evidence/virtual-commissioning/v07-closeout-2026-11-20/qualification-inspection.md)
+
 ### Native image handoff and CLD03
 
 A successful native workflow produces two artifacts with the same Source SHA, run ID and attempt. The small `r4-cld02-…` artifact is the qualification inventory. The separate `r4-image-…` artifact contains `image.tar` and `handoff.json`. Before loading, compare the archive SHA-256 and the native `image.json` SHA-256 to the handoff. After `docker load --input image.tar`, inspect the recorded `imageId` and check the Linux/amd64 platform and the OCI revision against the native record. Keep that configuration ID when tagging the release. Publication and deployment require the operator's release order. Deploy the immutable Artifact Registry repository digest. After publication the local Docker daemon must resolve that digest to the same configuration ID as CLD02.

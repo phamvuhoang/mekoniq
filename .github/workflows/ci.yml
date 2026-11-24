@@ -3,30 +3,70 @@ on: [push, pull_request]
 jobs:
   verify:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: source
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      ENGINEERING_PYTHON: ${{ github.workspace }}/source/.venv/bin/python
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: source
+      - name: Check out general CI selector compatibility input
+        uses: actions/checkout@v4
+        with:
+          repository: phamvuhoang/mekoniq-lab
+          ref: 65a4593ba728db32a54dfb5d2005f70816422113
+          path: lab
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: source/package.json
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version-file: source/.node-version
           cache: pnpm
-      # TS integration exercises the real Python compiler/worker output through the canonical runtime validator.
+          cache-dependency-path: source/pnpm-lock.yaml
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt -e robotics/agent
       - run: pnpm install --frozen-lockfile
-      - run: pnpm supabase:start
+      - name: Restore and verify the published regression corpus
+        run: bash scripts/restore-platform-ci-inputs.sh >> "$GITHUB_ENV"
       - run: pnpm contracts:check && pnpm typecheck && pnpm lint && pnpm build
-      - run: pnpm test:unit && pnpm test:contracts && pnpm test:adapters && pnpm test:integration
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: failures
-          path: test-results/
-      - run: pnpm supabase:stop
+      - run: pnpm test:unit
+      - run: pnpm test:contracts
+      - run: pnpm test:adapters
+      - name: Run integration with its owned database and cleanup receipt
+        env:
+          MEKONIQ_OWNED_CI_STATE: ${{ runner.temp }}/platform-db-owner.json
+        run: |
+          node scripts/owned-source-ci.mjs -- pnpm test:integration -- tests/integration \
+            --reporter=default --reporter=junit --outputFile.junit="$RUNNER_TEMP/platform-integration.xml"
+      - name: Summarize integration results
         if: always()
+        # Raw owned-service and child logs stay in the private runner temp directory.
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+          import os
+          import xml.etree.ElementTree as ET
+          report = Path(os.environ['RUNNER_TEMP']) / 'platform-integration.xml'
+          if report.is_file():
+              for suite in ET.parse(report).getroot().iter('testsuite'):
+                  counts = {key: int(suite.attrib[key]) for key in ('tests', 'failures', 'errors', 'skipped')}
+                  print(suite.get('name'), counts)
+                  for case in suite.findall('testcase'):
+                      if case.find('failure') is not None or case.find('error') is not None:
+                          print('  Failed', case.get('name'))
+          else:
+              print('No integration JUnit report was produced.')
+          PYTHON
   python:
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     # Python robot executor, hardware profile validation, the cross-runtime schema contract and the pure-Python simulation tooling (world compiler,
     # bridge protocol, actors/metrics, collision). Target runtime is 3.12. robotics/simulation/tests/test_restaurant.py skips itself here: the Gazebo/Nav2
     # scenarios need Docker and ROS 2 Jazzy/Gazebo (see docs/implementation/evidence/W06-T04.md for the command); a skip is never a pass of that gate.

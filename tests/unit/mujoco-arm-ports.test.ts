@@ -2,7 +2,7 @@ import * as workerClient from '../../packages/lab-runtime/src/v2/simulation3d/wo
 // M06 step 2: mujocoArmPorts against the real MuJoCo worker session over a fake cell engine (tests/support/mujoco_doubles/fake_cell_plant.py). No MuJoCo is imported.
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { existsSync, lstatSync, readdirSync } from 'node:fs';
+import { lstatSync, readdirSync } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -24,7 +24,9 @@ import { MUJOCO_SLOT, type MujocoRuntimeOptions } from '../../packages/lab-runti
 import { validateTwinSampleV2, type LabProjectV2 } from '../../packages/lab-runtime/src/v2/contracts';
 import { projectSamples } from '../../packages/lab-runtime/src/v2/twin-projection';
 
-const python = resolve('.venv-mujoco/bin/python'), workerRoot = resolve('robotics/simulation-mujoco'), double = resolve('tests/support/mujoco_doubles/fake_cell_plant.py');
+import { engineeringPython } from '../support/engineering-python';
+
+const workerRoot = resolve('robotics/simulation-mujoco'), double = resolve('tests/support/mujoco_doubles/fake_cell_plant.py');
 const FX = join(workerRoot, 'fixtures', XARM_FIXTURE_ID), fixture = readXArmFixture(workerRoot), oracle = loadOracleProfile().profile.mujocoArm!;
 const project = async () => JSON.parse(await readFile(join(FX, 'coffee-cell-project.json'), 'utf8')) as LabProjectV2;
 const dirs: string[] = [], open: CoffeePlantPorts[] = [];
@@ -33,7 +35,7 @@ afterEach(async () => { for (const p of open.splice(0)) await p.close().catch(()
 const command = (id: string, program: 'cup-pick' | 'cup-place'): CellCommand => ({ runId: 'run-a', commandId: id, deviceId: 'arm-1', controlEpoch: 1, expiresAt: '2026-11-06T00:00:00Z', recipeRevision: 1,
   programRef: { id: program, hash: 'a'.repeat(64) }, payloadHash: 'a'.repeat(64), capability: 'start_job', payload: { jobId: 'j' } });
 async function runtime(mode = 'ok', at = 0): Promise<MujocoRuntimeOptions> {
-  return { python, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), engineVersion: '3.17.0', maxActiveRuns: 1, entry: [double, mode, String(at)] };
+  return { python: engineeringPython, workerRoot, schemaDir: resolve('packages/contracts/schemas'), lockDigest: await lockDigestOf(join(workerRoot, 'requirements.lock')), engineVersion: '3.17.0', maxActiveRuns: 1, entry: [double, mode, String(at)] };
 }
 const fresh = () => ({ stationId: 'coffee-pickup', cellId: 'cell-1', armId: 'arm-1', registered: false, sessions: {}, workload: [{ cupId: 'cup-1' }, { cupId: 'cup-2' }], plant: MockCoffeePlant.initial('cell-1'),
   arm: MockArmPlant.initial('arm-1'), trays: {} } as unknown as CoffeeState);
@@ -79,7 +81,7 @@ describe('mujocoProgramSet', () => {
   });
 });
 
-describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', () => {
+describe('mujocoArmPorts over a fake cell engine', () => {
   test('each advance sends exactly one step (the tick advances by one); a nozzle cup is placed once on the stand, a delivered cup is parked once', async () => {
     const { p, st, directory, log } = await ports(await runtime());
     expect(st.arm.plantId).toBe('mujoco_arm'); expect(st.arm.q).toEqual(fixture.programs.waypoints.home);
@@ -228,8 +230,45 @@ describe.skipIf(!existsSync(python))('mujocoArmPorts over a fake cell engine', (
   }, 60_000);
 });
 
- test('shared MuJoCo slot remains held while the arm worker is closing',async()=>{
-  const spawn=workerClient.spawnMujocoWorker;let enter!:()=>void,release!:()=>void;const reached=new Promise<void>(r=>enter=r),wait=new Promise<void>(r=>release=r);
-  const spy=vi.spyOn(workerClient,'spawnMujocoWorker').mockImplementation(async o=>{const w=await spawn(o);return {...w,close:async reason=>{enter();await wait;await w.close(reason);}};});
-  try{const {p}=await ports(await runtime());const closing=p.close();await reached;try{expect(activeRunCount('mujoco_3d')).toBe(1);}finally{release();await closing;}}finally{release();spy.mockRestore();}
- });
+function holdRunClose() {
+  const spawn = workerClient.spawnMujocoWorker;
+  let enter!: () => void, release!: () => void;
+  const reached = new Promise<void>(resolve => { enter = resolve; });
+  const hold = new Promise<void>(resolve => { release = resolve; });
+  const spy = vi.spyOn(workerClient, 'spawnMujocoWorker').mockImplementation(async options => {
+    const worker = await spawn(options);
+    return { ...worker, close: async reason => {
+      if (reason === 'run closed') { enter(); await hold; }
+      await worker.close(reason);
+    } };
+  });
+  return { reached, release, restore: () => spy.mockRestore() };
+}
+
+test('shared MuJoCo slot remains held while the arm worker is closing', async () => {
+  const hold = holdRunClose();
+  try {
+    const { p } = await ports(await runtime());
+    const closing = p.close();
+    try {
+      const first = await Promise.race([hold.reached.then(() => 'held'), closing.then(() => 'closed')]);
+      expect(first).toBe('held');
+      expect(activeRunCount('mujoco_3d')).toBe(1);
+    } finally { hold.release(); await closing; }
+    expect(activeRunCount('mujoco_3d')).toBe(0);
+  } finally { hold.release(); hold.restore(); }
+});
+
+test.each(['missing interpreter', 'exit during create'])('close hold preserves create failure and releases the slot on %s', async mode => {
+  const rt = await runtime('quit', 1);
+  if (mode === 'missing interpreter') {
+    const dir = await mkdtemp(join(tmpdir(), 'missing-python-')); dirs.push(dir); rt.python = join(dir, 'absent');
+  }
+  const hold = holdRunClose();
+  const failed = ports(rt).then(() => 'unexpected success', (error: Error) => error.message);
+  try {
+    const error = await Promise.race([failed, hold.reached.then(() => 'create cleanup held')]);
+    expect(error).toBe('MUJOCO_ARM_CREATE_FAILED: ' + (mode === 'missing interpreter' ? 'WORKER_SPAWN_FAILED' : 'WORKER_EXITED'));
+    expect(activeRunCount('mujoco_3d')).toBe(0);
+  } finally { hold.release(); await failed; hold.restore(); }
+});
