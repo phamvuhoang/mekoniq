@@ -3,8 +3,8 @@ import {expect,test} from 'vitest';
 import {artifactDispositionsFromGroups,CAMPAIGNS} from '../../scripts/r4-readback.mjs';
 // @ts-expect-error plain ESM script without types
 import {CASES_R4} from '../../scripts/sim-extension-r4.mjs';
-test('REC06 requires verified recovery campaign input and an executed native suite',()=>{
- expect(CASES_R4.REC06).toMatchObject({input:'recoveryCampaign',suites:['rec-unit','rec-campaign-engine']});
+test('REC06 requires the verified campaign, unit, native and browser request suites',()=>{
+ expect(CASES_R4.REC06).toMatchObject({input:'recoveryCampaign',suites:['rec-unit','rec-campaign-engine','e2e-recovery-request']});
  expect(CAMPAIGNS.recoveryCampaign.ids).toEqual(['mj-cell-recovery-v2']);
  for(const [issues,status] of [[['RECOVERY_CAMPAIGN_MISSING'],'not_run'],[['RECOVERY_CAMPAIGN_CORRUPT'],'failed'],[[],'tested']] as const)
   expect(artifactDispositionsFromGroups({recoveryCampaign:issues}).REC06.status).toBe(status);

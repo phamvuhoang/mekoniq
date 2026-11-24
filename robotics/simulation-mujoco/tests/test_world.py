@@ -185,19 +185,63 @@ def test_registered_force_clears_on_native_step_exception(monkeypatch):
 def test_world_control_context_is_opt_in_and_missing_or_changed_stage_refuses_before_mutation(session):
  start_world(session);req=world_step(session);req['payload']['worldControl']={'version':1,'program':None,'attachmentProxyPropId':None,'movementInterlocked':False,'stopLatched':False}
  r=session.handle(req);assert not r['ok'] and r['error']['code']=='WORLD_CONTROL_INVALID' and session.engine.total_substeps==10
-def test_cup_nudge_is_a_registered_push_that_moves_the_cup_but_keeps_it_on_its_support():
- # R4.4 (R4-D33): the push must exceed the grasp tolerance observed in the study (a few mm each side of the open gripper) and must not tip or drop the cup; a no-op or a fall is not a nudge
- e=WorldEngine(*inputs());home=load('programs.json')['programs']['waypoints']['home']
- e.step(home,.0889,[('cup-1',{'position':[.49,0,.151],'quaternionXyzw':[0,0,0,1]})],0,0)
- for _ in range(50):r=e.step(home,.0889,[],0,0)
- before=r['world']['props'][0]['position']
- r=e.step(home,.0889,[],0,0,{'presetId':'world-cup-nudge-v1','targetId':'cup-1'})
- for _ in range(100):r=e.step(home,.0889,[],0,0)
- p=r['world']['props'][0];moved=float(np.hypot(p['position'][0]-before[0],p['position'][1]-before[1]))
- print('NUDGE_MM',round(moved*1000,2),p['restingOn'],p['position'][2]-before[2])
- assert .006<moved<.03 and p['restingOn']=='nozzle-stand' and abs(p['position'][2]-before[2])<.001
- assert np.count_nonzero(e.data.xfrc_applied)==0
- e.close()
+
+
+def test_cup_nudge_v1_applies_one_registered_tick_and_reports_the_native_outcome(monkeypatch):
+    home = load('programs.json')['programs']['waypoints']['home']
+    pushed, control = WorldEngine(*inputs()), WorldEngine(*inputs())
+    try:
+        for engine in (pushed, control):
+            engine.step(home, .0889, [('cup-1', {'position': [.49, 0, .151], 'quaternionXyzw': [0, 0, 0, 1]})], 0, 0)
+            for _ in range(50):
+                engine.step(home, .0889, [], 0, 0)
+        cup = pushed.arm.prop['cup-1']
+        body = cup['body']
+        stand = pushed.model.geom(pushed.names['arm']['supports']['nozzle-stand']).id
+
+        def check_outcome(world):
+            prop = world['props'][0]
+            assert prop['propId'] == 'cup-1'
+            np.testing.assert_allclose(prop['position'], pushed.data.xpos[body], rtol=0, atol=1e-12)
+            touching_stand = any(
+                c.exclude == 0 and {c.geom1, c.geom2} == {cup['geom'], stand}
+                for c in pushed.data.contact[:pushed.data.ncon]
+            )
+            speed = np.linalg.norm(pushed.data.qvel[cup['qvel']:cup['qvel'] + 3])
+            assert prop['restingOn'] == ('nozzle-stand' if touching_stand and speed < .01 else None)
+
+        check_outcome(pushed.last)
+        control_body = control.arm.prop['cup-1']['body']
+        np.testing.assert_array_equal(pushed.data.xpos[body], control.data.xpos[control_body])
+        control.step(home, .0889, [], 0, 0)
+
+        native_step = mujoco.mj_step
+        unloaded = np.zeros_like(pushed.data.xfrc_applied)
+        loaded = unloaded.copy()
+        loaded[body] = [14.4, 0, 0, 0, 0, 0]
+        substeps = 0
+
+        def observe_step(model, data):
+            nonlocal substeps
+            np.testing.assert_array_equal(data.xfrc_applied, loaded if substeps < 10 else unloaded)
+            native_step(model, data)
+            substeps += 1
+
+        monkeypatch.setattr(mujoco, 'mj_step', observe_step)
+        pulse = {'presetId': 'world-cup-nudge-v1', 'targetId': 'cup-1'}
+        row = pushed.step(home, .0889, [], 0, 0, pulse)
+        assert substeps == 10
+        np.testing.assert_array_equal(pushed.data.xfrc_applied, unloaded)
+        assert pushed.data.xpos[body, 0] > control.data.xpos[control_body, 0]
+        check_outcome(row['world'])
+        for _ in range(100):
+            row = pushed.step(home, .0889, [], 0, 0)
+        assert substeps == 1010
+
+        check_outcome(row['world'])
+    finally:
+        pushed.close()
+        control.close()
 
 
 def test_pick_rig_birth_witness_reads_native_pose_before_any_integration():
