@@ -50,7 +50,7 @@ try{
  await writeFile(receipt,JSON.stringify({version:1,projectId,containerId,database:'postgres',host:'127.0.0.1',port:57422,createdForTests:true,unrelatedServicesModified:false}),{mode:0o600});
  const childEnv={...process.env};
  for(const key of ['MEKONIQ_OWNED_CI_STATE','MEKONIQ_OWNED_CI_PARENT','MEKONIQ_OWNED_CI_TEST_TIMEOUT_MS'])delete childEnv[key];
- state.primaryExitCode=(await run('tests',args[1],args.slice(2),{...childEnv,MEKONIQ_TEST_SERVICE_RECEIPT:receipt,MEKONIQ_TEST_DB:'postgres',DATABASE_ADMIN_URL:creds.DB_URL,NEXT_PUBLIC_SUPABASE_URL:creds.API_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:creds.ANON_KEY,SUPABASE_SERVICE_ROLE_KEY:creds.SERVICE_ROLE_KEY})).exitCode;
+ state.primaryExitCode=(await run('tests',args[1],args.slice(2),{...childEnv,MEKONIQ_TEST_SERVICE_RECEIPT:receipt,MEKONIQ_DB_CONTAINER:'supabase_db_'+projectId,MEKONIQ_TEST_DB:'postgres',DATABASE_ADMIN_URL:creds.DB_URL,NEXT_PUBLIC_SUPABASE_URL:creds.API_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:creds.ANON_KEY,SUPABASE_SERVICE_ROLE_KEY:creds.SERVICE_ROLE_KEY})).exitCode;
 }catch(e){state.primaryExitCode=e.exitCode??2;console.error(e.prerequisite?e.message:'OWNED_CI_PREREQUISITE_FAILED');}
 finally{
  try{state.stopExitCode=(await run('stop','pnpm',['exec','supabase','stop','--workdir',work])).exitCode;}
