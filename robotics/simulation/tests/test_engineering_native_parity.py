@@ -2,6 +2,8 @@
 import hashlib
 import copy
 import json
+import os
+import stat
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import pytest
@@ -162,11 +164,18 @@ def check_native_v1_profile(directory):
     def digest(path):
         return hashlib.sha256(path.read_bytes()).hexdigest()
     assert digest(frozen/manifest) == NATIVE_V1_PROFILES[0][0]
+    expected = {row['path']: row['sha256'] for row in json.loads((frozen/manifest).read_text())['outputs']}
+    expected_dirs = {p.as_posix()+'/' for name in expected for p in Path(name).parents if p != Path('.')}
+    assert stat.S_ISDIR(directory.lstat().st_mode)
+    actual = set()
+    for path in directory.rglob('*'):
+        mode = path.lstat().st_mode
+        name = path.relative_to(directory).as_posix()
+        assert stat.S_ISREG(mode) or stat.S_ISDIR(mode), name
+        actual.add(name + ('/' if stat.S_ISDIR(mode) else ''))
+    assert actual == set(expected) | expected_dirs | {manifest}
     assert (digest(directory/manifest), digest(directory/urdf)) in NATIVE_V1_PROFILES
     assert (directory/'native-mapping.json').read_bytes() == (frozen/'native-mapping.json').read_bytes()
-    expected = {row['path']: row['sha256'] for row in json.loads((frozen/manifest).read_text())['outputs']}
-    actual = {p.relative_to(directory).as_posix() for p in directory.rglob('*') if p.is_file()}
-    assert actual == set(expected) | {manifest}
     for row in json.loads((directory/manifest).read_text())['outputs']:
         name = row['path']
         assert digest(directory/name) == row['sha256']
@@ -203,6 +212,26 @@ def test_native_v1_profile_rejects_modified_outputs(tmp_path, mutation):
         target.write_bytes(target.read_bytes() + b'\n')
     with pytest.raises(AssertionError):
         check_native_v1_profile(tmp_path)
+
+
+@pytest.mark.parametrize('mutation', ['linked manifest', 'dangling link', 'FIFO', 'extra directory'])
+def test_native_v1_rejects_changed_member_types(tmp_path, mutation):
+    from compiler.engineering_native import compile_native
+    directory = tmp_path/'output'
+    compile_native(*inputs(), directory)
+    if mutation == 'linked manifest':
+        manifest = directory/'compiler-manifest.json'
+        original = tmp_path/'original-manifest.json'
+        manifest.rename(original)
+        manifest.symlink_to(original)
+    elif mutation == 'dangling link':
+        (directory/'extra').symlink_to('absent')
+    elif mutation == 'FIFO':
+        os.mkfifo(directory/'extra')
+    else:
+        (directory/'extra').mkdir()
+    with pytest.raises(AssertionError):
+        check_native_v1_profile(directory)
 
 
 @pytest.fixture
