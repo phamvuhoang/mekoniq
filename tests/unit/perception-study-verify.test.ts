@@ -1,6 +1,7 @@
 import {afterEach,expect,test} from 'vitest';
-import {readFile,writeFile,rm} from 'node:fs/promises';
+import {appendFile,mkdtemp,readFile,rename,rm,symlink,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
+import {tmpdir} from 'node:os';
 import {derivePerceptionStudy,runPerceptionStudy,verifyPerceptionStudy} from '../../packages/lab-runtime/src/v2/perception/perception-study';
 import {readPickRigEvidence} from '../../packages/lab-runtime/src/v2/perception/pick-rig-evidence';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
@@ -97,6 +98,19 @@ test.each(['missing','accepted','point','count','issues','omitted'])('cold verif
  if(field==='count')saved.completedRuns=20;if(field==='issues')saved.issues=['other'];if(field==='omitted')delete saved.expectedRuns;
  if(field==='missing')await rm(path,{force:true});else await writeFile(path,JSON.stringify(saved));
  expect((await verifyPerceptionStudy(h.root,'truth-0')).issues.join()).toContain('STUDY_SUMMARY');
+});
+test.each(['linked','oversized'])('cold verification refuses %s summaries with otherwise valid contents',async kind=>{
+ const h=await fixture(),path=join(h.root,'summary.json'),v=await derivePerceptionStudy(h.root,'truth-0');
+ expect(v).toMatchObject({completedRuns:1,issues:[]});
+ await writeFile(path,JSON.stringify({accepted:false,...v}));
+ expect(await verifyPerceptionStudy(h.root,'truth-0')).toEqual(v);
+ if(kind==='linked'){
+  const outside=await mkdtemp(join(tmpdir(),'study-summary-'));dirs.push(outside);
+  const target=join(outside,'summary.json');await rename(path,target);await symlink(target,path);
+ }else{
+  await appendFile(path,Buffer.alloc(64*1024*1024,0x20)); // JSON whitespace keeps the saved verdict identical
+ }
+ expect((await verifyPerceptionStudy(h.root,'truth-0')).issues).toEqual(['STUDY_SUMMARY_UNREADABLE']);
 });
 test('a partial producer writes the independently reproducible first summary with its missing run',async()=>{
  const h=await fixture(),out=join(h.root,'partial');

@@ -4,7 +4,7 @@ import {isDeepStrictEqual} from 'node:util';
 import {join} from 'node:path';
 import campaign from '../../../../../robotics/simulation-mujoco/campaigns/perception-gap-v1.json';
 import {actorStream} from '../random';
-import {cellArtifacts} from '../simulation3d/cell-campaign';
+import {cellArtifacts,readCellJson} from '../simulation3d/cell-campaign';
 import {lockDigestOf} from '../../engineering/linkforge';
 import {runPickRig,type RigRunRecord} from './pick-rig';
 import {PICK_RIG_ENDPOINT_PROTOCOL,readPickRigEvidence} from './pick-rig-evidence';
@@ -94,7 +94,7 @@ export async function derivePerceptionStudy(root:string,only?:string):Promise<Pe
 export async function verifyPerceptionStudy(root:string,only?:string):Promise<PerceptionStudyVerdict>{
  const verdict=await derivePerceptionStudy(root,only);
  try{
-  const saved=JSON.parse(await readFile(join(root,'summary.json'),'utf8'));
+  const saved=await readCellJson(root,'summary.json');
   if(!isDeepStrictEqual(saved,{accepted:false,...verdict}))verdict.issues.push('STUDY_SUMMARY_MISMATCH');
  }catch{verdict.issues.push('STUDY_SUMMARY_UNREADABLE');}
  return verdict;
