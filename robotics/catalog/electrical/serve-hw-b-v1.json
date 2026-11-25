@@ -180,7 +180,7 @@
       "profile": {
         "id": "io-module-can-ref-v1",
         "revision": 1,
-        "digest": "569435bba517e7be6c6a672069b496be8e79a871a4688021a9d545a58432b7d7"
+        "digest": "7a9d3b6dbd22b2256f8926b74b7ab9ed5921ba0f0adde5cb580e12815ba0d96e"
       },
       "assemblyInstanceId": null
     },
@@ -342,46 +342,6 @@
           "protectionDeviceId": "fuse-logic",
           "lengthM": {
             "value": 0.4,
-            "unit": "m",
-            "source": {
-              "kind": "assumed",
-              "documentId": "r5-assumptions",
-              "revision": "1",
-              "locator": "estimated from a 0.5 m chassis; measure on the first build",
-              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
-            }
-          }
-        },
-        {
-          "id": "f-lamp",
-          "to": {
-            "deviceId": "lamp",
-            "pin": "C/1",
-            "returnPin": "C/2"
-          },
-          "protectionDeviceId": "fuse-logic",
-          "lengthM": {
-            "value": 0.6,
-            "unit": "m",
-            "source": {
-              "kind": "assumed",
-              "documentId": "r5-assumptions",
-              "revision": "1",
-              "locator": "estimated from a 0.5 m chassis; measure on the first build",
-              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
-            }
-          }
-        },
-        {
-          "id": "f-buzzer",
-          "to": {
-            "deviceId": "buzzer",
-            "pin": "C/1",
-            "returnPin": "C/2"
-          },
-          "protectionDeviceId": "fuse-logic",
-          "lengthM": {
-            "value": 0.6,
             "unit": "m",
             "source": {
               "kind": "assumed",
@@ -574,7 +534,7 @@
       "field": {
         "deviceId": "cliff-left-sn",
         "pin": "BK",
-        "returnPin": "BU"
+        "returnPin": null
       },
       "electrical": {
         "type": "pnp_source_output",
@@ -604,7 +564,7 @@
       "field": {
         "deviceId": "cliff-right-sn",
         "pin": "BK",
-        "returnPin": "BU"
+        "returnPin": null
       },
       "electrical": {
         "type": "pnp_source_output",
@@ -634,7 +594,7 @@
       "field": {
         "deviceId": "dock-sn",
         "pin": "BK",
-        "returnPin": "BU"
+        "returnPin": null
       },
       "electrical": {
         "type": "pnp_source_output",
@@ -724,7 +684,7 @@
       "field": {
         "deviceId": "charger-sn",
         "pin": "BK",
-        "returnPin": "BU"
+        "returnPin": null
       },
       "electrical": {
         "type": "pnp_source_output",
@@ -977,5 +937,5 @@
     "revision": 1,
     "digest": "0e7bce99b1ec3c90bcb6920bbbe1972d3d2a3ff236c04680759da40412075d42"
   },
-  "digest": "741a9ccaea1a6fa01191895be36cf0d2b63f607fb50a001d52f7de3082dcafea"
+  "digest": "f355ae9558c03bf983d370ef81551b016ad45246236b6d20027929998e70e4a6"
 }

@@ -72,5 +72,5 @@ export async function engineeringFromOptions(o:EngineeringRuntimeOptions):Promis
  if(o.mujoco)compilers['engineering-mujoco-3d-v1']=createMujocoCompiler({workerRoot:resolve(o.mujoco.workerRoot)});
  if(o.webots)compilers['engineering-webots-3d-v1']=createWebotsCompiler();
  if(o.portableOnly&&!Object.keys(compilers).length)throw Error('ENGINEERING_COMPILER_UNAVAILABLE');
- return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,...!o.portableOnly?{compiler:createPythonCompiler({python,simulationRoot})}:{},compilers,validator,validationUnavailable});
+ return createEngineeringService({directory:join(o.directory,'engineering'),catalogRoot,electrical:Object.keys(catalog.deviceProfiles).length>0,...!o.portableOnly?{compiler:createPythonCompiler({python,simulationRoot})}:{},compilers,validator,validationUnavailable});
 }

@@ -20,7 +20,7 @@ import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProvide
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
 import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
-import {ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
+import {ELECTRICAL_CAPABILITY,ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,BENCH_WHEEL_DIRECTION,SUGGEST_OPTIONS} from './control/bench-signals';
 import {benchIdleLease,type BenchCatalog,type BenchInfo} from './control/bench-runner';
 /** Hooks into the v1 gateway so v2 shares its pairing token, body parser and response helper without importing it. */
@@ -136,7 +136,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    ...deps.modelMaturity?{modelMaturity:structuredClone(deps.modelMaturity),...deps.calibrationConfigDigests?{calibrationConfigDigests:{...deps.calibrationConfigDigests}}:{}}:{},
    ...deps.driveFaultContext?{faultCatalog:Object.entries(DRIVE_FAULTS).filter(([,f])=>!f.campaignOnly).map(([id,f])=>({id,layer:f.layer,target:f.target,appliedBy:f.appliedBy,params:structuredClone(f.params)}))}:{},
    // a capability is advertised only when the server can execute it now: irsim_navigation_v1 needs the live portable provider and engineering bundles
-   capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1','sim3d_belief_grasp_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
+   capabilities:[...deps.worldExperiments?['web_replay_package_v1','sim3d_world_experiments_v1','sim3d_belief_grasp_v1']:[],...deps.engineering?[ENGINEERING_CAPABILITY]:[],...deps.engineering?.electrical?[ELECTRICAL_CAPABILITY]:[],...deps.engineering&&enabled.has('irsim_2d')&&catalog.backends.some(b=>b.id==='irsim_2d'&&b.installed&&b.reachable)?['irsim_navigation_v1']:[],...deps.engineering&&enabled.has('webots_3d')&&catalog.backends.some(b=>b.id==='webots_3d'&&b.installed&&b.reachable)?['sim3d_navigation_v1']:[],
     // the arm plant needs no engineering bundle: its scene is built from the run's project
     ...enabled.has('webots_arm')&&catalog.backends.some(b=>b.id==='webots_arm'&&b.installed&&b.reachable)?['sim3d_arm_v1']:[],
     ...deps.engineering&&enabled.has('mujoco_3d')&&catalog.backends.some(b=>b.id==='mujoco_3d'&&b.installed&&b.reachable)?['sim3d_mujoco_mobile_v1','sim3d_payload_experiments_v1']:[],
@@ -169,6 +169,20 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(!session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
   // a bearer session is never attached by the browser on its own, so it carries no CSRF risk
   const csrfValid=()=>bearer||deps.same(String(request.headers['x-csrf-token']??''),session.csrf);
+  const electricalRoute=/^\/engineering\/electrical(?:\/([0-9a-f]{64}))?$/.exec(sub);
+  if(electricalRoute){
+   if(!deps.engineering?.electrical)return deny(response,400,'ELECTRICAL_CAPABILITY_REQUIRED',['ELECTRICAL_CAPABILITY_REQUIRED']);
+   const [,bundleDigest]=electricalRoute;
+   if(bundleDigest){
+    if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+    try{return send(response,200,await deps.engineering.readElectrical(sessionId,bundleDigest));}catch(e){return engineeringFailed(response,e);}
+   }
+   if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
+   if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
+   const body=await deps.readBody(request,2*1024*1024),extra=Object.keys(body).filter(k=>!['ref','design'].includes(k));
+   if(extra.length||!body.ref||!body.design||typeof body.design!=='object'){const issues=extra.map(k=>({path:'',code:classifyField(k),message:`Property "${k}" is not allowed`}));return deny(response,422,'INVALID_ELECTRICAL_REQUEST',codesOf(issues),issues);}
+   try{return send(response,200,await deps.engineering.compileElectrical(sessionId,body.ref,body.design));}catch(e){return engineeringFailed(response,e);}
+  }
   const engineeringRoute=/^\/engineering\/(?:(compile|validate)|bundles\/([^/]+)\/manifest|blobs\/([^/]+)|validations\/([^/]+))$/.exec(sub);
   if(engineeringRoute){
    if(!deps.engineering)return deny(response,400,'ENGINEERING_CAPABILITY_REQUIRED',['ENGINEERING_CAPABILITY_REQUIRED']);

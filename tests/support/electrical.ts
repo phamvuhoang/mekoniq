@@ -88,12 +88,16 @@ export function allocContext(o:{points?:Point[];signals?:SignalV1[];cycleMs?:num
 }
 
 import {loadCatalog} from '../../packages/lab-runtime/src/engineering/catalog';
+import {resolveAssembly} from '../../packages/lab-runtime/src/engineering/assembly';
 /** One of the shipped Serve options with its catalog profiles and components, as the compiler sees it after admission. */
-export async function shippedContext(option:'serve-hw-a-v1'|'serve-hw-b-v1'|'serve-hw-c-v1',tweak:(d:ElectricalDesignV1)=>ElectricalDesignV1=d=>d){
+export async function shippedContext(option:'serve-hw-a-v1'|'serve-hw-b-v1'|'serve-hw-c-v1',tweak:(d:ElectricalDesignV1)=>ElectricalDesignV1=d=>d,policyTweak:(p:WiringPolicyV1)=>WiringPolicyV1=p=>p){
  const catalog=await loadCatalog('robotics/catalog'),json=async(n:string)=>JSON.parse(await readFile(`robotics/catalog/electrical/${n}`,'utf8'));
- const design=tweak(await json(`${option}.json`)),policy=await json('wiring-policy-v1.json') as WiringPolicyV1,safety=await json('serve-safety-requirements-v1.json') as SafetyRequirementsV1;
+ const policy=policyTweak(await json('wiring-policy-v1.json') as WiringPolicyV1),design=tweak({...await json(`${option}.json`),wiringPolicyRef:{id:policy.id,revision:policy.revision,digest:policy.digest}}),safety=await json('serve-safety-requirements-v1.json') as SafetyRequirementsV1;
+ const dir='robotics/simulation-mujoco/fixtures/serve-tray-v1/',project=JSON.parse(await readFile(dir+'serve-3d-project.json','utf8')),parts=JSON.parse(await readFile(dir+'serve-3d-components.json','utf8'));
+ const {resolved,problems}=resolveAssembly(project,parts.components,{models:parts.models,quotes:catalog.quotes});
+ if(!resolved)throw new Error('SERVE_PROJECT_UNRESOLVED '+JSON.stringify(problems.slice(0,3)));
  const byId=Object.values(catalog.deviceProfiles);
  const profiles=new Map(design.devices.map(d=>[d.id,byId.find(p=>p.id===d.profile.id&&p.revision===d.profile.revision)!]));
- const context:DesignContext={design,profiles,components:catalog.components,resolved:{placements:[],bom:{lines:[],incompleteTotal:false,missingPriceLineIds:[]}} as never,project:{id:design.project.id,revision:design.project.revision,digest:'p'.repeat(64)}};
+ const context:DesignContext={design,profiles,components:catalog.components,resolved,project:{id:design.project.id,revision:design.project.revision,digest:hashJson(project)}};
  return {context,policy,safety,catalog};
 }

@@ -18,6 +18,8 @@ export function resolvePin(profile:DeviceProfileV1,ref:string):string|null{
  const hits=profile.connectors.flatMap(c=>c.pins.filter(p=>p.pin===ref).map(p=>`${c.id}/${p.pin}`));
  return hits.length===1?hits[0]!:null;
 }
+/** Fuses are modelled as devices whose single protection_rating point carries the rating as its maximum current. */
+export const protectionRating=(p:DeviceProfileV1):number|null=>p.ioPoints.find(i=>i.functions.includes('protection_rating'))?.electrical.maxCurrentA?.value??null;
 const norm=(s:string)=>s.toUpperCase().replace(/[^A-Z0-9]/g,'');
 const pinOf=(profile:DeviceProfileV1,canonical:string)=>profile.connectors.flatMap(c=>c.pins.map(p=>({...p,canonical:`${c.id}/${p.pin}`}))).find(p=>p.canonical===canonical);
 
@@ -57,14 +59,16 @@ export function deriveNetlist(context:DesignContext,allocation:IoAllocationV1,po
   const loads=rail.feeds.map((f,fi)=>({f,fi,to:pin(f.to.deviceId,f.to.pin,`/power/${ri}/feeds/${fi}/to/pin`),ret:pin(f.to.deviceId,f.to.returnPin,`/power/${ri}/feeds/${fi}/to/returnPin`),amps:pinCurrent(context,f.to.deviceId,resolvePin(profiles.get(f.to.deviceId)!,f.to.pin)??'')?.value??null}));
   for(const l of loads)if(l.f.protectionDeviceId)behind.set(l.f.protectionDeviceId,(behind.get(l.f.protectionDeviceId)??0)+(l.amps??0));
   for(const {f,fi,to,ret,amps} of loads){
-   const prot=f.protectionDeviceId,pp=prot?profiles.get(prot):undefined;
+   const prot=f.protectionDeviceId,pp=prot?profiles.get(prot):undefined,rating=pp?protectionRating(pp):null;
+   // a wire behind a protection device is sized for the larger of its load and the rating, so the fuse protects the wire (the rule ELD_PROTECTION_OVERSIZED fires when no wire in the policy can)
+   const sized=(a:number|null)=>csaFor(rating===null?a:Math.max(a??0,rating));
    if(src&&to){
     if(prot&&pp){
      const pin_in=pin(prot,'IN',`/power/${ri}/feeds/${fi}/protectionDeviceId`),pin_out=pin(prot,'OUT',`/power/${ri}/feeds/${fi}/protectionDeviceId`);
-     if(pin_in&&pin_out){wire(`pwr/${rail.railId}`,'power',src,pin_in,'power',csaFor(behind.get(prot)??null),behind.get(prot)??null);wire(`pwr/${rail.railId}`,'power',pin_out,to,'power',csaFor(amps),amps,f.lengthM);}
+     if(pin_in&&pin_out){wire(`pwr/${rail.railId}`,'power',src,pin_in,'power',sized(behind.get(prot)??null),behind.get(prot)??null);wire(`pwr/${rail.railId}`,'power',pin_out,to,'power',sized(amps),amps,f.lengthM);}
     }else wire(`pwr/${rail.railId}`,'power',src,to,'power',csaFor(amps),amps,f.lengthM);
    }
-   if(srcRet&&ret)wire(`ret/${rail.railId}`,'return',srcRet,ret,'return',csaFor(amps),amps,f.lengthM);
+   if(srcRet&&ret)wire(`ret/${rail.railId}`,'return',srcRet,ret,'return',sized(amps),amps,f.lengthM);
   }
  }
  // buses

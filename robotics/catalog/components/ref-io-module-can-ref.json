@@ -4,7 +4,7 @@
   "revision": "1",
   "identity": {
     "manufacturer": "MEKONIQ reference",
-    "family": "CANopen remote I/O 8 DI / 4 DO, 24 V",
+    "family": "CANopen remote I/O 16 DI / 4 DO, 24 V",
     "sku": "IOM-REF",
     "status": "candidate"
   },

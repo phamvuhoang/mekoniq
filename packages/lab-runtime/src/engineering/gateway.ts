@@ -9,6 +9,10 @@ import {EngineeringInputError,prepareEngineeringCompileInput,resolveAssembly} fr
 import {createBundleStore,type BundleManifest} from './bundle-store';
 import {loadCatalog,type CatalogResult} from './catalog';
 import {validateBundleReceipt,validateEngineeringProject,validateEngineeringRef} from './contracts';
+import {compileElectrical} from './electrical/compile';
+import {ELECTRICAL_SCHEMA_HASH,validateElectricalDesign,type ElectricalDesignV1} from './electrical/contracts';
+import {loadElectricalDocuments} from './electrical/documents-store';
+import {createElectricalStore} from './electrical/store';
 import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem,ResolvedAssembly} from './contracts';
 import {incompleteReport,validationCacheKey,type RobotModelValidator} from './linkforge';
 import {projectPhysicalModel} from './physical-model';
@@ -31,12 +35,15 @@ export interface EngineeringServiceOptions{
  compilers?:Partial<Record<string,CompilerPort>>;recipes?:CoffeeRecipe[];limits?:Partial<EngineeringLimits>;
  /** LinkForge shadow validation. Absent means every validation is `not_run` with `validationUnavailable` as the reason; compile and run never depend on it. */
  validator?:RobotModelValidator;validationUnavailable?:string;
+ /** Offer `compileElectrical`: set only when the catalog carries device profiles, so the capability is never advertised for a service that would refuse every design. */
+ electrical?:boolean;
 }
 /** Typed failure mapped to HTTP by the v2 gateway: 400 shape/capability, 403 ownership, 409 identity/closure, 503 timeout. */
 export class EngineeringError extends Error{constructor(readonly code:string,readonly status:number,readonly reasonCodes:string[]=[]){super(code);this.name='EngineeringError';}}
 /** `navigation` (portable profiles only): the bundle's navigation scene identity, pinned at admission so the run executes exactly that scene. */
 export interface LockedEngineering{ref:EngineeringRef;project:EngineeringProject;runtimeProjection:{project:LabProjectV2;assets:AssetRevision[]};navigation?:{path:'navigation-scene.json';sha256:string;sceneDigest:string}}
 export const ENGINEERING_CAPABILITY='engineering_bundle_v1';
+export const ELECTRICAL_CAPABILITY='electrical_bundle_v1';
 /** Profiles whose bundles are produced by the portable compiler only. */
 export const PORTABLE_PROFILES:readonly string[]=['engineering-irsim-2d-v1','engineering-webots-3d-v1','engineering-mujoco-3d-v1'];
 
@@ -51,7 +58,7 @@ function withTimeout<T>(work:Promise<T>,ms:number):Promise<T>{
 
 export function createEngineeringService(options:EngineeringServiceOptions){
  const limits={...DEFAULT_LIMITS,...options.limits},store=createBundleStore(options.directory),recipes=options.recipes??([ESPRESSO,ICED_MILK_COFFEE] as unknown as CoffeeRecipe[]);
- const validations=createValidationStore(join(options.directory,'validations'));
+ const validations=createValidationStore(join(options.directory,'validations')),electricalStore=createElectricalStore(join(options.directory,'electrical'));
  let catalog:Promise<CatalogResult>|undefined;
  // ponytail: catalog is read once per process; restart (or a future explicit reload) picks up catalog edits.
  const loadedCatalog=()=>catalog??=loadCatalog(options.catalogRoot);
@@ -221,6 +228,43 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    return blob.bytes;
   },
   bindRun:store.bindRun,
+  /** True when this runtime offers electrical compilation (see the option). */
+  electrical:options.electrical===true,
+  /**
+   * Compiles an electrical design for the project of a compiled bundle this session may read. Shape errors are 400, identity or catalog errors 409 with the refusal codes,
+   * and everything else is a check inside the sealed bundle; the engineering bundle is only read, never changed.
+   */
+  async compileElectrical(sessionId:string,ref:unknown,design:unknown):Promise<{state:'compiled'|'blocked';digest:string;problems:Problem[]}>{
+   if(!options.electrical)throw new EngineeringError('ELECTRICAL_UNAVAILABLE',400);
+   if(!validateEngineeringRef(ref).ok)throw new EngineeringError('INVALID_ENGINEERING_REF',400);
+   if(Buffer.byteLength(JSON.stringify(design??null))>limits.maxJsonBytes)throw new EngineeringError('ELECTRICAL_TOO_LARGE',400);
+   const shape=validateElectricalDesign(design);
+   if(!shape.ok)throw new EngineeringError('INVALID_ELECTRICAL_DESIGN',400,[...new Set(shape.problems.map(p=>p.code))]);
+   const r=ref as EngineeringRef;
+   if(!await store.authorizeBundle(sessionId,r.bundleDigest))throw new EngineeringError('ENGINEERING_BUNDLE_FORBIDDEN',403);
+   const manifest=await store.readManifest(r.bundleDigest);
+   if(!manifest)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,['MANIFEST']);
+   if(manifest.projectDigest!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
+   const closure=await store.verifyClosure(r.bundleDigest);
+   if(closure.length)throw new EngineeringError('ENGINEERING_CLOSURE_MISSING',409,closure);
+   const project=await readFileJson<EngineeringProject>(manifest,'engineering-project.json');
+   if(hashJson(project)!==r.projectDigest)throw new EngineeringError('ENGINEERING_IDENTITY_MISMATCH',409);
+   const resolved=await readFileJson<ResolvedAssembly>(manifest,'resolved-assembly.json'),scene=await readFileJson<{wheelBindings?:{entityId:string;side:string}[]}>(manifest,'scene.json');
+   const d=design as ElectricalDesignV1,cat=await loadedCatalog(),docs=await loadElectricalDocuments(options.catalogRoot);
+   const policy=docs.policies.find(p=>p.id===d.wiringPolicyRef.id&&p.revision===d.wiringPolicyRef.revision),safety=d.safetyRequirementsRef?docs.registers.find(x=>x.id===d.safetyRequirementsRef!.id&&x.revision===d.safetyRequirementsRef!.revision)??null:null;
+   if(!policy)throw new EngineeringError('WIRING_POLICY_UNAVAILABLE',409);
+   if(d.safetyRequirementsRef&&!safety)throw new EngineeringError('SAFETY_REQUIREMENTS_UNAVAILABLE',409);
+   const result=compileElectrical({design:d,resolved,project:{id:project.id,revision:project.revision,digest:r.projectDigest},catalog:cat,policy,safety,
+    driveAxisIds:(scene.wheelBindings??[]).map(w=>`${w.entityId}/wheel-${w.side}`).sort(),schemaHash:ELECTRICAL_SCHEMA_HASH});
+   if(!result.bundle)throw new EngineeringError(result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?'ELECTRICAL_TOO_LARGE':result.problems[0]?.code??'ELECTRICAL_REFUSED',result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?400:409,[...new Set(result.problems.map(p=>p.code))]);
+   await electricalStore.put(sessionId,result.bundle);
+   return {state:result.bundle.state,digest:result.bundle.digest,problems:result.bundle.checks.filter(c=>c.level==='blocking').map(c=>({code:c.ruleId,path:c.path,blocking:true,detail:c.detail}))};
+  },
+  async readElectrical(sessionId:string,digest:string){
+   const bundle=await electricalStore.read(sessionId,digest);
+   if(!bundle)throw new EngineeringError('NOT_FOUND',404);
+   return bundle;
+  },
   verifyClosure:store.verifyClosure,
   /** After a verified reclaim proof: read access to this run's bundle for the new session, nothing else. */
   grantRun:(sessionId:string,ref:EngineeringRef)=>store.grantBundle(sessionId,ref.bundleDigest),

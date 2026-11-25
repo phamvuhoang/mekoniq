@@ -32,7 +32,7 @@ test.skipIf(!available)('with a catalog and a working compiler the runtime compi
   const engineering = await engineeringFromOptions({ directory, catalogRoot: resolve('robotics/catalog'), simulationRoot: resolve('robotics/simulation'), python });
   const g = await startLabGateway({ port: 0, directory: join(directory, 'runs'), sourceCommit: 'c', schemaHash: 'a'.repeat(64), v2: { engineering } }); gateways.push(g);
   const h = await pair(g);
-  expect((await (await fetch(g.url + '/lab/v2/health')).json()).capabilities).toEqual(['engineering_bundle_v1']);
+  expect((await (await fetch(g.url + '/lab/v2/health')).json()).capabilities).toEqual(['engineering_bundle_v1', 'electrical_bundle_v1']);   // the shipped catalog carries device profiles
   const project = JSON.parse(await readFile('tests/fixtures/engineering/fd01.project.json', 'utf8'));
   const receipt = await (await fetch(g.url + '/lab/v2/engineering/compile', { method: 'POST', headers: h, body: JSON.stringify({ project }) })).json();
   expect(receipt).toMatchObject({ state: 'compiled', runnable: false });

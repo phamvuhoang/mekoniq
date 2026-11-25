@@ -78,10 +78,13 @@ export function allocateIo(context:DesignContext):{allocation:IoAllocationV1;che
  const matchOf=new Map<string,string>();                                                  // point key → signal id
  for(const [k,s] of owner)matchOf.set(k,s);
  const tryAssign=(sid:string,seen:Set<string>):boolean=>{
-  for(const e of cand.get(sid)!){
+  const list=cand.get(sid)!;
+  // a free point first, so signals take points in id order and a signal added later cannot move the others; only then reroute the current owner of a point
+  const free=list.find(e=>!pinnedBy.has(key(e.ref))&&!matchOf.has(key(e.ref)));
+  if(free){matchOf.set(key(free.ref),sid);return true;}
+  for(const e of list){
    const k=key(e.ref);if(seen.has(k)||pinnedBy.has(k))continue;seen.add(k);
-   const cur=matchOf.get(k);
-   if(cur===undefined||tryAssign(cur,seen)){matchOf.set(k,sid);return true;}
+   if(tryAssign(matchOf.get(k)!,seen)){matchOf.set(k,sid);return true;}
   }
   return false;
  };

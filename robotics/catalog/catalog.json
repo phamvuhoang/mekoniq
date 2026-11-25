@@ -80,7 +80,7 @@
     },
     {
       "file": "components/ref-io-module-can-ref.json",
-      "digest": "fc54b4069f26feb5229617dc2e65020cab4075d10f431deada11a9f9431405db"
+      "digest": "9db73067f5c539989fd35fa3151f5e8595111b1179b9ac9db21c0b0b7857a278"
     },
     {
       "file": "components/ref-lamp-24v.json",
@@ -167,7 +167,7 @@
     },
     {
       "file": "devices/io-module-can-ref-v1.json",
-      "digest": "569435bba517e7be6c6a672069b496be8e79a871a4688021a9d545a58432b7d7"
+      "digest": "7a9d3b6dbd22b2256f8926b74b7ab9ed5921ba0f0adde5cb580e12815ba0d96e"
     },
     {
       "file": "devices/lamp-24v-v1.json",
