@@ -44,6 +44,7 @@ export async function recordR5(args){
   try{const b=await readFile(abs);result={file:resultFile,sha256:sha(b),summary:summarizeResult(suite.kind,b.toString())};}catch{/* an explicit missing result stays not_run */}
   suites.push({id:suite.id,repo:suite.repo,kind:suite.kind,exitCode:p.exitCode??1,process:`suites/${suite.id}/process.json`,result});
  }
+ const licenses=join(out,'suites/licenses');await mkdir(licenses);const l=await runR2bCaseCommand(process.execPath,['scripts/portable-licenses.mjs','--check'],{out:licenses,cwd:root,env,timeoutMs:120000,signal:abort.signal});commands.push({id:'licenses',exitCode:l.exitCode??1,process:'suites/licenses/process.json'});
  const after=identity(),identityStable=JSON.stringify(before)===JSON.stringify(after)&&labIdentity(root,lab).commit===labCommit&&!labIdentity(root,lab).dirty;
  const m={schemaVersion:1,documentType:'sim-extension-qualification',release:'r5',scope:'full',candidateId:o['candidate-id']??out.split('/').at(-1),accepted:false,acceptedBy:null,acceptedAt:null,identity:{before,after,identityStable},
   lab:{commit:labCommit,dirty:!identityStable,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}},campaign:null,performance:null,inputs:refs,suites,commands,
