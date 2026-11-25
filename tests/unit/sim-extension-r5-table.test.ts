@@ -18,11 +18,11 @@ describe('R5 qualification table',()=>{
  test('the cases R5 did not build are not_run with their reason, and nothing is claimed for the cut ones',()=>{
   const notRun=Object.entries(CASES_R5).filter(([,c])=>(c as {notRun?:string}).notRun).map(([id])=>id);
   expect(notRun).toEqual(expect.arrayContaining(['VIO01','VIO02','VIO03','VIO04','DGN02','DGN04','REG06','CLD05','CLD06']));
-  expect((CASES_R5.CLD06 as {notRun:string}).notRun).toBe('deploy_order_pending');
+  expect(CASES_R5.CLD06!.notRun).toBe('deploy_order_pending');
  });
  test('every named test file exists',()=>{validateR5Selectors(tableR5(),{source:'.',lab:'apps/lab'});});
  test('no suite uses a launcher flag outside the documented ones, and each launcher runs one spec',()=>{
-  for(const s of SUITES_R5.filter(x=>x.kind==='playwright'))expect((s.command as string[]).filter(a=>a.endsWith('.spec.ts')).length).toBe(1);
+  for(const s of SUITES_R5.filter(x=>x.kind==='playwright'))expect((s.command!).filter(a=>a.endsWith('.spec.ts')).length).toBe(1);
   expect(readFileSync('scripts/sim-extension-r5.mjs','utf8')).not.toMatch(/accepted:\s*true/);
  });
 });

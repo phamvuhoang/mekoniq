@@ -182,6 +182,7 @@ describe('device profiles', () => {
     expect(blocking(result)).toContain('BLOB_UNAVAILABLE');
   });
   test('a safety claim that cites a datasheet is SAFETY_CLAIM_UNSUPPORTED', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the test edits a field of a typed document to make it invalid
     const { root, digest } = await build(), p = driveProfile({ componentDigest: digest }) as any;
     p.drive.stop.torqueOff.documentId = 'datasheet';
     const { digest: _d, ...rest } = p; void _d;
