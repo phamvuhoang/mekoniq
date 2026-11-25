@@ -41,7 +41,7 @@ interface CampaignCheckpoint{
 }
 // Both registered missions require completed work and a return to parking. The checkpoint supplies
 // controller-local flags and attention. The signed Source mutations supply fulfillment and mission state.
-export function verifyCampaignOutcome(cp:CampaignCheckpoint,source:Awaited<ReturnType<typeof readCampaignJournal>>,report:RunReport,prefix:'CELL'|'CIL'|'TRAY',beforeReopen=false){
+export function verifyCampaignOutcome(cp:CampaignCheckpoint,source:Awaited<ReturnType<typeof readCampaignJournal>>,report:RunReport,prefix:'CELL'|'CIL'|'TRAY'|'STOP',beforeReopen=false){
  const {states,events}=source,fail=()=>{throw Error(prefix+'_OUTCOME_NOT_FROM_JOURNAL');};
  if(hashJson(report.businessEvents)!==hashJson(events))throw Error(prefix+'_SOURCE_REPORT');
  const get=(kind:string,id?:string)=>states.get(kind+'/'+id);

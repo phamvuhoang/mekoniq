@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-functions",
+  "id": "stop-functions-v1",
+  "revision": 1,
+  "functions": [
+    {
+      "id": "normal",
+      "mechanism": "controller setpoint to zero through the acceleration limit; the drive stays enabled"
+    },
+    {
+      "id": "protective",
+      "mechanism": "controller quickStop on both axes, latched; the drive decelerates, then disables"
+    },
+    {
+      "id": "emergency",
+      "mechanism": "the virtual safety chain trips every axis (EXTERNAL_TRIP) in the worker, before the command channel and the controller"
+    }
+  ],
+  "note": "SS1-like stops coincide with protective in this model; no separate variant is built"
+}

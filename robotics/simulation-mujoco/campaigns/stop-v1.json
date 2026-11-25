@@ -1,0 +1,258 @@
+{
+  "id": "stop-v1",
+  "scenarioId": "MJ-TRAY01",
+  "maxTicks": 30000,
+  "note": "MJ-TRAY01 with three cups under the registered HW-C stop variants; the stop fires at the cruise tick of a survey run (fixtures/stop-v1/survey.json). Every number is assumed and not_calibrated. No threshold on distance or slip.",
+  "cases": [
+    {
+      "id": "s1-normal",
+      "group": "S1",
+      "experimentId": "tray-stop-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "normal",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s1-protective",
+      "group": "S1",
+      "experimentId": "tray-stop-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "protective",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s1-emergency-coast",
+      "group": "S1",
+      "experimentId": "tray-stop-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s1-emergency-brake",
+      "group": "S1",
+      "experimentId": "tray-stop-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s2-normal",
+      "group": "S2",
+      "experimentId": "tray-stop-slow-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "normal",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s2-protective",
+      "group": "S2",
+      "experimentId": "tray-stop-slow-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "protective",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s2-emergency-coast",
+      "group": "S2",
+      "experimentId": "tray-stop-slow-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s2-emergency-brake",
+      "group": "S2",
+      "experimentId": "tray-stop-slow-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s3-normal",
+      "group": "S3",
+      "experimentId": "tray-stop-low-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "normal",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s3-protective",
+      "group": "S3",
+      "experimentId": "tray-stop-low-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "protective",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s3-emergency-coast",
+      "group": "S3",
+      "experimentId": "tray-stop-low-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s3-emergency-brake",
+      "group": "S3",
+      "experimentId": "tray-stop-low-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s4-emergency-brake-command-loss",
+      "group": "S4",
+      "experimentId": "tray-stop-brake-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      },
+      "faults": [
+        {
+          "id": "loss-wheel-left",
+          "faultId": "command-loss",
+          "targetId": "amr-1/wheel-left",
+          "trigger": {
+            "kind": "elapsed_sim_ms",
+            "value": 8180
+          },
+          "durationMs": 400,
+          "params": {}
+        },
+        {
+          "id": "loss-wheel-right",
+          "faultId": "command-loss",
+          "targetId": "amr-1/wheel-right",
+          "trigger": {
+            "kind": "elapsed_sim_ms",
+            "value": 8180
+          },
+          "durationMs": 400,
+          "params": {}
+        }
+      ]
+    },
+    {
+      "id": "s5-emergency-coast-r1",
+      "group": "S5",
+      "experimentId": "tray-stop-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      }
+    },
+    {
+      "id": "s5-emergency-coast-r2",
+      "group": "S5",
+      "experimentId": "tray-stop-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      },
+      "repeatOf": "s5-emergency-coast-r1"
+    },
+    {
+      "id": "s5-emergency-coast-r3",
+      "group": "S5",
+      "experimentId": "tray-stop-coast-v1",
+      "seed": 7,
+      "entry": {
+        "id": "s1",
+        "function": "emergency",
+        "trigger": {
+          "kind": "elapsed_sim_ms",
+          "value": 8220
+        }
+      },
+      "repeatOf": "s5-emergency-coast-r1"
+    }
+  ]
+}

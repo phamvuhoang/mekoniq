@@ -52,11 +52,13 @@ export function deriveDriveModel(base:DriveModelV1,context:DesignContext,control
  return {model,changes,confirmed,checks};
 }
 
-/** A control profile for the same plant with the acceleration limit a pv-only drive will ramp with, taken from the profile's documented value; other fields stay. */
-export function deriveControlProfile(base:ControlProfileV1,context:DesignContext,driveModelDigests:readonly string[]):ControlProfileV1{
+/** A control profile for the same plant with the acceleration limit a pv-only drive will ramp with, taken from the profile's documented value and capped at `maxAccelerationRadS2` (the tuning envelope); other fields stay. */
+export function deriveControlProfile(base:ControlProfileV1,context:DesignContext,driveModelDigests:readonly string[],maxAccelerationRadS2=Number.POSITIVE_INFINITY):ControlProfileV1{
  const axes=base.axes.map(a=>{
   const d=context.design.axes.find(x=>x.axisId===a.axisId),drive=d&&context.profiles.get(d.driveDeviceId)?.drive;
-  return {...a,accelerationLimit:!drive||drive.modes.includes('csv')?a.accelerationLimit:drive.profileAccelerationRadS2?.value??a.accelerationLimit};
+  const documented=!drive||drive.modes.includes('csv')?a.accelerationLimit:drive.profileAccelerationRadS2?.value??a.accelerationLimit;
+  // the server's tuning envelope bounds the limit: a documented value above it is capped there
+  return {...a,accelerationLimit:documented===null?null:Math.min(documented,maxAccelerationRadS2)};
  });
  return sealDriveDocument({...base,id:`${base.id}-${context.design.option.id}`.slice(0,200),revision:base.revision+1,axes,driveModelDigests:[...driveModelDigests]}) as ControlProfileV1;
 }

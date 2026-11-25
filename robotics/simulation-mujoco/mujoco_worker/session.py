@@ -676,8 +676,13 @@ class WorkerSession:
         injections = p.get("faultInjections")
         if injections and not self.drive_on:
             raise WorkerError("INVALID_REQUEST", "faultInjections need a scene with a drive model and a control profile")
+        stops = p.get("stopInjections")
+        if stops and not self.drive_on:
+            raise WorkerError("INVALID_REQUEST", "stopInjections need a scene with a drive model and a control profile")
         group = self.engine.drive.g if self.drive_on else None
         try:
+            if stops:
+                group.stage_stops(stops)         # admitted whole before anything runs; applied first thing in the tick, before the faults and the commands
             if injections:
                 group.stage_faults(injections)   # admitted whole before anything runs; the drive applies them at the start of this tick
             if self.world:
@@ -691,11 +696,16 @@ class WorkerSession:
         finally:
             if group is not None:
                 group.staged = None   # a step that was refused applies nothing, now or on a later tick
+                group.staged_stops = None
         if group is not None:
             receipts = group.take_fault_receipts()
             if receipts:
                 digest = hashlib.sha256(rfc8785.dumps(p)).hexdigest()
                 snap["faultReceipts"] = [{**r, "runId": self.run_id, "bootId": self.boot_id, "sceneDigest": self.scene["sceneDigest"], "requestDigest": digest} for r in receipts]
+            stop_receipts = group.take_stop_receipts()
+            if stop_receipts:
+                digest = hashlib.sha256(rfc8785.dumps(p)).hexdigest()
+                snap["stopReceipts"] = [{**r, "runId": self.run_id, "bootId": self.boot_id, "sceneDigest": self.scene["sceneDigest"], "requestDigest": digest} for r in stop_receipts]
         self.tick += 1
         return snap
 

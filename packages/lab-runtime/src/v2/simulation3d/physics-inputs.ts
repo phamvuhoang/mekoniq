@@ -82,6 +82,14 @@ export const DRIVE_DOC_PINS:Record<string,{model:string;control:string}>={
  "drive-coarse-encoder-v1": {
   "model": "0dc9f9ab53eeb231f22e1ad7927f84dd4408ccfb473cd7ba5760c856f7edaa47",
   "control": "23431f266a3fe8031e607c4a7b15354ac45c22ea2baa91edd913dd4f8772a5b4"
+ },
+ "drive-hw-c-brake-v1": {
+  "model": "8459287e8b79673f896ca1398de5a844d7c217f5a78eeb4cba9cf64efad3690c",
+  "control": "d25d7d3cfc758d346bd20e40e6aa62225ad94dafec1eb7b050279a14c3b1b35b"
+ },
+ "drive-hw-c-coast-v1": {
+  "model": "256d6bd6bb4c46a6ca493e7dde736d5b66b61a6c7ffaa800497dd0f64172cac2",
+  "control": "d25d7d3cfc758d346bd20e40e6aa62225ad94dafec1eb7b050279a14c3b1b35b"
  }
 };
 /** The AMR drive documents of a registered drive experiment as the bundle holds them: the registry's file names, sealed, bound to this plant; a tray variant's base limit is the registered one. */

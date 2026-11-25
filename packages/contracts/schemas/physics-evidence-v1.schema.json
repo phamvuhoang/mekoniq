@@ -444,6 +444,22 @@
               "states"
             ]
           }
+        },
+        "stopIntents": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/StopIntentV1"
+          }
+        },
+        "stopReceipts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/StopReceiptV1"
+          }
         }
       },
       "required": [

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-oracle",
+  "id": "stop-oracle-v1",
+  "revision": 1,
+  "invariants": [
+    {
+      "id": "TORQUE_ZERO_AT_EMERGENCY",
+      "appliesTo": [
+        "emergency"
+      ]
+    },
+    {
+      "id": "NO_MOTION_ACCEPTED_AFTER_STOP",
+      "appliesTo": [
+        "protective",
+        "emergency"
+      ]
+    },
+    {
+      "id": "NO_AUTO_RESTART",
+      "appliesTo": [
+        "protective",
+        "emergency"
+      ]
+    },
+    {
+      "id": "RECEIPT_MATCHES_INTENT",
+      "appliesTo": [
+        "normal",
+        "protective",
+        "emergency"
+      ]
+    },
+    {
+      "id": "NO_FALSE_SERVE",
+      "appliesTo": [
+        "normal",
+        "protective",
+        "emergency"
+      ]
+    }
+  ],
+  "thresholds": {
+    "distance": "none",
+    "slip": "none"
+  },
+  "digest": "d278dd4bc2d14bfe68faa8dbcdaf671414249b5fc4cb78983ff7e77c6433e5ab"
+}

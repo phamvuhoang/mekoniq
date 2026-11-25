@@ -8,6 +8,8 @@ import {diffDriveBaseV1,initDiffDriveRevision2,type DiffDriveBaseConfig,type Dif
 import {hashJson} from '../hash';
 import type {ControllerEvent} from './controller';
 import {applyCommandLoss,runtimeFaultsAt} from './drive-faults';
+import {stopModeAt} from './stop-functions';
+import type {StopScheduleEntryV1} from './drive-io';
 import type {FaultScheduleEntry} from '../fault-schedule';
 
 export const CONTROLLER_IN_THE_LOOP='controller_in_the_loop' as const;
@@ -47,16 +49,16 @@ export const driveManifest=(d:{model:DriveModelV1;control:ControlProfileV1},expe
 
 export interface MobileDrive {readonly navigation:ReturnType<typeof routeCorrectionOptions>;readonly manifest:DriveManifest;readonly model:DriveModelV1;fresh():MobileDrive;
  /** The commands of the next tick from the navigation controller's setpoint and the drive feedback of the last verified snapshot. */
- step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
+ step(tick:number,setpoint:{vMps:number;omegaRadps:number;stop?:boolean;stopMode?:'normal'|'protective'|null},snapshot:{drives?:readonly DriveAxisSnapshot[]}):{commands:DriveCommandV1[];events:ControllerEvent[];odometry:[number,number,number]}}
 
 export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robot:{robotId:string;wheelRadiusM:number;wheelSeparationM:number;maxLinearMps:number;maxAngularRadps:number;maxWheelRadps:{left:number;right:number}}):MobileDrive{
  const ctl=d.control.controllers.find(c=>c.controllerId===diffDriveBaseV1.id);
- if(!ctl||![1,2].includes(ctl.revision))throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
+ if(!ctl||![1,2,3].includes(ctl.revision))throw new Error('DRIVE_CONTROLLER_UNREGISTERED');
  const accelMps2=ctl.params.maxAccelerationMps2;
  const config:DiffDriveBaseConfig={axisLeft:`${robot.robotId}/wheel-left`,axisRight:`${robot.robotId}/wheel-right`,wheelRadiusM:robot.wheelRadiusM,wheelSeparationM:robot.wheelSeparationM,
   maxWheelAccelRadS2:typeof accelMps2==='number'?accelMps2/robot.wheelRadiusM:1e9,...BASE_CONTROLLER_DEFAULTS,velocityResolutionRadS:wheelVelocityResolutionRadS(d.model,robot.robotId)};
- if(ctl.revision===2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
- let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2(config,Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
+ if(ctl.revision>=2&&typeof accelMps2!=='number')throw Error('DRIVE_CONTROLLER_LIMIT_INVALID');
+ let state:DiffDriveBaseState=ctl.revision===1?diffDriveBaseV1.init(config):initDiffDriveRevision2({...config,...ctl.revision===3?{stopAware:true}:{}},Number(ctl.params.maxJerkMps3)/robot.wheelRadiusM,{
   // Scene wheel limits include the physical actuator range. Drive rated speed belongs to the independent OVERSPEED monitor.
   wheel:[robot.maxWheelRadps.left,robot.maxWheelRadps.right],mean:robot.maxLinearMps/robot.wheelRadiusM,halfDifference:robot.maxAngularRadps*robot.wheelSeparationM/(2*robot.wheelRadiusM)});
  return {navigation:routeCorrectionOptions(d.control),manifest:driveManifest(d),model:d.model,fresh:()=>mobileDrive(d,robot),step(tick,setpoint,snapshot){
@@ -69,13 +71,13 @@ export function mobileDrive(d:{model:DriveModelV1;control:ControlProfileV1},robo
 
 /** Replay the profile against acknowledged feedback and the setpoint recorded for each tick.
  * A wire trace, when supplied, must match every field of both commands. */
-export function replayMobileCommands(controller:MobileDrive,robotId:string,records:readonly {tick:number;drives?:readonly DriveAxisSnapshot[]}[],controls:readonly {tick:number;targetTick:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]}[],wire?:readonly {tick:number;velocities:number;driveCommands:DriveCommandV1[]}[],faults:readonly FaultScheduleEntry[]=[]){
+export function replayMobileCommands(controller:MobileDrive,robotId:string,records:readonly {tick:number;drives?:readonly DriveAxisSnapshot[]}[],controls:readonly {tick:number;targetTick:number;velocities:readonly {robotId:string;vMps:number;omegaRadps:number}[]}[],wire?:readonly {tick:number;velocities:number;driveCommands:DriveCommandV1[]}[],faults:readonly FaultScheduleEntry[]=[],stops:readonly StopScheduleEntryV1[]=[]){
  const events:ControllerEvent[]=[];let lastSent:DriveCommandV1[]|undefined;
  if(controls.length!==records.length-1||(wire&&wire.length!==controls.length))throw Error('CIL_COMMAND_TRACE');
  for(const [i,c] of controls.entries()){
   const v=c.velocities[0],s=wire?.[i],next=records[i+1]!;
   if(c.tick!==i||c.targetTick!==i+1||c.velocities.length!==1||v?.robotId!==robotId||records[i]!.tick!==i||next.tick!==i+1||!next.drives||(!faults.length&&next.drives.some(d=>d.commandSeq!==next.tick)))throw Error('CIL_COMMAND_TRACE');
-  const out=controller.step(i,v,records[i]!);
+  const mode=stops.length?stopModeAt(stops,i+1):null,out=controller.step(i,mode?{...v,stopMode:mode}:v,records[i]!);
   // what was sent is what the controller asked for, but for the axes a command-loss window silenced on that tick: those repeat the last command that was sent (the schedule's own timeline, not a tolerance)
   const lost=new Set(runtimeFaultsAt(faults,i+1).active.filter(e=>e.faultId==='command-loss').map(e=>e.targetId)),sent=lost.size?applyCommandLoss(out.commands,lastSent,lost):out.commands;lastSent=sent;
   // with a schedule the acknowledged seq of an axis is the seq of what was sent to it: a silenced axis keeps its old one

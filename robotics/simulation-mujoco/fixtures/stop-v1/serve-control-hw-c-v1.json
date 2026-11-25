@@ -3,7 +3,7 @@
   "documentType": "control-profile",
   "id": "serve-control-hw-c-v1",
   "revision": 1,
-  "digest": "7b7376edc5e604036f281e3c81e9c5229bc0a2086e2633909da3cd3c449b6e94",
+  "digest": "49aa99a05220bb51b7f3644452db1c7e15ead55762cf5eddf82cbc3d0e9ad30c",
   "calibration": "not_calibrated",
   "plantModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
   "driveModelDigests": [
@@ -20,7 +20,7 @@
         "integralLimit": null,
         "slewLimit": null
       },
-      "accelerationLimit": 104.71975511965977
+      "accelerationLimit": 100
     },
     {
       "axisId": "amr-1/wheel-right",
@@ -31,13 +31,13 @@
         "integralLimit": null,
         "slewLimit": null
       },
-      "accelerationLimit": 104.71975511965977
+      "accelerationLimit": 100
     }
   ],
   "controllers": [
     {
       "controllerId": "diff-drive-base-v1",
-      "revision": 2,
+      "revision": 3,
       "params": {
         "maxAccelerationMps2": 1,
         "maxJerkMps3": 10

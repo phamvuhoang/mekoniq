@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-survey",
+  "note": "cruise ticks and speeds read from real MJ-TRAY01 runs without a stop; the stop of every case fires on the first tick of its cruise",
+  "seed": 7,
+  "runs": {
+    "tray-stop-brake-v1": {
+      "experimentId": "tray-stop-brake-v1",
+      "cruiseTick": 412,
+      "speedMps": 0.487,
+      "runTicks": 5646
+    },
+    "tray-stop-slow-brake-v1": {
+      "experimentId": "tray-stop-slow-brake-v1",
+      "cruiseTick": 412,
+      "speedMps": 0.24,
+      "runTicks": 8813
+    }
+  }
+}

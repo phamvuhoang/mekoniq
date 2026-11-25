@@ -7,18 +7,26 @@ export const TRAY_ACCELERATION=Object.freeze({
 });
 const nominal={load:'cup-triple',physics:'drive-contact-profile',driveExperimentId:'drive-nominal-v1',accelerationPolicy:'nominal',actor:false} as const;
 const low={...nominal,load:'cup-triple-low-friction',physics:'drive-contact-tray-low-v1'} as const;
-export interface TrayExperiment{load:'cup-triple'|'cup-triple-low-friction';physics:'drive-contact-profile'|'drive-contact-tray-low-v1';driveExperimentId:string;accelerationPolicy:'nominal'|'high';actor:boolean;comparedWith:string|null}
-export const TRAY_EXPERIMENTS:Readonly<Record<'tray-nominal-v1'|'tray-low-friction-v1'|'tray-accel-high-v1'|'tray-torque-limited-v1'|'tray-person-crossing-v1',TrayExperiment>>=Object.freeze({
+export interface TrayExperiment{load:'cup-triple'|'cup-triple-low-friction';physics:'drive-contact-profile'|'drive-contact-tray-low-v1';driveExperimentId:string;accelerationPolicy:'nominal'|'high';actor:boolean;comparedWith:string|null;/** the navigation policy's speed limit; 0.5 m/s when absent (R5 stop variants run slower too) */speedMps?:number}
+export type TrayExperimentName='tray-nominal-v1'|'tray-low-friction-v1'|'tray-accel-high-v1'|'tray-torque-limited-v1'|'tray-person-crossing-v1'|'tray-stop-brake-v1'|'tray-stop-coast-v1'|'tray-stop-slow-brake-v1'|'tray-stop-slow-coast-v1'|'tray-stop-low-brake-v1'|'tray-stop-low-coast-v1';
+export const TRAY_EXPERIMENTS:Readonly<Record<TrayExperimentName,TrayExperiment>>=Object.freeze({
  'tray-nominal-v1':Object.freeze({...nominal,comparedWith:null}),
  'tray-low-friction-v1':Object.freeze({...low,comparedWith:'tray-nominal-v1'}),
  'tray-accel-high-v1':Object.freeze({...low,accelerationPolicy:'high' as const,comparedWith:'tray-low-friction-v1'}),
  'tray-torque-limited-v1':Object.freeze({...nominal,driveExperimentId:'drive-torque-limited-v1',comparedWith:'tray-nominal-v1'}),
  'tray-person-crossing-v1':Object.freeze({...nominal,actor:true,comparedWith:'tray-nominal-v1'}),
+ // R5 stop-v1 variants: the HW-C drive (brake or coast on disable), the tray at the survey speed or half of it, and the slippery tray; each differs from its neighbour in one knob
+ 'tray-stop-brake-v1':Object.freeze({...nominal,driveExperimentId:'drive-hw-c-brake-v1',comparedWith:null}),
+ 'tray-stop-coast-v1':Object.freeze({...nominal,driveExperimentId:'drive-hw-c-coast-v1',comparedWith:'tray-stop-brake-v1'}),
+ 'tray-stop-slow-brake-v1':Object.freeze({...nominal,driveExperimentId:'drive-hw-c-brake-v1',speedMps:0.25,comparedWith:'tray-stop-brake-v1'}),
+ 'tray-stop-slow-coast-v1':Object.freeze({...nominal,driveExperimentId:'drive-hw-c-coast-v1',speedMps:0.25,comparedWith:'tray-stop-coast-v1'}),
+ 'tray-stop-low-brake-v1':Object.freeze({...low,driveExperimentId:'drive-hw-c-brake-v1',comparedWith:'tray-stop-brake-v1'}),
+ 'tray-stop-low-coast-v1':Object.freeze({...low,driveExperimentId:'drive-hw-c-coast-v1',comparedWith:'tray-stop-coast-v1'}),
 });
 export type TrayExperimentId=keyof typeof TRAY_EXPERIMENTS;
 export const isTrayExperiment=(id:unknown):id is TrayExperimentId=>typeof id==='string'&&Object.hasOwn(TRAY_EXPERIMENTS,id);
 export const trayExperiment=(id:string):TrayExperiment=>{if(!isTrayExperiment(id))throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');return TRAY_EXPERIMENTS[id];};
-const knobs=(e:TrayExperiment)=>({friction:e.load,acceleration:e.accelerationPolicy,drive:e.driveExperimentId,actor:e.actor});
+const knobs=(e:TrayExperiment)=>({friction:e.load,acceleration:e.accelerationPolicy,drive:e.driveExperimentId,actor:e.actor,speed:e.speedMps??0.5});
 /** The knobs (friction, acceleration, drive, actor) in which two registered variants differ. */
 export const trayKnobDifference=(a:string,b:string)=>{const x=knobs(trayExperiment(a)),y=knobs(trayExperiment(b));return (Object.keys(x) as (keyof typeof x)[]).filter(k=>x[k]!==y[k]);};
 /** sha256 of fixtures/serve-tray-v1/tray-policy-v1.json: the thresholds a tray run is judged by are the reviewed ones (tests/unit/tray-fixture.test.ts keeps it equal to the file). */

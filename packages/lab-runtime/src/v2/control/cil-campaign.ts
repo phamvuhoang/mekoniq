@@ -192,7 +192,7 @@ export async function verifyCilCampaign(root:string,onlyCase?:string):Promise<Ci
    // the controller's events are recomputed from the stream and the retained commands; the whole section must equal what the report says
    const again=buildDriveEvidence(model,records.map(r=>({tick:r.tick,drives:r.drives??[]})),{complete:read.complete,issues:read.issues,events:await replayMobile(dir,cp,scene,{model,control},records,trace)});
    check(hashJson(again as never)===hashJson(report.driveEvidence as never),'CIL_DRIVE_REPORT_NOT_FROM_STREAM');
-   const oracle=table.oracles.mobile[spec.experimentId] as Oracle&Record<string,unknown>;
+   const oracle=table.oracles.mobile[spec.experimentId as keyof typeof table.oracles.mobile] as Oracle&Record<string,unknown>;
    const out=outcome;check((oracle.status as string[]).includes(out.status),'CIL_OUTCOME_STATUS:'+out.status);
    const falseServed=out.served!=='0'&&(out.status!=='completed'||report.attention.length>0);check(!falseServed,'CIL_FALSE_SERVED');
    if('served' in oracle)check(out.served===oracle.served,'CIL_SERVED:'+out.served);

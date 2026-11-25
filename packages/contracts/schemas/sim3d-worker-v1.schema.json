@@ -489,6 +489,14 @@
               "items": {
                 "$ref": "drive-io-v1.schema.json#/definitions/FaultInjectionV1"
               }
+            },
+            "stopInjections": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 4,
+              "items": {
+                "$ref": "drive-io-v1.schema.json#/definitions/StopInjectionV1"
+              }
             }
           },
           "required": [
@@ -1279,6 +1287,14 @@
           "items": {
             "$ref": "drive-io-v1.schema.json#/definitions/FaultReceiptV1"
           }
+        },
+        "stopReceipts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/StopReceiptV1"
+          }
         }
       },
       "required": [
@@ -1401,6 +1417,14 @@
           "maxItems": 32,
           "items": {
             "$ref": "drive-io-v1.schema.json#/definitions/FaultReceiptV1"
+          }
+        },
+        "stopReceipts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/StopReceiptV1"
           }
         }
       },

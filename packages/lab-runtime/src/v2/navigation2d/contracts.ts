@@ -21,6 +21,7 @@ import {inertiaProblems} from '../../engineering/inertia';
 import {hashJson} from '../hash';
 export type {AlgorithmResultV1,ArmCellSceneV1,ArmScene3DV1,Sim3DRequestV1,Sim3DResponseV1,Sim3DSnapshotV1,World3DV1,IRSimRequestV1,IRSimResponseV1,IRSimSnapshotV1,LidarScanV1,ModelValidationReportV1,NavigationModel2DV1,NavigationPolicyV1,NavigationRunEvidenceV1,NavigationSceneV1,RobotPhysicalModelV1};
 export type {LoadProfileV1,PhysicsEvidenceV1,PhysicsTickRecord,ContactAggregate,LoadObservation} from '../../../../contracts/generated/navigation2d';
+export type {StopMetricsV1,StopPolicyV1,StopOracleV1,StopReportV1} from '../../../../contracts/generated/navigation2d';
 export type {InputIdentity,ArtifactRef,Vec2,SensorMount,Lidar2DProjection} from '../../../../contracts/generated/navigation2d';
 
 /** Content hash of the schemas a physical model is projected against; recorded as projection.sourceSchemaHash. */

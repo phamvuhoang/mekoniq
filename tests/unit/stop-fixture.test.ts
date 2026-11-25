@@ -27,7 +27,7 @@ test('brake and coast differ in exactly onDisable and brakeTorqueNm; both are va
  expect(brake.axes.every(a=>a.onDisable==='brake'&&a.brakeTorqueNm!==null)).toBe(true);expect(coast.axes.every(a=>a.onDisable==='coast'&&a.brakeTorqueNm===null)).toBe(true);
  expect(brake.revision).toBe(1);expect(r4.sources).toEqual(brake.sources);
 });
-test('the control profile carries the documented acceleration and both drive models',async()=>{
+test('the control profile carries the documented acceleration capped at the envelope, controller revision 3, and both drive models',async()=>{
  const c=await doc<ControlProfileV1>('serve-control-hw-c-v1.json'),brake=await doc<DriveModelV1>('serve-drive-hw-c-brake-v1.json'),coast=await doc<DriveModelV1>('serve-drive-hw-c-coast-v1.json');
- expect(c.driveModelDigests).toEqual([brake.digest,coast.digest]);expect(c.axes.every(a=>a.accelerationLimit!==null&&a.accelerationLimit>100)).toBe(true);expect(driveDocumentDigest(c)).toBe(c.digest);
+ expect(c.driveModelDigests).toEqual([brake.digest,coast.digest]);expect(c.axes.every(a=>a.accelerationLimit!==null&&a.accelerationLimit===100)).toBe(true);expect(driveDocumentDigest(c)).toBe(c.digest);
 });

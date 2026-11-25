@@ -20,6 +20,7 @@ import {createScenarioRun,type ScenarioRun,type RunManifestInput,type RunProvide
 import {serveRunStream,STREAM_DEFAULTS,type StreamOptions} from './event-stream';
 import type {WallClock} from './pace';
 import {findReclaim,proofHash,saveReclaim,saveControlEpoch} from './reclaim-store';
+import {STOP_FUNCTIONS,validateStopSchedule} from './control/stop-functions';
 import {ELECTRICAL_CAPABILITY,ENGINEERING_CAPABILITY,EngineeringError,type EngineeringService,type LockedEngineering} from '../engineering/gateway';
 import {BENCH_AMPLITUDES,BENCH_MAX_TICKS,BENCH_SIGNAL_KINDS,BENCH_WHEEL_DIRECTION,SUGGEST_OPTIONS} from './control/bench-signals';
 import {benchIdleLease,type BenchCatalog,type BenchInfo} from './control/bench-runner';
@@ -327,6 +328,13 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
     const checked=validateDriveFaultSchedule(r.driveFaultSchedule as FaultScheduleEntry[],{...ctx,campaign:false});
     if(!checked.ok)return deny(response,422,'INVALID_FAULT_SCHEDULE',checked.reasonCodes);
    }
+   // R5 stop requests are checked against the closed function list and the drive's axes before anything is built; the runner checks again against the scene it really runs
+   if(r.stopSchedule?.length){
+    const ctx=await deps.driveFaultContext?.({mode:r.mode,backendSetId:r.backendSetId,scenarioId:r.scenarioId});
+    if(!ctx)return deny(response,422,'STOP_BACKEND_UNSUPPORTED',['STOP_BACKEND_UNSUPPORTED']);
+    const checked=validateStopSchedule(r.stopSchedule,{axes:ctx.axes,functions:STOP_FUNCTIONS,missionEndMs:null});
+    if(!checked.ok)return deny(response,422,'INVALID_STOP_SCHEDULE',checked.reasonCodes);
+   }
    const project=engineering?engineering.runtimeProjection.project:r.project!;
    const set=Object.hasOwn(catalog.sets,r.backendSetId)?catalog.sets[r.backendSetId]:undefined;
    if(!set)return deny(response,422,'BACKEND_UNAVAILABLE',['BACKEND_SET_UNKNOWN']);
@@ -352,7 +360,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    if(runs.size+creating>=20)return deny(response,429,'RUN_LIMIT',[]);
    creating++;const directory=join(deps.directory,randomUUID());let run:ScenarioRun|undefined;
    try{
-    const input:RunManifestInput={project,...r.bench?{bench:r.bench as unknown as NonNullable<RunManifestInput['bench']>}:{},scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...r.graspMode?{graspMode:r.graspMode}:{},...r.perceptionProfileId?{perceptionProfileId:r.perceptionProfileId}:{},...r.recoveryPolicyId?{recoveryPolicyId:r.recoveryPolicyId}:{},...r.graspProgramId?{graspProgramId:r.graspProgramId}:{},...r.driveFaultSchedule?.length?{driveFaultSchedule:r.driveFaultSchedule as FaultScheduleEntry[]}:{},...engineering?{engineering}:{}};
+    const input:RunManifestInput={project,...r.bench?{bench:r.bench as unknown as NonNullable<RunManifestInput['bench']>}:{},scenarioId:r.scenarioId,scenarioRevision:r.scenarioRevision,seed:r.seed,mode:r.mode,access:r.access,backendSetId:r.backendSetId,sourceCommit:deps.sourceCommit,...r.worldExperimentId?{worldExperimentId:r.worldExperimentId}:{},...r.driveExperimentId?{driveExperimentId:r.driveExperimentId}:{},...r.graspMode?{graspMode:r.graspMode}:{},...r.perceptionProfileId?{perceptionProfileId:r.perceptionProfileId}:{},...r.recoveryPolicyId?{recoveryPolicyId:r.recoveryPolicyId}:{},...r.graspProgramId?{graspProgramId:r.graspProgramId}:{},...r.driveFaultSchedule?.length?{driveFaultSchedule:r.driveFaultSchedule as FaultScheduleEntry[]}:{},...r.stopSchedule?.length?{stopSchedule:r.stopSchedule}:{},...engineering?{engineering}:{}};
     run=await (input.mode==='simulation'?deps.simulationFactory!:createScenarioRun)(input,{directory,catalog,enabledBackends:[...enabled],...deps.wall?{wall:deps.wall}:{},...engineering?{assets:engineering.runtimeProjection.assets as never,bundleFile}:{}});
     const reclaimToken=token();await saveReclaim(directory,{runId:run.id,proofHash:proofHash(reclaimToken),schemaHash:deps.schemaHash,input});
     // the run → bundle association is durable before the client hears about the run

@@ -399,6 +399,11 @@ export type Sim3DRequestV1 =
          * @maxItems 32
          */
         faultInjections?: FaultInjectionV1[];
+        /**
+         * @minItems 0
+         * @maxItems 4
+         */
+        stopInjections?: StopInjectionV1[];
       };
     }
   | {
@@ -1391,6 +1396,11 @@ export interface Sim3DSnapshotV1 {
    * @maxItems 32
    */
   faultReceipts?: FaultReceiptV1[];
+  /**
+   * @minItems 0
+   * @maxItems 4
+   */
+  stopReceipts?: StopReceiptV1[];
 }
 /**
  * What the engine reports about the world it loaded (getState only): link masses and world positions, wheel radius and separation, wheel hinge axes. Compared with the physical model by the parity test.
@@ -1583,6 +1593,16 @@ export interface PhysicsTickRecord {
      */
     states: ('hit' | 'no_return' | 'below_min' | 'invalid')[];
   }[];
+  /**
+   * @minItems 0
+   * @maxItems 4
+   */
+  stopIntents?: StopIntentV1[];
+  /**
+   * @minItems 0
+   * @maxItems 4
+   */
+  stopReceipts?: StopReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1700,6 +1720,30 @@ export interface FaultReceiptV1 {
   sceneDigest: string;
   requestDigest: string;
   overriddenBy?: 'WORLD_MOVEMENT_INTERLOCK';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopIntentV1".
+ */
+export interface StopIntentV1 {
+  entryId: string;
+  function: 'normal' | 'protective' | 'emergency';
+  appliedBy: 'controller' | 'worker';
+  targetTick: number;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopReceiptV1".
+ */
+export interface StopReceiptV1 {
+  entryId: string;
+  function: 'normal' | 'protective' | 'emergency';
+  appliedBy: 'controller' | 'worker';
+  appliedTick: number;
+  runId: string;
+  bootId: string;
+  sceneDigest: Digest;
+  requestDigest: Digest;
 }
 export interface WorldStep {
   workerPid: number;
@@ -1859,6 +1903,11 @@ export interface Sim3DWireSnapshotV1 {
    * @maxItems 32
    */
   faultReceipts?: FaultReceiptV1[];
+  /**
+   * @minItems 0
+   * @maxItems 4
+   */
+  stopReceipts?: StopReceiptV1[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -1909,6 +1958,19 @@ export interface DriveCommandV1 {
   enable: boolean;
   quickStop: boolean;
   faultReset: boolean;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopInjectionV1".
+ */
+export interface StopInjectionV1 {
+  entryId: string;
+  function: 'emergency';
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes: DriveAxisId[];
 }
 /**
  * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
@@ -2771,6 +2833,18 @@ export interface DriveFaultEntryV1 {
   durationMs: number;
   params?: {
     [k: string]: number;
+  };
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopScheduleEntryV1".
+ */
+export interface StopScheduleEntryV1 {
+  id: string;
+  function: 'normal' | 'protective' | 'emergency';
+  trigger: {
+    kind: 'elapsed_sim_ms';
+    value: number;
   };
 }
 /**
@@ -3702,4 +3776,132 @@ export interface CalibrationRecordV1 {
   )[];
   toolSelfTest: boolean;
   accepted: false;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "Unavailable".
+ */
+export interface Unavailable {
+  unavailable: 'NOT_AT_REST' | 'NOT_APPLICABLE' | 'STREAM_MISSING' | 'TOO_FEW_SAMPLES' | 'RUN_ENDED';
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopMetricsV1".
+ */
+export interface StopMetricsV1 {
+  stopTimeMs: number | Unavailable;
+  stopDistanceM: number | Unavailable;
+  peakDecelerationMps2: number | Unavailable;
+  torqueZeroTick: number | Unavailable;
+  cupMaxSlipMm: number | Unavailable;
+  cupTipped: boolean | Unavailable;
+  postStopDriftMm: number | Unavailable;
+  wheelSlip: boolean | Unavailable;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopPolicyV1".
+ */
+export interface StopPolicyV1 {
+  schemaVersion: 1;
+  documentType: 'stop-policy';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  calibration: 'not_calibrated';
+  restSpeedMps: number;
+  restTicks: number;
+  observeTicks: number;
+  decelWindowTicks: number;
+  driftTicks: number;
+  slipToleranceMps: number;
+  cupTiltCosine: number;
+  source: SourceRef;
+}
+/**
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopOracleV1".
+ */
+export interface StopOracleV1 {
+  schemaVersion: 1;
+  documentType: 'stop-oracle';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  /**
+   * @minItems 5
+   * @maxItems 5
+   */
+  invariants: {
+    id:
+      | 'TORQUE_ZERO_AT_EMERGENCY'
+      | 'NO_MOTION_ACCEPTED_AFTER_STOP'
+      | 'NO_AUTO_RESTART'
+      | 'RECEIPT_MATCHES_INTENT'
+      | 'NO_FALSE_SERVE';
+    /**
+     * @minItems 1
+     * @maxItems 3
+     */
+    appliesTo: ('normal' | 'protective' | 'emergency')[];
+  }[];
+  thresholds: {
+    distance: 'none';
+    slip: 'none';
+  };
+}
+/**
+ * What one stop request did to one run, read from the durable evidence of that run. Every number is an observation in an assumed, not calibrated model; the report never states a stopping distance of a robot.
+ *
+ * This interface was referenced by `Navigation2DContracts`'s JSON-Schema
+ * via the `definition` "StopReportV1".
+ */
+export interface StopReportV1 {
+  schemaVersion: 1;
+  documentType: 'stop-report';
+  accepted: false;
+  calibration: 'not_calibrated';
+  digest: Digest;
+  runId: string;
+  function: 'normal' | 'protective' | 'emergency';
+  entryId: string;
+  verdict: 'fired' | 'not_fired';
+  appliedTick: number | null;
+  receipt: StopReceiptV1 | null;
+  metrics: StopMetricsV1;
+  /**
+   * @maxItems 16
+   */
+  drives: {
+    axisId: DriveAxisId;
+    state: string;
+    fault: string | null;
+  }[];
+  /**
+   * @minItems 5
+   * @maxItems 5
+   */
+  invariants: {
+    id:
+      | 'TORQUE_ZERO_AT_EMERGENCY'
+      | 'NO_MOTION_ACCEPTED_AFTER_STOP'
+      | 'NO_AUTO_RESTART'
+      | 'RECEIPT_MATCHES_INTENT'
+      | 'NO_FALSE_SERVE';
+    result: 'pass' | 'violated' | 'not_applicable' | 'not_evidenced';
+    detail: string;
+  }[];
+  /**
+   * @maxItems 16
+   */
+  decidingParameters: {
+    id: string;
+    value: number | string | null;
+    source: SourceRef;
+  }[];
+  /**
+   * @minItems 1
+   * @maxItems 8
+   */
+  limits: string[];
 }

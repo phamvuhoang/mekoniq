@@ -54,7 +54,8 @@ describe('deriveDriveModel',()=>{
   const base=await load<DriveModelV1>('serve-drive-nominal-v1.json'),control=await load<ControlProfileV1>('serve-control-v2.json'),{context}=await shippedContext('serve-hw-c-v1');
   expect(deriveDriveModel(base,context,control).checks.map(c=>c.ruleId)).toEqual(['ELD_MODE_UNSUPPORTED','ELD_MODE_UNSUPPORTED']);
   const derived=deriveControlProfile(control,context,[base.digest]);
-  expect(derived.axes.every(a=>a.accelerationLimit!==null&&Math.abs(a.accelerationLimit-104.71975511965977)<1e-9)).toBe(true);expect(derived.revision).toBe(control.revision+1);
+  expect(derived.axes.every(a=>a.accelerationLimit!==null&&Math.abs(a.accelerationLimit-104.71975511965977)<1e-9)).toBe(true);
+  expect(deriveControlProfile(control,context,[base.digest],100).axes.every(a=>a.accelerationLimit===100)).toBe(true);expect(derived.revision).toBe(control.revision+1);
   expect(deriveDriveModel(base,context,derived).checks).toEqual([]);
  });
  test('a stop that ends in torque_off_brake needs a brake output in the profile',async()=>{

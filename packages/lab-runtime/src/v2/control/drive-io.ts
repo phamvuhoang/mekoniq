@@ -11,6 +11,7 @@ import type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,
 import {hashJson} from '../hash';
 import {withinEnvelope} from './tuning-envelope';
 export type {AxisControl,AxisDriveModel,AxisEnvelope,BenchRequestV1,BenchSignal,ControlProfileV1,DriveAxisSnapshot,DriveCommandV1,DriveFeedbackV1,DriveModelV1,TuningEnvelopeV1};
+export type {StopScheduleEntryV1,StopInjectionV1,StopIntentV1,StopReceiptV1} from '../../../../contracts/generated/navigation2d';
 export type {ControlMetric,DriveTrace,DriveMode,DriveState,DriveFault,DriveTickRecord,TuningResultV1,FaultReportV1,FaultOracleV1,ControlOracleV1} from '../../../../contracts/generated/navigation2d';
 export type Check={ok:boolean;reasonCodes:string[]};
 

@@ -59,7 +59,7 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  if(bench!==undefined||scenarioRegistry.get(v.scenarioId)?.bench){
   const scope=(message:string):Validated<CreateRunRequest>=>({ok:false,issues:[{path:'/bench',code:'BENCH_SCOPE_INVALID',message}]});
   if(bench===undefined||!scenarioRegistry.get(v.scenarioId)?.bench||v.mode!=='simulation'||v.backendSetId!==BENCH_SET_ID)return scope('A bench request runs only a bench scenario on engineering-mujoco-bench-v1, and a bench scenario only with a bench request');
-  if(v.project!==undefined||v.engineeringRef!==undefined||v.worldExperimentId!==undefined||v.driveExperimentId!==undefined||v.driveFaultSchedule!==undefined||v.graspProgramId!==undefined)return scope('A bench plant is built by the server: no project, engineering bundle or run experiment (the drive experiment is the bench request\'s own)');
+  if(v.project!==undefined||v.engineeringRef!==undefined||v.worldExperimentId!==undefined||v.driveExperimentId!==undefined||v.driveFaultSchedule!==undefined||v.stopSchedule!==undefined||v.graspProgramId!==undefined)return scope('A bench plant is built by the server: no project, engineering bundle or run experiment (the drive experiment is the bench request\'s own)');
   const checked=validateBenchRequestShape(bench);
   if(!checked.ok)return {ok:false,issues:checked.reasonCodes.map(code=>({path:'/bench',code,message:'Invalid bench request'}))};
   return (bench as {scenarioId:string}).scenarioId===v.scenarioId?shape:scope('The bench request names another scenario than the run');
@@ -81,6 +81,11 @@ export function validateRunRequestV2(value:unknown):Validated<CreateRunRequest>{
  if(shape.value.driveFaultSchedule?.length){
   const f=shape.value,cell=f.backendSetId==='engineering-mujoco-cell-v1'&&f.scenarioId==='MJ-CELL-BV01'&&!!f.driveExperimentId,mobile=f.backendSetId==='engineering-mujoco-3d-v1'&&f.engineeringRef!==undefined;
   if(f.mode!=='simulation'||!(cell||mobile))return {ok:false,issues:[{path:'/driveFaultSchedule',code:'FAULT_BACKEND_UNSUPPORTED',message:'Drive faults need a simulation run with a drive model: the shared-world cell with a drive experiment, or an engineering MuJoCo mobile run'}]};
+ }
+ // R5 stop requests need a drive on an engineering MuJoCo mobile run
+ if(shape.value.stopSchedule?.length){
+  const f=shape.value;
+  if(f.mode!=='simulation'||f.backendSetId!=='engineering-mujoco-3d-v1'||f.engineeringRef===undefined)return {ok:false,issues:[{path:'/stopSchedule',code:'STOP_BACKEND_UNSUPPORTED',message:'Stop requests need an engineering MuJoCo mobile run with a drive model'}]};
  }
  // An engineering request carries engineeringRef instead of (or equal to) a project; the gateway derives the project from the bundle.
  const project=shape.value.project===undefined?undefined:validateProjectV2(shape.value.project);

@@ -244,7 +244,9 @@
             "drive-nominal-v1",
             "drive-torque-limited-v1",
             "drive-latency-v1",
-            "drive-coarse-encoder-v1"
+            "drive-coarse-encoder-v1",
+            "drive-hw-c-brake-v1",
+            "drive-hw-c-coast-v1"
           ]
         },
         "graspMode": {
@@ -280,6 +282,14 @@
           "description": "Drive, feedback, command-channel and sensor faults of this run (R4, V08). Admitted against the server's fault catalog; run-scoped, never part of the project. Absent: no injection, byte for byte.",
           "items": {
             "$ref": "drive-io-v1.schema.json#/definitions/DriveFaultEntryV1"
+          }
+        },
+        "stopSchedule": {
+          "type": "array",
+          "maxItems": 4,
+          "description": "Stop requests of this run (R5): normal, protective and emergency stops at simulation times. Admitted against the closed function list; run-scoped, never part of the project. Absent: no stop, byte for byte.",
+          "items": {
+            "$ref": "drive-io-v1.schema.json#/definitions/StopScheduleEntryV1"
           }
         }
       },

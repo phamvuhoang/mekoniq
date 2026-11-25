@@ -10,8 +10,8 @@ import {validateControlProfile,validateDriveModel,type TuningEnvelopeV1} from '.
 const root=resolve('robotics/simulation-mujoco');
 // the same literal as WORLD_PLANT in tests/test_drive_engine.py, computed there with rfc8785
 const WORLD_PLANT='9da95c2a2a5cdc6d8761ca786917d740a85bc19091bdd9d254613549c514fa7b';
-test('the registry is closed: five ids, an unknown id is refused before anything is built',()=>{
- expect(Object.keys(DRIVE_EXPERIMENTS)).toEqual(['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1']);
+test('the registry is closed: the five ids of R4 and the two HW-C stop variants of R5, an unknown id is refused before anything is built',()=>{
+ expect(Object.keys(DRIVE_EXPERIMENTS)).toEqual(['drive-ideal-v1','drive-nominal-v1','drive-torque-limited-v1','drive-latency-v1','drive-coarse-encoder-v1','drive-hw-c-brake-v1','drive-hw-c-coast-v1']);
  for(const bad of ['drive-nominal-v2','__proto__','constructor','','../drive-v1/serve-drive-nominal-v1','toString'])expect(()=>driveExperiment(bad),bad).toThrow('DRIVE_EXPERIMENT_UNREGISTERED');
  expect(Object.isFrozen(DRIVE_EXPERIMENTS)).toBe(true);
 });

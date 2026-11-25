@@ -3,19 +3,23 @@
 import type {DriveCommandV1,DriveFeedbackV1} from './drive-io';
 import type {ControllerEvent,MotionController} from './controller';
 
-export interface DiffDriveBaseConfig {axisLeft:string;axisRight:string;wheelRadiusM:number;wheelSeparationM:number;maxWheelAccelRadS2:number;enableTimeoutTicks:number;trackingDegradedRadS:number;trackingDegradedTicks:number;/** what one encoder count is worth as a speed estimate; a deviation below it is quantisation, not tracking (absent = an exact encoder) */velocityResolutionRadS?:number}
+export interface DiffDriveBaseConfig {/** revision 3: honours a stop request in the setpoint. Revisions 1 and 2 ignore one, so their commands do not change by a byte. */stopAware?:boolean;axisLeft:string;axisRight:string;wheelRadiusM:number;wheelSeparationM:number;maxWheelAccelRadS2:number;enableTimeoutTicks:number;trackingDegradedRadS:number;trackingDegradedTicks:number;/** what one encoder count is worth as a speed estimate; a deviation below it is quantisation, not tracking (absent = an exact encoder) */velocityResolutionRadS?:number}
 export interface DiffDriveBaseState {
- config:DiffDriveBaseConfig;seq:number;waitingTicks:number;notReady:boolean;faulted:boolean;degraded:boolean;
+ config:DiffDriveBaseConfig;/** a protective stop, once requested, holds quickStop on both axes for the rest of the run */protective?:boolean;stopSeen?:'normal'|'protective';seq:number;waitingTicks:number;notReady:boolean;faulted:boolean;degraded:boolean;
  ramp?:{maxChange:number;delta:WheelPair;bounds:DriveBounds};targets:[number,number];wheelAngles:[number,number]|null;odometry:[number,number,number];errors:[number[],number[]]}
 const TICK_S=0.02;
 const sinc=(x:number)=>x===0?1:Math.sin(Math.PI*x)/(Math.PI*x);  // numpy's normalised sinc, as the worker uses it
 
 type WheelPair=[number,number];
-export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;omegaRadps:number;stop?:boolean},DiffDriveBaseConfig>={
+export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;omegaRadps:number;stop?:boolean;stopMode?:'normal'|'protective'|null},DiffDriveBaseConfig>={
  id:'diff-drive-base-v1',revision:1,
  init:config=>({config,seq:0,waitingTicks:0,notReady:false,faulted:false,degraded:false,targets:[0,0],wheelAngles:null,odometry:[0,0,0],errors:[[],[]]}),
  step(state,input){
   const c=state.config,events:ControllerEvent[]=[];
+  // revision 3: a normal stop asks for zero speed through the ramp; a protective stop does that and holds quickStop, latched: navigation setpoints after it change nothing
+  const mode=c.stopAware?input.setpoint.stopMode??null:null,protective=c.stopAware===true&&(state.protective===true||mode==='protective'),stopMode=protective?'protective':mode;
+  const sp=stopMode?{...input.setpoint,vMps:0,omegaRadps:0}:input.setpoint;
+  if(stopMode&&state.stopSeen!==stopMode)events.push({tick:input.tick,code:stopMode==='protective'?'PROTECTIVE_STOP':'NORMAL_STOP'});
   const fb=[c.axisLeft,c.axisRight].map(id=>{const f=input.feedback.find(x=>x.axisId===id);if(!f)throw new Error(`DRIVE_FEEDBACK_AXIS_MISSING:${id}`);return f as DriveFeedbackV1;});
   const seq=state.seq+1;
   // odometry from the measured angle increments, the worker's formula (arc of the mean wheel travel, heading by the difference)
@@ -34,14 +38,16 @@ export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;om
    if(!faulted)events.push({tick:input.tick,code:'DRIVE_FAULT',axisId:faultedAxes[0]!.axisId,detail:faultedAxes.map(f=>`${f.axisId}:${f.fault}`).join(',')});
    faulted=true;errors=[[],[]];degraded=false;
   }else if(!allEnabled){
-   faulted=false;waitingTicks+=1;errors=[[],[]];degraded=false;
+   faulted=false;errors=[[],[]];degraded=false;
+   // a protective stop leaves the drive disabled on purpose: that is not an enable failure
+   waitingTicks=protective?0:waitingTicks+1;
    if(waitingTicks>c.enableTimeoutTicks&&!notReady){notReady=true;events.push({tick:input.tick,code:'DRIVE_NOT_READY',axisId:fb.find(f=>f.state!=='enabled')!.axisId,detail:fb.map(f=>`${f.axisId}:${f.state}`).join(',')});}
   }else{
    faulted=false;waitingTicks=0;notReady=false;
-   const half=input.setpoint.omegaRadps*c.wheelSeparationM/2,desired:[number,number]=[(input.setpoint.vMps-half)/c.wheelRadiusM,(input.setpoint.vMps+half)/c.wheelRadiusM],step=c.maxWheelAccelRadS2*TICK_S;
+   const half=sp.omegaRadps*c.wheelSeparationM/2,desired:[number,number]=[(sp.vMps-half)/c.wheelRadiusM,(sp.vMps+half)/c.wheelRadiusM],step=c.maxWheelAccelRadS2*TICK_S;
    // `stop`: the caller (an interlocked cell) needs the wheels at zero NOW; the acceleration limit would stretch that into a ramp
-   targets=input.setpoint.stop?[0,0]:[0,1].map(i=>Math.max(state.targets[i]!-step,Math.min(state.targets[i]!+step,desired[i]!))) as [number,number];
-   if(ramp&&!input.setpoint.stop){
+   targets=sp.stop||protective?[0,0]:[0,1].map(i=>Math.max(state.targets[i]!-step,Math.min(state.targets[i]!+step,desired[i]!))) as [number,number];
+   if(ramp&&!sp.stop&&!protective){
     const delta=nextWheelDelta(state.targets,desired,ramp.delta,step,ramp.maxChange,ramp.bounds);
     targets=[state.targets[0]+delta[0],state.targets[1]+delta[1]];ramp={...ramp,delta};
    }
@@ -51,9 +57,9 @@ export const diffDriveBaseV1:MotionController<DiffDriveBaseState,{vMps:number;om
    if(bad&&!degraded)events.push({tick:input.tick,code:'TRACKING_DEGRADED',detail:errors.map(e=>(e.reduce((a,b)=>a+b,0)/Math.max(1,e.length)).toFixed(3)).join(',')});
    degraded=bad;
   }
-  if(ramp&&(input.setpoint.stop||!allEnabled))ramp={...ramp,delta:[0,0]};
-  const commands:DriveCommandV1[]=[c.axisLeft,c.axisRight].map((axisId,i)=>({axisId,seq,mode:'csv',target:targets[i]!,enable:true,quickStop:false,faultReset:false}));
-  return {state:{config:c,...ramp?{ramp}:{},seq,waitingTicks,notReady,faulted,degraded,targets,wheelAngles,odometry,errors},commands,events};
+  if(ramp&&(sp.stop||protective||!allEnabled))ramp={...ramp,delta:[0,0]};
+  const commands:DriveCommandV1[]=[c.axisLeft,c.axisRight].map((axisId,i)=>({axisId,seq,mode:'csv',target:targets[i]!,enable:true,quickStop:protective,faultReset:false}));
+  return {state:{config:c,...ramp?{ramp}:{},...protective?{protective:true}:{},...stopMode?{stopSeen:stopMode}:{},seq,waitingTicks,notReady,faulted,degraded,targets,wheelAngles,odometry,errors},commands,events};
  },
 };
 

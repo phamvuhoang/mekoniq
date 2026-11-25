@@ -10,7 +10,7 @@ export function mujocoExperiment(id:string):MujocoExperiment{
  if(Object.hasOwn(PAYLOAD_EXPERIMENTS,id))return {family:'payload',fixture:'serve-payload-v1',...payloadExperiment(id)};
  if(!isTrayExperiment(id))throw new Error('MUJOCO_EXPERIMENT_UNREGISTERED');
  const e=trayExperiment(id),a=TRAY_ACCELERATION[e.accelerationPolicy];
- return {family:'tray',fixture:'serve-tray-v1',load:e.load,physics:e.physics,maxLinearMps:0.5,maxAngularRadps:1,maxAccelerationMps2:a.policyMps2,baseAccelerationMps2:a.baseLimitMps2,driveExperimentId:e.driveExperimentId,actor:e.actor};
+ return {family:'tray',fixture:'serve-tray-v1',load:e.load,physics:e.physics,maxLinearMps:e.speedMps??0.5,maxAngularRadps:1,maxAccelerationMps2:a.policyMps2,baseAccelerationMps2:a.baseLimitMps2,driveExperimentId:e.driveExperimentId,actor:e.actor};
 }
 
 /** The navigation policy an experiment applies: the baseline with the registered limits (all else retained), sealed with the experiment's name; the baseline itself when the limits equal it. The compiler and the input verifier build the same one. */

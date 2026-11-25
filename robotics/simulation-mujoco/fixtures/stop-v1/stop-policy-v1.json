@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "documentType": "stop-policy",
+  "id": "stop-policy-v1",
+  "revision": 1,
+  "calibration": "not_calibrated",
+  "restSpeedMps": 0.01,
+  "restTicks": 25,
+  "observeTicks": 500,
+  "decelWindowTicks": 5,
+  "driftTicks": 100,
+  "slipToleranceMps": 0.05,
+  "cupTiltCosine": 0.866,
+  "source": {
+    "kind": "assumed",
+    "documentId": "r5-stop-assumptions",
+    "revision": "1",
+    "locator": "starting values of the stop metrics; test policy, locked before the campaign",
+    "contentSha256": "62b581642690efe7924d8d8ff85c60b5eb5b12015983d5e8758c956318c22532"
+  },
+  "digest": "bd13acb7d14a6f4d5fb06b268334daf3eec29d86f5f1c154b8c4ada90afe04c2"
+}

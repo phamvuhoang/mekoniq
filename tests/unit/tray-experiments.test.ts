@@ -4,8 +4,8 @@ import {mujocoExperiment} from '../../packages/lab-runtime/src/v2/simulation3d/e
 import {PAYLOAD_EXPERIMENTS} from '../../packages/lab-runtime/src/v2/simulation3d/payload-experiments';
 import {DRIVE_EXPERIMENTS} from '../../packages/lab-runtime/src/v2/control/drive-experiments';
 
-test('the registry is closed and has the five ids of R4-A 7.4',()=>{
- expect(Object.keys(TRAY_EXPERIMENTS).sort()).toEqual(['tray-accel-high-v1','tray-low-friction-v1','tray-nominal-v1','tray-person-crossing-v1','tray-torque-limited-v1']);
+test('the registry is closed: the five ids of R4-A 7.4 and the six stop variants of R5',()=>{
+ expect(Object.keys(TRAY_EXPERIMENTS).sort()).toEqual(['tray-accel-high-v1','tray-low-friction-v1','tray-nominal-v1','tray-person-crossing-v1','tray-stop-brake-v1','tray-stop-coast-v1','tray-stop-low-brake-v1','tray-stop-low-coast-v1','tray-stop-slow-brake-v1','tray-stop-slow-coast-v1','tray-torque-limited-v1']);
  expect(Object.isFrozen(TRAY_EXPERIMENTS)).toBe(true);
  for(const e of Object.values(TRAY_EXPERIMENTS))expect(Object.isFrozen(e)).toBe(true);
  expect(()=>trayExperiment('__proto__')).toThrow('MUJOCO_EXPERIMENT_UNREGISTERED');
@@ -17,7 +17,7 @@ test('every variant names a registered drive experiment; ids do not clash with t
 });
 
 test('a variant differs from the one it is compared with in exactly one knob',()=>{
- const expected={'tray-nominal-v1':null,'tray-low-friction-v1':['friction','tray-nominal-v1'],'tray-accel-high-v1':['acceleration','tray-low-friction-v1'],'tray-torque-limited-v1':['drive','tray-nominal-v1'],'tray-person-crossing-v1':['actor','tray-nominal-v1']} as const;
+ const expected={'tray-nominal-v1':null,'tray-low-friction-v1':['friction','tray-nominal-v1'],'tray-accel-high-v1':['acceleration','tray-low-friction-v1'],'tray-torque-limited-v1':['drive','tray-nominal-v1'],'tray-person-crossing-v1':['actor','tray-nominal-v1'],'tray-stop-brake-v1':null,'tray-stop-coast-v1':['drive','tray-stop-brake-v1'],'tray-stop-slow-brake-v1':['speed','tray-stop-brake-v1'],'tray-stop-slow-coast-v1':['speed','tray-stop-coast-v1'],'tray-stop-low-brake-v1':['friction','tray-stop-brake-v1'],'tray-stop-low-coast-v1':['friction','tray-stop-coast-v1']} as const;
  for(const [id,e] of Object.entries(TRAY_EXPERIMENTS)){
   const want=expected[id as keyof typeof expected];
   if(!want){expect(e.comparedWith).toBeNull();continue;}
@@ -54,9 +54,9 @@ import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {DRIVE_DOC_PINS,controlShape} from '../../packages/lab-runtime/src/v2/simulation3d/physics-inputs';
 import {hashJson} from '../../packages/lab-runtime/src/v2/hash';
-test('the pinned drive documents are the fixtures of drive-v1 (a drifted fixture fails here, not silently in a verifier)',async()=>{
- const dir='robotics/simulation-mujoco/fixtures/drive-v1/';
+test('the pinned drive documents are the fixtures of drive-v1 and stop-v1 (a drifted fixture fails here, not silently in a verifier)',async()=>{
  for(const [id,e] of Object.entries(DRIVE_EXPERIMENTS)){
+  const dir=`robotics/simulation-mujoco/fixtures/${e.mobileDir??'drive-v1'}/`;
   const model=JSON.parse(await readFile(dir+e.mobileModel,'utf8')),control=JSON.parse(await readFile(dir+e.mobileControl,'utf8'));
   expect(DRIVE_DOC_PINS[id]).toEqual({model:model.digest,control:hashJson(controlShape(control))});
  }

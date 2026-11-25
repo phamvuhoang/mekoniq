@@ -944,7 +944,13 @@ export interface CreateRunRequest {
    * Registered server-owned virtual-drive experiment (R4) of the shared-world cell. Absent: the R2b control path, byte for byte.
    */
   driveExperimentId?:
-    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+    | 'drive-ideal-v1'
+    | 'drive-nominal-v1'
+    | 'drive-torque-limited-v1'
+    | 'drive-latency-v1'
+    | 'drive-coarse-encoder-v1'
+    | 'drive-hw-c-brake-v1'
+    | 'drive-hw-c-coast-v1';
   /**
    * R4.4: how the arm of the shared-world cell chooses its grasp point. Absent or fixed_program: the R2b program, byte for byte.
    */
@@ -973,6 +979,12 @@ export interface CreateRunRequest {
    * @maxItems 16
    */
   driveFaultSchedule?: DriveFaultEntryV1[];
+  /**
+   * Stop requests of this run (R5): normal, protective and emergency stops at simulation times. Admitted against the closed function list; run-scoped, never part of the project. Absent: no stop, byte for byte.
+   *
+   * @maxItems 4
+   */
+  stopSchedule?: StopScheduleEntryV1[];
 }
 /**
  * A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes.
@@ -993,6 +1005,14 @@ export interface DriveFaultEntryV1 {
   durationMs: number;
   params?: {
     [k: string]: number;
+  };
+}
+export interface StopScheduleEntryV1 {
+  id: string;
+  function: 'normal' | 'protective' | 'emergency';
+  trigger: {
+    kind: 'elapsed_sim_ms';
+    value: number;
   };
 }
 

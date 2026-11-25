@@ -7,13 +7,13 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "a7d6da12445c45668cbeb431e27a532eca3c23885c965d2d8f691f499cea5ffb",
-      "bytes": 1036
+      "sha256": "6f2be9d8cfd165912c64ad9b28ec6811824c5377029692a42131f4663cea7fab",
+      "bytes": 1102
     },
     {
       "path": "serve-control-hw-c-v1.json",
-      "sha256": "51dcc4817341cfa572e396471e9f0730ed07a7773ac186fc690fe9ade199040f",
-      "bytes": 2068
+      "sha256": "6c49881821668bdd053d9fb89b1943a073ad9d7cac314dc45e42d32284986b3b",
+      "bytes": 2038
     },
     {
       "path": "serve-drive-hw-c-brake-v1.json",
@@ -24,6 +24,26 @@
       "path": "serve-drive-hw-c-coast-v1.json",
       "sha256": "816de678a6d36ea6e3935f569a7ffe30d2dc87fc5e8f48b9a2f200c43b04f0d9",
       "bytes": 3498
+    },
+    {
+      "path": "stop-functions-v1.json",
+      "sha256": "d982ff48a20a3478af67f449e4b95cfd7732f8215c77172c24337b91425e9b45",
+      "bytes": 684
+    },
+    {
+      "path": "stop-oracle-v1.json",
+      "sha256": "095e3fd7ae6156f72599d940986805e7c89baa257938056d730c0711a2b8838a",
+      "bytes": 887
+    },
+    {
+      "path": "stop-policy-v1.json",
+      "sha256": "77989c8c3bcc366efe73aef90393e09b4c9b07827155c9c6d73a27d8833f931d",
+      "bytes": 669
+    },
+    {
+      "path": "survey.json",
+      "sha256": "3283b8cc8474158915c64663eaa522f3a5b75823f2b481380d69571e0f1effe9",
+      "bytes": 544
     }
   ]
 }

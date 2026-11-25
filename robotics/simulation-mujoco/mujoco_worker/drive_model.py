@@ -100,6 +100,8 @@ class DriveGroup:
         self.fault_scale = [1.0] * self.n
         self.forced_reset = [False] * self.n
         self.fault_open, self.fault_done, self.staged, self.receipts = {}, set(), None, []
+        # emergency stop (R5): the staged injections of the step, the receipts of what was applied, and the axes whose fault this tick a reset edge may not clear
+        self.staged_stops, self.stop_receipts, self.stop_hold = None, [], [False] * self.n
         self.tick = 0
         self.ready = False
         self.traced, self.samples = [], []   # bench only: the traced axes (indices) and this tick's samples of each
@@ -158,6 +160,10 @@ class DriveGroup:
     def begin_tick(self, commands):
         """Admit the whole command set or refuse it (WorkerError with a DRIVE_* code) before any state changes."""
         by_id = self.check(commands)
+        self.stop_hold = [False] * self.n
+        if self.staged_stops:
+            self.stop_receipts.extend(drive_faults.apply_stop(self, self.staged_stops, self.tick))
+        self.staged_stops = None
         if self.staged:
             self.receipts.extend(drive_faults.apply(self, self.staged, self.tick))
         self.staged = None
@@ -171,7 +177,7 @@ class DriveGroup:
                 self.accepted[i] = c.copy()
             self.saturated[i] = 0
             if self.state[i] == FAULT:
-                if edge and self._cause_cleared(i):
+                if edge and not self.stop_hold[i] and self._cause_cleared(i):
                     self.state[i], self.fault[i] = DISABLED, None
                     self.stale[i], self.fe_count[i], self.loss_count[i] = 0, 0, 0
             elif self.state[i] == ENABLED and a["watchdogTicks"] is not None:
@@ -213,6 +219,14 @@ class DriveGroup:
     def stage_faults(self, injections):
         """Admit this step's `faultInjections` against the catalog (WorkerError FAULT_* on any refusal, nothing changed) and hold them for the next begin_tick, which applies them before the tick runs."""
         self.staged = drive_faults.check(self, injections) if injections else None
+
+    def stage_stops(self, injections):
+        """Admit this step's `stopInjections` (WorkerError STOP_* on any refusal, nothing changed) and hold them for the next begin_tick, which applies them before anything else."""
+        self.staged_stops = drive_faults.check_stops(self, injections) if injections else None
+
+    def take_stop_receipts(self):
+        out, self.stop_receipts = self.stop_receipts, []
+        return out
 
     def take_fault_receipts(self):
         out, self.receipts = self.receipts, []

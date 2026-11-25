@@ -6,14 +6,19 @@ import {join} from 'node:path';
 import {hashJson} from '../hash';
 import {sealDriveDocument,type ControlProfileV1,type DriveModelV1} from './drive-io';
 
-export type DriveExperimentId='drive-ideal-v1'|'drive-nominal-v1'|'drive-torque-limited-v1'|'drive-latency-v1'|'drive-coarse-encoder-v1';
-export const DRIVE_EXPERIMENTS:Readonly<Record<DriveExperimentId,{mobileModel:string;armModel:string;mobileControl:string;armControl:string}>>=Object.freeze({
+export type DriveExperimentId='drive-ideal-v1'|'drive-nominal-v1'|'drive-torque-limited-v1'|'drive-latency-v1'|'drive-coarse-encoder-v1'|'drive-hw-c-brake-v1'|'drive-hw-c-coast-v1';
+/** The five experiments of R4 (bench and CIL campaigns keep their closed list); the R5 stop variants are registered beside them. */
+export type R4DriveExperimentId=Exclude<DriveExperimentId,'drive-hw-c-brake-v1'|'drive-hw-c-coast-v1'>;
+export const DRIVE_EXPERIMENTS:Readonly<Record<DriveExperimentId,{mobileModel:string;armModel:string;mobileControl:string;armControl:string;/** fixture folder of the AMR documents, `drive-v1` when absent */mobileDir?:string}>>=Object.freeze({
  'drive-ideal-v1':{mobileModel:'serve-drive-ideal-v1.json',armModel:'xarm6-drive-ideal-v1.json',mobileControl:'serve-control-legacy-ideal-v1.json',armControl:'xarm6-control-v1.json'},
  'drive-nominal-v1':{mobileModel:'serve-drive-nominal-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
  // the wheel torque curve x 0.4 concerns the AMR; the arm keeps its nominal drive
  'drive-torque-limited-v1':{mobileModel:'serve-drive-torque-limited-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
  'drive-latency-v1':{mobileModel:'serve-drive-latency-v1.json',armModel:'xarm6-drive-latency-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
  'drive-coarse-encoder-v1':{mobileModel:'serve-drive-coarse-encoder-v1.json',armModel:'xarm6-drive-coarse-encoder-v1.json',mobileControl:'serve-control-v2.json',armControl:'xarm6-control-v1.json'},
+ // R5 (stop-v1): the AMR drive derived from the HW-C hardware option, with the base controller at revision 3 (honours stop requests); the arm keeps its nominal drive
+ 'drive-hw-c-brake-v1':{mobileModel:'serve-drive-hw-c-brake-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-hw-c-v1.json',armControl:'xarm6-control-v1.json',mobileDir:'stop-v1'},
+ 'drive-hw-c-coast-v1':{mobileModel:'serve-drive-hw-c-coast-v1.json',armModel:'xarm6-drive-nominal-v1.json',mobileControl:'serve-control-hw-c-v1.json',armControl:'xarm6-control-v1.json',mobileDir:'stop-v1'},
 });
 export const driveExperiment=(id:string)=>{
  if(!Object.hasOwn(DRIVE_EXPERIMENTS,id))throw new Error('DRIVE_EXPERIMENT_UNREGISTERED');
@@ -25,14 +30,15 @@ export const experimentOfMobileModel=(path:string):DriveExperimentId|undefined=>
 
 const sha=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 const json=(v:unknown)=>Buffer.from(JSON.stringify(v,null,2)+'\n');
+const mobileDir=(e:{mobileDir?:string})=>e.mobileDir??'drive-v1';
 export interface DriveBundle {files:{path:string;bytes:Uint8Array}[];refs:{driveModelRef:{id:string;revision:number;path:string;sha256:string};controlProfileRef:{id:string;revision:number;path:string;sha256:string}};model:DriveModelV1;control:ControlProfileV1}
 const ref=(d:{id:string;revision:number},path:string,bytes:Uint8Array)=>({id:d.id,revision:d.revision,path,sha256:sha(bytes)});
-const read=async<T,>(workerRoot:string,name:string)=>{const bytes=await readFile(join(workerRoot,'fixtures/drive-v1',name));return {bytes,doc:JSON.parse(bytes.toString()) as T};};
+const read=async<T,>(workerRoot:string,name:string,dir='drive-v1')=>{const bytes=await readFile(join(workerRoot,'fixtures',dir,name));return {bytes,doc:JSON.parse(bytes.toString()) as T};};
 
 /** The AMR's drive documents of an experiment. The model is the fixture's, byte for byte. The control profile is the fixture's bound to the plant the bundle was compiled for (`plantModelDigest`);
  * without a plant it is byte for byte too. */
 export async function mobileDriveBundle(workerRoot:string,id:string,plantModelDigest?:string,historical=false,baseLimitMps2?:number):Promise<DriveBundle>{
- const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},m=await read<DriveModelV1>(workerRoot,e.mobileModel),c=await read<ControlProfileV1>(workerRoot,e.mobileControl);
+ const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},m=await read<DriveModelV1>(workerRoot,e.mobileModel,mobileDir(e)),c=await read<ControlProfileV1>(workerRoot,e.mobileControl,mobileDir(e));
  let control=plantModelDigest&&plantModelDigest!==c.doc.plantModelDigest?sealDriveDocument({...c.doc,plantModelDigest}):c.doc;
  // a registered acceleration knob (tray) sets the base controller's own limit; it is an upper bound and stays no lower than the navigation policy's
  const base=control.controllers.find(k=>k.controllerId==='diff-drive-base-v1');
@@ -47,7 +53,7 @@ export const worldPlantDigest=(scene:{navigation:{robots:{model:{physicalModelDi
 /** One combined drive model and control profile for the nine axes of the cell world: the arm's axes (renamed to the scene's arm id) and the AMR's. A registry fixture may be re-sealed for the plant it runs on (D2): the
  * profile is sealed with `plantModelDigest`, the world's own. Only registry fixtures are ever re-sealed; a profile a person sends is admitted as it is or refused. */
 export async function worldDriveBundle(workerRoot:string,id:string,armId:string,plantModelDigest:string,historical=false):Promise<DriveBundle>{
- const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},sm=await read<DriveModelV1>(workerRoot,e.mobileModel),sc=await read<ControlProfileV1>(workerRoot,e.mobileControl),am=await read<DriveModelV1>(workerRoot,e.armModel),ac=await read<ControlProfileV1>(workerRoot,e.armControl);
+ const e={...driveExperiment(id),...historical?{mobileControl:'serve-control-v1.json'}:{}},sm=await read<DriveModelV1>(workerRoot,e.mobileModel,mobileDir(e)),sc=await read<ControlProfileV1>(workerRoot,e.mobileControl,mobileDir(e)),am=await read<DriveModelV1>(workerRoot,e.armModel),ac=await read<ControlProfileV1>(workerRoot,e.armControl);
  const rename=<T extends {axisId:string}>(axes:T[])=>axes.map(a=>({...a,axisId:a.axisId.replace(/^xarm-1\//,`${armId}/`)}));
  const model=sealDriveDocument({...am.doc,id:`world-${id}`,axes:[...rename(am.doc.axes),...sm.doc.axes]});
  const control=sealDriveDocument({...ac.doc,id:`world-${id}-control`,plantModelDigest,driveModelDigests:[model.digest],axes:[...rename(ac.doc.axes),...sc.doc.axes],controllers:[...ac.doc.controllers,...sc.doc.controllers]});

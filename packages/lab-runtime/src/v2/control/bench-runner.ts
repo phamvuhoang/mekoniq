@@ -109,7 +109,7 @@ export async function loadBenchCatalog(workerRoot:string,scenarios:readonly Benc
  let tuningEnvelope:TuningEnvelopeV1|undefined;
  const experiments=Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[],out:Partial<BenchCatalog>={};
  for(const scenarioId of scenarios){
-  const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId},engineVersion);
+  const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId:driveExperimentId as BenchRequestV1['driveExperimentId']},engineVersion);   // the bench request names only the five R4 experiments, which its schema enforces
   const runs:[DriveExperimentId,BenchPlant][]=[];for(const id of experiments)runs.push([id,await at(names[0]!,id)]);
   const p=runs.find(([id])=>id==='drive-nominal-v1')![1],nominal=DRIVE_EXPERIMENTS['drive-nominal-v1'];
   const startingProfile=JSON.parse(await readFile(join(workerRoot,DRIVE,p.kind==='amr'?nominal.mobileControl:nominal.armControl),'utf8')) as ControlProfileV1;

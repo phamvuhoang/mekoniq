@@ -477,12 +477,24 @@ export interface EngineeringProject {
     | 'tray-low-friction-v1'
     | 'tray-accel-high-v1'
     | 'tray-torque-limited-v1'
-    | 'tray-person-crossing-v1';
+    | 'tray-person-crossing-v1'
+    | 'tray-stop-brake-v1'
+    | 'tray-stop-coast-v1'
+    | 'tray-stop-slow-brake-v1'
+    | 'tray-stop-slow-coast-v1'
+    | 'tray-stop-low-brake-v1'
+    | 'tray-stop-low-coast-v1';
   /**
    * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
    */
   driveExperimentId?:
-    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
+    | 'drive-ideal-v1'
+    | 'drive-nominal-v1'
+    | 'drive-torque-limited-v1'
+    | 'drive-latency-v1'
+    | 'drive-coarse-encoder-v1'
+    | 'drive-hw-c-brake-v1'
+    | 'drive-hw-c-coast-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
