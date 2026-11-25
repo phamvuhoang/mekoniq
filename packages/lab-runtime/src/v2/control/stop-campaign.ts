@@ -116,7 +116,8 @@ export async function verifyStopCampaign(out:string,onlyCase?:string):Promise<St
    check(stored.verdict==='fired','STOP_NOT_FIRED');
    for(const i of stored.invariants)if(i.result==='violated')v.issues.push(`STOP_ORACLE:${spec.id}:${i.id}`);
    if(spec.group==='S4'){const t=stored.invariants.find(i=>i.id==='TORQUE_ZERO_AT_EMERGENCY');check(t?.result==='pass','STOP_S4_TORQUE_NOT_ZERO');}
-   recordHash.set(spec.id,hashJson(records.map(r=>({...r}))));
+   // a receipt names the run and boot that issued it; those identify the execution, so the comparison leaves them out and compares everything the plant did
+   recordHash.set(spec.id,hashJson(records.map(r=>({...r,...(r as {stopReceipts?:unknown[]}).stopReceipts?{stopReceipts:(r as {stopReceipts:{runId?:unknown;bootId?:unknown}[]}).stopReceipts.map(({runId:_r,bootId:_b,...x})=>x)}:{}}))));
    v.reports.push({caseId:spec.id,report:stored});v.completedCases++;
   }catch(e){v.issues.push(`${spec.id}:${(e as Error).message}`);}
  }
