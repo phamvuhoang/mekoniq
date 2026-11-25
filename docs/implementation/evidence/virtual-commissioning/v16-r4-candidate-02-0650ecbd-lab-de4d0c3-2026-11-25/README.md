@@ -5,9 +5,9 @@
 | Gate | Trạng thái |
 |---|---|
 | G-DRV1, G-CIL1, G-TUNE1, G-FLT1, G-TRAY1, G-BEL1, G-REC1, G-CAL1, G-WEB2, G-REG5 | `tested` |
-| G-CLOUD2 | `not_run`: CLD01 và CLD02 `tested`; CLD03 `deploy_order_pending` (chờ lệnh deploy Cloud Run + Lab công khai) |
+| G-CLOUD2 | record R4 ghi `not_run` (CLD03 `deploy_order_pending` lúc ghi); sau lệnh deploy ngày 25/11, supplement [`cloud-run/mekoniq-r4-2026-11-25`](../../cloud-run/mekoniq-r4-2026-11-25/README.md) chứng minh CLD03 trên Cloud Run thật (guard `cloud-run` đạt); không sửa `qualification.json` |
 
-55/56 case `tested`; case còn lại là CLD03. Đọc lại: `node scripts/r4-readback.mjs <archive>/r4-candidate-02 <source> <lab>` → `issues: []` (5 phút 18 giây); `LAB_SIMEXT_EVIDENCE_DIR=<archive>/r4-candidate-02 pnpm test:acceptance -- sim-extension` → 12/12. Lưu ý: test chính của guard có timeout cứng 300 s, record 3,7 GB cần khoảng 320 s; lần chạy đầu quá hạn 300 s, lần chạy lại với timeout nâng lên tạm thời (đã hoàn nguyên, không commit) đạt 12/12 (`logs/27-acceptance-guard*.log` trong archive).
+55/56 case `tested` trong record; case còn lại là CLD03, được supplement Cloud Run bổ sung. Đọc lại: `node scripts/r4-readback.mjs <archive>/r4-candidate-02 <source> <lab>` → `issues: []` (5 phút 18 giây); `LAB_SIMEXT_EVIDENCE_DIR=<archive>/r4-candidate-02 pnpm test:acceptance -- sim-extension` → 12/12. Lưu ý: test chính của guard có timeout cứng 300 s, record 3,7 GB cần khoảng 320 s; lần chạy đầu quá hạn 300 s, lần chạy lại với timeout nâng lên tạm thời (đã hoàn nguyên, không commit) đạt 12/12 (`logs/27-acceptance-guard*.log` trong archive).
 
 ## Số đo
 - **WEB09** (build production, 1440×900, Chrome/ANGLE Metal, dpr 1; giới hạn 33 ms): đồ thị 5.010 mẫu/trục, rAF p95 16,7 ms (max 16,8 ms, 61 s); lớp belief trên replay offline: rAF p95 16,8 ms, thời gian vẽ p95 1,9 ms, nhịp render p95 18,5 ms, hình ma có trong 82,8 % lần vẽ (≥ 80 %), 78,8 s phát. `records/web09.json`.
