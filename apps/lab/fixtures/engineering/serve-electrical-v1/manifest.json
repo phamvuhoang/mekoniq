@@ -9,18 +9,18 @@
     },
     {
       "path": "serve-hw-a-v1.json",
-      "sha256": "b6188022af8e5a73cca163575429efb907deca1f01860ff2f1fb330133e9707b",
-      "bytes": 26349
+      "sha256": "6c388bcf44af8d9b8101b66a2c7e511bb69d749ad145636a8743a087f93e5794",
+      "bytes": 25081
     },
     {
       "path": "serve-hw-b-v1.json",
-      "sha256": "80d5ebe022fe623f51c576ed493c9b18f58fc90a5c6507d5f55469bf87e68016",
-      "bytes": 26963
+      "sha256": "95afe4b8a9f027938905f0eaf5b00fe744bbfc9b47d0d562f643bb11e3512e07",
+      "bytes": 25695
     },
     {
       "path": "serve-hw-c-v1.json",
-      "sha256": "10c8588f3fc985fdd029376bf6810bb22763f33f572fa9c246193f3886a97d9a",
-      "bytes": 27319
+      "sha256": "f1f8137ca55a39a9e691819c24c1767338f8217e5c177f4e0d072b097c5fa521",
+      "bytes": 26051
     },
     {
       "path": "serve-safety-requirements-v1.json",

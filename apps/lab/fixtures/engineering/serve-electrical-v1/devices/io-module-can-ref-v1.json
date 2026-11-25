@@ -6,7 +6,7 @@
   "component": {
     "id": "ref-io-module-can-ref",
     "revision": "1",
-    "digest": "fc54b4069f26feb5229617dc2e65020cab4075d10f431deada11a9f9431405db"
+    "digest": "9db73067f5c539989fd35fa3151f5e8595111b1179b9ac9db21c0b0b7857a278"
   },
   "variant": {
     "orderCode": null,
@@ -205,6 +205,110 @@
           }
         },
         {
+          "pin": "DI8",
+          "name": "DI8",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI9",
+          "name": "DI9",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI10",
+          "name": "DI10",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI11",
+          "name": "DI11",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI12",
+          "name": "DI12",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI13",
+          "name": "DI13",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI14",
+          "name": "DI14",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "DI15",
+          "name": "DI15",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device io-module-can-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
           "pin": "DO0",
           "name": "DO0",
           "role": "do",
@@ -304,7 +408,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -339,7 +443,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -374,7 +478,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -409,7 +513,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -444,7 +548,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -479,7 +583,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -514,7 +618,7 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -549,7 +653,287 @@
         "kind": "assumed",
         "documentId": "r5-assumptions",
         "revision": "1",
-        "locator": "8-channel PNP input block, planning assumption",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI8",
+      "direction": "input",
+      "pin": "IO/DI8",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 8,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI9",
+      "direction": "input",
+      "pin": "IO/DI9",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 9,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI10",
+      "direction": "input",
+      "pin": "IO/DI10",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 10,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI11",
+      "direction": "input",
+      "pin": "IO/DI11",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 11,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI12",
+      "direction": "input",
+      "pin": "IO/DI12",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 12,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI13",
+      "direction": "input",
+      "pin": "IO/DI13",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 13,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI14",
+      "direction": "input",
+      "pin": "IO/DI14",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 14,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    {
+      "pointId": "DI15",
+      "direction": "input",
+      "pin": "IO/DI15",
+      "commonPin": "IO/COM",
+      "electrical": {
+        "type": "pnp_sink_input",
+        "voltageRangeV": [
+          12,
+          30
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "general_purpose"
+      ],
+      "defaultFunction": "general_purpose",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "cyclic",
+        "object": "6000:01",
+        "bit": 15,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "16-channel PNP input block, planning assumption",
         "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
       }
     },
@@ -751,5 +1135,5 @@
     }
   ],
   "drive": null,
-  "digest": "569435bba517e7be6c6a672069b496be8e79a871a4688021a9d545a58432b7d7"
+  "digest": "7a9d3b6dbd22b2256f8926b74b7ab9ed5921ba0f0adde5cb580e12815ba0d96e"
 }
