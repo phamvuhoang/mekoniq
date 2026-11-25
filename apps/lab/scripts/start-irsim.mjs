@@ -98,10 +98,13 @@ async function writeCatalog(fixtureFile,catalog,id,source){
  // a device profile names its part by digest, so the profiles load only next to the parts they describe, and the runtime then advertises electrical_bundle_v1
  let extra={};
  if(source){
-  const base=join(source,'robotics/catalog'),all=JSON.parse(await readFile(join(base,'catalog.json'),'utf8'));
-  await cp(base,catalog,{recursive:true,filter:f=>f!==join(base,'catalog.json')});
-  const have=new Set(entries.map(e=>e.digest));for(const e of all.components??[])if(!have.has(e.digest))entries.push(e);
-  extra={deviceProfiles:all.deviceProfiles??[],quotes:all.quotes??[]};
+  // a source tree without the electrical catalog (an older checkout) runs as before: the runtime then simply does not advertise electrical_bundle_v1
+  const base=join(source,'robotics/catalog'),all=await readFile(join(base,'catalog.json'),'utf8').then(t=>JSON.parse(t),()=>null);
+  if(all){
+   await cp(base,catalog,{recursive:true,filter:f=>f!==join(base,'catalog.json')});
+   const have=new Set(entries.map(e=>e.digest));for(const e of all.components??[])if(!have.has(e.digest))entries.push(e);
+   extra={deviceProfiles:all.deviceProfiles??[],quotes:all.quotes??[]};
+  }
  }
  await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id,components:entries,quotes:[],...extra}));
  return catalog;
