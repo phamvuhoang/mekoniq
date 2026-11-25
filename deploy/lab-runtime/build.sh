@@ -22,7 +22,10 @@ mkdir "$ctx/robotics"
 cp "$ctx/export/runtime.mjs" "$ctx/runtime.mjs"; cp -R "$ctx/export/schemas" "$ctx/schemas"; rm -rf "$ctx/export"
 # only the MuJoCo tool root, as committed, without its tests
 git -C "$root" archive HEAD robotics/simulation-mujoco | tar -x -C "$ctx" --exclude 'robotics/simulation-mujoco/tests'
-node "$here/prepare-catalog.mjs" "$ctx/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json" "$ctx/catalog"
+# the electrical catalog (device profiles, electrical fixtures, parts) as committed; manufacturer documents are not part of the image
+git -C "$root" archive HEAD robotics/catalog | tar -x -C "$ctx" --exclude robotics/catalog/documents
+node "$here/prepare-catalog.mjs" "$ctx/robotics/simulation-mujoco/fixtures/serve-payload-v1/serve-3d-components.json" "$ctx/catalog" "$ctx/robotics/catalog"
+rm -rf "$ctx/robotics/catalog"
 cp "$here/Dockerfile" "$ctx/Dockerfile"
 printf '%s\n' '**/__pycache__' '**/*.pyc' '**/tests' '**/.git' '**/.env*' > "$ctx/.dockerignore"
 package_sha=$(shasum -a 256 "$ctx/r2b-campaign-package.json" | cut -d " " -f 1)
