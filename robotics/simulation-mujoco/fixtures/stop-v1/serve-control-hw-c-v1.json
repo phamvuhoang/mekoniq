@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "documentType": "control-profile",
+  "id": "serve-control-hw-c-v1",
+  "revision": 1,
+  "digest": "7b7376edc5e604036f281e3c81e9c5229bc0a2086e2633909da3cd3c449b6e94",
+  "calibration": "not_calibrated",
+  "plantModelDigest": "e6a44a42b6a0a02cc7a54e7f5956d5aaed093fd4b3c30abcaf2df7e7d4d3cb2e",
+  "driveModelDigests": [
+    "8459287e8b79673f896ca1398de5a844d7c217f5a78eeb4cba9cf64efad3690c",
+    "256d6bd6bb4c46a6ca493e7dde736d5b66b61a6c7ffaa800497dd0f64172cac2"
+  ],
+  "axes": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "loop": {
+        "kp": 2,
+        "ki": 0,
+        "kd": 0,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": 104.71975511965977
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "loop": {
+        "kp": 2,
+        "ki": 0,
+        "kd": 0,
+        "integralLimit": null,
+        "slewLimit": null
+      },
+      "accelerationLimit": 104.71975511965977
+    }
+  ],
+  "controllers": [
+    {
+      "controllerId": "diff-drive-base-v1",
+      "revision": 2,
+      "params": {
+        "maxAccelerationMps2": 1,
+        "maxJerkMps3": 10
+      }
+    },
+    {
+      "controllerId": "exhausted-route-correction",
+      "revision": 1,
+      "params": {}
+    }
+  ],
+  "sources": {
+    "loop": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/drive-contact-profile.json",
+      "revision": "1",
+      "locator": "velocityGainNmsPerRad",
+      "contentSha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3"
+    },
+    "limits": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "controller": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    }
+  }
+}

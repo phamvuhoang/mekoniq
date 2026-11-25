@@ -25,7 +25,7 @@ async function boot(electrical=true){
  for(const [digest,m] of Object.entries(parts.models))await writeFile(join(catalogRoot,'models',`${digest}.json`),JSON.stringify(m));
  await writeFile(join(catalogRoot,'catalog.json'),JSON.stringify(index));
  const profiles={'engineering-webots-3d-v1':sceneCompiler,'engineering-mujoco-3d-v1':sceneCompiler};
- const g=await startLabGateway({port:0,directory:join(directory,'runs'),sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{engineering:createEngineeringService({directory:join(directory,'engineering'),catalogRoot,compilers:profiles,electrical})}});
+ const g=await startLabGateway({port:0,directory:join(directory,'runs'),sourceCommit:'test-commit',schemaHash:'a'.repeat(64),v2:{engineering:createEngineeringService({directory:join(directory,'engineering'),catalogRoot,compilers:profiles,electrical,driveFixtureDir:'robotics/simulation-mujoco/fixtures/drive-v1'})}});
  gateways.push(g);
  const pair=async()=>{const r=await fetch(g.url+'/lab/v2/sessions',{method:'POST',headers:{origin:'http://127.0.0.1:4175','content-type':'application/json'},body:JSON.stringify({token:g.issuePairingToken()})});return {cookie:r.headers.get('set-cookie')!.split(';')[0]!,origin:'http://127.0.0.1:4175','content-type':'application/json','x-csrf-token':String((await r.json()).csrfToken)};};
  const project=JSON.parse(await readFile(FIXTURE+'serve-3d-project.json','utf8')),design=JSON.parse(await readFile('robotics/catalog/electrical/serve-hw-c-v1.json','utf8'));

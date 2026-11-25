@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "documentType": "drive-fixture-manifest",
+  "id": "stop-v1",
+  "generator": "scripts/generate-stop-fixture.mts",
+  "calibration": "not_calibrated",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "a7d6da12445c45668cbeb431e27a532eca3c23885c965d2d8f691f499cea5ffb",
+      "bytes": 1036
+    },
+    {
+      "path": "serve-control-hw-c-v1.json",
+      "sha256": "51dcc4817341cfa572e396471e9f0730ed07a7773ac186fc690fe9ade199040f",
+      "bytes": 2068
+    },
+    {
+      "path": "serve-drive-hw-c-brake-v1.json",
+      "sha256": "4455e0a0a2c6a8a82188fbe9f674a94b2c6fb3dd10c79366df4a9ccc3558b964",
+      "bytes": 3492
+    },
+    {
+      "path": "serve-drive-hw-c-coast-v1.json",
+      "sha256": "816de678a6d36ea6e3935f569a7ffe30d2dc87fc5e8f48b9a2f200c43b04f0d9",
+      "bytes": 3498
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import {loadCatalog} from '../catalog';
 import type {EngineeringProject,Problem} from '../contracts';
 import {compileElectrical} from './compile';
 import {ELECTRICAL_SCHEMA_HASH,problem,validateElectricalDesign,type DeviceProfileV1,type ElectricalBundleV1,type ElectricalDesignV1} from './contracts';
-import {loadElectricalDocuments} from './documents-store';
+import {loadDriveBase,loadElectricalDocuments} from './documents-store';
 
 export const SERVE_FIXTURE_DIR='robotics/simulation-mujoco/fixtures/serve-tray-v1';
 export interface OfflineResult{problems:Problem[];bundle:ElectricalBundleV1|null;profiles:Map<string,DeviceProfileV1>;design:ElectricalDesignV1|null}
@@ -29,7 +29,7 @@ export async function compileDesignFile(o:{design:string;catalogRoot:string;root
  const safety=design.safetyRequirementsRef?docs.registers.find(x=>x.id===design.safetyRequirementsRef!.id&&x.revision===design.safetyRequirementsRef!.revision)??null:null;
  if(!policy)return {...none,design,problems:[problem('WIRING_POLICY_UNAVAILABLE','/wiringPolicyRef',design.wiringPolicyRef.id)]};
  const driveAxisIds=project.entityBindings.flatMap(b=>(['left','right'] as const).filter(side=>b.instanceIds.some(i=>i.endsWith(`wheel-${side}`))).map(side=>`${b.entityId}/wheel-${side}`)).sort();
- const result=compileElectrical({design,resolved,project:{id:project.id,revision:project.revision,digest:hashJson(project)},catalog:cat,policy,safety,driveAxisIds,schemaHash:ELECTRICAL_SCHEMA_HASH});
+ const result=compileElectrical({design,resolved,project:{id:project.id,revision:project.revision,digest:hashJson(project)},catalog:cat,policy,safety,driveAxisIds,schemaHash:ELECTRICAL_SCHEMA_HASH,driveBase:await loadDriveBase(join(o.root??'.','robotics/simulation-mujoco/fixtures/drive-v1'))});
  const profiles=new Map<string,DeviceProfileV1>(),all=Object.values(cat.deviceProfiles);
  for(const d of design.devices){const p=all.find(x=>x.id===d.profile.id&&x.revision===d.profile.revision);if(p)profiles.set(d.id,p);}
  return {...result,profiles,design};

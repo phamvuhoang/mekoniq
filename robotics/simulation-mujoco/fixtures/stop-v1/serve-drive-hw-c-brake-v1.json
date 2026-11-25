@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "documentType": "drive-model",
+  "id": "serve-drive-hw-c-brake-v1",
+  "revision": 1,
+  "digest": "8459287e8b79673f896ca1398de5a844d7c217f5a78eeb4cba9cf64efad3690c",
+  "calibration": "not_calibrated",
+  "axes": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "mode": "csv",
+      "torque": {
+        "kind": "envelope_ref",
+        "scale": 1
+      },
+      "velocityLimitRadS": 20,
+      "encoder": {
+        "countsPerRev": 4096,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 6,
+      "followingError": null
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "mode": "csv",
+      "torque": {
+        "kind": "envelope_ref",
+        "scale": 1
+      },
+      "velocityLimitRadS": 20,
+      "encoder": {
+        "countsPerRev": 4096,
+        "velocityWindowSubsteps": 5
+      },
+      "feedbackDelaySubsteps": 1,
+      "feedbackLossSubsteps": 25,
+      "commandDelaySubsteps": 1,
+      "commandInterpolation": "hold",
+      "watchdogTicks": 5,
+      "enableDelaySubsteps": 25,
+      "quickStopSubsteps": 100,
+      "onDisable": "brake",
+      "brakeTorqueNm": 6,
+      "followingError": null
+    }
+  ],
+  "sources": {
+    "torque": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/drive-contact-profile.json",
+      "revision": "1",
+      "locator": "driveCurve and brakeTorqueNm",
+      "contentSha256": "9a0940dcff41e56a21bf38bed4c4984d55200cfa736c6507ecced8e5df96a1d3"
+    },
+    "velocity": {
+      "kind": "assumed",
+      "documentId": "serve-payload-v1/physical-model-amr-1.json",
+      "revision": "1",
+      "locator": "drive.actuatorMaxSpeedRadps",
+      "contentSha256": "830ba57f4f51272b533fd2c6a2c8743ba4857341af0e7af90f4525145b7249b9"
+    },
+    "encoder": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: countsPerRev starting values",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "delays": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "case 4: command delay, queue equals native buffer",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "watchdog": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: watchdog and enable sequence starting values",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "disable": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "case 3: group-bit switch-off and brake softness",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    },
+    "followingError": {
+      "kind": "assumed",
+      "documentId": "docs/research/virtual-drive-spike/results.json",
+      "revision": "1",
+      "locator": "section 5: following error starting value",
+      "contentSha256": "25c92aea038c35306cd9f89850d4821dd15f662771a69d3a50db119946800e35"
+    }
+  }
+}

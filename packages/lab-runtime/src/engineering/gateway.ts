@@ -11,7 +11,7 @@ import {loadCatalog,type CatalogResult} from './catalog';
 import {validateBundleReceipt,validateEngineeringProject,validateEngineeringRef} from './contracts';
 import {compileElectrical} from './electrical/compile';
 import {ELECTRICAL_SCHEMA_HASH,validateElectricalDesign,type ElectricalDesignV1} from './electrical/contracts';
-import {loadElectricalDocuments} from './electrical/documents-store';
+import {loadDriveBase,loadElectricalDocuments} from './electrical/documents-store';
 import {createElectricalStore} from './electrical/store';
 import {compareOptions} from './electrical/tco';
 import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem,ResolvedAssembly} from './contracts';
@@ -38,6 +38,8 @@ export interface EngineeringServiceOptions{
  validator?:RobotModelValidator;validationUnavailable?:string;
  /** Offer `compileElectrical`: set only when the catalog carries device profiles, so the capability is never advertised for a service that would refuse every design. */
  electrical?:boolean;
+ /** Folder with the base drive model and control profile (`fixtures/drive-v1` of the MuJoCo tool root); without it a compiled bundle carries no draft drive model. */
+ driveFixtureDir?:string;
 }
 /** Typed failure mapped to HTTP by the v2 gateway: 400 shape/capability, 403 ownership, 409 identity/closure, 503 timeout. */
 export class EngineeringError extends Error{constructor(readonly code:string,readonly status:number,readonly reasonCodes:string[]=[]){super(code);this.name='EngineeringError';}}
@@ -256,7 +258,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    if(!policy)throw new EngineeringError('WIRING_POLICY_UNAVAILABLE',409);
    if(d.safetyRequirementsRef&&!safety)throw new EngineeringError('SAFETY_REQUIREMENTS_UNAVAILABLE',409);
    const result=compileElectrical({design:d,resolved,project:{id:project.id,revision:project.revision,digest:r.projectDigest},catalog:cat,policy,safety,
-    driveAxisIds:(scene.wheelBindings??[]).map(w=>`${w.entityId}/wheel-${w.side}`).sort(),schemaHash:ELECTRICAL_SCHEMA_HASH});
+    driveAxisIds:(scene.wheelBindings??[]).map(w=>`${w.entityId}/wheel-${w.side}`).sort(),schemaHash:ELECTRICAL_SCHEMA_HASH,driveBase:options.driveFixtureDir?await loadDriveBase(options.driveFixtureDir):null});
    if(!result.bundle)throw new EngineeringError(result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?'ELECTRICAL_TOO_LARGE':result.problems[0]?.code??'ELECTRICAL_REFUSED',result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?400:409,[...new Set(result.problems.map(p=>p.code))]);
    await electricalStore.put(sessionId,result.bundle);
    return {state:result.bundle.state,digest:result.bundle.digest,problems:result.bundle.checks.filter(c=>c.level==='blocking').map(c=>({code:c.ruleId,path:c.path,blocking:true,detail:c.detail}))};
