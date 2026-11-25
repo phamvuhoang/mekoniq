@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 3fc5e544f3020e7c70401b6cfe112c9f062396e2 (sha256 4894ee59e626b7d7f573dd472f5708ae547b31b1a20ad4df0a88ed8d2816e130). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ 96373379c12add013baa6ac04e830df3e087dacc (sha256 95d10d65d4ca84943db4f32f53504cd138a32f5fcab8c5e4aaad5e22a0f78bb9). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -2259,6 +2259,7 @@ export interface IOPointV1 {
       | 'dry_contact_input'
       | 'pnp_source_output'
       | 'npn_sink_output'
+      | 'isolated_transistor_output'
       | 'relay_output'
       | 'analog_voltage'
       | 'analog_current';
