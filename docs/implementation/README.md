@@ -108,3 +108,7 @@ Guard Cloud bổ sung (ràng buộc với đúng byte của R2a candidate-02, n�
 ## R4 (virtual commissioning)
 
 Drive model, controller-in-the-loop, workbench, lỗi drive, khay ba cốc, belief/phục hồi và công cụ hiệu chuẩn: [virtual-commissioning/](virtual-commissioning/README.md). Qualification: [`docs/operations/r4-qualification.md`](../operations/r4-qualification.md).
+
+## Gộp repo (2026-11-25)
+
+Lab chuyển vào `apps/lab` của repo này; thiết kế, ghi chép cutover và ba hostname: [codebase-merge/](codebase-merge/README.md).
