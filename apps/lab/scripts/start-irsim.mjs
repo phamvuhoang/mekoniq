@@ -14,7 +14,7 @@
 // The source runtime accepts browser traffic only from 127.0.0.1:4175/4176, so other ports serve only non-browser checks.
 import {execFile,spawn} from 'node:child_process';
 import {homedir} from 'node:os';
-import {mkdir,readFile,writeFile,access,constants,stat} from 'node:fs/promises';
+import {cp,mkdir,readFile,writeFile,access,constants,stat} from 'node:fs/promises';
 import {basename,dirname,join,resolve} from 'node:path';
 import {mkdtempSync,realpathSync} from 'node:fs';
 import {tmpdir} from 'node:os';
@@ -88,19 +88,26 @@ async function verifiedTools(o,launch_,lock,need,missing,venvs,track){
  return {p,tool,root};
 }
 /** The server-owned component catalog of a launcher: a fixture's components and models, taken from the verified closure. */
-async function writeCatalog(fixtureFile,catalog,id){
+async function writeCatalog(fixtureFile,catalog,id,source){
  const fixture=JSON.parse(await readFile(fixtureFile,'utf8'));
  for(const d of ['components','models','documents'])await mkdir(join(catalog,d),{recursive:true});
  const entries=[];
  for(const [digest,c] of Object.entries(fixture.components)){const file=`components/${digest}.json`;await writeFile(join(catalog,file),JSON.stringify(c));entries.push({file,digest});}
  for(const [digest,m] of Object.entries(fixture.models??{}))await writeFile(join(catalog,'models',`${digest}.json`),JSON.stringify(m));
- await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id,components:entries,quotes:[]}));
+ // R5: with a source tree the catalog also carries the device profiles, their documents and the electrical fixtures, so the runtime advertises electrical_bundle_v1
+ let deviceProfiles;
+ if(source){
+  const base=join(source,'robotics/catalog');
+  deviceProfiles=JSON.parse(await readFile(join(base,'catalog.json'),'utf8')).deviceProfiles;
+  for(const d of ['devices','documents','electrical','descriptions'])await cp(join(base,d),join(catalog,d),{recursive:true}).catch(e=>{if(e.code!=='ENOENT')throw e;});
+ }
+ await writeFile(join(catalog,'catalog.json'),JSON.stringify({schemaVersion:1,id,components:entries,quotes:[],...deviceProfiles?{deviceProfiles}:{}}));
  return catalog;
 }
 /** Every check before a process is spawned; returns the runtime argv and env for the verified tools. */
 export async function prepareIRSim(o,launch_,lock,track=()=>{}){
  const {tool,root}=await verifiedTools(o,launch_,lock,'irsim_worker','the pinned runtime predates portable simulation; import an export that carries portableSimulationTools.',[['irsim_worker',o.irsimPython,'IRSIM'],['linkforge_worker',o.linkforgePython,'LINKFORGE']],track);
- const catalog=await writeCatalog(join(root('irsim_worker'),'fixtures/serve-demo-v1/serve-components.json'),join(launch_.dataDir,'irsim-catalog'),'serve-demo-v1');
+ const catalog=await writeCatalog(join(root('irsim_worker'),'fixtures/serve-demo-v1/serve-components.json'),join(launch_.dataDir,'irsim-catalog'),'serve-demo-v1',o.source);
  const simulation=join(o.source,tool('description_helper').root,'..');
  return {readyMs:60000,backends:[...MOCK_BACKENDS,IRSIM_BACKEND].join(', '),env:{MEKONIQ_LAB_IRSIM:'1',MEKONIQ_LAB_LINKFORGE:'1'},
   args:['--engineering-catalog',catalog,'--engineering-simulation',simulation,'--engineering-python',o.irsimPython,'--linkforge-python',o.linkforgePython,'--linkforge-worker',root('linkforge_worker'),
