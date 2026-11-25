@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "ae28b359b617bcea3846c8f26a31d2f64be3ee8fcec7cdba680b88aa723f6833",
-      "bytes": 988
+      "sha256": "26f00769e160e29ddacad3ccdb018802e7a5876b2d0182be4921778633292c9b",
+      "bytes": 1145
     },
     {
       "path": "serve-hw-a-v1.json",
@@ -26,6 +26,11 @@
       "path": "serve-safety-requirements-v1.json",
       "sha256": "eedce849c405b80acfefabf43a4a0092503cb02a9b694503a5fa15164b9c9942",
       "bytes": 2163
+    },
+    {
+      "path": "tco-assumptions-v1.json",
+      "sha256": "f82c81bfb4ec5e55c5640d726c386a861da3415a61b1622cb3e559d7a2d3cfeb",
+      "bytes": 1026
     },
     {
       "path": "wiring-policy-v1.json",

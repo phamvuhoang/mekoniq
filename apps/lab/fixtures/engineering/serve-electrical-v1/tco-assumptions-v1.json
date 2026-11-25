@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "documentType": "tco-assumptions",
+  "id": "tco-assumptions-v1",
+  "revision": 1,
+  "currency": "USD",
+  "labourPerHour": 10,
+  "minutesPerWire": 3,
+  "minutesPerConnector": 2,
+  "testMinutesPerUnit": 5,
+  "driveReplacementsOverLife": 1,
+  "downtimeHoursPerRepair": 4,
+  "downtimeCostPerHour": 20,
+  "wirePricePerM": null,
+  "connectorPrice": null,
+  "sources": {
+    "labour": {
+      "kind": "assumed",
+      "documentId": "r5-assumptions",
+      "revision": "1",
+      "locator": "labour and downtime rates are planning assumptions",
+      "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+    },
+    "service": {
+      "kind": "assumed",
+      "documentId": "r5-assumptions",
+      "revision": "1",
+      "locator": "one drive replacement over the life is a planning assumption",
+      "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+    }
+  },
+  "digest": "a144541860ea728770535fac6aec625cb807b99d58566ea29a56eba854571195"
+}
