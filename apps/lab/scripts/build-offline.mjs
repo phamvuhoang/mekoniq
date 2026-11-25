@@ -34,7 +34,7 @@ export async function buildOffline(root,out){
   await cp(join(root,'dist'),join(staging,'ui'),{recursive:true,dereference:false});
   await cp(resolve(file,'..'),join(staging,'runtime'),{recursive:true,dereference:false});
   await copyFile(process.execPath,join(staging,'bin/node'),constants.COPYFILE_FICLONE);await chmod(join(staging,'bin/node'),0o755);
-  await copyFile(join(root,'pnpm-lock.yaml'),join(staging,'pnpm-lock.yaml'));
+  await copyFile(resolve(root,'../../pnpm-lock.yaml'),join(staging,'pnpm-lock.yaml')); // the workspace lockfile: apps/lab has no lockfile of its own
   await copyFile(resolve(process.execPath,'../../LICENSE'),join(staging,'LICENSE-Node.txt'));
   await copyFile(join(here,'../node_modules/three/LICENSE'),join(staging,'LICENSE-Three.txt'));
   await copyFile(join(here,'offline-start.mjs'),join(staging,'start.mjs'));

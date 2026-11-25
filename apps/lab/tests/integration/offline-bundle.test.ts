@@ -8,14 +8,14 @@ import {spawnSync} from 'node:child_process';
 const lab=fileURLToPath(new URL('../../',import.meta.url)),dirs:string[]=[];
 afterEach(async()=>{for(const d of dirs.splice(0))await rm(d,{recursive:true,force:true});});
 async function fixture(){
- const root=await mkdtemp(join(tmpdir(),'lab-offline-'));dirs.push(root);
+ const base=await mkdtemp(join(tmpdir(),'lab-offline-')),root=join(base,'apps/lab');dirs.push(base);await mkdir(root,{recursive:true});
  await mkdir(join(root,'dist'),{recursive:true});await mkdir(join(root,'config'));
  const lock=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8'));
  await writeFile(join(root,'dist/index.html'),'<!doctype html><title>Offline fixture</title>');
  await writeFile(join(root,'dist/source-runtime.lock.json'),JSON.stringify(lock));
  await cp(join(lab,'config/source-runtime.lock.json'),join(root,'config/source-runtime.lock.json'));
  await cp(join(lab,'.runtime',lock.artifactSha256),join(root,'.runtime',lock.artifactSha256),{recursive:true});
- await cp(join(lab,'pnpm-lock.yaml'),join(root,'pnpm-lock.yaml'));
+ await cp(join(lab,'../../pnpm-lock.yaml'),join(base,'pnpm-lock.yaml'));
  return root;
 }
 test('offline release contains its Node, runtime, built dependency assets and lock; boots with no package manager',async()=>{
