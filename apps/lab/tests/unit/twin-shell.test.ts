@@ -39,12 +39,12 @@ test('the measured speed shows only when it differs from the chosen speed by mor
  expect(transportBar(transport({speed:4,measuredSpeed:3.9}))).not.toContain('measured-speed');
  expect(/data-testid="measured-speed"[^>]*>([^<]*)</.exec(transportBar(transport({speed:4,measuredSpeed:2.5})))?.[1]).toContain('2,5×');
 });
-test('a closed inspector is hidden and still holds all five tab panels',()=>{
- const html=inspector(ui(),{objects:'O',engineering:'E',report:'R',setup:'S',control:'C'});
+test('a closed inspector is hidden and still holds all six tab panels',()=>{
+ const html=inspector(ui(),{objects:'O',engineering:'E',report:'R',setup:'S',control:'C',diagnostics:'D'});
  expect(/<[^>]*data-testid="twin-inspector"[^>]*>/.exec(html)?.[0]).toMatch(/\shidden(\s|>|=)/);
- expect(html.match(/role="tabpanel"/g)).toHaveLength(5);
- for(const t of ['objects','engineering','report','setup','control'])expect(html).toContain(`data-testid="inspector-tab-${t}"`);
- expect(/<[^>]*data-testid="twin-inspector"[^>]*>/.exec(inspector(ui({inspectorOpen:true}),{objects:'O',engineering:'E',report:'R',setup:'S',control:'C'}))?.[0]).not.toMatch(/\shidden(\s|>|=)/);
+ expect(html.match(/role="tabpanel"/g)).toHaveLength(6);
+ for(const t of ['objects','engineering','report','setup','control','diagnostics'])expect(html).toContain(`data-testid="inspector-tab-${t}"`);
+ expect(/<[^>]*data-testid="twin-inspector"[^>]*>/.exec(inspector(ui({inspectorOpen:true}),{objects:'O',engineering:'E',report:'R',setup:'S',control:'C',diagnostics:'D'}))?.[0]).not.toMatch(/\shidden(\s|>|=)/);
 });
 test('loadUi falls back to the defaults on empty or broken storage; saveUi keeps only the inspector state',()=>{
  const s=memory();vi.stubGlobal('localStorage',s);
