@@ -52,3 +52,20 @@ export async function addProfile(root:string,profile:DeviceProfileV1,o:{blobs?:b
  index.deviceProfiles=[...(index.deviceProfiles??[]),{file,digest:o.declared??profile.digest}];
  await writeFile(join(root,'catalog.json'),JSON.stringify(index));
 }
+
+import type {ElectricalDesignV1,SignalV1,WiringPolicyV1,SafetyRequirementsV1} from '../../packages/lab-runtime/src/engineering/electrical/contracts';
+export const signal=(o:Partial<SignalV1>={}):SignalV1=>({id:'bumper-front',label:'Front bumper',role:'bumper',direction:'input',field:{deviceId:'bumper-front-sw',pin:'1',returnPin:'2'},
+ electrical:{type:'dry_contact_input',nominalV:24,currentA:{value:0.005,unit:'A',source:assumedSource}},consumer:'controller',maxLatencyMs:50,required:true,pinned:null,...o});
+export const wiringPolicy=(o:Partial<WiringPolicyV1>={}):WiringPolicyV1=>sealElectrical({schemaVersion:1,documentType:'wiring-policy',id:'wiring-policy-test',revision:1,
+ ampacity:[{csaMm2:0.5,maxCurrentA:{value:5,unit:'A',source:assumedSource}},{csaMm2:1,maxCurrentA:{value:10,unit:'A',source:assumedSource}},{csaMm2:2.5,maxCurrentA:{value:20,unit:'A',source:assumedSource}}],
+ signalMinCsaMm2:0.25,maxVoltageDropFraction:{value:0.03,unit:'1',source:assumedSource},copperResistivityOhmMm2PerM:0.0175,colours:[{role:'power',colour:'red'},{role:'return',colour:'black'}],
+ sources:{ampacity:assumedSource,drop:assumedSource},...o}) as WiringPolicyV1;
+/** One drive device ('drive-left' with the given profile) and one pin-level signal; `o` overrides any top-level field. */
+export function design(o:Partial<ElectricalDesignV1>&{profile?:DeviceProfileV1}={}):ElectricalDesignV1{
+ const profile=o.profile??driveProfile(),{profile:_p,...rest}=o;void _p;
+ return sealElectrical({schemaVersion:1,documentType:'electrical-design',id:'design-test',revision:1,project:{id:'project-test',revision:1},option:{id:'hw-test',label:'Test option',rationale:'fixture'},
+  devices:[{id:'drive-left',profile:{id:profile.id,revision:profile.revision,digest:profile.digest},assemblyInstanceId:null},{id:'bumper-front-sw',profile:{id:profile.id,revision:profile.revision,digest:profile.digest},assemblyInstanceId:null}],
+  axes:[{axisId:'amr-1/wheel-left',driveDeviceId:'drive-left',channel:0,motorDeviceId:null}],buses:[],power:[],signals:[signal()],stopFunctions:[],safetyRequirementsRef:null,
+  wiringPolicyRef:{id:'wiring-policy-test',revision:1,digest:wiringPolicy().digest},...rest}) as ElectricalDesignV1;
+}
+export const safetyRequirements=(requirements:SafetyRequirementsV1['requirements']=[]):SafetyRequirementsV1=>sealElectrical({schemaVersion:1,documentType:'safety-requirements',id:'safety-test',revision:1,requirements}) as SafetyRequirementsV1;

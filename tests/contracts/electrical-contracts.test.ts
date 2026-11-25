@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe,expect,test} from 'vitest';
 import {validateDeviceProfile,sealElectrical,type DeviceProfileV1} from '../../packages/lab-runtime/src/engineering/electrical/contracts';
 import {driveProfile,manufacturer} from '../support/electrical';

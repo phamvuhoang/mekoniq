@@ -2574,3 +2574,5646 @@ export interface DeviceProfileV1 {
       ];
   drive: DriveCapabilityV1 | null;
 }
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "DocumentRef".
+ */
+export interface DocumentRef {
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "SignalV1".
+ */
+export interface SignalV1 {
+  id: EngineeringId;
+  label: string;
+  role:
+    | 'bumper'
+    | 'cliff'
+    | 'dock_detect'
+    | 'cover_switch'
+    | 'estop_status'
+    | 'charger_present'
+    | 'lamp'
+    | 'buzzer'
+    | 'brake_release'
+    | 'aux_input'
+    | 'aux_output'
+    | 'safety';
+  direction: 'input' | 'output';
+  field: {
+    deviceId: EngineeringId;
+    pin: string;
+    returnPin: string | null;
+  };
+  electrical: {
+    type:
+      | 'pnp_sink_input'
+      | 'npn_source_input'
+      | 'dry_contact_input'
+      | 'pnp_source_output'
+      | 'npn_sink_output'
+      | 'isolated_transistor_output'
+      | 'relay_output'
+      | 'analog_voltage'
+      | 'analog_current';
+    nominalV: number;
+    currentA: Scalar;
+  };
+  consumer: 'controller' | 'drive_local' | 'safety_chain';
+  maxLatencyMs: number | null;
+  required: boolean;
+  pinned: {
+    deviceId: EngineeringId;
+    pointId: EngineeringId;
+  } | null;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "StopFunctionV1".
+ */
+export interface StopFunctionV1 {
+  id: 'normal' | 'protective' | 'emergency';
+  trigger:
+    | {
+        kind: 'operator';
+      }
+    | {
+        kind: 'signal';
+        signalId: EngineeringId;
+      };
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  axes:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ];
+  finalState: 'hold' | 'disabled' | 'torque_off_coast' | 'torque_off_brake';
+  requirementId: EngineeringId | null;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "WiringPolicyV1".
+ */
+export interface WiringPolicyV1 {
+  schemaVersion: 1;
+  documentType: 'wiring-policy';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  /**
+   * @minItems 1
+   * @maxItems 16
+   */
+  ampacity:
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ]
+    | [
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        },
+        {
+          csaMm2: number;
+          maxCurrentA: Scalar;
+        }
+      ];
+  signalMinCsaMm2: number;
+  maxVoltageDropFraction: Scalar;
+  copperResistivityOhmMm2PerM: number;
+  /**
+   * @maxItems 32
+   */
+  colours: {
+    role: string;
+    colour: string;
+  }[];
+  sources: {
+    ampacity: SourceRef;
+    drop: SourceRef;
+  };
+}
+/**
+ * One hardware option for one engineering project: which devices, axes, buses, rails and functional signals. Authored by a person; the compiler derives allocation, netlist and checks. No wire runs from pin to pin unless the author pins it.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "ElectricalDesignV1".
+ */
+export interface ElectricalDesignV1 {
+  schemaVersion: 1;
+  documentType: 'electrical-design';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  project: {
+    id: EngineeringId;
+    revision: number;
+  };
+  option: {
+    id: EngineeringId;
+    label: string;
+    rationale: string;
+  };
+  /**
+   * @maxItems 64
+   */
+  devices: {
+    id: EngineeringId;
+    profile: {
+      id: EngineeringId;
+      revision: number;
+      digest: Digest;
+    };
+    assemblyInstanceId: EngineeringId | null;
+  }[];
+  /**
+   * @maxItems 16
+   */
+  axes:
+    | []
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ]
+    | [
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        },
+        {
+          axisId: string;
+          driveDeviceId: EngineeringId;
+          channel: number;
+          motorDeviceId: EngineeringId | null;
+        }
+      ];
+  /**
+   * @maxItems 8
+   */
+  buses:
+    | []
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ]
+    | [
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        },
+        {
+          id: EngineeringId;
+          protocol: 'canopen' | 'modbus_rtu' | 'ethercat_coe' | 'usb' | 'ethernet' | 'uart';
+          controllerDeviceId: EngineeringId;
+          cycleMs: number;
+          /**
+           * @minItems 1
+           * @maxItems 32
+           */
+          members: [
+            {
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            },
+            ...{
+              deviceId: EngineeringId;
+              interfaceId: EngineeringId;
+              address: number | null;
+            }[]
+          ];
+        }
+      ];
+  /**
+   * @maxItems 16
+   */
+  power:
+    | []
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ]
+    | [
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        },
+        {
+          railId: EngineeringId;
+          nominalV: number;
+          source: {
+            deviceId: EngineeringId;
+            pin: string;
+            returnPin: string;
+          };
+          /**
+           * @maxItems 64
+           */
+          feeds: {
+            id: EngineeringId;
+            to: {
+              deviceId: EngineeringId;
+              pin: string;
+              returnPin: string;
+            };
+            protectionDeviceId: EngineeringId | null;
+            lengthM: Scalar | null;
+          }[];
+        }
+      ];
+  /**
+   * @maxItems 128
+   */
+  signals: SignalV1[];
+  /**
+   * @maxItems 3
+   */
+  stopFunctions:
+    [] | [StopFunctionV1] | [StopFunctionV1, StopFunctionV1] | [StopFunctionV1, StopFunctionV1, StopFunctionV1];
+  safetyRequirementsRef: DocumentRef | null;
+  wiringPolicyRef: DocumentRef;
+}
+/**
+ * A register written by the person responsible for safety. It is not executable logic and the Lab never judges it. There is no status field: the evidence state is computed from the documents.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "SafetyRequirementsV1".
+ */
+export interface SafetyRequirementsV1 {
+  schemaVersion: 1;
+  documentType: 'safety-requirements';
+  id: EngineeringId;
+  revision: number;
+  digest: Digest;
+  /**
+   * @maxItems 64
+   */
+  requirements: {
+    id: EngineeringId;
+    function: string;
+    trigger: string;
+    stopCategory: 0 | 1 | 2;
+    /**
+     * @maxItems 64
+     */
+    deviceIds: EngineeringId[];
+    /**
+     * @maxItems 64
+     */
+    signalIds: EngineeringId[];
+    /**
+     * @maxItems 16
+     */
+    documents:
+      | []
+      | [DeviceDocument]
+      | [DeviceDocument, DeviceDocument]
+      | [DeviceDocument, DeviceDocument, DeviceDocument]
+      | [DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument]
+      | [DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument]
+      | [DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument]
+      | [DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument, DeviceDocument]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ]
+      | [
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument,
+          DeviceDocument
+        ];
+    notes: string;
+  }[];
+}

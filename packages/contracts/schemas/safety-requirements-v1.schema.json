@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.safety-requirements.v1",
+  "title": "SafetyRequirementsV1",
+  "description": "A register written by the person responsible for safety. It is not executable logic and the Lab never judges it. There is no status field: the evidence state is computed from the documents.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "safety-requirements"
+    },
+    "id": {
+      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "requirements": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+          },
+          "function": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "trigger": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "stopCategory": {
+            "enum": [
+              0,
+              1,
+              2
+            ]
+          },
+          "deviceIds": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            }
+          },
+          "signalIds": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "maxItems": 16,
+            "items": {
+              "$ref": "device-profile-v1.schema.json#/definitions/DeviceDocument"
+            }
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "id",
+          "function",
+          "trigger",
+          "stopCategory",
+          "deviceIds",
+          "signalIds",
+          "documents",
+          "notes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "requirements"
+  ]
+}
