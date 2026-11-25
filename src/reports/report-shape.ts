@@ -1,4 +1,5 @@
 import {validMobileSample} from '../twin/payload';
+import driveIoSchema from '../shared/engineering-schemas/drive-io-v1.schema.json' with {type:'json'};
 import physicsSchema from '../shared/engineering-schemas/physics-evidence-v1.schema.json' with {type:'json'};
 import componentSchema from '../shared/engineering-schemas/engineering-component.schema.json' with {type:'json'};
 // Import is a trust boundary. Validate every structural field consumed by replay/UI before persistence.
@@ -40,7 +41,11 @@ const physicsEvidence=closed(obj({manifest:{$ref:'physics-evidence-v1.schema.jso
 physicsEvidence.allOf=[{if:{type:'object',properties:{complete:{const:true}},required:['complete']},
  then:{type:'object',properties:{issues:{type:'array',maxItems:0},manifest:{type:'object',properties:{coverage:{type:'object',properties:{complete:{const:true}}},gaps:{type:'array',maxItems:0},terminalReason:{type:'null'}}}}},
  else:{type:'object',properties:{metrics:{type:'object',properties:Object.fromEntries(physicsKeys.map(k=>[k,{type:'object',properties:{available:{const:false}}}]))}}}}];
+const controlMetric:S={oneOf:[closed(obj({available:{const:true},value:num,unit:str,samples:integer,basis:{enum:['actual','feedback']}})),closed(obj({available:{const:false},value:{type:'null'},unit:str,reason:str}))]};
+const driveEvidence=closed(obj({testLevel:{const:'controller_in_the_loop'},complete:bool,issues:arr(str),ticks:integer,events:arr(closed(obj({tick:integer,code:str,axisId:str},['tick','code']))),
+ axes:arr(closed(obj({axisId:str,mode:{enum:['csp','csv']},states:arr(closed(obj({state:str,fromTick:integer}))),faults:arr(closed(obj({fault:str,firstTick:integer}))),enabledAtTick:nullable(integer),saturatedSubsteps:integer,trackingRms:controlMetric,speedDeficit:controlMetric},['axisId','mode','states','faults','enabledAtTick','saturatedSubsteps','trackingRms'])))}));
 const shape=obj({
+ driveEvidence,
  physicsEvidence,
  manifest:obj({engineering:closed(obj({bundleDigest:digest,projectDigest:digest})),runId:str,sourceCommit:str,mode:{enum:['mock','simulation']},access:str,backendSetId:str,backends:arr(obj({id:str,version:str,model:str,dynamics:bool})),clock:obj({tickMs:{...integer,minimum:1,maximum:3600000},native:obj({provider:{const:'gazebo_nav2'},originNs:decimal,businessEpochMs:integer})},['tickMs']),seed:integer,scenario:identity,project:identity,world:identity,assets:arr(obj({id:str,revision:integer,contentHash:str,resolved:bool})),models:arr(obj({id:str,revision:{type:['string','number']},hash:str,provenance:str})),recipes:arr(identity),profiles:arr(obj({id:str,revision:integer,hash:str,provenance:str})),armCollisionScene:obj({hash:str,profile:nullable(obj({revision:integer},['revision'])),profileHash:nullable(str),world:obj({}),worldHash:str,robotGeometry:arr(obj({id:str,radiusM:nullable(num)}))})},['runId','sourceCommit','mode','access','backendSetId','backends','clock','seed','scenario','project','world','assets']),
  engineeringEvidence,
@@ -53,7 +58,7 @@ const shape=obj({
  reconciliations:arr(obj({subjectId:str,commandId:nullable(str),nativeState:str,tick:integer})),coverage:record(bool),limitations:arr(str),
  coffee:obj({plantLog:arr(obj({})),jobs:arr(job),cups:arr(cup),armTrace:obj({tag:str,interpolation:str,modelRevision:str,limitsOk:bool,samples:arr(obj({tick:integer,q:arr(num),tcp:vector(3)})),collision:nullable(collision),stop:nullable(obj({latched:bool,reconcileRequired:bool,reason:str,events:arr(obj({tick:integer,stage:{enum:['requested','acknowledged','observed','reset']},reason:str,provenance:{const:'modelled'}}))}))},['tag','interpolation','modelRevision','limitsOk','samples'])},['jobs','cups','armTrace'])
 },['manifest','outcome','metrics','businessEvents','effects','faults','reconciliations','coverage','limitations']);
-const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicsSchema,'physics-evidence-v1.schema.json');
+const ajv=new Ajv({strict:true,allowUnionTypes:true});addFormats(ajv);ajv.addSchema(componentSchema,'engineering-component.schema.json');ajv.addSchema(physicsSchema,'physics-evidence-v1.schema.json');ajv.addSchema(driveIoSchema,'drive-io-v1.schema.json');
 const validShape=ajv.compile<RunReport>(shape);
 export function validReportShape(value:unknown):value is RunReport{
  if(!validShape(value))return false;

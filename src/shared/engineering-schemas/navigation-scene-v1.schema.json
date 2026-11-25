@@ -469,6 +469,12 @@
                 "path",
                 "sha256"
               ]
+            },
+            "driveModelRef": {
+              "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
+            },
+            "controlProfileRef": {
+              "$ref": "drive-io-v1.schema.json#/definitions/DriveDocumentRef"
             }
           },
           "required": [

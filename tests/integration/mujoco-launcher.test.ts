@@ -1,5 +1,6 @@
 // lab:mujoco boundary (U06): the pinned tool closure and .venv-mujoco against its lock, a data directory outside every tool root, then the runtime with only the
 // MuJoCo arm on top of the mocks. Anything missing exits 1 with a code before a port is opened; nothing is installed and no other backend stands in.
+import {freePort} from '../support/free-port';
 import { afterEach, expect, test } from 'vitest';
 import { spawn } from 'node:child_process';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -16,12 +17,13 @@ afterEach(async () => { for (const d of dirs.splice(0)) await rm(d, { recursive:
 const temp = async () => { const d = await mkdtemp(join(tmpdir(), 'mujoco-launcher-')); dirs.push(d); return d; };
 const listening = (port: number) => new Promise<boolean>((ok) => { const s = createConnection({ port, host: '127.0.0.1' }); s.once('connect', () => { s.destroy(); ok(true); }); s.once('error', () => ok(false)); });
 async function run(args: string[]) {
-  const p = spawn(process.execPath, [launcher, '--provider', 'mujoco', '--ui-port', '4175', '--runtime-port', '4176', ...args], { cwd: lab, stdio: ['ignore', 'pipe', 'pipe'] });
+  const [ui,runtime]=await Promise.all([freePort(),freePort()]);
+  const p = spawn(process.execPath, [launcher, '--provider', 'mujoco', '--ui-port', String(ui), '--runtime-port', String(runtime), ...args], { cwd: lab, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '', err = ''; p.stdout.on('data', (c) => { out += c; }); p.stderr.on('data', (c) => { err += c; });
   const timer = setTimeout(() => p.kill('SIGKILL'), 90_000);
   const exit = await new Promise<number>((r) => p.once('exit', (c) => r(c ?? 1)));
   clearTimeout(timer);
-  return { exit, out, err };
+  return { exit, out, err, ui, runtime };
 }
 const b = (id: string, on: boolean) => ({ id, modes: ['simulation'], accesses: ['simulated'], installed: on, compatible: on, reachable: on, enabled: on, commissioned: true });
 const lock = { sourceCommit: 'c'.repeat(40), schemaHash: 'a'.repeat(64) };
@@ -46,7 +48,7 @@ test('without the MuJoCo Python the launcher exits MUJOCO_PYTHON_MISSING before 
   const d = await temp();
   const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', join(d, 'runs')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('MUJOCO_PYTHON_MISSING'); expect(r.out).not.toMatch(/Ready in/);
-  expect(await listening(4175)).toBe(false); expect(await listening(4176)).toBe(false);
+  expect(await listening(r.ui)).toBe(false); expect(await listening(r.runtime)).toBe(false);
 }, 120_000);
 
 test('a data directory inside a tool root is refused (the worker would write into the pinned closure) before any port is opened', async () => {
@@ -54,7 +56,7 @@ test('a data directory inside a tool root is refused (the worker would write int
   const d = await temp();
   const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', resolve(lab, '../source/robotics/simulation-mujoco/runs-u06')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('DATA_DIR_IN_TOOL_ROOT'); expect(r.out).not.toMatch(/Ready in/);
-  expect(await listening(4175)).toBe(false); expect(await listening(4176)).toBe(false);
+  expect(await listening(r.ui)).toBe(false); expect(await listening(r.runtime)).toBe(false);
 }, 120_000);
 
 test('a data directory that reaches a tool root through a symbolic link is refused too', async () => {

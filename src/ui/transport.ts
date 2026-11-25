@@ -6,7 +6,8 @@ import {tr} from '../i18n';
 export interface TransportState {mode:'idle'|'live'|'replay';playing:boolean;canPlay:boolean;canStep:boolean;canPause:boolean;paused:boolean;
  /** Pause was pressed during a paced auto-run: the step in flight finishes, then pause is sent; the button says so and is disabled. */pausing?:boolean;canCancel:boolean;speeds:number[];speed:number;simTimeS:number;tick:number;
  /** Tốc độ đo được khi đang tự chạy; hiện cạnh tốc độ chọn khi lệch quá 10 % (data-testid measured-speed). */measuredSpeed?:number;
- replay?:{fromTick:number;toTick:number;tick:number;playing:boolean;marks:{tick:number;label:string}[];step?:number}}
+ replay?:{fromTick:number;toTick:number;tick:number;playing:boolean;marks:{tick:number;label:string}[];step?:number};
+ /** Whose run these controls drive, said on the bar when another tool shares the page (the Control tab: the twin's run, not the bench). */scope?:string}
 // the title carries the label where only the icon is shown (≤ 767 px); the id tells a transport control from the run bar's primary action of the same
 // action (the page restores focus by id first)
 const btn=(label:string,action:string,ico:string,on:boolean,cls='secondary')=>`<button class="button ${cls}" id="transport-${action}" data-action="${action}" title="${label}"${on?'':' disabled'}>${icon(ico,16)}<span>${label}</span></button>`;
@@ -22,7 +23,7 @@ export function transportBar(s:TransportState):string{
  // in a fixed slot: the readout appearing never shifts the controls after it (they keep their elements during a paced run)
  const measured=s.measuredSpeed!==undefined&&Math.abs(s.measuredSpeed-s.speed)>0.1*s.speed?`<span class="twin-measured" data-testid="measured-speed">${tr('đo được','実測','measured')} ${esc(decimal(s.measuredSpeed))}×</span>`:'';
  const cursor=r?`<label for="twin-replay-cursor" class="visually-hidden">${tr('Vị trí xem lại (tick)','再生位置(tick)','Replay position (tick)')}</label><input id="twin-replay-cursor" type="range" min="${esc(r.fromTick)}" max="${esc(r.toTick)}" step="${esc(r.step??5)}" value="${esc(r.tick)}"${r.marks.length?' list="twin-replay-marks"':''}>${r.marks.length?`<datalist id="twin-replay-marks">${r.marks.map(m=>`<option value="${esc(m.tick)}" label="${esc(m.label)}"></option>`).join('')}</datalist>`:''}`:'<span class="twin-transport-fill"></span>';
- return `<div class="twin-transport" id="twin-transport" data-testid="twin-transport" role="group" aria-label="${tr('Điều khiển lần chạy','実行の操作','Run controls')}">
-${play}${btn('+5 s','twin-step','arrow',run&&s.canStep)}${pause}${r?'':`<label class="twin-speed"><span>${tr('Tốc độ chạy','実行速度','Run speed')}</span><select id="twin-run-speed">${s.speeds.map(n=>`<option value="${esc(n)}"${n===s.speed?' selected':''}>${esc(n)}×</option>`).join('')}</select></label><span class="twin-measured-slot" id="twin-measured">${measured}</span>`}
+ return `<div class="twin-transport" id="twin-transport" data-testid="twin-transport" role="group" aria-label="${s.scope?esc(s.scope):tr('Điều khiển lần chạy','実行の操作','Run controls')}">
+${s.scope?`<span class="twin-transport-scope" data-testid="transport-scope">${esc(s.scope)}</span>`:''}${play}${btn('+5 s','twin-step','arrow',run&&s.canStep)}${pause}${r?'':`<label class="twin-speed"><span>${tr('Tốc độ chạy','実行速度','Run speed')}</span><select id="twin-run-speed">${s.speeds.map(n=>`<option value="${esc(n)}"${n===s.speed?' selected':''}>${esc(n)}×</option>`).join('')}</select></label><span class="twin-measured-slot" id="twin-measured">${measured}</span>`}
 ${cursor}<span class="twin-transport-time" id="twin-transport-time"${r?' data-testid="replay-time"':''}>${esc(transportTime(s.simTimeS,s.tick,r?.toTick))}</span>${r?btn(tr('Thoát xem lại','再生を終了','Exit replay'),'twin-replay-exit','cross',true,'quiet'):btn(tr('Hủy lần chạy','実行をキャンセル','Cancel run'),'twin-cancel','cross',run&&s.canCancel,'quiet')}</div>`;
 }

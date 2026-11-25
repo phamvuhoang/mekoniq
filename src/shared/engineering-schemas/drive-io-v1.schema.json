@@ -1,0 +1,582 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.drive-io.v1",
+  "title": "DriveIoV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Neutral drive command/feedback contract (R4-A). DriveFeedbackV1 carries measured values only; DriveAxisSnapshot adds the true state and is evidence-only.",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/definitions/DriveCommandV1"
+      }
+    },
+    "feedback": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 16,
+      "items": {
+        "$ref": "#/definitions/DriveFeedbackV1"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion"
+  ],
+  "definitions": {
+    "DriveDocumentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 240,
+          "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9_-]+(?:/[A-Za-z0-9_.-]+)*\\.json$"
+        },
+        "sha256": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "path",
+        "sha256"
+      ],
+      "title": "DriveDocumentRef"
+    },
+    "DriveAxisId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+$",
+      "title": "DriveAxisId"
+    },
+    "DriveMode": {
+      "enum": [
+        "csp",
+        "csv"
+      ],
+      "title": "DriveMode"
+    },
+    "DriveState": {
+      "enum": [
+        "disabled",
+        "ready",
+        "enabled",
+        "quick_stop",
+        "fault"
+      ],
+      "title": "DriveState"
+    },
+    "DriveFault": {
+      "enum": [
+        "COMMAND_TIMEOUT",
+        "FEEDBACK_LOSS",
+        "FOLLOWING_ERROR",
+        "OVERSPEED",
+        "EXTERNAL_TRIP"
+      ],
+      "title": "DriveFault"
+    },
+    "DriveCommandV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "#/definitions/DriveAxisId"
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "mode": {
+          "$ref": "#/definitions/DriveMode"
+        },
+        "target": {
+          "type": "number"
+        },
+        "enable": {
+          "type": "boolean"
+        },
+        "quickStop": {
+          "type": "boolean"
+        },
+        "faultReset": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "axisId",
+        "seq",
+        "mode",
+        "target",
+        "enable",
+        "quickStop",
+        "faultReset"
+      ],
+      "title": "DriveCommandV1"
+    },
+    "DriveFeedbackV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "#/definitions/DriveAxisId"
+        },
+        "state": {
+          "$ref": "#/definitions/DriveState"
+        },
+        "fault": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DriveFault"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commandSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "positionRad": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "velocityRadS": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "torqueNm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "axisId",
+        "state",
+        "fault",
+        "commandSeq",
+        "positionRad",
+        "velocityRadS",
+        "torqueNm",
+        "tick"
+      ],
+      "title": "DriveFeedbackV1"
+    },
+    "DriveAxisSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "#/definitions/DriveAxisId"
+        },
+        "state": {
+          "$ref": "#/definitions/DriveState"
+        },
+        "fault": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/DriveFault"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commandSeq": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "positionRad": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "velocityRadS": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "torqueNm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "targetApplied": {
+          "type": "number"
+        },
+        "actualPositionRad": {
+          "type": "number"
+        },
+        "actualVelocityRadS": {
+          "type": "number"
+        },
+        "saturatedSubsteps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "followingErrorRad": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "axisId",
+        "state",
+        "fault",
+        "commandSeq",
+        "positionRad",
+        "velocityRadS",
+        "torqueNm",
+        "tick",
+        "targetApplied",
+        "actualPositionRad",
+        "actualVelocityRadS",
+        "saturatedSubsteps",
+        "followingErrorRad"
+      ],
+      "title": "DriveAxisSnapshot",
+      "description": "Feedback plus the true state; the actual* fields never reach a controller."
+    },
+    "DriveTrace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "axisId": {
+          "$ref": "#/definitions/DriveAxisId"
+        },
+        "dtS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "samples": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 5000,
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "target": {
+                    "type": "number"
+                  },
+                  "actual": {
+                    "type": "number"
+                  },
+                  "feedback": {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "torqueNm": {
+                    "type": "number"
+                  },
+                  "saturated": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "target",
+                  "actual",
+                  "feedback",
+                  "torqueNm"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "axisId",
+        "dtS",
+        "samples"
+      ],
+      "title": "DriveTrace",
+      "description": "One sample per substep (dtS apart). A null entry is a missing substep (a gap): a metric over a window containing one is TRACE_GAP. actual is the true state (position for csp, velocity for csv); feedback is what the controller saw."
+    },
+    "FaultInjectionV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "faultId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4
+        },
+        "phase": {
+          "enum": [
+            "start",
+            "end"
+          ]
+        }
+      },
+      "required": [
+        "entryId",
+        "faultId",
+        "targetId",
+        "params",
+        "phase"
+      ]
+    },
+    "FaultReceiptV1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "faultId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4
+        },
+        "phase": {
+          "enum": [
+            "start",
+            "end"
+          ]
+        },
+        "appliedTick": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bootId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "sceneDigest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "requestDigest": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "overriddenBy": {
+          "enum": [
+            "WORLD_MOVEMENT_INTERLOCK"
+          ]
+        }
+      },
+      "required": [
+        "entryId",
+        "faultId",
+        "targetId",
+        "params",
+        "phase",
+        "appliedTick",
+        "runId",
+        "bootId",
+        "sceneDigest",
+        "requestDigest"
+      ]
+    },
+    "DriveFaultEntryV1": {
+      "title": "DriveFaultEntryV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "faultId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$"
+        },
+        "targetId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_./:-]{1,200}$"
+        },
+        "trigger": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "elapsed_sim_ms"
+                },
+                "value": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 3600000
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "const": "phase"
+                },
+                "value": {
+                  "enum": [
+                    "brew",
+                    "grasp",
+                    "handoff",
+                    "delivery"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "value"
+              ]
+            }
+          ]
+        },
+        "durationMs": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 60000
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "maxProperties": 4,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9]{0,39}$"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "faultId",
+        "targetId",
+        "trigger",
+        "durationMs"
+      ],
+      "description": "A fault-schedule entry of the R4 drive catalog (V08): the shape of FaultScheduleEntry plus catalog parameters, and targets named like axes (robot/axis). It is a separate document so the frozen FaultScheduleEntry schema keeps its bytes."
+    }
+  }
+}

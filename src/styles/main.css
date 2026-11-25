@@ -2315,7 +2315,7 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 #twin-fault-schedule>summary{min-height:24px;cursor:pointer}
 .twin-display-menu{position:static;min-height:0;width:min(360px,calc(100vw - 48px));max-height:none}
 .twin-display-menu h2{margin:0 0 8px;font-size:13px}
-.twin-viewport .notice{position:absolute;top:8px;left:8px;z-index:2;max-width:min(560px,calc(100% - 200px));margin:0}
+.twin-viewport .notice{position:absolute;top:64px;left:8px;z-index:2;max-width:min(560px,calc(100% - 16px));margin:0}
 .twin-overlay{position:absolute;left:8px;right:8px;bottom:8px;z-index:2;display:grid;gap:6px;pointer-events:none}
 .twin-overlay>*{pointer-events:auto;margin:0}
 .twin-overlay .source-note{padding:6px 10px;background:var(--panel);border-radius:8px}
@@ -2333,6 +2333,7 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .twin-transport input[type="range"],.twin-transport-fill{flex:1 1 120px;min-height:44px}
 .twin-transport-fill{flex-basis:0}
 .twin-transport-time,.twin-measured{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.twin-transport-scope{font-size:12px;font-weight:600;color:var(--muted)}
 .twin-measured{color:var(--amber)}
 /* U03: disabled transport buttons look disabled in every state (the brand rules reset the global dimming) */
 .twin-transport .button:disabled,.twin-transport .button[aria-disabled="true"]{opacity:.45;cursor:default}
@@ -2428,6 +2429,8 @@ main:has(>.twin-shell){display:flex;flex-direction:column;min-height:0;padding:8
 .tw-cell.derived{stroke-dasharray:2 3}
 .tw-glyph{fill:var(--ink);font:700 12px var(--mono)}
 .tw-cup{fill:#f5f0e6;stroke:#122207;stroke-width:2}
+/* R4.4: belief dashed, truth solid, the error as the link between them */
+.tw-belief-ghost{fill:none;stroke:#7a3fb0;stroke-width:2;stroke-dasharray:4 3;pointer-events:none}.tw-belief-truth{fill:#122207;pointer-events:none}.tw-belief-link{stroke:#7a3fb0;stroke-width:1.5;pointer-events:none}
 .tw-job{fill:var(--raised);stroke:var(--muted)}
 .tw-job.attention{fill:#3a2222;stroke:var(--danger);stroke-width:2;stroke-dasharray:3 2}
 .tw-footprint{fill:#9dccff22;stroke:var(--blue);stroke-width:2}
@@ -2612,8 +2615,9 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 .assembly-page .asm-scene canvas{width:100%;display:block}
 .assembly-page .asm-status{color:var(--mq-text-muted)}
 
-/* A status message must retain a readable line at phone widths, clear of the viewport tools. */
-@media(max-width:767px){.twin-viewport .notice{top:64px;right:8px;max-width:calc(100% - 16px)}.twin-viewport .notice span{min-width:0}.twin-viewport .notice>svg,.twin-viewport .notice button{flex-shrink:0}}
+/* Keep the message and its dismiss button below the viewport tools, including a narrow viewport beside an open inspector. */
+.twin-viewport .notice span{min-width:0}
+.twin-viewport .notice>svg,.twin-viewport .notice button{flex-shrink:0}
 
 /* Viewport-first recorded-world workspace; keep file/evidence tools secondary. */
 .replay-app{max-width:1600px;margin:0 auto;padding:12px 20px;color:var(--ink);min-width:0}
@@ -2651,3 +2655,108 @@ input:disabled, select:disabled { opacity: 1; background: var(--raised); color: 
 [data-testid="semantic-study"] summary{min-height:44px;cursor:pointer;padding:8px 0}
 [data-testid="semantic-study"] td{overflow-wrap:anywhere;max-width:24ch}
 #twin-import-study{max-width:100%;margin:8px 0}
+/* Control tab (R4.2 §6.3): while it is the open tab the inspector takes the main area, form beside plots (the viewport is hidden; the twin's run goes on) */
+.twin-main.control-open{grid-template-columns:minmax(0,1fr)}
+.twin-main.control-open>.twin-viewport{display:none}
+.control-bench{display:grid;gap:12px;min-width:0}
+.twin-main.control-open #inspector-panel-control{scroll-padding:80px 0 12px}
+.control-field input,.control-field select{min-width:0;width:100%}
+/* the plant line and the banner stay in view while the panel scrolls (the banner is fixed: Mô phỏng · chưa hiệu chuẩn) */
+.control-head{position:sticky;top:-12px;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:-12px -12px 0;padding:12px 12px 6px;background:var(--panel)}
+.control-plant{flex:1 1 360px;margin:0;font:12px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.control-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin:0;padding:4px 10px;color:var(--amber);border:1px solid var(--amber);border-radius:8px}
+.control-banner span{color:var(--muted)}
+.control-grid{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:16px;align-items:start}
+.control-form{display:grid;gap:10px;min-width:0}
+.control-form fieldset{display:grid;gap:8px;margin:0;padding:8px 10px 10px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.control-form legend{padding:0 4px;font-size:12px;font-weight:700;color:var(--muted)}
+.control-axes{grid-template-columns:repeat(5,minmax(0,1fr));gap:0 8px}
+.control-axes label:has(#twin-ctl-axis-wheels),.control-axes label:has(#twin-ctl-axis-gripper){grid-column:span 2}
+/* the signal and the gains take two fields per row; the drive model is one labelled row */
+.control-signal,.control-gains{grid-template-columns:repeat(2,minmax(0,1fr))}
+.control-signal>.field-help{grid-column:1/-1}
+.control-inline{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px}
+.control-axes label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}
+.control-axes input[type="radio"]{width:auto;min-height:0;margin:0;padding:0;accent-color:var(--accent)}
+.control-field,.control-suggest,.control-io{display:grid;gap:4px;min-width:0}
+.control-field label,.control-suggest label,.control-io label{font-size:12px}
+.control-field small{font-family:var(--mono);color:var(--muted)}
+.control-form [aria-invalid="true"]{border-color:var(--danger)}
+.control-form .field-error,.control-results .field-error{margin:0;color:var(--danger);font-size:12px}
+.control-form .field-help,.control-results .field-help{margin:0}
+.control-actions{display:flex;flex-wrap:wrap;gap:8px}
+.control-actions .button,.control-suggest .button,.control-io .button{min-height:44px}
+.control-reasons{padding-left:18px}
+.control-results{display:grid;gap:10px;min-width:0;container-type:inline-size}
+.control-results h3{margin:0;font-size:13px}
+.control-result{display:grid;gap:8px}
+.control-status{margin:0}
+.control-status b{color:var(--amber)}
+.control-status[data-status="completed"] b{color:var(--accent)}
+.control-progress{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0}
+.control-summary{display:flex;flex-wrap:wrap;gap:2px 10px;margin:0;font:12px var(--mono)}
+.control-summary small{font-family:var(--font);color:var(--muted)}
+.control-orphans{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.control-plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.control-plots figure{margin:0;min-width:0}
+.control-plots .plot-wide{grid-column:1/-1}
+.control-plots figcaption{margin-bottom:2px;font-size:12px;color:var(--muted)}
+.plot{display:block;width:100%;max-width:760px;height:auto}
+.plot text{font:12px var(--mono);fill:var(--muted)}
+.plot .plot-label{fill:var(--ink)}
+.plot-frame{fill:none;stroke:var(--line)}
+.plot-grid{stroke:var(--line);stroke-width:.5}
+.plot-line{fill:none;stroke-width:1.5;stroke-linejoin:round}
+.plot-line.plot-s0{stroke:var(--blue)}.plot-line.plot-s1{stroke:var(--accent)}.plot-line.plot-s2{stroke:var(--amber)}
+.plot-band{fill:var(--danger);opacity:.25}
+.plot-legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 0;padding:0;list-style:none;font-size:12px}
+.plot-key{display:inline-block;width:18px;margin-right:6px;vertical-align:middle;border-top:2px solid}
+.plot-key.plot-s0{border-color:var(--blue)}.plot-key.plot-s1{border-color:var(--accent)}.plot-key.plot-s2{border-color:var(--amber)}.plot-key.dashed{border-top-style:dashed}
+.plot-data summary{display:flex;align-items:center;min-height:44px;cursor:pointer}
+/* the error and torque plots sit side by side only when the results column has room for both; a plot drawn smaller gets larger text in viewBox units, so it stays legible */
+@container (max-width:760px){.control-plots{grid-template-columns:minmax(0,1fr)}.plot-wide .plot text{font-size:16px}}
+@container (max-width:480px){.plot text{font-size:15px}.plot-wide .plot text{font-size:18px}}
+/* a fine pointer on a wide screen: denser rows so the axis, signal and gains of §6.3 fit beside the plots at 1440×900; touch and narrow widths keep 44 px targets */
+@media (pointer:fine) and (min-width:768px){
+ .control-axes label{min-height:30px}
+ .control-form input:not([type="radio"]):not([type="file"]),.control-form select{min-height:34px;padding:5px 8px}
+ .control-form fieldset{padding:4px 10px 8px;gap:6px}
+ .control-form{gap:8px}
+}
+/* phones: form above results; the open Control tab is the page (no viewport row, no sheet height cap) */
+@media (max-width:767px){
+ .control-grid{grid-template-columns:minmax(0,1fr)}
+ .twin-main.control-open,.twin-main.control-open.inspector-open{grid-template-rows:auto}
+ .twin-main.control-open .twin-inspector{height:78dvh;max-height:78dvh}
+ .twin-main.control-open #inspector-panel-control{scroll-padding-top:108px}
+ .control-head{gap:3px;padding-top:6px}
+ .control-banner{font-size:12px}
+}
+
+/* R4 V09: the drive fault studio and the fault section of a report. Tokens only; the plot is hidden on a narrow screen and the text list stands in for it. */
+.drive-faults label { display: inline-flex; flex-direction: column; gap: 2px; margin: 6px 12px 6px 0; font-size: 0.85rem; }
+.drive-faults input[type="number"] { width: 110px; }
+.drive-fault-draft { border: 1px solid var(--line, currentColor); border-radius: 8px; margin: 10px 0; padding: 8px 12px; }
+.fault-timeline { margin: 10px 0; }
+.fault-timeline .fault-axis { display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.8; }
+.fault-timeline-plot { width: 100%; height: 88px; display: block; border: 1px solid var(--line, currentColor); border-radius: 6px; }
+.fault-timeline-plot .lane-label { font-size: 5px; fill: currentColor; opacity: 0.75; }
+.fault-timeline-plot .fault-bar { fill: var(--accent); stroke: var(--accent-ink); stroke-width: 0.2; }
+.fault-timeline-list { margin: 8px 0 0; padding-left: 20px; font-size: 0.85rem; }
+.fault-timeline-list [data-unknown="true"], .fault-timeline-list [data-beyond="true"] { color: var(--danger); }
+.fault-timeline[data-empty="true"] .fault-timeline-list { display: none; }
+@media (max-width: 520px) { .fault-timeline-plot, .fault-timeline .fault-axis { display: none; } .fault-timeline[data-empty="true"] .fault-timeline-list { display: block; } }
+[data-testid="fault-evidence"] .link-button { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; text-align: left; }
+[data-testid="fault-evidence"][data-violated="true"] h3 { color: var(--danger); }
+[data-testid="fault-evidence"] .pill[data-verdict="detected_late"] { border-color: var(--danger); }   /* not_detected is a valid result for the faults the oracle does not require */
+
+/* V15: the model-maturity badge (words first: the level is never carried by colour alone) and the calibration record screen */
+.maturity-badge { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; max-width: 100%; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 12px; }
+.control-maturity { margin: 0; }
+.maturity-badge[data-level="calibrated"] { border-color: var(--accent); }
+.maturity-badge[data-level="illustrative"] { border-style: dashed; }
+.maturity-groups { color: var(--muted); }
+.calibration-loader { margin-top: 12px; }
+.calibration-view table { margin: 4px 0 12px; }
+.calibration-view tr[data-bound="true"] td, .calibration-view tr[data-bound="true"] th { color: var(--amber); }
+.calibration-view .calibration-reasons { margin: 4px 0; padding-left: 20px; }

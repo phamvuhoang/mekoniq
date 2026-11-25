@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.perception-profile.v1",
+  "title": "PerceptionProfileV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "A modelled perception error (R4-D22): bias, noise, latency, dropout, view region and maximum age of the estimate a grasp may use. Every value is assumed; this is not camera data.",
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "id",
+    "revision",
+    "digest",
+    "calibration",
+    "parameterSource",
+    "updateEveryTicks",
+    "latencyTicks",
+    "biasM",
+    "sigmaM",
+    "dropoutProbability",
+    "visibleRegionId",
+    "maxAgeTicks"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "perception-profile"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "calibration": {
+      "const": "not_calibrated"
+    },
+    "parameterSource": {
+      "const": "assumed"
+    },
+    "updateEveryTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 250
+    },
+    "latencyTicks": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "biasM": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": -0.03,
+        "maximum": 0.03
+      }
+    },
+    "sigmaM": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.03
+      }
+    },
+    "dropoutProbability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 0.9
+    },
+    "visibleRegionId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "maxAgeTicks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  }
+}

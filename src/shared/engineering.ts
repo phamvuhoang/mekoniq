@@ -1,4 +1,4 @@
-// Synced from source packages/contracts/generated/engineering.ts @ 3d8c2a8daa025cab6373fd86b0cec7f40864fdb0 (sha256 c02609af39c714d907e8e2147af491402ae497f412181d0d64342e4a29eea33c). Run node scripts/sync-engineering-contracts.mjs; do not edit.
+// Synced from source packages/contracts/generated/engineering.ts @ 0650ecbd126ee4b0b6004412942d5109e5b253a6 (sha256 060586c160557e696404e0e3230615b196766454d0811baa4d23a9b2e21c05d4). Run node scripts/sync-engineering-contracts.mjs; do not edit.
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type {LabProjectV2,AssetRevision} from './types';
 export type CoffeeRecipe=Record<string,unknown>;
@@ -697,7 +697,7 @@ export interface EngineeringProject {
   entityBindings: EntityBinding[];
   requestedProfile: EngineeringProfile;
   /**
-   * Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.
+   * Registered server-owned new-run payload or tray experiment; only engineering-mujoco-3d-v1.
    */
   mujocoExperimentId?:
     | 'payload-empty-v1'
@@ -706,7 +706,17 @@ export interface EngineeringProject {
     | 'payload-slow-v1'
     | 'payload-fast-v1'
     | 'payload-friction-low-v1'
-    | 'payload-friction-high-v1';
+    | 'payload-friction-high-v1'
+    | 'tray-nominal-v1'
+    | 'tray-low-friction-v1'
+    | 'tray-accel-high-v1'
+    | 'tray-torque-limited-v1'
+    | 'tray-person-crossing-v1';
+  /**
+   * Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.
+   */
+  driveExperimentId?:
+    'drive-ideal-v1' | 'drive-nominal-v1' | 'drive-torque-limited-v1' | 'drive-latency-v1' | 'drive-coarse-encoder-v1';
 }
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema

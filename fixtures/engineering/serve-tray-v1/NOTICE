@@ -1,0 +1,3 @@
+serve-tray-v1
+First-party Serve fixture inputs. The files listed as shared are copied byte-for-byte from serve-payload-v1; the cup layout, friction pair, policy thresholds and actor proxy are assumed experiment inputs, not_calibrated.
+No vendor mesh or code is redistributed.

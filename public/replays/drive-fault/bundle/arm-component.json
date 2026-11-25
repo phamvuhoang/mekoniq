@@ -1,0 +1,2167 @@
+{
+  "documents": [
+    {
+      "digest": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+      "id": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/urdf/xarm6/xarm6.urdf.xacro"
+    },
+    {
+      "digest": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+      "id": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml"
+    },
+    {
+      "digest": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+      "id": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/config/xarm6/joint_limits_1305.yaml"
+    },
+    {
+      "digest": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+      "id": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/urdf/gripper/xarm_gripper.urdf.xacro"
+    },
+    {
+      "digest": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link_base.stl"
+    },
+    {
+      "digest": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link1.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link1.stl"
+    },
+    {
+      "digest": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link2.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link2.stl"
+    },
+    {
+      "digest": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link3.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link3.stl"
+    },
+    {
+      "digest": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link4.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link4.stl"
+    },
+    {
+      "digest": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link5.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link5.stl"
+    },
+    {
+      "digest": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+      "id": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link6.stl",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/xarm6_1305/visual/link6.stl"
+    },
+    {
+      "digest": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/base_link_g2.dae"
+    },
+    {
+      "digest": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_finger_g2.dae"
+    },
+    {
+      "digest": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae"
+    },
+    {
+      "digest": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae"
+    },
+    {
+      "digest": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_finger_g2.dae"
+    },
+    {
+      "digest": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae"
+    },
+    {
+      "digest": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+      "id": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+      "license": "BSD-3-Clause",
+      "url": "https://raw.githubusercontent.com/xArm-Developer/xarm_ros2/ac736c92b02de7ca7e0be6f737d77d46707464d8/xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae"
+    }
+  ],
+  "id": "xarm6-g2-v1",
+  "identity": {
+    "family": "xArm 6 (1305) + Gripper G2",
+    "manufacturer": "UFACTORY",
+    "sku": null,
+    "status": "candidate"
+  },
+  "joints": [
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link1",
+      "id": "J1",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint1.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 179.4445
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint1_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -6.28318530718
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint1_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 6.28318530718
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint1 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0.267
+        ]
+      },
+      "parent": "base"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link2",
+      "id": "J2",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint2.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 179.4445
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint2_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -2.059
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint2_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 2.0944
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint2 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707108079859,
+          0,
+          0,
+          0.707105482511
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link1"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link3",
+      "id": "J3",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint3.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 92
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint3_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -3.927
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint3_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.19198
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint3 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0.0535,
+          -0.2845,
+          0
+        ]
+      },
+      "parent": "link2"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link4",
+      "id": "J4",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint4.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 81.558
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint4_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -6.28318530718
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint4_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 6.28318530718
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint4 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707108079859,
+          0,
+          0,
+          0.707105482511
+        ],
+        "xyzM": [
+          0.0775,
+          0.3425,
+          0
+        ]
+      },
+      "parent": "link3"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link5",
+      "id": "J5",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint5.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 30.6
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint5_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -1.69297
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint5_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 3.14159265359
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint5 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0.707108079859,
+          0,
+          0,
+          0.707105482511
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link4"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "link6",
+      "id": "J6",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "db51c8e0b4b80bc378a8b16ae7e185e394393efb6eda89feb8c9cc9f41c096eb",
+            "documentId": "xarm_ros2:xarm_description/config/xarm6/joint_limits_1305.yaml",
+            "kind": "manufacturer",
+            "locator": "joint6.max_effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 30.6
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint6_lower_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": -6.28318530718
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "xarm6_urdf joint6_upper_limit",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 6.28318530718
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+            "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "joint6 limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 3.14
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          -0.707108079859,
+          0,
+          0,
+          0.707105482511
+        ],
+        "xyzM": [
+          0.076,
+          0.097,
+          0
+        ]
+      },
+      "parent": "link5"
+    },
+    {
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "child": "xarm_gripper_base_link",
+      "id": "gripper_fix",
+      "kind": "fixed",
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0,
+          0
+        ]
+      },
+      "parent": "link6"
+    },
+    {
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "child": "left_outer_knuckle",
+      "id": "drive_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "drive_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "drive_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "drive_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "drive_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0.035,
+          0.059098
+        ]
+      },
+      "parent": "xarm_gripper_base_link"
+    },
+    {
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "child": "left_finger",
+      "id": "left_finger_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_finger_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_finger_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_finger_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_finger_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0.035465,
+          0.042039
+        ]
+      },
+      "parent": "left_outer_knuckle"
+    },
+    {
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "child": "left_inner_knuckle",
+      "id": "left_inner_knuckle_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_inner_knuckle_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_inner_knuckle_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_inner_knuckle_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "left_inner_knuckle_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          0.02,
+          0.074098
+        ]
+      },
+      "parent": "xarm_gripper_base_link"
+    },
+    {
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "child": "right_outer_knuckle",
+      "id": "right_outer_knuckle_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_outer_knuckle_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_outer_knuckle_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_outer_knuckle_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_outer_knuckle_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          -0.035,
+          0.059098
+        ]
+      },
+      "parent": "xarm_gripper_base_link"
+    },
+    {
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "child": "right_finger",
+      "id": "right_finger_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_finger_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_finger_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_finger_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_finger_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          -0.035465,
+          0.042039
+        ]
+      },
+      "parent": "right_outer_knuckle"
+    },
+    {
+      "axis": [
+        -1,
+        0,
+        0
+      ],
+      "child": "right_inner_knuckle",
+      "id": "right_inner_knuckle_joint",
+      "kind": "revolute",
+      "limits": {
+        "effort": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_inner_knuckle_joint limit effort",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "N*m",
+          "value": 50
+        },
+        "lower": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_inner_knuckle_joint limit lower",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0
+        },
+        "upper": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_inner_knuckle_joint limit upper",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad",
+          "value": 0.85
+        },
+        "velocity": {
+          "source": {
+            "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+            "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+            "kind": "manufacturer",
+            "locator": "right_inner_knuckle_joint limit velocity",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          },
+          "unit": "rad/s",
+          "value": 2
+        }
+      },
+      "origin": {
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "xyzM": [
+          0,
+          -0.02,
+          0.074098
+        ]
+      },
+      "parent": "xarm_gripper_base_link"
+    }
+  ],
+  "links": [
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        0,
+        0.09103
+      ],
+      "id": "base",
+      "inertiaKgM2": [
+        0.00494875,
+        -0.0000035,
+        0.0000125,
+        0.00494174,
+        0.00000167,
+        0.002219
+      ],
+      "inertialSource": {
+        "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+        "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "link_base inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "73afc631fde21296af2f60f037e26234a294113f6e6a22e09dec43bc8b461593",
+          "documentId": "xarm_ros2:xarm_description/urdf/xarm6/xarm6.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "link_base inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 2.7
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "479e88e779dcb811721d70ce0463c20cc22d8db196fa6c61af2e3f0d06c2dc28",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link_base.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link1.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link1.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0.00022,
+        0.02951,
+        -0.0124
+      ],
+      "id": "link1",
+      "inertiaKgM2": [
+        0.0058562,
+        -0.0000179,
+        0.00000355,
+        0.0050316,
+        -0.000888336,
+        0.003536652
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link1 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link1.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 2.3814
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "25fdfe132e46c5f5cf8ea8bfdeb52b5f7bfd4765179a6299fd9e2276ea3152b9",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link1.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link1.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link2.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link2.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0.03881,
+        -0.22783,
+        0.03496
+      ],
+      "id": "link2",
+      "inertiaKgM2": [
+        0.028315776,
+        0.005,
+        0.00066546,
+        0.0058,
+        -0.0045741,
+        0.0273447
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link2 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link2.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 2.2675
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "d9fdfbb44a966f9c48479b8d015c98af396ad643c0a65d87219342c59d322d82",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link2.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link2.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link3.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link3.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0.07041,
+        0.11631,
+        0.0107
+      ],
+      "id": "link3",
+      "inertiaKgM2": [
+        0.0063483,
+        -0.0015397,
+        0.00096858,
+        0.00379758,
+        0.00186567,
+        0.00595768
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link3 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link3.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 1.875
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "48336e399ce49b8575da43c8053f7e0a07ec6774a11f57276aa1c0e327143a81",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link3.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link3.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link4.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link4.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        -0.00018,
+        0.01798,
+        -0.02291
+      ],
+      "id": "link4",
+      "inertiaKgM2": [
+        0.004896,
+        -0.000006925,
+        -0.00001418,
+        0.00445694,
+        -0.00023186,
+        0.00134332
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link4 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link4.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 1.3192
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "29d52195102bc5a01f29d97d2f0c8a32883a8050a2a29447ee9f70d7bad67943",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link4.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link4.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link5.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link5.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0.0651,
+        0.03096,
+        0.00315
+      ],
+      "id": "link5",
+      "inertiaKgM2": [
+        0.00146378,
+        -0.000450624,
+        0.000284306,
+        0.00184192,
+        0.000130866,
+        0.002333524
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link5 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link5.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 1.33854
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "25272c881b50cf1d69d1a675fc2801a3e83e51186e3c999599ca482e50c0d771",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link5.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link5.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [
+        {
+          "geometry": {
+            "blobSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link6.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link6.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ],
+      "comM": [
+        0,
+        -0.00677,
+        -0.01098
+      ],
+      "id": "link6",
+      "inertiaKgM2": [
+        0.000093,
+        0,
+        0,
+        0.0000587,
+        -0.0000036,
+        0.000132
+      ],
+      "inertialSource": {
+        "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+        "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+        "kind": "manufacturer",
+        "locator": "link6 (origin, mass, inertia)",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "ee278042008ad01e0fbc95a3ce0c270c898fe73bb46793c8a54daf34234c0f5c",
+          "documentId": "xarm_ros2:xarm_description/config/link_inertial/xarm6_type6_HT_BR2.yaml",
+          "kind": "manufacturer",
+          "locator": "link6.mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.17
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "7604bde7881dc09ce16db57007bfc03e3885abe9d12da18e63b91cb1569d6d4f",
+            "documentId": "xarm_ros2:xarm_description/meshes/xarm6_1305/visual/link6.stl",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/xarm6_1305/visual/link6.stl",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        -0.00065489,
+        -0.0018497,
+        0.048028
+      ],
+      "id": "xarm_gripper_base_link",
+      "inertiaKgM2": [
+        0.00047106,
+        3.9292e-7,
+        0.0000026537,
+        0.00033072,
+        -0.000010975,
+        0.00025642
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "xarm_gripper_base_link inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "xarm_gripper_base_link inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.54156
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "4449fd2b65e5bdaf059aa57cd2e7c36ff2e85730bacd065683d0c6327da39621",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "d46f7e336755a7fd58ebee4b3eab2c6eca7eec611358fc6bf5f683e63efd7575",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/base_link_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        2.9948e-14,
+        0.021559,
+        0.015181
+      ],
+      "id": "left_outer_knuckle",
+      "inertiaKgM2": [
+        0.000019111,
+        -1.8803e-17,
+        -1.1002e-17,
+        0.0000066256,
+        -0.0000073008,
+        0.000013185
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "left_outer_knuckle inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "left_outer_knuckle inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.033618
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "0e432c39574957b02b753ba5415fe6f9b5298c095fc8b321f33457212954ded7",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "b791ec24aae545a5dd70aefd12ddac6bdbecf74388ca2f655b34b140ae7da80b",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/left_outer_knuckle_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        -2.4536e-14,
+        -0.016413,
+        0.029258
+      ],
+      "id": "left_finger",
+      "inertiaKgM2": [
+        0.000017493,
+        -4.2156e-19,
+        6.9164e-18,
+        0.000017225,
+        0.0000046433,
+        0.0000051466
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "left_finger inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "left_finger inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.048304
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "1ca636e4e35dfade0ed3ec074add5e53b0937aac4149969d464726e3a00b1060",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "69c888529def394ddf00edfb11db061d300c586e6df681a33c894af5be14a59b",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/left_finger_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        0.00000186600784688,
+        0.0220467847634,
+        0.0261334672831
+      ],
+      "id": "left_inner_knuckle",
+      "inertiaKgM2": [
+        0.00000609490024272,
+        6.0665132616e-11,
+        7.19102670501e-11,
+        0.00000601955084375,
+        -0.00000275316812992,
+        0.0000050786200448
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "left_inner_knuckle inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "left_inner_knuckle inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.0230125781257
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "c13cdebffd518e2519f0b44561394a549164e5ae5fca1a4b8552b8aeb944f2a5",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "f12e642f44ce4a5b0c9bb2ed5c2cf4f9ea0a22b5e87839c29490e8eee6171b86",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/left_inner_knuckle_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        -3.1669e-14,
+        -0.021559,
+        0.015181
+      ],
+      "id": "right_outer_knuckle",
+      "inertiaKgM2": [
+        0.000019111,
+        -1.8789e-17,
+        1.0986e-17,
+        0.0000066256,
+        0.0000073008,
+        0.000013185
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "right_outer_knuckle inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "right_outer_knuckle inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.033618
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "fef06b38e7abdce85d16638784ac0077cd094962a38176092cfb3f09b0518d97",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "d9ed7ed551136ecd57fe733c5e9c7e7fa70e10345e26441452122b6bba061f55",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/right_outer_knuckle_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        2.5618e-14,
+        0.016413,
+        0.029258
+      ],
+      "id": "right_finger",
+      "inertiaKgM2": [
+        0.000017493,
+        -5.0014e-19,
+        -7.5079e-18,
+        0.000017225,
+        -0.0000046435,
+        0.0000051466
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "right_finger inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "right_finger inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.048304
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "9a76cf4400c6df370d68434ac08eccf6ea93a1443f46f6eb9c130b0a59e6b6e9",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "c2914ea791f520253e5536b0078f4e7e3b7b16112eb3dab21db2f5029c150b36",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/right_finger_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    },
+    {
+      "collision": [],
+      "comM": [
+        0.000001866,
+        -0.022047,
+        0.026133
+      ],
+      "id": "right_inner_knuckle",
+      "inertiaKgM2": [
+        0.0000060949,
+        -6.0665e-11,
+        7.191e-11,
+        0.0000060197,
+        0.0000027531,
+        0.0000050784
+      ],
+      "inertialSource": {
+        "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+        "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+        "kind": "manufacturer",
+        "locator": "right_inner_knuckle inertial",
+        "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+      },
+      "massKg": {
+        "source": {
+          "contentSha256": "e1987b755501636b7ba32518d98ecb5fc8c6d2c4b1c45a49d332d6672f22c8cb",
+          "documentId": "xarm_ros2:xarm_description/urdf/gripper/xarm_gripper.urdf.xacro",
+          "kind": "manufacturer",
+          "locator": "right_inner_knuckle inertial/mass",
+          "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+        },
+        "unit": "kg",
+        "value": 0.023013
+      },
+      "visual": [
+        {
+          "geometry": {
+            "blobSha256": "f50fd91ce7076e57aabbfd1160d6138d83df12f31e5ff12497029354d335a344",
+            "kind": "mesh",
+            "scale": [
+              1,
+              1,
+              1
+            ]
+          },
+          "pose": {
+            "quaternionXyzw": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "xyzM": [
+              0,
+              0,
+              0
+            ]
+          },
+          "source": {
+            "contentSha256": "9e73e1fb4e65bc79dbaf2d8fe86fa835c67faa1e5ab08a8a55bec3b9023a1aa3",
+            "documentId": "xarm_ros2:xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+            "kind": "manufacturer",
+            "locator": "xarm_description/meshes/gripper/xarm/right_inner_knuckle_g2.dae",
+            "revision": "ac736c92b02de7ca7e0be6f737d77d46707464d8"
+          }
+        }
+      ]
+    }
+  ],
+  "models": [],
+  "ports": [],
+  "revision": "1",
+  "schemaVersion": 1
+}

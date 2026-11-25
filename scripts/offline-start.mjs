@@ -54,10 +54,9 @@ async function main(){
   }
   for(const p of [uiPort,runtimePort])if(!Number.isInteger(p)||p<1024||p>65535||[1880,1884].includes(p))throw new Error(`FORBIDDEN_PORT:${p}`);
   if(uiPort===runtimePort)throw new Error('PORTS_MUST_DIFFER');
-  if(uiPort!==4175)throw new Error('UI_PORT_REQUIRES_4175: the runtime pairs only with the declared Lab UI origin.');
   const manifest=await verifyOffline(root);await free(uiPort);await free(runtimePort);
   const {MEKONIQ_LAB_ACCESS_KEY:_key,...env}=process.env;// a local launcher never uses an access key: the runtime must print its pairing code
-  child=spawn(process.execPath,[join(root,'runtime/runtime.mjs'),'--port',String(runtimePort),'--data-dir',data],{cwd:root,stdio:['ignore','pipe','inherit'],env});
+  child=spawn(process.execPath,[join(root,'runtime/runtime.mjs'),'--port',String(runtimePort),'--data-dir',data,...uiPort!==4175?['--allow-origin',`http://127.0.0.1:${uiPort}`,'--public-host',`127.0.0.1:${uiPort}`]:[]],{cwd:root,stdio:['ignore','pipe','inherit'],env});
   let text='';child.stdout.on('data',c=>text+=c);
   const token=await new Promise((ok,fail)=>{
    const timer=setTimeout(()=>finish(new Error('RUNTIME_NOT_READY')),15000);

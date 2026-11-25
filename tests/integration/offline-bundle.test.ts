@@ -1,3 +1,4 @@
+import {freePort} from '../support/free-port';
 import {afterEach, expect, test} from 'vitest';
 import {mkdtemp, mkdir, writeFile, readFile, cp, rm, readdir} from 'node:fs/promises';
 import {join} from 'node:path';
@@ -26,9 +27,9 @@ test('offline release contains its Node, runtime, built dependency assets and lo
  expect(manifest.files).toHaveProperty('bin/node');expect(manifest.files).toHaveProperty('ui/index.html');
  expect(manifest.files).toHaveProperty('pnpm-lock.yaml');expect(manifest.files).toHaveProperty('runtime/runtime.mjs');
  expect(await readdir(out)).not.toContain('node_modules');
- const wrongPort=spawnSync(join(out,'bin/node'),[join(out,'start.mjs'),'--boot-only','--ui-port','49175'],{encoding:'utf8',timeout:10000});
- expect(wrongPort.status).toBe(1);expect(wrongPort.stderr).toContain('UI_PORT_REQUIRES_4175');
- const boot=spawnSync(join(out,'bin/node'),[join(out,'start.mjs'),'--boot-only','--runtime-port','49176','--data-dir',join(root,'data')],{encoding:'utf8',env:{...process.env,PATH:'/nonexistent'},timeout:30000});
+ const wrongPort=spawnSync(join(out,'bin/node'),[join(out,'start.mjs'),'--boot-only','--ui-port','1000'],{encoding:'utf8',timeout:10000});
+ expect(wrongPort.status).toBe(1);expect(wrongPort.stderr).toContain('FORBIDDEN_PORT:1000');
+ const boot=spawnSync(join(out,'bin/node'),[join(out,'start.mjs'),'--boot-only','--ui-port',String(await freePort()),'--runtime-port',String(await freePort()),'--data-dir',join(root,'data')],{encoding:'utf8',env:{...process.env,PATH:'/nonexistent'},timeout:30000});
  expect(boot.status,boot.stderr).toBe(0);expect(boot.stdout).toMatch(/Offline mock ready/);
  for(const wrong of [{platform:process.platform==='darwin'?'linux':'darwin'},{arch:process.arch==='arm64'?'x64':'arm64'}]){
   await writeFile(join(out,'offline-manifest.json'),JSON.stringify({...manifest,...wrong}));

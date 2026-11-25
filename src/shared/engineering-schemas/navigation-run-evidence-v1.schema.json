@@ -299,6 +299,12 @@
                 "path",
                 "sha256"
               ]
+            },
+            "hostArch": {
+              "enum": [
+                "arm64",
+                "x86_64"
+              ]
             }
           },
           "required": [

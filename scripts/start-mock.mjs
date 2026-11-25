@@ -3,6 +3,7 @@
 // Never downloads or installs anything, never starts a stand-in when the runtime is missing, never stops a process it did not start.
 // Options (defaults are the only ones the source runtime accepts browser traffic from): --ui-port 4175 --runtime-port 4176 --data-dir <lab>/runs
 // --root <dir> selects another Lab install (tests); --boot-only exits after ready (boot-to-ready measurement).
+// --production-ui builds an owned production preview and saves its served bytes in LAB_EVIDENCE_DIR.
 // --allow-origin <origin> lets the runtime accept a bearer session from that origin too; --extra-ui-port <port> serves the same Lab on
 // http://localhost:<port> (another origin, loopback only) with no /lab of its own: a web-hosted Lab stand-in for the e2e (remote-origin.spec.ts).
 // A local launcher never uses an access key: MEKONIQ_LAB_ACCESS_KEY is removed from the runtime's environment, so it always prints a pairing code.
@@ -41,10 +42,11 @@ function extraUi(port,uiPort){
 }
 const PREVIEW='Runtime unavailable: the Lab can only open in preview only mode (design, layout, no runs or results). Install the pinned export with node scripts/import-runtime.mjs <artifact-dir> (see README), then pnpm check:source.';
 function options(argv){
- const o={root:lab,uiPort:4175,runtimePort:4176,dataDir:undefined,bootOnly:false,allowOrigin:undefined,extraUiPort:undefined};
+ const o={root:lab,uiPort:4175,runtimePort:4176,dataDir:undefined,bootOnly:false,productionUi:false,allowOrigin:undefined,extraUiPort:undefined};
  for(let i=0;i<argv.length;i++){const a=argv[i];
   if(a==='--')continue;else if(a==='--root')o.root=resolve(argv[++i]);else if(a==='--ui-port')o.uiPort=Number(argv[++i]);else if(a==='--runtime-port')o.runtimePort=Number(argv[++i]);
   else if(a==='--data-dir')o.dataDir=resolve(argv[++i]);else if(a==='--boot-only')o.bootOnly=true;
+  else if(a==='--production-ui')o.productionUi=true;
   else if(a==='--allow-origin')o.allowOrigin=argv[++i];else if(a==='--extra-ui-port')o.extraUiPort=Number(argv[++i]);else throw new Error(`UNKNOWN_ARGUMENT:${a}`);}
  o.dataDir??=join(o.root,'runs');return o;
 }
@@ -81,6 +83,7 @@ export async function launch({argv=process.argv.slice(2),prepare=async()=>({args
  try{
   assertNode();assertPlatform();
   const o=options(argv);
+  if(o.productionUi&&!process.env.LAB_EVIDENCE_DIR)throw new Error('PRODUCTION_EVIDENCE_DIR_REQUIRED');
   assertPort(o.uiPort);assertPort(o.runtimePort);if(o.uiPort===o.runtimePort)throw new Error('INVALID_PORT:ui and runtime ports must differ');
   if(o.extraUiPort!==undefined){assertPort(o.extraUiPort);if([o.uiPort,o.runtimePort].includes(o.extraUiPort))throw new Error('INVALID_PORT:the extra UI port must differ from the others');}
   if(o.allowOrigin!==undefined&&!/^https?:\/\/[^/\s]+$/.test(o.allowOrigin))throw new Error(`INVALID_ORIGIN:${o.allowOrigin}`);
@@ -92,13 +95,15 @@ export async function launch({argv=process.argv.slice(2),prepare=async()=>({args
   await access(vite).catch(()=>{throw new Error('DEPENDENCIES_NOT_INSTALLED: run pnpm install --frozen-lockfile once (the launcher never downloads).');});
   const extra=await prepare(o,lock,track);go();
   await portFree(o.runtimePort);await portFree(o.uiPort);if(o.extraUiPort!==undefined)await portFree(o.extraUiPort);go();
-  const rt=spawn(process.execPath,[file,'--port',String(o.runtimePort),'--data-dir',o.dataDir,...o.allowOrigin?['--allow-origin',o.allowOrigin]:[],...extra.args],{cwd:o.root,stdio:['ignore','pipe','inherit'],env:{...runtimeEnv(),...extra.env},detached:true});rt.groupKill=true;track(rt);
+  const rt=spawn(process.execPath,[file,'--port',String(o.runtimePort),'--data-dir',o.dataDir,...o.uiPort!==4175?['--public-host',`127.0.0.1:${o.uiPort}`]:[],...o.allowOrigin?['--allow-origin',o.allowOrigin]:[],...extra.args],{cwd:o.root,stdio:['ignore','pipe','inherit'],env:{...runtimeEnv(),...extra.env},detached:true});rt.groupKill=true;track(rt);
   let out='';rt.stdout.on('data',c=>{out+=c;});
   const token=await waitFor(rt,'RUNTIME',()=>/Pairing token \(expires in 5 minutes; one use\): (\S+)/.exec(out)?.[1],extra.readyMs??15000);
   go();const health=await (await fetch(`http://127.0.0.1:${o.runtimePort}/lab/v2/health`)).json();
   check(health,lock);go();
-  const ui=spawn(process.execPath,[vite,'--host','127.0.0.1','--port',String(o.uiPort),'--strictPort'],{cwd:lab,stdio:['ignore','ignore','inherit'],env:{...process.env,LAB_RUNTIME_PORT:String(o.runtimePort)},detached:true});ui.groupKill=true;track(ui);
-  await waitFor(ui,'UI',async()=>(await fetch(`http://127.0.0.1:${o.uiPort}/`)).ok||undefined,30000);go();
+  const uiArgs=o.productionUi?[join(lab,'scripts/production-ui.mjs'),lab,o.root,String(o.uiPort),String(o.runtimePort),resolve(process.env.LAB_EVIDENCE_DIR)]:[vite,'--host','127.0.0.1','--port',String(o.uiPort),'--strictPort'];
+  const ui=spawn(process.execPath,uiArgs,{cwd:lab,stdio:['ignore','pipe','inherit'],env:{...process.env,LAB_RUNTIME_PORT:String(o.runtimePort)},detached:true});ui.groupKill=true;track(ui);
+  let uiOut='';ui.stdout.on('data',c=>{uiOut+=c;});
+  await waitFor(ui,'UI',async()=>{if(o.productionUi&&!uiOut.includes('Production UI ready'))return undefined;return (await fetch(`http://127.0.0.1:${o.uiPort}/`)).ok||undefined;},o.productionUi?120000:30000);go();
   const extraServer=o.extraUiPort===undefined?null:await extraUi(o.extraUiPort,o.uiPort);
   if(extraServer){servers.push(extraServer);if(stopping)await closeServers();}// a stop that began while it opened has already closed the others
   go();

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "handoff-policy-v1",
+  "revision": 1,
+  "provenance": "assumed",
+  "calibration": "not_calibrated",
+  "robotId": "amr-1",
+  "armId": "arm-1",
+  "supportId": "amr-1/tray-1",
+  "dock": {
+    "poseDriveMap": [
+      0.35,
+      0.48591366218667575,
+      1.5707963267948966
+    ],
+    "xyToleranceM": 0.01,
+    "yawToleranceRad": 0.02,
+    "maxLinearMps": 0.01,
+    "maxAngularRadps": 0.02,
+    "holdTicks": 10
+  },
+  "receiver": {
+    "maxRelativeMps": 0.01,
+    "holdTicks": 25,
+    "comMarginM": 0.005
+  },
+  "birth": {
+    "centerM": [
+      0.49,
+      0,
+      0.151
+    ],
+    "maxOffsetXYM": 0.005
+  },
+  "withdrawal": [
+    "placeApproach",
+    "high",
+    "home"
+  ],
+  "note": "Direct rig evidence is not Source custody; B06 correlates transfer receipts and served."
+}

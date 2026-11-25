@@ -55,6 +55,20 @@ test('an out-of-order compile cannot admit or replace a newer experiment draft',
  expect(h.preset.engineering!.project.mujocoExperimentId).toBe('payload-empty-v1');expect(h.preset.engineering!.receipt?.bundleDigest).toBe('b'.repeat(64));expect(ready).toHaveBeenCalledTimes(1);expect(ready.mock.calls[0]?.[3]).toEqual({bundleDigest:'b'.repeat(64),projectDigest:hashJson(next.engineering!.project)});w.leave();
 });
 
+// R12: the runtime runs one exclusive smoke and answers a second one MUJOCO_SMOKE_BUSY; a variant chosen while a smoke runs is probed after it, and only its answer is applied
+for(const kind of ['tray','payload'] as const)test(`a ${kind} variant chosen while the previous readiness smoke runs is probed after it, and the newer answer is the one applied`,async()=>{
+ vi.stubGlobal('innerWidth',1440);vi.stubGlobal('document',{querySelector:()=>null,getElementById:()=>null,activeElement:null});
+ const {TwinWorkspace}=await import('../../src/ui/workspace'),{hashJson}=await import('../../src/twin/hash'),{trayPreset}=await import('../../src/twin/payload');
+ const p=kind==='tray'?trayPreset():payloadPreset(),variant=kind==='tray'?'tray-accel-high-v1':'payload-empty-v1';let calls=0,inFlight=0,most=0,release!:()=>void;const held=new Promise<void>(r=>{release=r;});
+ const answer=(k:string,codes:string[]=[])=>({scenarioId:p.scenarioId,backendSetId:p.backendSetId,canStart:!codes.length,checkedAt:k,expiresAt:new Date(Date.now()+30000).toISOString(),checks:codes.length?[{id:'runner',status:'blocked',reasonCodes:codes}]:[]});
+ const readiness=vi.fn(async()=>{const k=++calls;inFlight++;most=Math.max(most,inFlight);try{if(inFlight>1)return answer(`busy-${k}`,['MUJOCO_SMOKE_BUSY']);if(k===1)await held;return answer(String(k));}finally{inFlight--;}});
+ const rt={paired:true,readiness,compileEngineering:async(project:unknown)=>({state:'compiled',projectDigest:hashJson(project),bundleDigest:'b'.repeat(64),problems:[]})};
+ const w=new TwinWorkspace(()=>{},rt as never),h=w as unknown as {preset:typeof p;health:unknown;readiness:{checkedAt:string}|null;checkReadiness(value?:typeof p):Promise<void>};
+ h.health={features:{readiness:true},capabilities:['sim3d_payload_experiments_v1'],trayExperiments:[{id:variant}]};h.preset=p;
+ const first=h.checkReadiness(p);await vi.waitFor(()=>expect(readiness).toHaveBeenCalledTimes(1));
+ w.change(`twin-${kind}-experiment`,variant);await new Promise(r=>setTimeout(r,10));release();await first;
+ await vi.waitFor(()=>expect(h.readiness?.checkedAt).toBe('2'));expect(most).toBe(1);expect(readiness).toHaveBeenCalledTimes(2);expect(h.preset.engineering!.project.mujocoExperimentId).toBe(variant);w.leave();
+});
 test('paused payload cancellation journals cancel before advancing the same clock to the first observed stop',async()=>{
  vi.stubGlobal('innerWidth',1440);vi.stubGlobal('document',{querySelector:()=>null,getElementById:()=>null,activeElement:null});const {TwinWorkspace}=await import('../../src/ui/workspace');
  const w=new TwinWorkspace(()=>{},{paired:true} as never),h=w as unknown as {view:{run:{status:string}};runPreset:unknown;act:(kind:string,p?:unknown)=>Promise<void>;cancelPayload():Promise<void>};

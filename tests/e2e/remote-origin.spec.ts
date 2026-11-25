@@ -4,7 +4,7 @@ import {openDisplayMenu,openScenarioPicker} from '../support/twin';
 // session and fetch-based streams. Run with scripts/test-mock-e2e.mjs remote-origin.spec.ts: the launcher starts the runtime with
 // --allow-origin http://localhost:4177 and serves the Lab again on --extra-ui-port 4177. One spec per launcher (one-use pairing code).
 const token=process.env.LAB_TEST_PAIRING_TOKEN,shots=process.env.LAB_EVIDENCE_DIR;
-const LAB='http://localhost:4177',RUNTIME='http://127.0.0.1:4176';
+const LAB=`http://localhost:${process.env.LAB_TEST_EXTRA_PORT??4177}`,RUNTIME=`http://127.0.0.1:${process.env.LAB_TEST_RUNTIME_PORT??4176}`;
 const shot=async(page:Page,name:string)=>{if(shots)await page.screenshot({path:`${shots}/N03-${name}.png`});};
 const PAGES=['design','assembly','restaurant','scenarios','results','deployment','twin'];
 
@@ -36,7 +36,8 @@ test('a Lab on another origin sends nothing to the runtime before the click, the
  await shot(page,'address-corrected');
 
  await page.locator('#twin-pair-token').fill(token!);
- await shot(page,'pair-form-filled');
+ // The one-use credential stays out of the screenshot.
+ if(shots)await page.screenshot({path:`${shots}/N03-pair-form-filled.png`,mask:[page.locator('#twin-pair-token')]});
  expect(toRuntime).toHaveLength(0);
  await page.getByRole('button',{name:'Ghép nối runtime'}).click();
  await expect(page.getByTestId('runtime-popover')).toBeHidden();
@@ -65,7 +66,7 @@ test('a Lab on another origin sends nothing to the runtime before the click, the
   expect(await remember()).toBeGreaterThan(10);const t0=await tick.textContent();
   await page.waitForTimeout(1300);
   await expect(tick).not.toHaveText(t0!);expect(await allKept(),`controls kept their elements at ${speed}×`).toBe(true);
-  if(speed==='1')await shot(page,'paced-1x');
+  await shot(page,`paced-${speed}x`);
   // an inspector tab, then Stop, then Pause: each with a real pointer click, each on the first attempt
   const tab=speed==='1'?'engineering':'report';
   await page.getByTestId(`inspector-tab-${tab}`).click();await expect(page.getByTestId(`inspector-tab-${tab}`)).toHaveAttribute('aria-selected','true');
@@ -105,7 +106,7 @@ test('a Lab on another origin sends nothing to the runtime before the click, the
 
  // every runtime request after pairing carried the bearer, none carried a cookie, CSRF header or token in its URL;
  // the bearer is kept in sessionStorage only (and never in the page)
- const session=await page.evaluate(()=>({keys:Object.keys(sessionStorage),value:sessionStorage.getItem('mekoniq-lab-session:http://127.0.0.1:4176/lab/v2'),local:JSON.stringify({...localStorage}),html:document.documentElement.outerHTML}));
+ const session=await page.evaluate(runtime=>({keys:Object.keys(sessionStorage),value:sessionStorage.getItem(`mekoniq-lab-session:${runtime}/lab/v2`),local:JSON.stringify({...localStorage}),html:document.documentElement.outerHTML}),RUNTIME);
  expect(session.value).toBeTruthy();expect(session.local).not.toContain(session.value!);expect(session.html).not.toContain(session.value!);
  const authed=toRuntime.filter(r=>r.method()!=='OPTIONS'&&!r.url().endsWith('/health')&&!r.url().endsWith('/sessions'));
  expect(authed.length).toBeGreaterThan(0);

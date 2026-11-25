@@ -1,3 +1,4 @@
+import {TWO_STAGE,CUP_NUDGE,compatibleProgram,compatibleExperiment} from '../twin/cell-selection';
 import {hashJson,sha256Hex} from '../twin/hash';
 import type {RunVerification} from '../reports/contracts/verification-types';
 // The twin's only path to execution: a small client over the source v2 gateway (/lab/v2). The UI never decides an outcome; every action
@@ -8,10 +9,14 @@ import type {TwinSample} from '../twin/store';
 import type {BundleReceipt,EngineeringAssessment,EngineeringProject,EngineeringRef} from '../shared/engineering';
 import type {ModelValidationReportV1} from '../shared/navigation2d';
 import {validModelValidationReport} from './model-validation';
+import {RunEntries} from '../runtime/run-entries';
 import {loadToken,requestInit,saveToken,type RuntimeTarget} from '../runtime/target';
 import {FetchEventSource} from '../runtime/fetch-event-source';
 import type {StreamDeps} from '../runtime/stream';
-export interface TwinHealth {worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
+import type {BenchHealth,BenchTraceReceipt} from '../control/workbench';
+import type {BenchRequestV1,DriveTrace,TuningResultV1} from '../shared/navigation2d';
+/** `tuningEnvelope`, `benchSignals` and `benchCatalog` (BenchHealth) are present only where a bench scenario is offered (R4.2, V06/V07pre). */
+export interface TwinHealth extends BenchHealth {/** R4.5 V15: per plant provider, the maturity of each model group (a function of the sources of its parameters; read with maturityOf) */modelMaturity?:unknown;/** R4.5 V15: per bench axis, the digest of the measured configuration a calibration record is valid for */calibrationConfigDigests?:Record<string,string>;/** R4 V08: present only on a runtime that can run drive faults (read with faultCatalogOf) */faultCatalog?:unknown;/** R4 V10: the registered tray variants of a runtime that offers MJ-TRAY01 */trayExperiments?:{id:string;loadProfileId:string;driveExperimentId:string;accelerationPolicy:string;actor:boolean;comparedWith:string|null;requiresNewRun:boolean}[];worldExperiments?:{id:string;requiresNewRun:boolean;cause?:string;graspProgramId?:string;graspModes?:string[]}[];/** R4.4: the grasp modes of a runtime that has the belief grasp (capability sim3d_belief_grasp_v1) */graspModes?:{id:string;profileIds?:string[];programIds?:string[];recoveryPolicyIds?:string[]}[];scenarioRequirements?:Record<string,{mock:string[];simulation:string[]}>;
  /** Server-advertised optional features, e.g. engineering_bundle_v1. Absent on runtimes that predate engineering. */
  capabilities?:string[];
  /** scenarioId -> backendSetId -> what that pairing needs; engineering clients must read this instead of scenarioRequirements. */
@@ -55,7 +60,13 @@ export interface ArmPlantBlock {trace:{path:string;sha256:string;samples:number}
  waypoints?:{digest:string;table:{waypoint:string;q:number[];positionErrorM:number;orientationErrorRad:number;condition:number}[]};props?:{path:string;sha256:string;samples:number};allowedContacts?:{a:string;b:string}[];releaseTimeoutTicks?:number;notes?:string[]}
 export type PhysicsMetric={available:true;value:number;unit:string;samples:number}|{available:false;value:null;unit:string;reason:string};
 export interface PhysicsReportBlock {manifest:import('../shared/navigation2d').PhysicsEvidenceV1;manifestSha256:string;complete:boolean;issues:string[];metrics:Record<'loadDisplacementM'|'maxTiltRad'|'tiltExceededDurationS'|'wheelPositionResidualM'|'wheelYawResidualRad'|'contactPeakN'|'contactImpulseNs'|'stopDistanceM',PhysicsMetric>}
-export interface RunReport {physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
+export type ControlMetric={available:true;value:number;unit:string;samples:number;basis:'actual'|'feedback'}|{available:false;value:null;unit:string;reason:string};
+/** The `drive` section of a run that went through a virtual drive (R4): per axis the states, faults and metrics derived from the verified per-tick drive records. Absent on every other run. */
+export interface DriveEvidenceBlock {testLevel:'controller_in_the_loop';complete:boolean;issues:string[];ticks:number;
+ axes:{axisId:string;mode:'csp'|'csv';states:{state:string;fromTick:number}[];faults:{fault:string;firstTick:number}[];enabledAtTick:number|null;saturatedSubsteps:number;trackingRms:ControlMetric;speedDeficit?:ControlMetric}[];
+ events:{tick:number;code:string;axisId?:string}[]}
+/** `tuning`: a bench run's result (R4.2); null until it has one, absent on every other run. */
+export interface RunReport {/** R4.4: the runtime's perception section of a belief run (beliefs, grasp attempts, recovery steps), rebuilt from its durable stream; absent on a fixed-program run and on older reports */perceptionEvidence?:import('../reports/perception').PerceptionEvidenceView;/** R4 V10: what the runtime computed from a tray run's durable records (read with trayEvidenceOf) */trayEvidence?:import('../reports/design-hint').TrayEvidenceView;/** R4 V08: the runtime's own fault report, built from the recorded streams; absent on a run without a drive fault schedule (read with faultSection) */faultReport?:import('../shared/navigation2d').FaultReportV1;bench?:{request:Omit<BenchRequestV1,'controlProfile'>&{controlProfile:Pick<BenchRequestV1['controlProfile'],'id'|'revision'|'digest'>}};tuning?:TuningResultV1|null;driveEvidence?:DriveEvidenceBlock;physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlock;verification?:RunVerification;/** Present only on engineering runs; older reports have neither field. */engineeringEvidence?:EngineeringAssessment;manifest:{engineering?:{bundleDigest:string;projectDigest:string};armCollisionScene?:{hash:string;profile:LabProjectV2['armCollisionProfile']|null;profileHash:string|null;world:LabProjectV2['world'];worldHash:string;robotGeometry:{id:string;radiusM:number|null}[]};hashAlgorithm?:string;designHash?:string;models?:{id:string;revision:string|number;hash:string;provenance:string}[];recipes?:{id:string;revision:number;hash:string}[];profiles?:{id:string;revision:number;hash:string;provenance:string}[];adapterHash?:string;calibration?:{status:string;revision:string|number|null;hash:string|null;reason?:string};runId:string;sourceCommit:string;mode:string;access:string;backendSetId:string;backends:{id:string;version:string;model:string;dynamics:boolean}[];clock:{tickMs:number;native?:{provider:'gazebo_nav2';originNs:string;businessEpochMs:number}};seed:number;
   scenario:{id:string;revision:number;hash:string};project:{id:string;revision:number;hash:string};world:{id:string;revision:number;hash:string};assets:{id:string;revision:number;contentHash:string;resolved:boolean}[]};
  outcome:{status:string;served:string;tick:number;simTimeNs:string};
  metrics:{maxConcurrentMovers?:number;distanceM:Record<string,number>;collision:{available:boolean;reason?:string;contacts:number|null;minSeparationM:number|null};
@@ -71,14 +82,20 @@ export interface RunReport {physicsEvidence?:PhysicsReportBlock;arm?:ArmPlantBlo
  reconciliations:{subjectId:string;commandId:string|null;nativeState:string;tick:number}[];coverage:Record<string,boolean>;limitations:string[];
  coffee?:{plantLog?:Record<string,unknown>[];jobs:{jobId:string;recipeId:string;recipeRevision:number;status:string;steps:JobStep[]}[];cups:{cupId:string;ownerKind:string;ownerId:string;movements:{transferId:string;provenance:string;observedBy:string;at:string}[]}[];
   armTrace:{collision?:ArmCollisionView|null;stop?:ArmStopView|null;tag:string;interpolation:string;modelRevision:string;limitsOk:boolean;samples:{tick:number;q:number[];tcp:[number,number,number]}[]}};}
-interface CreateRunBase {worldExperimentId?:import('../twin/cell').WorldExperiment;scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
+interface CreateRunBase {graspProgramId?:typeof TWO_STAGE;/** R4 V09: the cell's drive experiment and the run-scoped drive fault schedule (never part of the project) */driveExperimentId?:string;driveFaultSchedule?:import('./drive-faults').DriveFaultEntry[];worldExperimentId?:import('../twin/cell').WorldExperiment;/** R4.4 (shared-world cell only) */graspMode?:'belief_ground_truth'|'belief_estimated';perceptionProfileId?:string;recoveryPolicyId?:string;scenarioId:string;scenarioRevision:number;seed:number;mode:'mock'|'simulation';backendSetId:string;access:'simulated'}
 /** Legacy request: the project travels with it and there is no engineeringRef. */
 export interface LegacyCreateRun extends CreateRunBase {project:LabProjectV2;engineeringRef?:undefined}
 /** Engineering request: the server derives the project from the bundle; a project, if sent at all, must equal the locked projection. */
 export interface EngineeringCreateRun extends CreateRunBase {engineeringRef:EngineeringRef;project?:LabProjectV2}
-export type CreateRun=LegacyCreateRun|EngineeringCreateRun;
-export function requestForPreset(p:import('./catalog').TwinPreset):CreateRun{
- const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
+/** Bench request (R4.2): the plant is the server's, so no project, bundle or run experiment travels with it. */
+export interface BenchCreateRun extends CreateRunBase {bench:BenchRequestV1;project?:undefined;engineeringRef?:undefined}
+export type CreateRun=LegacyCreateRun|EngineeringCreateRun|BenchCreateRun;
+export function requestForPreset(p:import('./catalog').TwinPreset,driveFaults?:readonly import('./drive-faults').DriveFaultEntry[],health?:TwinHealth):CreateRun{
+ const belief=p.id==='mujoco-cell'&&(p.graspMode==='belief_ground_truth'||p.graspMode==='belief_estimated');
+ if(p.graspProgramId&&(!belief||p.graspProgramId!==TWO_STAGE||!compatibleProgram(health,p)))throw new TwinRuntimeError('GRASP_PROGRAM_UNAVAILABLE',[],422);
+ if(p.worldExperimentId===CUP_NUDGE&&(!belief||p.graspProgramId!==TWO_STAGE||!compatibleExperiment(health,p,CUP_NUDGE)))throw new TwinRuntimeError('WORLD_EXPERIMENT_UNAVAILABLE',[],422);
+ // a drive fault schedule rides with the request; the cell also names its drive experiment (a mobile run's experiment is in its engineering project)
+ const base={...p.worldExperimentId?{worldExperimentId:p.worldExperimentId}:{},...p.id==='mujoco-cell'&&p.driveExperimentId?{driveExperimentId:p.driveExperimentId}:{},...p.id==='mujoco-cell'&&p.graspMode&&p.graspMode!=='fixed_program'?{graspMode:p.graspMode,...p.graspProgramId?{graspProgramId:p.graspProgramId} as const:{},...p.graspMode==='belief_estimated'?{perceptionProfileId:'perception-nominal-v1'}:{},recoveryPolicyId:'pick-recovery-v1'}:{},...driveFaults?.length?{driveFaultSchedule:structuredClone([...driveFaults])}:{},scenarioId:p.scenarioId,scenarioRevision:p.scenarioRevision,seed:p.seed,mode:p.mode??'mock',backendSetId:p.backendSetId,access:'simulated'} as const;
  // engineering never falls back to the preset project: the receipt that matches this exact draft is the only way to a ref
  if (p.engineering) return {...base,engineeringRef:engineeringRefFor(p.engineering.project,p.engineering.receipt)};
  return {project:structuredClone(p.project),...base};
@@ -100,6 +117,8 @@ export type ActionKind='start'|'pause'|'resume'|'cancel'|'step'|'confirm'|'injec
 export interface EngineeringManifest {schemaVersion:1;projectDigest:string;assemblyDigest:string;sceneDigest:string;profile:string;compilerVersion:string;files:{path:string;sha256:string;sizeBytes:number}[]}
 export interface WorldDisplay {view?:RunView;version:1;runId:string;revision:number;tick:number;simTimeNs:string;availability:'valid'|'stale'|'unknown';reason:string|null;snapshot:import('../shared/navigation2d').Sim3DSnapshotV1|null;control:Pick<import('../shared/navigation2d').WorldEvidenceRecord['command'] & {},'targetTick'|'worldControl'|'velocities'>|null;controlReason:string|null}
 export interface TwinRuntime {
+ /** R4 V09: asks the runtime to check a drive fault schedule (schema, bounds, overlap, backend) without creating a run. 422 answers are data, anything else throws. */
+ checkDriveFaults?(body:{driveFaultSchedule:import('./drive-faults').DriveFaultEntry[];backendSetId:string;scenarioId:string;driveExperimentId?:string},signal?:AbortSignal):Promise<{ok:true}|{ok:false;error:string;codes:string[]}>;
  exportReplay?(id:string,signal:AbortSignal):Promise<{reader:import('../reports/replay-package').ReplayReader;release():Promise<void>}>;
  worldDisplay?(id:string,signal?:AbortSignal):Promise<WorldDisplay>;
  worldDisplayScene?(id:string,signal?:AbortSignal):Promise<{runId:string;availability:string;reason:string|null;scene:import('../shared/navigation2d').LabWorldSceneV1|null}>;
@@ -115,11 +134,16 @@ export interface TwinRuntime {
  health():Promise<TwinHealth>;pair(token:string):Promise<void>;readonly paired:boolean;
  /** Drop the in-memory CSRF token after the runtime lost the session (restart): the pair form shows again. */
  forget():void;
- create(request:CreateRun,identity:{sourceCommit:string;schemaHash:string}):Promise<RunView>;
+ readonly sessionGeneration?:number;
+ create(request:CreateRun,identity:{sourceCommit:string;schemaHash:string},signal?:AbortSignal):Promise<RunView>;
  /** `actionId`: resend a step whose response was lost with the same id; the runtime returns its stored receipt and does not act again. */
  action(view:RunView,kind:ActionKind,payload?:Record<string,unknown>,actionId?:string,signal?:AbortSignal):Promise<RunView>;
- readonly recoverableRunIds?:readonly string[];archive?(runId:string):Promise<void>;reclaim?(runId:string):Promise<RunView>;
+ readonly recoverableRunIds?:readonly string[];archive?(runId:string,signal?:AbortSignal):Promise<void>;reclaim?(runId:string,signal?:AbortSignal):Promise<RunView>;
  get(runId:string,signal?:AbortSignal):Promise<RunView>;report(runId:string,signal?:AbortSignal):Promise<RunReport>;
+ /** A bench run's drive trace as read back from its chunks (GET /runs/:id/trace; null samples are gaps). Up to ~1 MB: read once per finished bench, never polled. */
+ trace?(runId:string,signal?:AbortSignal):Promise<BenchTraceReceipt>;
+ /** Drop this client's reclaim proof of a run: an archived bench keeps no checkpoint to reclaim, so it is never offered for reopening. */
+ dropProof?(runId:string):void;
  /** Where requests go (target.ts). Optional only so test doubles may omit it; httpTwinRuntime always has it. */
  readonly target?:RuntimeTarget;
  /** Point this client at another runtime: the old session (and its stored bearer) is dropped. */
@@ -128,29 +152,32 @@ export interface TwinRuntime {
  streamDeps?():Pick<StreamDeps,'base'|'EventSource'|'fetch'>;
 }
 export class TwinRuntimeError extends Error {
- constructor(readonly code:string,readonly reasonCodes:string[],readonly status:number){super(reasonCodes.length?`${code}: ${reasonCodes.join(', ')}`:code);this.name='TwinRuntimeError';}
+ constructor(readonly code:string,readonly reasonCodes:string[],readonly status:number,readonly runId?:string){super(reasonCodes.length?`${code}: ${reasonCodes.join(', ')}`:code);this.name='TwinRuntimeError';}
 }
 /** The Lab's pin (config/source-runtime.lock.json, served beside the page): the commit a runtime on another origin must report. */
 let pin:Promise<string>|undefined;
-export const pinnedCommit=()=>pin??=fetch('/source-runtime.lock.json',{cache:'no-store'}).then(async r=>{const c=r.ok?(await r.json() as {sourceCommit?:unknown}).sourceCommit:undefined;if(typeof c!=='string'||!c)throw new TwinRuntimeError('RUNTIME_LOCK_MISSING',[],409);return c;}).catch(e=>{pin=undefined;throw e;});
+export const pinnedCommit=()=>pin??=fetch('/source-runtime.lock.json',{cache:'no-store',signal:AbortSignal.timeout(30000)}).then(async r=>{const c=r.ok?(await r.json() as {sourceCommit?:unknown}).sourceCommit:undefined;if(typeof c!=='string'||!c)throw new TwinRuntimeError('RUNTIME_LOCK_MISSING',[],409);return c;}).catch(e=>{pin=undefined;throw e;});
 /** Same origin: cookie session + CSRF header (unchanged). Other targets: the bearer from POST /sessions, no CSRF, no cookie; the bearer is dropped on 401. */
 export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_origin'}):TwinRuntime {
  let csrf='',token=target.kind==='same_origin'?'':loadToken(target);
  const remote=()=>target.kind!=='same_origin',auth=()=>requestInit(target,token);
  // reclaim proofs belong to the runtime that issued them: same origin keeps its original key, any other runtime has its own
  const proofKey=(t:RuntimeTarget)=>t.kind==='same_origin'?'mekoniq-lab-reclaim':`mekoniq-lab-reclaim:${t.base}`;
- const loadProofs=(t:RuntimeTarget):Record<string,string>=>{try{return JSON.parse(localStorage.getItem(proofKey(t))??'{}');}catch{return {};/* no local ownership proofs */}};
- let proofs=loadProofs(target);
- const forget=()=>{csrf='';if(token){token='';saveToken(target,'');}};
+ const usableProof=(proof:unknown):proof is string=>typeof proof==='string'&&proof.trim().length>0;
+ const proofs=new RunEntries<string>(raw=>Object.fromEntries(raw&&typeof raw==='object'?Object.entries(raw).filter(([,proof])=>usableProof(proof)):[]),usableProof);
+ let generation=0;
+ const forget=()=>{generation++;csrf='';if(token){token='';saveToken(target,'');}};
+ const assertSession=(g:number)=>{if(g!==generation)throw new TwinRuntimeError('SESSION_CHANGED',[],0);};
  /** Every request is judged by the target it was made for: a late 401 from a previous runtime never drops the current bearer.
   * A loopback fetch the browser refuses (local network access denied, nothing listening, Safari's HTTPS-to-http rule) rejects with a TypeError we cannot tell apart. */
- const send=async(url:string,init:RequestInit,t:RuntimeTarget)=>{
+ const send=async(url:string,init:RequestInit,t:RuntimeTarget,g=generation)=>{
   let response:Response;
   try{response=await fetch(url,init);}catch(e){if(t.kind==='loopback'&&e instanceof TypeError)throw new TwinRuntimeError('LOOPBACK_BLOCKED',[],0);throw e;}
-  if(response.status===401&&t.kind!=='same_origin'&&t===target)forget();
+  if(response.status===401&&t===target&&g===generation&&(csrf||token))forget();
   return response;
  };
  const request=async<T>(path:string,body?:unknown,signal?:AbortSignal):Promise<T>=>{
+  signal=signal?AbortSignal.any([signal,AbortSignal.timeout(30000)]):AbortSignal.timeout(30000);
   const t=target,post=body!==undefined,a=auth(),response=await send(t.base+path,{method:post?'POST':'GET',...a,cache:'no-store',headers:{...a.headers as Record<string,string>,...post?{'Content-Type':'application/json',...csrf&&!remote()?{'X-CSRF-Token':csrf}:{}}:{}},...post?{body:JSON.stringify(body)}:{},...signal?{signal}:{}},t);
   // a body that does not parse (not JSON, cut off, or aborted while read) is never data, whatever the status
   const data=await response.json().then(d=>d!==null&&typeof d==='object'?d as Record<string,unknown>:null,()=>null);
@@ -160,9 +187,9 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
  };
  const run=(id:string)=>`/runs/${encodeURIComponent(id)}`;
  return {
-  get paired(){return remote()?!!token:!!csrf;},forget,
+  get sessionGeneration(){return generation;},get paired(){return remote()?!!token:!!csrf;},forget,
   get target(){return target;},
-  retarget(t){forget();target=t;token=t.kind==='same_origin'?'':loadToken(t);proofs=loadProofs(t);},
+  retarget(t){forget();target=t;token=t.kind==='same_origin'?'':loadToken(t);},
   streamDeps(){
    if(!remote())return {base:target.base,EventSource:globalThis.EventSource};
    // the bearer is read when each stream opens (a re-pair is picked up by the next reconnect), and only while this client still points at that runtime
@@ -189,21 +216,28 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
    if(sha256Hex(bytes)!==sha256)throw new TwinRuntimeError('ENGINEERING_BLOB_CORRUPT',[],409);
    return bytes;
   },
+  async checkDriveFaults(body,signal){try{await request('/projects/validate',body,signal);return {ok:true as const};}catch(e){if(e instanceof TwinRuntimeError&&e.status===422)return {ok:false as const,error:e.code,codes:e.reasonCodes};throw e;}},
   readiness:(scenarioId,backendSetId,project,engineeringRef)=>engineeringRef?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,engineeringRef,...project?{project}:{}}):project?request<ReadinessSnapshot>('/readiness',{scenarioId,backendSetId,project}):request<ReadinessSnapshot>(`/readiness?scenarioId=${encodeURIComponent(scenarioId)}&backendSetId=${encodeURIComponent(backendSetId)}`),
   async pair(code){
-   const r=await request<{csrfToken?:string;sessionToken?:string}>('/sessions',{token:code});
+   const g=++generation,r=await request<{csrfToken?:string;sessionToken?:string}>('/sessions',{token:code},AbortSignal.timeout(30000));assertSession(g);
    if(remote()){if(!r.sessionToken)throw new TwinRuntimeError('INVALID_PAIRING_RESPONSE',[],502);token=r.sessionToken;saveToken(target,token);return;}
    if(!r.csrfToken)throw new TwinRuntimeError('INVALID_PAIRING_RESPONSE',[],502);csrf=r.csrfToken;
   },
-  async create(r,identity){
+  async create(r,identity,signal){
+   const g=generation,t=target;
    // a runtime on another origin was not installed by the launcher: it must be the pinned one (same origin is checked by the launcher)
-   if(remote()){const [h,p]=await Promise.all([request<TwinHealth>('/health'),pinnedCommit()]);if(h.sourceCommit!==p)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',[String(h.sourceCommit).slice(0,7),p.slice(0,7)],409);}
-   const t=target,{reclaimToken,...view}=await request<RunView&{reclaimToken?:string}>('/runs',{...r,runtimeIdentity:identity});
-   if(reclaimToken){const own=t===target?proofs:loadProofs(t);own[view.run.id]=reclaimToken;try{localStorage.setItem(proofKey(t),JSON.stringify(own));}catch{/* current tab retains the proof if storage is unavailable */}}
+   if(remote()){const [h,p]=await Promise.all([request<TwinHealth>('/health',undefined,signal),pinnedCommit()]);assertSession(g);if(h.sourceCommit!==p)throw new TwinRuntimeError('RUNTIME_PIN_MISMATCH',[String(h.sourceCommit).slice(0,7),p.slice(0,7)],409);}
+   const {reclaimToken,...view}=await request<RunView&{reclaimToken?:string}>('/runs',{...r,runtimeIdentity:identity},signal);
+   const id=typeof view.run?.id==='string'&&view.run.id.trim()?view.run.id:undefined;
+   if('bench' in r&&!usableProof(reclaimToken))throw new TwinRuntimeError('BENCH_CREATE_PROOF_MISSING',[],502,id);
+   if(id&&usableProof(reclaimToken))proofs.write(proofKey(t),id,reclaimToken);
    return view;},
-  get recoverableRunIds(){return Object.keys(proofs);},
-  async archive(id){await request(`${run(id)}/archive`,{});},
-  reclaim:id=>{const proof=proofs[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof});},
+  get recoverableRunIds(){return Object.keys(proofs.read(proofKey(target)));},
+  async archive(id,signal){
+   const ack=await request<{archived?:boolean;runId?:string}>(`${run(id)}/archive`,{},signal);
+   if(ack.archived!==true||ack.runId!==id)throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+  },
+  reclaim:(id,signal)=>{const proof=proofs.read(proofKey(target))[id];if(!proof)throw new TwinRuntimeError('RUN_PROOF_MISSING',[],403);return request<RunView>(`${run(id)}/reclaim`,{proof},signal);},
   // expectedRevision comes from the last snapshot the UI rendered: a stale view is refused (REVISION_CONFLICT), never applied
   action:(v,kind,payload={},actionId=crypto.randomUUID(),signal)=>request<RunView>(`${run(v.run.id)}/actions`,{actionId,expectedRevision:v.run.runRevision,kind,payload},signal),
   get:(id,signal)=>request<RunView>(run(id),undefined,signal),
@@ -223,6 +257,12 @@ export function httpTwinRuntime(target:RuntimeTarget={base:'/lab/v2',kind:'same_
   worldDisplay:(id,signal)=>request<WorldDisplay>(`${run(id)}/world-display`,undefined,signal),
   worldDisplayScene:(id,signal)=>request(`${run(id)}/world-display/scene`,undefined,signal),
   report:(id,signal)=>request<RunReport>(`${run(id)}/report`,undefined,signal),
+  async trace(id,signal){
+   const r=await request<{runId?:unknown;manifestSha256?:unknown;traces?:unknown;issues?:unknown}>(`${run(id)}/trace`,undefined,signal);
+   if(!r||r.runId!==id||!(r.manifestSha256===null||typeof r.manifestSha256==='string'&&/^[a-f0-9]{64}$/.test(r.manifestSha256))||!Array.isArray(r.traces)||!Array.isArray(r.issues)||!r.issues.every(i=>typeof i==='string')||!r.traces.every(t=>!!t&&typeof t==='object'&&typeof (t as DriveTrace).axisId==='string'&&typeof (t as DriveTrace).dtS==='number'&&Array.isArray((t as DriveTrace).samples)))throw new TwinRuntimeError('INVALID_RUNTIME_RESPONSE',[],502);
+   return {runId:id,manifestSha256:r.manifestSha256,traces:r.traces as DriveTrace[],issues:r.issues};
+  },
+  dropProof(id){proofs.write(proofKey(target),id,null);},
  };
 }
 /** What the run controls may offer, from the set's execution metadata in health. Mock: Lab step/auto-run. Simulation with a source fixed-step clock:

@@ -36,7 +36,7 @@
       "$ref": "#/definitions/EngineeringProfile"
     },
     "mujocoExperimentId": {
-      "description": "Registered server-owned new-run payload experiment; only engineering-mujoco-3d-v1.",
+      "description": "Registered server-owned new-run payload or tray experiment; only engineering-mujoco-3d-v1.",
       "enum": [
         "payload-empty-v1",
         "payload-center-v1",
@@ -44,7 +44,22 @@
         "payload-slow-v1",
         "payload-fast-v1",
         "payload-friction-low-v1",
-        "payload-friction-high-v1"
+        "payload-friction-high-v1",
+        "tray-nominal-v1",
+        "tray-low-friction-v1",
+        "tray-accel-high-v1",
+        "tray-torque-limited-v1",
+        "tray-person-crossing-v1"
+      ]
+    },
+    "driveExperimentId": {
+      "description": "Registered server-owned virtual-drive experiment (R4); only engineering-mujoco-3d-v1. Absent: the R2b control path, byte for byte.",
+      "enum": [
+        "drive-ideal-v1",
+        "drive-nominal-v1",
+        "drive-torque-limited-v1",
+        "drive-latency-v1",
+        "drive-coarse-encoder-v1"
       ]
     }
   },
