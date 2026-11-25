@@ -50,3 +50,13 @@ test('compare prints the comparison and exits 1 while prices are missing', () =>
   expect(r.status).toBe(1);
   expect(JSON.parse(r.stdout).notComparableReason).toBe('PRICE_MISSING_FOR_DECIDING_PARTS');
 });
+
+test('package writes a verifiable package, verify names a changed file and exits 1, a blocked option writes nothing',async()=>{
+ const d=await out(),pkg=join(d,'pkg');
+ expect(cli(['package','--design',design('serve-hw-c-v1'),'--out',pkg]).status).toBe(0);
+ expect(cli(['verify','--package',pkg]).status).toBe(0);
+ await writeFile(join(pkg,'documents/pinout.csv'),'tampered\n');
+ const bad=cli(['verify','--package',pkg]);expect(bad.status).toBe(1);expect(bad.stderr).toContain('CHECKSUM_MISMATCH documents/pinout.csv');
+ const blocked=cli(['package','--design',design('serve-hw-a-v1'),'--out',join(d,'none')]);
+ expect(blocked.status).toBe(1);expect(blocked.stderr).toContain('ELECTRICAL_BUNDLE_BLOCKED');
+});

@@ -14,6 +14,8 @@ import {ELECTRICAL_SCHEMA_HASH,validateElectricalDesign,type ElectricalDesignV1}
 import {loadDriveBase,loadElectricalDocuments} from './electrical/documents-store';
 import {createElectricalStore} from './electrical/store';
 import {compareOptions} from './electrical/tco';
+import {buildHardwareCandidate} from './electrical/package';
+import {deriveControlProfile,deriveDriveModel} from './electrical/drive-derivation';
 import type {BundleReceipt,EngineeringCompileInput,EngineeringProject,EngineeringRef,Problem,ResolvedAssembly} from './contracts';
 import {incompleteReport,validationCacheKey,type RobotModelValidator} from './linkforge';
 import {projectPhysicalModel} from './physical-model';
@@ -260,7 +262,7 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    const result=compileElectrical({design:d,resolved,project:{id:project.id,revision:project.revision,digest:r.projectDigest},catalog:cat,policy,safety,
     driveAxisIds:(scene.wheelBindings??[]).map(w=>`${w.entityId}/wheel-${w.side}`).sort(),schemaHash:ELECTRICAL_SCHEMA_HASH,driveBase:options.driveFixtureDir?await loadDriveBase(options.driveFixtureDir):null});
    if(!result.bundle)throw new EngineeringError(result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?'ELECTRICAL_TOO_LARGE':result.problems[0]?.code??'ELECTRICAL_REFUSED',result.problems.some(p=>p.code==='ELECTRICAL_TOO_LARGE')?400:409,[...new Set(result.problems.map(p=>p.code))]);
-   await electricalStore.put(sessionId,result.bundle);
+   await electricalStore.put(sessionId,result.bundle,d);
    return {state:result.bundle.state,digest:result.bundle.digest,problems:result.bundle.checks.filter(c=>c.level==='blocking').map(c=>({code:c.ruleId,path:c.path,blocking:true,detail:c.detail}))};
   },
   async readElectrical(sessionId:string,digest:string){
@@ -268,6 +270,21 @@ export function createEngineeringService(options:EngineeringServiceOptions){
    const bundle=await electricalStore.read(sessionId,digest);
    if(!bundle)throw new EngineeringError('NOT_FOUND',404);
    return bundle;
+  },
+  /** The hardware candidate package of a compiled bundle of this session; a blocked bundle gets 409 with the reason, never a package. */
+  async packageElectrical(sessionId:string,digest:string){
+   const bundle=await this.readElectrical(sessionId,digest);
+   if(bundle.state!=='compiled')throw new EngineeringError('ELECTRICAL_BUNDLE_BLOCKED',409,bundle.checks.filter(c=>c.level==='blocking').map(c=>c.ruleId).slice(0,20));
+   const design=await electricalStore.readDesign(sessionId,digest);
+   if(!design)throw new EngineeringError('NOT_FOUND',404);
+   const cat=await loadedCatalog(),docs=await loadElectricalDocuments(options.catalogRoot),all=Object.values(cat.deviceProfiles);
+   const policy=docs.policies.find(p=>p.digest===bundle.inputs.wiringPolicyDigest),safety=bundle.inputs.safetyRequirementsDigest?docs.registers.find(x=>x.digest===bundle.inputs.safetyRequirementsDigest)??null:null;
+   if(!policy)throw new EngineeringError('WIRING_POLICY_UNAVAILABLE',409);
+   const profiles=new Map(design.devices.flatMap(d=>{const p=all.find(x=>x.id===d.profile.id&&x.revision===d.profile.revision);return p?[[d.id,p] as const]:[];}));
+   const ctx={design,profiles} as unknown as import('./electrical/design').DesignContext,base=options.driveFixtureDir?await loadDriveBase(options.driveFixtureDir):null;
+   const derived=base?deriveDriveModel(base.model,ctx,deriveControlProfile(base.control,ctx,[])):undefined;
+   const pkg=buildHardwareCandidate({bundle,design,policy,safety,context:{profiles},...derived?{drive:{changes:derived.changes,confirmed:derived.confirmed,manufacturerGroups:Object.values(bundle.driveModelDraft!.sources).filter(s=>s.kind==='manufacturer').length}}:{}});
+   return {manifest:pkg.manifest,files:pkg.files.map(f=>({path:f.path,bytes:f.bytes.length,contentBase64:Buffer.from(f.bytes).toString('base64')}))};
   },
   /** 2 to 4 bundles of this session and one project; the assumptions come from the catalog's electrical documents, never from the caller. */
   async compareElectrical(sessionId:string,digests:unknown){

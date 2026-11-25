@@ -86,3 +86,17 @@ test('compare: two bundles of one session are compared, another session is refus
  expect((await t.post(h,'electrical/compare',{digests:[b,b]})).status).toBe(400);
  expect((await t.post(h,'electrical/compare',{digests:[b,c],endpoint:'x'})).status).toBe(422);
 });
+
+test('package: a compiled bundle yields a verifiable package, a blocked one is 409, another session is 403',async()=>{
+ const t=await boot(),h=await t.pair(),other=await t.pair(),ref=await compiled(t,h),r={bundleDigest:ref.bundleDigest,projectDigest:ref.projectDigest};
+ const compile=async(file:string)=>(await (await t.post(h,'electrical',{ref:r,design:JSON.parse(await readFile(`robotics/catalog/electrical/${file}.json`,'utf8'))})).json()).digest as string;
+ const c=await compile('serve-hw-c-v1'),a=await compile('serve-hw-a-v1');
+ const ok=await fetch(t.g.url+`/lab/v2/engineering/electrical/${c}/package`,{headers:{cookie:h.cookie}});expect(ok.status).toBe(200);
+ const pkg=await ok.json() as {manifest:{status:string;hardwareValidated:boolean;controlAuthority:boolean};files:{path:string;contentBase64:string}[]};
+ expect([pkg.manifest.status,pkg.manifest.hardwareValidated,pkg.manifest.controlAuthority]).toEqual(['draft',false,false]);
+ const {verifyHardwareCandidate}=await import('../../packages/lab-runtime/src/engineering/electrical/package');
+ const m=new Map(pkg.files.map(f=>[f.path,new Uint8Array(Buffer.from(f.contentBase64,'base64'))]));
+ expect(await verifyHardwareCandidate(async p=>m.get(p)??null,async()=>[...m.keys()])).toEqual([]);
+ const blocked=await fetch(t.g.url+`/lab/v2/engineering/electrical/${a}/package`,{headers:{cookie:h.cookie}});expect(blocked.status).toBe(409);expect((await blocked.json()).error).toBe('ELECTRICAL_BUNDLE_BLOCKED');
+ expect((await fetch(t.g.url+`/lab/v2/engineering/electrical/${c}/package`,{headers:{cookie:other.cookie}})).status).toBe(403);
+});

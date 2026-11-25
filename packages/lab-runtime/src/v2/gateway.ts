@@ -170,10 +170,10 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
   if(!session||deps.now()>=session.expiresAt)return deny(response,401,'SESSION_REQUIRED',[]);
   // a bearer session is never attached by the browser on its own, so it carries no CSRF risk
   const csrfValid=()=>bearer||deps.same(String(request.headers['x-csrf-token']??''),session.csrf);
-  const electricalRoute=/^\/engineering\/electrical(?:\/(compare)|\/([0-9a-f]{64}))?$/.exec(sub);
+  const electricalRoute=/^\/engineering\/electrical(?:\/(compare)|\/([0-9a-f]{64})(\/package)?)?$/.exec(sub);
   if(electricalRoute){
    if(!deps.engineering?.electrical)return deny(response,400,'ELECTRICAL_CAPABILITY_REQUIRED',['ELECTRICAL_CAPABILITY_REQUIRED']);
-   const [,compare,bundleDigest]=electricalRoute;
+   const [,compare,bundleDigest,asPackage]=electricalRoute;
    if(compare){
     if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
     if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
@@ -183,7 +183,7 @@ const engineeringFailed=(response:ServerResponse,e:unknown)=>e instanceof Engine
    }
    if(bundleDigest){
     if(method!=='GET')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
-    try{return send(response,200,await deps.engineering.readElectrical(sessionId,bundleDigest));}catch(e){return engineeringFailed(response,e);}
+    try{return send(response,200,asPackage?await deps.engineering.packageElectrical(sessionId,bundleDigest):await deps.engineering.readElectrical(sessionId,bundleDigest));}catch(e){return engineeringFailed(response,e);}
    }
    if(method!=='POST')return deny(response,405,'METHOD_NOT_ALLOWED',[]);
    if(!csrfValid())return deny(response,403,'CSRF_INVALID',[]);
