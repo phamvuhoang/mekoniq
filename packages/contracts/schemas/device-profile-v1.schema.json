@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.device-profile.v1",
+  "title": "DeviceProfileV1",
+  "description": "What a device is, taken from pinned manufacturer documents: connectors, pins, I/O points, interfaces, drive capability, safety claims (verbatim). There is deliberately no field for an evidence level, a safety level or a verified state: those are pure functions of the document and its sources.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "documentType": {"const": "device-profile"},
+    "id": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+    "revision": {"type": "integer", "minimum": 1, "maximum": 9007199254740991},
+    "digest": {"$ref": "engineering-component.schema.json#/definitions/Digest"},
+    "component": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "revision": {"type": "string", "minLength": 1, "maxLength": 200},
+        "digest": {"$ref": "engineering-component.schema.json#/definitions/Digest"}
+      },
+      "required": ["id", "revision", "digest"]
+    },
+    "variant": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "orderCode": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+        "hardwareRevision": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+        "firmware": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]}
+      },
+      "required": ["orderCode", "hardwareRevision", "firmware"]
+    },
+    "kind": {"enum": ["servo_drive", "motor", "battery", "compute", "io_module", "sensor", "indicator", "switch", "safety_device", "power_conversion", "protection"]},
+    "documents": {"type": "array", "maxItems": 32, "items": {"$ref": "#/definitions/DeviceDocument"}},
+    "connectors": {"type": "array", "maxItems": 16, "items": {"$ref": "#/definitions/Connector"}},
+    "ioPoints": {"type": "array", "maxItems": 32, "items": {"$ref": "#/definitions/IOPointV1"}},
+    "interfaces": {"type": "array", "maxItems": 8, "items": {"$ref": "#/definitions/DeviceInterface"}},
+    "drive": {"anyOf": [{"$ref": "#/definitions/DriveCapabilityV1"}, {"type": "null"}]}
+  },
+  "required": ["schemaVersion", "documentType", "id", "revision", "digest", "component", "variant", "kind", "documents", "connectors", "ioPoints", "interfaces", "drive"],
+  "definitions": {
+    "DeviceDocument": {
+      "title": "DeviceDocument", "type": "object", "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "kind": {"enum": ["datasheet", "manual", "safety_manual", "certificate", "description_file", "description_summary", "drawing", "quotation", "vendor_page"]},
+        "title": {"type": "string", "minLength": 1, "maxLength": 300},
+        "revision": {"type": "string", "minLength": 1, "maxLength": 200},
+        "url": {"type": "string", "maxLength": 1000},
+        "digest": {"$ref": "engineering-component.schema.json#/definitions/Digest"},
+        "license": {"type": "string", "minLength": 1, "maxLength": 200}
+      },
+      "required": ["id", "kind", "title", "revision", "url", "digest", "license"]
+    },
+    "SafetyClaim": {
+      "title": "SafetyClaim", "type": "object", "additionalProperties": false,
+      "description": "Verbatim claim from a document. Certified only when a certificate names the order code of the profile; computed, never typed.",
+      "properties": {
+        "function": {"enum": ["sto", "ss1", "sbc", "safe_input"]},
+        "claim": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "documentId": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "locator": {"type": "string", "minLength": 1, "maxLength": 200},
+        "certificate": {"anyOf": [{"$ref": "#/definitions/Certificate"}, {"type": "null"}]}
+      },
+      "required": ["function", "claim", "documentId", "locator", "certificate"]
+    },
+    "Certificate": {
+      "title": "Certificate", "type": "object", "additionalProperties": false,
+      "properties": {
+        "documentId": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "body": {"type": "string", "minLength": 1, "maxLength": 200},
+        "number": {"type": "string", "minLength": 1, "maxLength": 200},
+        "models": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"type": "string", "minLength": 1, "maxLength": 200}}
+      },
+      "required": ["documentId", "body", "number", "models"]
+    },
+    "Connector": {
+      "title": "Connector", "type": "object", "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "label": {"type": "string", "minLength": 1, "maxLength": 100},
+        "matingPart": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+        "pins": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"$ref": "#/definitions/Pin"}}
+      },
+      "required": ["id", "label", "matingPart", "pins"]
+    },
+    "Pin": {
+      "title": "Pin", "type": "object", "additionalProperties": false,
+      "properties": {
+        "pin": {"type": "string", "minLength": 1, "maxLength": 40},
+        "name": {"type": "string", "minLength": 1, "maxLength": 100},
+        "role": {"enum": ["power", "return", "pe", "di", "do", "ai", "ao", "bus", "sto", "brake", "motor_phase", "encoder", "shield", "nc"]},
+        "portId": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+        "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+      },
+      "required": ["pin", "name", "role", "portId", "source"]
+    },
+    "IOPointV1": {
+      "title": "IOPointV1", "type": "object", "additionalProperties": false,
+      "properties": {
+        "pointId": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "direction": {"enum": ["input", "output"]},
+        "pin": {"type": "string", "minLength": 1, "maxLength": 80},
+        "commonPin": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 80}, {"type": "null"}]},
+        "electrical": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "type": {"enum": ["pnp_sink_input", "npn_source_input", "dry_contact_input", "pnp_source_output", "npn_sink_output", "relay_output", "analog_voltage", "analog_current"]},
+            "voltageRangeV": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
+            "maxCurrentA": {"anyOf": [{"$ref": "engineering-component.schema.json#/definitions/Scalar"}, {"type": "null"}]}
+          },
+          "required": ["type", "voltageRangeV", "maxCurrentA"]
+        },
+        "functions": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"type": "string", "minLength": 1, "maxLength": 100}},
+        "defaultFunction": {"type": "string", "minLength": 1, "maxLength": 100},
+        "reassignable": {"type": "boolean"},
+        "assignmentPersistence": {"enum": ["retained", "volatile", "fixed"]},
+        "busExposure": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "kind": {"enum": ["cyclic", "acyclic", "none"]},
+            "object": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 40}, {"type": "null"}]},
+            "bit": {"anyOf": [{"type": "integer", "minimum": 0, "maximum": 63}, {"type": "null"}]},
+            "precondition": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 300}, {"type": "null"}]},
+            "updatePeriodMs": {"anyOf": [{"type": "number", "exclusiveMinimum": 0}, {"type": "null"}]}
+          },
+          "required": ["kind", "object", "bit", "precondition", "updatePeriodMs"]
+        },
+        "safety": {"anyOf": [{"$ref": "#/definitions/SafetyClaim"}, {"type": "null"}]},
+        "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+      },
+      "required": ["pointId", "direction", "pin", "commonPin", "electrical", "functions", "defaultFunction", "reassignable", "assignmentPersistence", "busExposure", "safety", "source"]
+    },
+    "DeviceInterface": {
+      "title": "DeviceInterface", "type": "object", "additionalProperties": false,
+      "properties": {
+        "id": {"$ref": "engineering-component.schema.json#/definitions/EngineeringId"},
+        "portId": {"type": "string", "minLength": 1, "maxLength": 200},
+        "protocol": {"enum": ["canopen", "modbus_rtu", "ethercat_coe", "usb", "ethernet", "uart"]},
+        "profile": {"enum": ["cia402", null]},
+        "descriptionDocumentId": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+        "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+      },
+      "required": ["id", "portId", "protocol", "profile", "descriptionDocumentId", "source"]
+    },
+    "DriveCapabilityV1": {
+      "title": "DriveCapabilityV1", "type": "object", "additionalProperties": false,
+      "properties": {
+        "axes": {"enum": [1, 2]},
+        "modes": {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true, "items": {"enum": ["csp", "csv", "cst", "pp", "pv", "pt"]}},
+        "ratedCurrentA": {"$ref": "engineering-component.schema.json#/definitions/Scalar"},
+        "peakCurrentA": {"$ref": "engineering-component.schema.json#/definitions/Scalar"},
+        "profileAccelerationRadS2": {"anyOf": [{"$ref": "engineering-component.schema.json#/definitions/Scalar"}, {"type": "null"}]},
+        "feedback": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "kinds": {"type": "array", "maxItems": 8, "items": {"type": "string", "minLength": 1, "maxLength": 100}},
+            "countsPerRev": {"anyOf": [{"$ref": "engineering-component.schema.json#/definitions/Scalar"}, {"type": "null"}]}
+          },
+          "required": ["kinds", "countsPerRev"]
+        },
+        "watchdog": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "kind": {"enum": ["heartbeat", "sync_timeout", "modbus_timeout", "none"]},
+            "rangeMs": {"anyOf": [{"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number", "minimum": 0}}, {"type": "null"}]},
+            "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+          },
+          "required": ["kind", "rangeMs", "source"]
+        },
+        "stop": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "quickStop": {"type": "boolean"},
+            "quickStopOption": {"anyOf": [{"$ref": "engineering-component.schema.json#/definitions/Scalar"}, {"type": "null"}]},
+            "faultReactionOption": {"anyOf": [{"$ref": "engineering-component.schema.json#/definitions/Scalar"}, {"type": "null"}]},
+            "torqueOff": {"anyOf": [{"$ref": "#/definitions/SafetyClaim"}, {"type": "null"}]},
+            "torqueOffPointIds": {"type": "array", "maxItems": 8, "items": {"type": "string", "minLength": 1, "maxLength": 200}},
+            "monitorOutputPointId": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+            "brakeOutputPointId": {"anyOf": [{"type": "string", "minLength": 1, "maxLength": 200}, {"type": "null"}]},
+            "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+          },
+          "required": ["quickStop", "quickStopOption", "faultReactionOption", "torqueOff", "torqueOffPointIds", "monitorOutputPointId", "brakeOutputPointId", "source"]
+        },
+        "faultMap": {
+          "type": "array", "maxItems": 64,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "vendorCode": {"type": "string", "minLength": 1, "maxLength": 40},
+              "neutral": {"enum": ["COMMAND_TIMEOUT", "FEEDBACK_LOSS", "FOLLOWING_ERROR", "OVERSPEED", "EXTERNAL_TRIP", "OTHER"]},
+              "source": {"$ref": "engineering-component.schema.json#/definitions/SourceRef"}
+            },
+            "required": ["vendorCode", "neutral", "source"]
+          }
+        }
+      },
+      "required": ["axes", "modes", "ratedCurrentA", "peakCurrentA", "profileAccelerationRadS2", "feedback", "watchdog", "stop", "faultMap"]
+    }
+  }
+}
