@@ -55,7 +55,7 @@ export async function addProfile(root:string,profile:DeviceProfileV1,o:{blobs?:b
 
 import type {ElectricalDesignV1,SignalV1,WiringPolicyV1,SafetyRequirementsV1} from '../../packages/lab-runtime/src/engineering/electrical/contracts';
 export const signal=(o:Partial<SignalV1>={}):SignalV1=>({id:'bumper-front',label:'Front bumper',role:'bumper',direction:'input',field:{deviceId:'bumper-front-sw',pin:'1',returnPin:'2'},
- electrical:{type:'dry_contact_input',nominalV:24,currentA:{value:0.005,unit:'A',source:assumedSource}},consumer:'controller',maxLatencyMs:50,required:true,pinned:null,...o});
+ electrical:{type:'relay_output',nominalV:24,currentA:{value:0.005,unit:'A',source:assumedSource}},consumer:'controller',maxLatencyMs:50,required:true,pinned:null,...o});
 export const wiringPolicy=(o:Partial<WiringPolicyV1>={}):WiringPolicyV1=>sealElectrical({schemaVersion:1,documentType:'wiring-policy',id:'wiring-policy-test',revision:1,
  ampacity:[{csaMm2:0.5,maxCurrentA:{value:5,unit:'A',source:assumedSource}},{csaMm2:1,maxCurrentA:{value:10,unit:'A',source:assumedSource}},{csaMm2:2.5,maxCurrentA:{value:20,unit:'A',source:assumedSource}}],
  signalMinCsaMm2:0.25,maxVoltageDropFraction:{value:0.03,unit:'1',source:assumedSource},copperResistivityOhmMm2PerM:0.0175,colours:[{role:'power',colour:'red'},{role:'return',colour:'black'}],
@@ -69,3 +69,20 @@ export function design(o:Partial<ElectricalDesignV1>&{profile?:DeviceProfileV1}=
   wiringPolicyRef:{id:'wiring-policy-test',revision:1,digest:wiringPolicy().digest},...rest}) as ElectricalDesignV1;
 }
 export const safetyRequirements=(requirements:SafetyRequirementsV1['requirements']=[]):SafetyRequirementsV1=>sealElectrical({schemaVersion:1,documentType:'safety-requirements',id:'safety-test',revision:1,requirements}) as SafetyRequirementsV1;
+
+import type {DesignContext} from '../../packages/lab-runtime/src/engineering/electrical/design';
+type Point=DeviceProfileV1['ioPoints'][number];
+/** An input point on the I/O module of {@link allocContext}: cyclic, 12 to 30 V, free for any signal. */
+export const point=(o:Partial<Point>&{pointId?:string}={}):Point=>({pointId:'IN1',direction:'input',pin:'IO/IN1',commonPin:'IO/COM',electrical:{type:'pnp_sink_input',voltageRangeV:[12,30],maxCurrentA:null},functions:['general_purpose'],defaultFunction:'general_purpose',reassignable:true,
+ assignmentPersistence:'retained',busExposure:{kind:'cyclic',object:'6000:01',bit:0,precondition:null,updatePeriodMs:null},safety:null,source:manufacturer('manual','IO'),...o,...(o.pointId&&!o.pin?{pin:'IO/'+o.pointId}:{})});
+/** A design with a controller and one I/O module on a 10 ms CANopen bus; `points` are the module's I/O, `signals` the design's. */
+export function allocContext(o:{points?:Point[];signals?:SignalV1[];cycleMs?:number;moduleOnBus?:boolean;extraDevices?:{id:string;profile:DeviceProfileV1;onBus?:boolean}[]}={}):DesignContext{
+ const points=o.points??[point()],base=driveProfile({kind:'io_module',noDrive:true,id:'io-module'});
+ const io=sealElectrical({...base,component:{...base.component,id:'io-component'},kind:'io_module' as const,connectors:[{id:'IO',label:'I/O',matingPart:null,pins:[{pin:'COM',name:'COM',role:'return' as const,portId:null,source:manufacturer('manual','IO')},...points.map(p=>({pin:p.pointId,name:p.pointId,role:(p.direction==='input'?'di':'do') as 'di'|'do',portId:null,source:manufacturer('manual','IO')}))]}],ioPoints:points,digest:undefined}) as DeviceProfileV1;
+ const ctrl=sealElectrical({...driveProfile({id:'ctrl',kind:'compute',noDrive:true}),ioPoints:[],digest:undefined}) as DeviceProfileV1,extra=o.extraDevices??[];
+ const devices=[{id:'controller',profile:ctrl},{id:'io',profile:io},...extra.map(e=>({id:e.id,profile:e.profile}))];
+ const d=design({signals:o.signals??[signal({field:{deviceId:'controller',pin:'1',returnPin:null}})]});
+ const full:ElectricalDesignV1={...d,devices:devices.map(x=>({id:x.id,profile:{id:x.profile.id,revision:1,digest:x.profile.digest},assemblyInstanceId:null})),axes:[],
+  buses:[{id:'can0',protocol:'canopen',controllerDeviceId:'controller',cycleMs:o.cycleMs??10,members:[{deviceId:'controller',interfaceId:'can0',address:null},...(o.moduleOnBus===false?[]:[{deviceId:'io',interfaceId:'can0',address:1}]),...extra.filter(e=>e.onBus!==false).map((e,i)=>({deviceId:e.id,interfaceId:'can0',address:2+i}))]}]};
+ return {design:full,profiles:new Map(devices.map(x=>[x.id,x.profile])),resolved:{placements:[],bom:{lines:[]}} as never,project:{id:'project-test',revision:1,digest:'p'.repeat(64)}};
+}

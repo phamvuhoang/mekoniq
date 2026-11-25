@@ -1,5 +1,6 @@
 /* Generated from the engineering schemas. Run pnpm contracts:generate; do not edit. */
 import type { LabProjectV2, AssetRevision, CoffeeRecipe } from './lab-v2';
+import type { DriveModelV1 } from './navigation2d';
 /**
  * This interface was referenced by `EngineeringContracts`'s JSON-Schema
  * via the `definition` "Digest".
@@ -1528,6 +1529,164 @@ export interface ElectricalDesignV1 {
   stopFunctions: StopFunctionV1[];
   safetyRequirementsRef: DocumentRef | null;
   wiringPolicyRef: DocumentRef;
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "CheckResult".
+ */
+export interface CheckResult {
+  ruleId: string;
+  level: 'blocking' | 'warning' | 'unverified';
+  path: string;
+  detail: string;
+  /**
+   * @maxItems 20
+   */
+  sources: SourceRef[];
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "IoAllocationV1".
+ */
+export interface IoAllocationV1 {
+  /**
+   * @maxItems 128
+   */
+  assigned: {
+    signalId: EngineeringId;
+    deviceId: EngineeringId;
+    pointId: EngineeringId;
+    busId: EngineeringId | null;
+    exposure: 'cyclic' | 'acyclic' | 'local';
+    pinned: boolean;
+  }[];
+  /**
+   * @maxItems 128
+   */
+  unassigned: {
+    signalId: EngineeringId;
+    /**
+     * @maxItems 16
+     */
+    reasons: {
+      code: string;
+      candidates: number;
+    }[];
+  }[];
+  /**
+   * @maxItems 2048
+   */
+  spare: {
+    deviceId: EngineeringId;
+    pointId: EngineeringId;
+  }[];
+  /**
+   * @maxItems 2048
+   */
+  reserved: {
+    deviceId: EngineeringId;
+    pointId: EngineeringId;
+    function: string;
+  }[];
+}
+/**
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "NetlistV1".
+ */
+export interface NetlistV1 {
+  /**
+   * @maxItems 1024
+   */
+  nets: {
+    id: string;
+    kind: 'power' | 'return' | 'bus' | 'signal' | 'axis' | 'safety';
+    /**
+     * @maxItems 128
+     */
+    nodes: {
+      deviceId: EngineeringId;
+      pin: string;
+    }[];
+    reviewRequired: boolean;
+  }[];
+  /**
+   * @maxItems 512
+   */
+  wires: {
+    id: string;
+    netId: string;
+    from: {
+      deviceId: EngineeringId;
+      pin: string;
+    };
+    to: {
+      deviceId: EngineeringId;
+      pin: string;
+    };
+    csaMm2: number;
+    csaSource: SourceRef;
+    colour: string;
+    lengthM: Scalar | null;
+    currentA: Scalar | null;
+  }[];
+  /**
+   * @maxItems 128
+   */
+  cables: {
+    id: string;
+    kind: 'motor' | 'encoder' | 'bus' | 'usb' | 'ethernet';
+    from: string;
+    to: string;
+    part: string | null;
+  }[];
+}
+/**
+ * Derived, sealed result of compiling one electrical design: allocation, netlist, checks, extended BOM and a draft drive model. Nobody edits it by hand; it carries the identity of every input.
+ *
+ * This interface was referenced by `EngineeringContracts`'s JSON-Schema
+ * via the `definition` "ElectricalBundleV1".
+ */
+export interface ElectricalBundleV1 {
+  schemaVersion: 1;
+  documentType: 'electrical-bundle';
+  digest: Digest;
+  state: 'compiled' | 'blocked';
+  inputs: {
+    project: {
+      id: EngineeringId;
+      revision: number;
+      digest: Digest;
+    };
+    assemblyDigest: Digest;
+    design: {
+      id: EngineeringId;
+      revision: number;
+      digest: Digest;
+    };
+    /**
+     * @maxItems 64
+     */
+    profiles: {
+      id: EngineeringId;
+      revision: number;
+      digest: Digest;
+      evidenceLevel: 'candidate' | 'documented';
+    }[];
+    safetyRequirementsDigest: Digest | null;
+    wiringPolicyDigest: Digest;
+    compilerVersion: 'electrical-compiler/1';
+    schemaHash: string;
+  };
+  allocation: IoAllocationV1;
+  netlist: NetlistV1;
+  /**
+   * @maxItems 2000
+   */
+  checks: CheckResult[];
+  bom: Bom;
+  driveModelDraft: DriveModelV1 | null;
+  hardwareValidated: false;
+  controlAuthority: false;
 }
 /**
  * A register written by the person responsible for safety. It is not executable logic and the Lab never judges it. There is no status field: the evidence state is computed from the documents.

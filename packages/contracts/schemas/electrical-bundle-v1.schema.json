@@ -1,0 +1,597 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "mekoniq.electrical-bundle.v1",
+  "title": "ElectricalBundleV1",
+  "description": "Derived, sealed result of compiling one electrical design: allocation, netlist, checks, extended BOM and a draft drive model. Nobody edits it by hand; it carries the identity of every input.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "documentType": {
+      "const": "electrical-bundle"
+    },
+    "digest": {
+      "$ref": "engineering-component.schema.json#/definitions/Digest"
+    },
+    "state": {
+      "enum": [
+        "compiled",
+        "blocked"
+      ]
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "digest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "digest"
+          ]
+        },
+        "assemblyDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "design": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "digest": {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            }
+          },
+          "required": [
+            "id",
+            "revision",
+            "digest"
+          ]
+        },
+        "profiles": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "digest": {
+                "$ref": "engineering-component.schema.json#/definitions/Digest"
+              },
+              "evidenceLevel": {
+                "enum": [
+                  "candidate",
+                  "documented"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "revision",
+              "digest",
+              "evidenceLevel"
+            ]
+          }
+        },
+        "safetyRequirementsDigest": {
+          "anyOf": [
+            {
+              "$ref": "engineering-component.schema.json#/definitions/Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wiringPolicyDigest": {
+          "$ref": "engineering-component.schema.json#/definitions/Digest"
+        },
+        "compilerVersion": {
+          "const": "electrical-compiler/1"
+        },
+        "schemaHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "project",
+        "assemblyDigest",
+        "design",
+        "profiles",
+        "safetyRequirementsDigest",
+        "wiringPolicyDigest",
+        "compilerVersion",
+        "schemaHash"
+      ]
+    },
+    "allocation": {
+      "$ref": "#/definitions/IoAllocationV1"
+    },
+    "netlist": {
+      "$ref": "#/definitions/NetlistV1"
+    },
+    "checks": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "$ref": "#/definitions/CheckResult"
+      }
+    },
+    "bom": {
+      "$ref": "engineering-bundle.schema.json#/definitions/Bom"
+    },
+    "driveModelDraft": {
+      "anyOf": [
+        {
+          "$ref": "drive-model-v1.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hardwareValidated": {
+      "const": false
+    },
+    "controlAuthority": {
+      "const": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "documentType",
+    "digest",
+    "state",
+    "inputs",
+    "allocation",
+    "netlist",
+    "checks",
+    "bom",
+    "driveModelDraft",
+    "hardwareValidated",
+    "controlAuthority"
+  ],
+  "definitions": {
+    "CheckResult": {
+      "title": "CheckResult",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "level": {
+          "enum": [
+            "blocking",
+            "warning",
+            "unverified"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+          }
+        }
+      },
+      "required": [
+        "ruleId",
+        "level",
+        "path",
+        "detail",
+        "sources"
+      ]
+    },
+    "IoAllocationV1": {
+      "title": "IoAllocationV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assigned": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "signalId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "deviceId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "pointId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "busId": {
+                "anyOf": [
+                  {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "exposure": {
+                "enum": [
+                  "cyclic",
+                  "acyclic",
+                  "local"
+                ]
+              },
+              "pinned": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "signalId",
+              "deviceId",
+              "pointId",
+              "busId",
+              "exposure",
+              "pinned"
+            ]
+          }
+        },
+        "unassigned": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "signalId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "reasons": {
+                "type": "array",
+                "maxItems": 16,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 60
+                    },
+                    "candidates": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100000
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "candidates"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "signalId",
+              "reasons"
+            ]
+          }
+        },
+        "spare": {
+          "type": "array",
+          "maxItems": 2048,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "deviceId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "pointId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              }
+            },
+            "required": [
+              "deviceId",
+              "pointId"
+            ]
+          }
+        },
+        "reserved": {
+          "type": "array",
+          "maxItems": 2048,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "deviceId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "pointId": {
+                "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+              },
+              "function": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "deviceId",
+              "pointId",
+              "function"
+            ]
+          }
+        }
+      },
+      "required": [
+        "assigned",
+        "unassigned",
+        "spare",
+        "reserved"
+      ]
+    },
+    "NetlistV1": {
+      "title": "NetlistV1",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nets": {
+          "type": "array",
+          "maxItems": 1024,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "kind": {
+                "enum": [
+                  "power",
+                  "return",
+                  "bus",
+                  "signal",
+                  "axis",
+                  "safety"
+                ]
+              },
+              "nodes": {
+                "type": "array",
+                "maxItems": 128,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "deviceId": {
+                      "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                    },
+                    "pin": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    }
+                  },
+                  "required": [
+                    "deviceId",
+                    "pin"
+                  ]
+                }
+              },
+              "reviewRequired": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "nodes",
+              "reviewRequired"
+            ]
+          }
+        },
+        "wires": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "netId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "from": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "deviceId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "pin": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "pin"
+                ]
+              },
+              "to": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "deviceId": {
+                    "$ref": "engineering-component.schema.json#/definitions/EngineeringId"
+                  },
+                  "pin": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "deviceId",
+                  "pin"
+                ]
+              },
+              "csaMm2": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "csaSource": {
+                "$ref": "engineering-component.schema.json#/definitions/SourceRef"
+              },
+              "colour": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "lengthM": {
+                "anyOf": [
+                  {
+                    "$ref": "engineering-component.schema.json#/definitions/Scalar"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "currentA": {
+                "anyOf": [
+                  {
+                    "$ref": "engineering-component.schema.json#/definitions/Scalar"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "netId",
+              "from",
+              "to",
+              "csaMm2",
+              "csaSource",
+              "colour",
+              "lengthM",
+              "currentA"
+            ]
+          }
+        },
+        "cables": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "kind": {
+                "enum": [
+                  "motor",
+                  "encoder",
+                  "bus",
+                  "usb",
+                  "ethernet"
+                ]
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "part": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "from",
+              "to",
+              "part"
+            ]
+          }
+        }
+      },
+      "required": [
+        "nets",
+        "wires",
+        "cables"
+      ]
+    }
+  }
+}
