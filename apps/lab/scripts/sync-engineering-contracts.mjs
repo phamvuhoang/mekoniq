@@ -5,13 +5,14 @@ import {createHash} from 'node:crypto';
 import {mkdir,readFile,readdir,rm,writeFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {sourceCommit} from '../../../scripts/repo-identity.mjs';
 const here=(p)=>fileURLToPath(new URL(p,import.meta.url));
 const sourceRoot=here('../../../'),target=here('../src/shared/engineering.ts');
 const generated=await readFile(here('../../../packages/contracts/generated/engineering.ts'),'utf8');
 // Lab owns its LabProjectV2/AssetRevision copies (shared/types); CoffeeRecipe is only carried through, never inspected here.
 const body=generated.replace("import type { LabProjectV2, AssetRevision, CoffeeRecipe } from './lab-v2';","import type {LabProjectV2,AssetRevision} from './types';\nexport type CoffeeRecipe=Record<string,unknown>;");
 if(body===generated)throw new Error('GENERATED_IMPORT_CHANGED');
-const commit=execFileSync('git',['rev-parse','HEAD'],{cwd:sourceRoot,encoding:'utf8'}).trim();
+const commit=sourceCommit(sourceRoot);
 const dirty=execFileSync('git',['status','--porcelain','--','packages/contracts'],{cwd:sourceRoot,encoding:'utf8'}).trim();
 if(dirty)throw new Error('SOURCE_CONTRACTS_DIRTY: commit source before syncing');
 const header=`// Synced from source packages/contracts/generated/engineering.ts @ ${commit} (sha256 ${createHash('sha256').update(generated).digest('hex')}). Run node scripts/sync-engineering-contracts.mjs; do not edit.\n`;

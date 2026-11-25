@@ -9,11 +9,12 @@ import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
 import {auditBundle,serializeRuntimeManifest} from './lab-runtime-audit.mjs';
+import {sourceCommit as repoSourceCommit,sourceDirty} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const out=resolve(process.argv.slice(2).find(a=>!a.startsWith('--'))??join(root,'packages/lab-runtime/dist'));
 if(out===root||out.startsWith(join(root,'packages/contracts')))throw new Error('UNSAFE_OUTPUT_DIRECTORY');
 const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8'}).trim();
-const dirty=git('status','--porcelain','--untracked-files=all');
+const dirty=sourceDirty(root);
 if(dirty&&process.argv.includes('--clean-checkout')){
  // Export committed HEAD from a temporary worktree (deps from the local pnpm store, --offline: no download); the working tree is untouched.
  const tmp=mkdtempSync(join(tmpdir(),'mekoniq-clean-export-'));
@@ -24,7 +25,7 @@ if(dirty&&process.argv.includes('--clean-checkout')){
  process.exit(0);
 }
 if(dirty&&!process.argv.includes('--allow-dirty'))throw new Error('CLEAN_SOURCE_CHECKOUT_REQUIRED');
-const sourceCommit=git('rev-parse','HEAD'),nativeTools=nativeToolClosure(root);
+const sourceCommit=repoSourceCommit(root),nativeTools=nativeToolClosure(root);
 const schemaDir=join(root,'packages/contracts/schemas');
 const names=(await readdir(schemaDir)).filter(n=>n.endsWith('.json')).sort();
 const hash=createHash('sha256');

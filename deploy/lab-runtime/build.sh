@@ -13,8 +13,8 @@ if [ "${1:-}" = --oci-out ]; then oci_out=${2:?--oci-out needs a fresh directory
 [ $# -eq 0 ] || { echo "UNKNOWN_ARGUMENT:$1" >&2; exit 2; }
 case "$platform" in ''|linux/amd64|linux/arm64) ;; *) echo "UNSUPPORTED_PLATFORM:$platform" >&2; exit 2;; esac
 here=$(cd "$(dirname "$0")" && pwd); root=$(cd "$here/../.." && pwd)
-[ -z "$(git -C "$root" status --porcelain --untracked-files=all)" ] || { echo "DIRTY_SOURCE_TREE: commit first, the image's sourceCommit must be a real commit" >&2; exit 1; }
-commit=$(git -C "$root" rev-parse HEAD)
+[ -z "$(git -C "$root" status --porcelain --untracked-files=all -- . ':(exclude)apps/lab')" ] || { echo "DIRTY_SOURCE_TREE: commit first, the image's sourceCommit must be a real commit" >&2; exit 1; }
+commit=$(git -C "$root" log -1 --format=%H -- . ':(exclude)apps/lab')
 ctx=$(mktemp -d); trap 'rm -rf "$ctx"' EXIT
 node "$root/scripts/export-lab-runtime.mjs" "$ctx/export" >/dev/null
 node "$root/scripts/build-r2b-campaign.mjs" "$ctx" "$ctx/export"

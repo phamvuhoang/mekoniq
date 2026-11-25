@@ -8,10 +8,11 @@ import {tsImport} from 'tsx/esm/api';
 import reference from './r2a-arm-baseline.json' with {type:'json'};
 import profile from '../../robotics/simulation-mujoco/profiles/linux-amd64.json' with {type:'json'};
 import {probeFile,sha256} from './mujoco-probe-evidence.mjs';
+import {labFileAt} from '../repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 export async function prepareR2aHandoff({runtimeCache,lab,out,checker}){
  const old=reference.subject,git=(repo,commit,path)=>execFileSync('git',['show',commit+':'+path],{cwd:repo,timeout:10000,maxBuffer:64*1024*1024});
- const runtime=await probeFile(runtimeCache,'runtime.mjs'),manifestBytes=await probeFile(runtimeCache,'manifest.json'),runtimeManifest=JSON.parse(manifestBytes),lockBytes=git(lab,old.labCommit,'config/source-runtime.lock.json');
+ const runtime=await probeFile(runtimeCache,'runtime.mjs'),manifestBytes=await probeFile(runtimeCache,'manifest.json'),runtimeManifest=JSON.parse(manifestBytes),lockBytes=labFileAt(lab,old.labCommit,'config/source-runtime.lock.json');
  if(sha256(runtime)!==old.runtimeArtifactSha256||runtimeManifest.sourceCommit!==old.sourceCommit||runtimeManifest.schemaHash!==old.schemaHash||runtimeManifest.dirty!==false||runtimeManifest.portableSimulationTools.closure.digest!==old.portableClosureHash)throw Error('R2A_CACHE_IDENTITY');
  await mkdir(out,{mode:0o700});const refs={};
  const put=async(role,path,bytes,sourcePath=path,sourceCommit=old.sourceCommit)=>{await mkdir(dirname(join(out,path)),{recursive:true,mode:0o700});await writeFile(join(out,path),bytes,{flag:'wx',mode:0o600});const ref={path,sourcePath,sourceCommit,bytes:bytes.length,sha256:sha256(bytes)};(refs[role]??=[]).push(ref);return ref;};

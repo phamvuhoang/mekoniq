@@ -13,6 +13,7 @@ import {realpathSync} from 'node:fs';
 import {dirname,isAbsolute,join,relative,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {nativeToolClosure,portableToolClosure,PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
+import {sourceCommit as repoSourceCommit,SOURCE_PATHSPEC} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const usage=(m)=>{console.error(`${m}\nusage: lab-irsim.mjs doctor [--json] [--irsim-python PATH] | run --campaign ID|PATH --out DIR [--concurrency 1|2] [--irsim-python PATH] [--run-timeout-s N] [--expect-portable-digest HEX] | verify --input DIR`);process.exit(2);};
 const SCHEMA={doctor:{json:'flag',provider:'provider','irsim-python':'path','webots-python':'path','webots-home':'path'},run:{campaign:'campaign',out:'path',concurrency:'int',provider:'provider','irsim-python':'path','webots-python':'path','webots-home':'path','run-timeout-s':'int','expect-portable-digest':'hex'},verify:{input:'path'}};
@@ -43,9 +44,9 @@ const HARMLESS_IGNORED=/(^|\/)(__pycache__\/[^/]+\.pyc|\.pytest_cache\/.*|tests\
  * sitecustomize.py next to the worker would otherwise pass as clean), or any ignored file inside a portable tool root other than HARMLESS_IGNORED.
  */
 export function treeState(dir=root,exclude=[]){
- const git=(...a)=>spawnSync('git',a,{cwd:dir,encoding:'utf8'}),head=git('rev-parse','HEAD').stdout.trim()||'unknown';
+ const git=(...a)=>spawnSync('git',a,{cwd:dir,encoding:'utf8'}),head=(()=>{try{return repoSourceCommit(dir)||'unknown';}catch{return 'unknown';}})();
  // `exclude`: repository-relative directories whose files are this process's own output (a campaign/record written inside the repo), never code that can run
- const changed=git('status','--porcelain','--untracked-files=all','--','.',...exclude.map(p=>`:(exclude)${p}`)).stdout.split('\n').filter(Boolean);
+ const changed=git('status','--porcelain','--untracked-files=all','--',...SOURCE_PATHSPEC,...exclude.map(p=>`:(exclude)${p}`)).stdout.split('\n').filter(Boolean);
  const ignored=git('status','--porcelain','--ignored','--untracked-files=all','--',...PORTABLE_TOOL_PATHS).stdout.split('\n').filter(l=>l.startsWith('!! ')).map(l=>l.slice(3)).filter(p=>!HARMLESS_IGNORED.test(p));
  const reasons=[...changed.map(l=>`${l.slice(0,2).trim()||'?'} ${l.slice(3)}`),...ignored.map(p=>`ignored-in-tool-root ${p}`)];
  return {head,dirty:reasons.length>0,reasons};

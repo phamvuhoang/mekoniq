@@ -5,6 +5,7 @@ import {join} from 'node:path';
 import {expect,test,vi} from 'vitest';
 // Keep the recorder, input copy and case disposition real. Supply controlled suite results and candidate identity.
 vi.mock('node:child_process',async importOriginal=>({...await importOriginal<typeof import('node:child_process')>(),execFileSync:(_cmd:string,args:string[])=>args[0]==='status'?'':'a'.repeat(40)}));
+vi.mock('../../scripts/repo-identity.mjs',()=>({sourceCommit:()=>'a'.repeat(40),sourceDirty:()=>'',labIdentity:()=>({commit:'a'.repeat(40),dirty:false})}));
 vi.mock('../../scripts/lab-irsim.mjs',()=>({closureIdentity:()=>({portable:'portable'})}));
 vi.mock('../../scripts/native-sim/r2b-process.mjs',()=>({runR2bCaseCommand:async(_node:string,_cmd:string[],{out}:{out:string})=>{
  await writeFile(join(out,'result.json'),JSON.stringify({numPassedTests:1,numFailedTests:0,numPendingTests:0,numTotalTests:1}));return {exitCode:0};

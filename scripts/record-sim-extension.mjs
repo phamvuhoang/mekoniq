@@ -30,6 +30,7 @@ import {closureIdentity,ownOutput,treeState} from './lab-irsim.mjs';
 import {bytecodeUnder,summarizeResult as summarize} from './irsim-qualification.mjs';
 import {SPIKE_NOTE,SUITES,SUITES_R11,checkBlocked,checkLabCommits,preflight,screenLockedFromIoreg,checkIrsimRecord,checkR1Record,checkR11Record,checkQualification,qualify,qualifyR11,qualifyR2a,tableR2a} from './sim-extension-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
+import {labIdentity} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 if(process.argv[process.argv.indexOf('--release')+1]==='r3'){try{const {recordR3}=await import('./record-sim-extension-r3.mjs');process.exit(await recordR3(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
 if(process.argv[process.argv.indexOf('--release')+1]==='r2b'){try{const {recordR2b}=await import('./record-sim-extension-r2b.mjs');process.exit(await recordR2b(process.argv.slice(2)));}catch(e){console.error('NOT_RUN: '+e.message);process.exit(2);}}
@@ -100,8 +101,8 @@ const irsimDoc=R11?readJson(join(r1Dir,r1Doc.irsimRecord.file),'IRSIM_RECORD_MIS
 const irsimProblems=checkIrsimRecord(irsimDoc,before.sourceCommit);if(irsimProblems.length)fail('NOT_RUN',`${irsimProblems.join('; ')} (record linkforge-irsim for this commit first)`);
 if(mockDoc.schema!=='lab-v2-regression/1'||mockDoc.identity?.start?.source?.commit!==before.sourceCommit)fail('NOT_RUN',`MOCK_REGRESSION_COMMIT: the Lab regression is of ${mockDoc.identity?.start?.source?.commit??'no commit'}, this source is ${before.sourceCommit}`);
 if(own.lab&&own.lab!=='none'&&!existsSync(join(labDir,'config/source-runtime.lock.json')))fail('NOT_RUN',`LAB_NOT_FOUND: ${own.lab}`);
-const labInfo=()=>{if(!labDir)return null;const git=(...a)=>spawnSync('git',a,{cwd:labDir,encoding:'utf8'}).stdout.trim(),pin=JSON.parse(readFileSync(join(labDir,'config/source-runtime.lock.json'),'utf8'));
- return {path:labDir,commit:git('rev-parse','HEAD'),dirty:git('status','--porcelain','--untracked-files=all').length>0,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};
+const labInfo=()=>{if(!labDir)return null;const pin=JSON.parse(readFileSync(join(labDir,'config/source-runtime.lock.json'),'utf8'));
+ return {path:labDir,...labIdentity(root,labDir),pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};
 const labBefore=labInfo(),notRunEarly=[];
 if(labBefore){
  const bytecode=bytecodeUnder(root,PORTABLE_TOOL_PATHS);if(bytecode.length)fail('NOT_RUN',`PORTABLE_BYTECODE: ${bytecode.slice(0,5).join(', ')}${bytecode.length>5?` (+${bytecode.length-5})`:''} — the Lab launchers refuse a closure with bytecode; remove it yourself (find <root> -name __pycache__ -prune -exec rm -rf {} +)`);

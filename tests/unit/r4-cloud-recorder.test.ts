@@ -10,6 +10,7 @@ import nominal from '../fixtures/control/r4-cell-nominal-report.json';
 import wheel from '../fixtures/control/r4-wheel-bench-report.json';
 // @ts-expect-error plain ESM
 import {checkCloudRunR4Evidence} from '../../scripts/cloud-run-qualification.mjs';
+import {sourceCommit as repoSourceCommit} from '../../scripts/repo-identity.mjs';
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex');
 const commit=nominal.manifest.sourceCommit,lab='b'.repeat(40),schemaHash='c'.repeat(64),artifactSha256='d'.repeat(64);
 const service='mekoniq-lab-runtime',url='https://mekoniq-lab-runtime-ojykcqdkja-as.a.run.app',origin='https://mekoniq-lab.vercel.app',revision=service+'-00004-abc';
@@ -117,7 +118,7 @@ test('native handoff verifies recorded ID before writing and binds the exact sav
 });
 test.each(['ok','health','secret','cleanup','primary-and-cleanup'])('HTTP diagnostic exercises only its own runs and protects tokens (%s)',async(mode)=>{
  const dir=mkdtempSync(join(tmpdir(),'r4-cloud-wire-')),out=join(dir,'out'),key='private-access-key-marker',token='private-session-marker',reclaim='private-reclaim-marker',paths:string[]=[],archives:string[]=[];
- const {f}=fixture();const state:Record<string,{tick:number;rev:number;status:string}>={};const sourceCommit=spawnSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).stdout.trim();
+ const {f}=fixture();const state:Record<string,{tick:number;rev:number;status:string}>={};const sourceCommit=repoSourceCommit('.');
  const api=createServer(async(req,res)=>{const path=new URL(req.url!,'http://localhost').pathname.replace('/lab/v2','');paths.push(path);res.setHeader('access-control-allow-origin','http://127.0.0.1:4175');
   let requestText='';for await(const chunk of req)requestText+=chunk;const body=JSON.parse(requestText||'{}');let code=200,data:any={};
   if(path==='/health'){data={...health,benchCatalog:{'MJ-BENCH-WHEEL':{startingProfile:{...profile,axes:[{id:'fixture'}]}}},sourceCommit:mode==='health'?commit:sourceCommit};}

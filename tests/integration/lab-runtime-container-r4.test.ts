@@ -11,11 +11,12 @@ import {machine,tmpdir,type} from 'node:os';
 import {join} from 'node:path';
 import {assertR4Image,assertR4Runtime} from '../support/r4-container-identity';
 import {afterAll,describe,expect,test} from 'vitest';
+import {sourceCommit as repoSourceCommit} from '../../scripts/repo-identity.mjs';
 
 const image=process.env.LAB_CONTAINER_IMAGE??'',LABEL='mekoniq-lab-container-test',ORIGIN='http://127.0.0.1:4175';
 const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000,killSignal:'SIGKILL'});return {exitCode:r.status,ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
 const dockerUp=!!image&&(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:15_000,killSignal:'SIGKILL'});return true;}catch{return false;}})();
-const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const head=repoSourceCommit('.');
 const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const runId=randomUUID(),names:string[]=[];

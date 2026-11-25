@@ -6,6 +6,7 @@ import {mkdtemp,readFile,rm,copyFile,writeFile,mkdir,readdir} from 'node:fs/prom
 import {createHash} from 'node:crypto';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
+import {sourceCommit as repoSourceCommit} from '../../scripts/repo-identity.mjs';
 const exec=promisify(execFile);
 test('self-contained exported artifact opens its embedded SQLite migration away from the source checkout',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'lab-artifact-'));
@@ -96,7 +97,7 @@ test.runIf(process.env.LAB_V2_CLEAN_EXPORT==='1')('--clean-checkout exports comm
  const out=await mkdtemp(join(tmpdir(),'lab-clean-export-'));
  try{
   await exec(process.execPath,['scripts/export-lab-runtime.mjs','--clean-checkout',join(out,'artifact')],{maxBuffer:1<<26});
-  const manifest=JSON.parse(await readFile(join(out,'artifact/manifest.json'),'utf8')),head=(await exec('git',['rev-parse','HEAD'])).stdout.trim();
+  const manifest=JSON.parse(await readFile(join(out,'artifact/manifest.json'),'utf8')),head=repoSourceCommit('.');
   expect(manifest).toMatchObject({dirty:false,sourceCommit:head});
  }finally{await rm(out,{recursive:true,force:true});}
 },600000);

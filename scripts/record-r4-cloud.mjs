@@ -9,6 +9,7 @@ import {boundedEvidenceRead} from './r2b-readback.mjs';
 import {assessR4Directory} from './r4-readback.mjs';
 import {checkCloudRunR4Evidence} from './cloud-run-qualification.mjs';
 import {sha,must,project,region,service,macPath,nativePath,scenarios,checkCandidateInputs,checkDeployment,checkHealth,checkReadiness,checkCell,checkBench,elapsed,timing,comparison,digestRef} from './r4-cloud-evidence.mjs';
+import {sourceCommit,sourceDirty} from './repo-identity.mjs';
 
 const source=fileURLToPath(new URL('../',import.meta.url)),fixture='robotics/simulation-mujoco/fixtures/coffee-delivery-cell-v1/project.json';
 const uuid=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i;
@@ -130,11 +131,11 @@ async function main(){
  must(v.endpoint&&v.origin,'ENDPOINT_AND_ORIGIN_REQUIRED');endpointCheck(v.endpoint,v.origin,local);
  let base,pin,metadata;
  if(local){must(v['runtime-manifest']&&!v.candidate&&!v['release-approved'],'DIAGNOSTIC_MANIFEST_REQUIRED');pin=JSON.parse(readFileSync(v['runtime-manifest']));
-  must(pin.dirty===false&&pin.sourceCommit===external('git',['rev-parse','HEAD'])&&/^[0-9a-f]{64}$/.test(pin.schemaHash)&&/^[0-9a-f]{64}$/.test(pin.artifactSha256),'DIAGNOSTIC_IDENTITY');}
+  must(pin.dirty===false&&pin.sourceCommit===sourceCommit(process.cwd())&&/^[0-9a-f]{64}$/.test(pin.schemaHash)&&/^[0-9a-f]{64}$/.test(pin.artifactSha256),'DIAGNOSTIC_IDENTITY');}
  else{
   must(v.candidate&&!v['runtime-manifest'],'CANDIDATE_REQUIRED');
   base=await readCandidate(resolve(v.candidate));pin=base.q.lab.pin;
-  must(external('git',['rev-parse','HEAD'])===pin.sourceCommit&&!external('git',['status','--porcelain','--untracked-files=all']),'CLEAN_CANDIDATE_SOURCE_REQUIRED');
+  must(sourceCommit(process.cwd())===pin.sourceCommit&&!sourceDirty(process.cwd()),'CLEAN_CANDIDATE_SOURCE_REQUIRED');
   if(mode==='plan'){console.log(JSON.stringify({mode,candidateId:base.q.candidateId,sourceCommit:pin.sourceCommit,labCommit:base.q.lab.commit,imageId:base.native.imageId,service,project,region,endpoint:v.endpoint,origin:v.origin,accepted:false}));return;}
   must(v['release-approved']===true,'RELEASE_APPROVAL_REQUIRED');
  }

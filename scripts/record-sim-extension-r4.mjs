@@ -1,6 +1,5 @@
 // Recorder for release `r4` (plan V16, contracts §10). Refuses an existing output, a dirty source or Lab tree, a Lab pin that is not this commit, and any bytecode under the portable roots (the closure identity covers it).
 // It copies every input beside the record, runs the closed suites, then reads the whole directory back through scripts/r4-readback.mjs. qualification.json is always `accepted:false`.
-import {execFileSync} from 'node:child_process';
 import {mkdir,writeFile,readFile,cp,lstat} from 'node:fs/promises';
 import {existsSync} from 'node:fs';
 import {join,resolve,dirname} from 'node:path';
@@ -12,6 +11,7 @@ import {evidenceInventory,boundedEvidenceRead} from './r2b-readback.mjs';
 import {summarizeResult} from './irsim-qualification.mjs';
 import {closureIdentity} from './lab-irsim.mjs';
 import {runR2bCaseCommand} from './native-sim/r2b-process.mjs';
+import {sourceCommit as srcCommit,sourceDirty as srcDirty,labIdentity} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=b=>createHash('sha256').update(b).digest('hex');
 const INPUTS={'recovery-campaign':['recoveryCampaign','inputs/recovery','campaign.json'],'r2b-record':['r2bRecord','inputs/r2b','qualification.json'],'cil-campaign':['cilCampaign','inputs/cil','campaign.json'],'fault-campaign':['faultCampaign','inputs/fault','campaign.json'],'tray-campaign':['trayCampaign','inputs/tray','campaign.json'],
  'perception-study':['perceptionStudy','inputs/study','campaign.json'],'bench-record':['benchCampaign','inputs/bench','campaign.json'],'container-record':['containerRecord','inputs/container','container.json'],
@@ -22,8 +22,8 @@ export async function recordR4(args){
  for(const key of ['out','r2b-record','cil-campaign','fault-campaign','tray-campaign','perception-study','bench-record','container-record','mock-regression'])if(!o[key])throw Error('MISSING_OPTION:--'+key);
  const out=resolve(o.out),lab=resolve(o.lab??join(root,'apps/lab'));if(existsSync(out))throw Error('OUT_EXISTS');if(out===root||out.startsWith(root+'/')||out===lab||out.startsWith(lab+'/'))throw Error('OUTPUT_MUST_BE_OUTSIDE_REPOSITORIES');
  validateR4Selectors(table,{source:root,lab});
- const git=(cwd,...a)=>execFileSync('git',a,{cwd,encoding:'utf8'}).trim(),identity=()=>({sourceCommit:git(root,'rev-parse','HEAD'),dirty:!!git(root,'status','--porcelain','--untracked-files=all'),toolClosures:closureIdentity(),node:process.version}),before=identity();if(before.dirty)throw Error('SOURCE_DIRTY');
- const pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),labCommit=git(lab,'rev-parse','HEAD');if(git(lab,'status','--porcelain','--untracked-files=all'))throw Error('LAB_DIRTY');if(pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
+ const identity=()=>({sourceCommit:srcCommit(root),dirty:!!srcDirty(root),toolClosures:closureIdentity(),node:process.version}),before=identity();if(before.dirty)throw Error('SOURCE_DIRTY');
+ const pin=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),{commit:labCommit,dirty:labWasDirty}=labIdentity(root,lab);if(labWasDirty)throw Error('LAB_DIRTY');if(pin.sourceCommit!==before.sourceCommit||pin.portableToolsDigest!==before.toolClosures.portable)throw Error('LAB_PIN_MISMATCH');
  await mkdir(out,{mode:0o700});await mkdir(join(out,'inputs'));await mkdir(join(out,'suites'));const refs={};
  for(const [opt,[key,dest,entry]] of Object.entries(INPUTS)){if(!o[opt])continue;const source=resolve(o[opt]);if((await lstat(source)).isSymbolicLink())throw Error('EVIDENCE_SYMLINK');
   const original=evidenceInventory(source);await cp(source,join(out,dest),{recursive:true,force:false,errorOnExist:true});
@@ -49,7 +49,7 @@ export async function recordR4(args){
   suites.push({id:suite.id,repo:suite.repo,kind:suite.kind,exitCode:p.exitCode??1,process:`suites/${suite.id}/process.json`,result});
  }
  const licenses=join(out,'suites/licenses');await mkdir(licenses);const l=await runR2bCaseCommand(process.execPath,['scripts/portable-licenses.mjs','--check'],{out:licenses,cwd:root,env,timeoutMs:120000,signal:abort.signal});commands.push({id:'licenses',exitCode:l.exitCode??1,process:'suites/licenses/process.json'});
- const after=identity(),identityStable=JSON.stringify(before)===JSON.stringify(after)&&git(lab,'rev-parse','HEAD')===labCommit&&!git(lab,'status','--porcelain','--untracked-files=all');
+ const after=identity(),identityStable=JSON.stringify(before)===JSON.stringify(after)&&labIdentity(root,lab).commit===labCommit&&!labIdentity(root,lab).dirty;
  const m={schemaVersion:1,documentType:'sim-extension-qualification',release:'r4',scope:'full',candidateId:o['candidate-id']??out.split('/').at(-1),accepted:false,acceptedBy:null,acceptedAt:null,identity:{before,after,identityStable},
   lab:{commit:labCommit,dirty:!identityStable,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}},campaign:null,performance:null,inputs:refs,suites,commands};
  const derived=await collectR4ArtifactDispositions(out,m);m.artifactDispositions=derived.artifactDispositions;Object.assign(m,qualifyR4Structure({suites,lab:true,sourceCommit:before.sourceCommit,artifactDispositions:m.artifactDispositions}));m.artifacts=evidenceInventory(out);

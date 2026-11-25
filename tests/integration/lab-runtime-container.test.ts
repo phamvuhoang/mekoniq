@@ -11,11 +11,12 @@ import {afterAll,describe,expect,test} from 'vitest';
 // @ts-expect-error shared standalone artifact observer programs
 import {CHUNK_PROGRAM,WORKER_PROGRAM} from '../../scripts/web05-observations.mjs';
 import {xarmProject} from '../support/mujoco-arm';
+import {sourceCommit as repoSourceCommit} from '../../scripts/repo-identity.mjs';
 
 const image=process.env.LAB_CONTAINER_IMAGE??'',LABEL='mekoniq-lab-container-test',ORIGIN='http://127.0.0.1:4175';
 const docker=(args:string[],env?:Record<string,string>)=>{const r=spawnSync('docker',args,{encoding:'utf8',env:{...process.env,...env},timeout:120_000,killSignal:'SIGKILL'});return {exitCode:r.status,signal:r.signal,ok:r.status===0,out:(r.stdout??'').trim(),err:(r.stderr??'').trim()};};
 const dockerUp=!!image&&(()=>{try{execFileSync('docker',['info'],{stdio:'ignore',timeout:15_000,killSignal:'SIGKILL'});return true;}catch{return false;}})();
-const head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const head=repoSourceCommit('.');
 const freePort=()=>new Promise<number>((resolve,reject)=>{const s=createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=(s.address() as {port:number}).port;s.close(()=>resolve(p));});});
 const logs=(name:string,key:string)=>{const l=docker(['logs','--tail','20',name]);return `${l.out}\n${l.err}`.replaceAll(key,'<key>');};
 // MuJoCo writes its warnings (which name the DOF and the time) to MUJOCO_LOG.TXT in the run's working directory: the last 20 lines of each, for a run that did not complete

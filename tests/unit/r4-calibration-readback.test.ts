@@ -1,4 +1,4 @@
-import {execFileSync,spawnSync} from 'node:child_process';
+import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {mkdir,mkdtemp,readFile,rm,symlink,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -12,8 +12,9 @@ import {artifactDispositionsFromGroups,collectR4ArtifactDispositions} from '../.
 import {qualifyR4Structure,SUITES_R4} from '../../scripts/sim-extension-r4.mjs';
 import {loadCalibrationSelftestBase,writeCalibrationSelftest} from '../../scripts/r4-calibration-selftest';
 import {verifyCalibrationSelftest} from '../../scripts/r4-calibration-evidence';
+import {sourceCommit as repoSourceCommit} from '../../scripts/repo-identity.mjs';
 
-const sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const sourceCommit=repoSourceCommit('.');
 const toolClosures={portable:'e'.repeat(64),native:'a'.repeat(64)};
 const workerRoot=resolve('robotics/simulation-mujoco');
 const sha=(bytes:Buffer|string)=>createHash('sha256').update(bytes).digest('hex');

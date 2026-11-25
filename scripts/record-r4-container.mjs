@@ -1,17 +1,17 @@
 // CLD01 runs the arm64 container suite. CLD02 imports the complete native output of scripts/r4-cld02.sh.
 import {readNativeContainer} from './r4-container-readback.mjs';
-import {execFileSync,spawnSync} from 'node:child_process';
+import {spawnSync} from 'node:child_process';
 import {mkdirSync,writeFileSync,readFileSync,existsSync,cpSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {sourceCommit,sourceDirty} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),sha=b=>createHash('sha256').update(b).digest('hex');
 const args=process.argv.slice(2),o={};for(let i=0;i<args.length;i+=2){if(!['--out','--cld02-dir','--skip-amd64-build'].includes(args[i])||!args[i+1]){console.error('INVALID_OPTION:'+args[i]);process.exit(2);}o[args[i].slice(2)]=args[i+1];}
 if(!o.out){console.error('MISSING_OPTION:--out');process.exit(2);}
 const out=resolve(o.out);if(existsSync(out)){console.error('OUT_EXISTS');process.exit(2);}
-const git=(...a)=>execFileSync('git',a,{cwd:root,encoding:'utf8'}).trim();
-if(git('status','--porcelain','--untracked-files=all')){console.error('SOURCE_DIRTY');process.exit(2);}
-const commit=git('rev-parse','HEAD'),tag=`mekoniq-lab-runtime:r4-${commit.slice(0,8)}`;
+if(sourceDirty(root)){console.error('SOURCE_DIRTY');process.exit(2);}
+const commit=sourceCommit(root),tag=`mekoniq-lab-runtime:r4-${commit.slice(0,8)}`;
 const src=o['cld02-dir']?resolve(o['cld02-dir']):null;
 if(src)readNativeContainer(src,commit);
 mkdirSync(out,{recursive:true});

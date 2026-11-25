@@ -2,6 +2,7 @@
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
+import {labCommit,sourceCommit,LAB_PREFIX} from '../../scripts/repo-identity.mjs';
 export const LAB_EVIDENCE_MUTABLE_PATHS=['docs/','README.md','config/simulation-compatibility.json'] as const;
 export interface RepositoryIdentity {commit:string;codeHash:string;dirtyCodePaths:string[]}
 export interface RegressionIdentity {source:RepositoryIdentity;lab:RepositoryIdentity}
@@ -13,18 +14,26 @@ export interface RegressionIdentityRecord {
 // Qualification artifacts make ls-tree exceed Node's default 1 MiB buffer. Keep the complete listing (and a bounded failure), never truncate the identity input.
 const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,...args],{encoding:'utf8',maxBuffer:64*1024*1024});
 const mutableLabPath=(path:string)=>LAB_EVIDENCE_MUTABLE_PATHS.some(p=>p.endsWith('/')?path.startsWith(p):path===p);
-function treeHash(directory:string,revision:string,lab:boolean){
- const entries=git(directory,['ls-tree','-r','-z',revision]).split('\0').filter(Boolean).filter(e=>!lab||!mutableLabPath(e.slice(e.indexOf('\t')+1))).sort();
+// One repository: the Lab is apps/lab of the source directory. Source = every path outside it; the Lab listing drops the prefix so a hash compares with the standalone Lab's.
+const PREFIX=`${LAB_PREFIX}/`,entryPath=(e:string)=>e.slice(e.indexOf('\t')+1),inLab=(p:string)=>p.startsWith(PREFIX);
+const isEmbedded=(source:string,lab:string)=>resolve(source,LAB_PREFIX)===resolve(lab);
+function treeHash(directory:string,revision:string,lab:boolean,embedded=false){
+ let entries=git(directory,['ls-tree','-r','-z',revision]).split('\0').filter(Boolean);
+ // a revision from before the merge is a standalone Lab or source commit: its entries are already in that repository's own layout
+ if(embedded){const own=entries.filter(e=>inLab(entryPath(e)));entries=lab?(own.length?own.map(e=>e.replace(`\t${PREFIX}`,'\t')):entries):entries.filter(e=>!inLab(entryPath(e)));}
+ entries=entries.filter(e=>!lab||!mutableLabPath(entryPath(e))).sort();
  return createHash('sha256').update(entries.join('\0')).digest('hex');
 }
-function repositoryIdentity(directory:string,lab:boolean):RepositoryIdentity {
- const commit=git(directory,['rev-parse','HEAD']).trim();
+function repositoryIdentity(directory:string,lab:boolean,embedded=false):RepositoryIdentity {
+ const commit=embedded?(lab?labCommit(directory):sourceCommit(directory)):git(directory,['rev-parse','HEAD']).trim();
  // --no-renames includes both ends of a move: moving code under docs cannot make the deletion invisible.
- const dirty=[...git(directory,['diff','--cached','--no-renames','--name-only','-z','HEAD']).split('\0'),...git(directory,['diff','--no-renames','--name-only','-z']).split('\0'),...git(directory,['ls-files','--others','--exclude-standard','-z']).split('\0')].filter(Boolean);
- return {commit,codeHash:treeHash(directory,commit,lab),dirtyCodePaths:[...new Set(dirty.filter(p=>!lab||!mutableLabPath(p)))].sort()};
+ const side=(p:string)=>!embedded||inLab(p)===lab,cut=(p:string)=>embedded&&lab?p.slice(PREFIX.length):p;
+ const dirty=[...git(directory,['diff','--cached','--no-renames','--name-only','-z','HEAD']).split('\0'),...git(directory,['diff','--no-renames','--name-only','-z']).split('\0'),...git(directory,['ls-files','--others','--exclude-standard','-z']).split('\0')].filter(Boolean).filter(side).map(cut);
+ return {commit,codeHash:treeHash(directory,commit,lab,embedded),dirtyCodePaths:[...new Set(dirty.filter(p=>!lab||!mutableLabPath(p)))].sort()};
 }
 export function captureRegressionIdentity(sourceDirectory:string,labDirectory:string):RegressionIdentity {
- return {source:repositoryIdentity(sourceDirectory,false),lab:repositoryIdentity(labDirectory,true)};
+ const embedded=isEmbedded(sourceDirectory,labDirectory);
+ return {source:repositoryIdentity(sourceDirectory,false,embedded),lab:repositoryIdentity(embedded?sourceDirectory:labDirectory,true,embedded)};
 }
 export function assertRecordableIdentity(identity:RegressionIdentity){
  for(const repo of ['source','lab'] as const)if(identity[repo].dirtyCodePaths.length)throw new Error(`${repo.toUpperCase()}_CODE_DIRTY: ${identity[repo].dirtyCodePaths.join(', ')}`);
@@ -48,8 +57,10 @@ export function assertRecordedRegressionIdentity(record:RegressionIdentityRecord
  for(const command of record.commands)for(const phase of ['before','after'])if(!checkpoints.some(c=>c.id===`${command.id}:${phase}`))throw new Error('REGRESSION_CHECKPOINT_MISSING');
  const current=captureRegressionIdentity(sourceDirectory,labDirectory);assertRecordableIdentity(current);
  if(current.source.commit!==start.source.commit)throw new Error('SOURCE_REVISION_STALE');
- for(const [repo,directory] of [['source',sourceDirectory],['lab',labDirectory]] as const){
-  if(treeHash(directory,start[repo].commit,repo==='lab')!==start[repo].codeHash)throw new Error('RECORDED_CODE_HASH_MISMATCH');
+
+ const embedded=isEmbedded(sourceDirectory,labDirectory);
+ for(const [repo,directory] of [['source',sourceDirectory],['lab',embedded?sourceDirectory:labDirectory]] as const){
+  if(treeHash(directory,start[repo].commit,repo==='lab',embedded)!==start[repo].codeHash)throw new Error('RECORDED_CODE_HASH_MISMATCH');
   if(current[repo].codeHash!==start[repo].codeHash)throw new Error(`${repo.toUpperCase()}_CODE_STALE`);
  }
 }

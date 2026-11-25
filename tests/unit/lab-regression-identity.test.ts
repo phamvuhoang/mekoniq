@@ -72,3 +72,26 @@ test('recorded dirty Lab state and incomplete command checkpoints cannot be acce
  expect(()=>assertRecordedRegressionIdentity(record,f.source,f.lab)).toThrow('RECORDED_CODE_DIRTY');
  record.revisions.labDirty=false;record.identity.checkpoints.pop();expect(()=>assertRecordedRegressionIdentity(record,f.source,f.lab)).toThrow('REGRESSION_CHECKPOINT_MISSING');
 });
+// One repository (apps/lab): the same code must hash the same as the two standalone repositories did, so records compare across the merge.
+function embedded(){
+ const f=fixture(),root=mkdtempSync(join(tmpdir(),'regression-identity-one-'));roots.push(root);
+ execFileSync('cp',['-R',`${f.source}/.`,root]);rmSync(join(root,'.git'),{recursive:true,force:true});mkdirSync(join(root,'apps/lab'),{recursive:true});execFileSync('cp',['-R',`${f.lab}/.`,join(root,'apps/lab')]);rmSync(join(root,'apps/lab/.git'),{recursive:true,force:true});
+ git(root,'init','-q');git(root,'config','user.name','Identity fixture');git(root,'config','user.email','fixture@example.invalid');commit(root);
+ return {...f,root,lab:join(root,'apps/lab')};
+}
+test('merged repository: source and Lab hashes equal the standalone ones, and each side is dirty on its own paths',()=>{
+ const f=embedded(),one=captureRegressionIdentity(f.root,f.lab);
+ expect(one.source.codeHash).toBe(f.start.source.codeHash);expect(one.lab.codeHash).toBe(f.start.lab.codeHash);
+ expect(()=>assertRecordableIdentity(one)).not.toThrow();
+ write(f.root,'src/main.ts','changed');expect(()=>assertRecordableIdentity(captureRegressionIdentity(f.root,f.lab))).toThrow('SOURCE_CODE_DIRTY');
+ write(f.root,'src/main.ts','export const value=1;\n');write(f.lab,'src/main.ts','changed');
+ const dirtyLab=captureRegressionIdentity(f.root,f.lab);expect(dirtyLab.lab.dirtyCodePaths).toEqual(['src/main.ts']);expect(dirtyLab.source.dirtyCodePaths).toEqual([]);
+ write(f.lab,'docs/evidence.json','{"fresh":true}');write(f.lab,'src/main.ts','export const value=1;\n');
+ expect(()=>assertRecordableIdentity(captureRegressionIdentity(f.root,f.lab))).not.toThrow();
+});
+test('merged repository: a recording validates, a Lab-only code commit makes it stale on the Lab side only',()=>{
+ const f=embedded(),start=captureRegressionIdentity(f.root,f.lab),record=recording(start);
+ expect(()=>assertRecordedRegressionIdentity(record,f.root,f.lab)).not.toThrow();
+ write(f.lab,'src/main.ts','changed');commit(f.root);
+ expect(()=>assertRecordedRegressionIdentity(record,f.root,f.lab)).toThrow('LAB_CODE_STALE');
+});

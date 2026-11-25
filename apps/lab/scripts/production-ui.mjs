@@ -1,16 +1,16 @@
 // Owned production preview for runtime E2E evidence. The archived files are the
 // bytes fetched from the server, checked against the build before Ready is printed.
 import {build,preview} from 'vite';
-import {execFileSync} from 'node:child_process';
 import {mkdtemp,mkdir,readFile,writeFile,rm,access,realpath,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {productionAssetDependencies} from './production-assets.mjs';
+import {labIdentity} from '../../../scripts/repo-identity.mjs';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 const entries=index=>[...new Set([...index.toString().matchAll(/(?:src|href)="(\/assets\/[A-Za-z0-9_.-]+\.(?:js|css))"/g)].map(m=>m[1].slice(1)))];
-function identity(root){try{return {labCommit:execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim(),labDirty:!!execFileSync('git',['-C',root,'status','--porcelain'],{encoding:'utf8'}).trim()};}catch{return {labCommit:null,labDirty:true};}}
+function identity(root){try{const {commit,dirty}=labIdentity(resolve(root,'../..'),root);return {labCommit:commit,labDirty:dirty};}catch{return {labCommit:null,labDirty:true};}}
 async function fetchBytes(url,path){const r=await fetch(new URL(path,url),{signal:AbortSignal.timeout(10000),redirect:'error'});if(!r.ok)throw Error('PRODUCTION_HTTP_'+r.status);return Buffer.from(await r.arrayBuffer());}
 async function close(server){server.httpServer.closeAllConnections?.();await new Promise((done,reject)=>server.httpServer.close(e=>e?reject(e):done()));}
 export async function verifyProductionUi({url,evidenceDir}){

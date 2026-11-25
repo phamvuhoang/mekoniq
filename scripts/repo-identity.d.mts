@@ -1,0 +1,9 @@
+export const LAB_PREFIX:string;
+export const SOURCE_PATHSPEC:string[];
+export const LAB_PATHSPEC:string[];
+export function sourceCommit(root:string):string;
+export function labCommit(root:string):string;
+export function sourceDirty(root:string):string;
+export function labDirty(root:string):string;
+export function labIdentity(root:string,labDir:string):{commit:string;dirty:boolean};
+export function labFileAt(repo:string,commit:string,path:string):Buffer;

@@ -6,7 +6,7 @@
 //   node scripts/record-irsim.mjs --out DIR [--concurrency 1|2] [--campaign ID] [--irsim-python PATH] [--expect-portable-digest HEX] [--lab DIR|none] [--candidate-id ID] [--skip-suites]
 // Refuses an existing --out, a dirty source tree, a Lab whose pin is not this source commit/closure. Exit 0 complete (not_run only where declared), 1 a suite or
 // the campaign failed or the record is inconsistent, 2 prerequisite/usage (not_run), 130/143 on a signal.
-import {spawn,spawnSync} from 'node:child_process';
+import {spawn} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {existsSync,readFileSync,readdirSync,statSync,writeFileSync} from 'node:fs';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
@@ -16,6 +16,7 @@ import {fileURLToPath} from 'node:url';
 import {closureIdentity,ownOutput,parse,treeState} from './lab-irsim.mjs';
 import {SUITES,bytecodeUnder,checkQualification,qualify,summarizeResult as summarize} from './irsim-qualification.mjs';
 import {PORTABLE_TOOL_PATHS} from './native-sim/tool-identity.mjs';
+import {labIdentity} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const fail=(code,m)=>{console.error(`${code}: ${m}`);process.exit(code==='NOT_RUN'?2:1);};
 // own options first; the rest is exactly lab-irsim's `run` argv (same parser, same refusals)
@@ -35,8 +36,8 @@ if(before.dirty)fail('NOT_RUN',`SOURCE_DIRTY: commit the source before recording
 // --lab none records without the Lab (INT01/INT04 not_run); otherwise ../lab when present, or the given checkout
 const labDir=own.lab==='none'?null:own.lab??(existsSync(join(root,'apps/lab/config/source-runtime.lock.json'))?resolve(root,'apps/lab'):null);
 if(own.lab&&own.lab!=='none'&&!existsSync(join(own.lab,'config/source-runtime.lock.json')))fail('NOT_RUN',`LAB_NOT_FOUND: ${own.lab}`);
-const labInfo=()=>{if(!labDir)return null;const git=(...a)=>spawnSync('git',a,{cwd:labDir,encoding:'utf8'}).stdout.trim(),pin=JSON.parse(readFileSync(join(labDir,'config/source-runtime.lock.json'),'utf8'));
- return {path:labDir,commit:git('rev-parse','HEAD'),dirty:git('status','--porcelain','--untracked-files=all').length>0,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};
+const labInfo=()=>{if(!labDir)return null;const pin=JSON.parse(readFileSync(join(labDir,'config/source-runtime.lock.json'),'utf8'));
+ return {path:labDir,...labIdentity(root,labDir),pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};
 const labBefore=labInfo();
 if(labBefore){
  const bytecode=bytecodeUnder(root,PORTABLE_TOOL_PATHS);if(bytecode.length)fail('NOT_RUN',`PORTABLE_BYTECODE: ${bytecode.slice(0,5).join(', ')}${bytecode.length>5?` (+${bytecode.length-5})`:''} — the Lab launcher refuses a closure with bytecode; remove it yourself (find <root> -name __pycache__ -prune -exec rm -rf {} +)`);

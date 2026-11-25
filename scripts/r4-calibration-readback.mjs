@@ -1,10 +1,10 @@
 // Read a calibration self-test from an R4 input or directly with --input DIR.
-import {execFileSync} from 'node:child_process';
 import {lstatSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {tsImport} from 'tsx/esm/api';
 import {closureIdentity} from './lab-irsim.mjs';
+import {sourceCommit} from './repo-identity.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const calibrationDir='inputs/calibration';
@@ -32,7 +32,7 @@ if(process.argv[1]===fileURLToPath(import.meta.url)){
   console.error('usage: r4-calibration-readback.mjs --input DIR');
   process.exitCode=2;
  }else{
-  const expected={sourceCommit:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),toolClosures:closureIdentity(root)};
+  const expected={sourceCommit:sourceCommit(root),toolClosures:closureIdentity(root)};
   const issues=await readCalibrationDirectory(resolve(dir),expected);
   console.log(JSON.stringify({accepted:false,issues}));
   process.exitCode=issues.length?1:0;

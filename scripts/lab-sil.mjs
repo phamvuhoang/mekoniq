@@ -12,6 +12,7 @@ import {existsSync} from 'node:fs';
 import {mkdir,readFile,readdir,writeFile} from 'node:fs/promises';
 import {dirname,join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {sourceCommit} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),SIM=join(root,'robotics/simulation'),TSX=join(root,'node_modules/.bin/tsx'),CLI=join(root,'packages/lab-runtime/src/v2/sil/cli.ts');
 const BACKENDS=['gazebo_nav2','linuxcnc_sim'],ARM=join(root,'integrations/arm-controller');
 const sha=(s)=>createHash('sha256').update(s).digest('hex');
@@ -92,7 +93,7 @@ async function run(o){
  // engineering sets run a compiled project, never a preset; a project with a legacy set is a mistake, not a fallback
  if(o['engineering-case']&&!['nominal','obstacle','no-path','cancel','worker-loss'].includes(o['engineering-case']))usage('ENGINEERING_CASE_INVALID');
  const engineeringSet=String(o['backend-set']??'').startsWith('engineering-');
- const subjectCommit=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
+ const subjectCommit=sourceCommit(root);
  if(o['engineering-case']&&!engineeringSet)usage('ENGINEERING_CASE_NEEDS_ENGINEERING_BACKEND_SET');
  if(engineeringSet&&!o['engineering-project'])usage('MISSING_OPTION:--engineering-project');
  if(o['engineering-project']&&!engineeringSet)usage('ENGINEERING_PROJECT_NEEDS_ENGINEERING_BACKEND_SET');
@@ -116,7 +117,7 @@ async function run(o){
   console.error(`NOT_RUN: ${reasons.join(', ')} (see ${manifestFile})`);process.exit(2);
  }
  const fixtures=join(root,'tests/fixtures/digital-twin');
- const commit=spawnSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).stdout.trim();
+ const commit=sourceCommit(root);
  if(o.campaign)await writeFile(manifestFile,JSON.stringify({schemaVersion:1,status:'running',campaignId:o.campaign,sourceCommit:commit,scenarios,expectedRuns,doctor:report},null,2)+'\n');
  let failed=0,completed=0;
  for(const e of entries){
