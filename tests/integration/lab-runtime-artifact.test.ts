@@ -79,7 +79,7 @@ test('exporter refuses a bundle that is not standalone or embeds a secret',async
 async function scratchRepo(){
  const dir=await mkdtemp(join(tmpdir(),'lab-export-repo-')),tmp=join(dir,'tmp'),repo=join(dir,'repo');await mkdir(join(repo,'scripts'),{recursive:true});await mkdir(tmp);
  await mkdir(join(repo,'scripts/native-sim'),{recursive:true});
- for(const f of ['export-lab-runtime.mjs','lab-runtime-audit.mjs','native-sim/tool-identity.mjs'])await copyFile(join('scripts',f),join(repo,'scripts',f));
+ for(const f of ['export-lab-runtime.mjs','lab-runtime-audit.mjs','repo-identity.mjs','native-sim/tool-identity.mjs'])await copyFile(join('scripts',f),join(repo,'scripts',f));
  await exec('git',['init','-q'],{cwd:repo});await writeFile(join(repo,'untracked.txt'),'dirty');
  return {dir,repo,tmp,run:(...args:string[])=>exec(process.execPath,['scripts/export-lab-runtime.mjs',join(dir,'out'),...args],{cwd:repo,env:{...process.env,TMPDIR:tmp}})};
 }
