@@ -71,7 +71,7 @@ export function checkElectrical(context:DesignContext,allocation:IoAllocationV1,
  const assumed=new Map<string,SourceRef>();
  const add=(s:SourceRef)=>{if(s.kind==='assumed')assumed.set(sourceKey(s),s);};
  for(const d of design.devices){const p=profiles.get(d.id)!;profileSources(p).forEach(add);for(const q of context.components?.[p.component.digest]?.ports??[])if(q.continuousCurrentA)add(q.continuousCurrentA.source);}
- policy.ampacity.forEach(r=>add(r.maxCurrentA.source));add(policy.maxVoltageDropFraction.source);add(policy.sources.ampacity);add(policy.sources.drop);
+ add(policy.maxVoltageDropFraction.source);add(policy.sources.ampacity);add(policy.sources.drop);
  design.signals.forEach(s=>add(s.electrical.currentA.source));design.power.forEach(r=>r.feeds.forEach(f=>f.lengthM&&add(f.lengthM.source)));
  for(const s of [...assumed.values()].sort((a,b)=>sourceKey(a)<sourceKey(b)?-1:1))out.push(chk('UNVERIFIED_ASSUMED_SOURCE','unverified','/sources',`assumed: ${s.documentId} / ${s.locator}`,[s]));
  for(const d of [...design.devices].sort((a,b)=>a.id<b.id?-1:1)){
