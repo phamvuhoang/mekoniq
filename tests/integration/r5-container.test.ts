@@ -6,7 +6,7 @@
 import {execFileSync,spawnSync} from 'node:child_process';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {createServer} from 'node:net';
-import {readFile,mkdtemp,rm} from 'node:fs/promises';
+import {readFile,mkdtemp,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {afterAll,describe,expect,test} from 'vitest';
@@ -61,7 +61,8 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R5.4',()=>{
     const bundle=await api(`/engineering/electrical/${receipt.body.digest}`,{token});expect(bundle.status).toBe(200);
     inContainer[id]={state:bundle.body.state,body:body(bundle.body)};
     // the host: the same design compiled by the CLI against the same catalog
-    execFileSync(process.execPath,['scripts/lab-hardware.mjs','compile','--design',`robotics/catalog/electrical/${id}.json`,'--out',join(dir,id)],{stdio:'ignore',timeout:120_000});
+    // the CLI writes the bundle for a blocked option too and then exits 1
+    spawnSync(process.execPath,['scripts/lab-hardware.mjs','compile','--design',`robotics/catalog/electrical/${id}.json`,'--out',join(dir,id)],{stdio:'ignore',timeout:120_000});
     const host=JSON.parse(await readFile(join(dir,id,'electrical-bundle.json'),'utf8'));
     expect(inContainer[id]!.state,id).toBe(host.state);
     expect(inContainer[id]!.body,`${id}: the bundle body must equal the host's`).toBe(body(host));
@@ -84,7 +85,9 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R5.4',()=>{
    // nothing written outside /tmp (read-only root + empty diff; OrbStack alone adds its CA certificate at container start), and the process is not root
    expect(docker(['diff',name]).out.split('\n').filter(l=>l&&!/^[CA] \/usr(\/local(\/share(\/ca-certificates(\/orbstack-root\.crt)?)?)?)?$/.test(l))).toEqual([]);
    expect(docker(['exec',name,'id','-u']).out).not.toBe('0');
-   console.log('CLD04',JSON.stringify({image,imageId:info.Id,platform:info.Os+'/'+info.Architecture,sourceCommit:head,options:inContainer,stopTick:report.attention.find((a:{reason:string})=>a.reason==='EMERGENCY_STOP').tick}));
+   const evidence={schemaVersion:1,image,imageId:info.Id,platform:info.Os+'/'+info.Architecture,sourceCommit:head,schemaHash:health.schemaHash,options:inContainer,stop:{entry,function:'emergency',tick:report.attention.find((a:{reason:string})=>a.reason==='EMERGENCY_STOP').tick,status:report.outcome.status,served:report.outcome.served},diffEmpty:true,rootUid:'not 0'};
+   console.log('CLD04',JSON.stringify(evidence));
+   if(process.env.LAB_CLD04_OUT)await writeFile(process.env.LAB_CLD04_OUT,JSON.stringify(evidence,null,2)+'\n');
   }finally{await rm(dir,{recursive:true,force:true});}
  },1_800_000);
 });
