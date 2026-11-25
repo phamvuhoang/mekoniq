@@ -100,7 +100,8 @@ describe.skipIf(!dockerUp||!image)('lab runtime container, R4.1, R4.2 and R4.4',
    const faultArchived=await api(`${fUrl}/archive`,{method:'POST',token,body:{}});expect(faultArchived.status,JSON.stringify(faultArchived.body)).toBe(200);
    // R4 V10: the three-cup tray (tray-nominal-v1, seed 42) compiles through the image's engineering API and runs on its real MuJoCo worker: it serves 3 after the confirmation, no cup slides past the warning threshold in any
    // window, and the report carries the tray evidence the Lab compares. A tray project is the payload project with a registered experiment id: the catalog the image ships already holds its components.
-   expect(health.trayExperiments.map((e:{id:string})=>e.id).sort()).toEqual(['tray-accel-high-v1','tray-low-friction-v1','tray-nominal-v1','tray-person-crossing-v1','tray-torque-limited-v1']);
+   // R5 adds the registered stop variants (tray-stop-*) to the same list; R4's five are checked here, R5's in r5-container.test.ts
+   expect(health.trayExperiments.map((e:{id:string})=>e.id).filter((id:string)=>!id.startsWith('tray-stop-')).sort()).toEqual(['tray-accel-high-v1','tray-low-friction-v1','tray-nominal-v1','tray-person-crossing-v1','tray-torque-limited-v1']);
    const trayProject={...JSON.parse(await readFile('robotics/simulation-mujoco/fixtures/serve-tray-v1/serve-3d-project.json','utf8')),requestedProfile:'engineering-mujoco-3d-v1',mujocoExperimentId:'tray-nominal-v1'};
    const trayCompiled=await api('/engineering/compile',{method:'POST',token,body:{project:trayProject}});
    expect(trayCompiled.status,JSON.stringify(trayCompiled.body).slice(0,400)).toBe(200);expect(trayCompiled.body.state,JSON.stringify(trayCompiled.body.problems)).toBe('compiled');
