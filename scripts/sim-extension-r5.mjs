@@ -5,6 +5,8 @@
 import {statSync} from 'node:fs';
 import {join} from 'node:path';
 import {qualify,checkQualification} from './irsim-qualification.mjs';
+import {checkPlaywrightResult,checkPlaywrightProcess} from './r4-playwright.mjs';
+import {checkR2bExecutedFiles} from './sim-extension-r2b.mjs';
 const V=(id,files,repo='source')=>({id,repo,kind:'vitest',files});
 // one spec per launcher (its pairing code is one-use); alternate ports so a developer's running Lab on 4175/4176 is never touched
 const E=(id,spec,provider)=>({id,repo:'lab',kind:'playwright',command:['scripts/test-irsim-e2e.mjs','--same-origin','--provider',provider,'--ui-port','42455','--runtime-port','42456',spec]});
@@ -26,14 +28,14 @@ export const CASES_R5={
  ...cases(['IOA01','IOA02','IOA03','IOA04','IOA05'],['ioa-unit']),
  ...cases(['NET01','NET02','NET03','ERC01','ERC02','ERC03','ERC04'],['net-erc-unit']),
  ...cases(['SAF01'],['dev-unit','net-erc-unit']),SAF02:{suites:['doc-unit']},
- ...cases(['DOC01','DOC02','DOC03','DOC04'],['doc-unit']),...cases(['TCO01','TCO02'],['tco-unit']),
+ ...cases(['DOC01','DOC02','DOC04'],['doc-unit']),DOC03:{suites:['doc-unit'],input:'hardwarePackage'},...cases(['TCO01','TCO02'],['tco-unit']),
  ...cases(['STP01','STP02','STP05','STP07'],['stp-unit']),...cases(['STP03','STP04'],['stp-unit','stp-engine']),STP06:{suites:['stp-unit','stp-engine'],input:'stopCampaign'},
  VIO01:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut; the plan allows it)'},VIO02:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},VIO03:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},VIO04:{notRun:'vio_cut: R5 has no virtual I/O (E14 cut)'},
  DGN01:{suites:['web-unit','e2e-electrical']},DGN02:{notRun:'not_built: an axis is chosen from a keyboard-operable list; picking a wheel or joint in the 2D/3D twin is not implemented'},
  DGN03:{suites:['web-unit']},DGN04:{notRun:'not_built: an alarm jumps to its tick, but the twin does not mark the entity with an outline and icon; there is no end-to-end run of the jump'},
  WEB11:{suites:['web-unit','e2e-samples']},WEB12:{suites:['e2e-samples']},WEB13:{suites:['web-unit','e2e-samples']},
- REG06:{notRun:'chain_not_run: needs the full recording chain at one tuple; its owned-CI step stops the local Supabase stack, so it waits for the user'},
- CLD04:{input:'containerRecord'},CLD05:{notRun:'native_linux_x86_64_host_required: Python tests of the tool roots on a pushed branch; the amd64 image build is recorded in container.json'},CLD06:{notRun:'deploy_order_pending'}
+ REG06:{input:'r4Record'},
+ CLD04:{input:'containerRecord'},CLD05:{notRun:'native_linux_x86_64_host_required: Python tests of the tool roots run on a pushed branch'},CLD06:{notRun:'deploy_order_pending'}
 };
 export const GATES_R5={
  'G-DEV1':['DEV01','DEV02','DEV03','DEV04','DEV05','DEV06'],'G-ELE1':['IOA01','IOA02','IOA03','IOA04','IOA05','NET01','NET02','NET03','ERC01','ERC02','ERC03','ERC04','SAF01','SAF02'],
@@ -44,9 +46,27 @@ export const GATES_R5={
 export const EXTERNAL_GATES_R5={'G-BENCH1':'real devices on an isolated bench, with a signed measurement record','G-SAFE1':'risk assessment, design and testing of safety functions by a qualified person, signed'};
 /** The nine gates that close R5 when every one is `tested`. */
 export const CLOSING_GATES_R5=Object.keys(GATES_R5);
+const equalKeys=(a,b)=>JSON.stringify(Object.keys(a??{}).sort())===JSON.stringify(Object.keys(b).sort());
 export function tableR5(){
  const used=new Set(Object.values(CASES_R5).flatMap(c=>c.suites??[]));
- return {documentType:'sim-extension-qualification',campaign:false,cases:CASES_R5,gates:GATES_R5,suites:SUITES_R5.filter(s=>used.has(s.id))};
+ return {documentType:'sim-extension-qualification',campaign:false,
+  // the exact-file check reads a Vitest JSON; a Playwright result has its own counts, and its one spec is named in the suite's command
+  checkSuiteResult:(suite,bytes)=>suite.kind==='vitest'?checkR2bExecutedFiles(suite,bytes):checkPlaywrightResult(suite,bytes),cases:CASES_R5,gates:GATES_R5,suites:SUITES_R5.filter(s=>used.has(s.id)),inputs(m,read){const reasons=[];
+  if(m.accepted!==false||m.acceptedBy!==null||m.acceptedAt!==null)reasons.push('RECORD_ACCEPTED');
+  if(!equalKeys(m.cases,CASES_R5))reasons.push('CASE_TABLE_MISMATCH');
+  if(!equalKeys(m.gates,GATES_R5))reasons.push('GATE_TABLE_MISMATCH');
+  if(!equalKeys(m.externalGates,EXTERNAL_GATES_R5)||Object.values(m.externalGates??{}).some(g=>g.status!=='blocked_external'||g.accepted!==false))reasons.push('EXTERNAL_GATES_MISMATCH');
+  const actual=m.suites??[];if(actual.length!==used.size||new Set(actual.map(s=>s.id)).size!==actual.length||actual.some(s=>!used.has(s.id)))reasons.push('SUITE_TABLE_MISMATCH');
+  for(const su of actual){const required=SUITES_R5.find(s=>s.id===su.id);if(required?.kind==='playwright')reasons.push(...checkPlaywrightProcess(required,su,read));}
+  if(!/^[a-f0-9]{40}$/.test(m.lab?.commit??''))reasons.push('LAB_COMMIT_REQUIRED');
+  if(!equalKeys(m.artifactDispositions,CASES_R5)||Object.values(m.artifactDispositions??{}).some(x=>!['tested','not_run','failed','blocked_external','blocked'].includes(x?.status)||!Array.isArray(x?.issues)))reasons.push('ARTIFACT_DISPOSITION_SHAPE');
+  return {input:{artifactDispositions:m.artifactDispositions},reasons};},adjust(q,input){
+   for(const [id,c]of Object.entries(q.cases)){const d=input.artifactDispositions?.[id]??{status:'not_run',issues:['ARTIFACT_READBACK_PENDING']};
+    if(d.status!=='tested'&&c.status!=='failed'||d.status==='failed'){c.status=d.status==='blocked'||d.status==='blocked_external'?'not_run':d.status;c.reason=(d.status==='blocked'||d.status==='blocked_external'?d.status+': ':'artifact '+d.status+': ')+d.issues.join('; ');}else if(c.status==='tested')c.evidence.push('artifact:'+id);
+   }
+   q.notRun=Object.entries(q.cases).filter(([,c])=>c.status!=='tested').map(([id,c])=>({id,reason:c.reason}));
+   for(const g of Object.values(q.gates))g.status=g.cases.every(id=>q.cases[id].status==='tested')?'tested':g.cases.some(id=>q.cases[id].status==='failed')?'failed':'not_run';return q;
+  }};
 }
 export const qualifyR5Structure=input=>qualify(input,tableR5());
 export function checkR5Structure(m,read){try{return checkQualification(m,read,tableR5());}catch(e){return ['R5_STRUCTURE_INVALID:'+e.message];}}
