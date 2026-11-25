@@ -1,0 +1,3 @@
+{"experiment1":{"what":"copy robotics/catalog, add deviceProfiles:[] to catalog.json, loadCatalog on both","same":true,"components":13,"problems":0},
+ "experiment2":{"what":"add robotics/catalog/devices/spike.json, compare portableToolClosure and nativeToolClosure digests","portableBefore":"5292583e86f7044d0bce41242faadebde30782e7bd3ffc1f7fe615437934c4be","portableAfter":"5292583e86f7044d0bce41242faadebde30782e7bd3ffc1f7fe615437934c4be","nativeBefore":"eb1a4eae9b00edc8a539eb1eed93ac84eb4a2b9a20f66b3cee89c79effb5fa50","nativeAfter":"eb1a4eae9b00edc8a539eb1eed93ac84eb4a2b9a20f66b3cee89c79effb5fa50","same":true},
+ "note":"experiments ran in place with a temporary untracked file removed afterwards; git status stayed clean"}

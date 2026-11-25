@@ -1,0 +1,32 @@
+FileInfo {'FileName': 'ELD2-CAN.eds', 'FileVersion': '1', 'FileRevision': '0', 'EDSVersion': '4.0', 'CreationDate': '01-05-2020', 'ModificationDate': '05-19-2020'}
+DeviceInfo {'VendorName': 'Shenzen Leadshine Technology Co.,Ltd.', 'VendorNumber': '0x00000331', 'ProductName': 'ELD2-CAN', 'ProductNumber': '0x00000045', 'RevisionNumber': '0x00000100', 'BaudRate_500': '1', 'BaudRate_1000': '1', 'SimpleBootUpSlave': '1', 'NrOfRXPDO': '4', 'NrOfTXPDO': '4', 'LSS_Supported': '0'}
+objects: 545 range 1000 6502
+mfr-specific (2000-5FFF): 458 | profile (6000-67FF): 54 | axis2 (6800-6FFF): 0
+   1001 Error Register | access ro | PDO 0 | default 0x00
+   1003 Pre-defined Error Field | access - | PDO - | default -
+   1017 Producer Heartbeat Time | access rw | PDO 0 | default 0x07D0
+   1029 ABSENT
+   6007 ABSENT
+   603F error code | access ro | PDO 1 | default 0
+   6040 control word | access rw | PDO 1 | default 0x0000
+   6041 status word | access ro | PDO 1 | default 0x0000
+   605A quick stop option code | access rw | PDO 0 | default 6
+   605B shut down option code | access rw | PDO 0 | default 0
+   605C disable operation option code | access rw | PDO 0 | default 0
+   605D halt option code | access rw | PDO 0 | default 1
+   605E fault option code | access rw | PDO 0 | default 0
+   6060 modes of operation | access rw | PDO 1 | default 0x01
+   6061 modes of operation display | access ro | PDO 1 | default 0x00
+   606C velocity actual value | access ro | PDO 1 | default 0x00000000
+   6083 profile acceleration | access rw | PDO 1 | default 0x000186A0
+   6084 profile deceleration | access rw | PDO 1 | default 0x00030D40
+   6085 quick stop deceleration | access rw | PDO 1 | default 0x00030D40
+   60FD digital inputs | access ro | PDO 1 | default 0x00000000
+   60FE digital outputs | access - | PDO - | default -
+   60FF target velocity | access rw | PDO 1 | default 0x00000000
+   6502 support drive modes | access rw | PDO 0 | default 0x0000002D
+   6840 ABSENT
+   6841 ABSENT
+   68FF ABSENT
+   68FD ABSENT
+   68FE ABSENT

@@ -1,0 +1,62 @@
+Vendor: 17185 Leadshine Technology Co.,Ltd.
+
+Device: ELD3 ProductCode #x100A Rev 1 | Name: ELD3(COE)
+  Physics YY | Profile: [(None, None)]
+  Mailbox: [('CoE', {'SdoInfo': 'false', 'PdoUpload': 'false', 'PdoAssign': 'true', 'PdoConfig': 'true', 'SegmentedSdo': 'false', 'CompleteAccess': 'false', 'DiagHistory': 'false'}), ('FoE', {})]
+  DC OpModes: [('DC', '#x0300'), ('Free Run', '#x0000')]
+   RxPdo #x1600 Fixed= 0 Sm= 2 Receive PDO 1
+        ('#x6040', '0', '16', 'Control word')
+        ('#x607a', '0', '32', 'Profile target position')
+        ('#x60b8', '0', '16', 'Touch Probe Function')
+   RxPdo #x1601 Fixed= 0 Sm= None Receive PDO 2
+        ('#x6040', '0', '16', 'Control word')
+        ('#x60ff', '0', '32', 'Target velocity')
+        ('#x60b2', '0', '16', 'Torque offset')
+        ('#x6060', '0', '8', 'Modes of operation')
+   RxPdo #x1602 Fixed= 0 Sm= None Receive PDO 3
+        ('#x6040', '0', '16', 'Control word')
+        ('#x6071', '0', '16', 'Target Torque')
+        ('#x6087', '0', '32', 'Torque slope')
+        ('#x6060', '0', '8', 'Modes of operation')
+   RxPdo #x1603 Fixed= 0 Sm= None Receive PDO 4
+        ('#x6040', '0', '16', 'Control word')
+        ('#x6098', '0', '8', 'Homing method')
+        ('#x6099', '1', '32', 'Homing velocity (fast)')
+        ('#x6099', '2', '32', 'Homing velocity (slow)')
+        ('#x609a', '0', '32', 'Homing acceleration')
+        ('#x607c', '0', '32', 'Homing offset')
+        ('#x6060', '0', '8', 'Modes of operation')
+   TxPdo #x1a00 Fixed= 0 Sm= 3 Transmit PDO 1
+        ('#x503F', '#x00', '16', 'Servo error code')
+        ('#x603F', '#x00', '16', 'Last error code')
+        ('#x6041', '0', '16', 'Status word')
+        ('#x6061', '#x00', '8', 'Modes of operation display')
+        ('#x60F4', '0', '32', 'Position loop error')
+        ('#x6077', '0', '16', 'Actual motor torque')
+        ('#x6064', '0', '32', 'Actual motor position')
+        ('#x60B9', '#x00', '16', 'Touch Probe Status')
+        ('#x60BA', '#x00', '32', 'Touch probe pos1 pos value')
+        ('#x60FD', '#x00', '32', 'Digital inputs')
+   TxPdo #x1a01 Fixed= 0 Sm= None Transmit PDO 2
+  Dictionary objects: 305
+      #x1001 Error Register USINT bits 8 access ro pdo T default None
+      #x603f Last error code UINT bits 16 access ro pdo T default None
+      #x6040 Control word UINT bits 16 access rw pdo R default None
+      #x6041 Status word UINT bits 16 access ro pdo T default None
+      #x605a Quick stop option code INT bits 16 access rw pdo None default None
+      #x605b Shutdown option code INT bits 16 access rw pdo None default None
+      #x605c Disable operation option code INT bits 16 access rw pdo None default None
+      #x605d Halt option code INT bits 16 access rw pdo None default None
+      #x605e Fault reaction option code INT bits 16 access rw pdo None default None
+      #x6060 Modes of operation SINT bits 8 access rw pdo R default None
+      #x6061 Modes of operation display SINT bits 8 access ro pdo T default None
+      #x606c Actual motor velocity DINT bits 32 access ro pdo T default None
+      #x6083 Profile target acceleration UDINT bits 32 access rw pdo R default None
+      #x6084 Profile target deceleration UDINT bits 32 access rw pdo R default None
+      #x6085 Quick stop deceleration UDINT bits 32 access rw pdo R default None
+      #x60b8 Touch Probe Function UINT bits 16 access rw pdo R default None
+      #x60c2 Interpolation time period DT60C2 bits 48 access ro pdo None default None
+      #x60fd Digital inputs UDINT bits 32 access ro pdo T default None
+      #x60fe Digital outputs DT60FE bits 72 access None pdo None default None
+      #x60ff Target velocity DINT bits 32 access rw pdo R default None
+      #x6502 Supported drive modes UDINT bits 32 access ro pdo T default None
