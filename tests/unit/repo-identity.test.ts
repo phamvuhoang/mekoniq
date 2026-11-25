@@ -35,7 +35,7 @@ test('MG-03 a Lab-only branch merged with --no-ff leaves the source commit where
 
 test('MG-10 import boundaries: runtime never imports the Lab, the Lab web code never reaches out of apps/lab',()=>{
   const g=(re:string,...p:string[])=>{try{return execFileSync('git',['grep','-nE',re,'--',...p],{encoding:'utf8'}).trim();}catch{return '';}};
-  expect(g('apps/lab','packages','robotics')).toBe('');
+  expect(g('apps/lab','packages','robotics',':(exclude)*.md')).toBe('');
   expect(g('from [\'"](\\.\\./){2,}(packages|scripts|tests|robotics)','apps/lab/src')).toBe('');
 });
 
