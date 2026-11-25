@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "ref-switch-dry-contact",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "family": "bumper or cover switch, potential-free contact",
+    "sku": "SW-REF",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": []
+}

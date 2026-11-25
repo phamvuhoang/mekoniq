@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "ref-estop-button",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "family": "emergency stop push button, 2 NC",
+    "sku": "ESTOP-REF",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": []
+}

@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "documentType": "wiring-policy",
+  "id": "wiring-policy-v1",
+  "revision": 1,
+  "ampacity": [
+    {
+      "csaMm2": 0.25,
+      "maxCurrentA": {
+        "value": 2,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (0.25 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 0.5,
+      "maxCurrentA": {
+        "value": 5,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (0.5 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 0.75,
+      "maxCurrentA": {
+        "value": 8,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (0.75 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 1,
+      "maxCurrentA": {
+        "value": 10,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (1 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 1.5,
+      "maxCurrentA": {
+        "value": 15,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (1.5 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 2.5,
+      "maxCurrentA": {
+        "value": 20,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (2.5 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    },
+    {
+      "csaMm2": 4,
+      "maxCurrentA": {
+        "value": 28,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "planning table, not a standard value; to be replaced from a pinned wire datasheet (4 mm2)",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    }
+  ],
+  "signalMinCsaMm2": 0.25,
+  "maxVoltageDropFraction": {
+    "value": 0.03,
+    "unit": "1",
+    "source": {
+      "kind": "assumed",
+      "documentId": "r5-assumptions",
+      "revision": "1",
+      "locator": "planning limit of 3 % on a 24 V rail",
+      "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+    }
+  },
+  "copperResistivityOhmMm2PerM": 0.0175,
+  "colours": [
+    {
+      "role": "power",
+      "colour": "red"
+    },
+    {
+      "role": "return",
+      "colour": "black"
+    },
+    {
+      "role": "signal",
+      "colour": "white"
+    },
+    {
+      "role": "bus_high",
+      "colour": "yellow"
+    },
+    {
+      "role": "bus_low",
+      "colour": "green"
+    },
+    {
+      "role": "protective_earth",
+      "colour": "green-yellow"
+    }
+  ],
+  "sources": {
+    "ampacity": {
+      "kind": "assumed",
+      "documentId": "r5-assumptions",
+      "revision": "1",
+      "locator": "ampacity table is a planning assumption",
+      "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+    },
+    "drop": {
+      "kind": "assumed",
+      "documentId": "r5-assumptions",
+      "revision": "1",
+      "locator": "voltage drop limit is a planning assumption",
+      "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+    }
+  },
+  "digest": "0e7bce99b1ec3c90bcb6920bbbe1972d3d2a3ff236c04680759da40412075d42"
+}

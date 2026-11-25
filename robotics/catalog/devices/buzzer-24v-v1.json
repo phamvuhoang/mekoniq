@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "buzzer-24v-v1",
+  "revision": 1,
+  "component": {
+    "id": "ref-buzzer-24v",
+    "revision": "1",
+    "digest": "e114b3e823e5e68e54cdcc21243002111e80a76af58654fc7ee845a1398fa12b"
+  },
+  "variant": {
+    "orderCode": null,
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "indicator",
+  "documents": [],
+  "connectors": [
+    {
+      "id": "C",
+      "label": "Terminals",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "+",
+          "role": "power",
+          "portId": "vin",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device buzzer-24v: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "-",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device buzzer-24v: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "680555695088aacab2cfc869ca4ad32091a690a7ffb82931484c142e93868b13"
+}

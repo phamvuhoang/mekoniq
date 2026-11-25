@@ -1,0 +1,995 @@
+{
+  "schemaVersion": 1,
+  "documentType": "electrical-design",
+  "id": "serve-hw-c-v1",
+  "revision": 1,
+  "project": {
+    "id": "serve-serve-3d",
+    "revision": 1
+  },
+  "option": {
+    "id": "hw-c",
+    "label": "HW-C: BLV-R 60 W drives, separate I/O module",
+    "rationale": "Same drives as HW-A; every controller signal goes through one CANopen I/O module."
+  },
+  "devices": [
+    {
+      "id": "controller",
+      "profile": {
+        "id": "controller-ref-v1",
+        "revision": 1,
+        "digest": "2a069b1b07ba6152f87b2120b9c60e74934a772b6e45c9428c2943d68ddc84d7"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "battery",
+      "profile": {
+        "id": "battery-24v-pack-v1",
+        "revision": 1,
+        "digest": "8ce380ce0ab9ef72137d9428725095f5df4c33d6cb808b8b7cc8ff53b3a7a274"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "estop-button",
+      "profile": {
+        "id": "estop-button-v1",
+        "revision": 1,
+        "digest": "61f1238f69084be8c805cb79e80c0edbebe028016d16050c5857b2c08e012865"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "safety-relay",
+      "profile": {
+        "id": "safety-relay-v1",
+        "revision": 1,
+        "digest": "5cfe293b1ec2f2334b9785794ebf871b9e3fa08d258b15af3d76c12fa94290b3"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "fuse-logic",
+      "profile": {
+        "id": "fuse-5a-v1",
+        "revision": 1,
+        "digest": "8ff9894e22dcaa729691416c7e4329c7d3d6c5347fa228e6c6acb7c7836aa42c"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "bumper-front-sw",
+      "profile": {
+        "id": "switch-dry-contact-v1",
+        "revision": 1,
+        "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "bumper-left-sw",
+      "profile": {
+        "id": "switch-dry-contact-v1",
+        "revision": 1,
+        "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "bumper-right-sw",
+      "profile": {
+        "id": "switch-dry-contact-v1",
+        "revision": 1,
+        "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "cover-sw",
+      "profile": {
+        "id": "switch-dry-contact-v1",
+        "revision": 1,
+        "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "cliff-left-sn",
+      "profile": {
+        "id": "sensor-pnp-24v-v1",
+        "revision": 1,
+        "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "cliff-right-sn",
+      "profile": {
+        "id": "sensor-pnp-24v-v1",
+        "revision": 1,
+        "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "dock-sn",
+      "profile": {
+        "id": "sensor-pnp-24v-v1",
+        "revision": 1,
+        "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "charger-sn",
+      "profile": {
+        "id": "sensor-pnp-24v-v1",
+        "revision": 1,
+        "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "lamp",
+      "profile": {
+        "id": "lamp-24v-v1",
+        "revision": 1,
+        "digest": "83ba32f3a8bd230f88a09dd462ed8d59dae70f05ae11fb094a7fd39012b6aac2"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "buzzer",
+      "profile": {
+        "id": "buzzer-24v-v1",
+        "revision": 1,
+        "digest": "680555695088aacab2cfc869ca4ad32091a690a7ffb82931484c142e93868b13"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "drive-left",
+      "profile": {
+        "id": "blvd-krd-v1",
+        "revision": 1,
+        "digest": "93e934ecfb67d5d640bcc92e537eda6d03def00d97a4e631a132e61de26e03e0"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "drive-right",
+      "profile": {
+        "id": "blvd-krd-v1",
+        "revision": 1,
+        "digest": "93e934ecfb67d5d640bcc92e537eda6d03def00d97a4e631a132e61de26e03e0"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "motor-left",
+      "profile": {
+        "id": "blv-r-60w-v1",
+        "revision": 1,
+        "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "motor-right",
+      "profile": {
+        "id": "blv-r-60w-v1",
+        "revision": 1,
+        "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "fuse-drive-left",
+      "profile": {
+        "id": "fuse-10a-v1",
+        "revision": 1,
+        "digest": "16f1c443badee544b784a589ecd3d621c6804737bfba11bc352062f07374dcc1"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "fuse-drive-right",
+      "profile": {
+        "id": "fuse-10a-v1",
+        "revision": 1,
+        "digest": "16f1c443badee544b784a589ecd3d621c6804737bfba11bc352062f07374dcc1"
+      },
+      "assemblyInstanceId": null
+    },
+    {
+      "id": "io-module",
+      "profile": {
+        "id": "io-module-can-ref-v1",
+        "revision": 1,
+        "digest": "569435bba517e7be6c6a672069b496be8e79a871a4688021a9d545a58432b7d7"
+      },
+      "assemblyInstanceId": null
+    }
+  ],
+  "axes": [
+    {
+      "axisId": "amr-1/wheel-left",
+      "driveDeviceId": "drive-left",
+      "channel": 0,
+      "motorDeviceId": "motor-left"
+    },
+    {
+      "axisId": "amr-1/wheel-right",
+      "driveDeviceId": "drive-right",
+      "channel": 0,
+      "motorDeviceId": "motor-right"
+    }
+  ],
+  "buses": [
+    {
+      "id": "can0",
+      "protocol": "canopen",
+      "controllerDeviceId": "controller",
+      "cycleMs": 10,
+      "members": [
+        {
+          "deviceId": "controller",
+          "interfaceId": "can0",
+          "address": null
+        },
+        {
+          "deviceId": "drive-left",
+          "interfaceId": "can0",
+          "address": 1
+        },
+        {
+          "deviceId": "drive-right",
+          "interfaceId": "can0",
+          "address": 2
+        },
+        {
+          "deviceId": "io-module",
+          "interfaceId": "can0",
+          "address": 3
+        }
+      ]
+    }
+  ],
+  "power": [
+    {
+      "railId": "rail-24v",
+      "nominalV": 24,
+      "source": {
+        "deviceId": "battery",
+        "pin": "OUT/POS",
+        "returnPin": "OUT/NEG"
+      },
+      "feeds": [
+        {
+          "id": "f-drive-left",
+          "to": {
+            "deviceId": "drive-left",
+            "pin": "CN1/1",
+            "returnPin": "CN1/2"
+          },
+          "protectionDeviceId": "fuse-drive-left",
+          "lengthM": {
+            "value": 0.6,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-drive-right",
+          "to": {
+            "deviceId": "drive-right",
+            "pin": "CN1/1",
+            "returnPin": "CN1/2"
+          },
+          "protectionDeviceId": "fuse-drive-right",
+          "lengthM": {
+            "value": 0.6,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-controller",
+          "to": {
+            "deviceId": "controller",
+            "pin": "PWR/VIN",
+            "returnPin": "PWR/GND"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.4,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-io",
+          "to": {
+            "deviceId": "io-module",
+            "pin": "PWR/VIN",
+            "returnPin": "PWR/GND"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.4,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-safety",
+          "to": {
+            "deviceId": "safety-relay",
+            "pin": "C/A1",
+            "returnPin": "C/A2"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.4,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-lamp",
+          "to": {
+            "deviceId": "lamp",
+            "pin": "C/1",
+            "returnPin": "C/2"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.6,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-buzzer",
+          "to": {
+            "deviceId": "buzzer",
+            "pin": "C/1",
+            "returnPin": "C/2"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.6,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-cliff-left-sn",
+          "to": {
+            "deviceId": "cliff-left-sn",
+            "pin": "C/BN",
+            "returnPin": "C/BU"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.8,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-cliff-right-sn",
+          "to": {
+            "deviceId": "cliff-right-sn",
+            "pin": "C/BN",
+            "returnPin": "C/BU"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.8,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-dock-sn",
+          "to": {
+            "deviceId": "dock-sn",
+            "pin": "C/BN",
+            "returnPin": "C/BU"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.8,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        },
+        {
+          "id": "f-charger-sn",
+          "to": {
+            "deviceId": "charger-sn",
+            "pin": "C/BN",
+            "returnPin": "C/BU"
+          },
+          "protectionDeviceId": "fuse-logic",
+          "lengthM": {
+            "value": 0.8,
+            "unit": "m",
+            "source": {
+              "kind": "assumed",
+              "documentId": "r5-assumptions",
+              "revision": "1",
+              "locator": "estimated from a 0.5 m chassis; measure on the first build",
+              "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "signals": [
+    {
+      "id": "bumper-front",
+      "label": "bumper front",
+      "role": "bumper",
+      "direction": "input",
+      "field": {
+        "deviceId": "bumper-front-sw",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 50,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "bumper-left",
+      "label": "bumper left",
+      "role": "bumper",
+      "direction": "input",
+      "field": {
+        "deviceId": "bumper-left-sw",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 50,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "bumper-right",
+      "label": "bumper right",
+      "role": "bumper",
+      "direction": "input",
+      "field": {
+        "deviceId": "bumper-right-sw",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 50,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "cliff-left",
+      "label": "cliff left",
+      "role": "cliff",
+      "direction": "input",
+      "field": {
+        "deviceId": "cliff-left-sn",
+        "pin": "BK",
+        "returnPin": "BU"
+      },
+      "electrical": {
+        "type": "pnp_source_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 50,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "cliff-right",
+      "label": "cliff right",
+      "role": "cliff",
+      "direction": "input",
+      "field": {
+        "deviceId": "cliff-right-sn",
+        "pin": "BK",
+        "returnPin": "BU"
+      },
+      "electrical": {
+        "type": "pnp_source_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 50,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "dock-detect",
+      "label": "dock detect",
+      "role": "dock_detect",
+      "direction": "input",
+      "field": {
+        "deviceId": "dock-sn",
+        "pin": "BK",
+        "returnPin": "BU"
+      },
+      "electrical": {
+        "type": "pnp_source_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 200,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "cover-switch",
+      "label": "cover switch",
+      "role": "cover_switch",
+      "direction": "input",
+      "field": {
+        "deviceId": "cover-sw",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 200,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "estop-status",
+      "label": "estop status",
+      "role": "estop_status",
+      "direction": "input",
+      "field": {
+        "deviceId": "safety-relay",
+        "pin": "S33",
+        "returnPin": "S34"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 100,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "charger-present",
+      "label": "charger present",
+      "role": "charger_present",
+      "direction": "input",
+      "field": {
+        "deviceId": "charger-sn",
+        "pin": "BK",
+        "returnPin": "BU"
+      },
+      "electrical": {
+        "type": "pnp_source_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 500,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "lamp-status",
+      "label": "lamp status",
+      "role": "lamp",
+      "direction": "output",
+      "field": {
+        "deviceId": "lamp",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "pnp_sink_input",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.1,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 500,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "buzzer",
+      "label": "buzzer",
+      "role": "buzzer",
+      "direction": "output",
+      "field": {
+        "deviceId": "buzzer",
+        "pin": "1",
+        "returnPin": "2"
+      },
+      "electrical": {
+        "type": "pnp_sink_input",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.05,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "controller",
+      "maxLatencyMs": 500,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "brake-release",
+      "label": "brake release",
+      "role": "brake_release",
+      "direction": "output",
+      "field": {
+        "deviceId": "motor-left",
+        "pin": "ENC/1",
+        "returnPin": null
+      },
+      "electrical": {
+        "type": "pnp_sink_input",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.5,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "drive_local",
+      "maxLatencyMs": null,
+      "required": false,
+      "pinned": null
+    },
+    {
+      "id": "estop-chain",
+      "label": "estop chain",
+      "role": "safety",
+      "direction": "input",
+      "field": {
+        "deviceId": "estop-button",
+        "pin": "S1",
+        "returnPin": "S2"
+      },
+      "electrical": {
+        "type": "relay_output",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.02,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "safety_chain",
+      "maxLatencyMs": null,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "sto-left",
+      "label": "sto left",
+      "role": "safety",
+      "direction": "output",
+      "field": {
+        "deviceId": "drive-left",
+        "pin": "CN4/11",
+        "returnPin": "CN4/12"
+      },
+      "electrical": {
+        "type": "pnp_sink_input",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "safety_chain",
+      "maxLatencyMs": null,
+      "required": true,
+      "pinned": null
+    },
+    {
+      "id": "sto-right",
+      "label": "sto right",
+      "role": "safety",
+      "direction": "output",
+      "field": {
+        "deviceId": "drive-right",
+        "pin": "CN4/26",
+        "returnPin": "CN4/27"
+      },
+      "electrical": {
+        "type": "pnp_sink_input",
+        "nominalV": 24,
+        "currentA": {
+          "value": 0.005,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "planning estimate until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "consumer": "safety_chain",
+      "maxLatencyMs": null,
+      "required": true,
+      "pinned": null
+    }
+  ],
+  "stopFunctions": [
+    {
+      "id": "normal",
+      "trigger": {
+        "kind": "operator"
+      },
+      "axes": [
+        "amr-1/wheel-left",
+        "amr-1/wheel-right"
+      ],
+      "finalState": "hold",
+      "requirementId": null
+    },
+    {
+      "id": "protective",
+      "trigger": {
+        "kind": "signal",
+        "signalId": "bumper-front"
+      },
+      "axes": [
+        "amr-1/wheel-left",
+        "amr-1/wheel-right"
+      ],
+      "finalState": "disabled",
+      "requirementId": null
+    },
+    {
+      "id": "emergency",
+      "trigger": {
+        "kind": "signal",
+        "signalId": "estop-chain"
+      },
+      "axes": [
+        "amr-1/wheel-left",
+        "amr-1/wheel-right"
+      ],
+      "finalState": "torque_off_coast",
+      "requirementId": "req-estop"
+    }
+  ],
+  "safetyRequirementsRef": {
+    "id": "serve-safety-requirements-v1",
+    "revision": 1,
+    "digest": "140f75f26a41b10b066e23292df9f0f9434b81d17be9381c3ce8526a3d3a2595"
+  },
+  "wiringPolicyRef": {
+    "id": "wiring-policy-v1",
+    "revision": 1,
+    "digest": "0e7bce99b1ec3c90bcb6920bbbe1972d3d2a3ff236c04680759da40412075d42"
+  },
+  "digest": "fa215f78c7b467153537157a7b3e1c45b0291704ed020005906a446ea63b9dd6"
+}

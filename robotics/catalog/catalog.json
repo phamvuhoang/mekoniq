@@ -40,11 +40,63 @@
     },
     {
       "file": "components/orientalmotor-blvd-krd.json",
-      "digest": "71a21f08beef8232735f88b40f206aeb1629813a14f65923f248ab72a2e96131"
+      "digest": "35e8b1c0c77cbb5c9347389076d4e53a1d2a2ed664906a373cf7e6c6cd9f30ab"
     },
     {
       "file": "components/phidgets-frc4115.json",
       "digest": "9bdb9c3b7bfc77adfd49166e736d6258f260ddeb59e5f01e18f312b6d0ab32dc"
+    },
+    {
+      "file": "components/ref-battery-24v-pack.json",
+      "digest": "005b05631825169f983ca690c79b5f9807a36e7998f0c7f8b882565c11ae19a5"
+    },
+    {
+      "file": "components/ref-buzzer-24v.json",
+      "digest": "e114b3e823e5e68e54cdcc21243002111e80a76af58654fc7ee845a1398fa12b"
+    },
+    {
+      "file": "components/ref-contactor.json",
+      "digest": "35b69295b77e9c796dab73b59606eb3feec4468ba0532f20183ee6d3cca8222a"
+    },
+    {
+      "file": "components/ref-controller-ref.json",
+      "digest": "0f558007ffd837eb299945932c4911325a8a803f1e73b04c4b57308534975b6c"
+    },
+    {
+      "file": "components/ref-estop-button.json",
+      "digest": "af99cf79cf5c411349cae189a6ed535ad8d8334624b2899cc052256b1291d7da"
+    },
+    {
+      "file": "components/ref-fuse-10a.json",
+      "digest": "4de14491b79c890c636f40fa3fab356a9948c1338fa7d913e52c705a82915152"
+    },
+    {
+      "file": "components/ref-fuse-20a.json",
+      "digest": "d8d77e1c293b678c2292e5d23c34d8e1ff3a5daf0191b040f1354c904f744d62"
+    },
+    {
+      "file": "components/ref-fuse-5a.json",
+      "digest": "e65829507de566e5e127079be366fd932bfbfca666222d768b46d243fc7b7ef3"
+    },
+    {
+      "file": "components/ref-io-module-can-ref.json",
+      "digest": "fc54b4069f26feb5229617dc2e65020cab4075d10f431deada11a9f9431405db"
+    },
+    {
+      "file": "components/ref-lamp-24v.json",
+      "digest": "1d66e96f6cac197233136f9976353f58985488c9e3178bc99d360c94073b6f61"
+    },
+    {
+      "file": "components/ref-safety-relay.json",
+      "digest": "7559048ec81b7ae135eeef474fd545b8ff4e5c017191c5799d3c5b06530f2e8a"
+    },
+    {
+      "file": "components/ref-sensor-pnp-24v.json",
+      "digest": "818789064fc8862c17ffb21bde03032923ea1f704794d31cf44c635e119f8137"
+    },
+    {
+      "file": "components/ref-switch-dry-contact.json",
+      "digest": "5cc95cdd1b5e9a77969871fa6917081d61dca7348a17189ca4c697b51dc214ff"
     },
     {
       "file": "components/service-tray-ref.json",
@@ -61,17 +113,85 @@
     {
       "file": "components/ufactory-xarm6.json",
       "digest": "842508dfd500f578d9c0b88aa881a1c0d80f230bf5b02f09124122e494216345"
+    },
+    {
+      "file": "components/zltech-zlac8015d.json",
+      "digest": "0559568738b73c5ee44f68b9ff63a20e0cad4f36ab0e380e1250f469422e7bd9"
+    },
+    {
+      "file": "components/zltech-zllg65asm250.json",
+      "digest": "961665483ab4022c8093272573786bfd743abef120bea627545cb5b9623c7906"
     }
   ],
   "quotes": [],
   "deviceProfiles": [
+    {
+      "file": "devices/battery-24v-pack-v1.json",
+      "digest": "8ce380ce0ab9ef72137d9428725095f5df4c33d6cb808b8b7cc8ff53b3a7a274"
+    },
     {
       "file": "devices/blv-r-60w-v1.json",
       "digest": "ddfef645872ce5dbc0ee1284518ca5e3a76a4e7f949626d1ae8807385b94c8a2"
     },
     {
       "file": "devices/blvd-krd-v1.json",
-      "digest": "b49efac9ef86935d48e7fa639ce3fb9b962255f0bceffe376f9dd73a3ab8df3c"
+      "digest": "93e934ecfb67d5d640bcc92e537eda6d03def00d97a4e631a132e61de26e03e0"
+    },
+    {
+      "file": "devices/buzzer-24v-v1.json",
+      "digest": "680555695088aacab2cfc869ca4ad32091a690a7ffb82931484c142e93868b13"
+    },
+    {
+      "file": "devices/contactor-v1.json",
+      "digest": "ed7e3b58bebfc3c431e8fb2ccbc2e5e0956252aba74fb5119a856ed37ee37065"
+    },
+    {
+      "file": "devices/controller-ref-v1.json",
+      "digest": "2a069b1b07ba6152f87b2120b9c60e74934a772b6e45c9428c2943d68ddc84d7"
+    },
+    {
+      "file": "devices/estop-button-v1.json",
+      "digest": "61f1238f69084be8c805cb79e80c0edbebe028016d16050c5857b2c08e012865"
+    },
+    {
+      "file": "devices/fuse-10a-v1.json",
+      "digest": "16f1c443badee544b784a589ecd3d621c6804737bfba11bc352062f07374dcc1"
+    },
+    {
+      "file": "devices/fuse-20a-v1.json",
+      "digest": "69ab62770560e50a8404f885fa7d0676c9be6721247770367b89232ae74fbd0f"
+    },
+    {
+      "file": "devices/fuse-5a-v1.json",
+      "digest": "8ff9894e22dcaa729691416c7e4329c7d3d6c5347fa228e6c6acb7c7836aa42c"
+    },
+    {
+      "file": "devices/io-module-can-ref-v1.json",
+      "digest": "569435bba517e7be6c6a672069b496be8e79a871a4688021a9d545a58432b7d7"
+    },
+    {
+      "file": "devices/lamp-24v-v1.json",
+      "digest": "83ba32f3a8bd230f88a09dd462ed8d59dae70f05ae11fb094a7fd39012b6aac2"
+    },
+    {
+      "file": "devices/safety-relay-v1.json",
+      "digest": "5cfe293b1ec2f2334b9785794ebf871b9e3fa08d258b15af3d76c12fa94290b3"
+    },
+    {
+      "file": "devices/sensor-pnp-24v-v1.json",
+      "digest": "dcfd90752ff5e5bd5ca3610e35543c5710e0443ca3b4ad61d934accee869a7a4"
+    },
+    {
+      "file": "devices/switch-dry-contact-v1.json",
+      "digest": "7bce4e084cf505919353e34574886faed28220f79d87d2d8d64ad0d9325a9856"
+    },
+    {
+      "file": "devices/zlac8015d-v1.json",
+      "digest": "6a0d7c2dd0328344f54d85d7bd4f7ad6e243b74e1f58ce6094e47cd994b237b5"
+    },
+    {
+      "file": "devices/zllg65asm250-v1.json",
+      "digest": "d5a96ae02f18deb6a1718a299c0c785567f0d925a82db05d77091564d96bbbee"
     }
   ]
 }

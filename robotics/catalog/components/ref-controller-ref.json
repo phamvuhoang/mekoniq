@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "ref-controller-ref",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "family": "embedded controller (CAN, Ethernet)",
+    "sku": "CTRL-REF",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [
+    {
+      "id": "vin",
+      "kind": "power",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "dc-bus",
+      "direction": "in",
+      "voltageRangeV": [
+        9,
+        36
+      ],
+      "continuousCurrentA": {
+        "value": 2,
+        "unit": "A",
+        "source": {
+          "kind": "assumed",
+          "documentId": "r5-assumptions",
+          "revision": "1",
+          "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+          "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+        }
+      }
+    }
+  ],
+  "models": [],
+  "documents": []
+}

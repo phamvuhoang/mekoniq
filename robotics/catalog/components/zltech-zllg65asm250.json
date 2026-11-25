@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "zltech-zllg65asm250",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "ZLTECH",
+    "family": "ZLLG65ASM250-L hub servo wheel 24 V",
+    "sku": "ZLLG65ASM250-L",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": [
+    {
+      "id": "zllg-drawing",
+      "url": "https://www.zlingkj.com/en/robot-hub-servo-motor-series/901228",
+      "digest": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706",
+      "license": "unreviewed"
+    }
+  ]
+}

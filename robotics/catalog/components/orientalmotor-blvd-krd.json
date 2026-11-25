@@ -10,7 +10,42 @@
   },
   "links": [],
   "joints": [],
-  "ports": [],
+  "ports": [
+    {
+      "id": "vin",
+      "kind": "power",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "dc-bus",
+      "direction": "in",
+      "voltageRangeV": [
+        15,
+        55
+      ],
+      "continuousCurrentA": {
+        "value": 3.3,
+        "unit": "A",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "hp5140",
+          "revision": "8E",
+          "locator": "HP-5140-8E p.35: rated supply current, 60 W motor, at 24 VDC",
+          "contentSha256": "7dfd2fc7e3024978ac927ea3cd6981a7221949c6e006ff4306bb9fb8bfc073cd"
+        }
+      }
+    }
+  ],
   "models": [],
   "documents": [
     {

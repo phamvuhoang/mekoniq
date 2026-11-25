@@ -6,7 +6,7 @@
   "component": {
     "id": "orientalmotor-blvd-krd",
     "revision": "1",
-    "digest": "71a21f08beef8232735f88b40f206aeb1629813a14f65923f248ab72a2e96131"
+    "digest": "35e8b1c0c77cbb5c9347389076d4e53a1d2a2ed664906a373cf7e6c6cd9f30ab"
   },
   "variant": {
     "orderCode": "BLVD-KRD",
@@ -44,7 +44,7 @@
           "pin": "1",
           "name": "VIN",
           "role": "power",
-          "portId": null,
+          "portId": "vin",
           "source": {
             "kind": "manufacturer",
             "documentId": "hp5140",
@@ -1055,5 +1055,5 @@
       }
     ]
   },
-  "digest": "b49efac9ef86935d48e7fa639ce3fb9b962255f0bceffe376f9dd73a3ab8df3c"
+  "digest": "93e934ecfb67d5d640bcc92e537eda6d03def00d97a4e631a132e61de26e03e0"
 }

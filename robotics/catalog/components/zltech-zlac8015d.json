@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "zltech-zlac8015d",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "ZLTECH",
+    "family": "ZLAC8015D dual hub servo driver",
+    "sku": "ZLAC8015D",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [
+    {
+      "id": "vin",
+      "kind": "power",
+      "frame": {
+        "xyzM": [
+          0,
+          0,
+          0
+        ],
+        "quaternionXyzw": [
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "mate": "dc-bus",
+      "direction": "in",
+      "voltageRangeV": [
+        20,
+        48
+      ],
+      "continuousCurrentA": {
+        "value": 13,
+        "unit": "A",
+        "source": {
+          "kind": "derived",
+          "documentId": "zllg-drawing",
+          "revision": "V3.15",
+          "locator": "2 x rated current 6.5 A of ZLLG65ASM250-L (drawing V3.15); supply current is not stated in the driver manual",
+          "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+        }
+      }
+    }
+  ],
+  "models": [],
+  "documents": [
+    {
+      "id": "zlac-manual",
+      "url": "https://www.zlingkj.com/download/robot-hub-servo-driver-77233",
+      "digest": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4",
+      "license": "unreviewed"
+    },
+    {
+      "id": "zllg-drawing",
+      "url": "https://www.zlingkj.com/en/robot-hub-servo-motor-series/901228",
+      "digest": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706",
+      "license": "unreviewed"
+    }
+  ]
+}

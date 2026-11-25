@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "ref-fuse-5a",
+  "revision": "1",
+  "identity": {
+    "manufacturer": "MEKONIQ reference",
+    "family": "inline fuse holder 5 A",
+    "sku": "FUSE-5A",
+    "status": "candidate"
+  },
+  "links": [],
+  "joints": [],
+  "ports": [],
+  "models": [],
+  "documents": []
+}
