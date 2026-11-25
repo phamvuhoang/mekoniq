@@ -14,7 +14,6 @@ test.skipIf(spawnSync('python3',['--version']).status!==0)('doctor imports Pytho
  try{
   await mkdir(join(root,'scripts/native-sim'),{recursive:true});
   await copyFile('scripts/lab-sil.mjs',join(root,'scripts/lab-sil.mjs'));
-  await copyFile('scripts/repo-identity.mjs',join(root,'scripts/repo-identity.mjs'));
   await copyFile('scripts/native-sim/profile-report.mjs',join(root,'scripts/native-sim/profile-report.mjs'));
   await copyFile('scripts/native-sim/native-inventory.mjs',join(root,'scripts/native-sim/native-inventory.mjs'));
   await mkdir(join(root,'packages/contracts/schemas'),{recursive:true});

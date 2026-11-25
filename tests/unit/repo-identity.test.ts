@@ -1,5 +1,5 @@
 import {execFileSync} from 'node:child_process';
-import {mkdtempSync,mkdirSync,writeFileSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,symlinkSync,writeFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {expect,test} from 'vitest';
@@ -44,6 +44,9 @@ test('labIdentity reads apps/lab by path and any other directory as a standalone
   expect(labIdentity(d,join(d,'apps/lab'))).toEqual({commit:A,dirty:false});
   const solo=repo();put(solo,'f','1');const S=commit(solo,'s');put(solo,'g','2');
   expect(labIdentity(d,solo)).toEqual({commit:S,dirty:true});expect(B).not.toBe(A);
+  // robot/lab is a symlink to apps/lab; it and a trailing slash still name this repository's Lab (HEAD is B, the Lab commit A)
+  const link=join(mkdtempSync(join(tmpdir(),'repo-identity-link-')),'lab');symlinkSync(join(d,'apps/lab'),link);
+  expect(labIdentity(d,link)).toEqual({commit:A,dirty:false});expect(labIdentity(d,join(d,'apps/lab')+'/')).toEqual({commit:A,dirty:false});
 });
 
 test('labFileAt reads a Lab file from a commit before the merge (root) and after it (apps/lab)',()=>{
@@ -51,4 +54,26 @@ test('labFileAt reads a Lab file from a commit before the merge (root) and after
   sh(d,'rm','-q','-r','config');put(d,'apps/lab/config/pin.json','new');const NEW=commit(d,'moved');
   expect(labFileAt(d,OLD,'config/pin.json').toString()).toBe('old');expect(labFileAt(d,NEW,'config/pin.json').toString()).toBe('new');
   expect(()=>labFileAt(d,NEW,'config/missing.json')).toThrow();
+  // a failure other than a missing path is not retried at the root
+  expect(()=>labFileAt(d,'no-such-ref','config/pin.json')).toThrow(/apps\/lab\/config\/pin\.json/);
+});
+
+// Recorders and readbacks bind the source side by path (repo-identity sourceCommit). A script that records HEAD as the source commit
+// mismatches them as soon as a pin commit sits on top. Every HEAD reader left is listed with its reason.
+test('no new HEAD reader stands in for the source commit',()=>{
+  const allowed={
+    'packages/lab-runtime/src/v2/sil/native-providers.ts':'pinned runtime; a native host checks out the source commit itself',
+    'packages/lab-runtime/src/v2/sil/xarm-cli.ts':'pinned runtime; same',
+    'scripts/lab-sil.mjs':'feeds native-providers.ts, which checks HEAD',
+    'scripts/lab-algorithm.mjs':'checker identity of the checkout, recorded beside the subject commit',
+    'scripts/export-arm-controller.mjs':'arm-controller package version',
+    'scripts/r4-cld02.sh':'native CI container, runs on the source commit before the pin commit',
+    'scripts/repo-identity.mjs':'standalone Lab checkout',
+    'scripts/release.mjs':'platform release, no Lab pair',
+    'scripts/restore-rehearsal.mjs':'platform release, no Lab pair',
+    'tests/support/load-report.ts':'platform load report, no Lab pair',
+    'tests/support/regression-identity.ts':'standalone Lab checkout',
+  };
+  let hits='';try{hits=execFileSync('git',['grep','-lE',"rev-parse(' *, *'| )HEAD",'--','scripts','packages','tests/support','deploy','apps/lab/scripts'],{encoding:'utf8'}).trim();}catch{/* none */}
+  expect(hits.split('\n').filter(Boolean).filter(f=>!(f in allowed))).toEqual([]);
 });

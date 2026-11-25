@@ -4,6 +4,7 @@ import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {tsImport} from 'tsx/esm/api';
+import {sourceCommit} from './repo-identity.mjs';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const usage=()=>{console.error('usage: lab-mujoco.mjs run --campaign payload-v1|mj-cell-bv01-v1|mj-cell-recovery-v2|cil-v2|bench-v2|fault-v1|tray-v1|perception-gap-v1 --out DIR [--case REGISTERED_ID] | verify --input DIR | bench --axis wheels|J1..J6|gripper --signal JSON --profile FILE --out DIR [--experiment DRIVE_EXPERIMENT_ID] [--seed N]');process.exit(2);};
 const [command,...args]=process.argv.slice(2),options={};
@@ -22,7 +23,7 @@ if(command==='bench'){
  try{controlProfile=JSON.parse(await readFile(resolve(options['--profile']),'utf8'));}catch{missing('BENCH_PROFILE_UNREADABLE');}
  const axis=options['--axis'],scenarioId=axis==='wheels'?'MJ-BENCH-WHEEL':'MJ-BENCH-ARM',seed=Number(options['--seed']??7);
  const bench={schemaVersion:1,scenarioId,axis,signal,driveExperimentId:options['--experiment']??'drive-nominal-v1',controlProfile};
- const head=git('rev-parse','HEAD').stdout.trim(),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
+ const head=sourceCommit(root),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
  const {mujocoFromOptions}=await tsImport('../packages/lab-runtime/src/v2/simulation3d/mujoco.ts',import.meta.url),{createBenchRun}=await tsImport('../packages/lab-runtime/src/v2/control/bench-runner.ts',import.meta.url);
  const workerRoot=resolve(root,'robotics/simulation-mujoco'),probe=await mkdtemp(join(tmpdir(),'lab-mujoco-bench-'));
  try{
@@ -52,7 +53,7 @@ if(command==='bench'){
  let verdict;
  if(command==='verify'){const doc=await readCellJson(resolve(options['--input']),'campaign.json');verdict=await(doc.campaign?.id==='mj-cell-recovery-v2'?verifyRecoveryCampaign:doc.campaign?.id==='perception-gap-v1'?verifyPerceptionStudy:doc.campaign?.id==='tray-v1'?verifyTrayCampaign:doc.campaign?.id==='fault-v1'?verifyFaultCampaign:['bench-v1','bench-v2'].includes(doc.campaign?.id)?verifyBenchCampaign:['cil-v1','cil-v2'].includes(doc.campaign?.id)?verifyCilCampaign:doc.campaign?.id==='mj-cell-bv01-v1'?verifyCellCampaign:verifyPayloadCampaign)(resolve(options['--input']));}
  else{
-  const head=git('rev-parse','HEAD').stdout.trim(),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
+  const head=sourceCommit(root),dirty=git('status','--porcelain','--untracked-files=all').stdout.trim();
   if(!mujocoPresent()){console.error('MUJOCO_PREREQUISITE_MISSING');process.exit(2);}
   if(['mj-cell-recovery-v2','cil-v2','bench-v2','fault-v1','tray-v1','perception-gap-v1'].includes(options['--campaign'])&&dirty){console.error(options['--campaign']==='mj-cell-recovery-v2'?'RECOVERY_CLEAN_TREE_REQUIRED':options['--campaign']==='cil-v2'?'CIL_CLEAN_TREE_REQUIRED':options['--campaign']==='fault-v1'?'FAULT_CLEAN_TREE_REQUIRED':options['--campaign']==='tray-v1'?'TRAY_CLEAN_TREE_REQUIRED':options['--campaign']==='perception-gap-v1'?'STUDY_CLEAN_TREE_REQUIRED':'BENCH_CLEAN_TREE_REQUIRED');process.exit(2);}   // the recording is bound to a commit: a dirty tree is a missing condition
   verdict=await (options['--campaign']==='perception-gap-v1'?runPerceptionStudy:options['--campaign']==='tray-v1'?runTrayCampaign:options['--campaign']==='fault-v1'?runFaultCampaign:options['--campaign']==='bench-v2'?runBenchCampaign:options['--campaign']==='cil-v2'?runCilCampaign:['mj-cell-bv01-v1','mj-cell-recovery-v2'].includes(options['--campaign'])?runCellCampaign:runPayloadCampaign)({root,...options['--campaign']==='mj-cell-recovery-v2'?{campaignId:'mj-cell-recovery-v2'}:{},out:resolve(options['--out']),sourceCommit:head+(dirty?'-dirty':''),caseId:options['--case'],pointId:options['--case'],signal:abort.signal});

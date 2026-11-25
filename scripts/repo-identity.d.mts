@@ -5,5 +5,6 @@ export function sourceCommit(root:string):string;
 export function labCommit(root:string):string;
 export function sourceDirty(root:string):string;
 export function labDirty(root:string):string;
+export function realPath(p:string):string;
 export function labIdentity(root:string,labDir:string):{commit:string;dirty:boolean};
 export function labFileAt(repo:string,commit:string,path:string):Buffer;

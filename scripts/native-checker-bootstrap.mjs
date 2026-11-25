@@ -8,7 +8,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export async function checkedCheckerIdentity(){
  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',timeout:10000,maxBuffer:8*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
  let sourceCommit,tree;
- try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('rev-parse','HEAD');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
+ try{if(await realpath(git('rev-parse','--show-toplevel'))!==await realpath(root))throw Error('wrong root');sourceCommit=git('log','-1','--format=%H','--','.',':(exclude)apps/lab');if(!/^[a-f0-9]{40}$/.test(sourceCommit)||git('rev-parse','--show-object-format')!=='sha1')throw Error('unsupported Git identity');tree=git('ls-tree','-r','-z','--full-tree','HEAD','--','scripts','packages','robotics','integrations','tests/fixtures','package.json','pnpm-lock.yaml','tsconfig.json','.gitignore');}catch{throw Error('CHECKER_GIT_REQUIRED');}
  if(git('status','--porcelain','--untracked-files=all'))throw Error('CHECKER_CHECKOUT_DIRTY');
  let total=0;const entries=tree.split('\0').filter(Boolean);if(!entries.length||entries.length>20000)throw Error('CHECKER_INPUT_MISMATCH');
  for(const entry of entries){

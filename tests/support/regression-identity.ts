@@ -2,7 +2,7 @@
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
-import {labCommit,sourceCommit,LAB_PREFIX} from '../../scripts/repo-identity.mjs';
+import {labCommit,sourceCommit,realPath,LAB_PREFIX} from '../../scripts/repo-identity.mjs';
 export const LAB_EVIDENCE_MUTABLE_PATHS=['docs/','README.md','config/simulation-compatibility.json'] as const;
 export interface RepositoryIdentity {commit:string;codeHash:string;dirtyCodePaths:string[]}
 export interface RegressionIdentity {source:RepositoryIdentity;lab:RepositoryIdentity}
@@ -16,7 +16,7 @@ const git=(directory:string,args:string[])=>execFileSync('git',['-C',directory,.
 const mutableLabPath=(path:string)=>LAB_EVIDENCE_MUTABLE_PATHS.some(p=>p.endsWith('/')?path.startsWith(p):path===p);
 // One repository: the Lab is apps/lab of the source directory. Source = every path outside it; the Lab listing drops the prefix so a hash compares with the standalone Lab's.
 const PREFIX=`${LAB_PREFIX}/`,entryPath=(e:string)=>e.slice(e.indexOf('\t')+1),inLab=(p:string)=>p.startsWith(PREFIX);
-const isEmbedded=(source:string,lab:string)=>resolve(source,LAB_PREFIX)===resolve(lab);
+const isEmbedded=(source:string,lab:string)=>realPath(resolve(source,LAB_PREFIX))===realPath(lab);
 function treeHash(directory:string,revision:string,lab:boolean,embedded=false){
  let entries=git(directory,['ls-tree','-r','-z',revision]).split('\0').filter(Boolean);
  // a revision from before the merge is a standalone Lab or source commit: its entries are already in that repository's own layout
