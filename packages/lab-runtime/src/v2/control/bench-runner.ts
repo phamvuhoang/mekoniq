@@ -107,7 +107,8 @@ export type BenchCatalog=Record<BenchRequestV1['scenarioId'],BenchCatalogEntry>;
 export interface BenchInfo {tuningEnvelope?:TuningEnvelopeV1;reasonCodes:string[];idleLease:{durationMs:number;expiryReason:string}}
 export async function loadBenchCatalog(workerRoot:string,scenarios:readonly BenchRequestV1['scenarioId'][],engineVersion?:string){
  let tuningEnvelope:TuningEnvelopeV1|undefined;
- const experiments=Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[],out:Partial<BenchCatalog>={};
+ // only the five R4 experiments are bench experiments: the R5 hardware experiments (`drive-hw-c-*`) keep their documents under stop-v1 and are run by the stop campaign
+ const experiments=(Object.keys(DRIVE_EXPERIMENTS) as DriveExperimentId[]).filter(id=>!id.startsWith('drive-hw-c-')),out:Partial<BenchCatalog>={};
  for(const scenarioId of scenarios){
   const names=BENCH_AXES.filter(a=>(a==='wheels')===(scenarioId==='MJ-BENCH-WHEEL')),at=(axis:BenchRequestV1['axis'],driveExperimentId:DriveExperimentId)=>benchPlant(workerRoot,{scenarioId,axis,driveExperimentId:driveExperimentId as BenchRequestV1['driveExperimentId']},engineVersion);   // the bench request names only the five R4 experiments, which its schema enforces
   const runs:[DriveExperimentId,BenchPlant][]=[];for(const id of experiments)runs.push([id,await at(names[0]!,id)]);

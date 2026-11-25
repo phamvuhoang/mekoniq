@@ -34,7 +34,7 @@ for(const [id,e] of Object.entries(TRAY_EXPERIMENTS)){
   const load=await read(`${e.load}.json`);expect(load.props.map((p:{propId:string})=>p.propId)).toEqual(['cup-1','cup-2','cup-3']);
   const a=TRAY_ACCELERATION[e.accelerationPolicy];
   expect(scene.policy.parameters.maxAccelerationMps2).toBe(a.policyMps2);
-  const driveModel=scene.engine.driveModelRef.path as string;expect(driveModel).toContain(e.driveExperimentId==='drive-torque-limited-v1'?'torque-limited':'nominal');
+  const driveModel=scene.engine.driveModelRef.path as string;expect(driveModel).toContain(e.driveExperimentId==='drive-torque-limited-v1'?'torque-limited':e.driveExperimentId.startsWith('drive-hw-c-')?e.driveExperimentId.replace(/^drive-/,'').replace(/-v1$/,''):'nominal');
   const control=await read(scene.engine.controlProfileRef.path);
   expect(control.controllers.find((c:{controllerId:string})=>c.controllerId==='diff-drive-base-v1').params.maxAccelerationMps2).toBe(a.baseLimitMps2);
   expect(a.baseLimitMps2).toBeGreaterThanOrEqual(scene.policy.parameters.maxAccelerationMps2);
