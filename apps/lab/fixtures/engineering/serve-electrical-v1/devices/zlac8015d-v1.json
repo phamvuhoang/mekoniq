@@ -1,0 +1,970 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "zlac8015d-v1",
+  "revision": 1,
+  "component": {
+    "id": "zltech-zlac8015d",
+    "revision": "1",
+    "digest": "0559568738b73c5ee44f68b9ff63a20e0cad4f36ab0e380e1250f469422e7bd9"
+  },
+  "variant": {
+    "orderCode": "ZLAC8015D",
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "servo_drive",
+  "documents": [
+    {
+      "id": "zlac-manual",
+      "kind": "manual",
+      "title": "ZLAC8015D servo hub motor driver user manual V1.02 (Chinese)",
+      "revision": "V1.02",
+      "url": "https://www.zlingkj.com/download/robot-hub-servo-driver-77233",
+      "digest": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4",
+      "license": "unreviewed"
+    },
+    {
+      "id": "zllg-drawing",
+      "kind": "datasheet",
+      "title": "ZLLG65ASM250-L robot hub servo motor drawing V3.15",
+      "revision": "V3.15",
+      "url": "https://www.zlingkj.com/en/robot-hub-servo-motor-series/901228",
+      "digest": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706",
+      "license": "unreviewed"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "PWR-L",
+      "label": "Left motor power and supply",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "DC",
+          "role": "power",
+          "portId": "vin",
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.1 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.1 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "U",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.1 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "V",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.1 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "5",
+          "name": "W",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.1 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "PWR-R",
+      "label": "Right motor power and supply",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "U",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.2 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "V",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.2 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "W",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.2 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "DC",
+          "role": "power",
+          "portId": "vin",
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.2 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "5",
+          "name": "GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.2 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "J3",
+      "label": "Brakes and outputs",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "BGND-L",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "-BR-L",
+          "role": "brake",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "BDC-L",
+          "role": "brake",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "BGND-R",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "5",
+          "name": "-BR-R",
+          "role": "brake",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "6",
+          "name": "BDC-R",
+          "role": "brake",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "7",
+          "name": "OUTPUT1",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "8",
+          "name": "OUTPUT2",
+          "role": "do",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.4 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "J4",
+      "label": "Inputs and encoder outputs",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "AOUT-L",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "BOUT-L",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "AOUT-R",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "BOUT-R",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "5",
+          "name": "+5V",
+          "role": "power",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "6",
+          "name": "GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "7",
+          "name": "INPUT1",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "8",
+          "name": "INPUT2",
+          "role": "di",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.5 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "J5",
+      "label": "CAN and RS-485",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "CANH",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.6 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "A",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.6 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "CANL",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.6 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        },
+        {
+          "pin": "4",
+          "name": "B",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.6 pin table",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "J2",
+      "label": "Left motor encoder and HALL",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "ENC-L",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.3 encoder and HALL port, 12 pins",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    },
+    {
+      "id": "J6",
+      "label": "Right motor encoder and HALL",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "ENC-R",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zlac-manual",
+            "revision": "V1.02",
+            "locator": "ZLAC8015D manual V1.02 PDF p.6: 3.1.3 encoder and HALL port, 12 pins",
+            "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [
+    {
+      "pointId": "IN1",
+      "direction": "input",
+      "pin": "J4/7",
+      "commonPin": "J4/6",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          5,
+          5
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "enable",
+        "start_stop",
+        "emergency_stop",
+        "limit"
+      ],
+      "defaultFunction": "unassigned",
+      "reassignable": true,
+      "assignmentPersistence": "volatile",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "the user manual says the input function is configured over CAN/RS485; it does not say the input state is readable there (CANopen manual not pinned)",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.7: 2 isolated programmable inputs, 5 V; 12 V needs 1 kOhm, 24 V 2 kOhm in series; unassigned after power-up (p.8, 3.2.3)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "pointId": "IN2",
+      "direction": "input",
+      "pin": "J4/8",
+      "commonPin": "J4/6",
+      "electrical": {
+        "type": "dry_contact_input",
+        "voltageRangeV": [
+          5,
+          5
+        ],
+        "maxCurrentA": null
+      },
+      "functions": [
+        "enable",
+        "start_stop",
+        "emergency_stop",
+        "limit"
+      ],
+      "defaultFunction": "unassigned",
+      "reassignable": true,
+      "assignmentPersistence": "volatile",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "the user manual says the input function is configured over CAN/RS485; it does not say the input state is readable there (CANopen manual not pinned)",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.7: 2 isolated programmable inputs, 5 V; 12 V needs 1 kOhm, 24 V 2 kOhm in series; unassigned after power-up (p.8, 3.2.3)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "pointId": "OUT1",
+      "direction": "output",
+      "pin": "J3/7",
+      "commonPin": null,
+      "electrical": {
+        "type": "npn_sink_output",
+        "voltageRangeV": [
+          3.3,
+          24
+        ],
+        "maxCurrentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "output current is not stated in the manual",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "functions": [
+        "alarm",
+        "in_position"
+      ],
+      "defaultFunction": "alarm",
+      "reassignable": true,
+      "assignmentPersistence": "volatile",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "the manual says the output function is configured over CAN/RS485",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.8: output with internal 5 V pull-up, or external 3.3 to 24 V pull-up (3.2.3)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "pointId": "OUT2",
+      "direction": "output",
+      "pin": "J3/8",
+      "commonPin": null,
+      "electrical": {
+        "type": "npn_sink_output",
+        "voltageRangeV": [
+          3.3,
+          24
+        ],
+        "maxCurrentA": {
+          "value": 0.01,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "output current is not stated in the manual",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "functions": [
+        "alarm",
+        "in_position"
+      ],
+      "defaultFunction": "alarm",
+      "reassignable": true,
+      "assignmentPersistence": "volatile",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": "the manual says the output function is configured over CAN/RS485",
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.8: output with internal 5 V pull-up, or external 3.3 to 24 V pull-up (3.2.3)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "pointId": "BRAKE_L",
+      "direction": "output",
+      "pin": "J3/3",
+      "commonPin": "J3/1",
+      "electrical": {
+        "type": "isolated_transistor_output",
+        "voltageRangeV": [
+          24,
+          48
+        ],
+        "maxCurrentA": {
+          "value": 1,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "brake circuit rating is not stated in the manual",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "functions": [
+        "brake"
+      ],
+      "defaultFunction": "brake",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.6: left brake control, J3 pins BGND/-BR/BDC (3.1.4); circuit in figure 5",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "pointId": "BRAKE_R",
+      "direction": "output",
+      "pin": "J3/6",
+      "commonPin": "J3/4",
+      "electrical": {
+        "type": "isolated_transistor_output",
+        "voltageRangeV": [
+          24,
+          48
+        ],
+        "maxCurrentA": {
+          "value": 1,
+          "unit": "A",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "brake circuit rating is not stated in the manual",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      },
+      "functions": [
+        "brake"
+      ],
+      "defaultFunction": "brake",
+      "reassignable": false,
+      "assignmentPersistence": "fixed",
+      "busExposure": {
+        "kind": "none",
+        "object": null,
+        "bit": null,
+        "precondition": null,
+        "updatePeriodMs": null
+      },
+      "safety": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.6: right brake control, J3 pins BGND/-BR/BDC (3.1.4); circuit in figure 5",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "can0",
+      "portId": "J5/1,3",
+      "protocol": "canopen",
+      "profile": "cia402",
+      "descriptionDocumentId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.4: CANopen CiA301 and CiA402 sub-protocols, 100 to 1000 kbps, default 500 kbps (1.2)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    {
+      "id": "rs485",
+      "portId": "J5/2,4",
+      "protocol": "modbus_rtu",
+      "profile": null,
+      "descriptionDocumentId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.4: RS-485 Modbus RTU, 9600 to 128000 bps, default 115200 (1.2)",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    }
+  ],
+  "drive": {
+    "axes": 2,
+    "modes": [
+      "pp",
+      "pv",
+      "pt"
+    ],
+    "ratedCurrentA": {
+      "value": 15,
+      "unit": "A",
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.5: 2.1: output current (peak) typical 15 A",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    "peakCurrentA": {
+      "value": 30,
+      "unit": "A",
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.5: 2.1: output current (peak) maximum 30 A",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    "profileAccelerationRadS2": {
+      "value": 20,
+      "unit": "rad/s^2",
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "profile acceleration is not stated in the user manual (CANopen manual not pinned)",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    "feedback": {
+      "kinds": [
+        "incremental encoder",
+        "HALL"
+      ],
+      "countsPerRev": {
+        "value": 4096,
+        "unit": "1",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zllg-drawing",
+          "revision": "V3.15",
+          "locator": "ZLLG65ASM250-L drawing V3.15: encoder lines 4096 (valid for this wheel only)",
+          "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+        }
+      }
+    },
+    "watchdog": {
+      "kind": "none",
+      "rangeMs": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "the user manual does not describe a communication watchdog",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    },
+    "stop": {
+      "quickStop": false,
+      "quickStopOption": null,
+      "faultReactionOption": null,
+      "torqueOff": null,
+      "torqueOffPointIds": [],
+      "monitorOutputPointId": null,
+      "brakeOutputPointId": null,
+      "source": {
+        "kind": "manufacturer",
+        "documentId": "zlac-manual",
+        "revision": "V1.02",
+        "locator": "ZLAC8015D manual V1.02 PDF p.3: p.3: e-stop circuit outside the controller; no torque-off input described; p.9 3.6: bleeder resistor advised",
+        "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+      }
+    },
+    "faultMap": [
+      {
+        "vendorCode": "LED-6",
+        "neutral": "FOLLOWING_ERROR",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5 status LED: position deviation, 6 red flashes",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-12",
+        "neutral": "FEEDBACK_LOSS",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: encoder broken or miswired, 12 red flashes",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-10",
+        "neutral": "FEEDBACK_LOSS",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: HALL missing or wrong, 10 red flashes",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-1",
+        "neutral": "OTHER",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: over-voltage",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-2",
+        "neutral": "OTHER",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: under-voltage",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-3",
+        "neutral": "OTHER",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: over-current",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-4",
+        "neutral": "OTHER",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: overload",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      },
+      {
+        "vendorCode": "LED-11",
+        "neutral": "OTHER",
+        "source": {
+          "kind": "manufacturer",
+          "documentId": "zlac-manual",
+          "revision": "V1.02",
+          "locator": "ZLAC8015D manual V1.02 PDF p.9: 3.5: motor over-temperature",
+          "contentSha256": "94bd0ee19b86c7093451847ac0cd0a9bcecbd4d945a5c9791c4126a58388f5e4"
+        }
+      }
+    ]
+  },
+  "digest": "6a0d7c2dd0328344f54d85d7bd4f7ad6e243b74e1f58ce6094e47cd994b237b5"
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "estop-button-v1",
+  "revision": 1,
+  "component": {
+    "id": "ref-estop-button",
+    "revision": "1",
+    "digest": "af99cf79cf5c411349cae189a6ed535ad8d8334624b2899cc052256b1291d7da"
+  },
+  "variant": {
+    "orderCode": null,
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "safety_device",
+  "documents": [],
+  "connectors": [
+    {
+      "id": "C",
+      "label": "Contacts",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "S1",
+          "name": "S1",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device estop-button: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "S2",
+          "name": "S2",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device estop-button: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "S3",
+          "name": "S3",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device estop-button: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "S4",
+          "name": "S4",
+          "role": "sto",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device estop-button: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "61f1238f69084be8c805cb79e80c0edbebe028016d16050c5857b2c08e012865"
+}

@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "controller-ref-v1",
+  "revision": 1,
+  "component": {
+    "id": "ref-controller-ref",
+    "revision": "1",
+    "digest": "0f558007ffd837eb299945932c4911325a8a803f1e73b04c4b57308534975b6c"
+  },
+  "variant": {
+    "orderCode": null,
+    "hardwareRevision": null,
+    "firmware": null
+  },
+  "kind": "compute",
+  "documents": [],
+  "connectors": [
+    {
+      "id": "PWR",
+      "label": "Supply",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "VIN",
+          "name": "VIN",
+          "role": "power",
+          "portId": "vin",
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "GND",
+          "name": "GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    },
+    {
+      "id": "CAN",
+      "label": "CAN",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "CANH",
+          "name": "CANH",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "CANL",
+          "name": "CANL",
+          "role": "bus",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        },
+        {
+          "pin": "GND",
+          "name": "CAN GND",
+          "role": "return",
+          "portId": null,
+          "source": {
+            "kind": "assumed",
+            "documentId": "r5-assumptions",
+            "revision": "1",
+            "locator": "reference device controller-ref: values are planning assumptions until a part is chosen",
+            "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [
+    {
+      "id": "can0",
+      "portId": "CAN",
+      "protocol": "canopen",
+      "profile": null,
+      "descriptionDocumentId": null,
+      "source": {
+        "kind": "assumed",
+        "documentId": "r5-assumptions",
+        "revision": "1",
+        "locator": "CAN bus interface, planning assumption",
+        "contentSha256": "228fd9264ba9b2de2f175e17ff8666478604739d0bd5260e20ecb30a3f87a84e"
+      }
+    }
+  ],
+  "drive": null,
+  "digest": "2a069b1b07ba6152f87b2120b9c60e74934a772b6e45c9428c2943d68ddc84d7"
+}

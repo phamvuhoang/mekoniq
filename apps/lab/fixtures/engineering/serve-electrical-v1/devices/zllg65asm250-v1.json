@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "documentType": "device-profile",
+  "id": "zllg65asm250-v1",
+  "revision": 1,
+  "component": {
+    "id": "zltech-zllg65asm250",
+    "revision": "1",
+    "digest": "961665483ab4022c8093272573786bfd743abef120bea627545cb5b9623c7906"
+  },
+  "variant": {
+    "orderCode": "ZLLG65ASM250-L",
+    "hardwareRevision": "V3.15",
+    "firmware": null
+  },
+  "kind": "motor",
+  "documents": [
+    {
+      "id": "zllg-drawing",
+      "kind": "datasheet",
+      "title": "ZLLG65ASM250-L robot hub servo motor drawing V3.15",
+      "revision": "V3.15",
+      "url": "https://www.zlingkj.com/en/robot-hub-servo-motor-series/901228",
+      "digest": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706",
+      "license": "unreviewed"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "POWER",
+      "label": "Motor lead U/V/W",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "U",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zllg-drawing",
+            "revision": "V3.15",
+            "locator": "drawing V3.15, 8015D terminal wiring: pin 1 yellow U",
+            "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+          }
+        },
+        {
+          "pin": "2",
+          "name": "V",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zllg-drawing",
+            "revision": "V3.15",
+            "locator": "drawing V3.15: pin 2 green V",
+            "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+          }
+        },
+        {
+          "pin": "3",
+          "name": "W",
+          "role": "motor_phase",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zllg-drawing",
+            "revision": "V3.15",
+            "locator": "drawing V3.15: pin 3 blue W",
+            "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+          }
+        }
+      ]
+    },
+    {
+      "id": "SIGNAL",
+      "label": "Encoder and HALL lead",
+      "matingPart": null,
+      "pins": [
+        {
+          "pin": "1",
+          "name": "ENC",
+          "role": "encoder",
+          "portId": null,
+          "source": {
+            "kind": "manufacturer",
+            "documentId": "zllg-drawing",
+            "revision": "V3.15",
+            "locator": "drawing V3.15, 12-pin signal terminal (encoder A/B, thermistor, HALL U/V/W, +5 V, GND), 4096 lines",
+            "contentSha256": "588593436deacf7bf66ab2a57946fb9f706a6bf749e464e29a21118977c82706"
+          }
+        }
+      ]
+    }
+  ],
+  "ioPoints": [],
+  "interfaces": [],
+  "drive": null,
+  "digest": "d5a96ae02f18deb6a1718a299c0c785567f0d925a82db05d77091564d96bbbee"
+}
