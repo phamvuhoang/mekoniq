@@ -1,8 +1,8 @@
 import {expect,test} from 'vitest';
 import {applyPageActionTimes,correlatePageActions} from '../../scripts/page-action-clock';
 // @ts-expect-error Source-owned standalone reader, imported read-only like scripts/measure-cell-production.ts does
-import {assessCapture,checkCaptureClock} from '../../../source/scripts/browser-capture-clock.mjs';
-import {captureFixture} from '../../../source/tests/support/r2b-capture';
+import {assessCapture,checkCaptureClock} from '../../../../scripts/browser-capture-clock.mjs';
+import {captureFixture} from '../../../../tests/support/r2b-capture';
 const url='http://h/lab/v2/runs/r1/actions',O=1e12;
 test('actions are matched to their own resource entry by actionId on the page timeline',()=>{
  const calls=[{actionId:'b',name:url,callAt:20},{actionId:'a',name:url,callAt:10}],entries=[{name:url,startTime:20.5,responseEnd:30},{name:url,startTime:10.2,responseEnd:15}];

@@ -48,7 +48,7 @@ if(blocked){const p=checkBlocked(blocked,existsSync(join(root,SPIKE_NOTE))?readF
 const table=R2A?tableR2a(blocked?.gates??[],blocked?.reason):null,SUITES_RUN=R2A?table.suites:R11?SUITES_R11:SUITES;
 for(const [k,f] of [['out','--out'],[R2A?'r11Record':R11?'r1Record':'irsimRecord',R2A?'--r11-record':R11?'--r1-record':'--irsim-record'],['mock','--mock-regression']])if(!own[k])fail('NOT_RUN',`MISSING_OPTION:${f}`);
 const out=resolve(own.out),r11Dir=R2A?resolve(own.r11Record):null,r1Dir=R11?resolve(own.r1Record):null,irsimDir=R2A?r11Dir:R11?r1Dir:resolve(own.irsimRecord),mockDir=resolve(own.mock);
-const labDir=own.lab==='none'?null:own.lab?resolve(own.lab):existsSync(join(root,'../lab/config/source-runtime.lock.json'))?resolve(root,'../lab'):null;
+const labDir=own.lab==='none'?null:own.lab?resolve(own.lab):existsSync(join(root,'apps/lab/config/source-runtime.lock.json'))?resolve(root,'apps/lab'):null;
 const imageTag=`mekoniq-lab-runtime:record-${process.pid}`,imagePlatform=`linux/${arch()==='x64'?'amd64':arch()}`;
 /** How a suite of the table is run: the same for the plan and the recording. */
 const suiteRun=(s,cwd,abs,env={})=>s.kind==='vitest'?{cmd:process.execPath,args:[join(cwd,'node_modules/vitest/vitest.mjs'),'run',...s.files,'--reporter=json',`--outputFile=${abs}`,'--reporter=default'],env}

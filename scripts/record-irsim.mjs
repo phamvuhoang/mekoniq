@@ -33,7 +33,7 @@ const before=identity();
 if(before.dirty)fail('NOT_RUN',`SOURCE_DIRTY: commit the source before recording evidence (${before.dirtyReasons.slice(0,5).join('; ')})`);
 // the Lab checkout (default ../lab when present): its pin must be exactly this source commit and portable closure, or the browser evidence would be of another candidate
 // --lab none records without the Lab (INT01/INT04 not_run); otherwise ../lab when present, or the given checkout
-const labDir=own.lab==='none'?null:own.lab??(existsSync(join(root,'../lab/config/source-runtime.lock.json'))?resolve(root,'../lab'):null);
+const labDir=own.lab==='none'?null:own.lab??(existsSync(join(root,'apps/lab/config/source-runtime.lock.json'))?resolve(root,'apps/lab'):null);
 if(own.lab&&own.lab!=='none'&&!existsSync(join(own.lab,'config/source-runtime.lock.json')))fail('NOT_RUN',`LAB_NOT_FOUND: ${own.lab}`);
 const labInfo=()=>{if(!labDir)return null;const git=(...a)=>spawnSync('git',a,{cwd:labDir,encoding:'utf8'}).stdout.trim(),pin=JSON.parse(readFileSync(join(labDir,'config/source-runtime.lock.json'),'utf8'));
  return {path:labDir,commit:git('rev-parse','HEAD'),dirty:git('status','--porcelain','--untracked-files=all').length>0,pin:{sourceCommit:pin.sourceCommit,artifactSha256:pin.artifactSha256,portableToolsDigest:pin.portableToolsDigest,schemaHash:pin.schemaHash}};};

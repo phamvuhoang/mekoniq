@@ -143,7 +143,7 @@ test('world hash changes with any model change but not with the revision counter
 
 // Lab twin guard. source/ and lab/ are separate repos with separate CI, so source CI (CI=true, no lab/) must skip these.
 // Set LAB_V2_REQUIRE_LAB_FIXTURES=1 (e.g. in a workspace checkout that has both) to make a missing lab/ fail loudly instead of skip.
-const LAB='../lab/',labFixtures=['restaurant-v2','coffee-cell-v2','v1-legacy'].map(n=>`${LAB}fixtures/twins/${n}.json`);
+const LAB='apps/lab/',labFixtures=['restaurant-v2','coffee-cell-v2','v1-legacy'].map(n=>`${LAB}fixtures/twins/${n}.json`);
 const required=process.env.LAB_V2_REQUIRE_LAB_FIXTURES==='1';
 const labTest=(name:string,fn:()=>void)=>test.skipIf(!required&&!labFixtures.every(f=>existsSync(f)))(name,fn);
 const readLab=(f:string)=>readFileSync(LAB+f,'utf8');

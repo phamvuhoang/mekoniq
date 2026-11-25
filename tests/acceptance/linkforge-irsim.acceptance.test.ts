@@ -25,7 +25,7 @@ test('the campaign directory re-verifies from disk through the headless CLI (exi
  expect(r.status,r.stderr).toBe(0);
 });
 test('the Lab checkout pins exactly the recorded source commit and portable tool closure; the record names that pin',()=>{
- const m=manifest(),lab=resolve('..','lab'),lock=JSON.parse(readFileSync(join(lab,'config/source-runtime.lock.json'),'utf8')) as {sourceCommit:string;portableToolsDigest:string;artifactSha256:string};
+ const m=manifest(),lab=resolve('apps','lab'),lock=JSON.parse(readFileSync(join(lab,'config/source-runtime.lock.json'),'utf8')) as {sourceCommit:string;portableToolsDigest:string;artifactSha256:string};
  expect(m.lab,'the Lab must be recorded with the candidate (INT01/INT04)').toBeTruthy();
  expect(m.lab.pin).toMatchObject({sourceCommit:m.identity.before.sourceCommit,portableToolsDigest:m.identity.before.toolClosures.portable});
  expect(lock.sourceCommit).toBe(m.lab.pin.sourceCommit);expect(lock.portableToolsDigest).toBe(m.lab.pin.portableToolsDigest);expect(lock.artifactSha256).toBe(m.lab.pin.artifactSha256);

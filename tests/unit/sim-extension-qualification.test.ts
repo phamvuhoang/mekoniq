@@ -221,7 +221,7 @@ test('r1.1 guard: a complete record has no reasons; accepted:true, a missing res
 
 // ---- Release R2a (Q01): the r2a table of spec 2026-11-12-realistic-arm-web-ui-design.md §6.4, REG03, G-CLOUD1, --blocked and the guard ----
 const R2A=async()=>Q as M;
-const LAB_ROOT='../lab',CASE_IDS_R2A=['MA01','MA02','MA03','MA04','MA05','MA06','MA07','MA08','RT01','RT02','RT03','RT04','RT05','CL01','UI01','UI02','UI03','UI04','UI05','INT15','INT16','REG03'];
+const LAB_ROOT='apps/lab',CASE_IDS_R2A=['MA01','MA02','MA03','MA04','MA05','MA06','MA07','MA08','RT01','RT02','RT03','RT04','RT05','CL01','UI01','UI02','UI03','UI04','UI05','INT15','INT16','REG03'];
 const r11Record=(over:M={})=>({schemaVersion:1,documentType:'sim-extension-qualification',release:'r1.1',accepted:false,identity:{before:{sourceCommit:COMMIT}},lab:{commit:LABC},
  r1Record:{file:'r1-record.json',sha256:sha(JSON.stringify(r1Record()))},irsimRecord:{file:'irsim-record.json',sha256:sha(JSON.stringify(irsimRecord()))},mockRegression:{file:'mock-regression.json',sha256:sha(JSON.stringify(mockManifest()))},
  gates:Object.fromEntries(Object.keys(GATES_R11).map(g=>[g,{status:'tested',accepted:false,cases:[]}])),...over});

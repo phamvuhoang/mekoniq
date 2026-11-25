@@ -20,7 +20,7 @@ test('the campaign fixture names registry scenarios and backend sets the runtime
  expect(fixture.scenarios.map(s=>s.id)).toEqual(['FD02','FD07','BV01','CAMPAIGN-FD02-FD07-BV01-BV03']);
  const known=new Set((compatibility as {scenarios:{id:string}[]}).scenarios.map(s=>s.id));
  for(const s of fixture.scenarios){expect(known.has(s.id)).toBe(true);expect(s.repeat).toBeGreaterThanOrEqual(3);expect(s.simulation.requires.length).toBeGreaterThan(0);}
- const sibling='../source/tests/fixtures/digital-twin/campaigns/food-beverage.json';
+ const sibling='../../tests/fixtures/digital-twin/campaigns/food-beverage.json';
  if(existsSync(sibling))expect(JSON.parse(readFileSync(sibling,'utf8'))).toEqual(fixture);
 });
 

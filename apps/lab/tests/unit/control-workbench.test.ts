@@ -20,7 +20,7 @@ const {coffeeReplay}=await import('../support/coffee-replay');
 const {backendSetOptions}=await import('../../src/scenarios/support');
 const {TwinWorkspace}=await import('../../src/ui/workspace');
 
-const fixture=<T,>(n:string):T=>JSON.parse(readFileSync(`../source/robotics/simulation-mujoco/fixtures/drive-v1/${n}`,'utf8')) as T;
+const fixture=<T,>(n:string):T=>JSON.parse(readFileSync(`../../robotics/simulation-mujoco/fixtures/drive-v1/${n}`,'utf8')) as T;
 const serve=fixture<ControlProfileV1>('serve-control-v1.json'),xarm=fixture<ControlProfileV1>('xarm6-control-v1.json'),envelope=fixture<TuningEnvelopeV1>('tuning-envelope-v1.json');
 const NOMINAL='cf7b61f6b110bd4cf31c2fca3455350a8e29160b5791fd3b47345c5129468405',WHEELS=['amr-1/wheel-left','amr-1/wheel-right'];
 const env=(id:string)=>envelope.axes.find(a=>a.axisId===id)!;

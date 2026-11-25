@@ -1,5 +1,5 @@
 // @ts-expect-error Source-owned standalone qualification observer
-import {checkCaptureClock} from '../../source/scripts/browser-capture-clock.mjs';
+import {checkCaptureClock} from '../../../scripts/browser-capture-clock.mjs';
 import {installPageActionClock,applyPageActionClock,pageClockOffsetMs} from './page-action-clock';
 /** Actual production UI + Source shared MuJoCo world; never the synthetic renderer harness. Run with Source's pnpm exec tsx. */
 import {mkdir,readFile,writeFile,mkdtemp,stat,readdir} from 'node:fs/promises';
@@ -13,17 +13,17 @@ import {createHash,randomUUID} from 'node:crypto';
 import {performance,monitorEventLoopDelay} from 'node:perf_hooks';
 import {preview} from 'vite';
 import {chromium,expect} from '@playwright/test';
-import {mujocoFromOptions} from '../../source/packages/lab-runtime/src/v2/simulation3d/mujoco';
-import {portableSimulationFromOptions} from '../../source/packages/lab-runtime/src/v2/navigation2d/readiness';
-import {engineeringFromOptions} from '../../source/packages/lab-runtime/src/engineering/runtime-options';
-import {startLabGateway} from '../../source/packages/lab-runtime/src/gateway';
-import {OwnedProcesses} from '../../source/tests/support/owned-processes';
+import {mujocoFromOptions} from '../../../packages/lab-runtime/src/v2/simulation3d/mujoco';
+import {portableSimulationFromOptions} from '../../../packages/lab-runtime/src/v2/navigation2d/readiness';
+import {engineeringFromOptions} from '../../../packages/lab-runtime/src/engineering/runtime-options';
+import {startLabGateway} from '../../../packages/lab-runtime/src/gateway';
+import {OwnedProcesses} from '../../../tests/support/owned-processes';
 /** Canonical argv; must equal source/scripts/browser-evidence-readback.mjs (tests/unit/measure-args.test.ts). */
 export const BROWSER_ARGS=['exec','playwright','test','--config','playwright.b07b.config.ts','mujoco-cell.spec.ts'];
 if(process.argv[1]&&realpathSync(process.argv[1])===realpathSync(import.meta.filename)){ // run only as a script (realpaths: a symlinked launch must still run, never exit 0 silently); importing (unit test) has no side effects
 const arg=(key:string)=>{const i=process.argv.indexOf(key);return i<0?undefined:process.argv[i+1];};
 const exported=process.argv.includes('--exported-runtime');
-const lab=resolve(import.meta.dirname,'..'),source=resolve(lab,'../source'),output=resolve(arg('--out')??'/tmp/b07b-production'),duration=Number(arg('--duration-ms')??185000),warmup=Number(arg('--warmup-ms')??5000);
+const lab=resolve(import.meta.dirname,'..'),source=resolve(lab,'../..'),output=resolve(arg('--out')??'/tmp/b07b-production'),duration=Number(arg('--duration-ms')??185000),warmup=Number(arg('--warmup-ms')??5000);
 if(duration<180000&&!process.argv.includes('--diagnostic'))throw Error('ACTIVE_CAPTURE_REQUIRES_180000MS');
 await mkdir(output,{recursive:true});const directory=await mkdtemp('/tmp/b07b-native-production-'),owned=new OwnedProcesses(),workerSamples:unknown[]=[],stageSamples:{runId:string;stage:string;tick:number;elapsedMs:number;wallMs:number}[]=[],runDirectories=new Map<string,string>(),actions:Record<string,unknown>[]=[],responses:Record<string,unknown>[]=[],exports:Record<string,unknown>[]=[],errors:string[]=[];owned.addDirectory(directory);
 const lock=JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')),loop=monitorEventLoopDelay({resolution:10});loop.enable();

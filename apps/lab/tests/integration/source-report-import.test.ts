@@ -9,7 +9,7 @@ import {importNavigationEvidence,navigationEvidenceView} from '../../src/reports
 import {reportJson} from '../../src/reports/metrics';
 import type {RunReport} from '../../src/scenarios/controls';
 (globalThis as Record<string,unknown>).localStorage??={getItem:()=>'en',setItem:()=>{}};
-const sourceRoot=resolve(fileURLToPath(new URL('../../../source/',import.meta.url))),venv=join(sourceRoot,'.venv-irsim/bin/python');
+const sourceRoot=resolve(fileURLToPath(new URL('../../../../',import.meta.url))),venv=join(sourceRoot,'.venv-irsim/bin/python');
 // source modules are loaded from the source checkout at run time (not type-checked here: they are source's own code)
 const fromSource=(p:string)=>import(/* @vite-ignore */ join(sourceRoot,p)) as Promise<Record<string,(...a:never[])=>Promise<never>>>;
 const cleanup:(()=>Promise<unknown>)[]=[];

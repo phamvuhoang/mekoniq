@@ -66,7 +66,7 @@ test('the arm inspector prefers live telemetry rows and still ends with ARM03; w
 });
 
 test('the shared handoff fixture never serves from arm evidence and keeps custody explicit',()=>{
- const sibling='../source/integrations/arm-controller/tests/fixtures/coffee-handoff.json';
+ const sibling='../../integrations/arm-controller/tests/fixtures/coffee-handoff.json';
  if(!existsSync(sibling))return;
  const fx=JSON.parse(readFileSync(sibling,'utf8')) as {cases:{name:string;expected:{served:boolean;custody:string;pickup:string}}[]};
  for(const c of fx.cases){expect(c.expected.served,c.name).toBe(false);expect(['cell','arm','unresolved'],c.name).toContain(c.expected.custody);}

@@ -9,7 +9,7 @@
 // Developer Mac/Linux only. It never downloads or installs anything, never falls back to the mock launcher, never stops a process it did not start.
 // Before spawning it verifies: the pinned artifact carries portableSimulationTools; the source tool tree is exactly that closure; each worker venv is
 // CPython 3.11 with every package of its lock installed at the locked version. Any failure exits 1 with a code; `pnpm lab:mock` is unaffected.
-// Options: --source <dir> (default ../source) --irsim-python <path> (default <source>/.venv-irsim/bin/python) --linkforge-python <path>
+// Options: --source <dir> (default ../..) --irsim-python <path> (default <source>/.venv-irsim/bin/python) --linkforge-python <path>
 // (default <source>/.venv-linkforge/bin/python), plus every lab:mock option (--ui-port 4175 --runtime-port 4176 --data-dir --root --boot-only).
 // The source runtime accepts browser traffic only from 127.0.0.1:4175/4176, so other ports serve only non-browser checks.
 import {execFile,spawn} from 'node:child_process';
@@ -65,7 +65,7 @@ export async function venvProblem(python,lockText,track=()=>{}){
  return wrong.length?`LOCK_MISMATCH:${wrong.slice(0,5).join(', ')}`:null;
 }
 export function irsimOptions(argv){
- const o={source:resolve(lab,'../source'),provider:'irsim',mujocoMobile:false,irsimPython:undefined,linkforgePython:undefined,webotsPython:undefined,webotsHome:undefined,mujocoPython:undefined,rest:[]};
+ const o={source:resolve(lab,'../..'),provider:'irsim',mujocoMobile:false,irsimPython:undefined,linkforgePython:undefined,webotsPython:undefined,webotsHome:undefined,mujocoPython:undefined,rest:[]};
  const value=(i)=>{const v=argv[i];if(!v||v.startsWith('--'))throw new Error(`MISSING_VALUE:${argv[i-1]}`);return resolve(v);};
  for(let i=0;i<argv.length;i++){const a=argv[i];
   if(a==='--mujoco-mobile')o.mujocoMobile=true;else if(a==='--source')o.source=value(++i);else if(a==='--irsim-python')o.irsimPython=value(++i);else if(a==='--linkforge-python')o.linkforgePython=value(++i);

@@ -42,7 +42,7 @@ test('ARM03 nominal BV01 records the declared scene and hashes without claiming 
  expect(evidence.intervals.some(i=>i.heldCupId==='cup-1')).toBe(true);expect(evidence.droppedIntervals).toBe(0);
  for(const i of evidence.intervals)expect(evidence.worlds[i.worldRevision]).toBeDefined();
 });
-const LAB_COFFEE_FIXTURE='../lab/fixtures/twins/coffee-cell-v2.json';
+const LAB_COFFEE_FIXTURE='apps/lab/fixtures/twins/coffee-cell-v2.json';
 test.skipIf(process.env.LAB_V2_REQUIRE_LAB_FIXTURES!=='1'&&!existsSync(LAB_COFFEE_FIXTURE))('ARM03 the shipped Lab coffee counter fixture completes nominal BV01',async()=>{
  const fixture=JSON.parse(readFileSync(LAB_COFFEE_FIXTURE,'utf8'));
  const r=await executeCoffee('BV01',{seed:42,project:fixture.project,assets:fixture.assets});

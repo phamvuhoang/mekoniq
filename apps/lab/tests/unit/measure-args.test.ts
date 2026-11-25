@@ -12,7 +12,7 @@ test('launching via a symlink still runs the script body (fails fast, never exit
  const dir=mkdtempSync(join(tmpdir(),'measure-link-')),link=join(dir,'measure-link.ts');
  try{
   symlinkSync(resolve(import.meta.dirname,'../../scripts/measure-cell-production.ts'),link);
-  const r=spawnSync(resolve(import.meta.dirname,'../../../source/node_modules/.bin/tsx'),[link,'--duration-ms','1'],{cwd:resolve(import.meta.dirname,'../../../source'),encoding:'utf8',timeout:90000});
+  const r=spawnSync(resolve(import.meta.dirname,'../../../../node_modules/.bin/tsx'),[link,'--duration-ms','1'],{cwd:resolve(import.meta.dirname,'../../../..'),encoding:'utf8',timeout:90000});
   expect(r.stderr).toContain('ACTIVE_CAPTURE_REQUIRES_180000MS');expect(r.status).not.toBe(0);
  }finally{rmSync(dir,{recursive:true,force:true});}
 },120000);

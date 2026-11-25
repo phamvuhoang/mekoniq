@@ -54,14 +54,14 @@ test('without the MuJoCo Python the launcher exits MUJOCO_PYTHON_MISSING before 
 test('a data directory inside a tool root is refused (the worker would write into the pinned closure) before any port is opened', async () => {
   // a missing Python too: if the check ever regressed, the launcher stops at the venv instead of starting a runtime that writes into the tool root
   const d = await temp();
-  const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', resolve(lab, '../source/robotics/simulation-mujoco/runs-u06')]);
+  const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', resolve(lab, '../../robotics/simulation-mujoco/runs-u06')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('DATA_DIR_IN_TOOL_ROOT'); expect(r.out).not.toMatch(/Ready in/);
   expect(await listening(r.ui)).toBe(false); expect(await listening(r.runtime)).toBe(false);
 }, 120_000);
 
 test('a data directory that reaches a tool root through a symbolic link is refused too', async () => {
   const d = await temp(); const { symlink } = await import('node:fs/promises');
-  await symlink(resolve(lab, '../source/robotics/simulation-mujoco'), join(d, 'link'));
+  await symlink(resolve(lab, '../../robotics/simulation-mujoco'), join(d, 'link'));
   const r = await run(['--mujoco-python', join(d, 'none/python'), '--data-dir', join(d, 'link/runs-u06')]);
   expect(r.exit, r.err).toBe(1); expect(r.err).toContain('DATA_DIR_IN_TOOL_ROOT'); expect(r.out).not.toMatch(/Ready in/);
 }, 120_000);

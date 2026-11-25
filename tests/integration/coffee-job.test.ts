@@ -164,7 +164,7 @@ test('the native robot adapter registry and dispatcher cannot execute cell comma
 });
 
 // Lab recipe fixtures are the same recipes as the server-owned ones (separate repos: skipped without lab/, LAB_V2_REQUIRE_LAB_FIXTURES=1 forces).
-const LAB_RECIPES=['espresso','iced-milk-coffee'].map(n=>`../lab/fixtures/recipes/${n}.json`);
+const LAB_RECIPES=['espresso','iced-milk-coffee'].map(n=>`apps/lab/fixtures/recipes/${n}.json`);
 test.skipIf(process.env.LAB_V2_REQUIRE_LAB_FIXTURES!=='1'&&!LAB_RECIPES.every(f=>existsSync(f)))('lab recipe fixtures equal the server recipes, are schema-valid and carry their content hash',()=>{
  for(const [file,recipe] of [[LAB_RECIPES[0]!,ESPRESSO],[LAB_RECIPES[1]!,ICED_MILK_COFFEE]] as const){
   const fixture=JSON.parse(readFileSync(file,'utf8'));

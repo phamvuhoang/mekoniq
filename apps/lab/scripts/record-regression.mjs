@@ -15,8 +15,8 @@ import {resolve} from 'node:path';
 import os from 'node:os';
 import {parseRecorderArgs,physicalPlan,physicalArtifacts,notExecuted,PHYSICAL_BROWSER_RUNS} from './recorder-options.mjs';
 import {scrubEvidence} from './recorder-scrub.mjs';
-import {captureRegressionIdentity,assertRecordableIdentity,assertStableRecording,LAB_EVIDENCE_MUTABLE_PATHS} from '../../source/tests/support/regression-identity.ts';
-const LAB=resolve(fileURLToPath(new URL('..',import.meta.url))),W=resolve(LAB,'..'),SRC=resolve(W,'source');
+import {captureRegressionIdentity,assertRecordableIdentity,assertStableRecording,LAB_EVIDENCE_MUTABLE_PATHS} from '../../../tests/support/regression-identity.ts';
+const LAB=resolve(fileURLToPath(new URL('..',import.meta.url))),SRC=resolve(LAB,'../..'),W=resolve(SRC,'..');
 // --suite physical-robot-lab --out <new dir>: a fresh evidence root (never replaced, never the historical one). Without options the legacy behaviour is unchanged.
 const opts=parseRecorderArgs(process.argv.slice(2),LAB),{ci,suite,out:OUT,explicitOut}=opts;
 const python=resolve(SRC,process.env.LAB_PYTHON||'.venv/bin/python');

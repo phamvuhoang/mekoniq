@@ -8,9 +8,9 @@ import {verifyR2bDirectory,evidenceInventory} from '../../scripts/r2b-readback.m
 // @ts-expect-error standalone tooling
 import {summarizeResult} from '../../scripts/irsim-qualification.mjs';
 test('every closed R2b selector exists and cloud payload remains required only in regression',()=>{
- expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('.'),lab:resolve('../lab')})).not.toThrow();
- expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('missing-checkout'),lab:resolve('../lab')})).toThrow('R2B_SELECTOR_MISSING');
- for(const suite of SUITES_R2B)for(const file of suite.files)expect(existsSync(resolve(suite.repo==='lab'?'../lab':'.',file)),`${suite.id}:${file}`).toBe(true);
+ expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('.'),lab:resolve('apps/lab')})).not.toThrow();
+ expect(()=>validateR2bSelectors({suites:SUITES_R2B},{source:resolve('missing-checkout'),lab:resolve('apps/lab')})).toThrow('R2B_SELECTOR_MISSING');
+ for(const suite of SUITES_R2B)for(const file of suite.files)expect(existsSync(resolve(suite.repo==='lab'?'apps/lab':'.',file)),`${suite.id}:${file}`).toBe(true);
  expect(SUITES_R2B.find((s:{id:string})=>s.id==='mj-evidence').files).toEqual(['tests/integration/mujoco-payload-campaign.test.ts','tests/integration/physics-evidence.test.ts']);
  expect(SUITES_R2B.find((s:{id:string})=>s.id==='r2b-regression').files).toContain('tests/security/payload.test.ts');
 });

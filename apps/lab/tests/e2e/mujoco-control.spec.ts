@@ -176,7 +176,7 @@ test('Control tab: a wheel bench, A/B after a gain change, export and import, bo
  //    is the model's physics, not a bug), never a delta against the wheels, and exports only a completed bench
  await page.getByRole('button',{name:'EN',exact:true}).click();await openInspector(page,'control');
  // the draft of J3 is the served starting profile's (the same file the runtime serves, read from the source checkout)
- const xarm=JSON.parse(readFileSync(join(process.cwd(),'../source/robotics/simulation-mujoco/fixtures/drive-v1/xarm6-control-v1.json'),'utf8')) as {axes:{axisId:string;loop:{kp:number;kd:number}}[]},j3=xarm.axes.find(x=>x.axisId==='xarm-1/J3')!;
+ const xarm=JSON.parse(readFileSync(join(process.cwd(),'../../robotics/simulation-mujoco/fixtures/drive-v1/xarm6-control-v1.json'),'utf8')) as {axes:{axisId:string;loop:{kp:number;kd:number}}[]},j3=xarm.axes.find(x=>x.axisId==='xarm-1/J3')!;
  await page.locator('#twin-ctl-axis-J3').check();await expect(kp).toHaveValue(String(j3.loop.kp));await expect(page.locator('#twin-ctl-kd')).toHaveValue(String(j3.loop.kd));await expect(page.locator('#twin-ctl-accelerationLimit')).toHaveCount(0);
  await page.locator('#twin-ctl-size').selectOption('0.2');
  await page.locator('#twin-ctl-kd').evaluate(el=>el.scrollIntoView({block:'start'})); // same: the panel's scroll offset is left over from the previous tab state

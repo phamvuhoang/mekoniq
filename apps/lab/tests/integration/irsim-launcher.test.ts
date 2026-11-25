@@ -83,7 +83,7 @@ test('launcher tree check: exact closure passes; a changed, missing, unlisted or
 }));
 test('pinned runtime: the closure covers the packages the description helper imports, so an edited actors/scenario.py is a mismatch',()=>withTmp(async(tmp)=>{
  const p=(await installedManifest(lab,JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')))).portableSimulationTools as Tools,src=join(tmp,'source');
- for(const f of p.closure.files){await mkdir(dirname(join(src,f.path)),{recursive:true});await copyFile(join(lab,'../source',f.path),join(src,f.path));}
+ for(const f of p.closure.files){await mkdir(dirname(join(src,f.path)),{recursive:true});await copyFile(join(lab,'../..',f.path),join(src,f.path));}
  expect(await verifyPortableTree(p,src)).toEqual([]);
  for(const f of ['actors/scenario.py','worlds/generate_restaurant.py']){await mkdir(dirname(join(src,'robotics/simulation',f)),{recursive:true});await writeFile(join(src,'robotics/simulation',f),'raise SystemExit("unpinned")\n');}
  expect((await verifyPortableTree(p,src)).sort()).toEqual(['robotics/simulation/actors/scenario.py:CHANGED','robotics/simulation/worlds/generate_restaurant.py:CHANGED']);
@@ -163,7 +163,7 @@ test('review5 #7: Ctrl-C during the venv preflight stops the probe and its child
  }
 }),60000);
 // review5 #6: planted bytecode beside a pinned source. Same name, same source mtime and size in its header, different body: Python would run it.
-const irPython=join(lab,'../source/.venv-irsim/bin/python');
+const irPython=join(lab,'../../.venv-irsim/bin/python');
 const PLANT=`import os,py_compile,sys
 src=sys.argv[1];body=open(src,'rb').read();st=os.stat(src)
 evil=b"raise SystemExit('planted bytecode ran')\\n";evil=evil+b'#'*(len(body)-len(evil)-1)+b'\\n'
@@ -172,7 +172,7 @@ py_compile.compile(src,cfile=os.path.join(os.path.dirname(src),'__pycache__',os.
 open(src,'wb').write(body);os.utime(src,ns=(st.st_atime_ns,st.st_mtime_ns))`;
 test.skipIf(!existsSync(irPython))('review5 #6: planted __pycache__ in a copy of the pinned closure: the launcher refuses it, and the interpreter flags run the source, never the bytecode',()=>withTmp(async(tmp)=>{
  const p=(await installedManifest(lab,JSON.parse(await readFile(join(lab,'config/source-runtime.lock.json'),'utf8')))).portableSimulationTools as Tools,src=join(tmp,'source');
- for(const f of p.closure.files){await mkdir(dirname(join(src,f.path)),{recursive:true});await copyFile(join(lab,'../source',f.path),join(src,f.path));}
+ for(const f of p.closure.files){await mkdir(dirname(join(src,f.path)),{recursive:true});await copyFile(join(lab,'../..',f.path),join(src,f.path));}
  expect(await verifyPortableTree(p,src)).toEqual([]);
  const root=join(src,'robotics/navigation-2d'),target=join(root,'irsim_worker/__init__.py'),before=await readFile(target);
  const {execFileSync}=await import('node:child_process');
