@@ -1,5 +1,6 @@
 import {expect,test} from 'vitest';
 import {execFileSync} from 'node:child_process';
+import * as identity from '../../scripts/repo-identity.mjs';
 import {mkdtemp,readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
@@ -19,7 +20,7 @@ const root=resolve('.'),home=process.env.MEKONIQ_WEBOTS_HOME??'/Applications/Web
 /** Native work is deliberately one serialized test. No skip, fallback, installation or hidden engine double. */
 test('X01: actual IR-SIM, Webots and MuJoCo on fresh empty Serve geometry with deterministic confirmations',async()=>{
  const out=process.env.SIMULATION_STUDY_OUT??await mkdtemp(join(tmpdir(),'mekoniq-b08-x01-')),owned=new OwnedProcesses(),runs:SimulationRunInput[]=[];
- const sourceCommit=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()+(execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim()?'-dirty':'');
+ const sourceCommit=identity.sourceCommit(root)+(identity.sourceDirty(root)?'-dirty':'');
  await mkdir(out,{recursive:true});await writeFile(join(out,'recording.json'),JSON.stringify({accepted:false,sourceCommit,status:'started',engineRuns:[]},null,2),{flag:'wx'});
  console.log('X01_OUTPUT',out);
  for(const engine of ['irsim_2d','webots_3d','mujoco_3d']){
